@@ -25,7 +25,12 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const SRC = fs.readFileSync(path.join(HERE, 'lane-fanout.js'), 'utf8')
+// The RED baseline for any change to these dispatchers is THIS file run against the PRE-FIX
+// sources (`git show <tip>:.claude/workflows/<f>.js` into a scratch dir, then point this at it).
+// Without the override the preflight can only ever measure the tree it ships with, so "it would
+// have gone red on the old code" is a claim nobody can re-run. CI passes nothing and gets HERE.
+const SRCDIR = process.env.LANE_FANOUT_SRCDIR || HERE
+const SRC = fs.readFileSync(path.join(SRCDIR, 'lane-fanout.js'), 'utf8')
 
 // Compile exactly as the harness evaluates it: an async function body with these globals, so
 // top-level await and return are legal. This is the only honest syntax check.
@@ -73,7 +78,10 @@ const pipeline = async (items, ...stages) => {
 const BUILD = (over = {}) => ({
   status: 'done', summary: 's', filesChanged: ['x.rs'], redBaseline: 'RED', verification: 'ok',
   contractBreaches: 'none', enforcementPlacement: 'n/a - adds no enforcement',
-  peripheralsUpdated: 'n/a - nothing described this behaviour', followUps: '', commands: [], ...over,
+  // Default must name a real command that VERIFY re-runs. `commands: []` used to converge
+  // vacuously against any verifier command — that is the fail-open under test below.
+  peripheralsUpdated: 'n/a - nothing described this behaviour', followUps: '',
+  commands: ['cargo test -p x'], ...over,
 })
 const FINDING = (over = {}) => ({
   severity: 'major', claim: 'c', failureScenario: 'f', location: 'l',
@@ -82,7 +90,7 @@ const FINDING = (over = {}) => ({
 const REVIEW = (over = {}) => ({ verdict: 'accept', findings: [], oracleWeakened: false, scopeCreep: false, ...over })
 const VERIFY = (over = {}) => ({
   reproduced: true, actualResults: 'a', discrepancies: 'none', contradictsClaim: false,
-  falseGreenRisk: 'none', headSha: 'cafe1234', ...over,
+  falseGreenRisk: 'none', commandsRun: ['cargo test -p x'], oracleIntact: true, headSha: 'cafe1234', ...over,
 })
 
 // Records every label the harness actually dispatched, which is how we prove a rule is REACHABLE
@@ -136,9 +144,18 @@ const threw = async (args) => {
   const hasPlacement = reviews.some((r) => /ENFORCEMENT PLACEMENT/.test(r.prompt))
   const hasDrift = reviews.some((r) => /PERIPHERAL DRIFT/.test(r.prompt))
   const hasCustom = reviews.some((r) => /CUSTOM ONE/.test(r.prompt))
+  const hasMaintainability = reviews.some((r) => /COST OF CARRY/.test(r.prompt))
+  // Sized against the standing set rather than pinned to a literal. The count was hard-coded to 5,
+  // so ADDING a standing lens -- the intended way to strengthen review -- read as a regression and
+  // blocked dispatch. An assertion that a legitimate improvement breaks is an assertion that will
+  // eventually be "fixed" by deleting the improvement. Two lanes have already learned this shape:
+  // a rule stated as a list of members instead of a relationship over the set.
+  const standing = SRC.match(/const STANDING_LENSES = \[([\s\S]*?)\n\]/)
+  const standingCount = standing ? (standing[1].match(/^\s{2}'/gm) || []).length : -1
   check('custom lenses ADD to standing lenses, never replace them',
-    reviews.length === 5 && hasOracle && hasPlacement && hasDrift && hasCustom,
-    { count: reviews.length, hasOracle, hasPlacement, hasDrift, hasCustom })
+    standingCount > 0 && reviews.length === standingCount + 2 &&
+      hasOracle && hasPlacement && hasDrift && hasMaintainability && hasCustom,
+    { count: reviews.length, standingCount, hasOracle, hasPlacement, hasDrift, hasMaintainability, hasCustom })
 }
 
 // --- 3. Convergence keys on PROOF, not on the severity label. -------------------------------
@@ -381,7 +398,7 @@ const threw = async (args) => {
 // path that does not exist — and nothing here could see it, because the preflight only ever
 // compiled lane-fanout.js. A dispatcher is part of the harness.
 {
-  const TICK = fs.readFileSync(path.join(HERE, 'program-tick.js'), 'utf8')
+  const TICK = fs.readFileSync(path.join(SRCDIR, 'program-tick.js'), 'utf8')
   try {
     new AsyncFunction('args', 'agent', 'parallel', 'pipeline', 'log', 'phase', 'budget', 'workflow',
       TICK.replace(/^export const meta = /m, 'const meta = '))
@@ -397,15 +414,24 @@ const threw = async (args) => {
 // program-tick. A rule present in two of three sibling harnesses is not a rule, it is a coincidence,
 // so the preflight now asserts it across ALL of them rather than for each file someone remembers.
 {
-  const dispatchers = ['program-tick', 'backlog-audit', 'lane-fanout']
+  // ENUMERATE THE DIRECTORY, DO NOT LIST IT. This was a hardcoded array of the harnesses someone
+  // remembered, which is how program-tick went without the guard while its two siblings had it, and
+  // how review-gate.js and slice.js sat in this directory referenced-but-never-compiled. A new
+  // harness must be covered by existing here, not by being added to a list a future author edits.
+  const dispatchers = fs.readdirSync(HERE)
+    .filter((f) => f.endsWith('.js'))
+    .map((f) => f.replace(/\.js$/, ''))
+    .sort()
+  check('every harness in the directory is swept, not a hardcoded subset',
+    dispatchers.length >= 4 && dispatchers.includes('scout'), dispatchers)
   for (const name of dispatchers) {
-    const src = fs.readFileSync(path.join(HERE, `${name}.js`), 'utf8')
+    const src = fs.readFileSync(path.join(SRCDIR, `${name}.js`), 'utf8')
       .replace(/^export const meta = /m, 'const meta = ')
     const fn = new AsyncFunction('args', 'agent', 'parallel', 'pipeline', 'log', 'phase', 'budget', 'workflow', src)
     const stub = async () => ({})
     // Every required field is supplied; ONLY the bogus key should be able to fail this.
     const base = { tip: 'a'.repeat(40), lanes: [LANE()], candidateWt: '/w', candidateTip: 'b'.repeat(40),
-      base: 'main', repo: '/r', ghRepo: 'o/n' }
+      base: 'main', repo: '/r', ghRepo: 'o/n', maxLanes: 2 }
     let threw = null
     try {
       await fn({ ...base, thisOptionDoesNotExist: true }, stub, async (t) => Promise.all(t.map((f) => f())),
@@ -418,7 +444,7 @@ const threw = async (args) => {
 
 // A batch size of -1 produces no batches and 1.5 produces overlapping slices; both exit cleanly.
 {
-  const src = fs.readFileSync(path.join(HERE, 'backlog-audit.js'), 'utf8')
+  const src = fs.readFileSync(path.join(SRCDIR, 'backlog-audit.js'), 'utf8')
     .replace(/^export const meta = /m, 'const meta = ')
   const fn = new AsyncFunction('args', 'agent', 'parallel', 'pipeline', 'log', 'phase', 'budget', 'workflow', src)
   for (const bad of [-1, 0, 1.5, 'eight']) {
@@ -436,7 +462,7 @@ const threw = async (args) => {
 // The reconciler was handed `JSON.stringify(findings).slice(0, 24000)`. With ~32 read lanes the cap
 // binds routinely, so the single writer filed beads for a prefix of the audit and reported success.
 {
-  const src = fs.readFileSync(path.join(HERE, 'backlog-audit.js'), 'utf8')
+  const src = fs.readFileSync(path.join(SRCDIR, 'backlog-audit.js'), 'utf8')
   check('backlog-audit no longer truncates the findings payload blindly',
     !/JSON\.stringify\(findingsAll\)\.slice\(/.test(src))
   const body = src.match(/function renderFindings\(all\) \{[\s\S]*?\n\}/)
@@ -476,9 +502,769 @@ const threw = async (args) => {
 // fix is one command, and the lane that made the edit could have run it. This assertion exists
 // because a correct change was turned red by exactly that, twice.
 {
-  const need = ['generate-documentation-manifest.mjs --write', 'check:doc-manifest', 'POSTFLIGHT']
+  const need = ['REGENERATE, THEN ASK GIT', 'git status --porcelain', 'POSTFLIGHT', 'tools/buck/preflight.sh', 'tools/lanes/pgtest.sh']
   for (const fragment of need) {
-    check(`the lock tells lanes to refresh generated doc peripherals: ${fragment}`, SRC.includes(fragment))
+    check(`the lock names a TOTAL generated-face check, not a list: ${fragment}`, SRC.includes(fragment))
+  }
+}
+
+// --- 14. OVERLAPPING OWNED ROOTS: the duplicate-worktree collision, deferred to LAND. --------
+// Separate worktrees mean two lanes cannot corrupt each other's files, so every reviewer and every
+// verifier passes. The collision arrives on the integration branch afterwards, as two independent
+// rewrites of the same files from the same base — the most expensive possible moment. Refuse it
+// where the duplicate `wt` is refused: at dispatch.
+{
+  const nested = await threw(ARGS({ lanes: [
+    LANE({ key: 'outer', wt: '/w1', owned: 'backend/crates/x/**' }),
+    LANE({ key: 'inner', wt: '/w2', owned: 'backend/crates/x/sub/**' }),
+  ] }))
+  check('a lane owning a subtree of another lane aborts',
+    !!nested && /overlapping owned root/i.test(nested) && /outer/.test(nested) && /inner/.test(nested), nested)
+
+  const same = await threw(ARGS({ lanes: [
+    LANE({ key: 'a1', wt: '/w1', owned: 'docs/x/**' }),
+    LANE({ key: 'a2', wt: '/w2', owned: 'docs/x/**' }),
+  ] }))
+  check('two lanes owning the SAME root abort', !!same && /overlapping owned root/i.test(same), same)
+
+  // An owned root is routinely a LIST. One colliding member is enough, and checking only the first
+  // would be the same defect with a smaller blast radius.
+  const multi = await threw(ARGS({ lanes: [
+    LANE({ key: 'm1', wt: '/w1', owned: 'a/**, b/**' }),
+    LANE({ key: 'm2', wt: '/w2', owned: 'c/**\nb/deep/**' }),
+  ] }))
+  check('one colliding path inside a multi-path owned root is enough', !!multi && /overlapping owned root/i.test(multi), multi)
+
+  // A guard that examines nothing must FAIL, not pass: an owned root naming no path cannot be
+  // compared, and it is also unusable as the reviewer's IN-SCOPE PATHS list.
+  const prose = await threw(ARGS({ lanes: [LANE({ key: 'p1', owned: 'everything in the crate' })] }))
+  check('an owned root with no path in it aborts rather than being silently unguarded',
+    !!prose && /no path/i.test(prose), prose)
+
+  // `./backend/crates/foo` and `backend/crates/foo` are the same root; dispatch must refuse.
+  const dotted = await threw(ARGS({ lanes: [
+    LANE({ key: 'bare', wt: '/w1', owned: 'backend/crates/foo/**' }),
+    LANE({ key: 'dot', wt: '/w2', owned: './backend/crates/foo/**' }),
+  ] }))
+  check('./ and bare owned roots collide at dispatch',
+    !!dotted && /overlapping owned root/i.test(dotted), dotted)
+
+  const parentDots = await threw(ARGS({ lanes: [
+    LANE({ key: 'up', wt: '/w1', owned: 'backend/crates/foo/../bar/**' }),
+    LANE({ key: 'other', wt: '/w2', owned: 'docs/x/**' }),
+  ] }))
+  check('owned roots containing .. are refused',
+    !!parentDots && /\.\./.test(parentDots), parentDots)
+
+  // ...and it must not OVER-refuse, or it becomes a thing people work around.
+  const sibling = await go(ARGS({ lanes: [
+    LANE({ key: 'd1', wt: '/w1', owned: 'backend/crates/ab/**' }),
+    LANE({ key: 'd2', wt: '/w2', owned: 'backend/crates/a/**' }),
+  ] }))
+  check('a shared string prefix that is not a PATH prefix is not an overlap',
+    !!sibling && Array.isArray(sibling.headline), sibling && sibling.headline)
+
+  const disjoint = await go(ARGS({ lanes: [
+    LANE({ key: 'e1', wt: '/w1', owned: 'backend/crates/a/**' }),
+    LANE({ key: 'e2', wt: '/w2', owned: 'docs/**' }),
+  ] }))
+  check('disjoint owned roots dispatch normally', !!disjoint && Array.isArray(disjoint.headline), disjoint && disjoint.headline)
+}
+
+// --- 15. A GREEN THE VERIFIER DID NOT ANSWER FOR IS NOT A GREEN. -----------------------------
+// reproduced+contradictsClaim say the verifier ran something and agreed. They do not say WHAT it
+// ran, whether any command selected zero tests and exited 0, or whether the suite still proves as
+// much as it did. Oracle integrity is the most common rejection cause in this programme and a
+// standing review lens, yet the schema let a verifier certify a green without ever answering it.
+{
+  const req = (SRC.match(/const VERIFY_SCHEMA = \{[\s\S]*?required: \[([^\]]*)\]/) || ['', ''])[1]
+  for (const f of ['falseGreenRisk', 'commandsRun', 'oracleIntact']) {
+    check(`${f} is a REQUIRED verifier field`, req.includes(f), req.slice(0, 300))
+  }
+
+  // The schema is a request, not an enforcement — the harness must refuse the green itself.
+  const noCommands = mkAgent({ verify: () => VERIFY({ commandsRun: [] }) })
+  check('a verifier that lists no command it RAN cannot certify a green',
+    (await go(ARGS(), noCommands)).lanes[0].converged === false)
+
+  const noRisk = mkAgent({ verify: () => VERIFY({ falseGreenRisk: '' }) })
+  check('a verifier that leaves the false-green risk blank cannot certify a green',
+    (await go(ARGS(), noRisk)).lanes[0].converged === false)
+
+  const silent = mkAgent({ verify: () => VERIFY({ oracleIntact: undefined }) })
+  check('a verifier that never answers oracle integrity cannot certify a green',
+    (await go(ARGS(), silent)).lanes[0].converged === false)
+
+  const weakened = mkAgent({ verify: () => VERIFY({ oracleIntact: false }) })
+  check('a verifier that OBSERVED a weakened oracle blocks convergence',
+    (await go(ARGS(), weakened)).lanes[0].converged === false)
+
+  // A rejection with no actionable text manufactures a wasted round, so the next build must be told.
+  const seenPrompts = []
+  const partialAnswer = mkAgent({
+    build: (seen) => { seenPrompts.push(seen[seen.length - 1].prompt); return BUILD() },
+    verify: () => VERIFY({ commandsRun: [] }),
+  })
+  await go(ARGS({ maxRounds: 2 }), partialAnswer)
+  check('and the next round is told the verification was unanswered, not merely "disagreed"',
+    seenPrompts.length === 2
+      && (/commandsRun/.test(seenPrompts[1])
+        || /NEVER independently run/.test(seenPrompts[1])
+        || /named no well-formed commands/.test(seenPrompts[1])),
+    { n: seenPrompts.length, round2: (seenPrompts[1] || '').slice(0, 400) })
+
+  // A field nobody is asked for is a field nobody fills in.
+  const asked = mkAgent()
+  await go(ARGS(), asked)
+  const vp = (asked.seen.find((s) => s.label.startsWith('verify:')) || {}).prompt || ''
+  check('the verifier is ASKED for the commands it ran and for an oracle verdict',
+    /commandsRun/.test(vp) && /oracleIntact/.test(vp), vp.slice(0, 300))
+
+  const full = await go(ARGS(), mkAgent())
+  check('a fully answered verification still converges', full.lanes[0].converged === true, full.headline)
+}
+
+// --- 16. program-tick is the CALLER, so a collision must be refused where the set is BUILT. ---
+// Refusing downstream in lane-fanout is necessary and late: by then the agents are already chosen.
+// These assertions drive the REAL program-tick body, with a genuinely concurrent parallel(), and
+// observe what it dispatches.
+{
+  const compileWorkflow = (name) => new AsyncFunction(
+    'args', 'agent', 'parallel', 'pipeline', 'log', 'phase', 'budget', 'workflow',
+    fs.readFileSync(path.join(SRCDIR, `${name}.js`), 'utf8').replace(/^export const meta = /m, 'const meta = '))
+  const tick = compileWorkflow('program-tick')
+
+  const WT = (over = {}) => ({ path: '/ws/x', head: 'abc', dirtyCount: 0, prunable: false, filesVsBase: [], commitsAheadOfCandidate: 0, ...over })
+  const RAW = (over = {}) => ({ candidateFiles: ['f.rs'], worktrees: [], prs: [], beads: [], ...over })
+  const JUDGED = (over = {}) => ({ startNow: [], holdBack: [], alreadyDone: [], coverageRisks: [], ...over })
+  const PR = (n, over = {}) => ({ number: n, title: `pr${n}`, checkConclusion: 'FAILURE', reviewDecision: '', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', headSha: `sha${n}`, failingChecks: ['t'], isDraft: false, ...over })
+  const SEL = (n) => Array.from({ length: n }, (_, i) => ({ key: `l${i + 1}`, bead: `b${i + 1}`, owned: `p${i + 1}/**`, brief: 'concrete', accept: 'a', briefConfidence: 'grounded' }))
+
+  const runTick = async (over = {}, raw = RAW(), judged = JUDGED()) => {
+    const inflight = new Set()
+    const overlaps = []
+    const dispatched = []
+    const logs = []
+    const workflows = []
+    const agentFn = async (prompt, o = {}) => {
+      const label = o.label || ''
+      dispatched.push(label)
+      if (label === 'collect') return raw
+      if (label === 'judge') return judged
+      // A PR disposition agent. `fix-then-merge` is WORK: it edits files in the candidate worktree.
+      inflight.add(label)
+      if (inflight.size > 1) overlaps.push([...inflight])
+      await new Promise((r) => setTimeout(r, 5))
+      inflight.delete(label)
+      return { pr: 1, done: true, outcome: 'x' }
+    }
+    // REAL concurrency. A sequential stub would make serialisation indistinguishable from its
+    // absence, which is how a test measures the fixture instead of the code.
+    const par = async (thunks) => Promise.all(thunks.map((t) => t()))
+    const plan = await tick(
+      { candidateWt: '/ws/cand', candidateTip: 'c'.repeat(40), base: 'main', ...over },
+      agentFn, par, async (i) => i, (m) => logs.push(m), () => {},
+      { total: null, spent: () => 0, remaining: () => Infinity },
+      async (name, a) => { workflows.push({ name, args: a }); return { headline: [] } },
+    )
+    return { plan, overlaps, dispatched, logs, workflows }
+  }
+
+  const twoFixes = await runTick({}, RAW({ prs: [PR(1), PR(2)] }))
+  // Both halves matter: a guard that dispatched ZERO PR lanes would also report zero overlaps.
+  check('two PR-fix lanes are both dispatched',
+    twoFixes.dispatched.filter((l) => l.startsWith('pr:')).length === 2, twoFixes.dispatched)
+  check('...and never run concurrently in the one candidate worktree they both edit',
+    twoFixes.overlaps.length === 0, twoFixes.overlaps)
+
+  const overCap = await runTick({ fanout: true, maxLanes: 4 },
+    RAW({ worktrees: [1, 2, 3, 4, 5].map((i) => WT({ path: `/ws/l${i}` })) }), JUDGED({ startNow: SEL(5) }))
+  check('more selected lanes than maxLanes refuses the fanout instead of ignoring the cap',
+    overCap.workflows.length === 0 && !!overCap.plan.fanoutBlocked,
+    { workflows: overCap.workflows.length, blocked: overCap.plan.fanoutBlocked })
+  check('and says the cap is why', /maxLanes/.test(JSON.stringify(overCap.plan.fanoutBlocked || '')), overCap.plan.fanoutBlocked)
+
+  const withinCap = await runTick({ fanout: true, maxLanes: 4 },
+    RAW({ worktrees: [1, 2, 3, 4].map((i) => WT({ path: `/ws/l${i}` })) }), JUDGED({ startNow: SEL(4) }))
+  check('a lane set within the cap still fans out',
+    withinCap.workflows.length === 1 && (withinCap.workflows[0].args.lanes || []).length === 4,
+    withinCap.workflows.map((w) => w.name))
+
+  const wts = await runTick({}, RAW({ worktrees: [
+    WT({ path: '/ws/cand' }),
+    WT({ path: '/ws/idle' }),
+    WT({ path: '/ws/unreadable', commitsAheadOfCandidate: -1 }),
+    WT({ path: '/ws/capped', filesVsBase: [], filesVsBaseCount: 900 }),
+  ] }))
+  const safe = wts.plan.worktrees.safeToRemove
+  check('the ACTIVE candidate worktree is never offered as safe to remove', !safe.includes('/ws/cand'), safe)
+  check('an unreadable worktree is not "unused"', !safe.includes('/ws/unreadable'), safe)
+  check('a worktree whose file list was capped is not "empty"', !safe.includes('/ws/capped'), safe)
+  // ...and the list is not simply emptied, which would pass all three above and help nobody.
+  check('a genuinely empty worktree is still removable', safe.includes('/ws/idle'), safe)
+}
+
+// --- 17. backlog-audit: evidence nobody landed is not evidence, and coverage must be real. ----
+{
+  const audit = new AsyncFunction(
+    'args', 'agent', 'parallel', 'pipeline', 'log', 'phase', 'budget', 'workflow',
+    fs.readFileSync(path.join(SRCDIR, 'backlog-audit.js'), 'utf8').replace(/^export const meta = /m, 'const meta = '))
+
+  const CENSUS = (over = {}) => {
+    const base = {
+      openIssueNumbers: [1], openIssueCount: 1, issues: [], beads: [],
+      crates: [{ name: 'identity' }, { name: 'policy' }],
+      cargoTomlPaths: ['backend/crates/identity/Cargo.toml', 'backend/crates/policy/Cargo.toml'],
+      mergedPrs: [], excludedRoots: [],
+    }
+    const merged = { ...base, ...over }
+    // Keep cargoTomlPaths consistent with crates unless the caller overrides either explicitly.
+    if (!('cargoTomlPaths' in over) && 'crates' in over) {
+      merged.cargoTomlPaths = (merged.crates || []).map((c) => `backend/crates/${c.name}/Cargo.toml`)
+    }
+    return merged
+  }
+  const VERDICT = (over = {}) => ({
+    number: 1, title: 't', verdict: 'CLOSE-FIXED',
+    evidence: 'implemented in backend/crates/identity/src/lib.rs:12 by commit deadbeefcafe1234 — verified by reading it',
+    ...over,
+  })
+
+  const runAudit = async (census, verdicts, over = {}) => {
+    const dispatched = []
+    const logs = []
+    const agentFn = async (prompt, o = {}) => {
+      const label = o.label || ''
+      dispatched.push({ label, prompt })
+      if (label === 'collect') return census
+      if (label.startsWith('triage:')) return { verdicts }
+      if (label === 'reconcile') return { ok: true }
+      return { domain: label, findings: [], coverage: 'read it all' }
+    }
+    let res = null
+    let err = null
+    try {
+      res = await audit({ repo: '/r', ghRepo: 'o/n', ...over }, agentFn,
+        async (t) => Promise.all(t.map((f) => f())), async (i) => i, (m) => logs.push(m), () => {},
+        { total: null, spent: () => 0, remaining: () => Infinity }, async () => ({}))
+    } catch (e) { err = e.message }
+    return { res, err, dispatched, logs }
+  }
+
+  const unmerged = await runAudit(CENSUS(), [VERDICT({ reachableFromDefault: false })])
+  check('a CLOSE-FIXED whose evidence is not on the default branch is WITHHELD',
+    !!unmerged.res && (unmerged.res.withheld || []).includes(1), unmerged.res && unmerged.res.withheld)
+
+  const unanswered = await runAudit(CENSUS(), [VERDICT()])
+  check('a CLOSE-FIXED that never answered reachability is WITHHELD too — absence is a NO',
+    !!unanswered.res && (unanswered.res.withheld || []).includes(1), unanswered.res && unanswered.res.withheld)
+
+  const landedEv = await runAudit(CENSUS(), [VERDICT({ reachableFromDefault: true })])
+  check('a CLOSE-FIXED reachable from the default branch is still closable',
+    !!landedEv.res && !(landedEv.res.withheld || []).includes(1), landedEv.res && landedEv.res.withheld)
+
+  const keep = await runAudit(CENSUS(), [VERDICT({ verdict: 'KEEP', evidence: 'this is still broken, here is the file and line that shows it' })])
+  check('a KEEP verdict is not withheld — the rule is about CLOSING',
+    !!keep.res && (keep.res.withheld || []).length === 0, keep.res && keep.res.withheld)
+
+  check('triage is told to PROVE reachability by running merge-base --is-ancestor',
+    landedEv.dispatched.some((d) => d.label.startsWith('triage:') && /merge-base --is-ancestor/.test(d.prompt)),
+    landedEv.dispatched.map((d) => d.label))
+
+  const extraCrate = await runAudit(CENSUS({ crates: [{ name: 'identity' }, { name: 'brand-new-crate' }] }),
+    [VERDICT({ reachableFromDefault: true })])
+  // Match the lane's OWN crate list, not the census echoed into every audit prompt — the echo made
+  // this assertion pass against the unfixed source, which is a test measuring its own fixture.
+  check('a discovered crate that no named domain claims is still audited',
+    extraCrate.dispatched.some((d) => /^audit:/.test(d.label) && /CRATES:[^\n]*brand-new-crate/.test(d.prompt)),
+    extraCrate.dispatched.map((d) => d.label))
+
+  const allCovered = await runAudit(CENSUS({ crates: [{ name: 'identity' }] }), [VERDICT({ reachableFromDefault: true })])
+  check('and no lane is invented when every discovered crate is claimed',
+    !allCovered.dispatched.some((d) => d.label === 'audit:uncovered'), allCovered.dispatched.map((d) => d.label))
+
+  const blind = await runAudit(CENSUS({ crates: [] }), [VERDICT({ reachableFromDefault: true })])
+  check('a census with no crate inventory cannot claim coverage and must abort',
+    !!blind.err && /crate inventory/i.test(blind.err), blind.err)
+
+  // cargoTomlPaths is the independent oracle (no Node fs in the workflow sandbox). Omitting a
+  // path that find would have returned must abort — same fail-closed class as a partial crates list.
+  const omittedDisk = await runAudit(CENSUS({
+    crates: [{ name: 'identity' }],
+    cargoTomlPaths: ['backend/crates/identity/Cargo.toml', 'backend/crates/brand-new/Cargo.toml'],
+  }), [VERDICT({ reachableFromDefault: true })])
+  check('a census that omits a cargoTomlPaths crate aborts',
+    !!omittedDisk.err && /omitted/i.test(omittedDisk.err), omittedDisk.err)
+
+  const emptyToml = await runAudit(CENSUS({
+    crates: [{ name: 'identity' }],
+    cargoTomlPaths: [],
+  }), [VERDICT({ reachableFromDefault: true })])
+  check('an empty cargoTomlPaths list cannot cross-check coverage and must abort',
+    !!emptyToml.err && /cargoTomlPaths/i.test(emptyToml.err), emptyToml.err)
+}
+
+// Six green tests over a self-built registry coexisted with a production root that wired none of it.
+// The lock must name the distinction, because "all the tests pass" is exactly how it presented.
+{
+  for (const fragment of ['BUILDS ITS OWN SUBJECT', 'MECHANISM:', 'WIRING:', 'composition root']) {
+    check(`the lock separates mechanism evidence from wiring evidence: ${fragment}`, SRC.includes(fragment))
+  }
+}
+
+// Sprawl and CI-caught-it-first are the two costs the harness never charged for.
+{
+  for (const fragment of ['MAINTAINABILITY / COST OF CARRY', 'COMMENT BLOBBING', 'RUN WHAT CI RUNS']) {
+    check(`the lock charges for cost of carry: ${fragment}`, SRC.includes(fragment))
+  }
+  // A lens that is defined but unreachable is the defect this file exists to catch.
+  const standing = SRC.match(/const STANDING_LENSES = \[([\s\S]*?)\n\]/)
+  check('the maintainability lens is a STANDING lens, not an opt-in',
+    !!standing && standing[1].includes('MAINTAINABILITY'))
+}
+
+// scout.js was added to the unknown-option sweep and NOTHING ELSE, so the harness that decides what
+// every other lane works on was the least tested one in the directory. Both of its judgement calls
+// shipped defective and both were caught by a real run rather than here: the packing produced two
+// lanes owning the same territory, and agent-authored paths reached the emitted plan unvalidated.
+// These assertions extract the two pure functions and drive them with the EXACT strings that run
+// produced, so neither can regress silently.
+{
+  const SCOUT = fs.readFileSync(path.join(HERE, 'scout.js'), 'utf8')
+
+  const normSrc = SCOUT.match(/function normaliseRoot\(raw\) \{[\s\S]*?\n\}/)
+  check('scout exposes normaliseRoot to the preflight', !!normSrc)
+  if (normSrc) {
+    const REPO = '/Users/x/wt'
+    const normaliseRoot = new Function('REPO', 'MIN_ROOT_SEGMENTS', `${normSrc[0]}; return normaliseRoot`)(REPO, 2)
+    const cases = [
+      [`${REPO}/backend/crates/platform/audit-chain/src/`, 'backend/crates/platform/audit-chain/src/', 'absolute path made repo-relative'],
+      ['<the', null, 'prose fragment rejected'],
+      ['`git', null, 'shell fragment rejected'],
+      ['backend/', null, 'the repository is not an owned root'],
+      ['docs/', null, 'nor is a top-level directory'],
+      ['backend/app/src/hr.rs', 'backend/app/src/', 'a file becomes its directory'],
+      ['backend/app/src/', 'backend/app/src/', 'a real root survives unchanged'],
+      ['./backend/crates/foo/', 'backend/crates/foo/', './ prefix collapses to the same root'],
+      ['backend/crates/foo/', 'backend/crates/foo/', 'bare form matches the ./ form'],
+      ['/', null, 'root rejected'],
+      ['', null, 'empty rejected'],
+      ['backend/**/*.rs', null, 'glob rejected'],
+      ['backend/crates/foo/../bar/', null, '.. segments rejected'],
+      ['/Users/x/wt-other/backend/crates/foo/', null, 'sibling worktree absolute rejected'],
+      ['/tmp/evil/backend/crates/foo/src/lib.rs', null, 'absolute outside REPO rejected'],
+      ['backend/Dockerfile', 'backend/Dockerfile', 'extensionless file preserved as exact path'],
+      ['backend/crates/foo/BUCK', 'backend/crates/foo/BUCK', 'BUCK file preserved as exact path'],
+      ['tools/ci/Makefile', 'tools/ci/Makefile', 'Makefile preserved as exact path'],
+    ]
+    for (const [input, want, why] of cases) {
+      check(`scout root: ${why}`, normaliseRoot(input) === want, { input, got: normaliseRoot(input), want })
+    }
+    check('scout root: ./ and bare forms are identical after normalise',
+      normaliseRoot('./backend/crates/foo/') === normaliseRoot('backend/crates/foo/'),
+      { a: normaliseRoot('./backend/crates/foo/'), b: normaliseRoot('backend/crates/foo/') })
+  }
+
+  // The packing must not be able to emit two lanes sharing territory. The first version decided
+  // membership one bead at a time against a set that was still moving, so absorbing a bead grew a
+  // lane's roots until it overlapped a lane created earlier -- and a run that had completed all
+  // fifteen of its agents threw at the final guard and discarded the lot.
+  const ovSrc = SCOUT.match(/function overlaps\(a, b\) \{[\s\S]*?\n\}/)
+  check('scout exposes overlaps to the preflight', !!ovSrc)
+  if (ovSrc) {
+    const overlaps = new Function(`${ovSrc[0]}; return overlaps`)()
+    check('scout overlap: a prefix counts as shared territory',
+      overlaps(['backend/app/'], ['backend/app/src/']))
+    check('scout overlap: siblings do not',
+      !overlaps(['backend/app/'], ['backend/crates/']))
+
+    // The transitive case the incremental packer got wrong: A and C do not overlap, but B bridges
+    // them, so all three belong in ONE lane. A packer that pairs A-B then creates C separately emits
+    // two lanes that collide at land.
+    const items = [
+      { id: 'a', roots: ['backend/app/src/'] },
+      { id: 'b', roots: ['backend/app/', 'backend/crates/x/'] },
+      { id: 'c', roots: ['backend/crates/x/y/'] },
+    ]
+    const parent = items.map((_, i) => i)
+    const find = (i) => (parent[i] === i ? i : (parent[i] = find(parent[i])))
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) {
+        if (overlaps(items[i].roots, items[j].roots)) parent[find(i)] = find(j)
+      }
+    }
+    check('scout packing: transitively-linked territory collapses to ONE group',
+      new Set(items.map((_, i) => find(i))).size === 1,
+      items.map((_, i) => find(i)))
+  }
+
+  // A guard that only exists in scout.js text is a guard nobody proved runs.
+  check('scout still refuses to emit a plan whose lanes overlap',
+    /own overlapping roots/.test(SCOUT))
+  check('scout defers a bead whose paths are all unusable rather than inventing a root',
+    /every reported path was unusable as an owned root/.test(SCOUT))
+}
+
+// TRIAL GATE. Bun proved its port method on three files before scaling to 64 agents; this harness
+// always dispatched every lane cold, so a brief that is wrong the same way for every lane wastes
+// the whole wave instead of one lane.
+{
+  const TWO = (over = {}) => ARGS({
+    // Distinct worktrees AND distinct owned roots: the overlap guard is a sibling rule and this
+    // fixture must not trip it while testing something else.
+    lanes: [LANE({ key: 'a', wt: '/w1', owned: 'aa/**' }), LANE({ key: 'b', wt: '/w2', owned: 'bb/**' })],
+    ...over,
+  })
+
+  // A failing trial must hold the fleet back, and must NOT dispatch lane b at all.
+  {
+    const agent = mkAgent({ review: () => REVIEW({ verdict: 'reject', findings: [FINDING({ severity: 'blocker' })] }) })
+    const out = await go(TWO({ trial: 'a', maxRounds: 1 }), agent)
+    const bDispatched = agent.seen.some((x) => /:b\b/.test(x.label))
+    check('a failed trial holds the fleet back', !!out && /DID NOT CONVERGE/.test(out.headline[0]), out && out.headline)
+    check('a failed trial dispatches NO other lane', !bDispatched,
+      agent.seen.map((x) => x.label))
+    check('the held-back lanes are named, not silently dropped',
+      !!out && Array.isArray(out.heldBack) && out.heldBack.includes('b'), out && out.heldBack)
+  }
+
+  // A converged trial must go on to dispatch the rest.
+  {
+    const agent = mkAgent()
+    const out = await go(TWO({ trial: 'a', maxRounds: 1 }), agent)
+    const bDispatched = agent.seen.some((x) => /:b\b/.test(x.label))
+    check('a converged trial dispatches the remaining lanes', bDispatched,
+      agent.seen.map((x) => x.label))
+  }
+
+  // Naming a lane that does not exist is a typo, not a silent no-trial run.
+  {
+    const m = await threw(TWO({ trial: 'nope' }))
+    check('trial naming an unknown lane aborts', !!m && /nope/.test(m), m)
+  }
+  {
+    const m = await threw(ARGS({ trial: 'a' }))
+    check('trial with a single lane aborts rather than serialising for nothing',
+      !!m && /serialises for nothing/.test(m), m)
+  }
+}
+
+// The tier rule must stay a RULE, not a preference someone reverses on a slow day.
+{
+  check('the lock states when a cheaper tier is allowed',
+    SRC.includes('A CHEAPER TIER IS ALLOWED ONLY WHERE AN INDEPENDENT STRONGER PASS AUDITS THE RESULT'))
+  const judgePhases = SRC.match(/label: `verify:[\s\S]{0,160}/g) || []
+  check('the independent verifier does NOT run on a cheaper tier',
+    judgePhases.every((frag) => !/model:/.test(frag)), judgePhases.length)
+}
+
+// KNOWN_ARGS IS A CLAIM ABOUT THE SOURCE, SO CHECK IT AGAINST THE SOURCE.
+// The guard's whole purpose is "an option this harness does not read must abort". Two of these
+// lists were hand-written and both were wrong in BOTH directions at once: slice.js omitted five
+// options it genuinely reads (so the guard rejected every real invocation) while review-gate.js
+// listed two it never reads (so the guard fell open on exactly what it exists to catch). A
+// hand-maintained list of what the code reads is a second copy of the code.
+{
+  for (const name of fs.readdirSync(HERE).filter((f) => f.endsWith('.js')).map((f) => f.replace(/\.js$/, ''))) {
+    const src = fs.readFileSync(path.join(HERE, `${name}.js`), 'utf8')
+    const declared = src.match(/const KNOWN_ARGS = \[([^\]]*)\]/)
+    if (!declared) { check(`${name} declares KNOWN_ARGS`, false); continue }
+    const listed = new Set([...declared[1].matchAll(/'([^']+)'/g)].map((m) => m[1]))
+
+    // Whichever accessor this harness uses for its parsed args.
+    const holder = /const KNOWN_ARGS[\s\S]{0,400}?\b(ARGS|A)\b\s*\)/.exec(src)?.[1]
+      || (src.includes('const ARGS') || src.includes('let ARGS') ? 'ARGS' : 'A')
+    const read = new Set(
+      [...src.matchAll(new RegExp(`\\b${holder}\\.([a-zA-Z_][a-zA-Z0-9_]*)`, 'g'))]
+        .map((m) => m[1])
+        .filter((k) => !['length', 'lanes'].includes(k) || k === 'lanes'),
+    )
+    // Object.keys(ARGS) inside the guard itself is not an option read.
+    read.delete('keys')
+
+    const unread = [...listed].filter((k) => !read.has(k))
+    const undeclared = [...read].filter((k) => !listed.has(k))
+    check(`${name}: KNOWN_ARGS lists nothing the harness never reads`, unread.length === 0, unread)
+    check(`${name}: every option the harness reads is declared`, undeclared.length === 0, undeclared)
+  }
+}
+
+// stale-take-audit.js had NO logic coverage here — only the generic KNOWN_ARGS sweep — and its
+// Confirm phase failed open exactly the way the Audit phase does not. A dead agent yielded
+// `refuted: null`, which is neither `=== false` nor truthy, so the suspicion fell out of BOTH result
+// lists and the headline still printed "full coverage". This is the step that decides whether a
+// reported reversion is REAL, and the reversion it exists to catch is a file whose un-wiring means
+// the check that would have caught it does not run.
+{
+  const STA = fs.readFileSync(path.join(HERE, 'stale-take-audit.js'), 'utf8')
+    .replace(/^export const meta = /m, 'const meta = ')
+  const fn = new AsyncFunction('args', 'agent', 'parallel', 'pipeline', 'log', 'phase', 'budget', 'workflow', STA)
+
+  const drive = async (confirmReturns) => {
+    const agent = async (prompt, o = {}) => {
+      if ((o.label || '').startsWith('audit:')) {
+        return { results: [{ file: '.github/workflows/ci.yml', verdict: 'STALE', evidence: 'main has a step HEAD lacks', missingFromHead: 'the step', wouldBreak: 'the suite un-wires' }] }
+      }
+      return confirmReturns()
+    }
+    return fn({ repo: '/r', main: 'origin/main', files: ['.github/workflows/ci.yml'] },
+      agent, async (t) => Promise.all(t.map((f) => f().catch(() => null))), async (i) => i,
+      () => {}, () => {}, { total: null, spent: () => 0, remaining: () => Infinity }, async () => ({}))
+  }
+
+  const dead = await drive(() => null)
+  check('a dead confirmation does not erase the suspicion',
+    !!dead && Array.isArray(dead.unconfirmed) && dead.unconfirmed.length === 1,
+    dead && { stale: dead.stale, refuted: dead.refuted, unconfirmed: dead.unconfirmed })
+  check('a dead confirmation stops the report claiming full coverage',
+    !!dead && !dead.headline.some((h) => /full coverage/.test(h)), dead && dead.headline)
+
+  // A live agent that omits the field despite the schema must land in the same bucket: the schema is
+  // a request to the model, not an enforcement.
+  const fieldless = await drive(() => ({ file: '.github/workflows/ci.yml', reasoning: 'no verdict' }))
+  check('a confirmation without a verdict is unresolved, not clean',
+    !!fieldless && fieldless.unconfirmed.length === 1, fieldless && fieldless.unconfirmed)
+
+  // Controls: the live paths must still work, or the fix is an over-block.
+  // Upholding STALE also requires this pass to attest the graft payload — publishing the
+  // first agent's missingFromHead unseen is how a wrong quote becomes the "confirmed" patch.
+  const kept = await drive(() => ({ file: '.github/workflows/ci.yml', refuted: false, reasoning: 'real', missingFromHead: 'the step (attested)' }))
+  check('a live confirmation that fails to refute still reports STALE',
+    !!kept && kept.stale.length === 1 && kept.unconfirmed.length === 0
+      && kept.stale[0].missingFromHead === 'the step (attested)',
+    kept && { s: kept.stale, u: kept.unconfirmed })
+  const noPayload = await drive(() => ({ file: '.github/workflows/ci.yml', refuted: false, reasoning: 'real but no graft' }))
+  check('an upheld STALE without an attested graft payload is unresolved',
+    !!noPayload && noPayload.stale.length === 0 && noPayload.unconfirmed.length === 1,
+    noPayload && { s: noPayload.stale, u: noPayload.unconfirmed })
+  const blankPayload = await drive(() => ({ file: '.github/workflows/ci.yml', refuted: false, reasoning: 'real', missingFromHead: '   ' }))
+  check('an upheld STALE with a blank graft payload is unresolved',
+    !!blankPayload && blankPayload.stale.length === 0 && blankPayload.unconfirmed.length === 1,
+    blankPayload && { s: blankPayload.stale, u: blankPayload.unconfirmed })
+  const dropped = await drive(() => ({ file: '.github/workflows/ci.yml', refuted: true, reasoning: 'deliberate', missingFromHead: '' }))
+  check('a live refutation still drops the suspicion',
+    !!dropped && dropped.stale.length === 0 && dropped.refuted.length === 1 && dropped.unconfirmed.length === 0,
+    dropped && { s: dropped.stale, r: dropped.refuted, u: dropped.unconfirmed })
+  check('a fully-answered run still claims full coverage',
+    !!dropped && dropped.headline.some((h) => /full coverage/.test(h)), dropped && dropped.headline)
+
+  // Partial result lists must not report full coverage: five verdicts for six files is incomplete.
+  const partialAudit = async () => {
+    const agent = async (prompt, o = {}) => {
+      if ((o.label || '').startsWith('audit:')) {
+        return {
+          results: [
+            { file: 'a.yml', verdict: 'CLEAN', evidence: 'ok' },
+            { file: 'b.yml', verdict: 'CLEAN', evidence: 'ok' },
+            { file: 'c.yml', verdict: 'CLEAN', evidence: 'ok' },
+            { file: 'd.yml', verdict: 'CLEAN', evidence: 'ok' },
+            { file: 'e.yml', verdict: 'CLEAN', evidence: 'ok' },
+            // f.yml omitted
+          ],
+        }
+      }
+      return null
+    }
+    return fn({ repo: '/r', main: 'origin/main', files: ['a.yml', 'b.yml', 'c.yml', 'd.yml', 'e.yml', 'f.yml'] },
+      agent, async (t) => Promise.all(t.map((f) => f().catch(() => null))), async (i) => i,
+      () => {}, () => {}, { total: null, spent: () => 0, remaining: () => Infinity }, async () => ({}))
+  }
+  const partial = await partialAudit()
+  check('a live audit that omits a requested file does not claim full coverage',
+    !!partial && !partial.headline.some((h) => /full coverage/.test(h))
+      && Array.isArray(partial.missingAuditFiles) && partial.missingAuditFiles.includes('f.yml'),
+    partial && { headline: partial.headline, missing: partial.missingAuditFiles })
+
+  check('stale-take RULES pin diffs to args.repo via git -C',
+    /git -C \$\{REPO\} diff HEAD/.test(STA) && /git -C \$\{REPO\} diff \$\{MAIN\} HEAD/.test(STA))
+}
+
+// A verifier that re-ran ONE of five claimed commands satisfied `commandsRun.length > 0`, and with
+// reproduced=true the lane converged while four suites were never independently run. Some of the
+// evidence re-run is a sample, not a verification.
+{
+  const build = (cmds) => () => BUILD({ commands: cmds })
+  const CMDS = ['cargo test -p a', 'cargo test -p b', 'npm run check:x']
+
+  const partial = mkAgent({ build: build(CMDS), verify: () => VERIFY({ commandsRun: [CMDS[0]], falseGreenRisk: 'none', oracleIntact: true }) })
+  const r1 = await go(ARGS({ maxRounds: 1 }), partial)
+  check('a verifier that re-ran only some claimed commands does not converge',
+    !!r1 && r1.lanes[0].converged === false, r1 && r1.lanes[0].converged)
+
+  const full = mkAgent({ build: build(CMDS), verify: () => VERIFY({ commandsRun: [...CMDS], falseGreenRisk: 'none', oracleIntact: true }) })
+  const r2 = await go(ARGS({ maxRounds: 1 }), full)
+  check('a verifier that re-ran every claimed command still converges',
+    !!r2 && r2.lanes[0].converged === true, r2 && r2.lanes[0].converged)
+
+  // Whitespace must not decide it, and repetition must not substitute for coverage.
+  const spaced = mkAgent({ build: build(CMDS), verify: () => VERIFY({ commandsRun: CMDS.map((c) => `  ${c.replace(/ /g, '  ')} `), falseGreenRisk: 'none', oracleIntact: true }) })
+  const r3 = await go(ARGS({ maxRounds: 1 }), spaced)
+  check('command matching is not defeated by whitespace', !!r3 && r3.lanes[0].converged === true, r3 && r3.lanes[0].converged)
+
+  const repeated = mkAgent({ build: build(CMDS), verify: () => VERIFY({ commandsRun: [CMDS[0], CMDS[0], CMDS[0]], falseGreenRisk: 'none', oracleIntact: true }) })
+  const r4 = await go(ARGS({ maxRounds: 1 }), repeated)
+  check('re-running one command three times is not three commands',
+    !!r4 && r4.lanes[0].converged === false, r4 && r4.lanes[0].converged)
+
+  // commandsRun: [""] must not converge — every entry has to be a non-empty string.
+  const blankOnly = mkAgent({
+    build: build(['cargo test -p a']),
+    verify: () => VERIFY({ commandsRun: [''], falseGreenRisk: 'none', oracleIntact: true }),
+  })
+  const r5 = await go(ARGS({ maxRounds: 1 }), blankOnly)
+  check('commandsRun of a single empty string does not converge',
+    !!r5 && r5.lanes[0].converged === false, r5 && r5.lanes[0].converged)
+
+  const blankAmong = mkAgent({
+    build: build(['cargo test -p a']),
+    verify: () => VERIFY({ commandsRun: ['cargo test -p a', ''], falseGreenRisk: 'none', oracleIntact: true }),
+  })
+  const r6 = await go(ARGS({ maxRounds: 1 }), blankAmong)
+  check('a blank entry among commandsRun fails closed even if a real command is present',
+    !!r6 && r6.lanes[0].converged === false, r6 && r6.lanes[0].converged)
+
+  // Omit/invalid claimed commands must not converge: empty coverage against the verifier's own
+  // commands is a vacuous pass, not independent verification of a done build.
+  const omitted = mkAgent({
+    build: () => BUILD({ commands: [] }),
+    verify: () => VERIFY({ commandsRun: ['cargo test -p x'], falseGreenRisk: 'none', oracleIntact: true }),
+  })
+  const r7 = await go(ARGS({ maxRounds: 1 }), omitted)
+  check('a done build that omits commands does not converge',
+    !!r7 && r7.lanes[0].converged === false, r7 && r7.lanes[0].converged)
+
+  const blanksOnly = mkAgent({
+    build: () => BUILD({ commands: ['', '   '] }),
+    verify: () => VERIFY({ commandsRun: ['cargo test -p x'], falseGreenRisk: 'none', oracleIntact: true }),
+  })
+  const r8 = await go(ARGS({ maxRounds: 1 }), blanksOnly)
+  check('a done build whose commands are only blanks does not converge',
+    !!r8 && r8.lanes[0].converged === false, r8 && r8.lanes[0].converged)
+
+  const missingField = mkAgent({
+    build: () => {
+      const b = BUILD()
+      delete b.commands
+      return b
+    },
+    verify: () => VERIFY({ commandsRun: ['cargo test -p x'], falseGreenRisk: 'none', oracleIntact: true }),
+  })
+  const r9 = await go(ARGS({ maxRounds: 1 }), missingField)
+  check('a done build that omits the commands field does not converge',
+    !!r9 && r9.lanes[0].converged === false, r9 && r9.lanes[0].converged)
+}
+
+// scout deferred a bead whose paths were ALL unusable and merely LOGGED the partial case, emitting a
+// lane authorised for the work but forbidden from part of it — a failure that arrives after dispatch.
+{
+  const SCOUT = fs.readFileSync(path.join(HERE, 'scout.js'), 'utf8')
+  check('scout defers a bead when only SOME of its paths are unusable',
+    /are unusable as owned roots, so any lane would be authorised/.test(SCOUT))
+  // The partial branch must CONTINUE, not fall through to placeable.push.
+  const partial = SCOUT.match(/if \(rejected\) \{[\s\S]*?\n  \}/)
+  check('the partial-rejection branch stops the bead being placed',
+    !!partial && /continue/.test(partial[0]), partial && partial[0].slice(0, 120))
+
+  // Unverified dependency edges must be dropped, not kept via the stored fallback.
+  check('scout drops edges with no verification verdict (fail closed)',
+    /if \(!v\) \{ unverifiedEdges\.push\(e\); continue \}/.test(SCOUT)
+      && /UNVERIFIED EDGES ARE NOT KEPT/.test(SCOUT))
+  check('scout no longer advertises fanoutArgs as feed-straight-into lane-fanout',
+    /fanoutPlan:/.test(SCOUT) && /status: 'incomplete'/.test(SCOUT) && !/Feed straight into lane-fanout/.test(SCOUT))
+  check('scout fanoutPlan is explicitly incomplete for lane-fanout',
+    /missing tip and per-lane wt\/brief\/accept/.test(SCOUT))
+  check('scout measures depth by downstream dependents (reverse edges)',
+    /corrected\.filter\(\(e\) => e\.to === id\)/.test(SCOUT))
+  check('scout counts rejected paths before deduplicating roots',
+    /const normalised = \(item\.paths/.test(SCOUT) && /rejected = normalised\.filter/.test(SCOUT))
+  check('scout rejects absolute paths outside REPO with a segment boundary',
+    /r\.startsWith\(`\$\{repo\}\/`\)/.test(SCOUT) && /else return null/.test(SCOUT))
+}
+
+// backlog-audit must not treat a partial crate census as complete coverage.
+{
+  const AUDIT = fs.readFileSync(path.join(HERE, 'backlog-audit.js'), 'utf8')
+  check('backlog-audit does not import Node fs for the crate census', !/import\(['"]node:fs['"]\)/.test(AUDIT))
+  check('backlog-audit requires cargoTomlPaths on Collect', /cargoTomlPaths/.test(AUDIT) && /required: \[[^\]]*cargoTomlPaths/.test(AUDIT))
+  const omitSrc = AUDIT.match(/function cratesOmittedFromCensus\([\s\S]*?\n\}/)
+  check('backlog-audit exposes cratesOmittedFromCensus to the preflight', !!omitSrc)
+  if (omitSrc) {
+    const cratesOmittedFromCensus = new Function(`${omitSrc[0]}; return cratesOmittedFromCensus`)()
+    check('a census that omits an on-disk crate is incomplete',
+      cratesOmittedFromCensus(['identity', 'brand-new'], ['identity']).join(',') === 'brand-new')
+    check('a census parent prefix still covers nested crates',
+      cratesOmittedFromCensus(['identity/domain', 'identity/rest'], ['identity']).length === 0)
+  }
+  const deriveSrc = AUDIT.match(/function crateNamesFromCargoTomlPaths\([\s\S]*?\n\}/)
+  check('backlog-audit exposes crateNamesFromCargoTomlPaths to the preflight', !!deriveSrc)
+  if (deriveSrc) {
+    const crateNamesFromCargoTomlPaths = new Function(`${deriveSrc[0]}; return crateNamesFromCargoTomlPaths`)()
+    check('cargoTomlPaths strip to crate names under backend/crates',
+      crateNamesFromCargoTomlPaths(['backend/crates/identity/Cargo.toml', './backend/crates/policy/Cargo.toml']).join(',') === 'identity,policy')
+  }
+}
+
+// Contract-drift: string literals must not invent HTTP methods; OpenAPI path keys may contain ':'.
+{
+  const driftPath = path.join(HERE, '..', '..', 'scripts', 'check-platform-contract-drift.mjs')
+  const driftSrc = fs.readFileSync(driftPath, 'utf8')
+  check('contract-drift masks string literals before method discovery',
+    /function maskStringLiterals/.test(driftSrc) && /maskStringLiterals\(methodExpression\)/.test(driftSrc))
+  check('contract-drift OpenAPI path keys allow colons inside the path',
+    driftSrc.includes('trimmedRight.match(/^ {2}(\\/.+):$/)')
+      || driftSrc.includes('trimmedRight.match(/^ {2}(/.+):$/)')
+      || /\\\/\.+\):\$/.test(driftSrc))
+  check('contract-drift refuses nonlocal resolution of generic PATH names',
+    /refusing nonlocal resolution for a generic name/.test(driftSrc))
+  check('contract-drift discovers route sources after stripping comments/literals',
+    /stripRustCommentsAndLiterals\(readFileSync\(file, "utf8"\)\)\.includes\(\s*"\.route\("\s*\)/.test(driftSrc)
+      || /stripRustCommentsAndLiterals\(readFileSync\(file, "utf8"\)\)\.includes\("\.route\("\)/.test(driftSrc))
+
+  const maskSrc = driftSrc.match(/function maskStringLiterals\([\s\S]*?\n\}/)
+  const stripSrc = driftSrc.match(/function stripRustCommentsAndLiterals\([\s\S]*?\n\}/)
+  if (stripSrc) {
+    const stripRustCommentsAndLiterals = new Function(`${stripSrc[0]}; return stripRustCommentsAndLiterals`)()
+    const docOnly = '//! example\n/// `.route("/api/x", get(h))` in docs only\nfn unused() {}\n'
+    const after = stripRustCommentsAndLiterals(docOnly)
+    check('doc-comment .route( does not survive strip discovery',
+      !after.includes('.route('), after)
+    const real = 'fn router() { axum::Router::new().route("/api/x", get(h)) }\n'
+    check('real .route( survives strip discovery',
+      stripRustCommentsAndLiterals(real).includes('.route('))
+  }
+  if (maskSrc) {
+    const maskStringLiterals = new Function(`${maskSrc[0]}; return maskStringLiterals`)()
+    const methodConstructor = /\b(get|put|post|delete|options|head|patch|trace)\s*\(/g
+    const expr = 'get(handler).layer(/* "documentation says get() here" */)'
+    // Simulate a string that would false-positive without masking:
+    const withProse = 'get(handler_with_doc("documentation says get() here"))'
+    const rawHits = [...withProse.matchAll(methodConstructor)].map((m) => m[1])
+    const maskedHits = [...maskStringLiterals(withProse).matchAll(methodConstructor)].map((m) => m[1])
+    check('prose get() inside a string is a raw false-positive before masking',
+      rawHits.includes('get') && rawHits.length >= 2, rawHits)
+    check('masking string literals drops the prose get() false-positive',
+      maskedHits.length === 1 && maskedHits[0] === 'get', maskedHits)
+
+    const openApiSrc = driftSrc.match(/function openApiApiOperations\([\s\S]*?\n\}/)
+    check('openApiApiOperations is extractable', !!openApiSrc)
+    if (openApiSrc) {
+      const helpers = driftSrc.match(/function operationKey\([\s\S]*?\n\}\n\nfunction normalizePathParameters\([\s\S]*?\n\}/)
+      const openApiApiOperations = new Function(
+        `const httpMethodSet = new Set(['get','put','post','delete','options','head','patch','trace']);\n`
+        + `${helpers ? helpers[0] : 'function operationKey(m,p){return m.toUpperCase()+\" \"+p} function normalizePathParameters(p){return p}'};\n`
+        + `${openApiSrc[0]}; return openApiApiOperations`,
+      )()
+      const ops = openApiApiOperations([
+        'paths:',
+        '  /api/jobs:run:',
+        '    post:',
+        '      summary: run',
+        '  /api/plain:',
+        '    get:',
+      ].join('\n'))
+      check('OpenAPI path keys with a colon are accepted',
+        ops.has('POST /api/jobs:run') && ops.has('GET /api/plain'), [...ops])
+    }
   }
 }
 

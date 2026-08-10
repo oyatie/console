@@ -14,9 +14,12 @@ export const meta = {
 //   repo:        "/abs/path"        // the checkout to audit
 //   ghRepo:      "owner/name"       // for gh issue operations
 //   ref?:        "branch-or-sha"    // what to audit; defaults to the checkout's HEAD
-//   domains?:    [{ key, crates:[...], why }]   // capability chunks; derived if omitted
+//   domains?:    [{ key, crates:[...], why }]   // capability chunks; defaults below.
+//                                   Whatever this list is, any crate the census finds and no domain
+//                                   claims gets its own lane — coverage is checked, not assumed.
 //   issueBatch?: 8                  // issues per triage agent; smaller = more lanes = same wall-clock
 //   apply?:      false              // false = report only. TRUE = actually mutate beads and issues.
+//   defaultBranch?: "origin/main"   // what a CLOSE-* verdict's evidence must be reachable from
 // }
 //
 // WHY THIS IS SEPARATE FROM lane-fanout: that harness reviews a DIFF against a tip, which is the
@@ -43,7 +46,7 @@ ARGS = ARGS || {}
 
 // An option this workflow does not read must abort rather than be silently dropped — the same rule
 // lane-fanout learned from a sibling runner where an ignored option cost six lanes.
-const KNOWN_ARGS = ['repo', 'ghRepo', 'ref', 'domains', 'issueBatch', 'apply']
+const KNOWN_ARGS = ['repo', 'ghRepo', 'ref', 'domains', 'issueBatch', 'apply', 'defaultBranch']
 {
   const unknown = Object.keys(ARGS).filter((k) => !KNOWN_ARGS.includes(k))
   if (unknown.length) {
@@ -64,6 +67,9 @@ if (!Number.isInteger(BATCH) || BATCH < 1) {
   throw new Error(`backlog-audit: issueBatch must be a positive integer; got ${JSON.stringify(ARGS.issueBatch)}`)
 }
 const APPLY = ARGS.apply === true
+// What "landed" means. An issue is closed against the branch everyone else will pull, not against
+// whatever branch the evidence happens to sit on.
+const DEFAULT_REF = ARGS.defaultBranch || 'origin/main'
 
 if (!REPO) throw new Error('backlog-audit: args.repo is required')
 if (!GH) throw new Error('backlog-audit: args.ghRepo is required (owner/name)')
@@ -125,10 +131,18 @@ const TRIAGE_SCHEMA = {
       type: 'array',
       items: {
         type: 'object',
-        required: ['number', 'verdict', 'evidence'],
+        required: ['number', 'verdict', 'evidence', 'reachableFromDefault'],
         properties: {
           number: { type: 'number' },
           title: { type: 'string' },
+          // EVIDENCE NOBODY LANDED IS NOT EVIDENCE. A commit that exists only on an unmerged branch
+          // closes an issue against work the default branch does not have — and the issue, once
+          // closed, is invisible while the gap is still there. Required, and a boolean rather than
+          // prose, so that not answering is a NO instead of a blank the reconciler reads past.
+          reachableFromDefault: {
+            type: 'boolean',
+            description: `for CLOSE-FIXED and CLOSE-OBSOLETE: TRUE only if you RAN \`git -C <repo> merge-base --is-ancestor <commit> ${DEFAULT_REF}\` and it exited 0. FALSE for anything else, including "I could not check" and any verdict where it does not apply.`,
+          },
           verdict: {
             type: 'string',
             enum: ['KEEP', 'CLOSE-FIXED', 'CLOSE-OBSOLETE', 'CLOSE-DUPLICATE', 'NEEDS-OWNER'],
@@ -163,6 +177,9 @@ Emit, in ONE batched pass each (not a loop of small commands):
     enough to get them all, and say how many you got.
  2. Every bead: id, title, status, priority, and its dependency edges. \`bd list\` and \`bd dep\`.
  3. The crate inventory under backend/crates, with each crate's line count, so domains can be sized.
+     ALSO run \`find backend/crates -name Cargo.toml -print\` (or equivalent) once and return EVERY path
+     in \`cargoTomlPaths\` — this is the independent on-disk census the script cross-checks against
+     \`crates\`; do not invent or truncate it.
  4. Recently merged PRs (last 40) with number, title and merge commit — a closed issue often has its
     fix sitting in one of these, and that is the cheapest evidence of CLOSE-FIXED there is.
  5. The abandoned-worktree roots that must be EXCLUDED from every later search, listed explicitly.
@@ -178,13 +195,31 @@ editorialises makes its own errors invisible.`,
     phase: 'Collect',
     schema: {
       type: 'object',
-      required: ['openIssueNumbers', 'openIssueCount', 'issues', 'beads'],
+      required: ['openIssueNumbers', 'openIssueCount', 'issues', 'beads', 'crates', 'cargoTomlPaths'],
       properties: {
         openIssueNumbers: { type: 'array', items: { type: 'number' }, description: 'EVERY open issue number. This drives the triage fan-out, so an omission here silently un-audits that issue.' },
         openIssueCount: { type: 'number', description: 'what gh reported, so the script can catch a truncated list' },
         issues: { type: 'array', items: { type: 'object' }, description: 'number, title, labels, author, createdAt, updatedAt, comments, body excerpt' },
         beads: { type: 'array', items: { type: 'object' } },
-        crates: { type: 'array', items: { type: 'object' } },
+        // This drives the domain-coverage check, so a missing crate is a domain nobody audits while
+        // the run still reports every domain covered. `name` is what makes it comparable.
+        crates: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: ['name'],
+            properties: {
+              name: { type: 'string', description: 'path relative to backend/crates, e.g. "identity" or "platform/db"' },
+              lines: { type: 'number' },
+            },
+          },
+        },
+        // Independent on-disk oracle from Collect's find. Workflow sandbox cannot import Node fs.
+        cargoTomlPaths: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'EVERY path from `find backend/crates -name Cargo.toml` (repo-relative), e.g. "backend/crates/identity/Cargo.toml"',
+        },
         mergedPrs: { type: 'array', items: { type: 'object' } },
         excludedRoots: { type: 'array', items: { type: 'string' } },
       },
@@ -202,7 +237,7 @@ editorialises makes its own errors invisible.`,
 //
 // Domains are narrow on purpose. A reviewer holding one bounded capability finds the interaction
 // defects that live in the seam, and a smaller root means fewer files skimmed rather than read.
-const DOMAINS = ARGS.domains || [
+const BASE_DOMAINS = ARGS.domains || [
   { key: 'identity', crates: ['identity'], why: 'principal resolution and the role/feature matrix — a fail-open here is silent and total' },
   { key: 'policy-authz', crates: ['policy'], why: 'Cedar is OBSERVE-ONLY and inert in production here; find what actually enforces' },
   { key: 'governance', crates: ['governance'], why: 'four-eyes, SoD, maker-checker, effective-dating — the controls that must not be bypassable' },
@@ -219,6 +254,81 @@ const DOMAINS = ARGS.domains || [
   { key: 'ops-field', crates: ['dispatch', 'facilities', 'equipment', 'inspection', 'logistics', 'workorder', 'production'], why: 'the 70% of staff who work on a client site' },
   { key: 'platform', crates: ['platform'], why: 'db, authz, request-context, audit-chain — every tenant boundary in one crate tree' },
 ]
+
+// THE DOMAIN LIST IS HAND-WRITTEN AND THE TREE IS NOT. A crate added after this list was written
+// belongs to no domain, so nothing reads it — while the headline still reports "15/15 domains
+// audited", which is true and means nothing. The census already collects the crate inventory, so
+// the gap is decidable here rather than discoverable later: everything the inventory names and no
+// domain claims becomes its own lane.
+const crateEntries = (collected && collected.crates) || []
+const crateNames = crateEntries
+  .map((c) => (c && typeof c.name === 'string' ? c.name : ''))
+  .map((n) => n.trim().replace(/^backend\/crates\//, '').replace(/\/+$/, ''))
+  .filter(Boolean)
+// A control that examines zero subjects must FAIL. With no inventory — or one whose entries have no
+// name — the coverage question cannot be asked at all, and answering it "complete" is the exact
+// false green this file exists to refuse.
+if (crateNames.length < crateEntries.length || !crateNames.length) {
+  throw new Error(
+    `backlog-audit: the census returned an unusable crate inventory (${crateEntries.length} entr(ies), ` +
+    `${crateNames.length} with a name). Domain coverage cannot be checked against it, so every domain ` +
+    'reported as audited would be an unverified claim. Re-run Collect and have it report each crate ' +
+    'under backend/crates with a `name`.',
+  )
+}
+// THE CENSUS CAN OMIT A CRATE AND STILL LOOK WELL-FORMED. A partial list whose every entry has a
+// name satisfies the guard above while the omitted crate receives no audit lane. Collect must
+// return cargoTomlPaths from `find backend/crates -name Cargo.toml`; the script derives on-disk
+// names from that list and aborts on any omission. Workflow sandboxes have no Node filesystem API,
+// so the collector is the oracle — not an in-process directory walk.
+function cratesOmittedFromCensus(onDiskNames, censusNames) {
+  return onDiskNames.filter((c) => !censusNames.some((n) => c === n || c.startsWith(`${n}/`)))
+}
+function crateNamesFromCargoTomlPaths(paths) {
+  const out = []
+  for (const raw of paths || []) {
+    if (typeof raw !== 'string') continue
+    let p = raw.trim().replace(/\\/g, '/')
+    if (!p) continue
+    p = p.replace(/^\.\//, '')
+    if (!p.endsWith('/Cargo.toml') && p !== 'Cargo.toml') continue
+    p = p.replace(/\/Cargo\.toml$/, '')
+    p = p.replace(/^backend\/crates\//, '')
+    if (!p || p.includes('..')) continue
+    out.push(p)
+  }
+  return [...new Set(out)].sort()
+}
+{
+  const cargoTomlPaths = collected && collected.cargoTomlPaths
+  if (!Array.isArray(cargoTomlPaths)) {
+    throw new Error(
+      'backlog-audit: Collect must return cargoTomlPaths (array) from `find backend/crates -name Cargo.toml`. ' +
+      'The harness cannot walk the crate tree itself inside the workflow sandbox.',
+    )
+  }
+  const onDisk = crateNamesFromCargoTomlPaths(cargoTomlPaths)
+  if (!onDisk.length) {
+    throw new Error(
+      'backlog-audit: Collect returned an empty cargoTomlPaths list — domain coverage cannot be ' +
+      'cross-checked against the on-disk Cargo.toml census. Re-run Collect with find output.',
+    )
+  }
+  const omitted = cratesOmittedFromCensus(onDisk, crateNames)
+  if (omitted.length) {
+    throw new Error(
+      `backlog-audit: the census omitted ${omitted.length} crate(s) present under backend/crates ` +
+      `(${onDisk.length} on disk via cargoTomlPaths, ${crateNames.length} named). Omitted: ${omitted.slice(0, 20).join(', ')}` +
+      `${omitted.length > 20 ? ', ...' : ''}. Re-run Collect so every Cargo.toml is named.`,
+    )
+  }
+}
+const claimed = (crate) => BASE_DOMAINS.some((d) => (d.crates || []).some((c) => crate === c || crate.startsWith(`${c}/`)))
+const uncovered = [...new Set(crateNames.filter((c) => !claimed(c)))].sort()
+const DOMAINS = uncovered.length
+  ? [...BASE_DOMAINS, { key: 'uncovered', crates: uncovered, why: 'crates the census found that no named domain claims — they would otherwise be read by nobody while the run reported full coverage' }]
+  : BASE_DOMAINS
+if (uncovered.length) log(`domain coverage: ${uncovered.length} discovered crate(s) matched no named domain, audited in the "uncovered" lane: ${uncovered.join(', ')}`)
 
 // Cross-cutting sweeps read ACROSS the tree rather than down one crate. They exist because the
 // worst defects in this programme were never inside one crate: a census that ran before migrations,
@@ -385,13 +495,28 @@ THE BAR FOR CLOSING, and it is deliberately high: a wrongly closed issue is INVI
 open one is merely noise. If you cannot point at the thing that makes it moot, the verdict is KEEP
 with a staleness note. "Looks done", "probably superseded" and "no longer relevant" are not evidence.
 
+AND THE EVIDENCE MUST BE LANDED. A commit sitting on an unmerged branch, an integration branch or an
+unmerged PR closes the issue against work nobody has — this checkout has dozens of worktrees whose
+commits are on none of them. For every CLOSE-FIXED and CLOSE-OBSOLETE, name the commit and PROVE it:
+
+  git -C ${REPO} merge-base --is-ancestor <commit> ${DEFAULT_REF} && echo REACHABLE
+
+Set reachableFromDefault=true ONLY when that exited 0 and you saw REACHABLE. If your evidence is a
+file rather than a commit, take the commit that last touched it
+(\`git -C ${REPO} log -1 --format=%H -- <path>\`) and run the same check. Anything else is FALSE,
+including "I could not check" — an unproven CLOSE is withheld and left open, which is the cheap
+failure.
+
 ALSO RECORD STALENESS for KEEP items: what in the issue text is now factually wrong — a renamed file,
 a moved line number, a crate that no longer exists, a fixed sub-part. That is what makes an old issue
 expensive to pick up, and writing it down is most of the value of this pass.
 
 Mark beadCandidate=true for KEEP items that are real work someone should schedule, so the reconcile
 phase can mirror them into the working tracker.`,
-    { label: `triage:${i + 1}`, phase: 'Read', schema: TRIAGE_SCHEMA },
+    // Cheap tier: every verdict here passes through the single-writer Reconcile, which refuses to
+    // close anything whose evidence is not reachable from the default branch. A wrong KEEP costs a
+    // stale issue; a wrong CLOSE cannot get past that guard.
+    { label: `triage:${i + 1}`, phase: 'Read', schema: TRIAGE_SCHEMA, model: 'sonnet' },
   ))
 
 // ONE parallel wave. Audit, cross-cutting and triage are mutually independent reads, so stacking
@@ -423,9 +548,16 @@ log(`read: ${totalFindings} findings, ${provenFindings} proven by execution`)
 const triageOk = triaged.filter(Boolean)
 const verdicts = triageOk.flatMap((t) => t.verdicts || [])
 const closing = verdicts.filter((v) => String(v.verdict).startsWith('CLOSE'))
-const unevidenced = closing.filter((v) => !v.evidence || v.evidence.trim().length < 40)
-log(`triage: ${verdicts.length} verdict(s); ${closing.length} propose closing; ${unevidenced.length} of those lack real evidence`)
-if (unevidenced.length) log(`triage: WITHHELD from closing for want of evidence: ${unevidenced.map((v) => '#' + v.number).join(', ')}`)
+// A CLOSE-FIXED or CLOSE-OBSOLETE verdict is a claim about the DEFAULT BRANCH: the code now does
+// this, or the thing no longer exists. Evidence reachable only from an unmerged branch does not
+// support that claim, and closing on it hides a live gap behind a closed issue. CLOSE-DUPLICATE
+// cites another issue rather than the tree, so ancestry does not apply to it.
+const NEEDS_LANDED_EVIDENCE = ['CLOSE-FIXED', 'CLOSE-OBSOLETE']
+const evidenceLanded = (v) => !NEEDS_LANDED_EVIDENCE.includes(String(v.verdict)) || v.reachableFromDefault === true
+const unevidenced = closing.filter((v) => !v.evidence || v.evidence.trim().length < 40 || !evidenceLanded(v))
+const unlanded = closing.filter((v) => !evidenceLanded(v)).map((v) => v.number)
+log(`triage: ${verdicts.length} verdict(s); ${closing.length} propose closing; ${unevidenced.length} of those lack real evidence${unlanded.length ? ` (${unlanded.length} cite work not reachable from ${DEFAULT_REF})` : ''}`)
+if (unevidenced.length) log(`triage: WITHHELD from closing for want of LANDED evidence: ${unevidenced.map((v) => '#' + v.number).join(', ')}`)
 
 // --- Reconcile -------------------------------------------------------------
 // A blind `.slice(0, 24000)` over the serialised findings dropped everything past the cap without a
@@ -468,8 +600,10 @@ ${renderFindings(findingsAll)}
 ISSUE VERDICTS (${verdicts.length}):
 ${JSON.stringify(verdicts).slice(0, 16000)}
 
-WITHHELD FOR WANT OF EVIDENCE — these were proposed for closing and must NOT be closed:
-${unevidenced.map((v) => `#${v.number} ${v.title || ''}`).join('\n') || '(none)'}
+WITHHELD FOR WANT OF LANDED EVIDENCE — proposed for closing, and must NOT be closed. Either the
+evidence is too thin to name anything, or it is not reachable from ${DEFAULT_REF}, which means it
+closes the issue against work the default branch does not have:
+${unevidenced.map((v) => `#${v.number} ${v.title || ''}${unlanded.includes(v.number) ? ` — evidence not reachable from ${DEFAULT_REF}` : ''}`).join('\n') || '(none)'}
 
 ${dead.length ? `LANES THAT NEVER REPORTED — their scope is UNAUDITED and the summary MUST say so: ${dead.join(', ')}` : 'Every read lane reported.'}
 

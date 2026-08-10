@@ -39,6 +39,16 @@ export const meta = {
 // resume.) Paths are therefore literals or `args`. Verified by the failure this line replaced.
 const HOME = '/Users/jasonlee'
 const A = typeof args === 'string' ? JSON.parse(args) : (args || {})
+// The unknown-option guard runs BEFORE the required-field check on purpose: with the order
+// reversed, a caller who typos an option gets "`task` is required" and goes looking for the wrong
+// thing. Report the typo you can see, not the consequence of it.
+const KNOWN_ARGS = ['base', 'context', 'crate', 'designs', 'explore', 'lane', 'owns', 'repo', 'task']
+{
+  const unknown = Object.keys(A).filter((k) => !KNOWN_ARGS.includes(k))
+  if (unknown.length) {
+    throw new Error(`slice: unknown option(s) ${unknown.join(', ')}. Known: ${KNOWN_ARGS.join(', ')}.`)
+  }
+}
 if (!A.task) throw new Error('slice: `task` is required')
 const REPO = A.repo || `${HOME}/Developer/console`
 

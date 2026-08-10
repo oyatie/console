@@ -24,6 +24,9 @@ export const meta = {
 // args = {
 //   candidateWt, candidateTip, base, authority?, maxLanes?=4, fanout?=false, workspace?
 //
+// maxLanes is a HARD CAP, not advice to the judge: a selection larger than it refuses the whole
+// fan-out rather than dispatching past it or silently truncating.
+//
 // workspace defaults to the directory candidateWt itself lives in. Lane worktrees are RESOLVED
 // against the worktree inventory collected below, never constructed from a literal — see the
 // fanout chain at the bottom of this file.
@@ -77,7 +80,7 @@ const RAW_SCHEMA = {
       type: 'array',
       items: {
         type: 'object',
-        required: ['path', 'head', 'dirtyCount', 'prunable', 'filesVsBase', 'commitsAheadOfCandidate'],
+        required: ['path', 'head', 'dirtyCount', 'prunable', 'filesVsBase', 'filesVsBaseCount', 'commitsAheadOfCandidate'],
         properties: {
           path: { type: 'string' },
           head: { type: 'string' },
@@ -85,6 +88,9 @@ const RAW_SCHEMA = {
           dirtyCount: { type: 'number', description: 'lines of git status --porcelain' },
           prunable: { type: 'boolean', description: 'worktree list --porcelain marked it prunable' },
           filesVsBase: { type: 'array', items: { type: 'string' }, description: `git -C <wt> diff --name-only ${BASE} — empty array if none or unreadable` },
+          // Without the count, an empty filesVsBase cannot be told apart from a capped one, and
+          // "we did not look" reads exactly like "there is nothing there".
+          filesVsBaseCount: { type: 'number', description: 'the @@N value: how many files differ from base IN TOTAL, reported even when filesVsBase was capped or unreadable; -1 if the command failed' },
           commitsAheadOfCandidate: { type: 'number', description: `git -C <wt> rev-list --count ${CAND_TIP}..HEAD, or -1 if unreadable` },
         },
       },
@@ -159,8 +165,12 @@ does all of that; your only failure mode that matters is reporting something you
    output (unfiltered, this repository emits 25,000+ lines). Report its @@N count with an empty
    filesVsBase and let the count speak. A LANE worktree is small by construction.
 
-   A worktree whose HEAD prints MISSING has no gitdir: set prunable true, filesVsBase [] and
-   commitsAheadOfCandidate -1. Do NOT skip it and do NOT guess its contents.
+   ALWAYS report @@N as filesVsBaseCount, capped or not. An empty filesVsBase with no count cannot
+   be told apart from a worktree that genuinely holds nothing, and the classification below would
+   then offer a capped worktree for removal.
+
+   A worktree whose HEAD prints MISSING has no gitdir: set prunable true, filesVsBase [],
+   filesVsBaseCount -1 and commitsAheadOfCandidate -1. Do NOT skip it and do NOT guess its contents.
 
 3. PULL REQUESTS
      gh pr list --state open --json number,title,mergeable,reviewDecision,isDraft,headRefOid
@@ -188,6 +198,13 @@ const classifyWorktree = (w) => {
   if (w.prunable) return 'prunable'
   const files = w.filesVsBase || []
   const ahead = typeof w.commitsAheadOfCandidate === 'number' ? w.commitsAheadOfCandidate : -1
+  // UNREADABLE IS NOT UNUSED, and it used to be sorted as `empty` — i.e. offered for removal. Two
+  // ways the inventory fails to describe a worktree, and both land here: `git rev-list` failed and
+  // the collector reported -1, and the deliberate 60-file cap, which reports the COUNT and an empty
+  // file list. In both cases the evidence that the worktree holds nothing is exactly what is
+  // missing, and removal is the one irreversible action in this plan.
+  const count = typeof w.filesVsBaseCount === 'number' ? w.filesVsBaseCount : files.length
+  if (ahead < 0 || count > files.length) return 'unreadable'
   const unmerged = files.filter((f) => !candSet.has(f))
   // At risk if it carries commits the candidate lacks, or contributes files the candidate lacks,
   // or has uncommitted edits. Anything else contributes nothing that is not already captured.
@@ -197,7 +214,7 @@ const classifyWorktree = (w) => {
   return 'integrated'
 }
 
-const buckets = { integrated: [], atRisk: [], prunable: [], dirty: [], empty: [] }
+const buckets = { integrated: [], atRisk: [], prunable: [], dirty: [], empty: [], unreadable: [] }
 for (const w of wts) buckets[classifyWorktree(w)].push(w)
 
 // Duplicate work: the same non-candidate file contributed by more than one worktree.
@@ -237,7 +254,7 @@ const prPlan = (raw.prs || []).map((p) => ({
 }))
 
 log(`collected: ${wts.length} worktrees, ${(raw.prs || []).length} open PRs, ${beads.length} open beads`)
-log(`worktrees -> integrated ${buckets.integrated.length}, atRisk ${buckets.atRisk.length}, prunable ${buckets.prunable.length}, dirty ${buckets.dirty.length}, empty ${buckets.empty.length}`)
+log(`worktrees -> integrated ${buckets.integrated.length}, atRisk ${buckets.atRisk.length}, prunable ${buckets.prunable.length}, dirty ${buckets.dirty.length}, empty ${buckets.empty.length}, unreadable ${buckets.unreadable.length}`)
 log(`beads -> ${unblocked.length} unblocked, ${blocked.length} blocked${duplicated.length ? `; ${duplicated.length} file(s) contributed by more than one worktree` : ''}`)
 
 // --- JUDGE: only what cannot be computed. -----------------------------------------------------
@@ -274,7 +291,7 @@ ALREADY COMPUTED (do not recompute):
 ${ranked.map((b) => `    ${b.id} [P${b.priority ?? '?'}] blocks:${b.blocksCount ?? 0} — ${b.title}`).join('\n') || '    (none)'}
   blocked beads:
 ${blocked.map((b) => `    ${b.id} — waiting on ${(b.blockedByOpen || []).join(', ')}`).join('\n') || '    (none)'}
-  worktrees: integrated ${buckets.integrated.length}, atRisk ${buckets.atRisk.length}, prunable ${buckets.prunable.length}, dirty ${buckets.dirty.length}
+  worktrees: integrated ${buckets.integrated.length}, atRisk ${buckets.atRisk.length}, prunable ${buckets.prunable.length}, dirty ${buckets.dirty.length}, unreadable ${buckets.unreadable.length}
 ${buckets.atRisk.length ? `  AT RISK (hold work nowhere else — never propose removing these):\n${buckets.atRisk.map((w) => `    ${w.path} @ ${w.head} (+${w.commitsAheadOfCandidate} commits)`).join('\n')}` : ''}
 ${duplicated.length ? `  DUPLICATED across worktrees:\n${duplicated.slice(0, 10).map((d) => `    ${d.file} <- ${d.paths.join(', ')}`).join('\n')}` : ''}
 
@@ -288,10 +305,11 @@ YOUR JOB — three judgements, each needing evidence a computation cannot supply
    fix. A bead tracking work that already landed is a recurring failure here — list it under
    alreadyDone WITH THE PROOF, not under startNow.
 
-2. WHAT SHOULD ACTUALLY START, at most ${MAX_LANES}. Choose for PATH DISJOINTNESS FIRST: two lanes
-   sharing a writable path must never both start however ready they look. Prefer lanes that unblock
-   the most. For each, write a brief citing CONCRETE files, line numbers and the governing
-   authority clause — a brief that restates the bead title is useless, mark it briefConfidence
+2. WHAT SHOULD ACTUALLY START, at most ${MAX_LANES} — a hard cap: returning more refuses the whole
+   fan-out and nothing starts. Choose for PATH DISJOINTNESS FIRST: two lanes sharing a writable
+   path must never both start however ready they look, and the fan-out refuses them anyway.
+   Prefer lanes that unblock the most. For each, write a brief citing CONCRETE files, line numbers
+   and the governing authority clause — a brief that restates the bead title is useless, mark it briefConfidence
    "thin". Name any leased file the deliverable structurally cannot avoid (a new crate needs the
    workspace manifest; a new test binary needs CI wiring) under structurallyNeedsLeasedFile, and
    instruct the lane to REPORT it rather than stall or fake it. Omitting that is how a lane gets
@@ -314,8 +332,14 @@ phase('Disposition')
 
 const actionable = prPlan.filter((p) => ['merge', 'fix-then-merge', 'rebase-then-merge'].includes(p.action))
 
-const prResults = actionable.length
-  ? await parallel(actionable.map((p) => () => agent(`Dispose of PR #${p.pr} ("${p.title}") in ${CAND_WT}.
+// EVERY DISPOSITION RUNS IN THE SAME CANDIDATE WORKTREE, AND fix-then-merge IS WORK. Two of
+// them through parallel() is two writers in one root: exactly the collision lane-fanout refuses at
+// dispatch for lanes, arriving here by a different door because PR dispositions are not lanes.
+// program-tick is the CALLER that builds this set, so refusing downstream would be late — the
+// agents are already chosen. Serialised, not partitioned by action: any of these agents may touch
+// the tree, and a rule that has to guess which ones is a rule with a next spelling. Depth costs
+// wall-clock and a tick disposes of a handful of PRs, which is the cheap side of the trade.
+const disposePr = (p) => agent(`Dispose of PR #${p.pr} ("${p.title}") in ${CAND_WT}.
 
 DECIDED ACTION: ${p.action}
 Current rollup: ${p.checkConclusion}; review: ${p.reviewDecision}${p.failingChecks.length ? `; failing: ${p.failingChecks.join(', ')}` : ''}
@@ -331,8 +355,10 @@ Current rollup: ${p.checkConclusion}; review: ${p.reviewDecision}${p.failingChec
 *** You may not relax branch protection, bypass a required check, skip a test, or merge anything
 whose signed authority train is not intact. If the right action needs any of that, report it. ***
 Do not poll: act on the state above, once.`,
-      { label: `pr:${p.pr}`, phase: 'Disposition', schema: { type: 'object', required: ['pr', 'done', 'outcome'], properties: { pr: { type: 'number' }, done: { type: 'boolean' }, outcome: { type: 'string' }, blockedBy: { type: 'string' } } } })))
-  : []
+  { label: `pr:${p.pr}`, phase: 'Disposition', schema: { type: 'object', required: ['pr', 'done', 'outcome'], properties: { pr: { type: 'number' }, done: { type: 'boolean' }, outcome: { type: 'string' }, blockedBy: { type: 'string' } } } })
+
+const prResults = []
+for (const p of actionable) prResults.push(await disposePr(p))
 
 if (!actionable.length) log(`no PR needed action this tick (${prPlan.length} open)`)
 
@@ -344,8 +370,15 @@ const plan = {
   coverageRisks: judged.coverageRisks || [],
   worktrees: {
     counts: Object.fromEntries(Object.entries(buckets).map(([k, v]) => [k, v.length])),
-    safeToRemove: buckets.integrated.concat(buckets.empty).map((w) => w.path),
+    // NEVER the worktree this tick is operating IN. It classifies as integrated by construction —
+    // its diff against base IS the candidate file set — so it sat at the head of a list titled
+    // "safe to remove", one copy-paste away from deleting the checkout doing the work.
+    safeToRemove: buckets.integrated.concat(buckets.empty)
+      .map((w) => w.path).filter((p) => String(p).replace(/\/+$/, '') !== CAND_WT.replace(/\/+$/, '')),
     mustNotRemove: buckets.atRisk.map((w) => ({ path: w.path, head: w.head, aheadBy: w.commitsAheadOfCandidate })),
+    // Not removable and not at risk either: we simply cannot see what they hold. Reported so the
+    // gap is visible rather than resolved by a silent default in either direction.
+    unreadable: buckets.unreadable.map((w) => w.path),
     prunableRegistrations: buckets.prunable.map((w) => w.path),
     duplicated,
   },
@@ -369,16 +402,23 @@ const resolveLaneWt = (key) => {
 // Chaining is opt-in and refuses to spawn implementers off a brief nobody has read.
 if (ARGS.fanout && (judged.startNow || []).length && !thin.length) {
   const resolved = judged.startNow.map((l) => ({ lane: l, ...resolveLaneWt(l.key) }))
-  const unusable = resolved.filter((r) => r.hits.length !== 1)
-  if (unusable.length) {
-    // Refuse the WHOLE fanout, not the unresolvable lanes only: chaining the resolvable subset
+  const unusable = resolved.filter((r) => r.hits.length !== 1).map((r) => ({
+    key: r.lane.key,
+    why: r.hits.length ? `ambiguous: ${r.hits.join(', ')}` : `no worktree under ${WORKSPACE} matches lane "${r.lane.key}"`,
+  }))
+  // maxLanes lived ONLY in the judge's prompt, and a prompt is a request. The judge is free to
+  // return more, and everything it returned was then fanned out — the cap was read, printed, and
+  // enforced by nobody. Enforced HERE because here is the last point before implementers exist.
+  const overCap = judged.startNow.length > MAX_LANES
+    ? [{ key: '(all)', why: `${judged.startNow.length} lanes selected but maxLanes=${MAX_LANES}. Raise maxLanes deliberately, or narrow the selection — do not dispatch past a cap the caller set.` }]
+    : []
+  const blocked = [...overCap, ...unusable]
+  if (blocked.length) {
+    // Refuse the WHOLE fanout, not the offending lanes only: chaining the remaining subset
     // would silently drop selected work, which is the same defect in a different spelling.
-    plan.fanoutBlocked = unusable.map((r) => ({
-      key: r.lane.key,
-      why: r.hits.length ? `ambiguous: ${r.hits.join(', ')}` : `no worktree under ${WORKSPACE} matches lane "${r.lane.key}"`,
-    }))
+    plan.fanoutBlocked = blocked
     log(`FANOUT REFUSED — no implementer dispatched. ${plan.fanoutBlocked.map((b) => `${b.key}: ${b.why}`).join(' | ')}`)
-    log(`create the missing worktree(s) from ${CAND_TIP} under ${WORKSPACE}, or pass args.workspace, then re-run with fanout`)
+    if (unusable.length) log(`create the missing worktree(s) from ${CAND_TIP} under ${WORKSPACE}, or pass args.workspace, then re-run with fanout`)
   } else {
     log(`chaining into lane-fanout with ${resolved.length} lane(s): ${resolved.map((r) => r.hits[0]).join(', ')}`)
     plan.fanoutResult = await workflow('lane-fanout', {

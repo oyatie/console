@@ -16,6 +16,17 @@ export const meta = {
 // NOTE: the runtime may deliver `args` as a JSON STRING rather than an object — parse defensively,
 // else `args.base`/`args.head` are undefined and the gate silently falls back to HEAD~1..HEAD.
 const A = typeof args === 'string' ? JSON.parse(args) : (args || {})
+// An option this harness does not read must abort rather than be silently dropped. Absent here
+// while three sibling harnesses had it; the preflight now enumerates the directory rather than a
+// list, which is what surfaced it.
+const KNOWN_ARGS = ['base', 'commit', 'context', 'head', 'kind', 'repo']
+{
+  const unknown = Object.keys(A).filter((k) => !KNOWN_ARGS.includes(k))
+  if (unknown.length) {
+    throw new Error(`review-gate: unknown option(s) ${unknown.join(', ')}. Known: ${KNOWN_ARGS.join(', ')}.`)
+  }
+}
+
 const COMMIT = A.commit || 'HEAD'
 const HEAD = A.head || COMMIT
 const BASE_REF = A.base || `${HEAD}~1`

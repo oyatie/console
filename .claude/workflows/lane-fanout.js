@@ -12,6 +12,9 @@ export const meta = {
 // args = {
 //   tip:        "<sha>"            // what each lane started from; ALL diffs are taken against this
 //   lanes:      [{ key, bead, wt, owned, brief, accept, blockedTargets? }]
+//               Lanes must be pairwise disjoint in BOTH `wt` and `owned`, and both are refused at
+//               dispatch: a shared worktree collides while they build, a shared owned root collides
+//               at LAND. `owned` must name paths, not describe them.
 //   lockExtra?: "<string>"         // phase-specific additions to the lock contract
 //   maxRounds?: 3
 //   lenses?:    ["...", "..."]     // review lenses; defaults below
@@ -42,7 +45,7 @@ ARGS = ARGS || {}
 // kilobytes of hand-written JSON, so a single typo -- `lens` for `lenses`, `maxRound` for
 // `maxRounds` -- silently changes what runs while every log line still looks right. Fail loudly at
 // dispatch instead, where it costs seconds.
-const KNOWN_ARGS = ['tip', 'lanes', 'maxRounds', 'lockExtra', 'lenses', 'land', 'integrationBranch']
+const KNOWN_ARGS = ['tip', 'lanes', 'maxRounds', 'lockExtra', 'lenses', 'land', 'integrationBranch', 'trial']
 // `blockedTargets` was documented in the args comment above but omitted here, so a caller
 // following the documented interface aborted with "unknown option(s)". Documented and accepted
 // must be the same set — a doc that describes an input the code rejects is the same defect class
@@ -103,6 +106,70 @@ for (const l of LANES) {
     if (keys.has(l.key)) throw new Error(`lane-fanout: duplicate lane key "${l.key}" — labels and telemetry would merge two lanes into one.`)
     keys.add(l.key)
   }
+
+  // OVERLAPPING OWNED ROOTS ARE THE SAME COLLISION, DEFERRED TO LAND. Separate worktrees mean two
+  // lanes cannot corrupt each other's files while they build, so this one survives every reviewer
+  // and every verifier: each diff is correct in isolation. It fires at LAND time, on the
+  // integration branch, after the whole run has been paid for — two independent rewrites of the
+  // same files from the same base, handed to a lander with no authority to judge either. Refuse it
+  // where the duplicate worktree is refused, for the cost of a string compare.
+  //
+  // An owned root is a list of path patterns, sometimes with prose around it. Reduce each entry to
+  // the fixed path prefix before its first wildcard segment; two lanes collide when one prefix is
+  // the other, or is a PATH prefix of it (segment-aligned, so crates/ab does not collide with
+  // crates/a).
+  // Canonicalise before compare: `./backend/crates/foo` and `backend/crates/foo` must collide.
+  // Collapse `.` segments; reject `..` rather than silently rewriting ownership.
+  const canonicalizeOwnedPrefix = (t) => {
+    const segs = []
+    for (const seg of String(t).split('/')) {
+      if (seg.includes('*')) break
+      if (!seg || seg === '.') continue
+      if (seg === '..') {
+        throw new Error(
+          `lane-fanout: owned path contains '..' (${JSON.stringify(t)}) — refuse rather than collapse ` +
+          'ownership across directories.',
+        )
+      }
+      segs.push(seg)
+    }
+    return segs.join('/').replace(/\/+$/, '')
+  }
+  const ownedPrefixes = (owned) => String(owned)
+    .split(/[\s,]+/)
+    .filter(Boolean)
+    // Path-shaped tokens only. Comparing every word would refuse two lanes for sharing "the".
+    .filter((t) => t.includes('/') || t.includes('*') || /\.\w+$/.test(t))
+    .map(canonicalizeOwnedPrefix)
+  const pathOverlap = (a, b) => a === b || a === '' || b === '' || a.startsWith(`${b}/`) || b.startsWith(`${a}/`)
+  const roots = LANES.map((l) => ({ key: l.key, owned: l.owned, prefixes: ownedPrefixes(l.owned) }))
+  for (const r of roots) {
+    // A guard that examines zero subjects must FAIL. An owned root naming no path cannot be
+    // compared with anything, and it is also useless as the reviewer's IN-SCOPE PATHS list.
+    if (!r.prefixes.length) {
+      throw new Error(
+        `lane-fanout: lane "${r.key}" declares an owned root with no path in it (${JSON.stringify(r.owned)}). ` +
+        'The overlap check would examine nothing and pass, and the reviewer would be handed prose as ' +
+        'its scope list. Name the paths.',
+      )
+    }
+  }
+  for (let i = 0; i < roots.length; i++) {
+    for (let j = i + 1; j < roots.length; j++) {
+      const hit = roots[i].prefixes
+        .flatMap((a) => roots[j].prefixes.map((b) => [a, b]))
+        .find(([a, b]) => pathOverlap(a, b))
+      if (hit) {
+        throw new Error(
+          `lane-fanout: lanes "${roots[i].key}" and "${roots[j].key}" declare OVERLAPPING owned roots ` +
+          `(${hit[0] || '<repo root>'} vs ${hit[1] || '<repo root>'}). Separate worktrees keep them from ` +
+          'corrupting each other while they build, so nothing before LAND can see this — the collision ' +
+          'arrives on the integration branch after every reviewer has passed, as two independent ' +
+          'rewrites of the same files from the same base. Narrow one lane, or run them in sequence.',
+        )
+      }
+    }
+  }
 }
 
 const BASE_LOCK = `
@@ -130,7 +197,42 @@ NEVER WEAKEN THE ORACLE:
   No deleted tests, no #[ignore], no relaxed or loosened assertions, and above all NEVER make a
   test pass by conforming it to the defect. Multiple lanes in this program were rejected for
   exactly that, and in each case the "green" test was hiding a live production outage.
-AN ENFORCEMENT MUST BE ABLE TO SEE ITS SUBJECT:
+AN ENFORCEMENT MUST BE ABLE TO SEE ITS SUBJECT
+RUN WHAT CI RUNS, BEFORE YOU REPORT DONE:
+  A defect that CI catches and the lane did not is a HARNESS failure, not a CI success. The lane had the
+  same tree, the same commands and more context; CI just had a checklist. The asymmetry is that accept
+  criteria are prose and CI is commands, so the lane satisfies a sentence while CI executes a gate.
+  Before status=done, find the commands CI will actually run over the files you touched -- read
+  .github/workflows/ci.yml rather than guessing -- and RUN THEM. At minimum, for the paths in your diff:
+  the formatter, the linter with the repo's own flags, the unit target, and any repo gate whose name
+  matches your area. Put the exact command lines and their exit codes in verification.commands.
+  If a gate cannot run locally, say WHICH and WHY there, rather than omitting it and reporting green.
+  A lane that reports done without having run the gates has reported an intention, not a result.
+  TESTS NAMED *_as_runtime_role.rs NEED A DATABASE, and a plain cargo test does NOT give them one --
+  it fails ALL of them in about 0.01s, including tests that were passing, which reads like your
+  change broke everything when nothing ran at all. The invocation takes the repo root as its FIRST
+  argument and is easy to get wrong three times in a row:
+      tools/lanes/pgtest.sh "$PWD" cargo test -p <crate> --test <name>
+  Without the leading repo root it tries to lstat a file named cargo and exits having run nothing.
+  A rule that cannot be followed without tribal knowledge is a rule that gets skipped, so the exact
+  line is written here rather than left in an ADR.
+
+A TEST THAT BUILDS ITS OWN SUBJECT MEASURES THE STUB, NOT THE DEPLOYMENT:
+  The sharper form of the rule above, and the one that actually shipped. A suite proved a dispatch
+  derivation TOTAL over every target in the contract -- six tests, all green, none of them naming a
+  target so none of them able to go stale. At the same moment the production composition root
+  registered ZERO of those thirteen targets. Both facts were true, because the tests constructed
+  their own registry from stub ports and then measured the thing they had just built.
+  The claim was about the DEPLOYED registry. The control could see a subject; it could not see THAT
+  subject. So when your evidence is a test, say plainly which of these it is:
+    - MECHANISM: the thing derives / fails closed / refuses the wrong payload. Stubs are correct
+      here, and a stub is the only way to test a fourteenth target that does not exist yet.
+    - WIRING: the composition root actually installs it. This one must drive the REAL constructor
+      -- "super::the_production_fn(...)" -- and must fail when a registration line is deleted.
+  A condition phrased as "X does not require hand-written Y per action" is a WIRING claim. Mechanism
+  evidence does not close it, however total the mechanism test is. If your redBaseline was produced
+  by deleting a line from a test fixture rather than from the composition root, you have proved the
+  fixture.:
   If your change adds or modifies a gate, check, census, guard or invariant, answer TWO questions
   in writing BEFORE you build it, and put the answers in enforcementPlacement:
     (1) WHERE does it run in the sequence, and does its subject EXIST yet at that point?
@@ -161,16 +263,23 @@ PERIPHERALS ARE PART OF THE CHANGE, NOT A FOLLOW-UP:
   exact edit in followUps. Never leave a doc contradicting the code you just shipped, and never
   silently widen scope to fix a doc you were not given.
 
-  MECHANICAL, AND NOT OPTIONAL — some peripherals are GENERATED, and prose about keeping docs
-  current does not update a checksum. If your diff touches ANY markdown under docs/, the
-  documentation manifest pins that file's exact Git blob OID and is now stale, so CI fails on a
-  change that is otherwise entirely correct. Regenerate it and include the result in the same commit
-  range:
-      node scripts/console/generate-documentation-manifest.mjs --write
-      npm run check:doc-links && npm run check:doc-manifest && npm run check:doc-citations
-  This is a POSTFLIGHT check: run it after your last edit, not before. It is listed here rather than
-  left to the reviewer because it is decidable by a command, and a lane that can run the command has
-  no business spending a review round on it.
+  MECHANICAL, AND NOT OPTIONAL — some peripherals are GENERATED, and prose about keeping things
+  current does not update a checksum. A change that is otherwise entirely correct fails CI because a
+  file some script writes is now stale.
+  DO NOT work from a list of generators. The first version of this clause named exactly one (the
+  documentation manifest) and the very next lane was failed by a different one (the first-party BUCK
+  faces). A list of the faces you have been burned by is not a rule, it is a record of your own
+  history -- and this lock says two paragraphs down that the third spelling means the mechanism is
+  wrong. The mechanism is: REGENERATE, THEN ASK GIT.
+      run every generator the repo exposes for the areas your diff touches, then:
+      git status --porcelain          # ANY output = your commit is incomplete
+  git is the oracle because it cannot be fooled by a face you did not think of. Two entry points
+  worth knowing, neither of which is the whole set: tools/buck/preflight.sh (what CI's preflight job
+  actually runs, covering every generated Buck face) and
+  node scripts/console/generate-documentation-manifest.mjs --write.
+  This is a POSTFLIGHT check: run it after your last edit, not before. It is here rather than left to
+  the reviewer because it is decidable by a command, and a lane that can run the command has no
+  business spending a review round on it.
 THE THIRD SPELLING MEANS THE MECHANISM IS WRONG, NOT THE LIST:
   If you are fixing the SAME class of bug for the third time in a different spelling, stop patching
   and replace the mechanism. Measured: a gate hand-lexed Rust and was defeated by '} // end tests',
@@ -277,7 +386,14 @@ const REVIEW_SCHEMA = {
 // check part of the pipeline.
 const VERIFY_SCHEMA = {
   type: 'object',
-  required: ['reproduced', 'actualResults', 'discrepancies', 'contradictsClaim', 'headSha'],
+  // A GREEN MUST BE ANSWERED FOR, NOT MERELY ASSERTED. reproduced + contradictsClaim say the
+  // verifier ran something and agreed with it. They do not say WHAT it ran, whether any command
+  // selected zero tests and still exited 0, or whether the suite still proves as much as it did.
+  // Oracle integrity is the most common rejection cause in this programme and a STANDING review
+  // lens, yet this schema let a verifier certify a green without ever answering it — and a field
+  // that is optional is a field that gets skipped. Requiring the command list is the same
+  // discipline as `commands` on the build side: a claim nobody can re-run is a claim.
+  required: ['reproduced', 'actualResults', 'discrepancies', 'contradictsClaim', 'headSha', 'falseGreenRisk', 'commandsRun', 'oracleIntact'],
   properties: {
     // WHAT was verified, not just whether. Landing cherry-picks a worktree AFTER review finishes,
     // and "clean working tree" is not a binding: a commit added after the reviewers finished is
@@ -294,7 +410,16 @@ const VERIFY_SCHEMA = {
     // verifier ran: every lane with one reported converged=false while every review-only lane
     // reported true. That defect manufactured rebuild rounds, which are the dominant cost here.
     contradictsClaim: { type: 'boolean', description: 'TRUE only if what you observed CONTRADICTS the claimed result - a count that differs, a command that failed, a false green. Cosmetic differences (line numbers, timings, wording) are FALSE.' },
-    falseGreenRisk: { type: 'string', description: 'did any command select ZERO tests and still exit 0?' },
+    falseGreenRisk: { type: 'string', description: 'did any command select ZERO tests and still exit 0? Answer for every command you ran; "none" is a valid answer, silence is not.' },
+    commandsRun: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'the commands you ACTUALLY ran, verbatim, in the order you ran them. Not the commands you were given — the ones you executed. An empty list means you verified nothing.',
+    },
+    oracleIntact: {
+      type: 'boolean',
+      description: 'TRUE only if the suite still proves as much as it did: no test deleted, no #[ignore] added, no assertion loosened, and no test made to pass by conforming it to the defect. FALSE if you observed any of those OR could not tell.',
+    },
   },
 }
 
@@ -305,7 +430,57 @@ const VERIFY_SCHEMA = {
 // rejection cause in this program and it had never been reviewed for; it was only ever caught
 // incidentally by a custom lens that happened to look. A default that is always overridden is not a
 // default, it is dead code that reads as coverage.
+// MODEL TIER: FRONTIER WHERE THE DECISION IS, CHEAP WHERE THE WORK IS.
+//
+// Every agent in this directory ran at the session model, which is the expensive one. Cursor's
+// swarm measured the same worker fleet at $9,373 with a frontier model and $411 with a cheap one
+// behind a frontier planner -- 23x -- on the argument that "few moments in a large task genuinely
+// require frontier intelligence, such as the original decomposition, the design decisions, and
+// certain trade-offs." This programme has now lost two runs to account limits, one of them 117
+// agents deep, so this is not a theoretical saving.
+//
+// The line we draw is NOT "cheap for reads, expensive for writes". It is:
+//
+//   A CHEAPER TIER IS ALLOWED ONLY WHERE AN INDEPENDENT STRONGER PASS AUDITS THE RESULT.
+//
+// That is the same defence-in-depth argument as decorrelated review lenses: a weaker first pass is
+// fine when a stronger one adjudicates it, and is NOT fine when its output is the final word.
+// So: batched fan-out that feeds a challenge/reconcile phase may run cheap; anything whose verdict
+// is terminal -- the adversarial reviewers, the independent verifier, the single writer, and any
+// re-derivation of a dependency edge, where a reversed answer silently reschedules everything --
+// stays on the inherited model.
+// NOT APPLIED TO THIS HARNESS'S OWN AGENTS, deliberately, and recorded because the first version of
+// this block defined a WORKER constant and used it NOWHERE -- a rule written, documented, believed,
+// and reachable by nothing, committed in the very change that added the rule. That is the defect the
+// preflight beside this file exists to catch, and it caught it.
+//
+// A build agent's output DOES qualify under the rule above: adversarial reviewers and an independent
+// verifier audit it. What stops it is arithmetic, not principle. This harness converges by ROUNDS,
+// and a round costs a full build plus every reviewer plus the verifier, so a tier that needs even one
+// extra round costs more than it saves. Unlike Cursor's workers, which execute a planner's explicit
+// instructions, a lane here is handed an open-ended brief. Applying it needs a measurement nobody has
+// made: rounds-to-converge per tier on the same briefs. Until then, the harnesses tiered are the ones
+// whose fan-out is a mechanical read feeding a stronger pass, where a wrong answer costs one re-read.
+
+// TRIAL ONE LANE BEFORE COMMITTING THE FLEET.
+//
+// Bun's Zig-to-Rust port ran ONE implementer plus TWO adversarial reviewers over THREE files, and
+// only then scaled to 64 agents across 4 worktrees. This harness has always dispatched every lane
+// cold, and it has cost real runs: a wave where the brief was wrong in the same way for all four
+// lanes is four wasted lanes, not one.
+//
+// `trial` names a lane key that must CONVERGE before the rest are dispatched. It is not a
+// smoke test -- it is the same full build/review/verify cycle, so what it proves is that the LOCK,
+// the accept criteria and the review lenses actually work against this tree, which is the part a
+// wave gets wrong identically across every lane.
+//
+// Deliberately opt-in. For two independent lanes the serialisation costs more than it saves; the
+// value appears when the lanes share a brief shape, which is exactly when they fail together.
+
+// Judges, verifiers and writers deliberately omit `model` so they inherit the session's.
+
 const STANDING_LENSES = [
+  'MAINTAINABILITY / COST OF CARRY — every other lens asks whether the change is CORRECT. This one asks what it costs to keep, and its default verdict is DELETE. (a) SPRAWL: does this add a doc, a crate, a script, a config, a workflow step or a process that duplicates one that exists? A second file describing the same fact is a future contradiction, not documentation. Name the existing thing it should have extended. (b) COMMENT BLOBBING: is there a paragraph of prose where a name would do? A comment that restates the code is noise that goes stale independently; a comment earning its place explains WHY, names a measurement, or records a rejected alternative. Twenty lines of comment over five lines of code is a defect in this repository, not thoroughness. (c) IDIOM: would a competent Rust/JS reader of this repo write it this way, or is it this author\'s private dialect? Hand-rolled parsing where a library exists, and enumerations where the language has a total construct, are the two that recur here. (d) AUTOMATION: is a human being asked to remember something a command could decide? If the accept criteria contain a step a script could run, that step WILL be skipped eventually. (e) UNDOCUMENTED-BUT-SHOULD-BE: the inverse of sprawl. A non-obvious constraint, a measured number, or a deliberate asymmetry that exists only in the author\'s head is undocumented, and the next lane will \'simplify\' it away. Report the NET line count of prose and config this change adds. A change that adds more explanation than behaviour needs a reason.',
   'CORRECTNESS + ORACLE INTEGRITY — does the change address the root cause, and does the suite still prove as much as before? Hunt for tests conformed to defects and assertions that would pass even if the behaviour were broken. Pick the load-bearing assertion, break the code it guards, and say whether it actually goes RED.',
   'PERIPHERAL DRIFT — read the diff, then go looking for what it made WRONG somewhere else. Does any module doc, /// comment, registry, roster, baseline, docs/** page or bead text still describe the behaviour as it was before this change? Pay closest attention to comments that ENUMERATE ("the three ways X can happen", "these are the cases") next to code this change made total or extended — those are false claims about a control, not stale prose. Verify the build agent\'s peripheralsUpdated field against the actual tree rather than trusting it, and check the reverse direction too: a doc updated to describe something the code does NOT do is worse than a stale one. Leased peripherals correctly reported in followUps are ownerLease=true, not defects.',
   'ENFORCEMENT PLACEMENT — for every gate/check/census/guard this change touches, ignore whether its LOGIC is right and ask only whether it can SEE its subject. (a) Where does it run in the sequence, and does its subject exist yet at that point? (b) What is the finest distinction its data source can express, and does the change claim a finer one? (c) Is the rule TOTAL over its domain, or is it an enumeration of spellings that a reviewer can always add one more to? If the change closes named cases rather than making the class unrepresentable, name the total primitive it should have used instead. (d) Does "examined zero subjects" fail, or pass? (d) Is it tested by EXECUTING it, or by a contains() over its own source text — mutate the control and check the tests go RED. Both failure modes have shipped here: a census that ran before migrations existed, and a per-crate rule enforced by a data source that only distinguishes roles. Verify the answers in enforcementPlacement rather than trusting them.',
@@ -480,6 +655,17 @@ RULES:
  - If a command fails for an ENVIRONMENTAL reason (missing dependency, database not provisioned,
    Docker down), say so explicitly rather than reporting the change as broken.
  - Do NOT edit any file. You are read-and-run only.
+
+*** THREE FIELDS DECIDE WHETHER THIS GREEN COUNTS. A green you cannot answer for is not a green. ***
+ commandsRun:     every command you ACTUALLY executed, verbatim and in order. Not the list you were
+                  handed — the one you ran. An empty list means nothing was verified, and the lane
+                  rebuilds.
+ falseGreenRisk:  answer it for every command, not just the suspicious one. "none" is an answer.
+ oracleIntact:    read the diff for deleted tests, added #[ignore], loosened assertions, and any
+                  expectation rewritten to match observed output instead of the intended contract.
+                  TRUE only if the suite still proves as much as before. If you could not tell,
+                  that is FALSE — this is the most common rejection cause in this programme and
+                  silence on it used to be free.
 
 Report any difference between what was claimed and what you observed, however small.`
 }
@@ -666,13 +852,56 @@ async function runLane(l) {
     // the claim untested and the lane must rebuild.
     // The deliberate exception stands: when the build claims nothing (`claimsGreen` false) no
     // verifier is dispatched, there is nothing to falsify, and its absence is not a death.
+    //
+    // AND A GREEN NOBODY ANSWERED FOR IS NOT A GREEN. The schema now REQUIRES the command list, the
+    // false-green answer and an oracle-integrity verdict, but a schema is a request to an agent and
+    // this is the enforcement: a verifier that reproduced the result while leaving any of the three
+    // unanswered has told us it agreed without saying what it ran or whether the suite still proves
+    // anything. Absence is a NO here, never a yes.
     const verifierDied = claimsGreen && !verify
-    const verifierOk = !claimsGreen || (!!verify && verify.reproduced === true && verify.contradictsClaim === false)
+    // COUNT THE COMMANDS AGAINST WHAT WAS CLAIMED, not against zero. `length > 0` let a verifier
+    // that re-ran ONE of the implementer's five commands satisfy the check, and with reproduced=true
+    // and contradictsClaim=false the lane converged while four suites were never independently run.
+    // "Some of it was re-run" is not independent verification of a green; it is a sample of one.
+    const claimedCommands = Array.isArray(fix.commands) ? fix.commands.filter((c) => typeof c === 'string' && c.trim()) : []
+    // Every commandsRun entry must be a non-empty string. Filtering blanks used to turn
+    // `commandsRun: [""]` (or `["cargo test", ""]`) into a quieter shape and let a hollow list
+    // look like "no commands named" rather than "the verifier answered with nothing". Fail closed:
+    // any blank or non-string entry means the verifier did not answer for what it ran.
+    const rawRan = verify && Array.isArray(verify.commandsRun) ? verify.commandsRun : []
+    const commandsRunWellFormed = rawRan.length > 0
+      && rawRan.every((c) => typeof c === 'string' && c.trim() !== '')
+    const ranCommands = commandsRunWellFormed ? rawRan.map((c) => c.trim()) : []
+    // Compared as a SET over normalised text rather than by count, because a verifier that ran the
+    // same command five times would satisfy a count and prove nothing. Coverage is against EVERY
+    // claimed command, not merely "ran at least one".
+    const norm = (c) => c.replace(/\s+/g, ' ').trim()
+    const ranSet = new Set(ranCommands.map(norm))
+    const unrun = claimedCommands.filter((c) => !ranSet.has(norm(c)))
+    // A done implementer that omits `commands` or returns only blanks used to make
+    // `unrun.length === 0` vacuously true: the verifier could name any command of its own and the
+    // lane converged without independently re-running anything the build claimed. Status=done
+    // requires a nonempty claimed-command set before coverage can be judged.
+    const verifierAnswered = !!verify
+      && claimedCommands.length > 0
+      && commandsRunWellFormed
+      && ranCommands.length > 0
+      && unrun.length === 0
+      && typeof verify.falseGreenRisk === 'string' && verify.falseGreenRisk.trim() !== ''
+      && verify.oracleIntact === true
+    const verifierOk = !claimsGreen
+      || (!!verify && verify.reproduced === true && verify.contradictsClaim === false && verifierAnswered)
     const verifierSaid = verifierOk
       ? null
       : (verifierDied
         ? 'the INDEPENDENT VERIFIER died before reporting, so nothing re-ran your claimed green. Re-run your own commands and report the exact output.'
-        : `reproduced=${verify && verify.reproduced}; contradictsClaim=${verify && verify.contradictsClaim}; discrepancies=${verify && verify.discrepancies}; falseGreenRisk=${verify && verify.falseGreenRisk}`)
+        : (claimedCommands.length === 0
+          ? `the build claimed status=done but named no well-formed commands (${JSON.stringify(fix.commands)}); a green with nothing claimed cannot be independently verified. List the commands you ran.`
+          : (unrun.length
+          ? `the verifier re-ran ${ranCommands.length} command(s) but the build claimed ${claimedCommands.length}; these were NEVER independently run: ${unrun.join(' | ')}. A green re-run of part of the evidence is a sample, not a verification.`
+          : (verify && verify.reproduced === true && verify.contradictsClaim === false
+          ? `the INDEPENDENT VERIFIER reproduced your result but could not answer for it: commandsRun=${JSON.stringify(verify.commandsRun)}, falseGreenRisk=${JSON.stringify(verify.falseGreenRisk)}, oracleIntact=${verify.oracleIntact}. Either it ran nothing it could name, or it judged the oracle no longer intact. Make the commands reproducible and show that the suite still proves what it did before.`
+          : `reproduced=${verify && verify.reproduced}; contradictsClaim=${verify && verify.contradictsClaim}; discrepancies=${verify && verify.discrepancies}; falseGreenRisk=${verify && verify.falseGreenRisk}`))))
     if (verifierDied) log(`${l.key}: round ${round} CANNOT CONVERGE — VERIFIER DIED; the claimed green was never re-run`)
 
     last = { lane: l, fix, reviews, verify, blockers, rounds: round, converged: false }
@@ -707,7 +936,37 @@ async function runLane(l) {
 
 phase('Build')
 
-const results = await parallel(LANES.map((l) => () => runLane(l)))
+let results
+if (ARGS.trial) {
+  const first = LANES.find((l) => l.key === ARGS.trial)
+  if (!first) {
+    throw new Error(`lane-fanout: trial names lane "${ARGS.trial}", which is not in lanes: ${LANES.map((l) => l.key).join(', ')}`)
+  }
+  if (LANES.length < 2) throw new Error('lane-fanout: trial with fewer than two lanes serialises for nothing')
+  log(`TRIAL: running lane "${first.key}" alone before committing the other ${LANES.length - 1}`)
+  const trial = await runLane(first)
+  const converged = trial && trial.converged
+  if (!converged) {
+    // The whole point: a brief that is wrong is usually wrong the SAME way for every lane, so
+    // dispatching the rest would multiply one defect by N rather than discover N defects.
+    log(`TRIAL FAILED — not dispatching the remaining ${LANES.length - 1} lane(s).`)
+    log('The lock, the accept criteria or the review lenses did not hold against this tree. Fix the')
+    log('brief, not the lane, then re-run: the other lanes would have failed the same way.')
+    return {
+      headline: [
+        `TRIAL LANE "${first.key}" DID NOT CONVERGE — fleet not dispatched`,
+        `${LANES.length - 1} lane(s) held back deliberately, not dropped`,
+      ],
+      trial,
+      heldBack: LANES.filter((l) => l.key !== first.key).map((l) => l.key),
+    }
+  }
+  log(`TRIAL CONVERGED — dispatching the remaining ${LANES.length - 1} lane(s)`)
+  const rest = await parallel(LANES.filter((l) => l.key !== first.key).map((l) => () => runLane(l)))
+  results = [trial, ...rest]
+} else {
+  results = await parallel(LANES.map((l) => () => runLane(l)))
+}
 
 const out = results.filter(Boolean).map((r) => ({
   lane: r.lane.key,
