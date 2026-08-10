@@ -174,6 +174,13 @@ RESOURCE_CONFIG = {
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
         },
     },
+    # Unit tests include_str! the published contract at compile time to prove the
+    # evidenceReference schema matches validate_evidence_reference.
+    "console-logistics-rest": {
+        "external": {
+            "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
+        },
+    },
 }
 
 SQLX_MACRO_MARKERS = ("query!", "query_as!", "query_scalar!")
@@ -581,6 +588,13 @@ TEST_RESOURCE_REQUIREMENTS = {
         },
     },
     'console-logistics-domain': {
+        'unit': 'none',
+    },
+    'console-logistics-rest': {
+        # The POD contract-agreement tests are pure logic: they embed
+        # backend/openapi/openapi.yaml with include_str! at COMPILE time and compare the published
+        # evidenceReference schema against validate_evidence_reference. No database, and no runtime
+        # file read, so no resource -- the document is in the binary.
         'unit': 'none',
     },
     'console-messenger-adapter-postgres': {

@@ -1,6 +1,6 @@
 {
   "schema_version": "console-jurisdiction-register-v2",
-  "last_refreshed": "2026-07-28",
+  "last_refreshed": "2026-08-09",
   "target_jurisdiction_set": [
     "KR"
   ],
@@ -1026,5 +1026,5 @@
     "historical_implementation_freeze_ref": "refs/tags/archive/pre-pivot-implementation-freeze-2026-07-24",
     "candidate_evidence_status": "HOLD"
   },
-  "authority_train_note": "Refreshed with the wave-4 Phase-0 authority tip. No jurisdiction, control, or coverage claim changed in this commit — the statutory work landed this wave (근로기준법 §61 촉진 tracks) is recorded in its lane evidence, not asserted here."
+  "authority_train_note": "Refreshed with the PR #620 Buck RESOURCE_CONFIG finish authority tip (2026-08-09). No jurisdiction, control, or coverage claim changed in this commit \u2014 tip only records authority-train custody after the documentation-manifest rebind to the tip ledger blob."
 }

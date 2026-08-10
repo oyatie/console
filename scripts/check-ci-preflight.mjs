@@ -187,6 +187,11 @@ const domainUnitPackages = [
   "console-platform-auth",
   "console-platform-authz-rest",
   "console-workflow-runtime",
+  // The POD contract-agreement tests: pure #[test], no database. They embed
+  // backend/openapi/openapi.yaml with include_str! and assert the published
+  // evidenceReference schema agrees with validate_evidence_reference, so an
+  // enforced rule cannot drift from the published one without this job going red.
+  "console-logistics-rest",
 ]
 const domainUnitIntegrationInvocations = [
   ["console-attendance-application", ["attendance_policy"]],
@@ -566,7 +571,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Workflow test-runner credential literals", "npm run check:test-credentials"),
   ],
   "domain-unit": [
-    proofDigest("Domain crate unit tests", "e87c4c10d44fcf60d4dd2121f5fa28d422d4d24cad095a8103be156a33854360"),
+    proofDigest("Domain crate unit tests", "f06b5adfc19d774e0b6b106a3505359934bb021fb53e1359cf1bb018cc03d474"),
   ],
   backend: [
     setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh"),

@@ -311,6 +311,8 @@ fn validate_evidence_reference(reference: &str) -> Result<(), RestError> {
             "evidenceReference may contain only letters, digits, '.', '_', '/' and '-' after the scheme",
         ));
     }
+    // The class check above admits ASCII only, so bytes and characters agree by
+    // here; `chars()` is the unit migration 0212's `char_length` counts.
     let len = reference.chars().count();
     if !(19..=411).contains(&len) {
         return Err(invalid(
@@ -482,5 +484,355 @@ impl IntoResponse for RestError {
             Json(json!({"error":{"code":self.code,"message":self.message}})),
         )
             .into_response()
+    }
+}
+
+/// The published `evidenceReference` schema must be the rule the server enforces.
+///
+/// A client reads `openapi.yaml`; the server runs [`validate_evidence_reference`].
+/// When the published schema is WEAKER, a client builds a reference its own
+/// contract accepts and gets a 400 it had no way to predict. So this is not an
+/// "the field exists" assertion: it reads the rule OUT OF the published document,
+/// evaluates it, and compares the verdict against the validator on concrete
+/// references.
+///
+/// Nothing here restates 19, 411 or the character class. The published side is
+/// read from the YAML; the enforced side is DISCOVERED by probing the validator.
+/// A retyped bound would be a third spelling of one fact, agreeing with itself.
+///
+/// This is a WIRING claim about the deployed artifact, not a mechanism claim
+/// about a fixture: `backend/openapi/openapi.yaml` is `include_str!`-ed here and
+/// is the same file `console_app` `include_str!`s and serves at
+/// `/openapi/openapi.yaml`. There is no second copy that could agree while the
+/// served one drifts.
+#[cfg(test)]
+#[allow(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
+mod published_evidence_reference_contract {
+    use super::validate_evidence_reference;
+
+    const OPENAPI_YAML: &str = include_str!("../../../../openapi/openapi.yaml");
+
+    /// Upper bound of the length probe. This is a search limit, not the rule: a
+    /// window that does not close below it FAILS rather than reporting a bound.
+    const PROBE_CEILING: usize = 2048;
+
+    // -- what the document publishes -----------------------------------------
+
+    /// The `evidenceReference` property object published for `verifyLogisticsPod`.
+    ///
+    /// Every lookup failure is a panic rather than a `None`: finding nothing here
+    /// means this test examined zero subjects, and a control that examined zero
+    /// subjects must never report green.
+    fn published_property() -> &'static str {
+        // The trailing newline makes this the WHOLE operation id. Without it,
+        // `verifyLogisticsPodDraft` published earlier in the file would be read
+        // instead, and its schema would be compared in place of this one's.
+        const OPERATION: &str = "operationId: verifyLogisticsPod\n";
+        let mut hits = OPENAPI_YAML.match_indices(OPERATION);
+        let (at, _) = hits
+            .next()
+            .expect("openapi.yaml publishes no verifyLogisticsPod operation");
+        assert!(
+            hits.next().is_none(),
+            "openapi.yaml publishes verifyLogisticsPod more than once; this test would \
+             read only the first"
+        );
+        // Confine the read to this operation, so a neighbouring operation's
+        // evidenceReference can never be mistaken for this one's.
+        let after = &OPENAPI_YAML[at + OPERATION.len()..];
+        let block = &after[..after.find("operationId: ").unwrap_or(after.len())];
+        const KEY: &str = "evidenceReference: {";
+        let at = block
+            .find(KEY)
+            .expect("verifyLogisticsPod publishes no evidenceReference schema object");
+        let body = &block[at + KEY.len()..];
+        let end = body
+            .find('}')
+            .expect("the evidenceReference schema object is unterminated");
+        let property = &body[..end];
+        assert!(
+            !property.contains('{'),
+            "the evidenceReference schema nests objects this reader would truncate: {property}"
+        );
+        property
+    }
+
+    /// One value of a flow-style `key: '<value>'`.
+    fn quoted(property: &'static str, key: &str) -> Option<&'static str> {
+        let at = property.find(&format!("{key}: '"))? + key.len() + 3;
+        let rest = &property[at..];
+        Some(&rest[..rest.find('\'')?])
+    }
+
+    /// One value of a flow-style `key: <digits>`.
+    fn number(property: &str, key: &str) -> Option<usize> {
+        let at = property.find(&format!("{key}: "))? + key.len() + 2;
+        property[at..]
+            .chars()
+            .take_while(char::is_ascii_digit)
+            .collect::<String>()
+            .parse()
+            .ok()
+    }
+
+    // -- evaluating the published pattern -------------------------------------
+
+    /// `(literal prefix, character class)` of `^<literal>` or `^<literal>[<class>]+$`.
+    ///
+    /// A pattern outside that shape panics rather than being skipped: a published
+    /// rule this test cannot evaluate is a rule nothing compares against.
+    fn parse_pattern(pattern: &str) -> (&str, Option<&str>) {
+        const NON_LITERAL: [char; 7] = ['\\', '(', ')', '|', '*', '?', '+'];
+        let body = pattern
+            .strip_prefix('^')
+            .expect("the published pattern is not anchored at the start");
+        let Some((literal, tail)) = body.split_once('[') else {
+            assert!(
+                !body.contains(NON_LITERAL) && !body.contains('$'),
+                "published pattern {pattern} is outside the subset this test evaluates"
+            );
+            return (body, None);
+        };
+        assert!(
+            !literal.contains(NON_LITERAL),
+            "published pattern {pattern} has a non-literal prefix this test does not evaluate"
+        );
+        let (class, anchor) = tail
+            .split_once(']')
+            .expect("the published pattern has an unterminated character class");
+        assert_eq!(
+            anchor, "+$",
+            "published pattern {pattern} is outside the subset this test evaluates ([class]+$)"
+        );
+        (literal, Some(class))
+    }
+
+    /// Membership in an OpenAPI character class, `a-z` ranges expanded. A `-` with
+    /// no member after it is itself, which is exactly how this class ends. A `\`
+    /// escapes the member after it, so `[..._/\-]` and `[..._/-]` — the same class,
+    /// and the two spellings tooling emits for a trailing hyphen — read alike.
+    fn class_contains(class: &str, c: char) -> bool {
+        let members: Vec<char> = class.chars().collect();
+        let mut at = 0;
+        while at < members.len() {
+            if members[at] == '\\' {
+                if members.get(at + 1) == Some(&c) {
+                    return true;
+                }
+                at += 2;
+            } else if at + 2 < members.len() && members[at + 1] == '-' {
+                if (members[at]..=members[at + 2]).contains(&c) {
+                    return true;
+                }
+                at += 3;
+            } else {
+                if members[at] == c {
+                    return true;
+                }
+                at += 1;
+            }
+        }
+        false
+    }
+
+    /// Characters immediately outside each published range or singleton.
+    ///
+    /// Derived from the class text, so a widened edge (e.g. `A-Z` → `A-[`) is
+    /// exercised without restating the member list. Distant widenings still need
+    /// the non-ASCII probes in [`corpus`].
+    fn class_boundary_reps(class: &str) -> Vec<char> {
+        let members: Vec<char> = class.chars().collect();
+        let mut out = Vec::new();
+        let mut push_adjacent = |c: char| {
+            if let Some(before) = char::from_u32(u32::from(c).wrapping_sub(1)) {
+                out.push(before);
+            }
+            if let Some(after) = char::from_u32(u32::from(c) + 1) {
+                out.push(after);
+            }
+        };
+        let mut at = 0;
+        while at < members.len() {
+            if members[at] == '\\' {
+                if let Some(&escaped) = members.get(at + 1) {
+                    push_adjacent(escaped);
+                }
+                at += 2;
+            } else if at + 2 < members.len() && members[at + 1] == '-' {
+                push_adjacent(members[at]);
+                push_adjacent(members[at + 2]);
+                at += 3;
+            } else {
+                push_adjacent(members[at]);
+                at += 1;
+            }
+        }
+        out
+    }
+
+    fn matches_pattern(pattern: &str, candidate: &str) -> bool {
+        let (literal, class) = parse_pattern(pattern);
+        let Some(suffix) = candidate.strip_prefix(literal) else {
+            return false;
+        };
+        match class {
+            // JSON Schema `pattern` is an unanchored SEARCH and `^` anchors only
+            // the start, so a pattern that is nothing but `^<literal>` constrains
+            // NOTHING past the prefix. Treating it as if it did is what would let
+            // a weak published pattern pass this test.
+            None => true,
+            Some(class) => !suffix.is_empty() && suffix.chars().all(|c| class_contains(class, c)),
+        }
+    }
+
+    /// The constraint the document publishes, read out of the document.
+    struct Published {
+        pattern: &'static str,
+        min_len: Option<usize>,
+        max_len: Option<usize>,
+    }
+
+    impl Published {
+        fn read() -> Self {
+            let property = published_property();
+            Self {
+                pattern: quoted(property, "pattern")
+                    .expect("evidenceReference publishes no pattern"),
+                min_len: number(property, "minLength"),
+                max_len: number(property, "maxLength"),
+            }
+        }
+
+        /// `minLength`/`maxLength` count CHARACTERS of the WHOLE string, scheme
+        /// included. Publishing the suffix window instead would advertise a
+        /// contract that rejects references the server accepts.
+        fn accepts(&self, candidate: &str) -> bool {
+            let len = candidate.chars().count();
+            !self.min_len.is_some_and(|min| len < min)
+                && !self.max_len.is_some_and(|max| len > max)
+                && matches_pattern(self.pattern, candidate)
+        }
+    }
+
+    // -- what the server enforces ---------------------------------------------
+
+    /// An `n`-character reference under `scheme`, padded with a character any
+    /// plausible class admits.
+    fn reference_of_len(scheme: &str, n: usize) -> String {
+        format!("{scheme}{}", "a".repeat(n - scheme.chars().count()))
+    }
+
+    /// The length window `validate_evidence_reference` actually enforces,
+    /// discovered by asking it rather than by restating its bounds here.
+    fn enforced_window(scheme: &str) -> (usize, usize) {
+        let accepted: Vec<usize> = (scheme.chars().count()..=PROBE_CEILING)
+            .filter(|&n| validate_evidence_reference(&reference_of_len(scheme, n)).is_ok())
+            .collect();
+        let (Some(&min), Some(&max)) = (accepted.first(), accepted.last()) else {
+            panic!(
+                "the validator accepts no reference at all under the published scheme \
+                 {scheme:?}: this test examined zero subjects and must not pass"
+            )
+        };
+        assert_eq!(
+            accepted.len(),
+            max - min + 1,
+            "the enforced length window {min}..={max} has holes; this test assumes one window"
+        );
+        assert!(
+            max < PROBE_CEILING,
+            "the enforced length window does not close below {PROBE_CEILING}"
+        );
+        (min, max)
+    }
+
+    // -- the agreement ---------------------------------------------------------
+
+    /// References the published schema and the validator must classify the SAME
+    /// way. Every candidate is derived from the published scheme and the probed
+    /// window, so no bound is typed here and the corpus follows both sides.
+    fn corpus(scheme: &str, class: Option<&str>, min: usize, max: usize) -> Vec<(String, String)> {
+        let mut out: Vec<(String, String)> = [
+            (min - 1, "one character under the enforced floor"),
+            (min, "the enforced floor exactly"),
+            (max, "the enforced ceiling exactly"),
+            (max + 1, "one character over the enforced ceiling"),
+        ]
+        .into_iter()
+        .map(|(n, why)| {
+            (
+                reference_of_len(scheme, n),
+                format!("{why} ({n} characters)"),
+            )
+        })
+        .collect();
+
+        // The class dimension, SWEPT rather than sampled, at a length the window
+        // accepts so each verdict turns on the class alone. Latin-1 is enumerated
+        // totally; boundary representatives are derived from the published class
+        // (char immediately before/after each range endpoint or singleton); and a
+        // fixed non-ASCII set catches widenings that stay far from those edges
+        // (the reviewer's `中` example). Full Unicode enumeration remains out of
+        // scope for this unit test — tracked with console-5yn's independent-corpus
+        // work rather than as a third spelling of the class here.
+        let mut probes: Vec<char> = (0_u8..=0xff).map(char::from).collect();
+        if let Some(class) = class {
+            probes.extend(class_boundary_reps(class));
+        }
+        probes.extend(['각', 'é', '中', '\u{200b}', '\u{ff01}']);
+        probes.sort_unstable();
+        probes.dedup();
+        for c in probes {
+            let mut candidate = reference_of_len(scheme, min);
+            candidate.pop();
+            candidate.push(c);
+            out.push((
+                candidate,
+                format!("{c:?} in the suffix, at the floor length"),
+            ));
+        }
+
+        // Schemes. The third is legal — a leading `/` is inside the class — and is
+        // here so the corpus is not classified all one way.
+        for other in ["https://", "evidence:/", &format!("{scheme}/")] {
+            out.push((
+                reference_of_len(other, min),
+                format!("scheme {other:?} at the floor length"),
+            ));
+        }
+        out
+    }
+
+    #[test]
+    fn published_schema_and_validator_agree_on_concrete_references() {
+        let published = Published::read();
+        let (scheme, class) = parse_pattern(published.pattern);
+        let (min, max) = enforced_window(scheme);
+
+        let (mut accepted, mut rejected) = (0_usize, 0_usize);
+        for (candidate, why) in corpus(scheme, class, min, max) {
+            let enforced = validate_evidence_reference(&candidate).is_ok();
+            if enforced {
+                accepted += 1;
+            } else {
+                rejected += 1;
+            }
+            assert_eq!(
+                published.accepts(&candidate),
+                enforced,
+                "backend/openapi/openapi.yaml and validate_evidence_reference disagree on \
+                 {why}: published {{pattern: {:?}, minLength: {:?}, maxLength: {:?}}} \
+                 accepts={}, the server accepts={enforced}. Candidate: {candidate:?}",
+                published.pattern,
+                published.min_len,
+                published.max_len,
+                published.accepts(&candidate),
+            );
+        }
+        assert!(
+            accepted > 0 && rejected > 0,
+            "a corpus the validator classifies all one way agrees with anything: \
+             {accepted} accepted, {rejected} rejected"
+        );
     }
 }

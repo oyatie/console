@@ -289,7 +289,8 @@ jobs:
             -p console-kernel-core -p console-registry-rest -p console-reporting-rest \
             -p console-workflow-runtime-adapter-postgres -p console-workorder-rest \
             -p console-financial-domain -p console-identity-application -p console-integrity \
-            -p console-platform-auth -p console-platform-authz-rest -p console-workflow-runtime
+            -p console-platform-auth -p console-platform-authz-rest -p console-workflow-runtime \
+            -p console-logistics-rest
           # Doc tests, same step so no new step name has to be declared anywhere.
           # `compile_fail` doctests are the only artifact that can hold a NEGATIVE
           # type-boundary claim ("this must not compile"), and they execute nowhere

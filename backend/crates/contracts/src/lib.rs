@@ -12,11 +12,61 @@
 //! * **Output is a function of the fragment set.** Keys are emitted in sorted
 //!   order and bodies are re-indented from scratch, so the bytes do not depend
 //!   on registration order or on how an author indented a raw string.
-//! * **Every schema `$ref` resolves.** A ref whose target no fragment defines
-//!   and no fragment declares external is a [`DanglingRef`]; a target that is
-//!   not an OpenAPI component key at all is a [`MalformedRef`]. Without this, a
-//!   schema deleted from a fragment is silent: the paths keep pointing at it
-//!   and the composed document simply loses the definition.
+//! * **Every `$ref` this scanner SEES points into this document, and every
+//!   schema `$ref` it sees resolves.** Read the qualifier: this is a text scan,
+//!   not a parse, so it is total over the positions it covers and NOT over YAML.
+//!   The positions it does not cover are named at the end of this list, with the
+//!   reason they are still open. An earlier revision stated this bullet without
+//!   the qualifier, which made it a false claim about a control rather than a
+//!   description of one — the failure mode this crate exists to prevent in
+//!   published contracts, committed in its own module doc. A `$ref` value that
+//!   is not exactly
+//!   `#/components/<section>/<key>` — a foreign file or URL, a nested JSON
+//!   pointer, a missing target, a `#/definitions/…` pointer, a typo anywhere in
+//!   the pointer — is an [`UnresolvableRef`]; one that is well formed but names
+//!   a schema no fragment defines and no fragment declares external is a
+//!   [`DanglingRef`]. Without this, a schema deleted from a fragment is silent:
+//!   the paths keep pointing at it and the composed document simply loses the
+//!   definition.
+//!
+//! **WHAT THIS SCANNER STILL MISSES, measured rather than assumed.** Adversarial
+//! review of the two-axis rule proved four positions still fail open, and they
+//! are recorded here because a gap nobody wrote down is a gap the next reader
+//! believes is closed:
+//!
+//!   * a `$ref` written in YAML **flow style** (`{ $ref: "..." }`), including the
+//!     foreign-URL case this check exists to close;
+//!   * a quoted `$ref` whose pointer contains an **internal space**, which
+//!     truncates to a resolvable prefix and composes clean — the `Todo-Summary`
+//!     prefix trap this crate has a dedicated test for;
+//!   * an OpenAPI 3.1 `discriminator.mapping` value in the implicit
+//!     **schema-NAME** form (`gone: Ghost`), which carries no pointer to find;
+//!   * a foreign prefix ending in `{ } [ ] ,`, which the backward scan treats as
+//!     a scalar delimiter even though those are legal inside a quoted YAML scalar.
+//!
+//! These are not oversights to patch one at a time — that is the enumeration
+//! this revision already replaced twice. **Two text scans cannot be total over
+//! YAML.** The total primitive is parsing the fragment body and walking every
+//! scalar, which needs a YAML crate; this crate has ZERO dependencies today, so
+//! that is a decision about the layer's dependency surface and its Buck
+//! vendoring, not a change a lane can make inside this file. Until it is made,
+//! this scanner is a strict improvement over matching a bare substring and is
+//! NOT a guarantee.
+//!
+//! The rule is stated over two axes at once, because a reference has two parts
+//! and keying the check on either alone is a fail-open the other catches: every
+//! `#/components/…` POINTER is checked wherever it is written — after a `$ref`
+//! of any spelling, or as a bare `discriminator.mapping` value, which carries
+//! no `$ref` key at all — and every block `$ref:` ENTRY is checked whatever it
+//! points at, which is how a ref carrying no pointer to find (`Todo.yaml`,
+//! `#/definitions/X`) is seen. This is two text scans and not a YAML parse, so
+//! it is not total over YAML; `ref_values` names the gap the two leave.
+//!
+//! What a fragment alone cannot settle is whether a well-formed pointer into a
+//! section [`Fragment`] does not model — `responses`, `parameters`, … — has a
+//! target: the published document supplies those sections and [`compose`]
+//! cannot see it, so those refs are checked for shape and then accepted. Only
+//! `schemas` is resolved.
 //!
 //! Fragment bodies are raw YAML text rather than a typed model: the faces
 //! already author this YAML by hand, and a typed re-implementation of OpenAPI
@@ -142,33 +192,62 @@ impl fmt::Display for DanglingRef {
 
 impl std::error::Error for DanglingRef {}
 
-/// A `$ref` whose target is not an OpenAPI component key, so it can never name
-/// a schema: an empty target, or one carrying a nested JSON pointer.
+/// A reference the composed document cannot follow, whatever the fragment set
+/// contains: anything that is not exactly `#/components/<section>/<key>` with a
+/// section OpenAPI defines and a legal component key.
+///
+/// One error rather than one per spelling, because they are one defect. A file
+/// or URL prefix, a nested JSON pointer, a missing target, a `#/definitions/…`
+/// pointer and a typo of `components` or of a section name are all the same
+/// thing: a pointer into something that is not this document.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MalformedRef {
-    pub target: String,
+pub struct UnresolvableRef {
+    /// The reference exactly as authored, quotes stripped. From a `$ref` value
+    /// or from any other position a pointer is written, such as a
+    /// `discriminator.mapping` entry.
+    pub value: String,
     /// Crate whose fragment body contains the ref.
     pub source: &'static str,
 }
 
-impl fmt::Display for MalformedRef {
+impl fmt::Display for UnresolvableRef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{} refs '#/components/schemas/{}', whose target is not an OpenAPI \
-             component key (`[A-Za-z0-9._-]+`)",
-            self.source, self.target
+            "{} writes the reference `{}`, which the composed document cannot \
+             follow: a reference must be exactly '#/components/<section>/<key>', \
+             where <section> is one of {} and <key> matches `[A-Za-z0-9._-]+`",
+            self.source,
+            self.value,
+            COMPONENT_SECTIONS.join(", ")
         )
     }
 }
 
-impl std::error::Error for MalformedRef {}
+impl std::error::Error for UnresolvableRef {}
+
+/// The component sections OpenAPI 3.1 defines, which is the version
+/// `backend/openapi/openapi.yaml` declares. Closed by the specification rather
+/// than by observation: a section a later OpenAPI version adds is rejected
+/// until it is listed here, which is the fail-closed direction.
+const COMPONENT_SECTIONS: [&str; 10] = [
+    "callbacks",
+    "examples",
+    "headers",
+    "links",
+    "parameters",
+    "pathItems",
+    "requestBodies",
+    "responses",
+    "schemas",
+    "securitySchemes",
+];
 
 /// Everything wrong with one composition run.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ComposeError {
     pub duplicates: Vec<DuplicateKey>,
-    pub malformed: Vec<MalformedRef>,
+    pub unresolvable: Vec<UnresolvableRef>,
     pub dangling: Vec<DanglingRef>,
 }
 
@@ -178,8 +257,8 @@ impl fmt::Display for ComposeError {
         for duplicate in &self.duplicates {
             write!(f, "\n  {duplicate}")?;
         }
-        for malformed in &self.malformed {
-            write!(f, "\n  {malformed}")?;
+        for unresolvable in &self.unresolvable {
+            write!(f, "\n  {unresolvable}")?;
         }
         for dangling in &self.dangling {
             write!(f, "\n  {dangling}")?;
@@ -257,13 +336,13 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
         // Ref resolution needs the complete schema set, which a collision denies.
         return Err(ComposeError {
             duplicates,
-            malformed: Vec::new(),
+            unresolvable: Vec::new(),
             dangling: Vec::new(),
         });
     }
 
     let mut known: BTreeSet<&str> = schemas.keys().copied().collect();
-    let mut malformed = Vec::new();
+    let mut unresolvable = Vec::new();
     let mut dangling = Vec::new();
     for fragment in fragments {
         known.extend(fragment.external_schemas.iter().copied());
@@ -274,24 +353,30 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
             .iter()
             .flat_map(|item| item.operations.iter().map(|operation| operation.body))
             .chain(fragment.schemas.iter().map(|schema| schema.body));
-        for target in bodies.flat_map(schema_refs) {
-            if !is_component_key(target) {
-                malformed.push(MalformedRef {
-                    target: target.to_owned(),
+        for value in bodies.flat_map(ref_values) {
+            let Some((section, key)) = component_ref(value) else {
+                unresolvable.push(UnresolvableRef {
+                    value: value.to_owned(),
                     source: fragment.source,
                 });
-            } else if !known.contains(target) {
+                continue;
+            };
+            // A section OpenAPI defines but `Fragment` does not model —
+            // `responses`, `parameters`, … — is resolved by the published
+            // document, which `compose` cannot see. The pointer is still known
+            // to be well formed, which is all a fragment alone can settle.
+            if section == "schemas" && !known.contains(key) {
                 dangling.push(DanglingRef {
-                    schema: target.to_owned(),
+                    schema: key.to_owned(),
                     source: fragment.source,
                 });
             }
         }
     }
-    if !malformed.is_empty() || !dangling.is_empty() {
+    if !unresolvable.is_empty() || !dangling.is_empty() {
         return Err(ComposeError {
             duplicates,
-            malformed,
+            unresolvable,
             dangling,
         });
     }
@@ -316,36 +401,144 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
     Ok(out)
 }
 
-/// Every `#/components/schemas/…` target named in `body`, whole.
+/// Every `#/components/schemas/…` key `body` names, from every position a
+/// pointer is written — including a `discriminator.mapping` value, which is a
+/// schema edge with no `$ref` key on it, so a closure walked with this does not
+/// drop the subtypes of a discriminated union.
 ///
-/// A target runs to the YAML token that ends the scalar it sits in — a quote,
-/// whitespace, or a flow-collection delimiter — NOT to the first character
-/// outside `[A-Za-z0-9_]`. Component keys are `[A-Za-z0-9._-]+`, so stopping
-/// at `.` or `-` would silently resolve `Todo-Summary` against `Todo`.
-/// Anything left that is not a component key is reported by [`compose`] as a
-/// [`MalformedRef`] rather than resolved.
+/// Refs into other component sections (`responses`, …) are NOT yielded: they
+/// are component references but not schema ones, and [`Fragment`] models only
+/// schemas. A caller walking a transitive `$ref` closure with this therefore
+/// stops at the boundary of a non-schema component and never enters its body —
+/// which is what `console_todos_rest`'s drift test does.
 ///
-/// Refs into other component sections (`responses`, …) are not modelled by
-/// [`Fragment`] and so are not resolvable here.
+/// Neither is anything [`component_ref`] rejects, since such a value names no
+/// schema to walk to. This is a resolver, not the control: [`compose`] is what
+/// REPORTS an unfollowable `$ref`, and it is the only thing that runs over a
+/// fragment before it is published.
 ///
 /// Public so a face's drift test can walk the PUBLISHED document with the same
 /// parser [`compose`] uses; a second ref parser in a test is a second source of
 /// truth about what a ref is.
 pub fn schema_refs(body: &str) -> impl Iterator<Item = &str> {
-    body.split("#/components/schemas/").skip(1).map(|rest| {
-        let end = rest
-            .find(|c: char| c.is_whitespace() || matches!(c, '\'' | '"' | ',' | ']' | '}'))
-            .unwrap_or(rest.len());
-        &rest[..end]
+    ref_values(body).filter_map(|value| match component_ref(value) {
+        Some(("schemas", key)) => Some(key),
+        _ => None,
     })
 }
 
-/// Whether `target` is an OpenAPI component key: `^[a-zA-Z0-9._-]+$`.
-fn is_component_key(target: &str) -> bool {
-    !target.is_empty()
-        && target
+/// Every reference `body` writes, in document order: first every pointer-shaped
+/// scalar, then every block `$ref:` entry whose value carries no pointer.
+///
+/// Two scans because neither position contains the other, and keying the check
+/// on either one alone is a fail-open that the other catches:
+///
+/// * [`pointer_scalars`] is stated over the VALUE and is therefore blind to no
+///   key. A `#/components/…` pointer is not written only after a `$ref` key: a
+///   `discriminator.mapping` value is a bare pointer with no `$ref` anywhere
+///   near it, and `backend/openapi/openapi.yaml` publishes 27 of those across
+///   its 7 `mapping:` blocks today. Neither
+///   is `$ref` written only one way — `"$ref":`, `'$ref':` and `$ref :` are all
+///   legal YAML and a JSON-converted spec produces the first.
+/// * [`ref_entry_values`] is stated over the KEY and is therefore blind to no
+///   value. It is the only way to see a ref that contains no `#/components/`
+///   pointer to find: `Todo.yaml`, `#/definitions/Todo`, a typo of `components`
+///   one segment to the LEFT of the section name.
+///
+/// The filter is what keeps the two from double-reporting one ref: anything
+/// carrying a pointer is already reported, whole, by the first scan.
+///
+/// NOT total over YAML — two text scans cannot be, and the only total answer is
+/// a YAML parser, which is a dependency this crate does not have. What is total
+/// is each scan over its own axis: every pointer-shaped scalar is checked in
+/// every key position, and every block `$ref:` entry is checked whatever its
+/// value. The gap left is their intersection's complement: a `$ref` written
+/// inside a flow mapping or continued onto the next line AND carrying no
+/// `#/components/` pointer — `[{$ref: Todo.yaml}]` — which no fragment writes
+/// today and which `component_ref` would reject if it were seen.
+fn ref_values(body: &str) -> impl Iterator<Item = &str> {
+    pointer_scalars(body)
+        .chain(ref_entry_values(body).filter(|value| !value.contains("#/components/")))
+}
+
+/// Every scalar in `body` containing `#/components/`, yielded WHOLE.
+///
+/// Whole, not from the `#/` onwards, because the prefix is the defect in
+/// `common.yaml#/components/schemas/Uuid`: reporting only the tail resolves a
+/// foreign-host pointer against the local schema set and publishes it verbatim
+/// into every generated client.
+///
+/// A scalar runs between the YAML tokens that delimit it — a quote, whitespace
+/// or a flow-collection delimiter — and NOT to the first character outside
+/// `[A-Za-z0-9_]`: component keys are `[A-Za-z0-9._-]+`, so stopping at `.` or
+/// `-` would silently resolve `Todo-Summary` against `Todo`.
+fn pointer_scalars(body: &str) -> impl Iterator<Item = &str> {
+    fn delimits_a_scalar(c: char) -> bool {
+        c.is_whitespace() || matches!(c, '\'' | '"' | ',' | '[' | ']' | '{' | '}')
+    }
+    body.match_indices("#/components/").map(|(at, _)| {
+        let start = body[..at]
+            .char_indices()
+            .rev()
+            .find(|(_, c)| delimits_a_scalar(*c))
+            .map_or(0, |(index, c)| index + c.len_utf8());
+        let end = body[at..]
+            .find(delimits_a_scalar)
+            .map_or(body.len(), |offset| at + offset);
+        &body[start..end]
+    })
+}
+
+/// The value of every block `$ref:` mapping entry in `body`, quotes stripped.
+///
+/// The key must OPEN its line, after indentation, `- ` sequence markers and an
+/// optional quote around the key itself. That is what separates a reference
+/// from a description that happens to contain the characters `$ref:`, which is
+/// prose and must compose.
+///
+/// A `$ref:` with nothing after it on the line yields nothing rather than an
+/// empty value: the value is on a following line, where [`pointer_scalars`]
+/// sees it, and reporting `` `$ref: ` `` names no ref an author could find.
+fn ref_entry_values(body: &str) -> impl Iterator<Item = &str> {
+    body.lines().filter_map(|line| {
+        let mut head = line.trim_start();
+        while let Some(rest) = head.strip_prefix("- ") {
+            head = rest.trim_start();
+        }
+        let head = head.strip_prefix(['\'', '"']).unwrap_or(head);
+        let rest = head.strip_prefix("$ref")?;
+        let rest = rest.strip_prefix(['\'', '"']).unwrap_or(rest);
+        let value = rest.trim_start().strip_prefix(':')?.trim();
+        let value = match value.chars().next() {
+            Some(quote @ ('\'' | '"')) => value[quote.len_utf8()..]
+                .split_once(quote)
+                .map_or(&value[quote.len_utf8()..], |(inner, _)| inner),
+            _ => {
+                let end = value
+                    .find(|c: char| c.is_whitespace() || matches!(c, ',' | ']' | '}'))
+                    .unwrap_or(value.len());
+                &value[..end]
+            }
+        };
+        (!value.is_empty()).then_some(value)
+    })
+}
+
+/// The `(section, key)` a `$ref` value names, or `None` when the composed
+/// document cannot follow it.
+///
+/// Total over the value rather than over one segment of it: the value must be
+/// EXACTLY `#/components/<section>/<key>`, so a file or URL prefix, a nested
+/// JSON pointer, a missing target, a foreign pointer dialect and a typo
+/// anywhere in the pointer all fail here, by the same rule, without anyone
+/// enumerating them.
+fn component_ref(value: &str) -> Option<(&str, &str)> {
+    let (section, key) = value.strip_prefix("#/components/")?.split_once('/')?;
+    let key_is_a_component_key = !key.is_empty()
+        && key
             .chars()
-            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_'))
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_'));
+    (COMPONENT_SECTIONS.contains(&section) && key_is_a_component_key).then_some((section, key))
 }
 
 /// Re-emit `body` at exactly `indent` spaces: strip blank leading/trailing
