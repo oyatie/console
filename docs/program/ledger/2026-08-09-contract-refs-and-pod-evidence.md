@@ -5,6 +5,34 @@
 **Scope:** `backend/crates/contracts/`, `backend/crates/logistics/rest/`, and one schema property in
 `backend/openapi/openapi.yaml`.
 **Not product authority.** Clears no HOLD. No migration, no new dependency, no production promotion.
+**Head SHA (reviewed tip before finish):** `c6dea4d2075e42b0e4c3006e8a1809c5f646c367`
+**Review identities:** Codex connector automated review on PR #620 (7 threads); Cursor-native
+finish/self-critic lane on worktree `console-integration` (no CLI critic wrapper).
+
+## Lane delivery evidence
+
+Recorded separately for each lane because AGENTS.md binds review and recovery to the exact
+candidate. Shared CI/Buck wiring that landed with this tip is listed once under Verification.
+
+### `console-qjb` (contracts `$ref` composition)
+
+| Field | Record |
+|---|---|
+| Pre-mortem | A `$ref` typo that names a non-existent component section composes clean and ships into the published contract; clients and generators follow a pointer that resolves nowhere. |
+| Blast radius | `backend/crates/contracts/` only for mechanism; compose callers that embed fragments (todos face drift test keeps `schema_refs` signature). No migration, no OpenAPI property change from this lane. |
+| Detection | `cargo test -p console-contracts` — compose suite rejects `#/components/schema/Todo` and the six "points somewhere else" spellings; drift gate still green. |
+| Rollback | Revert the contracts commits on this branch; published OpenAPI and logistics crate unchanged by this lane alone. |
+| Stop conditions | Widening to reject well-formed refs into `responses`/`parameters` (nine live todos refs); adding a YAML dependency to `console-contracts` without a layer decision (`console-ann`). |
+
+### `console-jf3` (POD evidenceReference publication)
+
+| Field | Record |
+|---|---|
+| Pre-mortem | Clients read `pattern: '^evidence://'` while the server and migration 0212 reject outside `[A-Za-z0-9._/-]` and length 19..=411 — predictable 400s invisible from the contract. |
+| Blast radius | One schema property in `backend/openapi/openapi.yaml`; unit tests in `backend/crates/logistics/rest/`; CI domain-unit wiring + Buck resource metadata so the new test actually builds and runs. |
+| Detection | `cargo test -p console-logistics-rest --lib` — `published_schema_and_validator_agree_on_concrete_references` (1 passed); oracle proved RED by reverting to weak `^evidence://`. |
+| Rollback | Revert the logistics/OpenAPI/CI/Buck commits; constants 19/411/class remain in validator + migration 0212 until republished together. |
+| Stop conditions | Retyping 19/411/class into a fourth site; claiming `check:ci-preflight` inherited while `ci.yml` changed; full Unicode class enumeration or YAML-parser `$ref` totality without the tracked beads (`console-5yn`, `console-ann`). |
 
 ## Summary
 
@@ -81,7 +109,8 @@ Executed, with results:
 | Command | Result |
 |---|---|
 | `cargo test -p console-contracts` | 30 passed, 0 failed |
-| `cargo test -p console-logistics-rest --lib` | 1 passed, 0 failed |
+| `cargo test -p console-logistics-rest --lib` | 1 passed, 0 failed — discovered 1 lib test (`published_schema_and_validator_agree_on_concrete_references`), executed 1 |
+| `python3 tools/buck/gen_first_party.py` then `buck2 build //backend/crates/logistics/rest:console-logistics-rest-unit` | BUCK regenerates with `//backend/openapi:openapi.yaml` external on library + unit; **BUILD SUCCEEDED** (build id `0ffef5a1-81ea-4d6b-b0f0-a949c26fe61a`) |
 | `npm run check:ci-preflight` | PASS |
 | `node --test scripts/check-ci-preflight.test.mjs` | 53 passed, 0 failed |
 | `npm run check:executed-tests` | PASS — the new binary reachable, not exempted |

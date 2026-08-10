@@ -635,6 +635,41 @@ mod published_evidence_reference_contract {
         false
     }
 
+    /// Characters immediately outside each published range or singleton.
+    ///
+    /// Derived from the class text, so a widened edge (e.g. `A-Z` → `A-[`) is
+    /// exercised without restating the member list. Distant widenings still need
+    /// the non-ASCII probes in [`corpus`].
+    fn class_boundary_reps(class: &str) -> Vec<char> {
+        let members: Vec<char> = class.chars().collect();
+        let mut out = Vec::new();
+        let mut push_adjacent = |c: char| {
+            if let Some(before) = char::from_u32(u32::from(c).wrapping_sub(1)) {
+                out.push(before);
+            }
+            if let Some(after) = char::from_u32(u32::from(c) + 1) {
+                out.push(after);
+            }
+        };
+        let mut at = 0;
+        while at < members.len() {
+            if members[at] == '\\' {
+                if let Some(&escaped) = members.get(at + 1) {
+                    push_adjacent(escaped);
+                }
+                at += 2;
+            } else if at + 2 < members.len() && members[at + 1] == '-' {
+                push_adjacent(members[at]);
+                push_adjacent(members[at + 2]);
+                at += 3;
+            } else {
+                push_adjacent(members[at]);
+                at += 1;
+            }
+        }
+        out
+    }
+
     fn matches_pattern(pattern: &str, candidate: &str) -> bool {
         let (literal, class) = parse_pattern(pattern);
         let Some(suffix) = candidate.strip_prefix(literal) else {
@@ -666,11 +701,6 @@ mod published_evidence_reference_contract {
                 min_len: number(property, "minLength"),
                 max_len: number(property, "maxLength"),
             }
-        }
-
-        /// The scheme the published pattern requires, taken from the pattern.
-        fn scheme(&self) -> &'static str {
-            parse_pattern(self.pattern).0
         }
 
         /// `minLength`/`maxLength` count CHARACTERS of the WHOLE string, scheme
@@ -721,7 +751,7 @@ mod published_evidence_reference_contract {
     /// References the published schema and the validator must classify the SAME
     /// way. Every candidate is derived from the published scheme and the probed
     /// window, so no bound is typed here and the corpus follows both sides.
-    fn corpus(scheme: &str, min: usize, max: usize) -> Vec<(String, String)> {
+    fn corpus(scheme: &str, class: Option<&str>, min: usize, max: usize) -> Vec<(String, String)> {
         let mut out: Vec<(String, String)> = [
             (min - 1, "one character under the enforced floor"),
             (min, "the enforced floor exactly"),
@@ -738,11 +768,21 @@ mod published_evidence_reference_contract {
         .collect();
 
         // The class dimension, SWEPT rather than sampled, at a length the window
-        // accepts so each verdict turns on the class alone. A hand-picked list of
-        // excluded characters is invisible to drift in both directions for every
-        // character it forgot; the length dimension above is already probed
-        // totally, and this is the same shape.
-        for c in (0_u8..=0x7f).map(char::from).chain(['각', 'é', '\u{200b}']) {
+        // accepts so each verdict turns on the class alone. Latin-1 is enumerated
+        // totally; boundary representatives are derived from the published class
+        // (char immediately before/after each range endpoint or singleton); and a
+        // fixed non-ASCII set catches widenings that stay far from those edges
+        // (the reviewer's `中` example). Full Unicode enumeration remains out of
+        // scope for this unit test — tracked with console-5yn's independent-corpus
+        // work rather than as a third spelling of the class here.
+        let mut probes: Vec<char> = (0_u8..=0xff).map(char::from).collect();
+        if let Some(class) = class {
+            probes.extend(class_boundary_reps(class));
+        }
+        probes.extend(['각', 'é', '中', '\u{200b}', '\u{ff01}']);
+        probes.sort_unstable();
+        probes.dedup();
+        for c in probes {
             let mut candidate = reference_of_len(scheme, min);
             candidate.pop();
             candidate.push(c);
@@ -766,11 +806,11 @@ mod published_evidence_reference_contract {
     #[test]
     fn published_schema_and_validator_agree_on_concrete_references() {
         let published = Published::read();
-        let scheme = published.scheme();
+        let (scheme, class) = parse_pattern(published.pattern);
         let (min, max) = enforced_window(scheme);
 
         let (mut accepted, mut rejected) = (0_usize, 0_usize);
-        for (candidate, why) in corpus(scheme, min, max) {
+        for (candidate, why) in corpus(scheme, class, min, max) {
             let enforced = validate_evidence_reference(&candidate).is_ok();
             if enforced {
                 accepted += 1;

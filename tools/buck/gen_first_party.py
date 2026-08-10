@@ -174,6 +174,13 @@ RESOURCE_CONFIG = {
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
         },
     },
+    # Unit tests include_str! the published contract at compile time to prove the
+    # evidenceReference schema matches validate_evidence_reference.
+    "console-logistics-rest": {
+        "external": {
+            "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
+        },
+    },
 }
 
 SQLX_MACRO_MARKERS = ("query!", "query_as!", "query_scalar!")

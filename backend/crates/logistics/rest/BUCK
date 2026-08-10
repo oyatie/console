@@ -10,7 +10,9 @@ export_file(
 
 rust_library(
     name = "console-logistics-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/logistics/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/logistics/rest", glob(["src/**/*.rs"]), external = {
+        "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
+    }),
     crate = "console_logistics_rest",
     edition = "2024",
     crate_root = "backend/crates/logistics/rest/src/lib.rs",
@@ -32,7 +34,9 @@ rust_library(
 
 rust_test(
     name = "console-logistics-rest-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/logistics/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/logistics/rest", glob(["src/**/*.rs"]), external = {
+        "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
+    }),
     crate = "console_logistics_rest",
     edition = "2024",
     crate_root = "backend/crates/logistics/rest/src/lib.rs",
