@@ -333,6 +333,22 @@ console-platform-push = { path = "crates/platform/push" }
 console-platform-email = { path = "crates/platform/email" }
 console-platform-test-support = { path = "crates/platform/test-support" }
 
+# Version taken from the already-resolved backend/Cargo.lock (syn 2.0.117), not
+# from training data: syn is long-standing transitive graph via the derive
+# macros, so the resolver has already verified this version against the registry
+# for this lockfile. Reindeer already builds it as the private target `syn-2`.
+#
+# Direct dependency for backend/ci/gates/writer-ownership ONLY. That gate must
+# decide which Rust items are compiled into production builds, and four
+# consecutive review rounds proved a hand-written answer cannot: a brace counter
+# was defeated by `} // end tests`, then by `use path::{A, B}`, then by a char
+# literal `'{'`, a block comment and a raw string; a hand-written cfg predicate
+# was defeated by `not(all(test))` and then by `any(test, feature = "x")`, which
+# is TRUE in production builds. Each fix was correct and each left a sibling
+# spelling live. Parsing Rust with the parser rustc's own ecosystem uses ends
+# the enumeration instead of extending it.
+syn = { version = "2.0.117", default-features = false, features = ["full", "parsing", "printing", "clone-impls", "visit"] }
+
 [workspace.lints.rust]
 unsafe_code = "forbid"
 

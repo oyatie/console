@@ -1026,5 +1026,5 @@
     "historical_implementation_freeze_ref": "refs/tags/archive/pre-pivot-implementation-freeze-2026-07-24",
     "candidate_evidence_status": "HOLD"
   },
-  "authority_train_note": "Refreshed with the PR #619 harness fail-closed / nonempty-commands authority tip (2026-08-10). No jurisdiction, control, or coverage claim changed in this commit - tip only records authority-train custody after the documentation-manifest rebind to the tip ledger blob."
+  "authority_train_note": "Refreshed with the PR #618 P4 canonical-ports / writer-ownership authority tip (2026-08-10). No jurisdiction, control, or coverage claim changed in this commit - tip only records authority-train custody after the documentation-manifest rebind to the tip ledger blob."
 }

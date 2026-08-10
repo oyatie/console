@@ -17,9 +17,9 @@ use console_notifications_domain::NotificationLink;
 use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use console_workflow_domain::{
     FinalizeWaitingTaskCommand, FinalizeWaitingTaskContext, FinalizedWaitingTask, NewRun,
-    NodeStepCommit, PortFuture, PostFinalizationRejection, PostFinalizationRejectionCommand,
-    RunRecord, RunStatus, RunTerminalTimestamp, RunTransition, WaitingTaskStatus,
-    WorkflowRuntimePort,
+    NodeStepCommit, PayrollDraftStaging, PortFuture, PostFinalizationRejection,
+    PostFinalizationRejectionCommand, RunRecord, RunStatus, RunTerminalTimestamp, RunTransition,
+    StagePayrollDraft, WaitingTaskStatus, WorkflowRuntimePort,
 };
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
@@ -724,131 +724,201 @@ impl PgWorkflowRuntimeStore {
     }
 
     /// STEP 5 — drain up to `limit` PENDING/FAILED JOB payroll outbox events for
-    /// `org` in ONE `with_audits` transaction (design §F). For each event claimed
-    /// with `FOR UPDATE SKIP LOCKED` (matching the partial index
-    /// `idx_workflow_outbox_events_pending`) this idempotently stages the
-    /// `payroll_draft_runs` row — keyed on the deterministic per-run natural key
-    /// `workflow_runtime_m2:run:{run_id}` with `ON CONFLICT DO NOTHING`, landing
-    /// `BLOCKED_LEGAL_GATE` with `calculation_enabled = FALSE` (the column
-    /// default) so nothing calculates without the legal gate — marks the event
-    /// `DELIVERED` (0078 requires `delivered_at`), and lands one
-    /// `workflow_runtime.outbox_drain` audit row. All three writes share the one
-    /// txn, so a failure rolls every one back and leaves the event PENDING for a
-    /// later retry; a replay claims nothing (the event is DELIVERED) and the
-    /// draft's natural key collides, so it is an exactly-once no-op. Returns the
-    /// number of payroll drafts actually created.
+    /// `org` (design §F). For each claimed event this idempotently stages the
+    /// `payroll_draft_runs` row THROUGH THE OWNER — keyed on the deterministic
+    /// per-run natural key `workflow_runtime_m2:run:{run_id}` with
+    /// `ON CONFLICT DO NOTHING`, landing `BLOCKED_LEGAL_GATE` with
+    /// `calculation_enabled = FALSE` (the column default) so nothing calculates
+    /// without the legal gate — then marks the event `DELIVERED` (0078 requires
+    /// `delivered_at`) and lands one `workflow_runtime.outbox_drain` audit row.
+    /// Returns the number of payroll drafts actually created.
+    ///
+    /// # This crate no longer writes `payroll_draft_runs`
+    ///
+    /// It is `ObjectKey::PayRun`'s table and
+    /// `console-payroll-adapter-postgres` is the contract's named owner, so the
+    /// `INSERT` that used to be here now lives there, in
+    /// `pay_run::stage_draft_run_in_tx`, and this drain reaches it through
+    /// [`PayrollDraftStaging`] — a port declared in `console-workflow-domain`
+    /// because the layer-boundary gate forbids one adapter crate depending on
+    /// another. `console-app` wires the implementer in, exactly as it wires the
+    /// [`NotificationSink`] the compensation bridge below uses.
+    ///
+    /// # Three phases, and why the ORDER is the safety argument
+    ///
+    /// The staging write belongs to another transaction now, so the drain is
+    /// staged-then-acked rather than all-in-one:
+    ///
+    /// 1. claim the due events and apply the freeze-window gate, in ONE read
+    ///    transaction that is CLOSED before any owner call — a cross-crate write
+    ///    performed while this connection still held a transaction open would
+    ///    make the drain a two-connection operation and is how a bounded pool
+    ///    deadlocks;
+    /// 2. stage each draft through the owner. Idempotent on the natural key;
+    /// 3. ack + audit the events that staged, re-claiming with
+    ///    `FOR UPDATE SKIP LOCKED` and acking only rows still `PENDING`/`FAILED`,
+    ///    so a concurrent drainer that raced through phase 1 on the same event
+    ///    lands neither a second ack nor a second audit row.
+    ///
+    /// A crash between 2 and 3 leaves the event `PENDING`: the next tick
+    /// re-claims it, the restage collides on the natural key and returns
+    /// `false`, and the ack lands. No draft is doubled and none is lost. The
+    /// reverse order would be the unsafe one — acking first can lose a draft
+    /// forever — which is why staging comes first. What is genuinely given up is
+    /// "the draft and its ack roll back together"; the natural key was always
+    /// the exactly-once mechanism, and this is the identical trade
+    /// [`Self::drain_notification_outbox`] documents below.
     // console-gate: state-changing-handler
     pub async fn drain_payroll_job_outbox(
         &self,
         org: OrgId,
         limit: i64,
+        staging: &dyn PayrollDraftStaging,
     ) -> Result<u64, KernelError> {
-        with_audits::<_, u64, PgWorkflowRuntimeError>(&self.pool, org, move |tx| {
-            Box::pin(async move {
-                // Claim due JOB payroll events. The lease is the row lock itself
-                // (FOR UPDATE SKIP LOCKED); a competing drainer skips a held row.
-                let claimed = sqlx::query(
-                    "SELECT id, run_id \
-                     FROM workflow_outbox_events \
-                     WHERE channel = 'JOB' \
-                       AND payload->>'job' = 'payroll_draft' \
-                       AND status IN ('PENDING', 'FAILED') \
-                       AND coalesce(next_attempt_at, created_at) <= now() \
-                     ORDER BY created_at \
-                     FOR UPDATE SKIP LOCKED \
-                     LIMIT $1",
-                )
-                .bind(limit)
-                .fetch_all(tx.as_mut())
-                .await
-                .map_err(PgWorkflowRuntimeError::from)?;
-
-                let mut created: u64 = 0;
-                let mut audit_events: Vec<AuditEvent> = Vec::with_capacity(claimed.len());
-
-                for row in &claimed {
-                    let event_id: Uuid = row.try_get("id")?;
-                    let run_id: Uuid = row.try_get("run_id")?;
-
-                    // Freeze-window gate: a payroll draft whose period overlaps
-                    // an active payroll period lock must NOT be created. The
-                    // event is left un-acked (PENDING) so it retries after the
-                    // period is unlocked — fail closed, never fail forgotten.
-                    let period: Option<(time::Date, time::Date)> = sqlx::query(
-                        "SELECT (payload->>'period_start')::date AS period_start, \
-                                (payload->>'period_end')::date AS period_end \
-                         FROM workflow_outbox_events WHERE id = $1",
+        // --- Phase 1: claim + freeze-window gate, in one read transaction ---
+        let drafts: Vec<StagePayrollDraft> =
+            with_org_conn::<_, _, PgWorkflowRuntimeError>(&self.pool, org, move |tx| {
+                Box::pin(async move {
+                    // The lease is the row lock itself (FOR UPDATE SKIP LOCKED);
+                    // a competing drainer skips a held row.
+                    let claimed = sqlx::query(
+                        "SELECT id, run_id, payload \
+                         FROM workflow_outbox_events \
+                         WHERE channel = 'JOB' \
+                           AND payload->>'job' = 'payroll_draft' \
+                           AND status IN ('PENDING', 'FAILED') \
+                           AND coalesce(next_attempt_at, created_at) <= now() \
+                         ORDER BY created_at \
+                         FOR UPDATE SKIP LOCKED \
+                         LIMIT $1",
                     )
-                    .bind(event_id)
-                    .fetch_optional(tx.as_mut())
-                    .await
-                    .map_err(PgWorkflowRuntimeError::from)?
-                    .and_then(|r| {
-                        let start: Option<time::Date> = r.try_get("period_start").ok()?;
-                        let end: Option<time::Date> = r.try_get("period_end").ok()?;
-                        Some((start?, end?))
-                    });
-                    if let Some((period_start, period_end)) = period
-                        && console_platform_db::assert_period_open_range(
-                            tx,
-                            console_platform_db::PeriodLockDomain::Payroll,
-                            period_start,
-                            period_end,
-                        )
-                        .await
-                        .is_err()
-                    {
-                        tracing::warn!(
-                            run_id = %run_id,
-                            "payroll draft skipped: period is locked; event stays pending"
-                        );
-                        continue;
-                    }
-
-                    // (a) Idempotent draft create keyed on the reused payroll
-                    // natural key. period_start/end + connector/job come from the
-                    // event payload; a replay of the same run collides on
-                    // UNIQUE(org_id, period_start, period_end, source_label).
-                    let inserted: Vec<Uuid> = sqlx::query_scalar(
-                        "INSERT INTO payroll_draft_runs \
-                             (org_id, period_start, period_end, source_label, status, \
-                              source_summary) \
-                         SELECT o.org_id, \
-                                (o.payload->>'period_start')::date, \
-                                (o.payload->>'period_end')::date, \
-                                'workflow_runtime_m2:run:' || o.run_id::text, \
-                                'BLOCKED_LEGAL_GATE', \
-                                jsonb_build_object( \
-                                    'outbox_event_id', o.id, \
-                                    'run_id', o.run_id, \
-                                    'connector', o.payload->>'connector', \
-                                    'job', o.payload->>'job') \
-                         FROM workflow_outbox_events o \
-                         WHERE o.id = $1 \
-                         ON CONFLICT (org_id, period_start, period_end, source_label) \
-                             DO NOTHING \
-                         RETURNING id",
-                    )
-                    .bind(event_id)
+                    .bind(limit)
                     .fetch_all(tx.as_mut())
                     .await
                     .map_err(PgWorkflowRuntimeError::from)?;
-                    let drafts_created = inserted.len() as u64;
-                    created += drafts_created;
 
-                    // (b) Ack the event DELIVERED in the SAME txn.
-                    sqlx::query(
+                    let mut drafts = Vec::with_capacity(claimed.len());
+                    for row in &claimed {
+                        let event_id: Uuid = row.try_get("id")?;
+                        let run_id: Uuid = row.try_get("run_id")?;
+                        let payload: serde_json::Value = row.try_get("payload")?;
+
+                        // The period is re-read with the SAME `::date` casts the
+                        // staging statement used to carry, so a payload holding a
+                        // malformed date still fails here rather than reaching the
+                        // owner, and an absent one is still `None`.
+                        let period: Option<(time::Date, time::Date)> = sqlx::query(
+                            "SELECT (payload->>'period_start')::date AS period_start, \
+                                    (payload->>'period_end')::date AS period_end \
+                             FROM workflow_outbox_events WHERE id = $1",
+                        )
+                        .bind(event_id)
+                        .fetch_optional(tx.as_mut())
+                        .await
+                        .map_err(PgWorkflowRuntimeError::from)?
+                        .and_then(|r| {
+                            let start: Option<time::Date> = r.try_get("period_start").ok()?;
+                            let end: Option<time::Date> = r.try_get("period_end").ok()?;
+                            Some((start?, end?))
+                        });
+
+                        // Freeze-window gate: a payroll draft whose period
+                        // overlaps an active payroll period lock must NOT be
+                        // created. The event is left un-acked (PENDING) so it
+                        // retries after the period is unlocked — fail closed,
+                        // never fail forgotten.
+                        if let Some((period_start, period_end)) = period
+                            && console_platform_db::assert_period_open_range(
+                                tx,
+                                console_platform_db::PeriodLockDomain::Payroll,
+                                period_start,
+                                period_end,
+                            )
+                            .await
+                            .is_err()
+                        {
+                            tracing::warn!(
+                                run_id = %run_id,
+                                "payroll draft skipped: period is locked; event stays pending"
+                            );
+                            continue;
+                        }
+
+                        drafts.push(StagePayrollDraft {
+                            org,
+                            outbox_event_id: event_id,
+                            run_id,
+                            period_start: period.map(|(start, _)| start),
+                            period_end: period.map(|(_, end)| end),
+                            connector: payload
+                                .get("connector")
+                                .and_then(serde_json::Value::as_str)
+                                .map(str::to_owned),
+                            job: payload
+                                .get("job")
+                                .and_then(serde_json::Value::as_str)
+                                .map(str::to_owned),
+                        });
+                    }
+                    Ok(drafts)
+                })
+            })
+            .await
+            .map_err(KernelError::from)?;
+
+        // --- Phase 2: stage each draft through the PayRun owner ---
+        let mut created: u64 = 0;
+        let mut staged: Vec<(Uuid, Uuid, u64)> = Vec::with_capacity(drafts.len());
+        for draft in drafts {
+            let event_id = draft.outbox_event_id;
+            let run_id = draft.run_id;
+            let source_label = draft.source_label();
+            match staging.stage(draft).await {
+                Ok(fresh) => {
+                    let drafts_created = u64::from(fresh);
+                    created += drafts_created;
+                    staged.push((event_id, run_id, drafts_created));
+                }
+                Err(err) => {
+                    // Leave the event PENDING. The next tick re-claims it and the
+                    // restage is a no-op if a partial write did land.
+                    tracing::warn!(
+                        %event_id,
+                        %source_label,
+                        error = %err,
+                        "payroll draft staging failed; event stays pending"
+                    );
+                }
+            }
+        }
+
+        if staged.is_empty() {
+            return Ok(created);
+        }
+
+        // --- Phase 3: ack + audit, one transaction ---
+        with_audits::<_, (), PgWorkflowRuntimeError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                let mut audit_events: Vec<AuditEvent> = Vec::with_capacity(staged.len());
+                for (event_id, run_id, drafts_created) in staged {
+                    // Re-claim: a concurrent drainer that raced through phase 1
+                    // on this event may already have acked it, and acking twice
+                    // would double the audit row.
+                    let acked = sqlx::query(
                         "UPDATE workflow_outbox_events \
                          SET status = 'DELIVERED', delivered_at = now(), \
                              attempt_count = attempt_count + 1, updated_at = now() \
-                         WHERE id = $1",
+                         WHERE id = $1 AND status IN ('PENDING', 'FAILED')",
                     )
                     .bind(event_id)
                     .execute(tx.as_mut())
                     .await
-                    .map_err(PgWorkflowRuntimeError::from)?;
+                    .map_err(PgWorkflowRuntimeError::from)?
+                    .rows_affected();
+                    if acked == 0 {
+                        continue;
+                    }
 
-                    // (c) One audit row per consumed event, in the SAME txn.
                     let action = AuditAction::new(DRAIN_AUDIT_ACTION)
                         .map_err(PgWorkflowRuntimeError::from)?;
                     let event = AuditEvent::new(
@@ -870,12 +940,13 @@ impl PgWorkflowRuntimeStore {
                     );
                     audit_events.push(event);
                 }
-
-                Ok((created, audit_events))
+                Ok(((), audit_events))
             })
         })
         .await
-        .map_err(KernelError::from)
+        .map_err(KernelError::from)?;
+
+        Ok(created)
     }
 
     /// Compensation bridge — drain PENDING/FAILED `NOTIFICATION` outbox events

@@ -254,6 +254,42 @@ where
     }
 }
 
+/// Run a closure inside a tenant-scoped transaction that is ALWAYS rolled back —
+/// the DRY-RUN sibling of [`with_org_conn`].
+///
+/// A caller that wants to know what a write WOULD do runs the real writer here
+/// and keeps its verdict without its rows. [`with_org_conn`] commits on `Ok`,
+/// which is exactly backwards for a simulation: the one case that must persist
+/// nothing is the case that succeeded. Re-deciding a writer's verdict in a
+/// second, read-only copy of its checks is the alternative, and two copies of a
+/// judgement drift — the copy then reports a green the writer would refuse.
+///
+/// The rollback is unconditional, so the success path is not a `commit` anyone
+/// can reach by editing a branch. A rollback that itself fails is reported
+/// rather than swallowed on the success path: the caller would otherwise be told
+/// its dry run was clean by a transaction whose fate is unknown.
+pub async fn with_org_rollback<F, T, E>(pool: &PgPool, org: OrgId, f: F) -> Result<T, E>
+where
+    F: for<'tx> FnOnce(
+        &'tx mut Transaction<'_, Postgres>,
+    ) -> std::pin::Pin<
+        Box<dyn std::future::Future<Output = Result<T, E>> + Send + 'tx>,
+    >,
+    E: From<DbError>,
+{
+    let mut tx = pool.begin().await.map_err(|e| E::from(DbError::Sqlx(e)))?;
+    set_current_org(&mut tx, org).await.map_err(E::from)?;
+    let result = f(&mut tx).await;
+    let rolled_back = tx.rollback().await;
+    match result {
+        Ok(value) => {
+            rolled_back.map_err(|e| E::from(DbError::Sqlx(e)))?;
+            Ok(value)
+        }
+        Err(e) => Err(e),
+    }
+}
+
 /// DB-current subject-authorization freshness for a specific `(org, user)`.
 ///
 /// The named fields mirror the access-token freshness claims

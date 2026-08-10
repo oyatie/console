@@ -48,6 +48,9 @@ use console_ontology_application::{
     ActionDefinition, ActionDispatch, CommandInputs, PreparedCommand, PreparedDispatch,
     WritebackInputs,
 };
+use console_ontology_canonical_domain::{
+    CanonicalObject, CanonicalPort, CanonicalQuery, CommandId, DispatchTarget, ObjectKey,
+};
 use console_ontology_domain::{
     FieldKind, InstanceId, InstanceLifecycleState, LinkTypeId, ObjectTypeId, SchemaLifecycleState,
 };
@@ -63,8 +66,9 @@ use console_platform_authz::{
     Action, AuthorizationRequest, AuthorizationResource, Feature, Principal, authorize_org_wide,
 };
 use console_platform_authz_rest::{AttachObjectPolicyCommand, PgCedarError, PgCedarPolicyStore};
-use console_platform_db::{DbError, with_audits};
+use console_platform_db::{DbError, with_audits, with_org_rollback};
 use console_platform_request_context::current_org;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -72,6 +76,7 @@ use sqlx::Row;
 use std::collections::{HashMap, HashSet, VecDeque, hash_map::Entry};
 use std::future::Future;
 use std::pin::Pin;
+use std::str::FromStr;
 use std::sync::Arc;
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -155,6 +160,12 @@ pub struct ProjectedDispatch {
     /// The projected entity's primary key (equipment id, work-order id, …) — the
     /// domain row the action targets. `None` for a create-style projected action.
     pub target_id: Option<Uuid>,
+    /// The caller's idempotency key, forwarded verbatim from `ActionCommand`.
+    /// A canonical port REPLAYS a repeat of the same id, so it is the difference
+    /// between a retried network call and a second write; the canonical
+    /// dispatcher refuses a command without one rather than minting a fresh key
+    /// on the caller's behalf, which would silently defeat that replay.
+    pub command_id: Option<Uuid>,
     /// Validated action params (the edit values) for the domain command.
     pub params: Value,
     /// Optional caller reason, forwarded to the domain audit trail.
@@ -172,12 +183,33 @@ pub type ProjectedHandler = Arc<
         + Sync,
 >;
 
-/// Maps each `dispatch_target` to its domain-use-case handler. Owns the
-/// fail-closed contract: an **unknown target is a typed `NotWiredYet` error**, so
-/// a mis-seeded or not-yet-wired action can never silently no-op or write.
+/// Resolves a `dispatch_target` to the domain use-case that owns its write.
+///
+/// # Why there are two maps, and why only one of them can grow by hand
+///
+/// A target that `console-ontology-canonical-domain` declares is resolved by
+/// DERIVATION: `DispatchTarget::from_str` parses it against the roster and
+/// `DispatchTarget::object()` names the [`ObjectKey`] that owns it, so the
+/// lookup key is the OBJECT — of which there are exactly six, locked by
+/// `six_projected_stable_object_keys_verbatim`. A fourteenth target added to
+/// `dispatch_targets!` therefore resolves the moment it exists, with no edit to
+/// this crate, to the App tier's wiring, or to any registration list.
+/// [`Self::register_port`] is generic over [`CanonicalPort`]: it is called once
+/// per OBJECT, never once per action, and it takes no closure.
+///
+/// `handlers` is the pre-canonical escape hatch for a projected target that is
+/// NOT a roster member (`registry.update_equipment`). It is a per-action map and
+/// it is exactly the shape this type is moving away from; nothing canonical may
+/// be registered there — a roster member never reaches it, because the branch
+/// above returns first.
+///
+/// Both halves own the same fail-closed contract: an **unresolved target is a
+/// typed `NotWiredYet` error**, so a mis-seeded or not-yet-wired action can
+/// never silently no-op or write.
 #[derive(Clone, Default)]
 pub struct ProjectedDispatchRegistry {
     handlers: HashMap<String, ProjectedHandler>,
+    ports: HashMap<ObjectKey, ProjectedHandler>,
 }
 
 impl ProjectedDispatchRegistry {
@@ -186,15 +218,57 @@ impl ProjectedDispatchRegistry {
         Self::default()
     }
 
-    /// Register a handler for one `dispatch_target`. Chainable builder.
+    /// Register a handler for one NON-canonical `dispatch_target`. Chainable
+    /// builder. A canonical target must go through [`Self::register_port`]:
+    /// registering one here is dead wiring, because [`Self::dispatch`] resolves
+    /// roster members from the ports map and never falls through to this one.
     #[must_use]
     pub fn register(mut self, target: impl Into<String>, handler: ProjectedHandler) -> Self {
         self.handlers.insert(target.into(), handler);
         self
     }
 
-    /// Route to the target's handler, or fail closed on an unknown target.
+    /// Install the canonical port that owns one object — and with it EVERY
+    /// dispatch target the contract assigns to that object, present and future.
+    ///
+    /// The port keeps its own transaction, RLS arming and audit: this registry
+    /// decodes the payload, checks it against the target, runs the port's PURE
+    /// preflight and hands over. It writes no domain table itself (§9.3).
+    #[must_use]
+    pub fn register_port<P>(mut self, port: P) -> Self
+    where
+        P: CanonicalPort + Send + Sync + 'static,
+        P::Query: DeserializeOwned + Send,
+        P::Command: Send + 'static,
+        P::Error: std::fmt::Display + Send + 'static,
+    {
+        self.ports.insert(
+            <P::Object as CanonicalObject>::KEY,
+            canonical_port_handler(port),
+        );
+        self
+    }
+
+    /// Whether this registry resolves `target` to a port. The coverage question
+    /// a test must be able to ask: without it, "every target is wired" is not
+    /// observable from outside and the registry can rot back into a partial list
+    /// while every test stays green.
+    #[must_use]
+    pub fn resolves(&self, target: DispatchTarget) -> bool {
+        self.ports.contains_key(&target.object())
+    }
+
+    /// Route to the owning port (canonical target) or to the per-action handler
+    /// (everything else), or fail closed.
     async fn dispatch(&self, input: ProjectedDispatch) -> Result<Value, ActionError> {
+        if let Ok(target) = DispatchTarget::from_str(&input.target) {
+            return match self.ports.get(&target.object()) {
+                Some(handler) => handler(input).await,
+                None => Err(ActionError::NotWiredYet {
+                    target: Some(input.target),
+                }),
+            };
+        }
         match self.handlers.get(&input.target) {
             Some(handler) => handler(input).await,
             None => Err(ActionError::NotWiredYet {
@@ -202,6 +276,128 @@ impl ProjectedDispatchRegistry {
             }),
         }
     }
+}
+
+/// ONE handler for every target a canonical port owns.
+///
+/// This function is the whole mechanism ADR-0030 §7 row 4 asks for, and it is
+/// generic rather than repeated: nothing in it names a target, an object, a
+/// param or a use-case. The roster is the only thing that decides which query a
+/// payload decodes to, because the query enums are internally tagged on the
+/// target string the CONTRACT spells — so a new target is a variant in the
+/// owning port, not a closure here.
+///
+/// The `dispatch_target()` re-check afterwards is not redundant with the serde
+/// tag: it is the fail-closed seam. Serde chooses a variant from the tag we
+/// inject; `dispatch_target()` reports what the DECODED value actually is. A
+/// port whose variant/target mapping ever disagrees with its serde tags is
+/// refused here rather than writing under the wrong target.
+fn canonical_port_handler<P>(port: P) -> ProjectedHandler
+where
+    P: CanonicalPort + Send + Sync + 'static,
+    P::Query: DeserializeOwned + Send,
+    P::Command: Send + 'static,
+    P::Error: std::fmt::Display + Send + 'static,
+{
+    let port = Arc::new(port);
+    Arc::new(move |input: ProjectedDispatch| {
+        let port = Arc::clone(&port);
+        Box::pin(async move {
+            // `target_id`, `reason` and `occurred_at` are deliberately not
+            // consumed here. A canonical command names its own subject inside
+            // the payload (`org_unit_id`, `run_id`, …) and stamps its own
+            // receipt time; taking the engine's instance id instead would make
+            // the port's subject depend on an ontology instance that a
+            // canonical write does not require.
+            let ProjectedDispatch {
+                principal,
+                target,
+                params,
+                command_id,
+                ..
+            } = input;
+            let Ok(target) = DispatchTarget::from_str(&target) else {
+                // Unreachable through `dispatch`, which parses first. Kept as a
+                // typed refusal so a direct caller cannot smuggle a non-roster
+                // string into a port.
+                return Err(ActionError::NotWiredYet {
+                    target: Some(target),
+                });
+            };
+            let command_id = command_id.ok_or_else(|| {
+                ActionError::Validation(format!(
+                    "{} requires command_id: it is the tenant-global idempotency \
+                     key the owning port replays on",
+                    target.as_str()
+                ))
+            })?;
+
+            let mut payload = match params {
+                Value::Object(map) => map,
+                Value::Null => serde_json::Map::new(),
+                other => {
+                    return Err(ActionError::Validation(format!(
+                        "params must be a JSON object for {}, got {other}",
+                        target.as_str()
+                    )));
+                }
+            };
+            // The contract's own spelling of the target, never the caller's:
+            // `from_str` already rejected anything else, so a payload cannot
+            // choose which variant it decodes to.
+            payload.insert(
+                "target".to_owned(),
+                Value::String(target.as_str().to_owned()),
+            );
+            let query: P::Query =
+                serde_json::from_value(Value::Object(payload)).map_err(|error| {
+                    ActionError::Validation(format!(
+                        "params do not decode as {}: {error}",
+                        target.as_str()
+                    ))
+                })?;
+            if query.dispatch_target() != target {
+                return Err(ActionError::Validation(format!(
+                    "payload decoded as {} but the action names {}",
+                    query.dispatch_target().as_str(),
+                    target.as_str()
+                )));
+            }
+
+            // PURE, and run before anything opens a connection.
+            let preflight = P::preflight(&query);
+            if !preflight.is_ok() {
+                return Err(ActionError::Validation(preflight.blockers().join("; ")));
+            }
+
+            let command = P::command(
+                principal.org_id,
+                CommandId::from_uuid(command_id),
+                principal.user_id,
+                query,
+            );
+            // `CanonicalPort::execute` is synchronous and blocks on a runtime
+            // handle, which panics on a worker thread. The blocking pool is not
+            // an async context, so this is the one legal way in — the same
+            // bridge every port's own suite uses.
+            let receipt = tokio::task::spawn_blocking(move || port.execute(&command))
+                .await
+                .map_err(|error| {
+                    ActionError::domain(KernelError::internal(format!(
+                        "canonical port for {} did not complete: {error}",
+                        target.as_str()
+                    )))
+                })?
+                .map_err(|error| ActionError::domain(KernelError::internal(error.to_string())))?;
+
+            Ok(serde_json::json!({
+                "owner": receipt.owner().as_str(),
+                "target": receipt.target().as_str(),
+                "command_id": receipt.command_id().as_uuid(),
+                "result": receipt.result(),
+            }))
+        })
+    })
 }
 
 pub const OBJECT_TYPES_PATH: &str = "/api/v1/ontology/object-types";
@@ -1245,16 +1441,21 @@ impl OntologyRestState {
     /// decision, run the §16 gate chain and report the per-gate status WITHOUT
     /// committing anything.
     ///
-    /// Nothing on this path can write: the two DB touches are the registry read
-    /// and the policy-gated head read, the four-eyes read is the non-consuming
-    /// [`PgGovernanceStore::four_eyes_approved`], and every decision after that
-    /// belongs to the pure [`PreparedCommand`]. Purity is a property of that type
-    /// only — the reads are ordinary reads, so what actually holds the zero-write
-    /// claim is the row-delta census in
-    /// `preflight_writes_zero_rows_and_never_spends_the_approval`.
+    /// Nothing on this path PERSISTS anything. The registry read and the
+    /// policy-gated head read are ordinary reads, the four-eyes read is the
+    /// non-consuming [`PgGovernanceStore::four_eyes_approved`], and the
+    /// [`PreparedCommand`] that owns every remaining decision is pure. The one
+    /// place this path issues writes at all is
+    /// [`Self::dry_run_instance_revision`], which issues them into a transaction
+    /// it always rolls back. None of that is a property the type system holds, so
+    /// what actually holds the zero-write claim is the row-delta census in
+    /// `preflight_writes_zero_rows_and_never_spends_the_approval` (accepted edit
+    /// set) and `preflight_refuses_an_edit_set_the_writeback_refuses` (rejected).
     ///
     /// A command this refuses is exactly a command [`Self::execute_action`]
-    /// refuses, because both prepare through the same constructor.
+    /// refuses, because both prepare through the same constructor — and, for
+    /// everything only the WRITER can decide, because
+    /// [`Self::dry_run_instance_revision`] runs that writer here.
     pub async fn preflight_action(
         &self,
         principal: &Principal,
@@ -1264,6 +1465,20 @@ impl OntologyRestState {
         let prepared = self.prepare(principal, action_key, &command).await?;
         let gates = self.evaluate_gates(principal, &prepared).await?;
         let criteria_ok = prepared.command.criteria_ok();
+        // Preparation resolves the edits; only the WRITEBACK judges what they
+        // resolved TO — against the object type's property schema, its field
+        // kinds and its derived-property declarations. Reporting `would_execute`
+        // without that judgement is a false green about the one thing a dry run
+        // exists to answer. Run the real writer, and throw its rows away.
+        //
+        // Only when the answer would otherwise be "yes": execute never reaches
+        // the writeback past a denied gate or a failed criterion, so simulating
+        // it there would refuse commands execute refuses for another reason
+        // first, and would spend a transaction on every denied preflight.
+        if gates.allow && criteria_ok {
+            self.dry_run_instance_revision(principal, &prepared, &command)
+                .await?;
+        }
         Ok(PreflightOutcome {
             dispatch: prepared.command.dispatch(),
             dispatch_target: prepared.command.dispatch_target().map(str::to_owned),
@@ -1353,6 +1568,7 @@ impl OntologyRestState {
                         principal: principal.clone(),
                         target,
                         target_id: command.instance_id.map(|id| *id.as_uuid()),
+                        command_id: command.command_id,
                         params: prepared.command.params().clone(),
                         reason: command.reason.clone(),
                         occurred_at: OffsetDateTime::now_utc(),
@@ -1489,6 +1705,104 @@ impl OntologyRestState {
         writeback: WritebackInputs,
     ) -> Result<CommandReceipt, PgOntologyError> {
         instance_revision_writeback(self, principal, action_key, command, prepared, writeback).await
+    }
+
+    /// The DRY RUN (DESIGN.md §4-42): run the writer the execute path runs, on a
+    /// transaction that is ALWAYS rolled back, and keep only its verdict.
+    ///
+    /// This is not a second copy of the writeback's checks — it is the same
+    /// [`stage_revision_in_tx`] / [`create_instance_in_tx`] call, against the same
+    /// pool, with the same resolved attribute bag. So every refusal only the
+    /// writer can reach is a refusal preflight reports: an attribute the object
+    /// type does not declare, a value of the wrong field kind, a required
+    /// attribute the edits left null, a `config.derive` that will not resolve, a
+    /// disposed instance, a link binding with no referent. A hand-written
+    /// preflight validator would have to re-derive all of that and would drift
+    /// from the writer the first time either changed.
+    ///
+    /// Deliberately NOT replayed here: the four-eyes consume, the receipt insert
+    /// and the audit event. Those are execute's bookkeeping about a command that
+    /// happened, not the writer's verdict on whether it can — and consuming an
+    /// approval to answer "would this work?" would spend it. The four-eyes gate
+    /// preflight does report comes from the non-consuming peek in
+    /// [`Self::evaluate_gates`].
+    ///
+    /// A `projected_usecase` action returns `Ok` untouched: its target is a
+    /// domain row this engine cannot read, let alone simulate a write to, and
+    /// a preflight that silently dispatched into a domain use-case to find out
+    /// would be the side effect §4-42 forbids.
+    ///
+    /// The transaction takes the same `FOR UPDATE` head lock the real writeback
+    /// takes, for the length of the simulation. That is the honest cost of a dry
+    /// run that is actually dry: the alternative prices a lock-free preflight at
+    /// a verdict that can be wrong.
+    async fn dry_run_instance_revision(
+        &self,
+        principal: &Principal,
+        prepared: &Prepared,
+        command: &ActionCommand,
+    ) -> Result<(), ActionError> {
+        let PreparedDispatch::InstanceRevision { attributes } =
+            prepared.command.prepared_dispatch().clone()
+        else {
+            return Ok(());
+        };
+        let org = current_org()
+            .map_err(|e| ActionError::Store(PgOntologyError::from(KernelError::from(e))))?;
+        let actor = principal.user_id;
+        let action_type_id = prepared.action.id;
+        let instance_id = command.instance_id;
+        let object_type_id = command.object_type_id;
+        let title = command.title.clone();
+        let reason = command.reason.clone();
+        let valid_from = command.valid_from;
+        let now = OffsetDateTime::now_utc();
+
+        with_org_rollback::<_, (), PgOntologyError>(self.registry.pool(), org, move |tx| {
+            Box::pin(async move {
+                match instance_id {
+                    Some(id) => {
+                        stage_revision_in_tx(
+                            tx,
+                            actor,
+                            org,
+                            id,
+                            StageRevision {
+                                attributes,
+                                valid_from,
+                                action_type_id: Some(action_type_id),
+                                reason,
+                            },
+                            now,
+                        )
+                        .await?;
+                    }
+                    None => {
+                        create_instance_in_tx(
+                            tx,
+                            actor,
+                            org,
+                            CreateInstance {
+                                object_type_id,
+                                title: title.unwrap_or_default(),
+                                attributes,
+                                valid_from,
+                                action_type_id: Some(action_type_id),
+                                reason,
+                            },
+                            now,
+                        )
+                        .await?;
+                    }
+                }
+                Ok(())
+            })
+        })
+        .await
+        // Returned as the SAME `ActionError` execute returns for the same
+        // writer refusal, so the two entry points cannot disagree even in the
+        // status the console renders.
+        .map_err(ActionError::Store)
     }
 }
 
@@ -2503,6 +2817,9 @@ const fn code_for_error_kind(kind: ErrorKind) -> &'static str {
         ErrorKind::Internal => "internal",
     }
 }
+
+#[cfg(test)]
+mod projected_dispatch_derivation;
 
 #[cfg(test)]
 mod tests {

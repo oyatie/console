@@ -349,6 +349,19 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/gate_detects_violation.rs': 'none',
         },
     },
+    'console-gate-writer-ownership': {
+        'unit': 'none',
+        'integration': {
+            # Static half: throwaway trees, no database.
+            'tests/gate_detects_violation.rs': 'none',
+            # Database half: drives its own disposable PostgreSQL containers
+            # through ops/postgres-reconcile-topology.sh. `postgres` here is the
+            # honest declaration even though the binary provisions its own
+            # cluster rather than consuming DATABASE_URL -- it needs Docker and a
+            # real server, which is what this axis exists to say.
+            'tests/census_executes_against_postgres.rs': 'postgres',
+        },
+    },
     'console-action-inbox-application': {
         'unit': 'none',
     },
@@ -666,6 +679,20 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-ontology-application': {
         'unit': 'none',
     },
+    'console-ontology-canonical-adapter-postgres': {
+        # No 'unit' key on purpose: nothing under src/ carries #[cfg(test)], and
+        # validate_resource_metadata raises on a STALE declaration just as loudly
+        # as on a missing one.
+        'integration': {
+            'tests/company_port_as_runtime_role.rs': 'postgres',
+            'tests/job_position_port_as_runtime_role.rs': 'postgres',
+            'tests/org_unit_port_as_runtime_role.rs': 'postgres',
+            'tests/person_port_as_runtime_role.rs': 'postgres',
+        },
+    },
+    'console-ontology-canonical-domain': {
+        'unit': 'none',
+    },
     'console-ontology-domain': {
         'unit': 'none',
     },
@@ -683,10 +710,8 @@ TEST_RESOURCE_REQUIREMENTS = {
         },
     },
     'console-orgchange-adapter-postgres': {
-        # No 'unit' key: this crate generates no unit-test target, and
-        # validate_resource_metadata raises on a STALE declaration as readily as
-        # on a missing one -- declaring 'unit': 'none' here fails the gate.
         'integration': {
+            'tests/employment_port_as_runtime_role.rs': 'postgres',
             'tests/preflight_persists_nothing.rs': 'postgres',
         },
     },
@@ -696,6 +721,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-payroll-adapter-postgres': {
         'unit': 'none',
         'integration': {
+            'tests/pay_run_port_as_runtime_role.rs': 'postgres',
             'tests/payroll_lifecycle_rls_as_runtime_role.rs': 'postgres',
             'tests/payroll_rls_surfaces_as_runtime_role.rs': 'postgres',
         },

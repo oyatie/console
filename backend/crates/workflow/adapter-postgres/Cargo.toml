@@ -22,6 +22,11 @@ uuid = { workspace = true }
 
 [dev-dependencies]
 console-notifications-adapter-postgres = { workspace = true }
+# The REAL `ObjectKey::PayRun` owner, for the drain tests only. A NORMAL
+# dependency here would be an adapter → adapter layer-boundary violation; the
+# gate scopes its edge check to normal deps, so a dev-dependency is the
+# supported way to drive the actual seam in a test instead of a stub.
+console-payroll-adapter-postgres = { workspace = true }
 console-platform-request-context = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 

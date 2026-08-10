@@ -112,6 +112,11 @@ console-platform-auth-rest = { workspace = true }
 console-platform-authz = { path = "../crates/platform/authz" }
 console-platform-authz-rest = { workspace = true }
 console-ontology-adapter-postgres = { workspace = true }
+# The four canonical ports this crate is the composition root for. No
+# [workspace.dependencies] entry exists for it (same as its two sibling owners),
+# so it is depended on by path. App is the only tier allowed to know a port
+# IMPLEMENTATION: the ontology REST tier stays free of a domain-adapter edge.
+console-ontology-canonical-adapter-postgres = { path = "../crates/ontology/canonical-adapter-postgres" }
 console-ontology-rest = { workspace = true }
 console-governance-adapter-postgres = { workspace = true }
 console-governance-domain = { workspace = true }
@@ -170,6 +175,8 @@ console-financial-application = { workspace = true }
 console-financial-domain = { workspace = true }
 console-governance-application = { workspace = true }
 console-notifications-domain = { workspace = true }
+# Dev-only: the coverage test asks `DispatchTarget::ALL` what the roster holds.
+console-ontology-canonical-domain = { path = "../crates/ontology/canonical-domain" }
 p256 = { version = "0.13.2", features = ["ecdsa", "pkcs8", "pem"] }
 tokio = { workspace = true, features = ["io-util", "net", "macros", "rt-multi-thread"] }
 tower = { workspace = true, features = ["util"] }

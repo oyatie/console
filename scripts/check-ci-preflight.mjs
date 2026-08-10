@@ -192,12 +192,22 @@ const domainUnitPackages = [
   // evidenceReference schema agrees with validate_evidence_reference, so an
   // enforced rule cannot drift from the published one without this job going red.
   "console-logistics-rest",
+  // The canonical-object roster the writer-ownership gate resolves table names
+  // through. Pure #[test], no database; its lib binary executed nowhere until
+  // the gate was wired.
+  "console-ontology-canonical-domain",
+  // The writer-ownership gate's own lib. Cargo and not the Buck2 mutation-suite
+  // step: its integration suite reads the real checkout, so the whole crate
+  // stays in one job rather than being split across two build systems.
+  "console-gate-writer-ownership",
 ]
 const domainUnitIntegrationInvocations = [
   ["console-attendance-application", ["attendance_policy"]],
   ["console-compliance-domain", ["location_consent_fsm", "location_ping_policy"]],
   ["console-platform-authz", ["cedar_pbac_readiness_cases", "cedar_pbac_legacy_only_observe_and_record"]],
   ["console-attendance-domain", ["range_and_history"]],
+  // Wired into ci.yml by the p2 contract-binary pass; the mirror entry was
+  // missed in that commit, which left this contract red on arrival.
   ["console-contracts", ["compose"]],
   ["console-todos-rest", ["openapi_fragment"]],
   ["console-financial-domain", ["quote_and_residual"]],
@@ -208,6 +218,10 @@ const domainUnitIntegrationInvocations = [
   ["console-platform-excel", ["template_fidelity", "template_fill_engine"]],
   ["console-platform-realtime", ["hub", "notify_payload"]],
   ["console-app", ["config", "dev_seed_notification_links", "openslo_files", "well_known", "workbench_api"]],
+  // Cargo, from a real checkout: 3 of its 41 tests assert about THIS repository
+  // (the backend crate tree and ops/postgres-reconcile-topology.sh), which the
+  // backend job's Buck2 mutation-suite step cannot materialize.
+  ["console-gate-writer-ownership", ["gate_detects_violation"]],
 ];
 const domainUnitTestFiles = domainUnitIntegrationInvocations.flatMap(([, tests]) => tests);
 const domainCargoPrefix = [
@@ -571,7 +585,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Workflow test-runner credential literals", "npm run check:test-credentials"),
   ],
   "domain-unit": [
-    proofDigest("Domain crate unit tests", "f06b5adfc19d774e0b6b106a3505359934bb021fb53e1359cf1bb018cc03d474"),
+    proofDigest("Domain crate unit tests", "27e92fd9609075c9d15ed5bcac25f3a1ef4c54bcc254a5e68c1e78e1b1d9a947"),
   ],
   backend: [
     setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh"),
@@ -587,6 +601,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("IaC tier-discipline gate", "cargo run -p console-gate-iac-tier"),
     proofRun("Fabricated-branch gate", "cargo run -p console-gate-fabricated-branch"),
     proofRun("Personal-data-classification gate", "cargo run -p console-gate-personal-data-classification"),
+    proofRun("Writer-ownership gate", "cargo run -p console-gate-writer-ownership"),
     proofDigest("Buck2 CI-gate mutation suites — every gate proven to still reject", "f6614509bd73220754a83d449b8bf422e616309ba48965f730f0d3dcff9d2cf4", { workingDirectory: "." }),
     proofRun("PR 473 migration operational contract tests", "python3 scripts/check-pr473-migration-operational.test.py -v", { workingDirectory: "." }),
     setupDigest("Reconcile portable PostgreSQL role topology", "5da0f2d8c399657dbc0a9d358c81d71399af1ea6c659074a365653db21fcaded"),

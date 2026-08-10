@@ -79,10 +79,15 @@ test("real postgres-cargo-map workflow set partitions cleanly with balanced doma
   // Inventory tripwire, not a safety property: the balance assertion above is the invariant.
   // 78 -> 80 when identity-rest org_setup and production-rest production_lifecycle_http were
   // repaired and joined the workflow set (P1 dark-test wiring, console-5lh.6).
-  // 80 -> 81 when orgchange-preflight-zero-write-pg joined it: the P3 proof that org-change
-  // preflight persists nothing, which needs a real database because it works by fingerprinting
-  // every base table either side of the call (console-tai / leaf 52a003cba).
-  assert.equal(da + db, 81, `expected 81 domain entries, got ${da + db}`);
+  // 80 -> 82: orgchange preflight_persists_nothing, and the writer-ownership canonical
+  // capability census — the load-bearing half of the writer-ownership gate, which drives
+  // ops/postgres-reconcile-topology.sh against a real PostgreSQL.
+  // 82 -> 84: the six canonical port suites joined the workflow set, but only TWO of them land
+  // in the domain halves — employment (orgchange) and pay_run (payroll). The other four are
+  // ontology-family packages and are counted by the `ontology` shard, not here. That asymmetry
+  // is why this number moved by 2 and not by 6, and it is worth stating: a reader who expects
+  // +6 would "correct" this to 88 and turn the tripwire red for the wrong reason.
+  assert.equal(da + db, 84, `expected 84 domain entries, got ${da + db}`);
 });
 
 test("shardIdForPackage with domain map resolves domain packages", () => {

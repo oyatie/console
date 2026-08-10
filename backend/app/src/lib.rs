@@ -74,12 +74,18 @@ use console_notifications_adapter_postgres::PgNotificationStore;
 use console_notifications_rest::NotificationRestState;
 use console_ontology_adapter_postgres::PgOntologyStore;
 use console_ontology_adapter_postgres::instances::PgInstanceStore;
+use console_ontology_canonical_adapter_postgres::company::PgCompanyPort;
+use console_ontology_canonical_adapter_postgres::job_position::PgJobPositionPort;
+use console_ontology_canonical_adapter_postgres::org_unit::PgOrgUnitPort;
+use console_ontology_canonical_adapter_postgres::person::PgPersonPort;
 use console_ontology_rest::{
     ActionError, OntologyRestState, ProjectedDispatch, ProjectedDispatchRegistry, ProjectedHandler,
 };
 use console_orgchange_adapter_postgres::PgOrgChangeStore;
+use console_orgchange_adapter_postgres::employment::PgEmploymentPort;
 use console_orgchange_rest::OrgChangeRestState;
 use console_payroll_adapter_postgres::PgPayrollStore;
+use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
 use console_payroll_rest::PayrollRestState;
 use console_platform_audit_chain::{
     ChainReport, InMemoryEd25519Signer, SealConfig, SealSigner, verify_org_chain,
@@ -2559,13 +2565,69 @@ fn update_equipment_projected_handler(store: PgRegistryStore) -> ProjectedHandle
 }
 
 /// The full projected-dispatch registry supplied to the ontology REST tier.
-/// Unregistered targets fail closed (`NotWiredYet`) — see
+/// Unresolved targets fail closed (`NotWiredYet`) — see
 /// `console_ontology_rest::ProjectedDispatchRegistry::dispatch`.
+///
+/// # Six lines for thirteen targets, and for the fourteenth
+///
+/// `register_port` is called once per canonical OBJECT, not once per action:
+/// each call installs the port that owns every `dispatch_target` the contract
+/// assigns to that object, so `hr.appoint`, `hr.promote` and `hr.transfer` are
+/// one line between them. `ObjectKey` is LOCKED at six by
+/// `six_projected_stable_object_keys_verbatim`, so this list is closed — a new
+/// dispatch target lands in `dispatch_targets!` and in the owning port's query
+/// enum, and needs no edit here at all. That is the whole point: the enumerable
+/// thing is the one a contract test forbids from growing.
+///
+/// `registry.update_equipment` is not a roster member and keeps its hand-written
+/// handler; it is the last of that shape.
 fn projected_dispatch_registry(pool: PgPool) -> ProjectedDispatchRegistry {
-    ProjectedDispatchRegistry::new().register(
-        "registry.update_equipment",
-        update_equipment_projected_handler(PgRegistryStore::new(pool)),
-    )
+    // Every port bridges a SYNCHRONOUS `execute` onto async `sqlx` with this
+    // handle. `build_router` is only ever called from inside a runtime, and a
+    // panic here is the correct failure: a router built without one would fail
+    // every canonical action at request time instead of at startup.
+    let runtime = tokio::runtime::Handle::current();
+    ProjectedDispatchRegistry::new()
+        .register(
+            "registry.update_equipment",
+            update_equipment_projected_handler(PgRegistryStore::new(pool.clone())),
+        )
+        .register_port(PgCompanyPort::new(pool.clone(), runtime.clone()))
+        .register_port(PgOrgUnitPort::new(pool.clone(), runtime.clone()))
+        .register_port(PgJobPositionPort::new(pool.clone(), runtime.clone()))
+        .register_port(PgPersonPort::new(pool.clone(), runtime.clone()))
+        .register_port(PgEmploymentPort::new(pool.clone(), runtime.clone()))
+        .register_port(PgPayRunPort::new(pool, runtime))
+}
+
+/// The composition root is measured for COVERAGE, not for its shape: whatever
+/// `dispatch_targets!` holds, the registry this crate hands the ontology tier
+/// must resolve all of it. Names no target and no object, so a fourteenth
+/// target is asserted the moment the contract declares one, and a dropped
+/// `register_port` line is what makes it fail.
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod projected_dispatch_coverage {
+    use console_ontology_canonical_domain::DispatchTarget;
+
+    #[tokio::test]
+    async fn the_wired_registry_resolves_every_canonical_dispatch_target() {
+        // Lazy: no connection is opened, and none is needed — resolution is a
+        // property of the wiring, not of the database behind it.
+        let pool = sqlx::postgres::PgPool::connect_lazy("postgres://console@127.0.0.1/console")
+            .expect("a lazy pool never connects");
+        let registry = super::projected_dispatch_registry(pool);
+
+        let unresolved: Vec<&str> = DispatchTarget::ALL
+            .iter()
+            .filter(|target| !registry.resolves(**target))
+            .map(|target| target.as_str())
+            .collect();
+        assert!(
+            unresolved.is_empty(),
+            "the deployed registry resolves no port for {unresolved:?}"
+        );
+    }
 }
 
 fn realtime_hub_from_database(database: &DatabaseDependency) -> Option<Arc<PgRealtimeHub>> {

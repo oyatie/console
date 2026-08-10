@@ -66,6 +66,12 @@ for i in $(seq 1 40); do
 done
 docker exec "$name" sh -ceu 'set -a; . /topology.env; exec bash /topology.sh' >/dev/null
 
+# That reconcile ran before any migration, so its canonical writer-ownership
+# census had zero canonical tables to look at. Re-run it on a migrated probe
+# database with the zero-table guard armed; "$db" itself is left untouched.
+bash "$repo_root/backend/ci/gates/writer-ownership/canonical-enforce.sh" \
+  "$repo_root" "$name" "canonical_probe_$$"
+
 port="$(docker port "$name" 5432/tcp)"; port="${port##*:}"
 export DATABASE_URL="postgres://console_buck_admin:${admin}@127.0.0.1:${port}/${db}?options%5Bconsole.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
 echo "postgres ready on ${port}"

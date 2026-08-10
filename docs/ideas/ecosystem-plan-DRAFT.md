@@ -588,7 +588,7 @@ composition and the reason a fixed list of spines was wrong.
 | **tenancy** | — | **code**: a migration, if it needs a table |
 | **economics / lineage** | — | **code**: today both substrates are absent |
 | **projected backing** | — | **code**: one arm in `allowlisted_projected_table` (`instances.rs` `fn allowlisted_projected_table`) |
-| **an action on a projected type** | — | **code**: one `ProjectedDispatchRegistry` handler per action. `backend/crates/ontology/rest/src/lib.rs` `pub struct ProjectedDispatchRegistry { handlers: HashMap<String, ProjectedHandler>, }`, a chainable `register(target, handler)` builder, and a `dispatch` returning `ActionError::NotWiredYet`. Registered in the App composition root; **unwired = `NotWiredYet`**, which is fail-closed but is still code |
+| **an action on a projected type** | — | **code, but no longer per action**: `backend/crates/ontology/rest/src/lib.rs` `pub struct ProjectedDispatchRegistry {` now carries a second map, `ports: HashMap<ObjectKey, ProjectedHandler>`, alongside the original `handlers`. `register_port` is called once per canonical OBJECT and covers every dispatch target the contract assigns to it, so the composition root wires **six** registrations for **thirteen** targets and a fourteenth target needs no edit there at all. The chainable `register(target, handler)` builder and the fail-closed `ActionError::NotWiredYet` both remain, for the one non-roster handler. Measured by `the_wired_registry_resolves_every_canonical_dispatch_target`, which names no target and fails naming the orphans when a `register_port` line is dropped |
 | **the authoring-action vocabulary** | — | **code, and it is CLOSED at five elements**: `backend/crates/platform/authz/src/cedar_pbac/authoring.rs` `const AUTHORING_ACTIONS: &[&str] = &[` = `view`, `edit`, `read_field`, `console:configure`, `console:deploy`. A sixth authoring verb is a code change, not an authored row |
 
 **So "manageable without developers" is true for the dimension side and false for the component side.**
@@ -599,7 +599,7 @@ does not pretend otherwise.
 
 **Size the wiring, do not label it.** `docs/specs/ecosystem-entity-components.tsv` (Phase 0) must carry a
 **handler count** for `work`'s Slice-0, W4, W11 and W13 actions, so §8 Phase 4's `app` crate row reads as a
-number rather than as the word "wiring". One `ProjectedDispatchRegistry` handler per action is a countable unit;
+number rather than as the word "wiring". One `ProjectedDispatchRegistry` registration per canonical OBJECT is a countable unit (it was per ACTION until the derivation landed, which is why the count fell from thirteen to six);
 "wiring" is not.
 
 **DN-0003 invariant 1 for Tier T and Tier P, answered before `work` is built.** The invariant is *"Every
@@ -2612,7 +2612,7 @@ Next crate activates only when the current one is clean. Derived from §4.1, in 
 | 5 | `identity/rest` | C2 — `policy_feature_catalog()` off data |
 | 6 | `finance-gl` | line-level typed dimension; **and the missing `assert_period_open` call** (§5.5) |
 | 7 | `messenger` + `platform/realtime` | derived membership; the `authority_changed` event |
-| 8 | `app` | `/overview` surface, and **N `ProjectedDispatchRegistry` handlers** — one per `work` action across Slice 0 / W4 / W11 / W13, counted in `ecosystem-entity-components.tsv` (§4.0.2). Sized, not labelled "wiring" |
+| 8 | `app` | `/overview` surface, and **N `ProjectedDispatchRegistry` registrations** — one per `work` OBJECT, not per action, across Slice 0 / W4 / W11 / W13, counted in `ecosystem-entity-components.tsv` (§4.0.2). Sized, not labelled "wiring" |
 
 **CI wiring is per TEST, not per crate — and the template is a worked one, cited by target name.** X9 traced
 all four links through a real test:

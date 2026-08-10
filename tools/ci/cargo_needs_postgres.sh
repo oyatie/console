@@ -110,6 +110,14 @@ for attempt in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
 done
 docker exec "${container_name}" sh -ceu 'set -a; . /topology.env; exec bash /topology.sh'
 
+# The reconcile above runs BEFORE any migration, so its canonical
+# writer-ownership census sees zero canonical tables and enforces nothing. Run
+# it again on a disposable probe database that has the real schema, with the
+# zero-table guard armed. Nothing here touches "${database}", so the cargo tests
+# below still see exactly the database they saw before.
+bash "${repo_root}/backend/ci/gates/writer-ownership/canonical-enforce.sh" \
+  "${repo_root}" "${container_name}" "canonical_probe_$$"
+
 port_mapping="$(docker port "${container_name}" 5432/tcp)"
 port="${port_mapping##*:}"
 case "${port}" in

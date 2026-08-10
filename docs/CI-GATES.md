@@ -207,6 +207,7 @@ names only, not incidental workflow prose or runner setup text.
 - `console-gate-pii-no-logs`
 - `console-gate-rls-arming`
 - `console-gate-tenant-isolation`
+- `console-gate-writer-ownership`
 
 ### Root package scripts run by CI
 
@@ -261,10 +262,10 @@ names only, not incidental workflow prose or runner setup text.
   `--lib`, doctest, and named non-PostgreSQL test targets. This is broad selected
   reachability, not a claim that one full-workspace `cargo test` runs.
 - **Backend — fmt / clippy / gates**: `cargo fmt --all -- --check`,
-  `SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings`, ten `console-gate-*` binaries
+  `SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings`, eleven `console-gate-*` binaries
   (`layer-boundary`, `audit-coverage`, `migration-safety`, `tenant-isolation`,
   `pii-no-logs`, `rls-arming`, `dev-auth-absence`, `iac-tier`,
-  `fabricated-branch`, `personal-data-classification`), their named mutation
+  `fabricated-branch`, `personal-data-classification`, `writer-ownership`), their named mutation
   suites, and the explicitly named PostgreSQL harness targets in this and the
   dedicated reachability jobs. `check:executed-tests` is the inventory ratchet.
 - **dev-up.mjs smoke — compose deps + migrate + /readyz**:
@@ -645,6 +646,42 @@ Source: `backend/ci/gates/dev-auth-absence/`. Uses `cargo metadata` to prove the
 `console-app` default feature set does not transitively enable `dev-auth`, so the
 local role-switch endpoint cannot ship in the default release binary. HTTP-level
 absence tests complement this feature-graph proof.
+
+### `console-gate-writer-ownership` — one writer per canonical object
+
+Two halves that read different things. Only the second one is load-bearing, and
+they are wired into different jobs, so a reader who finds the `cargo run` step
+and stops has found the weaker half.
+
+| | reads | CI step |
+| --- | --- | --- |
+| `console-gate-writer-ownership` | production Rust **source**, parsed with `syn` | `Writer-ownership gate` (`cargo run -p console-gate-writer-ownership`) |
+| `ops/postgres-reconcile-topology.sh` canonical block | the **capabilities** of a migrated database | PostgreSQL reachability facets → `writer-ownership-canonical-census-pg` in `tools/ci/postgres-cargo-map.json` |
+
+**The database half is total.** For every canonical relation it asks
+`has_table_privilege` for each non-expected role against each DML verb, pins the
+table OWNER, and walks `pg_inherits` with a reachability CTE so a partition child
+or an injected parent cannot carry a grant the roster never names. It fails
+closed when it examined a set of tables that is not exactly the canonical roster
+— "more than zero tables" was the previous spelling, and renaming one table away
+shrank the scope from eight to seven while still passing.
+`backend/ci/gates/writer-ownership/tests/census_executes_against_postgres.rs`
+executes it against a real PostgreSQL and mutates the script to prove each probe
+flips, because assertions about the script's *characters* survive
+`IF leaked IS NOT NULL AND false THEN`.
+
+**The source half is best-effort by construction.** It answers "which crate
+writes this table" from parsed Rust, and two residual shapes are pinned by
+`known_residual_` tests rather than claimed fixed. A SQL lexer is the total fix
+(bead `console-tai.1`). Treat it as defence in depth; the census is the control.
+
+Its mutation suite, `tests/gate_detects_violation.rs`, runs under **Domain crates
+— unit tests** and not in the backend job's Buck2 mutation-suite step with the
+other eight gates. Three of its 41 tests assert about *this* repository — one
+walks the whole backend crate tree, two read
+`ops/postgres-reconcile-topology.sh` — and a Buck2 action materializes only a
+target's own `mapped_srcs`, so those three fail there with `os error 2`. The
+requirement is a real checkout, which `domain-unit` has.
 
 ### Dev-auth feature build/tests — explicit non-default coverage
 

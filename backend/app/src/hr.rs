@@ -14,6 +14,9 @@ use console_kernel_core::{
 };
 use console_leave_adapter_postgres::{CreateEmployeeCommand, PgLeaveError, PgLeaveStore};
 use console_leave_domain::LeaveBalanceAmount;
+// `ObjectKey::Employment`'s owner. Every `employees` statement this module used
+// to hold lives there now; console-app is no longer a second writer of it.
+use console_orgchange_adapter_postgres::employment;
 use console_payroll_domain::{
     ProfessionalReviewerKind, ProfessionalValidation, SeverancePayInput, build_severance_pay_draft,
     moel_retirement_pay_source, nhis_qualification_loss_form_source,
@@ -1072,31 +1075,28 @@ pub(crate) async fn create_employee_core(
         )));
     }
 
+    // The statement itself lives in `console-orgchange-adapter-postgres`, which
+    // the canonical contract names as `ObjectKey::Employment`'s owner — the one
+    // crate permitted to hold DML against `employees`. It takes THIS
+    // transaction, so the employee row, its employment profile, its lifecycle
+    // event and the idempotency reservation still commit or roll back together.
+    //
     // home_branch_id is intentionally NOT inserted: since 0166 the branch
     // routing authority is command-only (the console_rt guard rejects it), so the
     // caller establishes it post-commit via [`assign_home_branch_if_unset`].
-    sqlx::query(
-        r#"INSERT INTO employees (
-            id, org_id, company, name, employee_number, org_unit, position,
-            worksite_name, source_filename, source_sheet,
-            source_row, source_key, raw_row, source_metadata,
-            identity_resolution_strategy, identity_resolution_confidence,
-            identity_review_required, identity_name_only_merge
-        ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, 'console', 'people', 1,
-            $9, '{}'::jsonb, '{}'::jsonb, 'employee_number', 'high', FALSE, FALSE
-        )"#,
+    employment::insert_employee_record(
+        tx,
+        org_uuid,
+        employment::NewEmployeeRecord {
+            employee_id,
+            company: &request.company,
+            name: &request.name,
+            employee_number: &request.employee_number,
+            org_unit: &request.org_unit,
+            position: &request.position,
+            worksite_name: &request.site,
+        },
     )
-    .bind(employee_id)
-    .bind(org_uuid)
-    .bind(&request.company)
-    .bind(&request.name)
-    .bind(&request.employee_number)
-    .bind(&request.org_unit)
-    .bind(&request.position)
-    .bind(&request.site)
-    .bind(format!("console:{}", request.employee_number))
-    .execute(tx.as_mut())
     .await
     .map_err(employee_create_db_error)?;
     sqlx::query(
@@ -3218,27 +3218,20 @@ async fn create_employee_lifecycle_event(
             .execute(tx.as_mut())
             .await?;
 
-            sqlx::query(
-                r#"
-                UPDATE employees
-                SET
-                    company = $3,
-                    org_unit = $4,
-                    position = $5,
-                    employment_status = $6,
-                    exit_date = CASE WHEN $6 = 'EXITED' THEN $7 ELSE exit_date END,
-                    updated_at = now()
-                WHERE org_id = $1 AND id = $2
-                "#,
+            // The Employment owner's statement, inside this transaction. See
+            // [`create_employee_core`] for why the DML is not held here.
+            employment::apply_employment_change(
+                tx,
+                org_uuid,
+                employee_id,
+                employment::EmploymentChange {
+                    company: &next_company,
+                    org_unit: next_org_unit.as_deref(),
+                    position: next_position.as_deref(),
+                    employment_status: &transition.to_status,
+                    effective_date: &transition.effective_date,
+                },
             )
-            .bind(org_uuid)
-            .bind(employee_id)
-            .bind(&next_company)
-            .bind(next_org_unit.as_deref())
-            .bind(next_position.as_deref())
-            .bind(&transition.to_status)
-            .bind(&transition.effective_date)
-            .execute(tx.as_mut())
             .await?;
 
             let row = sqlx::query(
@@ -6566,19 +6559,23 @@ async fn insert_confirmed_exit_lifecycle_event(
     .execute(tx.as_mut())
     .await?;
 
-    sqlx::query(
-        r#"
-        UPDATE employees
-        SET employment_status = 'EXITED',
-            exit_date = $3,
-            updated_at = now()
-        WHERE org_id = $1 AND id = $2
-        "#,
+    // The same Employment-owner statement the lifecycle handler calls: its
+    // `exit_date = CASE WHEN $6 = 'EXITED' THEN $7 …` arm fires here, and
+    // carrying the employee's CURRENT company/org-unit/position through leaves
+    // those three columns exactly as they stood — which is what the dedicated
+    // `SET employment_status = 'EXITED', exit_date = $3` statement did.
+    employment::apply_employment_change(
+        tx,
+        org_uuid,
+        context.employee_id,
+        employment::EmploymentChange {
+            company: &current.company,
+            org_unit: current.org_unit.as_deref(),
+            position: current.position.as_deref(),
+            employment_status: &transition.to_status,
+            effective_date: &context.effective_exit_date,
+        },
     )
-    .bind(org_uuid)
-    .bind(context.employee_id)
-    .bind(&context.effective_exit_date)
-    .execute(tx.as_mut())
     .await?;
     Ok(())
 }

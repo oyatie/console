@@ -34,7 +34,7 @@ pub mod versioning;
 
 pub use audit_tx::{
     SubjectAuthzFreshness, insert_audit_event, read_subject_authz_freshness, with_audit,
-    with_audits, with_org_conn,
+    with_audits, with_org_conn, with_org_rollback,
 };
 pub use code_issuance::issue_code;
 pub use error::DbError;

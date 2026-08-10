@@ -288,7 +288,7 @@ describe("CI preflight contract", () => {
     const requiredRunStepCounts = {
       preflight: 27,
       "domain-unit": 1,
-      backend: 23,
+      backend: 24,
       "dev-up-smoke": 6,
       "kubernetes-manifests": 6,
       "repo-gates": 26,
@@ -332,8 +332,14 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(runStepCount, 106, "required and planned job run-step coverage must not shrink");
-    assert.equal(mutationCount, 318, "exhaustive bypass matrix must not shrink");
+    // 106 -> 107: the writer-ownership gate's own run step in the backend job. The harness
+    // preflight step this branch also adds was already counted in main's 106, so the delta is
+    // one and not two -- worth stating, because the obvious arithmetic gives the wrong answer.
+    assert.equal(runStepCount, 107, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step, so this tracks runStepCount exactly: 106*3 = 318 became
+    // 107*3 = 321. If these two ever stop moving together, the matrix has stopped covering
+    // every step and the number is hiding it rather than reporting it.
+    assert.equal(mutationCount, 321, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {

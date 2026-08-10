@@ -10,6 +10,11 @@
 //!       acked DELIVERED.
 
 use console_kernel_core::OrgId;
+// The REAL `ObjectKey::PayRun` owner, as a dev-dependency. Dev-dependencies are
+// exempt from the layer-boundary edge check (it scopes to normal deps), which is
+// what lets this test drive the actual seam instead of a stub that would only
+// prove the drain calls something.
+use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
 use console_platform_request_context::scope_org;
 use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
 use sqlx::PgPool;
@@ -124,11 +129,15 @@ async fn payroll_period_lock_blocks_draft_creation_and_unlock_restores(owner_poo
 
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let store = PgWorkflowRuntimeStore::new(rt_pool.clone());
+    let payroll_staging = PgPayRunPort::new(rt_pool.clone(), tokio::runtime::Handle::current());
 
     // (a) Locked → drain creates nothing, event stays PENDING (retryable).
-    let created = scope_org(org, store.drain_payroll_job_outbox(org, 10))
-        .await
-        .expect("drain itself must not fail on a locked period");
+    let created = scope_org(
+        org,
+        store.drain_payroll_job_outbox(org, 10, &payroll_staging),
+    )
+    .await
+    .expect("drain itself must not fail on a locked period");
     assert_eq!(created, 0, "no payroll draft may be created inside a lock");
 
     let (status, drafts): (String, i64) = {
@@ -161,9 +170,12 @@ async fn payroll_period_lock_blocks_draft_creation_and_unlock_restores(owner_poo
     .await
     .unwrap();
 
-    let created = scope_org(org, store.drain_payroll_job_outbox(org, 10))
-        .await
-        .expect("drain must succeed after unlock");
+    let created = scope_org(
+        org,
+        store.drain_payroll_job_outbox(org, 10, &payroll_staging),
+    )
+    .await
+    .expect("drain must succeed after unlock");
     assert_eq!(created, 1, "the retried event must now create the draft");
 
     let status: String =

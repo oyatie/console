@@ -35,6 +35,7 @@ use std::time::Duration;
 
 use console_kernel_core::OrgId;
 use console_notifications_adapter_postgres::PgNotificationStore;
+use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
 use console_platform_realtime::PostgresNotificationNotifier;
 use console_platform_request_context::scope_org;
 use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
@@ -71,6 +72,12 @@ pub fn spawn(pool: sqlx::PgPool) -> WorkflowDrainHandle {
     // notification also fans out over the WebSocket, same as a REST-created one.
     let notification_sink = PgNotificationStore::new(pool.clone())
         .with_notifier(Arc::new(PostgresNotificationNotifier::new(pool.clone())));
+    // `payroll_draft_runs` belongs to `ObjectKey::PayRun`, whose sole permitted
+    // writer crate is `console-payroll-adapter-postgres`. The workflow adapter
+    // may not depend on it (adapter → adapter is a layer-boundary violation), so
+    // the owner is injected here as `console_workflow_domain::PayrollDraftStaging`
+    // — exactly how `notification_sink` above crosses the same boundary.
+    let payroll_staging = PgPayRunPort::new(pool.clone(), tokio::runtime::Handle::current());
 
     tokio::spawn(async move {
         let mut ticker = tokio::time::interval(Duration::from_secs(DEFAULT_TICK_SECS));
@@ -89,7 +96,7 @@ pub fn spawn(pool: sqlx::PgPool) -> WorkflowDrainHandle {
                     }
                 }
                 _ = ticker.tick() => {
-                    run_tick(&pool, &store, &notification_sink).await;
+                    run_tick(&pool, &store, &notification_sink, &payroll_staging).await;
                 }
             }
         }
@@ -103,6 +110,7 @@ async fn run_tick(
     pool: &sqlx::PgPool,
     store: &PgWorkflowRuntimeStore,
     notification_sink: &PgNotificationStore,
+    payroll_staging: &PgPayRunPort,
 ) {
     let orgs: Vec<Uuid> = match sqlx::query_scalar("SELECT id FROM platform_list_organizations()")
         .fetch_all(pool)
@@ -148,7 +156,11 @@ async fn run_tick(
         // Re-enter the tenant scope before the adapter call. The adapter arms
         // app.current_org from the org argument for its own txn; scope_org keeps
         // CURRENT_ORG consistent for any task-local reader on this path.
-        let result = scope_org(org, store.drain_payroll_job_outbox(org, DRAIN_BATCH_LIMIT)).await;
+        let result = scope_org(
+            org,
+            store.drain_payroll_job_outbox(org, DRAIN_BATCH_LIMIT, payroll_staging),
+        )
+        .await;
         match result {
             Ok(0) => {}
             Ok(created) => tracing::info!(

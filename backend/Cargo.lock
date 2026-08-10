@@ -863,6 +863,8 @@ dependencies = [
  "console-notifications-domain",
  "console-notifications-rest",
  "console-ontology-adapter-postgres",
+ "console-ontology-canonical-adapter-postgres",
+ "console-ontology-canonical-domain",
  "console-ontology-rest",
  "console-orgchange-adapter-postgres",
  "console-orgchange-rest",
@@ -1756,6 +1758,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "console-gate-writer-ownership"
+version = "0.1.0"
+dependencies = [
+ "console-ontology-canonical-domain",
+ "syn",
+]
+
+[[package]]
 name = "console-governance-adapter-postgres"
 version = "0.0.0"
 dependencies = [
@@ -2449,6 +2459,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "console-ontology-canonical-adapter-postgres"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-ontology-canonical-domain",
+ "console-platform-authz",
+ "console-platform-db",
+ "console-platform-request-context",
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx 0.9.0",
+ "thiserror 2.0.18",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "console-ontology-canonical-domain"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "serde_json",
+ "time",
+ "uuid",
+]
+
+[[package]]
 name = "console-ontology-domain"
 version = "0.0.0"
 dependencies = [
@@ -2469,6 +2509,7 @@ dependencies = [
  "console-kernel-core",
  "console-ontology-adapter-postgres",
  "console-ontology-application",
+ "console-ontology-canonical-domain",
  "console-ontology-domain",
  "console-platform-auth",
  "console-platform-authz",
@@ -2497,15 +2538,18 @@ version = "0.1.0"
 dependencies = [
  "console-governance-domain",
  "console-kernel-core",
+ "console-ontology-canonical-domain",
  "console-orgchange-domain",
  "console-platform-db",
  "console-platform-group",
  "console-platform-request-context",
+ "serde",
  "serde_json",
  "sha2 0.11.0",
  "sqlx 0.9.0",
  "thiserror 2.0.18",
  "time",
+ "tokio",
  "uuid",
 ]
 
@@ -2542,12 +2586,15 @@ name = "console-payroll-adapter-postgres"
 version = "0.1.0"
 dependencies = [
  "console-kernel-core",
+ "console-ontology-canonical-domain",
  "console-payroll-domain",
  "console-platform-db",
  "console-platform-request-context",
  "console-platform-test-support",
+ "console-workflow-domain",
  "serde",
  "serde_json",
+ "sha2 0.11.0",
  "sqlx 0.9.0",
  "thiserror 2.0.18",
  "time",
@@ -3371,6 +3418,7 @@ dependencies = [
  "console-notifications-adapter-postgres",
  "console-notifications-application",
  "console-notifications-domain",
+ "console-payroll-adapter-postgres",
  "console-platform-db",
  "console-platform-request-context",
  "console-workflow-domain",

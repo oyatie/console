@@ -12,6 +12,17 @@
 //! the op SQL itself inside the single apply transaction, re-implementing the
 //! SAME referential guards identity/registry enforce (active branches / active
 //! users / non-terminal equipment); the DB constraints remain the second net.
+/// `ObjectKey::Employment`'s port, plus the `employees` statements the REST
+/// handlers used to hold. The contract names THIS crate as that object's owner,
+/// so the port lives here rather than in the canonical adapter.
+///
+/// It is not the only `employees` write in this crate: `apply_op`'s
+/// `ReassignOrgUnit` arm still holds one, and the contract's own doc comment
+/// names it. That statement is inside the owner already, so it is not a second
+/// writer; routing org-change reassignment through a canonical transfer command
+/// is the retarget lane's work, not this module's.
+pub mod employment;
+
 use console_governance_domain::{Dependent, OnDelete, assess_impact};
 use console_kernel_core::{
     AuditAction, AuditClassification, AuditEvent, ErrorKind, KernelError, OrgId, TraceContext,

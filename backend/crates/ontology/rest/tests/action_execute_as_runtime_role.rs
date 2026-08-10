@@ -23,7 +23,10 @@
 //!   (i) a failed mutation NEVER spends the four-eyes approval;
 //!   (j) a replay returns the STORED receipt (proven by MOVING the head between
 //!       the first execution and the replay: a recomputed receipt could not still
-//!       describe v1), while a changed digest or actor conflicts.
+//!       describe v1), while a changed digest or actor conflicts;
+//!   (k) the DRY RUN is dry: preflight refuses an edit set only the WRITEBACK can
+//!       refuse (and with execute's own error), while persisting nothing on the
+//!       rejected AND the accepted set.
 //!
 //! NOTE (migrations path): runs against the canonical
 //! `../../platform/db/migrations` (the ship path). The earlier concurrent-lane
@@ -830,6 +833,12 @@ async fn preflight_rejects_every_command_execute_rejects(owner_pool: PgPool) {
                 instance_id: Some(instance_id),
                 title: None,
                 expected_revision: None,
+                // Strictly after the seeded revision. Everything EXCEPT the
+                // writeback-only input has to be genuinely executable, or this
+                // case would pass by refusing for the wrong reason: preflight
+                // now dry-runs the writer, and a `valid_from` equal to the
+                // current revision's is a refusal that writer raises.
+                valid_from: Some(AT + time::Duration::seconds(1)),
                 ..create_command(type_id, "hi")
             },
         ),
@@ -1114,6 +1123,185 @@ async fn preflight_writes_zero_rows_and_never_spends_the_approval(owner_pool: Pg
         1,
         "the edit moved ont_instances WITHOUT changing its row count — which is \
          exactly what a count-only census cannot see"
+    );
+}
+
+/// (k) THE DRY RUN IS ACTUALLY DRY. Preparation resolves the action's `edits`;
+/// only the WRITEBACK judges what they resolved to, against the object type's
+/// property schema and field kinds. A preflight that skips that judgement reports
+/// `would_execute: true` for an edit set the writeback then refuses — a false
+/// green in the product, and worse than no dry run because operators trust it
+/// (DESIGN.md §4-42 puts 시뮬레이션 on the write path precisely so they can).
+///
+/// `priority` is declared `choice`, so the writer's `check_field_shape` requires
+/// a string. A NUMERIC `priority` param passes `validate_params` (which checks
+/// declaration and presence, not type) and passes `apply_edits` (which resolves
+/// writes and does not type them), so the refusal is reachable ONLY by running
+/// the writer. Both dispatch branches are covered: an edit
+/// (`stage_revision_in_tx`) and a create (`create_instance_in_tx`).
+///
+/// And the simulation persists NOTHING — the same content census as (h), over a
+/// REJECTED edit set and an ACCEPTED one. (h) proves the accepted case still
+/// leaves the four-eyes approval spendable; this one proves the accepted case is
+/// still byte-identical now that preflight opens a real write transaction to
+/// answer it.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn preflight_refuses_an_edit_set_the_writeback_refuses(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let cmd = command_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "a").await;
+    let type_id = seed_instance_type_with_action(
+        &owner_pool,
+        org,
+        actor,
+        "wo.dryrun",
+        "set_priority",
+        json!(["authority"]),
+        json!([]),
+    )
+    .await;
+    attach_enforced_view_permit(&owner_pool, *org.as_uuid(), *type_id.as_uuid(), "wo.dryrun").await;
+
+    // One committed instance so the EDIT case addresses a real head.
+    let created = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(
+                &super_admin(actor, org),
+                "set_priority",
+                create_command(type_id, "lo"),
+            )
+            .await
+    })
+    .await
+    .expect("seed instance");
+    let instance_id = created.instance.unwrap().instance.id;
+
+    // A number into a `choice` property: refused by the writer, by nothing before it.
+    let bad_params = json!({"priority": 7, "count": 5});
+    let rejected: Vec<(&str, ActionCommand)> = vec![
+        (
+            "create with a wrongly-typed edit",
+            ActionCommand {
+                params: bad_params.clone(),
+                ..create_command(type_id, "hi")
+            },
+        ),
+        (
+            "edit with a wrongly-typed edit",
+            ActionCommand {
+                instance_id: Some(instance_id),
+                title: None,
+                expected_revision: Some(1),
+                valid_from: Some(AT + time::Duration::seconds(1)),
+                params: bad_params,
+                ..create_command(type_id, "hi")
+            },
+        ),
+    ];
+
+    for (label, command) in rejected {
+        let before = row_census(&owner_pool, org).await;
+        let preflighted = console_platform_request_context::scope_org(org, async {
+            state(&rt, &cmd)
+                .preflight_action(&super_admin(actor, org), "set_priority", command.clone())
+                .await
+        })
+        .await;
+        let preflight_error = preflighted
+            .as_ref()
+            .err()
+            .map(|e| format!("{e:?}"))
+            .unwrap_or_else(|| {
+                panic!("{label}: preflight reported an executable command: {preflighted:?}")
+            });
+        assert!(
+            preflight_error.contains("wrong type for field kind"),
+            "{label}: the refusal must be the WRITER's, not some earlier one: \
+             {preflight_error}"
+        );
+        assert_eq!(
+            before,
+            row_census(&owner_pool, org).await,
+            "{label}: the refused simulation persisted rows — §4-42 requires zero \
+             side effects, and the dry run's transaction must roll back"
+        );
+
+        // PARITY, as the identical error value: preflight is not merely refusing
+        // too, it is refusing with exactly what execute refuses with, so the
+        // console renders one status and one message for one command.
+        let executed = console_platform_request_context::scope_org(org, async {
+            state(&rt, &cmd)
+                .execute_action(&super_admin(actor, org), "set_priority", command)
+                .await
+        })
+        .await;
+        assert_eq!(
+            preflight_error,
+            format!("{:?}", executed.as_ref().unwrap_err()),
+            "{label}: preflight and execute must refuse identically, got \
+             {executed:?}"
+        );
+        assert_eq!(
+            before,
+            row_census(&owner_pool, org).await,
+            "{label}: the refused EXECUTE persisted rows"
+        );
+    }
+
+    // The ACCEPTED edit set: still reported executable, and still byte-identical
+    // afterwards even though answering it now opens a write transaction.
+    let accepted = ActionCommand {
+        instance_id: Some(instance_id),
+        title: None,
+        expected_revision: Some(1),
+        valid_from: Some(AT + time::Duration::seconds(1)),
+        ..create_command(type_id, "hi")
+    };
+    let before_accepted = row_census(&owner_pool, org).await;
+    let outcome = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .preflight_action(
+                &super_admin(actor, org),
+                "set_priority",
+                ActionCommand {
+                    command_id: None,
+                    expected_revision: None,
+                    ..accepted.clone()
+                },
+            )
+            .await
+    })
+    .await
+    .expect("a valid edit set must still preflight");
+    assert!(outcome.would_execute, "{outcome:?}");
+    assert_eq!(
+        before_accepted,
+        row_census(&owner_pool, org).await,
+        "the ACCEPTED simulation persisted rows — the rollback is what makes the \
+         dry run dry, and it is load-bearing on exactly this case"
+    );
+
+    // POSITIVE CONTROL for the census: the same command, executed, must move it.
+    // Without this, every equality above could be reading nothing at all.
+    let after_dry = row_census(&owner_pool, org).await;
+    console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(&super_admin(actor, org), "set_priority", accepted)
+            .await
+    })
+    .await
+    .expect("the command the dry run admitted must execute");
+    assert_eq!(
+        moved(&after_dry, &row_census(&owner_pool, org).await),
+        vec![
+            "ont_instances",
+            "ont_instance_revisions",
+            "ont_action_command_receipts",
+            "audit_events",
+        ],
+        "the census cannot see this write, so it could not have seen a dry-run \
+         write either"
     );
 }
 

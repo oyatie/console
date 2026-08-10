@@ -290,7 +290,8 @@ jobs:
             -p console-workflow-runtime-adapter-postgres -p console-workorder-rest \
             -p console-financial-domain -p console-identity-application -p console-integrity \
             -p console-platform-auth -p console-platform-authz-rest -p console-workflow-runtime \
-            -p console-logistics-rest
+            -p console-logistics-rest -p console-ontology-canonical-domain \
+            -p console-gate-writer-ownership
           # Doc tests, same step so no new step name has to be declared anywhere.
           # `compile_fail` doctests are the only artifact that can hold a NEGATIVE
           # type-boundary claim ("this must not compile"), and they execute nowhere
@@ -334,6 +335,13 @@ jobs:
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-app --test config --test dev_seed_notification_links --test openslo_files \
             --test well_known --test workbench_api
+          # The writer-ownership gate's mutation suite. It lives here and not in
+          # the backend job's Buck2 mutation-suite step because 3 of its 41 tests
+          # read THIS repository -- the whole backend crate tree, and
+          # ops/postgres-reconcile-topology.sh -- which a Buck2 action does not
+          # materialize. A real checkout is the requirement, and this job has one.
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-gate-writer-ownership --test gate_detects_violation
 
   # PostgreSQL reachability facets (S1 + S2 domain split). Package partition via --shard-id.
   # Do NOT put the load-bearing branch-protection display name on these jobs
@@ -728,7 +736,17 @@ jobs:
       - name: Personal-data-classification gate
         run: cargo run -p console-gate-personal-data-classification
 
-      # The ten `cargo run -p console-gate-*` steps above only prove the gates
+      # The STATIC half of writer ownership: at most one production crate may
+      # hold DML against each canonical-object table. Best-effort by
+      # construction — the load-bearing half is the database capability census
+      # in ops/postgres-reconcile-topology.sh, executed by
+      # //backend/ci/gates/writer-ownership:console-gate-writer-ownership-itest-census_executes_against_postgres
+      # through the disposable-PostgreSQL cargo harness. Two residual shapes are
+      # pinned by `known_residual_` tests; bead console-tai.1 carries the total fix.
+      - name: Writer-ownership gate
+        run: cargo run -p console-gate-writer-ownership
+
+      # The eleven `cargo run -p console-gate-*` steps above only prove the gates
       # exit 0 against THIS tree. A gate whose scan root no longer resolves --
       # e.g. after the 2026-07-28 deletion moved or emptied a directory it walks
       # -- also exits 0, so "green" cannot be distinguished from "scanned
@@ -737,11 +755,23 @@ jobs:
       # were compiled by clippy --all-targets and never executed.
       #
       # `env -u DATABASE_URL` matches the other hermetic Buck2 steps: none of
-      # these six touch a database (audit-coverage carries a stale
+      # these eight targets touches a database (audit-coverage carries a stale
       # `needs-postgres` label only because gen_first_party.py keys on the
       # literal "sqlx" appearing in its fixture strings -- the crate has zero
       # dependencies). Placed before the DB-heavy steps so a de-fanged gate
       # fails the job in minutes rather than at the end.
+      #
+      # console-gate-writer-ownership is DELIBERATELY ABSENT from this list, and
+      # adding it here fails the job. MEASURED 2026-08-09: under Buck2 only a
+      # target's own mapped_srcs are materialized, so 3 of the 41 tests in its
+      # gate_detects_violation die on a path that is not there --
+      # `measured_tip_has_exactly_the_ratcheted_dual_writers` walks the whole
+      # backend crate tree, and two more read ops/postgres-reconcile-topology.sh
+      # ("No such file or directory (os error 2)"). Unlike its siblings, that
+      # suite asserts about THIS repository and not only about throwaway trees,
+      # so it runs from a real checkout under `domain-unit` instead.
+      # Its database half runs in the PostgreSQL reachability facets via
+      # tools/ci/postgres-cargo-map.json.
       - name: Buck2 CI-gate mutation suites — every gate proven to still reject
         working-directory: .
         run: |

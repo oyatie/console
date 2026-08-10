@@ -118,9 +118,10 @@ const PLAN = new Map([
   ["Executed-tests ratchet — a test binary must have a path from a workflow step", { tier: "fast" }],
   ["JavaScript test reachability ratchet", { tier: "fast" }],
   ["JavaScript test reachability unit tests", { tier: "fast" }],
+  // Runs node directly on the harness preflight: no container, no bypass env var, so `fast`.
+  ["Lane fan-out harness preflight", { tier: "fast" }],
   // Execs tools/lanes/no-credential-in-argv.sh directly. No container, no
   // bypass env var, so `fast`.
-  ["Lane fan-out harness preflight", { tier: "fast" }],
   ["Workflow test-runner credential literals", { tier: "fast" }],
 
   // ---- domain-unit -------------------------------------------------------
@@ -141,12 +142,17 @@ const PLAN = new Map([
   ["IaC tier-discipline gate", { tier: "fast" }],
   ["Fabricated-branch gate", { tier: "fast" }],
   ["Personal-data-classification gate", { tier: "fast" }],
-  // The ten `cargo run -p console-gate-*` steps above prove only that each
+  // Static half only. The load-bearing database half of writer ownership is the
+  // capability census in ops/postgres-reconcile-topology.sh, executed by
+  // console-gate-writer-ownership's census binary in the PostgreSQL facets.
+  ["Writer-ownership gate", { tier: "fast" }],
+  // The eleven `cargo run -p console-gate-*` steps above prove only that each
   // gate exits 0 against THIS tree — which a gate scanning an empty directory
-  // also does. These six suites plant a violation in a throwaway tree and
+  // also does. These eight targets plant a violation in a throwaway tree and
   // assert the gate rejects it, so they are what distinguishes "scanned and
-  // found nothing" from "scanned nothing". Unsets DATABASE_URL: none of the
-  // five touch a database.
+  // found nothing" from "scanned nothing". Unsets DATABASE_URL: none of them
+  // touches a database. writer-ownership's equivalent suite is not here: it
+  // reads the real checkout, so it runs under `Domain crate unit tests`.
   ["Buck2 CI-gate mutation suites — every gate proven to still reject", { tier: "fast" }],
   ["PR 473 migration operational contract tests", { tier: "fast" }],
   ["Reconcile portable PostgreSQL role topology", {

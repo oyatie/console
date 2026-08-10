@@ -486,7 +486,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "fb1367a2e6d9f84364ccd02c044464902e070112",
+    "blob_sha": "a33b6dd367323e66fec87c4dc7a9900ff44458dd",
     "archive_tag": null
   },
   {
@@ -916,7 +916,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "c4c7aa53a02ad62a1d2e9e0edb5e1409170f465a",
+    "blob_sha": "296965e8b387f4afba9d487014d8f0ba9439c9cb",
     "archive_tag": null
   },
   {
@@ -2256,7 +2256,7 @@
     "status": "frozen",
     "replacement": null,
     "retention": "retain as context",
-    "blob_sha": "2a2daf4bf9e7f6e29d7db4822141d6ff46110ae6",
+    "blob_sha": "74ebea8be8b3e405f861b90cf011a448814ec215",
     "archive_tag": null
   },
   {
@@ -3492,6 +3492,16 @@
   {
     "path": "docs/program/ledger/2026-08-09-harness-fail-closed-sol-critic.md",
     "blob_sha": "3995b9d85645328b47366dbef957694a9a215413",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/program/ledger/2026-08-09-p4-canonical-writer-ownership.md",
+    "blob_sha": "4f0ad5b40394481f94626dd490828a87adc347ca",
     "class": "evidence",
     "owner": "repository maintainers",
     "status": "frozen",

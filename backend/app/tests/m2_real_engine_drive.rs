@@ -40,6 +40,11 @@
 //! no FK to it), so a synthetic id exercises the tail without the full WO chain.
 
 use console_kernel_core::{OrgId, WorkOrderId};
+// `payroll_draft_runs` is `ObjectKey::PayRun`'s table, so the drain no longer
+// writes it: the real owner is injected as the staging port. Using the REAL
+// `PgPayRunPort` here rather than a stub is deliberate — a stub would prove the
+// drain calls SOMETHING, not that the owner's statement still stages the row.
+use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
 use console_workflow_runtime_adapter_postgres::{M2_STRANGLER_FLAG, PgWorkflowRuntimeStore};
 use console_workorder_rest::m2_strangler::{drive_completion_tail, reconcile_completion_tails};
 use sqlx::postgres::PgPoolOptions;
@@ -187,6 +192,7 @@ async fn real_engine_completion_tail_drives_one_succeeded_run_and_one_blocked_dr
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let (definition_id, version) = seed_definition(&rt_pool, org).await;
     let store = PgWorkflowRuntimeStore::new(rt_pool.clone());
+    let payroll_staging = PgPayRunPort::new(rt_pool.clone(), tokio::runtime::Handle::current());
     let work_order_id = WorkOrderId::new();
 
     // --- Drive the tail through the REAL engine (system drive: no actor/shadow). --
@@ -236,7 +242,7 @@ async fn real_engine_completion_tail_drives_one_succeeded_run_and_one_blocked_dr
 
     // --- Drain: exactly ONE BLOCKED_LEGAL_GATE draft, calculation disabled. -------
     let created = store
-        .drain_payroll_job_outbox(org, DRAIN_LIMIT)
+        .drain_payroll_job_outbox(org, DRAIN_LIMIT, &payroll_staging)
         .await
         .unwrap();
     assert_eq!(
@@ -296,7 +302,7 @@ async fn real_engine_completion_tail_drives_one_succeeded_run_and_one_blocked_dr
     // --- RE-DRAIN: the event is DELIVERED, so ZERO additional drafts. -------------
     assert_eq!(
         store
-            .drain_payroll_job_outbox(org, DRAIN_LIMIT)
+            .drain_payroll_job_outbox(org, DRAIN_LIMIT, &payroll_staging)
             .await
             .unwrap(),
         0,
@@ -481,6 +487,7 @@ async fn reconciler_recovers_a_partial_crashed_run_and_is_idempotent(owner_pool:
     seed_partial_run(&rt_pool, org, definition_id, version, &completion_key).await;
 
     let store = PgWorkflowRuntimeStore::new(rt_pool.clone());
+    let payroll_staging = PgPayRunPort::new(rt_pool.clone(), tokio::runtime::Handle::current());
 
     // --- Precondition: exactly one RUNNING run, no nodes/outbox/draft. -------------
     assert_eq!(
@@ -551,7 +558,7 @@ async fn reconciler_recovers_a_partial_crashed_run_and_is_idempotent(owner_pool:
 
     // --- Drain the restaged tail (same tick as the drainer): ONE BLOCKED draft. ----
     let created = store
-        .drain_payroll_job_outbox(org, DRAIN_LIMIT)
+        .drain_payroll_job_outbox(org, DRAIN_LIMIT, &payroll_staging)
         .await
         .unwrap();
     assert_eq!(
@@ -576,7 +583,7 @@ async fn reconciler_recovers_a_partial_crashed_run_and_is_idempotent(owner_pool:
     );
     assert_eq!(
         store
-            .drain_payroll_job_outbox(org, DRAIN_LIMIT)
+            .drain_payroll_job_outbox(org, DRAIN_LIMIT, &payroll_staging)
             .await
             .unwrap(),
         0,

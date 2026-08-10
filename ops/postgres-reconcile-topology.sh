@@ -15,7 +15,20 @@ set -euo pipefail
 : "${CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD:?required}"
 : "${CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:?required}"
 : "${CONSOLE_ALLOW_LEGACY_CONSOLE_APP_SUPERUSER_CONVERSION:=0}"
-export POSTGRES_ADMIN_USER POSTGRES_ADMIN_PASSWORD
+# Set to 1 by the POST-MIGRATION invocation. The canonical writer-ownership
+# census can only see the tables that exist when it runs, so a reconcile against
+# a fresh cluster legitimately examines zero of them -- and a silently-skipped
+# census must never be readable as a pass. With this set, examining zero
+# canonical tables is a FAILURE, not a tolerated fresh database.
+: "${CONSOLE_TOPOLOGY_REQUIRE_CANONICAL_TABLES:=0}"
+case "${CONSOLE_TOPOLOGY_REQUIRE_CANONICAL_TABLES}" in
+  0|1) ;;
+  *)
+    echo "topology: CONSOLE_TOPOLOGY_REQUIRE_CANONICAL_TABLES must be 0 or 1" >&2
+    exit 1
+    ;;
+esac
+export POSTGRES_ADMIN_USER POSTGRES_ADMIN_PASSWORD CONSOLE_TOPOLOGY_REQUIRE_CANONICAL_TABLES
 
 if [[ "${POSTGRES_ADMIN_USER}" == "console_app" ]]; then
   echo "topology: POSTGRES_ADMIN_USER must be distinct from console_app" >&2
@@ -289,6 +302,10 @@ SET LOCAL log_min_error_statement = 'panic';
 \getenv ontology_password CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD
 \getenv platform_force_password CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD
 \getenv legacy_reassign CONSOLE_LEGACY_REASSIGN_FROM_ADMIN
+\getenv canonical_require CONSOLE_TOPOLOGY_REQUIRE_CANONICAL_TABLES
+-- Read back by the DO $canonical$ block below. A psql variable cannot be
+-- interpolated inside a dollar-quoted body, so it travels as a GUC.
+SET LOCAL console.canonical_require_tables = :'canonical_require';
 
 SELECT format(
   'CREATE ROLE console_app LOGIN NOSUPERUSER BYPASSRLS INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD %L',
@@ -641,6 +658,451 @@ BEGIN
     END IF;
 END
 $block$;
+
+-- Canonical-object writer ownership: the DATABASE half.
+--
+-- WHAT THIS HALF IS TOTAL OVER: whether a ROLE holds a DML privilege ON a
+-- relation in the reachable canonical set. It does not union catalogs and it
+-- keeps no list of the ways a privilege can arrive. It asks PostgreSQL the
+-- question directly, per role, per relation, per DML verb --
+-- `has_any_column_privilege`/`has_table_privilege` already account for direct
+-- grants, COLUMN grants, grants to PUBLIC, OWNERSHIP, role membership and
+-- superuser in one call, including the sources nobody has thought of yet. Four
+-- rounds were lost to unioning relacl, then attacl, then relowner, then
+-- pg_auth_members, then rolsuper, then partition children; each round closed the
+-- named case and the next reviewer named another. That enumeration is gone.
+--
+-- WHAT IT IS NOT TOTAL OVER: the PATHS by which canonical rows get written. The
+-- privilege question is asked about the relations in the examined set, so a role
+-- that writes canonical rows through some OTHER object holds no privilege the
+-- census can see. Two live examples, each executed against a migrated database
+-- by review and observed passing this block:
+--
+--   * an auto-updatable VIEW over a canonical table, under a name the roster
+--     does not carry, granted to a rogue;
+--   * a SECURITY DEFINER function owned by a privileged role -- which is how
+--     `lose_dml` roles are documented to reach their data, so this is the
+--     architecture rather than a corner case.
+--
+-- Closing those needs a census over view dependencies and function bodies. It is
+-- follow-up work; it is stated here rather than implied away.
+--
+-- Two consequences of asking PostgreSQL the privilege question, embraced rather
+-- than worked around:
+--
+--   * A SUPERUSER reports true on everything, so every superuser must appear on
+--     the expected-writer ratchet BY NAME. That is the point: the trusted set is
+--     explicit instead of silently excluded, which is what let an unexpected
+--     superuser write every canonical table and still pass. The single exception
+--     is the role EXECUTING this reconcile (`session_user`) -- it is running the
+--     block, so trusting it is not a decision the block gets to make.
+--   * MEMBERSHIP stops being a separate guard. `pg_write_all_data` holds DML in
+--     every cluster by construction and is named on the ratchet, so anyone who
+--     can BECOME it fails; that is what the deleted pg_auth_members guard was
+--     reaching for.
+--
+-- OWNERSHIP does NOT collapse into it, and folding it in was a fail-open. The
+-- census excludes a candidate by NAME before it asks the privilege question, so
+-- every role on the write ratchet -- including `console_rt`, the runtime login
+-- principal -- could OWN a canonical table and report clean. An owner holds more
+-- than DML: ALTER, DROP, TRUNCATE, and `DISABLE ROW LEVEL SECURITY` / `DROP
+-- POLICY` on relations whose tenant isolation IS row-level security. So the
+-- owner is pinned separately by `expected_owners`, which the ratchet cannot
+-- widen.
+--
+-- WHAT IT CANNOT DO: draw a CRATE boundary. deploy/apps/console/base/backend.yaml:62
+-- and worker.yaml:53 both connect the runtime as console_rt, and the ratchet
+-- whitelists ('console_rt','*'). Every crate in the application is therefore the
+-- same database principal: this half cannot tell console-payroll-adapter-postgres
+-- from console-leave-adapter-postgres. The static gate in
+-- backend/ci/gates/writer-ownership is the ONLY crate-level boundary that exists
+-- today. Per-crate database roles are what would make this half crate-aware;
+-- they are follow-up work, not done here.
+--
+-- WHEN IT RUNS: on every reconcile, on the relations that exist right now. That
+-- is why CONSOLE_TOPOLOGY_REQUIRE_CANONICAL_TABLES exists. Every automated path
+-- ran the reconcile BEFORE migrations, so the REVOKE loop iterated nothing and
+-- the census returned NULL unconditionally -- a structural no-op that looked
+-- like a pass. The post-migration invocation
+-- (backend/ci/gates/writer-ownership/canonical-enforce.sh) sets the flag, and
+-- then examining zero canonical relations is a FAILURE.
+--
+-- It does four things:
+--
+--   1. RESOLVES the roster by REACHABILITY, not by name-in-public. Each roster
+--      name must resolve to exactly one non-temporary relation, in `public`, as
+--      a table or partitioned table; a name that has moved schema, changed
+--      relkind, or acquired a second copy anywhere in the cluster (a shadow
+--      copy is a copy outside `public`) FAILS instead of quietly dropping out of
+--      the examined set. The resolved roots are then expanded through
+--      pg_inherits in BOTH directions -- to every partition and inheritance
+--      CHILD, because a grant on a child is a write to the parent's rows, and to
+--      every PARENT a canonical table has been made a child of, because DML on
+--      that parent writes the canonical rows while holding no privilege on the
+--      canonical relation at all. Neither carries a roster relname. A migrated
+--      database must additionally have every `required_tables` entry, and
+--      examining zero relations while claiming to enforce is a failure.
+--   2. REVOKES INSERT, UPDATE, DELETE, TRUNCATE on every relation in that set
+--      from the three command roles below. They reach their data through
+--      SECURITY DEFINER functions; direct table DML is never part of their job.
+--   3. CENSUSES the full cross product of (every role that is not on the ratchet)
+--      x (every relation in that set) x (INSERT, UPDATE, DELETE, TRUNCATE), and
+--      RAISES on any that can write. Deny by default: a role nobody thought of,
+--      a grant to PUBLIC, a rogue owner, a rogue superuser and a member of a
+--      write role are all the same finding.
+--   4. PINS the OWNER of every relation in that set to `expected_owners`,
+--      independently of the census ratchet. Ownership is DDL authority, not
+--      DML, so a role the ratchet permits to WRITE may still not OWN.
+--
+-- Membership is asked as reachability too. `has_table_privilege` ignores a
+-- NOINHERIT membership, but a NOINHERIT member can still SET ROLE and write, so
+-- the census asks whether the candidate can BECOME any role that holds the
+-- privilege -- `pg_has_role(candidate, holder, 'MEMBER')`, which is reflexive
+-- and therefore subsumes the direct question.
+--
+-- The membership-readback control at the exact-topology REVOKE above is a
+-- DIFFERENT control and stays: it REPAIRS membership in the seven application
+-- roles before this block runs, and `topology.membership_readback_failed` pins
+-- the result.
+--
+-- WHICH ROLE LOSES WHICH DML, and what is still expected:
+--   console_leave_cmd,
+--   console_ontology_cmd,
+--   console_platform_force_cmd  lose INSERT, UPDATE, DELETE, TRUNCATE on every
+--                               relation in the resolved set, every reconcile.
+--   console_app                 OWNS every canonical table (migrations run as
+--                               it) and therefore holds implicit DML. Named on
+--                               the write ratchet, and the sole entry in
+--                               `expected_owners`.
+--   console_rt                  still holds INSERT, UPDATE, DELETE on all of
+--                               them, from the ALTER DEFAULT PRIVILEGES above.
+--                               The port lanes remove it.
+--   console_leave_definer       still holds INSERT, UPDATE on `employees`, from
+--                               migration 0166. console-kmb removes it.
+--   pg_write_all_data           holds DML on every table in every PostgreSQL
+--                               cluster by construction. Naming the ROLE is what
+--                               makes every MEMBER of it fail.
+--   session_user                the role executing this reconcile.
+--   anything else               fails the reconcile.
+--
+-- The expected list is a RATCHET: it is the measured writer surface of this
+-- tree, each entry carries the lane that deletes it, and no lane may add one
+-- without editing this file and the guard test that pins it.
+DO $canonical$
+DECLARE
+    canonical_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN table roster. Kept identical to
+      -- console_ontology_canonical_domain::ObjectKey::owned_tables; the test
+      -- `topology_script_table_roster_matches_the_registry` in
+      -- backend/ci/gates/writer-ownership asserts the two lists are equal.
+      'organizations',
+      'company_revisions',
+      'org_units',
+      'org_unit_revisions',
+      'org_unit_source_bindings',
+      'job_positions',
+      'job_position_revisions',
+      'persons',
+      'person_revisions',
+      'employee_person_bindings',
+      'employees',
+      'employment_heads',
+      'employment_revisions',
+      'employment_source_bindings',
+      'payroll_draft_runs',
+      'payroll_draft_lines',
+      'payroll_line_calculations',
+      'payroll_run_exceptions',
+      'payroll_disbursements',
+      'payroll_payslip_deliveries'
+      -- canonical-writer-ownership: END table roster
+    ];
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables. The roster entries a
+      -- MIGRATED database must actually have, so that the census's SCOPE is
+      -- pinned and not merely non-empty. As of migration 0215 this list is the
+      -- WHOLE roster above -- every canonical name now resolves to a real
+      -- relation, so there is no longer such a thing as a roster name a
+      -- migrated database may legitimately lack. The executed census test pins
+      -- this exact set.
+      'organizations',
+      'employees',
+      -- Migration 0213: the three tables of ObjectKey::Person.
+      'persons',
+      'person_revisions',
+      'employee_person_bindings',
+      -- Migration 0214: the three MISSING tables of ObjectKey::Employment.
+      -- 'employees' is already listed above and is not re-added.
+      'employment_heads',
+      'employment_revisions',
+      'employment_source_bindings',
+      -- Migration 0215: the last six. 'organizations' is the seventh name of
+      -- these three objects, already listed above and not re-added.
+      'company_revisions',
+      'org_units',
+      'org_unit_revisions',
+      'org_unit_source_bindings',
+      'job_positions',
+      'job_position_revisions',
+      'payroll_draft_runs',
+      'payroll_draft_lines',
+      'payroll_line_calculations',
+      'payroll_run_exceptions',
+      'payroll_disbursements',
+      'payroll_payslip_deliveries'
+      -- canonical-writer-ownership: END required tables
+    ];
+    expected_owners CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN expected owners. Migrations are
+      -- applied as console_app, so it owns every canonical relation. This is
+      -- NOT the expected-writer ratchet below and no entry there may widen it:
+      -- ownership is DDL authority (ALTER, DROP, TRUNCATE, DISABLE ROW LEVEL
+      -- SECURITY, DROP POLICY), not the DML the census asks about.
+      'console_app'
+      -- canonical-writer-ownership: END expected owners
+    ];
+    lose_dml CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN revoked roles
+      'console_leave_cmd',
+      'console_ontology_cmd',
+      'console_platform_force_cmd'
+      -- canonical-writer-ownership: END revoked roles
+    ];
+    dml CONSTANT TEXT[] := ARRAY['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE'];
+    require_tables CONSTANT BOOLEAN :=
+        COALESCE(current_setting('console.canonical_require_tables', true), '0') = '1';
+    examined OID[];
+    examined_names TEXT;
+    revoke_targets TEXT;
+    target TEXT;
+    offending TEXT;
+    leaked TEXT;
+BEGIN
+    -- 1a. RESOLUTION. A roster name is a name; a rename, a schema move, a view
+    -- swap or a shadow copy all break name matching, and every one of them
+    -- shrinks the examined set without emptying it. So resolve the name and
+    -- FAIL on anything that is not exactly one table in `public`. Temporary
+    -- relations are excluded because a temp schema is session-private and
+    -- cannot alias a shared write.
+    SELECT string_agg(problem, ', ' ORDER BY problem)
+    INTO offending
+    FROM (
+        SELECT wanted.name || ' -> ' || string_agg(
+                 namespace.nspname || '.' || relation.relname || ':' || relation.relkind::TEXT,
+                 '+' ORDER BY namespace.nspname, relation.relname
+               ) AS problem
+        FROM unnest(canonical_tables) AS wanted(name)
+        JOIN pg_class relation
+          ON relation.relname = wanted.name
+         AND relation.relpersistence <> 't'
+        JOIN pg_namespace namespace ON namespace.oid = relation.relnamespace
+        GROUP BY wanted.name
+        HAVING bool_or(namespace.nspname <> 'public')
+            OR bool_or(relation.relkind NOT IN ('r', 'p'))
+    ) AS unresolved;
+    IF offending IS NOT NULL THEN
+        RAISE EXCEPTION 'topology.canonical_roster_unresolved: a canonical name does not resolve to exactly one public table, so the enforced set shrank: %', offending;
+    END IF;
+
+    -- 1b. REACHABILITY. The resolved roots plus every relation an inheritance
+    -- edge connects them to, in BOTH directions. Neither carries a roster
+    -- relname, so a name-matched census cannot see a grant on either.
+    WITH RECURSIVE roots AS (
+        SELECT relation.oid
+        FROM pg_class relation
+        WHERE relation.relnamespace = 'public'::regnamespace
+          AND relation.relkind IN ('r', 'p')
+          AND relation.relpersistence <> 't'
+          AND relation.relname = ANY (canonical_tables)
+    ), reachable AS (
+        SELECT roots.oid FROM roots
+        UNION
+        SELECT edge.reached
+        FROM reachable
+        -- One recursive reference, so both directions travel as edges of one
+        -- relation. PostgreSQL rejects a WITH RECURSIVE whose recursive term
+        -- names itself twice.
+        JOIN (
+            -- DOWN: rows written through a partition or inheritance CHILD land
+            -- in the parent, and the child carries a relname the roster has not.
+            SELECT inheritance.inhparent AS held, inheritance.inhrelid AS reached
+            FROM pg_inherits inheritance
+            UNION ALL
+            -- UP: a canonical table made the CHILD of some other relation is
+            -- written through that PARENT, which needs no privilege on the
+            -- canonical relation at all -- so a census scoped to the roster's
+            -- own relations asks a question that cannot see the write.
+            SELECT inheritance.inhrelid AS held, inheritance.inhparent AS reached
+            FROM pg_inherits inheritance
+        ) AS edge ON edge.held = reachable.oid
+    )
+    SELECT array_agg(relation.oid ORDER BY relation.relname),
+           string_agg(relation.relname, ',' ORDER BY relation.relname)
+    INTO examined, examined_names
+    FROM reachable
+    JOIN pg_class relation ON relation.oid = reachable.oid;
+
+    RAISE NOTICE 'topology.canonical_enforcement: examined % canonical tables [%]',
+        COALESCE(cardinality(examined), 0), COALESCE(examined_names, '');
+    IF COALESCE(cardinality(examined), 0) = 0 AND require_tables THEN
+        RAISE EXCEPTION 'topology.canonical_enforcement_examined_no_tables: this run claimed to enforce canonical writer ownership and found no canonical table to enforce it on';
+    END IF;
+
+    -- 1c. The roster entries a MIGRATED database must have. Armed by the same
+    -- GUC as the zero-relation guard, because a pre-migration reconcile
+    -- legitimately has none of these.
+    IF require_tables THEN
+        SELECT string_agg(wanted.name, ', ' ORDER BY wanted.name)
+        INTO offending
+        FROM unnest(required_tables) AS wanted(name)
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM pg_class relation
+            WHERE relation.relnamespace = 'public'::regnamespace
+              AND relation.relkind IN ('r', 'p')
+              AND relation.relname = wanted.name
+        );
+        IF offending IS NOT NULL THEN
+            RAISE EXCEPTION 'topology.canonical_roster_incomplete: a canonical table this run must enforce on is missing, so the census silently shrank: %', offending;
+        END IF;
+    END IF;
+
+    -- 2. REVOKE, on the same resolved set. `regclass` renders each relation
+    -- schema-qualified and quoted as needed, so a partition child is revoked by
+    -- its own identity rather than by the roster name it does not carry.
+    SELECT string_agg(quote_ident(role_name), ', ' ORDER BY role_name)
+    INTO revoke_targets
+    FROM unnest(lose_dml) AS wanted(role_name)
+    WHERE EXISTS (SELECT 1 FROM pg_roles WHERE rolname = wanted.role_name);
+    IF revoke_targets IS NOT NULL THEN
+        FOR target IN
+            SELECT relation.oid::regclass::TEXT
+            FROM unnest(examined) AS relation(oid)
+            ORDER BY 1
+        LOOP
+            EXECUTE format(
+                'REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON %s FROM %s',
+                target,
+                revoke_targets
+            );
+        END LOOP;
+    END IF;
+
+    -- 3. THE CENSUS. One question, asked of PostgreSQL, for every unratcheted
+    -- role x every examined relation x every DML verb.
+    --
+    -- canonical-writer-ownership: BEGIN census statement. The region
+    -- `topology_script_names_the_roles_that_lose_dml` holds the deleted-catalog
+    -- ratchet over: the six catalog columns and views that guard test names may
+    -- not be read HERE. Each was a hand-maintained union that
+    -- `has_table_privilege`/`has_any_column_privilege` subsume, and the OWNER
+    -- column in particular becomes subject to the ratchet below when it is read
+    -- here, which is the proven fail-open the step-4 owner pin exists to close.
+    SELECT string_agg(DISTINCT census.entry, ', ')
+    INTO leaked
+    FROM (
+        SELECT format('%s:%s:%s', candidate.rolname, relation.relname, privilege.name) AS entry
+        FROM pg_roles candidate
+        CROSS JOIN unnest(examined) AS examined_relation(oid)
+        JOIN pg_class relation ON relation.oid = examined_relation.oid
+        CROSS JOIN unnest(dml) AS privilege(name)
+        WHERE NOT EXISTS (
+              SELECT 1
+              FROM (VALUES
+                -- canonical-writer-ownership: BEGIN expected writers.
+                -- (role, relation name or '*' for every examined relation).
+                -- Pinned by `topology_script_names_the_roles_that_lose_dml`;
+                -- each entry names the lane that deletes it.
+                -- console_app: owner of every canonical table, because
+                -- migrations are applied as it, and therefore a holder of
+                -- implicit DML. This entry authorises the WRITE only; who may
+                -- OWN is `expected_owners`, which no entry here can widen.
+                ('console_app', '*'),
+                -- console_rt: ALTER DEFAULT PRIVILEGES above. Deleted by the six
+                -- port lanes, which route runtime writes through the ports.
+                ('console_rt', '*'),
+                -- console_leave_definer: migration 0166 GRANT INSERT, UPDATE ON
+                -- public.employees. Deleted by console-kmb (EmploymentPort).
+                ('console_leave_definer', 'employees'),
+                -- pg_write_all_data: a PostgreSQL predefined role that holds DML
+                -- on every table in every cluster. Nothing deletes it; naming
+                -- the role is what makes every MEMBER of it fail below.
+                ('pg_write_all_data', '*')
+                -- canonical-writer-ownership: END expected writers
+              ) AS expected(role_name, table_name)
+              WHERE expected.role_name = candidate.rolname
+                AND expected.table_name IN ('*', relation.relname)
+          )
+          -- The role EXECUTING this reconcile. It is the cluster admin by
+          -- construction and is running this block; every OTHER superuser is a
+          -- finding, which is the hole this replaces.
+          AND candidate.rolname <> session_user
+          AND EXISTS (
+              SELECT 1
+              FROM pg_roles holder
+              WHERE pg_has_role(candidate.oid, holder.oid, 'MEMBER')
+                AND CASE
+                      -- INSERT and UPDATE are the only DML privileges
+                      -- PostgreSQL lets a grant scope to a COLUMN, and
+                      -- `has_table_privilege` answers false for a column-only
+                      -- grant. `has_any_column_privilege` answers the table
+                      -- question too, so this is strictly wider, never narrower.
+                      WHEN privilege.name IN ('INSERT', 'UPDATE')
+                        THEN has_any_column_privilege(holder.oid, relation.oid, privilege.name)
+                      ELSE has_table_privilege(holder.oid, relation.oid, privilege.name)
+                    END
+          )
+    ) AS census;
+    -- canonical-writer-ownership: END census statement
+    IF leaked IS NOT NULL THEN
+        RAISE EXCEPTION 'topology.canonical_writer_ownership_failed: unaccounted DML on a canonical table: %', leaked;
+    END IF;
+
+    -- 4. THE OWNER PIN, asked separately from the census and NOT subject to its
+    -- ratchet.
+    --
+    -- The census answers "may this ROLE write this relation", and its ratchet is
+    -- a (role, relation) whitelist of the live WRITE holders. Ownership is a
+    -- different and strictly larger authority: ALTER, DROP, TRUNCATE, and -- for
+    -- relations whose tenant isolation is entirely row-level security --
+    -- `ALTER TABLE ... DISABLE ROW LEVEL SECURITY` and `DROP POLICY`.
+    -- `console_rt` is on the write ratchet because it is the runtime login
+    -- principal; letting that entry also authorise it to OWN `employees` would
+    -- hand the runtime the ability to switch its own RLS off. So the owner is
+    -- pinned by `expected_owners`, which the census's ratchet cannot widen, over
+    -- the same reachable set the census examined.
+    --
+    -- canonical-writer-ownership: BEGIN owner pin. This is the ONLY place the
+    -- owner catalog may be read, and `topology_script_names_the_roles_that_lose_dml`
+    -- counts `relowner` occurrences in the whole block against this region to
+    -- keep it so. Read anywhere the census can reach — including one statement
+    -- above the census markers, joined in afterwards — ownership becomes
+    -- subject to the census's ratchet, which excludes a candidate by NAME
+    -- before it asks the privilege question.
+    SELECT string_agg(
+             relation.relname || ':' || pg_get_userbyid(relation.relowner),
+             ', ' ORDER BY relation.relname
+           )
+    INTO offending
+    FROM unnest(examined) AS examined_relation(oid)
+    JOIN pg_class relation ON relation.oid = examined_relation.oid
+    WHERE pg_get_userbyid(relation.relowner) <> ALL (expected_owners);
+    IF offending IS NOT NULL THEN
+        RAISE EXCEPTION 'topology.canonical_table_owner_failed: unexpected owner of a canonical table: %', offending;
+    END IF;
+    -- canonical-writer-ownership: END owner pin
+
+    IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'canonical_api')
+       AND NOT EXISTS (
+        SELECT 1 FROM pg_namespace
+        WHERE nspname = 'canonical_api'
+          AND nspowner = (SELECT oid FROM pg_roles WHERE rolname = 'console_app')
+    ) THEN
+        RAISE EXCEPTION 'topology.canonical_api_owner_failed';
+    END IF;
+END
+$canonical$;
+
 SELECT 'DROP ROLE console_legacy_conversion_admin'
 WHERE :'legacy_reassign' = '1' \gexec
 COMMIT;

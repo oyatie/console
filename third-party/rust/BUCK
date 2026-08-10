@@ -19394,6 +19394,12 @@ cargo.rust_library(
     visibility = [],
 )
 
+alias(
+    name = "syn",
+    actual = ":syn-2",
+    visibility = ["PUBLIC"],
+)
+
 http_archive(
     name = "syn-2.0.117.crate",
     sha256 = "e665b8803e7b1d2a727f4023456bbbbe74da67099c585258af0ad9c5013b9b99",

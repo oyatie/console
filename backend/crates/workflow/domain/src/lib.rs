@@ -532,6 +532,56 @@ pub trait WorkflowRuntimePort: Send + Sync {
     ) -> PortFuture<'a, PostFinalizationRejection>;
 }
 
+// ---------------------------------------------------------------------------
+// The payroll-draft staging port the JOB outbox drain drives
+// ---------------------------------------------------------------------------
+
+/// One payroll draft the JOB outbox drain wants staged, carried as typed values
+/// rather than as the outbox row it came from — the implementer owns the
+/// `payroll_draft_runs` table and must not have to read the workflow spine to
+/// write it.
+///
+/// `period_start`/`period_end` are `Option` because the payload may simply not
+/// carry them. They are passed through as `NULL` rather than defaulted, so the
+/// column's `NOT NULL` refuses the row exactly as it did when this INSERT read
+/// `(payload->>'period_start')::date` directly.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StagePayrollDraft {
+    pub org: OrgId,
+    /// The outbox event this draft came from, recorded in `source_summary`.
+    pub outbox_event_id: uuid::Uuid,
+    pub run_id: uuid::Uuid,
+    pub period_start: Option<time::Date>,
+    pub period_end: Option<time::Date>,
+    pub connector: Option<String>,
+    pub job: Option<String>,
+}
+
+impl StagePayrollDraft {
+    /// The deterministic per-run natural key. Spelled ONCE, here, because it is
+    /// the idempotency key the drain and the owning crate must agree on: the
+    /// drain reports it in its audit row and the owner collides on it.
+    #[must_use]
+    pub fn source_label(&self) -> String {
+        format!("workflow_runtime_m2:run:{}", self.run_id)
+    }
+}
+
+/// The write port for `payroll_draft_runs`, declared by the CONSUMER because the
+/// layer boundary forbids one adapter depending on another: the workflow
+/// runtime adapter may reach a domain crate but never
+/// `console-payroll-adapter-postgres`, which the canonical contract names as
+/// `ObjectKey::PayRun`'s sole permitted writer.
+///
+/// [`Self::stage`] MUST be idempotent on [`StagePayrollDraft::source_label`] and
+/// MUST return `Ok(false)` — not an error — when the draft already exists, so an
+/// at-least-once drain never doubles a run.
+pub trait PayrollDraftStaging: Send + Sync {
+    /// Stages one draft. `true` when this call created it, `false` when the
+    /// natural key already held one.
+    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PortFuture<'a, bool>;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
