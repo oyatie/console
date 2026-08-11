@@ -4,6 +4,7 @@ import { AUTHORITY_DIFF_ARGS, LEDGER_DIRECTORY, isLedgerEntryPath } from './auth
 import {
   RELEASE_PLEASE_TRAIN_CLASS,
   classifyReleasePleaseBotTip,
+  classifyReleasePleaseSquashBinding,
   gitOpsForReleasePlease,
   verifyReleasePleaseBotTrain,
 } from './release-please-bot-candidate.mjs';
@@ -72,7 +73,11 @@ export function verifyConsoleAuthorityTrain(repoRoot, candidateSha, authorityTip
       trainClass: RELEASE_PLEASE_TRAIN_CLASS,
     });
   }
-  verifySigned(repoRoot, candidateSha, candidateSha, 'candidate C', authority);
+  // C may be the unsigned main squash of a previously classifiable release-please tip.
+  const squashC = classifyReleasePleaseSquashBinding(ops, candidateSha);
+  if (!(squashC && squashC.admittedCandidateSha === candidateSha)) {
+    verifySigned(repoRoot, candidateSha, candidateSha, 'candidate C', authority);
+  }
   verifySigned(repoRoot, candidateSha, authorityTipSha, 'authority tip T', authority);
   const tipParents = git(repoRoot, ['show', '-s', '--format=%P', authorityTipSha]).trim().split(/\s+/).filter(Boolean);
   if (tipParents.length !== 1 || tipParents[0] !== candidateSha) fail('T must be the direct single-parent child of C');

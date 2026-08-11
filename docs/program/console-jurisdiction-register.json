@@ -1,6 +1,6 @@
 {
   "schema_version": "console-jurisdiction-register-v2",
-  "last_refreshed": "2026-08-10T23:05:00-04:00",
+  "last_refreshed": "2026-08-11T06:25:00-04:00",
   "target_jurisdiction_set": [
     "KR"
   ],
@@ -1026,5 +1026,5 @@
     "historical_implementation_freeze_ref": "refs/tags/archive/pre-pivot-implementation-freeze-2026-07-24",
     "candidate_evidence_status": "HOLD"
   },
-  "authority_train_note": "Refreshed with the PR #738 Cursor in-hub .worktrees/ lane layout authority tip (2026-08-10). No jurisdiction, control, or coverage claim changed in this commit - tip only records authority-train custody after the chore-cursor-ratchet process/hooks/docs candidate."
+  "authority_train_note": "Refreshed with the console-sg2z release-squash C admit tip after v0.3.4 (#621) (2026-08-11). No jurisdiction, control, or coverage claim changed \u2014 tip only records authority-train custody for the bootstrap helper that admits tree-bound release squash C."
 }

@@ -17,6 +17,7 @@ import {
   RELEASE_PLEASE_TRAIN_CLASS,
   assertTrustedReleasePleasePrMeta,
   classifyReleasePleaseBotTip,
+  classifyReleasePleaseSquashBinding,
   verifyReleasePleaseBotTrain,
 } from './release-please-bot-candidate.mjs';
 
@@ -87,7 +88,15 @@ function verifySignedAuthorityTrain(ops, authorityTipSha) {
   if (policyEntry?.mode !== '100644' || policyEntry.type !== 'blob') fail('C signing policy must be a regular mode-100644 blob');
   const policy = validatePinnedPolicy(ops.readFile(C, POLICY_PATH));
   const authority = { policy, principal: TRUSTED_PRINCIPAL, fingerprint: TRUSTED_FINGERPRINT };
-  assertSigned(ops.verifyCommit(C, authority), 'C');
+  // After a release-please squash lands on main, C is that unsigned squash. Admit it only when
+  // it tree-binds a previously classifiable bot tip (verifySquashBinding dual); T still needs
+  // the pinned SSH signature. Arbitrary unsigned C stays fail-closed.
+  const squashBinding = typeof ops.commitIdentity === 'function'
+    ? classifyReleasePleaseSquashBinding(ops, C)
+    : null;
+  if (!squashBinding) {
+    assertSigned(ops.verifyCommit(C, authority), 'C');
+  }
   assertSigned(ops.verifyCommit(T, authority), 'T');
   const changes = ops.diff(C, T);
   if (!Array.isArray(changes)) fail('C..T diff is unavailable');
@@ -213,6 +222,26 @@ function gitOps(repo) {
     tree: (sha) => git(repo, ['show', '-s', '--format=%T', sha]).trim(),
     sameTreeDiff: (left, right) => git(repo, ['diff', '--quiet', '--no-ext-diff', left, right]) === '',
     verifyCommit: (sha, authority) => verifyPinnedSshCommit(repo, sha, authority.policy),
+    mainTip: () => {
+      // Prefer remotes: shared hubs often leave refs/heads/main stale across worktrees.
+      for (const ref of ['refs/remotes/origin/main', 'origin/main', 'refs/heads/main']) {
+        try {
+          const tip = git(repo, ['rev-parse', ref]).trim();
+          if (/^[0-9a-f]{40}$/.test(tip)) return tip;
+        } catch { /* try next */ }
+      }
+      fail('protected main tip is unresolvable');
+    },
+    isAncestor: (ancestor, descendant) => gitOk(repo, ['merge-base', '--is-ancestor', ancestor, descendant]),
+    pullHead: (number) => {
+      const parsed = String(number);
+      if (!/^\d+$/.test(parsed)) fail('PR number is invalid');
+      const ref = `refs/console-release-squash-binding/${parsed}/head`;
+      git(repo, ['fetch', '--no-tags', '--no-recurse-submodules', 'origin', `+refs/pull/${parsed}/head:${ref}`]);
+      const tip = git(repo, ['rev-parse', ref]).trim();
+      if (!/^[0-9a-f]{40}$/.test(tip)) fail('release-please pre-merge tip is unresolvable');
+      return tip;
+    },
   };
 }
 function safeBaseBranch(base) { return base === 'main'; }

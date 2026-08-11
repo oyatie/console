@@ -281,6 +281,87 @@ test('admits release-please bot tip only with event author/ref + docs-only diff;
   }), /not a release-please bot|authority documents|C is not signed/);
 });
 
+test('admits unsigned main release squash as C when it tree-binds classifiable T0; forged C still needs SSH', () => {
+  const {
+    RELEASE_PLEASE_BOT_EMAIL,
+    RELEASE_PLEASE_BOT_NAME,
+    RELEASE_PLEASE_COMMITTER_EMAIL,
+    RELEASE_PLEASE_COMMITTER_NAME,
+    RELEASE_PLEASE_PATHS,
+  } = requireReleasePleaseConstants();
+  const T0 = 'f'.repeat(40);
+  const releaseDiff = RELEASE_PLEASE_PATHS.map((path) => ({
+    path, status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob',
+  }));
+  const jurisdictionOnly = [modified('docs/program/console-jurisdiction-register.json')];
+  const verified = [];
+  const { data } = fixture({
+    parents: (sha) => {
+      if (sha === T) return [C];
+      if (sha === C || sha === T0) return [BASE];
+      if (sha === M) return [BASE, T];
+      return [];
+    },
+    commitIdentity: (sha) => {
+      if (sha === T0) {
+        return {
+          authorName: RELEASE_PLEASE_BOT_NAME,
+          authorEmail: RELEASE_PLEASE_BOT_EMAIL,
+          committerName: RELEASE_PLEASE_COMMITTER_NAME,
+          committerEmail: RELEASE_PLEASE_COMMITTER_EMAIL,
+          subject: 'chore(main): release 0.3.4',
+        };
+      }
+      return {
+        authorName: RELEASE_PLEASE_BOT_NAME,
+        authorEmail: RELEASE_PLEASE_BOT_EMAIL,
+        committerName: RELEASE_PLEASE_COMMITTER_NAME,
+        committerEmail: RELEASE_PLEASE_COMMITTER_EMAIL,
+        subject: 'chore(main): release 0.3.4 (#621)',
+      };
+    },
+    diff: (from, to) => {
+      if ((from === BASE && to === T0) || (from === BASE && to === C)) return releaseDiff;
+      if (from === C && to === T) return jurisdictionOnly;
+      return [];
+    },
+    tree: (sha) => {
+      if (sha === C || sha === T0) return 'tree-release';
+      if (sha === T || sha === M) return 'tree-t';
+      return 'tree-base';
+    },
+    sameTreeDiff: (left, right) => (
+      (left === C && right === T0)
+      || (left === T0 && right === C)
+      || (left === M && right === T)
+      || (left === T && right === M)
+    ),
+    mainTip: () => C,
+    isAncestor: (ancestor, descendant) => ancestor === C && descendant === C,
+    releasePleasePreMergeTip: (squash) => (squash === C ? T0 : null),
+    verifyCommit: (sha, authority) => {
+      verified.push(sha);
+      if (sha === C) return { ok: false };
+      return { ok: true, principal: TRUSTED_PRINCIPAL, fingerprint: TRUSTED_FINGERPRINT };
+    },
+  });
+  assert.deepEqual(verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), {
+    candidateSha: C,
+    integrationTipSha: T,
+    mergeSha: M,
+    trainClass: 'ssh-authority',
+  });
+  assert.deepEqual(verified, [T], 'release squash C must skip SSH; T must still verify');
+
+  // Forged unsigned C off main: no squash binding → SSH bar remains.
+  assert.throws(() => verifyBootstrapGraph(fixture({
+    mainTip: () => BASE,
+    isAncestor: () => false,
+    releasePleasePreMergeTip: () => T0,
+    verifyCommit: () => ({ ok: false }),
+  }).data, { headSha: T, mergeSha: M }), /C is not signed by the pinned SSH authority/);
+});
+
 function requireReleasePleaseConstants() {
   // Keep this suite dependency-free of a second import graph in the hermetic pin section above.
   return {

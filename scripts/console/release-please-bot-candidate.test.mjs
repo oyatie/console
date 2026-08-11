@@ -12,6 +12,7 @@ import {
   assertReleasePleaseBotPathDiff,
   assertTrustedReleasePleasePrMeta,
   classifyReleasePleaseBotTip,
+  classifyReleasePleaseSquashBinding,
   verifyReleasePleaseBotTrain,
 } from './release-please-bot-candidate.mjs';
 
@@ -193,5 +194,58 @@ test('structural M checks remain fail-closed for bot tips', () => {
       requirePrMeta: false,
     }),
     /tree\/diff/,
+  );
+});
+
+test('admits main squash that tree-binds a classifiable release-please tip; forged off-main C stays null', () => {
+  const S = 'e'.repeat(40);
+  const T0 = T;
+  const baseOps = {
+    hasCommit: (sha) => sha === S || sha === T0 || sha === C || sha === BASE,
+    parents: (sha) => (sha === S || sha === T0 ? [C] : []),
+    commitIdentity: (sha) => (sha === T0
+      ? botIdentity
+      : { ...botIdentity, subject: 'chore(main): release 0.3.4 (#621)' }),
+    diff: () => releaseDiff,
+    tree: (sha) => (sha === S || sha === T0 ? 'tree-release' : 'tree-other'),
+    sameTreeDiff: (left, right) => left === S && right === T0 || left === T0 && right === S,
+    mainTip: () => S,
+    isAncestor: (ancestor, descendant) => ancestor === S && descendant === S,
+    releasePleasePreMergeTip: (squash) => (squash === S ? T0 : null),
+  };
+  const admitted = classifyReleasePleaseSquashBinding(baseOps, S);
+  assert.equal(admitted.admittedCandidateSha, S);
+  assert.equal(admitted.releasePleaseTipSha, T0);
+  assert.equal(admitted.candidateSha, C);
+  assert.equal(admitted.preMergeBaseSha, C);
+  assert.equal(classifyReleasePleaseBotTip(baseOps, S), null, 'squash subject with (#N) must not classify as live tip');
+
+  assert.equal(
+    classifyReleasePleaseSquashBinding({
+      ...baseOps,
+      mainTip: () => BASE,
+      isAncestor: () => false,
+    }, S),
+    null,
+    'forged unsigned C off main must not admit',
+  );
+  assert.equal(
+    classifyReleasePleaseSquashBinding({
+      ...baseOps,
+      tree: (sha) => (sha === S ? 'tree-forged' : sha === T0 ? 'tree-release' : 'tree-other'),
+      sameTreeDiff: () => false,
+    }, S),
+    null,
+    'tree drift vs T0 must not admit',
+  );
+  assert.equal(
+    classifyReleasePleaseSquashBinding({
+      ...baseOps,
+      commitIdentity: (sha) => (sha === T0
+        ? { ...botIdentity, authorName: 'Eve' }
+        : { ...botIdentity, subject: 'chore(main): release 0.3.4 (#621)' }),
+    }, S),
+    null,
+    'T0 that fails bot identity must not admit the squash',
   );
 });

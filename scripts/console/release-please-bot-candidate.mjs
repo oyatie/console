@@ -116,6 +116,60 @@ export function classifyReleasePleaseBotTip(ops, tipSha) {
 }
 
 /**
+ * Dual of verifySquashBinding for a release-please tip that already landed as a
+ * one-parent main squash S. Admits S as the next train's candidate C without SSH
+ * when a previously classifiable tip T0 still resolves with:
+ *   parents(S) === [T0.candidateSha] && tree(S) === tree(T0)
+ *
+ * Fail-closed: forged unsigned C off main, wrong identity tip, path sprawl tip,
+ * missing T0, or tree/parent drift returns null (callers keep the SSH bar).
+ */
+export function classifyReleasePleaseSquashBinding(ops, squashSha) {
+  if (!SHA.test(squashSha ?? '')) return null;
+  if (!ops.hasCommit(squashSha)) return null;
+  const parents = ops.parents(squashSha);
+  if (!Array.isArray(parents) || parents.length !== 1 || !SHA.test(parents[0])) return null;
+  const preMergeBaseSha = parents[0];
+
+  // Protected history only — a PR-local forged C must not skip the SSH bar.
+  if (typeof ops.mainTip !== 'function' || typeof ops.isAncestor !== 'function') return null;
+  let mainTip;
+  try { mainTip = ops.mainTip(); } catch { return null; }
+  if (!SHA.test(mainTip ?? '') || !ops.isAncestor(squashSha, mainTip)) return null;
+
+  let tipSha = null;
+  if (typeof ops.releasePleasePreMergeTip === 'function') {
+    try { tipSha = ops.releasePleasePreMergeTip(squashSha); } catch { return null; }
+  }
+  if (!tipSha) {
+    let identity;
+    try { identity = ops.commitIdentity(squashSha); } catch { return null; }
+    const prMatch = typeof identity?.subject === 'string'
+      ? identity.subject.match(/^chore\([^)]+\): release \d+\.\d+\.\d+ \(#(\d+)\)$/)
+      : null;
+    if (!prMatch || typeof ops.pullHead !== 'function') return null;
+    try { tipSha = ops.pullHead(prMatch[1]); } catch { return null; }
+  }
+  if (!SHA.test(tipSha ?? '') || tipSha === squashSha || !ops.hasCommit(tipSha)) return null;
+
+  const classified = classifyReleasePleaseBotTip(ops, tipSha);
+  if (!classified) return null;
+  if (classified.candidateSha !== preMergeBaseSha) return null;
+  if (ops.tree(squashSha) !== ops.tree(tipSha) || !ops.sameTreeDiff(squashSha, tipSha)) return null;
+
+  return Object.freeze({
+    trainClass: RELEASE_PLEASE_TRAIN_CLASS,
+    squashSha,
+    preMergeBaseSha,
+    releasePleaseTipSha: tipSha,
+    admittedCandidateSha: squashSha,
+    candidateSha: classified.candidateSha,
+    authorityTipSha: tipSha,
+    identity: classified.identity,
+  });
+}
+
+/**
  * Admit a release-please bot tip as the authority tip of a structural M.
  * When `requirePrMeta` is true (bootstrap), event author/ref are mandatory.
  */
@@ -179,6 +233,26 @@ export function gitOpsForReleasePlease(repoRoot, git, gitSucceeds) {
     tree: (sha) => git(repoRoot, ['show', '-s', '--format=%T', sha]).trim(),
     sameTreeDiff: (left, right) => {
       try { git(repoRoot, ['diff', '--quiet', '--no-ext-diff', left, right]); return true; } catch { return false; }
+    },
+    mainTip: () => {
+      // Prefer remotes: shared hubs often leave refs/heads/main stale across worktrees.
+      for (const ref of ['refs/remotes/origin/main', 'origin/main', 'refs/heads/main']) {
+        try {
+          const tip = git(repoRoot, ['rev-parse', ref]).trim();
+          if (SHA.test(tip)) return tip;
+        } catch { /* try next */ }
+      }
+      fail('protected main tip is unresolvable');
+    },
+    isAncestor: (ancestor, descendant) => gitSucceeds(repoRoot, ['merge-base', '--is-ancestor', ancestor, descendant]),
+    pullHead: (number) => {
+      const parsed = String(number);
+      if (!/^\d+$/.test(parsed)) fail('PR number is invalid');
+      const ref = `refs/console-release-squash-binding/${parsed}/head`;
+      git(repoRoot, ['fetch', '--no-tags', '--no-recurse-submodules', 'origin', `+refs/pull/${parsed}/head:${ref}`]);
+      const tip = git(repoRoot, ['rev-parse', ref]).trim();
+      if (!SHA.test(tip)) fail('release-please pre-merge tip is unresolvable');
+      return tip;
     },
   };
 }
