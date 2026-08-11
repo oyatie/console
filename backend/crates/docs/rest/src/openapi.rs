@@ -16,68 +16,82 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["ErrorBody"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "ErrorBody",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/evidence/objects",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__evidence__objects.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__evidence__objects.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evidence/objects/{id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__evidence__objects__id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__evidence__objects__id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evidence/objects/{id}/hold",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__evidence__objects__id__hold.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evidence__objects__id__hold.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evidence/objects/{id}/verify",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__evidence__objects__id__verify.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evidence__objects__id__verify.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/office/callback",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__office__callback.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__office__callback.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/office/documents/{documentRef}/versions",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__office__documents__documentRef__versions.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__office__documents__documentRef__versions.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/office/documents/{documentRef}/versions/{versionNo}/restore",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__office__documents__documentRef__versions__versionNo__restore.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__office__documents__documentRef__versions__versionNo__restore.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/office/sessions",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__office__sessions.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__office__sessions.post.yaml"),
+            },
+        ],
     },
 ];
 

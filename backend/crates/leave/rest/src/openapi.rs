@@ -16,43 +16,57 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["ErrorBody", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "ErrorBody",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/leave/balances",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__leave__balances.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__leave__balances.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/leave/promotions",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__leave__promotions.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__leave__promotions.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/leave/refusal-notices",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__leave__refusal-notices.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__leave__refusal-notices.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/leave/requests",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__leave__requests.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__leave__requests.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/leave/requests/{id}/decide",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__leave__requests__id__decide.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__leave__requests__id__decide.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v2/leave/requests",
@@ -69,26 +83,30 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v2/leave/requests/{id}/charge-resolution",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v2__leave__requests__id__charge-resolution.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v2__leave__requests__id__charge-resolution.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v2/leave/requests/{id}/decide",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v2__leave__requests__id__decide.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v2__leave__requests__id__decide.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v2/me/leave",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v2__me__leave.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v2__me__leave.get.yaml"),
+            },
+        ],
     },
 ];
 

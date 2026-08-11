@@ -31,15 +31,11 @@ const PATHS: &[PathItem] = &[
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__v1__collaboration__calendar__events.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__collaboration__calendar__events.get.yaml"),
             },
             Operation {
                 method: "post",
-                body: include_str!(
-                    "../openapi/paths/api__v1__collaboration__calendar__events.post.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__collaboration__calendar__events.post.yaml"),
             },
         ],
     },
@@ -58,12 +54,12 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/collaboration/polls/{id}/vote",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__collaboration__polls__id__vote.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__collaboration__polls__id__vote.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mail/account",
@@ -80,86 +76,102 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/mail/account/test",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__mail__account__test.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__mail__account__test.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mail/attachments/{id}/download",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__mail__attachments__id__download.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__mail__attachments__id__download.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mail/folders",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__mail__folders.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__mail__folders.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mail/forward",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__mail__forward.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__mail__forward.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mail/messages/{id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__mail__messages__id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__mail__messages__id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mail/reply",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__mail__reply.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__mail__reply.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mail/send",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__mail__send.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__mail__send.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mail/threads",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__mail__threads.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__mail__threads.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mail/threads/{id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__mail__threads__id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__mail__threads__id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mail/threads/{id}/read-state",
-        operations: &[Operation {
-            method: "patch",
-            body: include_str!(
-                "../openapi/paths/api__v1__mail__threads__id__read-state.patch.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "patch",
+                body: include_str!("../openapi/paths/api__v1__mail__threads__id__read-state.patch.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mobile/collaboration/polls/{id}/vote",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__mobile__collaboration__polls__id__vote.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__mobile__collaboration__polls__id__vote.post.yaml"),
+            },
+        ],
     },
 ];
 

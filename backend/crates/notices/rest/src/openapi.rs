@@ -16,7 +16,11 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["NamedEntity", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "NamedEntity",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
@@ -47,31 +51,39 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/notices/{id}/ack",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__notices__id__ack.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__notices__id__ack.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/notices/{id}/progress",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__notices__id__progress.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__notices__id__progress.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/notices/{id}/publish",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__notices__id__publish.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__notices__id__publish.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/notices/{id}/receipts",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__notices__id__receipts.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__notices__id__receipts.get.yaml"),
+            },
+        ],
     },
 ];
 

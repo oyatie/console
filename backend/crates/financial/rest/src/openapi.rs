@@ -27,188 +27,182 @@ const EXTERNAL_SCHEMAS: &[&str] = &[
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/financial/equipment/{equipmentId}/cost-ledger",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__equipment__equipmentId__cost-ledger.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__financial__equipment__equipmentId__cost-ledger.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/equipment/{equipmentId}/cost-ledger/manual",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__equipment__equipmentId__cost-ledger__manual.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__equipment__equipmentId__cost-ledger__manual.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/equipment/{equipmentId}/lifecycle-cost",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__equipment__equipmentId__lifecycle-cost.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__financial__equipment__equipmentId__lifecycle-cost.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests",
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__v1__financial__purchase-requests.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests.get.yaml"),
             },
             Operation {
                 method: "post",
-                body: include_str!(
-                    "../openapi/paths/api__v1__financial__purchase-requests.post.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests.post.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/attachments/presign",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__purchase-requests__attachments__presign.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__attachments__presign.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/attachments/{attachmentId}/confirm",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__purchase-requests__attachments__attachmentId__confirm.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__attachments__attachmentId__confirm.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/preferences",
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__v1__financial__purchase-requests__preferences.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__preferences.get.yaml"),
             },
             Operation {
                 method: "put",
-                body: include_str!(
-                    "../openapi/paths/api__v1__financial__purchase-requests__preferences.put.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__preferences.put.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/{purchaseRequestId}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/{purchaseRequestId}/approve-admin",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__approve-admin.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__approve-admin.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/{purchaseRequestId}/approve-executive",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__approve-executive.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__approve-executive.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/{purchaseRequestId}/attachments/{attachmentId}/download",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__attachments__attachmentId__download.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__attachments__attachmentId__download.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/{purchaseRequestId}/execute",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__execute.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__execute.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/{purchaseRequestId}/prepare-expenditure",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__prepare-expenditure.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__prepare-expenditure.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/{purchaseRequestId}/reject",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__reject.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__reject.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/{purchaseRequestId}/restart",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__restart.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__restart.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/purchase-requests/{purchaseRequestId}/submit",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__submit.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__purchase-requests__purchaseRequestId__submit.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/rental-quotes",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__financial__rental-quotes.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__rental-quotes.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/rental-quotes/compute",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__rental-quotes__compute.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__financial__rental-quotes__compute.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/financial/rental-quotes/{quoteId}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__financial__rental-quotes__quoteId.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__financial__rental-quotes__quoteId.get.yaml"),
+            },
+        ],
     },
 ];
 

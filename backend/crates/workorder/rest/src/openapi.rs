@@ -35,10 +35,12 @@ const EXTERNAL_SCHEMAS: &[&str] = &[
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/approval-items",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__approval-items.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__approval-items.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/daily-work-plans",
@@ -55,174 +57,196 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/daily-work-plans/{planId}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__daily-work-plans__planId.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__daily-work-plans__planId.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/daily-work-plans/{planId}/confirm",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__daily-work-plans__planId__confirm.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__daily-work-plans__planId__confirm.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/daily-work-plans/{planId}/request-review",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__daily-work-plans__planId__request-review.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__daily-work-plans__planId__request-review.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/daily-work-plans/{planId}/review",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__daily-work-plans__planId__review.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__daily-work-plans__planId__review.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/target-change-requests/{requestId}/review",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__target-change-requests__requestId__review.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__target-change-requests__requestId__review.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/devices",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__devices.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__devices.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/equipment/lookup",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__equipment__lookup.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__equipment__lookup.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evidence/presign",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__evidence__presign.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evidence__presign.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evidence/staging-presign",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__evidence__staging-presign.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evidence__staging-presign.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evidence/{evidenceId}/confirm",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__evidence__evidenceId__confirm.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evidence__evidenceId__confirm.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evidence/{evidenceId}/status",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__evidence__evidenceId__status.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__evidence__evidenceId__status.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/mobile/work-orders/{workOrderId}/approve",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__mobile__work-orders__workOrderId__approve.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__mobile__work-orders__workOrderId__approve.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/settlements/{settlementId}/review",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__settlements__settlementId__review.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__settlements__settlementId__review.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/settlements/{settlementId}/submit",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__settlements__settlementId__submit.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__settlements__settlementId__submit.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/settlements/{settlementId}/void",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__settlements__settlementId__void.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__settlements__settlementId__void.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/sync",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__sync.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__sync.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/work-orders",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__work-orders.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__work-orders.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/work-orders/{workOrderId}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__work-orders__workOrderId.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__work-orders__workOrderId.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/work-orders/{workOrderId}/reject",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__work-orders__workOrderId__reject.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__work-orders__workOrderId__reject.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/work-orders/{workOrderId}/settlement",
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__v1__work-orders__workOrderId__settlement.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__work-orders__workOrderId__settlement.get.yaml"),
             },
             Operation {
                 method: "post",
-                body: include_str!(
-                    "../openapi/paths/api__v1__work-orders__workOrderId__settlement.post.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__work-orders__workOrderId__settlement.post.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/work-orders",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__work-orders.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__work-orders.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/work-orders/{workOrderId}",
@@ -239,60 +263,66 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/work-orders/{workOrderId}/approve",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__work-orders__workOrderId__approve.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__work-orders__workOrderId__approve.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/work-orders/{workOrderId}/assignments",
-        operations: &[Operation {
-            method: "put",
-            body: include_str!(
-                "../openapi/paths/api__work-orders__workOrderId__assignments.put.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "put",
+                body: include_str!("../openapi/paths/api__work-orders__workOrderId__assignments.put.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/work-orders/{workOrderId}/outsource-works",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__work-orders__workOrderId__outsource-works.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__work-orders__workOrderId__outsource-works.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/work-orders/{workOrderId}/priority",
-        operations: &[Operation {
-            method: "patch",
-            body: include_str!(
-                "../openapi/paths/api__work-orders__workOrderId__priority.patch.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "patch",
+                body: include_str!("../openapi/paths/api__work-orders__workOrderId__priority.patch.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/work-orders/{workOrderId}/report",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__work-orders__workOrderId__report.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__work-orders__workOrderId__report.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/work-orders/{workOrderId}/start",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__work-orders__workOrderId__start.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__work-orders__workOrderId__start.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/work-orders/{workOrderId}/target-change-requests",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__work-orders__workOrderId__target-change-requests.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__work-orders__workOrderId__target-change-requests.post.yaml"),
+            },
+        ],
     },
 ];
 

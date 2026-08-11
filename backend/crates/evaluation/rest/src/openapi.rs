@@ -16,7 +16,11 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Date", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Date",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
@@ -34,123 +38,129 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/evaluation/cycles/{cycle_id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__evaluation__cycles__cycle_id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__evaluation__cycles__cycle_id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/cycles/{cycle_id}/archive",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__evaluation__cycles__cycle_id__archive.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evaluation__cycles__cycle_id__archive.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/cycles/{cycle_id}/finalize",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__evaluation__cycles__cycle_id__finalize.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evaluation__cycles__cycle_id__finalize.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/cycles/{cycle_id}/open",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__evaluation__cycles__cycle_id__open.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evaluation__cycles__cycle_id__open.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/cycles/{cycle_id}/preflight",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__evaluation__cycles__cycle_id__preflight.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__evaluation__cycles__cycle_id__preflight.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/cycles/{cycle_id}/start-calibration",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__evaluation__cycles__cycle_id__start-calibration.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evaluation__cycles__cycle_id__start-calibration.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/employees/{employee_id}/reviews",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__evaluation__employees__employee_id__reviews.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__evaluation__employees__employee_id__reviews.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/my-tasks",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__evaluation__my-tasks.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__evaluation__my-tasks.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/subjects",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__evaluation__subjects.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evaluation__subjects.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/subjects/{subject_id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__evaluation__subjects__subject_id.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__evaluation__subjects__subject_id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/subjects/{subject_id}/calibrate",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__evaluation__subjects__subject_id__calibrate.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evaluation__subjects__subject_id__calibrate.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/subjects/{subject_id}/goals",
-        operations: &[Operation {
-            method: "put",
-            body: include_str!(
-                "../openapi/paths/api__v1__evaluation__subjects__subject_id__goals.put.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "put",
+                body: include_str!("../openapi/paths/api__v1__evaluation__subjects__subject_id__goals.put.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/subjects/{subject_id}/reviews/{kind}",
-        operations: &[Operation {
-            method: "put",
-            body: include_str!(
-                "../openapi/paths/api__v1__evaluation__subjects__subject_id__reviews__kind.put.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "put",
+                body: include_str!("../openapi/paths/api__v1__evaluation__subjects__subject_id__reviews__kind.put.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/evaluation/subjects/{subject_id}/reviews/{kind}/submit",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__evaluation__subjects__subject_id__reviews__kind__submit.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__evaluation__subjects__subject_id__reviews__kind__submit.post.yaml"),
+            },
+        ],
     },
 ];
 

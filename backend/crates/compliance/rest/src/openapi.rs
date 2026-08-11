@@ -16,76 +16,71 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/audit-streams/ceo-covert/access-events",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__audit-streams__ceo-covert__access-events.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__audit-streams__ceo-covert__access-events.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/audit-streams/ceo-covert/events",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__audit-streams__ceo-covert__events.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__audit-streams__ceo-covert__events.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/compliance/control-obligation-coverage",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__compliance__control-obligation-coverage.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__compliance__control-obligation-coverage.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/compliance/evidence-bindings",
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__v1__compliance__evidence-bindings.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__compliance__evidence-bindings.get.yaml"),
             },
             Operation {
                 method: "post",
-                body: include_str!(
-                    "../openapi/paths/api__v1__compliance__evidence-bindings.post.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__compliance__evidence-bindings.post.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/v1/compliance/evidence-bindings/{id}/accept",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__compliance__evidence-bindings__id__accept.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__compliance__evidence-bindings__id__accept.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/compliance/framework-controls",
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__v1__compliance__framework-controls.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__compliance__framework-controls.get.yaml"),
             },
             Operation {
                 method: "post",
-                body: include_str!(
-                    "../openapi/paths/api__v1__compliance__framework-controls.post.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__compliance__framework-controls.post.yaml"),
             },
         ],
     },
@@ -104,12 +99,12 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/compliance/obligation-regulation-links",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__compliance__obligation-regulation-links.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__compliance__obligation-regulation-links.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/compliance/obligations",
@@ -139,66 +134,84 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/location-consent/grant",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__location-consent__grant.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__location-consent__grant.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/location-consent/resume",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__location-consent__resume.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__location-consent__resume.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/location-consent/status",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__location-consent__status.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__location-consent__status.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/location-consent/suspend",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__location-consent__suspend.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__location-consent__suspend.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/location-consent/withdraw",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__location-consent__withdraw.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__location-consent__withdraw.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/location-consents/ledger",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__location-consents__ledger.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__location-consents__ledger.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/location-consents/ledger.csv",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__location-consents__ledger.csv.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__location-consents__ledger.csv.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/location-pings",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__location-pings.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__location-pings.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/location/arrival-events",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__location__arrival-events.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__location__arrival-events.get.yaml"),
+            },
+        ],
     },
 ];
 

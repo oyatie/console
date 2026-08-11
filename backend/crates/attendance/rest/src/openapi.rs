@@ -16,7 +16,9 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
@@ -34,19 +36,21 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/attendance/closes/preflight",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__attendance__closes__preflight.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__attendance__closes__preflight.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/attendance/closes/{close_id}/amendments",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__attendance__closes__close_id__amendments.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__attendance__closes__close_id__amendments.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/attendance/exceptions",
@@ -63,44 +67,48 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/attendance/exceptions/{exception_id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__attendance__exceptions__exception_id.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__attendance__exceptions__exception_id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/attendance/exceptions/{exception_id}/resolve",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__attendance__exceptions__exception_id__resolve.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__attendance__exceptions__exception_id__resolve.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/attendance/me/exceptions",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__attendance__me__exceptions.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__attendance__me__exceptions.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/attendance/me/week52",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__attendance__me__week52.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__attendance__me__week52.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/attendance/substitution-candidates",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__attendance__substitution-candidates.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__attendance__substitution-candidates.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/attendance/substitutions",
@@ -117,26 +125,30 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/attendance/substitutions/{substitution_id}/cancel",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__attendance__substitutions__substitution_id__cancel.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__attendance__substitutions__substitution_id__cancel.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/attendance/week52",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__attendance__week52.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__attendance__week52.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/attendance/week52/acks",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__attendance__week52__acks.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__attendance__week52__acks.post.yaml"),
+            },
+        ],
     },
 ];
 

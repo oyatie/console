@@ -16,7 +16,11 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["ErrorBody", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "ErrorBody",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
@@ -34,63 +38,75 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/me/notification-policies/{id}",
-        operations: &[Operation {
-            method: "delete",
-            body: include_str!(
-                "../openapi/paths/api__v1__me__notification-policies__id.delete.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "delete",
+                body: include_str!("../openapi/paths/api__v1__me__notification-policies__id.delete.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/notifications",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__me__notifications.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__me__notifications.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/notifications/by-object",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__me__notifications__by-object.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__me__notifications__by-object.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/notifications/read-all",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__me__notifications__read-all.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__me__notifications__read-all.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/notifications/summary",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__me__notifications__summary.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__me__notifications__summary.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/notifications/unread-count",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__me__notifications__unread-count.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__me__notifications__unread-count.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/notifications/{id}/read",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__me__notifications__id__read.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__me__notifications__id__read.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/notifications/{id}/unread",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__me__notifications__id__unread.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__me__notifications__id__unread.post.yaml"),
+            },
+        ],
     },
 ];
 

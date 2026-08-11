@@ -16,45 +16,56 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/messenger/channels",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__messenger__channels.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__messenger__channels.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/messenger/members",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__messenger__members.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__messenger__members.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/messenger/members/{userId}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__messenger__members__userId.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__messenger__members__userId.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/messenger/messages/{messageId}/ack",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__messenger__messages__messageId__ack.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__messenger__messages__messageId__ack.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/messenger/search",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__messenger__search.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__messenger__search.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/messenger/threads",
@@ -71,61 +82,61 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/messenger/threads/{threadId}/join",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__messenger__threads__threadId__join.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__messenger__threads__threadId__join.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/messenger/threads/{threadId}/messages",
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__messenger__threads__threadId__messages.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__messenger__threads__threadId__messages.get.yaml"),
             },
             Operation {
                 method: "post",
-                body: include_str!(
-                    "../openapi/paths/api__messenger__threads__threadId__messages.post.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__messenger__threads__threadId__messages.post.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/messenger/threads/{threadId}/mute",
-        operations: &[Operation {
-            method: "put",
-            body: include_str!("../openapi/paths/api__messenger__threads__threadId__mute.put.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "put",
+                body: include_str!("../openapi/paths/api__messenger__threads__threadId__mute.put.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/messenger/threads/{threadId}/presence",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__messenger__threads__threadId__presence.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__messenger__threads__threadId__presence.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/messenger/threads/{threadId}/read-receipt",
-        operations: &[Operation {
-            method: "put",
-            body: include_str!(
-                "../openapi/paths/api__messenger__threads__threadId__read-receipt.put.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "put",
+                body: include_str!("../openapi/paths/api__messenger__threads__threadId__read-receipt.put.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ws",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__ws.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__ws.get.yaml"),
+            },
+        ],
     },
 ];
 

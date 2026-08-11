@@ -16,85 +16,91 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/logistics/asns",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__logistics__asns.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__logistics__asns.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/logistics/asns/{asn_id}/putaway",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__logistics__asns__asn_id__putaway.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__logistics__asns__asn_id__putaway.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/logistics/asns/{asn_id}/receipts",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__logistics__asns__asn_id__receipts.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__logistics__asns__asn_id__receipts.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/logistics/fulfillments",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__logistics__fulfillments.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__logistics__fulfillments.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/logistics/fulfillments/{fulfillment_id}/dispatch",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__logistics__fulfillments__fulfillment_id__dispatch.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__logistics__fulfillments__fulfillment_id__dispatch.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/logistics/fulfillments/{fulfillment_id}/pack",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__logistics__fulfillments__fulfillment_id__pack.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__logistics__fulfillments__fulfillment_id__pack.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/logistics/fulfillments/{fulfillment_id}/pick",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__logistics__fulfillments__fulfillment_id__pick.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__logistics__fulfillments__fulfillment_id__pick.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/logistics/shipments/{shipment_id}/pod",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__logistics__shipments__shipment_id__pod.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__logistics__shipments__shipment_id__pod.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/logistics/shipments/{shipment_id}/settlements",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__logistics__shipments__shipment_id__settlements.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__logistics__shipments__shipment_id__settlements.post.yaml"),
+            },
+        ],
     },
 ];
 

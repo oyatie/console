@@ -16,145 +16,164 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/payroll/employees/{employeeId}/contract-wages",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__payroll__employees__employeeId__contract-wages.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__payroll__employees__employeeId__contract-wages.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/employees/{employeeId}/payslip-draft",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__payroll__employees__employeeId__payslip-draft.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__payroll__employees__employeeId__payslip-draft.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/payslips/me",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__payroll__payslips__me.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__payroll__payslips__me.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__payroll__runs.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__payroll__runs__id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/calculate",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__payroll__runs__id__calculate.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__calculate.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/close-attendance",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__payroll__runs__id__close-attendance.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__close-attendance.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/close-preflight",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__payroll__runs__id__close-preflight.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__close-preflight.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/decision",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__payroll__runs__id__decision.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__decision.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/disbursement/attest",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__payroll__runs__id__disbursement__attest.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__disbursement__attest.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/exceptions",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__payroll__runs__id__exceptions.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__exceptions.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/exceptions/{exceptionId}/resolve",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__payroll__runs__id__exceptions__exceptionId__resolve.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__exceptions__exceptionId__resolve.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/issue-payslips",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__payroll__runs__id__issue-payslips.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__issue-payslips.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/payslip-delivery",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__payroll__runs__id__payslip-delivery.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__payslip-delivery.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/schedule-disbursement",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__payroll__runs__id__schedule-disbursement.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__schedule-disbursement.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/submit",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__payroll__runs__id__submit.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__submit.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/payroll/runs/{id}/withdraw",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__payroll__runs__id__withdraw.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__payroll__runs__id__withdraw.post.yaml"),
+            },
+        ],
     },
 ];
 
