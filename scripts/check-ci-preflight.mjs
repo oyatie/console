@@ -236,15 +236,38 @@ const domainCargoPrefix = [
   "--manifest-path",
   "backend/Cargo.toml",
 ];
+const domainUnitOpenApiGenCommands = [
+  [
+    "SQLX_OFFLINE=true",
+    "cargo",
+    "run",
+    "--locked",
+    "--manifest-path",
+    "backend/Cargo.toml",
+    "-p",
+    "console-contracts",
+    "--bin",
+    "console-openapi-gen",
+  ],
+  ["git", "diff", "--exit-code", "--", "backend/openapi/openapi.yaml"],
+];
 const domainUnitExpectedCommands = [
   [...domainCargoPrefix, "--lib", ...domainUnitPackages.flatMap((pkg) => ["-p", pkg])],
   [...domainCargoPrefix, "--doc", "-p", "console-kernel-core"],
-  ...domainUnitIntegrationInvocations.map(([pkg, tests]) => [
-    ...domainCargoPrefix,
-    "-p",
-    pkg,
-    ...tests.flatMap((test) => ["--test", test]),
-  ]),
+  ...domainUnitIntegrationInvocations.flatMap(([pkg, tests]) => {
+    const cargoTest = [
+      ...domainCargoPrefix,
+      "-p",
+      pkg,
+      ...tests.flatMap((test) => ["--test", test]),
+    ];
+    // b4z: after the fragment oracle, lock the regen+diff gate so openapi.yaml
+    // cannot be hand-edited without regenerating from Fragments.
+    if (pkg === "console-todos-rest" && tests.includes("openapi_fragment")) {
+      return [cargoTest, ...domainUnitOpenApiGenCommands];
+    }
+    return [cargoTest];
+  }),
 ];
 // S1: facet harness invocations (must appear in workflow). Aggregator no longer runs cargo.
 const postgresReachabilityFacetCommands = Object.freeze({
@@ -589,7 +612,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Workflow test-runner credential literals", "npm run check:test-credentials"),
   ],
   "domain-unit": [
-    proofDigest("Domain crate unit tests", "fe8364ca98090845779a8db53a026e76fb7018b76907ee9ec2d39cfe979a8a01"),
+    proofDigest("Domain crate unit tests", "6a0c08b87c08827b9d709dc925d69bf0acd0a50c95129abe11544a71ea2551c1"),
   ],
   backend: [
     setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh"),
