@@ -1762,6 +1762,7 @@ name = "console-gate-writer-ownership"
 version = "0.1.0"
 dependencies = [
  "console-ontology-canonical-domain",
+ "serde_json",
  "sqlparser",
  "syn",
 ]

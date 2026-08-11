@@ -23,6 +23,9 @@ sqlparser = { version = "0.62.0", default-features = false }
 # Landed by the integration owner so this gate can stop hand-lexing Rust; see the
 # rationale on the `[workspace.dependencies]` entry in backend/Cargo.toml.
 syn = { workspace = true }
+# Cargo-authoritative dependency rename resolve (console-ugg). Already in
+# `[workspace.dependencies]`; no backend/Cargo.toml edit required.
+serde_json = { workspace = true }
 
 [lints]
 workspace = true

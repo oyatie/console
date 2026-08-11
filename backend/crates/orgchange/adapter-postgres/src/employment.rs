@@ -40,8 +40,12 @@
 //! 0214's `canonical_employment_row_immutable` trigger refuses UPDATE and DELETE
 //! on `employment_revisions` and UPDATE on `employment_source_bindings`, so a
 //! revision is never edited: `Promote`/`Transfer` append `MAX(version) + 1`.
-//! `employment_heads` deliberately carries no trigger — `valid_to` is the one
-//! legitimate mutation — and this port does not close a window yet.
+//! `employment_heads` carries a narrow trigger — `valid_to` is the one
+//! legitimate mutation. When a Promote/Transfer revision carries
+//! `employment_status = EXITED`, this port sets `employment_heads.valid_to` to
+//! that revision's `valid_from` in the same transaction that appends the
+//! revision and updates the legacy head. There is no separate `hr.exit`
+//! dispatch target: exit is expressed as Promote/Transfer with EXITED.
 //!
 //! A revision stores only `valid_from`; its half-open interval ends at the next
 //! revision's `valid_from`, or at the head's `valid_to`. That is 0214's temporal
@@ -480,7 +484,8 @@ impl PgEmploymentPort {
             // The legacy compatibility head carries the new state, through the
             // same statement the REST lifecycle handler calls. `valid_from` is
             // the effective date, and the statement writes `exit_date` from it
-            // exactly when the status is `EXITED`.
+            // exactly when the status is `EXITED`. The canonical head closes in
+            // the same transaction: `valid_to` = this revision's `valid_from`.
             EmploymentQuery::Promote { .. } | EmploymentQuery::Transfer { .. } => {
                 let employee_id = bound_employee(&mut tx, org, employment_id).await?;
                 let effective_date = valid_from.date().to_string();
@@ -491,6 +496,17 @@ impl PgEmploymentPort {
                     attributes.as_change(&effective_date),
                 )
                 .await?;
+                if attributes.employment_status == "EXITED" {
+                    sqlx::query(
+                        "UPDATE employment_heads SET valid_to = $3 \
+                         WHERE org_id = $1 AND id = $2",
+                    )
+                    .bind(org)
+                    .bind(employment_id)
+                    .bind(valid_from)
+                    .execute(&mut *tx)
+                    .await?;
+                }
             }
         }
 

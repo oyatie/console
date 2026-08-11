@@ -1647,14 +1647,14 @@ fn known_residual_a_line_comment_that_runs_off_the_end_of_its_literal()
     Ok(())
 }
 
-/// RESIDUAL 11 (CLOSED for `--` via sqlparser): a `--` inside single-quoted SQL
-/// DATA must NOT hide later statements in the SAME literal.
+/// RESIDUAL 11 (CLOSED for `--` / `/*` via sqlparser): comment markers inside
+/// single-quoted SQL DATA must NOT hide later statements in the SAME literal.
 ///
-/// The sqlparser path tokenizes with string context so `'a -- b'` stays data.
-/// Cases below assert `employees` is charged when a later write follows (`escapes=
-/// false`). A `--` in one Rust literal still does not reach a write in the NEXT
-/// one; a `--` in data after the target is already resolved before the comment
-/// opens.
+/// The sqlparser path tokenizes with string context so `'a -- b'` and `'a /* b'`
+/// stay data. Cases below assert `employees` is charged when a later write
+/// follows (`escapes=false`). A marker in one Rust literal still does not reach
+/// a write in the NEXT one; a marker in data after the target is already
+/// resolved before the comment opens.
 ///
 /// Same two canaries as the residual test above, for the same two reasons.
 #[test]
@@ -1685,6 +1685,19 @@ fn known_residual_a_dash_inside_quoted_sql_data_hides_a_later_statement()
             // Data dash AFTER the target: the write is already resolved.
             "dash-after-the-target",
             "pub const SQL: &str = \"UPDATE employees SET note = 'a -- b'\";",
+            false,
+        ),
+        // console-jth: `/*` inside quotes is the same extent question as `--`.
+        (
+            "block-comment-in-quoted-data",
+            "pub const SQL: &str = \"UPDATE t SET note = 'a /* b'; \
+             UPDATE employees SET org_unit = 1; SELECT 'x */ y'\";",
+            false,
+        ),
+        (
+            "unterminated-block-in-quoted-data",
+            "pub const SQL: &str = \"UPDATE t SET note = 'a /* b'; \
+             UPDATE employees SET org_unit = 1\";",
             false,
         ),
     ] {
@@ -2062,6 +2075,79 @@ fn an_unparseable_file_is_scanned_rather_than_skipped() -> Result<(), Box<dyn st
 // ---------------------------------------------------------------------------
 // The two exclusions, keyed on the manifest tree rather than on the crate name
 // ---------------------------------------------------------------------------
+
+/// console-ugg: workspace-inherited `package =` renames must not fail-open.
+///
+/// `alias = { workspace = true }` with
+/// `[workspace.dependencies] alias = { package = "real-pkg", … }` is a
+/// production edge to `real-pkg`. A text scan that only sees the key `alias`
+/// leaves `real-pkg` looking like a pure `[dev-dependencies]` crate when
+/// another member also lists it under dev — and every source file of a
+/// production writer is skipped. `cargo metadata` is the total primitive.
+#[test]
+fn workspace_inherited_package_rename_does_not_skip_a_shipped_writer()
+-> Result<(), Box<dyn std::error::Error>> {
+    let root = temp_tree("ugg-workspace-rename")?;
+    write_file(
+        &root.join("Cargo.toml"),
+        r#"[workspace]
+members = ["crates/*"]
+resolver = "2"
+
+[workspace.dependencies]
+alias = { package = "real-pkg", path = "crates/real_pkg" }
+"#,
+    )?;
+    write_file(
+        &root.join("crates/real_pkg/Cargo.toml"),
+        "[package]\nname = \"real-pkg\"\nversion = \"0.1.0\"\nedition = \"2021\"\n",
+    )?;
+    write_file(
+        &root.join("crates/real_pkg/src/lib.rs"),
+        &format!(
+            "{CANARY}{PARSED_ONLY_CANARY}pub mod employees {{}}\n\
+             pub const SQL: &str = \"UPDATE employees SET org_unit = 1\";\n"
+        ),
+    )?;
+    write_file(
+        &root.join("crates/producer/Cargo.toml"),
+        "[package]\nname = \"producer\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n\
+         [dependencies]\nalias = { workspace = true }\n",
+    )?;
+    write_file(
+        &root.join("crates/producer/src/lib.rs"),
+        "pub fn nothing() {}\n",
+    )?;
+    write_file(
+        &root.join("crates/consumer/Cargo.toml"),
+        "[package]\nname = \"consumer\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n\
+         [dev-dependencies]\nreal-pkg = { path = \"../real_pkg\" }\n",
+    )?;
+    write_file(
+        &root.join("crates/consumer/src/lib.rs"),
+        "pub fn nothing() {}\n",
+    )?;
+
+    let report = scan(&root)?;
+    let charged = |table: &str| report.violations.iter().any(|v| v.table == table);
+    assert!(
+        charged("organizations"),
+        "canary must fire so the tree was read: {:#?}",
+        report.violations
+    );
+    assert!(
+        !charged("org_units"),
+        "doc canary charged — parse failed: {:#?}",
+        report.violations
+    );
+    assert!(
+        charged("employees"),
+        "workspace-inherited package= rename must keep real-pkg shipped so its \
+         UPDATE employees is charged, not skipped as dev-only: {:#?}",
+        report.violations
+    );
+    Ok(())
+}
 
 /// A crate every edge of which is a `[dev-dependencies]` edge is linked into
 /// test binaries only. The exemption comes from the EDGE, not from the name:

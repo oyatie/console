@@ -295,6 +295,17 @@ sh_test(
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
 
+# `canonical_dispatch_audit` owns the engine-side ontology.action.execute audit
+# row on canonical projected_usecase success (console-nuc product tip). Without
+# this wrapper + postgres-cargo-map face, the rust_test is dark in CI.
+sh_test(
+    name = "ontology-canonical-dispatch-audit-postgres",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/rest:console-ontology-rest-itest-canonical_dispatch_audit_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/rest:console-ontology-rest-itest-canonical_dispatch_audit_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
 # The erasure ledger's refusals (42501 as console_rt, P0001 as the owner) and
 # its restore verdicts. Wired here deliberately: the sibling audit-chain itest
 # has a rust_test target, no wrapper, no contract and no workflow step, so it

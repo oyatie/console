@@ -269,12 +269,14 @@
 //!     what keeps a `/*` from closing on a `*/` in an unrelated later literal —
 //!     `a_block_comment_does_not_close_on_a_later_literals_text`.
 //!
-//! 11. **CLOSED — `--` inside single-quoted SQL data.** When [`sql_comment_extent_needs_lexer`]
-//!     says the fragment needs it, [`without_sql_comments`] tokenizes with `sqlparser`
-//!     (PostgreSQL dialect) so `'a -- b'` stays one string literal and a later
+//! 11. **CLOSED — `--` / `/*` inside single-quoted SQL data.** When
+//!     [`sql_comment_extent_needs_lexer`] says the fragment needs it,
+//!     [`without_sql_comments`] tokenizes with `sqlparser` (PostgreSQL dialect)
+//!     so `'a -- b'` and `'a /* b'` stay string data and a later
 //!     `UPDATE employees …` in the same Rust literal is charged. Pinned by
-//!     `known_residual_a_dash_inside_quoted_sql_data_hides_a_later_statement`.
-//!     All other fragments keep the byte path unchanged.
+//!     `known_residual_a_dash_inside_quoted_sql_data_hides_a_later_statement`
+//!     (includes the `/*`-in-quotes sibling). All other fragments keep the byte
+//!     path unchanged.
 //!
 //!     Historical note: a raw byte scan could not decide comment extent inside
 //!     quoted strings; Fix A charged ordinary Rust (`cargo update --workspace`);
@@ -464,7 +466,7 @@ pub fn scan(root: &Path) -> Result<Report, std::io::Error> {
     let mut manifests = Vec::new();
     collect_sources(root, &mut sources, &mut manifests)?;
     sources.sort();
-    let tree = CrateTree::read(&manifests)?;
+    let tree = CrateTree::read(root, &manifests)?;
 
     for path in sources {
         let Some((crate_name, manifest_dir)) = owning_crate(&path, root) else {
@@ -603,7 +605,66 @@ struct CrateTree {
 }
 
 impl CrateTree {
-    fn read(manifests: &[PathBuf]) -> Result<Self, std::io::Error> {
+    /// Prefer Cargo-authoritative metadata when `root` is a Cargo project.
+    /// Planted synthetic trees (gate tests) have no root manifest — those use
+    /// the key-only text scan, which deliberately does **not** resolve
+    /// `package =` renames (console-ugg: text-scan rename spellings are retired).
+    fn read(root: &Path, manifests: &[PathBuf]) -> Result<Self, std::io::Error> {
+        match Self::from_cargo_metadata(root) {
+            Ok(tree) => Ok(tree),
+            Err(meta_err) if root.join("Cargo.toml").is_file() => Err(std::io::Error::other(
+                format!("cargo metadata required for writer-ownership crate graph: {meta_err}"),
+            )),
+            Err(_) => Self::from_manifest_text(manifests),
+        }
+    }
+
+    fn from_cargo_metadata(root: &Path) -> Result<Self, String> {
+        let output = std::process::Command::new("cargo")
+            .args(["metadata", "--format-version", "1", "--no-deps"])
+            .current_dir(root)
+            .output()
+            .map_err(|e| format!("failed to run `cargo metadata`: {e}"))?;
+        if !output.status.success() {
+            return Err(format!(
+                "`cargo metadata` failed:\n{}",
+                String::from_utf8_lossy(&output.stderr)
+            ));
+        }
+        let meta: serde_json::Value = serde_json::from_slice(&output.stdout)
+            .map_err(|e| format!("failed to parse cargo metadata JSON: {e}"))?;
+        let packages = meta["packages"]
+            .as_array()
+            .ok_or("cargo metadata JSON has no `packages` array")?;
+        let mut tree = Self::default();
+        for package in packages {
+            let Some(deps) = package["dependencies"].as_array() else {
+                continue;
+            };
+            for dep in deps {
+                let Some(name) = dep["name"].as_str() else {
+                    continue;
+                };
+                let is_dev = dep["kind"].as_str() == Some("dev");
+                let set = if is_dev {
+                    &mut tree.dev_dependencies
+                } else {
+                    &mut tree.shipped_dependencies
+                };
+                // `name` is the resolved package (Cargo's answer to every
+                // `package =` / workspace-inherited rename spelling).
+                set.insert(name.to_owned());
+                // The Cargo.toml key survives too — that is how the crate is
+                // referred to in code when renamed.
+                if let Some(rename) = dep["rename"].as_str() {
+                    set.insert(rename.to_owned());
+                }
+            }
+        }
+        Ok(tree)
+    }
+
+    fn from_manifest_text(manifests: &[PathBuf]) -> Result<Self, std::io::Error> {
         let mut tree = Self::default();
         for manifest in manifests {
             let text = std::fs::read_to_string(manifest)?;
@@ -653,7 +714,13 @@ fn is_ci_gate(manifest_dir: &Path, root: &Path) -> bool {
         .any(|pair| pair[0] == "ci" && pair[1] == "gates")
 }
 
-/// The (shipped, dev) dependency edges declared by one manifest.
+/// Key-only dependency edges from one manifest text.
+///
+/// Used only for planted synthetic trees that are not a Cargo project.
+/// Rename resolution (`package =`, workspace-inherited aliases) is **not**
+/// done here — [`CrateTree::from_cargo_metadata`] is the total primitive
+/// (console-ugg). A `package =` directive line is skipped so it cannot invent
+/// a crate named `package`.
 ///
 /// `[workspace.dependencies]` is NOT an edge — it is the workspace's version
 /// registry, and every dev-dependency in the tree is also listed there. Reading
@@ -690,69 +757,14 @@ fn dependency_edges(manifest: &str) -> (BTreeSet<String>, BTreeSet<String>) {
             .next()
             .unwrap_or_default()
             .trim();
-        // `package = "x"` is a RENAME DIRECTIVE, never a dependency named `package`. Cargo accepts it
-        // in two positions and the first fix here handled only one:
-        //     inline    apalis-sqlx = { package = "sqlx", ... }   -- the live case in platform/jobs
-        //     subtable  [dependencies.alias]  \n  package = "sqlx"
-        // Recording `package` as a crate under the subtable form is not merely useless, it is the
-        // fail-open itself: the real name never enters `shipped`, so a dev-dependencies entry for it
-        // makes `is_unshipped` answer TRUE and every source file of a production crate is SKIPPED
-        // while this gate reports it examined the production tree.
-        //
-        // Handled by POSITION rather than by adding a branch per spelling: whatever `package = "…"`
-        // names is a package, wherever it appears, and the key it sits under is never itself one.
-        if key == "package" {
-            if let Some(package) = renamed_package(line) {
-                if is_dev { &mut dev } else { &mut shipped }.insert(package);
-            }
+        // Rename directive — never a dependency named `package`. Real package
+        // names come from `cargo metadata`, not another text-scan branch.
+        if key == "package" || key.is_empty() {
             continue;
         }
-        if !key.is_empty() {
-            if is_dev { &mut dev } else { &mut shipped }.insert(key.trim_matches('"').to_owned());
-            // The inline form: the key is how the crate is referred to in code and the package is
-            // what it is actually called, so BOTH are recorded.
-            if let Some(package) = renamed_package(line) {
-                if is_dev { &mut dev } else { &mut shipped }.insert(package);
-            }
-        }
+        if is_dev { &mut dev } else { &mut shipped }.insert(key.trim_matches('"').to_owned());
     }
     (shipped, dev)
-}
-
-/// The package a dependency line renames, if it uses Cargo's `package = "..."` form.
-///
-/// # This has now had three spellings, which means the mechanism is wrong
-///
-/// Cargo accepts a rename in three positions: inline, in a `[dependencies.alias]`
-/// subtable, and inherited via `[workspace.dependencies]` with `alias.workspace
-/// = true`. The first two are handled here; the third is NOT, and is filed as
-/// console-ugg rather than patched, because each fix so far replaced one enumeration of
-/// positions with a slightly larger one. The total primitive is `cargo metadata`,
-/// which resolves every dependency to its real package name authoritatively —
-/// Cargo answering instead of a text scan guessing.
-///
-/// Unreachable at this head: no first-party crate is aliased anywhere, and
-/// `[workspace.dependencies]` carries no `package =` at all.
-///
-/// Deliberately narrow: it reads only the `package` key of an inline table, because that is the
-/// one place Cargo lets a dependency's key differ from the crate it resolves to. Anything else on
-/// the line is irrelevant to who ships what.
-fn renamed_package(line: &str) -> Option<String> {
-    let after = line.split_once("package")?.1;
-    let after = after.trim_start();
-    let after = after.strip_prefix('=')?.trim_start();
-    let quote = after.chars().next()?;
-    if quote != '"' && quote != '\'' {
-        return None;
-    }
-    let rest = &after[quote.len_utf8()..];
-    let end = rest.find(quote)?;
-    let name = &rest[..end];
-    if name.is_empty() {
-        None
-    } else {
-        Some(name.to_owned())
-    }
 }
 
 /// `(is_dev, the crate named by the header itself)` for a dependency table, or
@@ -1151,7 +1163,9 @@ fn sql_comment_extent_needs_lexer(text: &str) -> bool {
             if bytes[i..].starts_with(b"--") || bytes[i..].starts_with(b"/*") {
                 return true;
             }
-        } else if bytes[i..].starts_with(b"--") {
+        } else if bytes[i..].starts_with(b"--") || bytes[i..].starts_with(b"/*") {
+            // Same extent question as `--` in quotes: the byte path cannot tell
+            // data from a real block comment, so route to sqlparser (console-jth).
             return true;
         }
         i += 1;
@@ -1755,66 +1769,26 @@ const fn is_ident_byte(byte: u8) -> bool {
 
 #[cfg(test)]
 mod tests {
-    /// Cargo's rename syntax means the dependency KEY is not the package name.
-    ///
-    /// `apalis-sqlx = { package = "sqlx", ... }` is live in
-    /// `backend/crates/platform/jobs/Cargo.toml`. Before `renamed_package`, only `apalis-sqlx`
-    /// entered the shipped set, so `sqlx` was shipped-by-nobody -- and any crate that also lists it
-    /// as a dev-dependency made `is_unshipped` answer TRUE for a package production depends on.
-    /// The consequence is not a wrong label: it is that every source file of that crate is SKIPPED,
-    /// and this gate's entire claim is that it examined the production tree.
+    /// Text fallback must not invent a crate named `package` from a rename
+    /// directive. Real package names are Cargo metadata's job (console-ugg).
     #[test]
-    fn an_aliased_production_dependency_is_recorded_under_its_real_package_name() {
-        let manifest = r#"
-[dependencies]
-apalis-sqlx = { package = "sqlx", version = "=0.8.6" }
-plain-dep = "1"
-
-[dev-dependencies]
-sqlx = { version = "=0.8.6" }
-"#;
-        let (shipped, dev) = dependency_edges(manifest);
-
+    fn text_scan_skips_package_rename_directives() {
+        let (shipped, _dev) =
+            dependency_edges("[dependencies.alias]\npackage = \"real-package\"\nversion = \"1\"\n");
         assert!(
-            shipped.contains("sqlx"),
-            "the renamed package must be shipped under its REAL name, else a dev-dependencies \
-             entry for it makes it look dev-only; shipped = {shipped:?}"
+            shipped.contains("alias"),
+            "subtable header still names the key: {shipped:?}"
         );
-        assert!(
-            shipped.contains("apalis-sqlx"),
-            "the key is still how the crate is referred to in code and must survive too"
-        );
-        assert!(dev.contains("sqlx"), "the dev entry is still a dev entry");
-
-        // The property that actually matters, stated over the sets rather than over one name.
-        for name in shipped.intersection(&dev) {
-            assert!(
-                shipped.contains(name),
-                "a package that is BOTH shipped and dev must never be classified unshipped: {name}"
-            );
-        }
-    }
-
-    #[test]
-    fn a_rename_declared_in_a_dependency_subtable_is_also_resolved() {
-        let manifest = r#"
-[dependencies.alias]
-package = "real-package"
-version = "1"
-
-[dev-dependencies]
-real-package = "1"
-"#;
-        let (shipped, dev) = dependency_edges(manifest);
-        assert!(shipped.contains("real-package"), "shipped = {shipped:?}");
         assert!(
             !shipped.contains("package"),
             "a `package =` key is a rename directive, not a crate: {shipped:?}"
         );
-        assert!(dev.contains("real-package"));
+        assert!(
+            !shipped.contains("real-package"),
+            "text scan must not pretend to resolve renames: {shipped:?}"
+        );
     }
 
-    /// A line that merely mentions the word `package` is not a rename.
     #[test]
     fn a_dependency_without_the_rename_form_records_only_its_key() {
         let (shipped, _dev) =
@@ -1823,8 +1797,62 @@ real-package = "1"
         assert_eq!(shipped.len(), 1, "no phantom package name: {shipped:?}");
     }
 
+    /// `cargo metadata` resolves every `package =` spelling — including
+    /// workspace-inherited aliases — so a production edge cannot fail-open as
+    /// "dev-only" when another crate lists the real name under `[dev-dependencies]`.
+    #[allow(clippy::unwrap_used, clippy::panic)]
+    #[test]
+    fn cargo_metadata_records_workspace_inherited_package_renames() {
+        let root = std::env::temp_dir().join(format!("console-wo-ugg-meta-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join("crates/real_pkg/src")).unwrap();
+        std::fs::create_dir_all(root.join("crates/producer/src")).unwrap();
+        std::fs::write(
+            root.join("Cargo.toml"),
+            r#"[workspace]
+members = ["crates/*"]
+resolver = "2"
+
+[workspace.dependencies]
+alias = { package = "real-pkg", path = "crates/real_pkg" }
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("crates/real_pkg/Cargo.toml"),
+            "[package]\nname = \"real-pkg\"\nversion = \"0.1.0\"\nedition = \"2021\"\n",
+        )
+        .unwrap();
+        std::fs::write(root.join("crates/real_pkg/src/lib.rs"), "pub fn x() {}\n").unwrap();
+        std::fs::write(
+            root.join("crates/producer/Cargo.toml"),
+            "[package]\nname = \"producer\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n\
+             [dependencies]\nalias = { workspace = true }\n",
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("crates/producer/src/lib.rs"),
+            "pub fn nothing() {}\n",
+        )
+        .unwrap();
+
+        let tree = CrateTree::from_cargo_metadata(&root)
+            .unwrap_or_else(|e| panic!("metadata must resolve the workspace rename: {e}"));
+        assert!(
+            tree.shipped_dependencies.contains("real-pkg"),
+            "workspace-inherited package= must ship under the REAL name: {:?}",
+            tree.shipped_dependencies
+        );
+        assert!(
+            tree.shipped_dependencies.contains("alias"),
+            "the Cargo.toml key must survive too: {:?}",
+            tree.shipped_dependencies
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
     use super::{
-        Production, Truth, WriteTargets, cfg_truth, collapsed_lower, dependency_edges,
+        CrateTree, Production, Truth, WriteTargets, cfg_truth, collapsed_lower, dependency_edges,
         file_write_targets, gated_to_test_builds, production_source, write_targets,
     };
 

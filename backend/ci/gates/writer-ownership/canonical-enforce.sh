@@ -12,13 +12,11 @@
 # script exists to remove:
 #     tools/ci/cargo_needs_postgres.sh   COVERED
 #     tools/lanes/pgtest.sh              COVERED
-#     .github/workflows/image-release.yml  NOT COVERED -- tracked as console-soe
-# In image-release.yml the reconcile runs at "Provision and verify the probe
-# database topology" and the published image applies migrations in the NEXT
-# step, so the release probe still performs the structural no-op described
-# above. Wiring it needs a probe database inside the release container after the
-# image has migrated, which is a release-pipeline change with its own blast
-# radius rather than a line in this file.
+#     .github/workflows/image-release.yml  COVERED
+# image-release.yml invokes this script against a disposable probe database
+# inside the release postgres container after the published image has applied
+# migrations (console-soe). The pre-migration reconcile step remains a topology
+# smoke only; post-migration canonical enforcement is this script.
 #
 # This is the post-migration half: a disposable probe database inside an
 # already-running container, migrated with the real migration set, then handed

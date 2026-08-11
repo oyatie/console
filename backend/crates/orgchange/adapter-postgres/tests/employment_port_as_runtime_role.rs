@@ -475,6 +475,103 @@ async fn a_promotion_carries_the_new_state_onto_the_legacy_employees_head(owner_
     );
 }
 
+/// An EXITED promote must close `employment_heads.valid_to` at the exit
+/// revision's `valid_from`. Legacy `employees.exit_date` alone is not enough:
+/// a future temporal reader over heads would still count the person as open.
+/// Mutating the close away (drop the UPDATE) must turn this red.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn an_exited_promote_closes_the_employment_head_window(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (employee, employment_id) = appointed(&owner_pool, org, actor, &port, "exit-1").await;
+
+    let open: Option<OffsetDateTime> =
+        sqlx::query_scalar("SELECT valid_to FROM employment_heads WHERE org_id = $1 AND id = $2")
+            .bind(ORG)
+            .bind(employment_id)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(open, None, "a newly appointed head must still be open");
+
+    let exit_at = at(86_400);
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: exit_at,
+                attributes: attributes("영업본부", "사원", "EXITED"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    let closed: Option<OffsetDateTime> =
+        sqlx::query_scalar("SELECT valid_to FROM employment_heads WHERE org_id = $1 AND id = $2")
+            .bind(ORG)
+            .bind(employment_id)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        closed,
+        Some(exit_at),
+        "EXITED must set employment_heads.valid_to to the exit revision's valid_from"
+    );
+
+    let (status, exit_date): (String, Option<String>) = {
+        let row = sqlx::query(
+            "SELECT employment_status, exit_date FROM employees WHERE org_id = $1 AND id = $2",
+        )
+        .bind(ORG)
+        .bind(employee)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+        (row.get("employment_status"), row.get("exit_date"))
+    };
+    assert_eq!(status, "EXITED");
+    let expected_exit_date = exit_at.date().to_string();
+    assert_eq!(
+        exit_date.as_deref(),
+        Some(expected_exit_date.as_str()),
+        "legacy exit_date stays the date form of the same effective instant"
+    );
+
+    // Control: a non-EXITED revise must leave the window open. Seed a second
+    // employment so the assertion is about status, not about promote-in-general.
+    let (_employee2, employment_open) =
+        appointed(&owner_pool, org, actor, &port, "exit-still-open").await;
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id: employment_open,
+                valid_from: at(86_400),
+                attributes: attributes("영업본부", "팀장", "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+    let still_open: Option<OffsetDateTime> =
+        sqlx::query_scalar("SELECT valid_to FROM employment_heads WHERE org_id = $1 AND id = $2")
+            .bind(ORG)
+            .bind(employment_open)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        still_open, None,
+        "ACTIVE promote must not close employment_heads.valid_to"
+    );
+}
+
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn a_transfer_appends_a_third_revision_and_the_intervals_stay_half_open(owner_pool: PgPool) {
     let (org, actor, port) = fixture(&owner_pool).await;

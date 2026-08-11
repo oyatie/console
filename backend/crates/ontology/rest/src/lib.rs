@@ -9,14 +9,18 @@
 //!    legacy authorization contract → self-checklist → four-eyes read from the DB
 //!    → egress derived from side effects) and returns each gate's status WITHOUT
 //!    committing anything;
-//!  * `execute` runs the same chain, and if it allows, opens ONE `with_audits`
-//!    writeback transaction that **re-checks** the mutable gate (four-eyes) inside
-//!    the tx (TOCTOU-safe), then dispatches: an `instance_revision` action appends
-//!    a fixity-chained revision through the instance store's in-tx helper; a
-//!    `projected_usecase` action routes through the [`ProjectedDispatchRegistry`]
-//!    into the OWNING domain crate's use-case (which owns its own RLS, audit, and
-//!    transaction) — the engine never writes a domain table itself (§9.3, no second
-//!    source of truth); an unknown `dispatch_target` fails closed.
+//!  * `execute` runs the same chain, and if it allows, dispatches:
+//!    an `instance_revision` action opens ONE `with_audits` writeback that
+//!    **re-checks** the mutable gate (four-eyes) inside the tx (TOCTOU-safe) and
+//!    appends a fixity-chained revision; a `projected_usecase` action routes
+//!    through the [`ProjectedDispatchRegistry`] into the OWNING domain crate's
+//!    use-case (which owns its own RLS and transaction — §9.3, no second source
+//!    of truth). Non-roster projected handlers (e.g. `registry.update_equipment`)
+//!    also own their audit row; **canonical** ports open a raw `pool.begin()` and
+//!    write no `audit_events`, so after a successful canonical dispatch the engine
+//!    emits one org-scoped `ontology.action.execute` row (same action key as the
+//!    instance-revision writeback, fail-closed if that insert cannot land). An
+//!    unknown `dispatch_target` fails closed.
 //!
 //! `router(state)` self-applies `with_request_context`; `build_router` merges it
 //! (L-WIRE), this crate does not.
@@ -231,9 +235,12 @@ impl ProjectedDispatchRegistry {
     /// Install the canonical port that owns one object — and with it EVERY
     /// dispatch target the contract assigns to that object, present and future.
     ///
-    /// The port keeps its own transaction, RLS arming and audit: this registry
-    /// decodes the payload, checks it against the target, runs the port's PURE
-    /// preflight and hands over. It writes no domain table itself (§9.3).
+    /// The port keeps its own transaction and RLS arming: this registry decodes
+    /// the payload, checks it against the target, runs the port's PURE preflight
+    /// and hands over. It writes no domain table itself (§9.3). Canonical adapters
+    /// open raw `pool.begin()` without an `audit_events` row; the engine emits
+    /// that row from [`OntologyRestState::execute_action`] after a successful
+    /// canonical dispatch (see `emit_canonical_projected_audit`).
     #[must_use]
     pub fn register_port<P>(mut self, port: P) -> Self
     where
@@ -1532,9 +1539,11 @@ impl OntologyRestState {
                         "an action gate is not satisfied".to_owned(),
                     ));
                 }
-                // No engine writeback: route to the owning domain crate's use-case,
-                // which owns its own RLS + audit + tx (§9.3 — no second source of
+                // No engine domain writeback: route to the owning domain crate's
+                // use-case, which owns its own RLS + tx (§9.3 — no second source of
                 // truth). An unwired/unknown target fails closed (`NotWiredYet`).
+                // Non-roster handlers keep their own audit; canonical ports do not
+                // (raw `begin()`), so success below emits `ontology.action.execute`.
                 //
                 // The §16 gate chain was already enforced fail-closed above. TOCTOU-
                 // safety of the domain MUTATION is the domain use-case's own
@@ -1578,11 +1587,34 @@ impl OntologyRestState {
                         ));
                     }
                 }
+                // Snapshot receipt presence before dispatch so an idempotent
+                // canonical replay (same command_id) does not mint a second audit
+                // row — same shape as InstanceRevision's early return with `vec![]`.
+                let canonical_target = DispatchTarget::from_str(&target).ok();
+                let prior_canonical_receipt = match (canonical_target, command.command_id) {
+                    (Some(_), Some(command_id)) => {
+                        let org = current_org().map_err(|e| {
+                            ActionError::Store(PgOntologyError::from(KernelError::from(e)))
+                        })?;
+                        sqlx::query_scalar::<_, bool>(
+                            "SELECT EXISTS(
+                                SELECT 1 FROM ont_action_command_receipts
+                                WHERE org_id = $1 AND command_id = $2
+                             )",
+                        )
+                        .bind(*org.as_uuid())
+                        .bind(command_id)
+                        .fetch_one(self.registry.pool())
+                        .await
+                        .map_err(|e| ActionError::Store(PgOntologyError::Db(DbError::Sqlx(e))))?
+                    }
+                    _ => false,
+                };
                 let projected = self
                     .projected_dispatch
                     .dispatch(ProjectedDispatch {
                         principal: principal.clone(),
-                        target,
+                        target: target.clone(),
                         target_id: command.instance_id.map(|id| *id.as_uuid()),
                         command_id: command.command_id,
                         params: prepared.command.params().clone(),
@@ -1590,6 +1622,17 @@ impl OntologyRestState {
                         occurred_at: OffsetDateTime::now_utc(),
                     })
                     .await?;
+                if canonical_target.is_some() && !prior_canonical_receipt {
+                    emit_canonical_projected_audit(
+                        self,
+                        principal,
+                        action_key,
+                        &target,
+                        command.command_id,
+                        &projected,
+                    )
+                    .await?;
+                }
                 Ok(ExecuteOutcome {
                     dispatch: ActionDispatch::ProjectedUsecase,
                     gates,
@@ -1895,6 +1938,73 @@ async fn action_execute(
         .await
         .map_err(RestError::from_action)?;
     Ok(Json(outcome))
+}
+
+/// Emit the engine-side audit row for a successful **canonical** projected
+/// dispatch.
+///
+/// Canonical Postgres ports open `pool.begin()` and commit domain + receipt
+/// rows without an `audit_events` insert. InstanceRevision already uses
+/// `AuditAction::new("ontology.action.execute")` inside `with_audits`; reuse
+/// that single action key here (smallest sufficient taxonomy — do not mint
+/// `ontology.canonical.*` per target). Distinguish via `target_type` (= receipt
+/// owner / object key) and `target_id` (= tenant-global `command_id`), with
+/// `after_snap` carrying `dispatch_target`. Fail-closed: a failed audit insert
+/// surfaces as [`ActionError::Store`] even though the port tx already committed
+/// (inherent to the port-owned transaction boundary; same class as four-eyes
+/// consume-before-dispatch).
+async fn emit_canonical_projected_audit(
+    state: &OntologyRestState,
+    principal: &Principal,
+    action_key: &str,
+    dispatch_target: &str,
+    command_id: Option<Uuid>,
+    projected: &Value,
+) -> Result<(), ActionError> {
+    let org = current_org()
+        .map_err(|e| ActionError::Store(PgOntologyError::from(KernelError::from(e))))?;
+    let actor = principal.user_id;
+    let command_id = command_id.ok_or_else(|| {
+        ActionError::Validation(
+            "canonical projected dispatch requires command_id for audit binding".to_owned(),
+        )
+    })?;
+    let action_key = action_key.to_owned();
+    let dispatch_target = dispatch_target.to_owned();
+    let owner = projected
+        .get("owner")
+        .and_then(Value::as_str)
+        .unwrap_or("canonical")
+        .to_owned();
+    let result = projected.get("result").cloned().unwrap_or(Value::Null);
+
+    with_audits::<_, (), PgOntologyError>(state.registry.pool(), org, move |_tx| {
+        Box::pin(async move {
+            let now = OffsetDateTime::now_utc();
+            let event = AuditEvent::new(
+                Some(actor),
+                AuditAction::new("ontology.action.execute")?,
+                &owner,
+                command_id.to_string(),
+                TraceContext::generate(),
+                now,
+            )
+            .with_org(org)
+            .with_snapshots(
+                None,
+                Some(serde_json::json!({
+                    "action_key": action_key,
+                    "dispatch": "projected_usecase",
+                    "dispatch_target": dispatch_target,
+                    "owner": owner,
+                    "result": result,
+                })),
+            );
+            Ok(((), vec![event]))
+        })
+    })
+    .await
+    .map_err(ActionError::Store)
 }
 
 /// The instance-revision writeback: ONE `with_audits` tx that re-checks the

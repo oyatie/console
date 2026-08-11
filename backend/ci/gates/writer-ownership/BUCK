@@ -18,6 +18,7 @@ rust_library(
     env = {"CARGO_MANIFEST_DIR": "backend/ci/gates/writer-ownership", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     deps = [
         "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
+        "//third-party/rust:serde_json",
         "//third-party/rust:sqlparser",
         "//third-party/rust:syn",
     ],
@@ -33,6 +34,7 @@ rust_binary(
     env = {"CARGO_MANIFEST_DIR": "backend/ci/gates/writer-ownership"},
     deps = [
         "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
+        "//third-party/rust:serde_json",
         "//third-party/rust:sqlparser",
         "//third-party/rust:syn",
         ":console-gate-writer-ownership-lib",
@@ -50,6 +52,7 @@ rust_test(
     labels = ["owner.backend.ci.gates.writer-ownership", "domain.ci", "test.unit", "resource.none"],
     deps = [
         "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
+        "//third-party/rust:serde_json",
         "//third-party/rust:sqlparser",
         "//third-party/rust:syn",
     ],
@@ -66,6 +69,7 @@ rust_test(
     labels = ["owner.backend.ci.gates.writer-ownership", "domain.ci", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
         "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
+        "//third-party/rust:serde_json",
         "//third-party/rust:sqlparser",
         "//third-party/rust:syn",
         ":console-gate-writer-ownership-lib",
@@ -83,6 +87,7 @@ rust_test(
     labels = ["owner.backend.ci.gates.writer-ownership", "domain.ci", "test.integration", "resource.none"],
     deps = [
         "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
+        "//third-party/rust:serde_json",
         "//third-party/rust:sqlparser",
         "//third-party/rust:syn",
         ":console-gate-writer-ownership-lib",
