@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.4](https://github.com/jason931225/console/compare/v0.3.3...v0.3.4) (2026-08-11)
+
+
+### Features
+
+* **p4:** canonical ports writer-ownership gate ([#618](https://github.com/jason931225/console/issues/618)) ([7b568df](https://github.com/jason931225/console/commit/7b568df9db961fa8aa3f36917eaa13c6af2c3023))
+* train-2 admit — openapi $ref totality, image-release census, leave §60, external seal signer, collab audience, audit-org threading, crate-disk census, authz AiAssist SSOT ([9acd784](https://github.com/jason931225/console/commit/9acd784f534bb25b0468139be8f9acb13bd8fbd8))
+
+
+### Bug Fixes
+
+* **p4:** Batch B h3e→avb micro-train — explicit subject_id + CanonicalPort error kinds ([#739](https://github.com/jason931225/console/issues/739)) ([526229d](https://github.com/jason931225/console/commit/526229dd8e3549139083736340f7a474eeeaa402))
+* **p4:** Batch B split admit — writer-ownership jth fold, employment valid_to close, canonical dispatch audit + CI wire ([#736](https://github.com/jason931225/console/issues/736)) ([e391abb](https://github.com/jason931225/console/commit/e391abb91c960e4c774fd59c42c64f5e8f87904b))
+* **p4:** wave-1 canonical hardening — tai.1 SQL lexer, uoh ambiguous-binding refuse, q06 subject bind ([#622](https://github.com/jason931225/console/issues/622)) ([e86cdd1](https://github.com/jason931225/console/commit/e86cdd1bbd77f024f2ca5236c8af97148e385045))
+* **release:** admit release-please bot docs-only candidates (console-9ry) ([#735](https://github.com/jason931225/console/issues/735)) ([f94308a](https://github.com/jason931225/console/commit/f94308a028868e735d61ca7857f3078f85d95598))
+* **release:** admit release-please tip documentation custody (console-9ry) ([#737](https://github.com/jason931225/console/issues/737)) ([f478623](https://github.com/jason931225/console/commit/f47862352243a60d4a095db44f52ab56d8527dd5))
+
 ## [0.3.3](https://github.com/jason931225/console/compare/v0.3.2...v0.3.3) (2026-08-06)
 
 
