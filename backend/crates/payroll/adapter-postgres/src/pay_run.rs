@@ -285,14 +285,34 @@ pub enum PayRunError {
 
 impl CanonicalPortError for PayRunError {
     fn into_kernel_error(self) -> KernelError {
-        let message = self.to_string();
         match self {
-            Self::Blocked(_) => KernelError::validation(message),
-            Self::DigestConflict(_) => KernelError::conflict(message),
-            Self::Database(_) | Self::Lifecycle(_) | Self::UnreadableReceipt(_, _) => {
-                KernelError::internal(message)
+            Self::Blocked(_) => KernelError::validation(self.to_string()),
+            Self::DigestConflict(_) => KernelError::conflict(self.to_string()),
+            Self::Lifecycle(err) => lifecycle_into_kernel_error(err),
+            Self::Database(_) | Self::UnreadableReceipt(_, _) => {
+                KernelError::internal(self.to_string())
             }
         }
+    }
+}
+
+/// Map payroll lifecycle failures onto [`KernelError`] kinds that match the
+/// REST `from_lifecycle` status surface (404 / 422 / 409 / 500), instead of
+/// flattening every arm to `Internal` via [`PayRunError::Lifecycle`].
+fn lifecycle_into_kernel_error(err: crate::lifecycle::LifecycleError) -> KernelError {
+    use crate::lifecycle::LifecycleError as E;
+    let message = err.to_string();
+    match err {
+        E::NotFound => KernelError::not_found(message),
+        E::Validation(_) => KernelError::validation(message),
+        E::InvalidTransition(_) => KernelError::invalid_transition(message),
+        E::InvalidState(_)
+        | E::PreflightBlocked(_)
+        | E::ExceptionsOpen(_)
+        | E::SodViolation
+        | E::AlreadyResolved
+        | E::LegalGate(_) => KernelError::conflict(message),
+        E::Db(_) => KernelError::internal(message),
     }
 }
 
@@ -621,8 +641,15 @@ fn payload_digest(command: &PayRunCommand) -> [u8; 32] {
 #[cfg(test)]
 mod port_error_kind_tests {
     use super::*;
+    use crate::lifecycle::{ClosePreflight, LifecycleError};
     use console_kernel_core::ErrorKind;
     use console_ontology_canonical_domain::CanonicalPortError;
+    use console_platform_db::DbError;
+
+    fn assert_lifecycle_kind(err: LifecycleError, expected: ErrorKind) {
+        let kind = PayRunError::Lifecycle(err).into_kernel_error().kind;
+        assert_eq!(kind, expected);
+    }
 
     #[test]
     fn digest_conflict_is_conflict_not_internal() {
@@ -631,6 +658,41 @@ mod port_error_kind_tests {
                 .into_kernel_error()
                 .kind,
             ErrorKind::Conflict
+        );
+    }
+
+    #[test]
+    fn lifecycle_variants_preserve_kernel_kinds() {
+        assert_lifecycle_kind(LifecycleError::NotFound, ErrorKind::NotFound);
+        assert_lifecycle_kind(
+            LifecycleError::Validation("bad input".into()),
+            ErrorKind::Validation,
+        );
+        assert_lifecycle_kind(
+            LifecycleError::InvalidTransition("draft→paid".into()),
+            ErrorKind::InvalidTransition,
+        );
+        assert_lifecycle_kind(
+            LifecycleError::InvalidState("cannot decide a run in status OPEN".into()),
+            ErrorKind::Conflict,
+        );
+        assert_lifecycle_kind(
+            LifecycleError::PreflightBlocked(ClosePreflight {
+                checks: Vec::new(),
+                can_close: false,
+            }),
+            ErrorKind::Conflict,
+        );
+        assert_lifecycle_kind(LifecycleError::ExceptionsOpen(3), ErrorKind::Conflict);
+        assert_lifecycle_kind(LifecycleError::SodViolation, ErrorKind::Conflict);
+        assert_lifecycle_kind(LifecycleError::AlreadyResolved, ErrorKind::Conflict);
+        assert_lifecycle_kind(
+            LifecycleError::LegalGate("missing reviewed_on".into()),
+            ErrorKind::Conflict,
+        );
+        assert_lifecycle_kind(
+            LifecycleError::Db(DbError::Sqlx(sqlx::Error::RowNotFound)),
+            ErrorKind::Internal,
         );
     }
 }
