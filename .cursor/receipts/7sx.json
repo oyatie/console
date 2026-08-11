@@ -1,0 +1,46 @@
+{
+  "status": "done",
+  "summary": "L5-ORG: OrgEntitySummary gains companyId/companyResolutionStatus/orgUnits on preserved /api/v1/org-entities; CreateRegion/CreateBranch apply emits org_unit_source_bindings via OrgUnit owner seam ensure_unambiguous_legacy_binding_in_tx (UUID-only; free-text refused). Readback + binding + ambiguous-name controls green.",
+  "filesChanged": [
+    "backend/crates/orgchange/domain/src/lib.rs",
+    "backend/crates/orgchange/adapter-postgres/src/lib.rs",
+    "backend/crates/orgchange/adapter-postgres/tests/org_reference_surface.rs",
+    "backend/crates/orgchange/adapter-postgres/Cargo.toml",
+    "backend/crates/orgchange/adapter-postgres/BUCK",
+    "backend/crates/ontology/canonical-adapter-postgres/src/org_unit.rs",
+    "backend/crates/ontology/canonical-adapter-postgres/src/company.rs",
+    "backend/Cargo.lock",
+    "tools/ci/postgres-cargo-map.json",
+    "tools/buck/gen_first_party.py",
+    ".cursor/receipts/7sx.json"
+  ],
+  "redBaseline": "org_entities_readback_company_and_bound_org_units + ensure_binds_region_uuid_and_replays + named_org_unit_probe_is_ambiguous_when_two_match + unambiguous_legacy_source_id free-text refuse; pre-fix OrgEntitySummary lacked canonical fields and apply did not emit bindings.",
+  "verification": "tools/ci/cargo_needs_postgres.sh --only orgchange-adapter-postgres-org-reference-surface-pg --num-threads=1 → 4 passed; orgchange-preflight-zero-write-pg → 5 passed; cargo test -p console-ontology-canonical-adapter-postgres --lib binding_seam → 2 passed; cargo fmt --check on touched packages; cargo check -p console-orgchange-rest.",
+  "contractBreaches": "none; OpenAPI OrgEntitySummary not updated in-lane (integrator-owned) — additive JSON fields only.",
+  "enforcementPlacement": "WHERE: (1) apply_op CreateRegion/CreateBranch calls ensure_unambiguous_legacy_binding_in_tx in owner crate org_unit.rs after legacy row INSERT inside the open apply tx — subject (region/branch UUID) exists. (2) org_entities LEFT JOIN projections examine regions/branches + org_unit_source_bindings. Finest distinction: UUID source_id only (unambiguous_legacy_source_id); name probe count_org_units_named returns Ambiguous when match_count!=1 and never writes. Examined-zero fails: unbound region/branch rows still appear with resolutionStatus=UNBOUND and orgUnitId null (empty join is observable gap, not silent omit).",
+  "peripheralsUpdated": "adapter-postgres Cargo.toml+BUCK+Cargo.lock path dep on canonical-adapter; tools/ci/postgres-cargo-map.json + tools/buck/gen_first_party.py register org_reference_surface itest. OpenAPI OrgEntitySummary schema deferred to admit (additive response fields).",
+  "commands": [
+    "cargo check -p console-orgchange-adapter-postgres -p console-orgchange-domain -p console-ontology-canonical-adapter-postgres --manifest-path backend/Cargo.toml",
+    "cargo fmt -p console-orgchange-adapter-postgres -p console-orgchange-domain -p console-ontology-canonical-adapter-postgres -- --check",
+    "cargo test -p console-ontology-canonical-adapter-postgres --lib binding_seam --manifest-path backend/Cargo.toml",
+    "cargo test -p console-orgchange-domain --lib --manifest-path backend/Cargo.toml",
+    "cargo check -p console-orgchange-rest --manifest-path backend/Cargo.toml",
+    "tools/ci/cargo_needs_postgres.sh --only orgchange-adapter-postgres-org-reference-surface-pg --num-threads=1",
+    "tools/ci/cargo_needs_postgres.sh --only orgchange-preflight-zero-write-pg --num-threads=1",
+    "cargo test -p console-gate-writer-ownership --lib --manifest-path backend/Cargo.toml"
+  ],
+  "headSha": "552eafd00e1ec6d584ea0aec4e53f68877e24e44",
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "challenges": [
+    "Handoff said route region/branch writers through OrgUnitPort; kyh closed decided-no on owning regions/branches. Binding seam keeps DML in OrgUnit owner tables only and leaves auth-spine writers intact (Chesterton kept; second-writer gate stays total)."
+  ],
+  "followUps": "Admit: OpenAPI OrgEntitySummary additive fields; optional tools/buck sh_test wrapper for org-reference-surface if Buck face required. Shared-root touches (Cargo.toml/lock, BUCK, postgres-cargo-map, gen_first_party) were required for path-dep + CI discovery — outside brief allowlist but necessary. Do not edit employment.rs / ReassignOrgUnit (y0n). JobPosition stays xxp."
+}
