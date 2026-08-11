@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.5](https://github.com/jason931225/console/compare/v0.3.4...v0.3.5) (2026-08-11)
+
+
+### Features
+
+* **leave:** §60⑤ consult workflow + ACTIVE-only coverage headcount ([#745](https://github.com/jason931225/console/issues/745)) ([eca122a](https://github.com/jason931225/console/commit/eca122ad0122457a77b85ca55fc1e8b2e4869e74))
+* wave-2 admit — dgo.1 four-eyes, ae5 ExternalSealSigner wire, i91 own-property ([#742](https://github.com/jason931225/console/issues/742)) ([be7b3e1](https://github.com/jason931225/console/commit/be7b3e14b2f126e8c24a2bf99758d0de00aaa23d))
+
+
+### Bug Fixes
+
+* **payroll:** map PayRun LifecycleError kinds through CanonicalPort ([#741](https://github.com/jason931225/console/issues/741)) ([57fddda](https://github.com/jason931225/console/commit/57fddda198ef3a6e0670aa60ad365417c9f22b2d))
+* **release:** admit main squash C after release-please tip bind ([#743](https://github.com/jason931225/console/issues/743)) ([2d5d285](https://github.com/jason931225/console/commit/2d5d285135499d50d20964fd17783ba7fc9c275b))
+* **release:** heal poisoned release-please tip committer in converge ([#740](https://github.com/jason931225/console/issues/740)) ([1af779c](https://github.com/jason931225/console/commit/1af779cacb98f46b976c42d98d6de0d9bd1b38c2))
+
 ## [0.3.4](https://github.com/jason931225/console/compare/v0.3.3...v0.3.4) (2026-08-11)
 
 
