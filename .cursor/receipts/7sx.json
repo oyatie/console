@@ -26,7 +26,7 @@
     "cargo check -p console-orgchange-adapter-postgres --manifest-path backend/Cargo.toml",
     "cargo fmt -p console-orgchange-adapter-postgres"
   ],
-  "headSha": "91fa608544781aac94c03af23d0974b25a739456",
+  "headSha": "c8fdd7d21dbb9650b6d648485bb4d8a20bf3d444",
   "lenses": [
     "Cartesian doubt",
     "Chesterton's Fence",
