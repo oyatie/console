@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-11
 **Kind:** authority tip ledger bound on candidate C; jurisdiction tip T is register-only (#618 grammar)
-**Candidate (authority train):**  (product tip parent of C; rekeyed at C commit time)
+**Candidate (authority train):** `6cfec81dd892da87480dbf272ebe62ca929f1c06` (product tip parent of C; rekeyed at C commit time)
 **Scope:** critic-APPROVED path-disjoint leaves on main base `eca122ad0` (#745). Clippy heal on cvh `ui_surface` included.
 **Not product authority.**
 
@@ -59,9 +59,9 @@
   },
   "mandatory_lens_exceptions": {},
   "findings": [
-    "Backend CI failed clippy collapsible_if/manual_contains on cvh tip \u2014 healed.",
-    "g14a census red on current main (stale residuals) \u2014 parked.",
-    "o498 adds dark #[cfg(test)] in identity adapter-postgres \u2014 parked."
+    "Backend CI failed clippy collapsible_if/manual_contains on cvh tip - healed.",
+    "g14a census red on current main (stale residuals) - parked.",
+    "o498 adds dark #[cfg(test)] in identity adapter-postgres - parked."
   ],
   "decisions_changed_or_rejected": [
     "Rejected folding g14a while prototype-chain census is red on current main.",
