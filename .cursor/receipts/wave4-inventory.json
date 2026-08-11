@@ -1,0 +1,35 @@
+{
+  "lane": "wave4-inventory",
+  "role": "admit-coordinator",
+  "status": "done",
+  "headSha": "be7b3e14b2f126e8c24a2bf99758d0de00aaa23d",
+  "baseSha": "be7b3e14b2f126e8c24a2bf99758d0de00aaa23d",
+  "summary": "Wave 4 ADR-0030 §7 inventory on origin/main be7b3e14b. 9ze already admitted (#734). ils close-on-admit (mechanism MET; bead closed). b4z+09c dispatched path-disjoint; admit order 09c then b4z. Frontend deferred. No full-programme E2E.",
+  "filesChanged": [],
+  "redBaseline": "n/a - inventory only",
+  "verification": "Measured tip: register_port x6 + projected_dispatch_derivation present; aggregate_instances absent; openapi still hand-maintained (1/34 fragments); bd close ils; preflight-forge ok.",
+  "commands": [
+    "git fetch origin main && git rev-parse origin/main",
+    "rg register_port backend/app/src/lib.rs",
+    "rg aggregate_instances backend/crates/ontology",
+    "bd show console-b4z console-ils console-09c console-9ze",
+    "bd close console-ils --reason '...MET on origin/main be7b3e14b...'",
+    "bash scripts/cursor/preflight-forge.sh",
+    "bash scripts/cursor/provision-lane-worktree.sh console-b4z",
+    "bash scripts/cursor/provision-lane-worktree.sh console-09c",
+    "bash scripts/cursor/provision-lane-worktree.sh --kind admission wave4-20260811"
+  ],
+  "contractBreaches": "none",
+  "enforcementPlacement": "n/a - adds no enforcement",
+  "peripheralsUpdated": "n/a - nothing described this behaviour",
+  "beads": {
+    "console-9ze": "CLOSED admitted train-2 #734",
+    "console-ils": "CLOSED close-on-admit tip be7b3e14b §7.4 MET",
+    "console-b4z": "OPEN dispatched lane/console-b4z",
+    "console-09c": "OPEN dispatched lane/console-09c",
+    "console-8nq": "DEFERRED §8 shell until remaining §7 green"
+  },
+  "admitOrder": ["console-09c", "console-b4z"],
+  "parked": [],
+  "flowDelta": "implementers live; admission branch ready at be7b3e14b; awaiting leaf receipts then critic+serial admit"
+}
