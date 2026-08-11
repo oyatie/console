@@ -27,6 +27,10 @@ jobs:
     name: CI preflight — foundation and lockfile integrity
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      path_class: ${{ steps.path_class.outputs.path_class }}
+      docs_only: ${{ steps.path_class.outputs.docs_only }}
+      run_heavy: ${{ steps.path_class.outputs.run_heavy }}
 
     steps:
       - name: Checkout
@@ -50,14 +54,6 @@ jobs:
             printf 'CONSOLE_SYNTHETIC_MERGE_SHA=%s\n' "$CONSOLE_SYNTHETIC_MERGE_SHA"
           } >> "$GITHUB_ENV"
 
-      - name: Install pinned DotSlash runtime
-        run: tools/buck/install_dotslash.sh
-
-      - name: Install Rust toolchain for Cargo.lock consistency
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-        with:
-          toolchain: "1.97.1"
-
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
@@ -67,7 +63,33 @@ jobs:
       - name: Install workspace dependencies
         run: npm ci
 
+      - name: Classify path class
+        id: path_class
+        shell: bash
+        env:
+          PATH_CLASS_EVENT_NAME: ${{ github.event_name }}
+          PATH_CLASS_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PATH_CLASS_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PATH_CLASS_PUSH_BEFORE_SHA: ${{ github.event.before }}
+          PATH_CLASS_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/check-ci-preflight.mjs --emit-path-class
+
+      # DotSlash + Rust follow classification so docs-only can skip them without
+      # reading an empty steps.path_class output (GHA evaluates if before later steps).
+      - name: Install pinned DotSlash runtime
+        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
+        run: tools/buck/install_dotslash.sh
+
+      - name: Install Rust toolchain for Cargo.lock consistency
+        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: "1.97.1"
+
       - name: Cheap Buck2 generated-face admission
+        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
         run: tools/buck/preflight.sh
 
       - name: Foundation gate contract
@@ -150,9 +172,11 @@ jobs:
         run: node --test scripts/console/plan-fanout.test.mjs
 
       - name: Buck PostgreSQL environment wrapper regression
+        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
         run: tools/buck/run_test_with_postgres_env.test.sh
 
       - name: Buck disposable PostgreSQL harness regression
+        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
         run: tools/buck/test_needs_postgres.test.sh
 
       - name: CI preflight contract
@@ -162,6 +186,7 @@ jobs:
         run: npm run check:package-lock
 
       - name: Cargo.lock consistency
+        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
         run: cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null
 
       # Moved here from repo-gates, which has npm and no Rust: the ratchet now
@@ -169,6 +194,7 @@ jobs:
       # where cargo does. The step above it is `cargo metadata` on the same
       # manifest, and preflight is the only job carrying both toolchains.
       - name: Executed-tests ratchet — a test binary must have a path from a workflow step
+        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
         run: npm run check:executed-tests
       - name: JavaScript test reachability ratchet
         run: npm run check:js-test-reachability
@@ -187,17 +213,26 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
 
       - name: Cache Rust dependencies + build artifacts
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
@@ -214,6 +249,7 @@ jobs:
           save-if: false
 
       - name: Domain crate unit tests
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         # cargo, not buck2. MEASURED 2026-07-31 on this crate: buck2 cold 118.4s
         # (176 commands, `cached: 0`) versus cargo cold 6.5s. Buck2 is not slower
         # by nature — its warm build is 0.17s — but its warm state CANNOT cross a
@@ -353,17 +389,27 @@ jobs:
     needs: preflight
     timeout-minutes: 45
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - name: Free runner disk for PostgreSQL cargo tests
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: ./.github/actions/free-runner-disk
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
       - name: Cache Rust dependencies + build artifacts
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
@@ -371,6 +417,7 @@ jobs:
           cache-all-crates: "true"
           save-if: false
       - name: Run disposable PostgreSQL integration targets
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id app --num-threads=1
 
@@ -380,17 +427,27 @@ jobs:
     needs: preflight
     timeout-minutes: 45
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - name: Free runner disk for PostgreSQL cargo tests
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: ./.github/actions/free-runner-disk
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
       - name: Cache Rust dependencies + build artifacts
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
@@ -398,6 +455,7 @@ jobs:
           cache-all-crates: "true"
           save-if: false
       - name: Run disposable PostgreSQL integration targets
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id platform --num-threads=1
 
@@ -407,17 +465,27 @@ jobs:
     needs: preflight
     timeout-minutes: 45
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - name: Free runner disk for PostgreSQL cargo tests
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: ./.github/actions/free-runner-disk
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
       - name: Cache Rust dependencies + build artifacts
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
@@ -425,6 +493,7 @@ jobs:
           cache-all-crates: "true"
           save-if: false
       - name: Run disposable PostgreSQL integration targets
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id ontology --num-threads=1
 
@@ -434,17 +503,27 @@ jobs:
     needs: preflight
     timeout-minutes: 45
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - name: Free runner disk for PostgreSQL cargo tests
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: ./.github/actions/free-runner-disk
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
       - name: Cache Rust dependencies + build artifacts
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
@@ -452,6 +531,7 @@ jobs:
           cache-all-crates: "true"
           save-if: false
       - name: Run disposable PostgreSQL integration targets
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-a --num-threads=1
 
@@ -461,17 +541,27 @@ jobs:
     needs: preflight
     timeout-minutes: 45
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - name: Free runner disk for PostgreSQL cargo tests
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: ./.github/actions/free-runner-disk
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
       - name: Cache Rust dependencies + build artifacts
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
@@ -479,6 +569,7 @@ jobs:
           cache-all-crates: "true"
           save-if: false
       - name: Run disposable PostgreSQL integration targets
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-b --num-threads=1
 
@@ -496,6 +587,7 @@ jobs:
     # any facet is not success. Do not matrix this display name.
     name: Dispatch, attendance and ontology — disposable PostgreSQL reachability
     needs:
+      - preflight
       - postgres-reachability-app
       - postgres-reachability-platform
       - postgres-reachability-ontology
@@ -505,7 +597,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Require all PostgreSQL reachability facets
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           test "${{ needs.postgres-reachability-app.result }}" = success &&
           test "${{ needs.postgres-reachability-platform.result }}" = success &&
@@ -529,24 +628,35 @@ jobs:
     timeout-minutes: 35
 
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
       - name: Install pinned DotSlash runtime
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: tools/buck/install_dotslash.sh
 
       - name: Free runner disk for PostgreSQL Buck2 tests
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: ./.github/actions/free-runner-disk
 
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
 
 
       - name: Company conformance against disposable PostgreSQL
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           tools/buck/test_needs_postgres.sh --num-threads=1 \
             //tools/buck:company-conformance-postgres
@@ -561,32 +671,44 @@ jobs:
     timeout-minutes: 35
 
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
       - name: Install pinned DotSlash runtime
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: tools/buck/install_dotslash.sh
 
       - name: Set up Node.js
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: "24.16.0"
           cache: npm
 
       - name: Set up Java
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
         with:
           distribution: temurin
           java-version: "21"
 
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
 
       - name: Install lock-pinned Reindeer Rust toolchain
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -595,9 +717,11 @@ jobs:
           rustup toolchain install "$REINDEER_TOOLCHAIN" --profile minimal
 
       - name: Install workspace dependencies
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: npm ci
 
       - name: Full generated-face closure
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: tools/buck/preflight.sh --full-generated-faces
 
   backend:
@@ -652,18 +776,28 @@ jobs:
         working-directory: backend
 
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
       - name: Install pinned DotSlash runtime
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: ../tools/buck/install_dotslash.sh
 
       - name: Free runner disk for Rust backend
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: ./.github/actions/free-runner-disk
 
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           # rust-toolchain.toml drives the exact version; this step just
@@ -672,6 +806,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Cache Rust dependencies + build artifacts
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         # rust-cache keys on Cargo.lock + rustc + job, caches registry/git deps
         # and prunes stale crates from target/ (so the cache does not grow
         # unbounded on every Cargo.lock change the way a raw target/ cache does).
@@ -690,32 +825,42 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: rustfmt check
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo fmt --all -- --check
 
       - name: clippy -D warnings
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings
       - name: Layer-boundary gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-layer-boundary
 
       - name: Audit-coverage gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-audit-coverage
 
       - name: Migration-safety gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-migration-safety
 
       - name: Tenant-isolation gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-tenant-isolation
 
       - name: PII-no-logs gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-pii-no-logs
 
       - name: RLS-arming gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-rls-arming
 
       - name: Dev-auth-absence gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-dev-auth-absence
 
       - name: IaC tier-discipline gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-iac-tier
 
       # An authorization branch must come from the RESOURCE. Deriving it from
@@ -732,9 +877,11 @@ jobs:
       # named in the module doc and in docs/CI-GATES.md; the control that closes
       # them is a `ResourceBranch` newtype, queued separately.
       - name: Fabricated-branch gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-fabricated-branch
 
       - name: Personal-data-classification gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-personal-data-classification
 
       # The STATIC half of writer ownership: at most one production crate may
@@ -745,6 +892,7 @@ jobs:
       # through the disposable-PostgreSQL cargo harness. Two residual shapes are
       # pinned by `known_residual_` tests; bead console-tai.1 carries the total fix.
       - name: Writer-ownership gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-writer-ownership
 
       # The eleven `cargo run -p console-gate-*` steps above only prove the gates
@@ -774,6 +922,7 @@ jobs:
       # Its database half runs in the PostgreSQL reachability facets via
       # tools/ci/postgres-cargo-map.json.
       - name: Buck2 CI-gate mutation suites — every gate proven to still reject
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: |
           env -u DATABASE_URL tools/buck2 test \
@@ -791,10 +940,12 @@ jobs:
       # migration, using the distinct service administrator only for this
       # cluster-scoped bootstrap.
       - name: PR 473 migration operational contract tests
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: python3 scripts/check-pr473-migration-operational.test.py -v
 
       - name: Reconcile portable PostgreSQL role topology
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           APP_PASSWORD="$(openssl rand -hex 32)"
           RT_PASSWORD="$(openssl rand -hex 32)"
@@ -856,6 +1007,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: PR 473 migration operational gate
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         # SQLX_OFFLINE=true so the query! macros compile against the committed
         # .sqlx cache (the documented contract — see crates/platform/db/src/lib.rs)
@@ -878,6 +1030,7 @@ jobs:
       # image-release.yml's release-probe job uses to boot the shipped image;
       # a throwaway keypair is fine, this only proves the app comes up.
       - name: Boot smoke — migrate + serve + /readyz
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           set -e
           openssl ecparam -name prime256v1 -genkey -noout | openssl pkcs8 -topk8 -nocrypt -out /tmp/smoke-priv.pem
@@ -947,6 +1100,7 @@ jobs:
           fi
 
       - name: Buck2 dev-auth feature PostgreSQL suites
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         # `dev-auth` is NOT in default features (proven above). These exact
         # feature-sensitive auth-rest and provisioning binaries run through
@@ -973,10 +1127,12 @@ jobs:
       # only evidence that widening `is_stable_key` for dots did not widen the
       # Cedar injection boundary on any other axis.
       - name: Buck2 platform-authz unit suite
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit
 
       - name: Buck2 console-app unit suite
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit
 
@@ -988,10 +1144,12 @@ jobs:
       # regexes /api/platform/ paths). The byte-compare of the served document
       # against the file was deleted: include_str! made it tautological.
       - name: Buck2 console-app OpenAPI drift suite
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift
 
       - name: Buck2 console-app inline PostgreSQL suites
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: |
           tools/buck/test_needs_postgres.sh --num-threads=1 \
@@ -1008,36 +1166,50 @@ jobs:
       CARGO_PROFILE_DEV_DEBUG: "0"
 
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
       - name: dev-up compose contract unit test
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: node --test scripts/dev-up-compose.test.mjs
 
       - name: Install pinned DotSlash runtime
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: tools/buck/install_dotslash.sh
 
       - name: Free runner disk for Rust backend
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: ./.github/actions/free-runner-disk
 
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
 
 
       - name: Set up Node.js
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: "24"
           cache: npm
 
       - name: PostgreSQL topology integration regression
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: ops/postgres-topology.integration.test.sh
 
       - name: dev-up bootstrap (compose deps + migrate + backend readyz)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         # macOS/Windows GH-hosted runners cannot run Linux containers reliably,
         # so this smoke test is ubuntu-only; the other OSes' acceptance is the
         # `doctor` self-check (documented deviation from the plan's "macos
@@ -1045,10 +1217,11 @@ jobs:
         run: node scripts/dev-up.mjs bootstrap
 
       - name: Confirm /readyz reachable
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: curl -fsS "http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz"
 
       - name: dev-up down
-        if: always()
+        if: ${{ always() && needs.preflight.outputs.run_heavy == 'true' }}
         run: node scripts/dev-up.mjs down
 
   repo-gates:
@@ -1108,59 +1281,59 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run test:gate-input-provenance
       - name: G004 identity group org people policy foundation gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:g004-identity-foundation
 
       - name: G005 workflow approval Work Hub lifecycle gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:g005-workflow-lifecycle
 
       - name: Workflow runtime spine gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:workflow-runtime-spine
 
       - name: Workflow runtime M2 strangler dark-landing gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:workflow-runtime-m2-strangler
 
       - name: Workflow runtime M2 Cedar-guard observe-and-record gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:workflow-runtime-m2-cedar-guards
 
       - name: Workflow runtime M2 flag-ON runtime gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:workflow-runtime-m2-runtime
 
       - name: Workflow runtime M2 outbox-drainer transactional-idempotency gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:workflow-runtime-m2-drainer
 
       - name: G006 asset equipment dispatch lifecycle gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:g006-asset-dispatch-lifecycle
 
       - name: G007 collaboration mail calendar poll mobile lifecycle gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:g007-collaboration-mobile-lifecycle
 
       - name: G008 import HR payroll readiness gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:g008-payroll-readiness
 
       - name: People HR lifecycle maturity gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:people-hr-maturity
 
       - name: Payroll release-gate contract
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:payroll-release-gate
 
       - name: Undeclared imports — every bare specifier must be declared
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:undeclared-imports
 
       - name: Request-body contract — spec fields must exist on the handler
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:request-body-contract
 
   api-contract:
@@ -1170,28 +1343,37 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Set up Node.js
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: "24"
           cache: npm
 
       - name: Install Node tooling
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: npm ci
 
       - name: Platform contract drift gate
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:platform-contract-drift
 
       - name: Employee import replay contract
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run test:employee-import-contract
 
       - name: Ontology write precondition contract
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run test:ontology-write-precondition
 
   kubernetes-manifests:
@@ -1201,12 +1383,20 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - name: Path-class skip proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
 
       - name: Install kubectl (for kustomize renderer)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         env:
           KUBECTL_VERSION: "v1.36.2"
         run: |
@@ -1227,6 +1417,7 @@ jobs:
       # independent renderers over the same prod overlay, which is stronger
       # evidence than one, and a divergence between them is itself a finding.
       - name: Install kustomize (NetworkPolicy static render proof)
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         env:
           KUSTOMIZE_VERSION: "v5.8.1"
           KUSTOMIZE_SHA256: "029a7f0f4e1932c52a0476cf02a0fd855c0bb85694b82c338fc648dcb53a819d"
@@ -1239,10 +1430,11 @@ jobs:
           kustomize version
 
       - name: Governed command-database DARK wiring regression
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: node --test scripts/check-command-database-wiring.test.mjs
 
       - name: Render manifests and NetworkPolicy enforcement preflight
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         # Generic CI has no production kubeconfig, so the live readback runs in
         # warning mode here. Real deployment validation must set
         # CONSOLE_NETWORKPOLICY_PREFLIGHT=require against the target cluster.
@@ -1251,11 +1443,11 @@ jobs:
         run: npm run check:k8s
 
       - name: Production hardening contract
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:production-hardening
 
       - name: Production hardening regression tests
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run test:production-hardening
 
   required-ci:

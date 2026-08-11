@@ -78,6 +78,14 @@ const PLAN = new Map([
     tier: "ci-only",
     why: "`npm ci` deletes node_modules; `Canonical npm lockfile` below covers lockfile drift",
   }],
+  // Emits path_class / docs_only / run_heavy for hosted job scheduling. Locally
+  // the PATH_CLASS_* event SHAs are absent, so --emit-path-class always lands
+  // on unsupported-event; classification totality lives in `CI preflight
+  // contract` (+ its unit tests), and local verify always takes the heavy path.
+  ["Classify path class", {
+    tier: "ci-only",
+    why: "Actions-only PATH_CLASS_* event SHAs; `CI preflight contract` covers classification; local mirror always exercises the heavy path",
+  }],
   ["Cheap Buck2 generated-face admission", { tier: "fast" }],
   ["Foundation gate contract", { tier: "fast" }],
   ["Reasoning lens contract regression", { tier: "fast" }],
@@ -128,6 +136,15 @@ const PLAN = new Map([
   // This is the exact no-database Cargo selection from CI. A former exemption
   // incorrectly claimed fast verification ran a workspace suite; it did not.
   ["Domain crate unit tests", { tier: "fast" }],
+  // Hosted skip proofs fire only when preflight sets run_heavy!=true (docs_only
+  // scheduling). Local verify never docs_only-schedules mirrored jobs — it
+  // always runs the heavy command path — so mirroring the printf proof is
+  // meaningless theater. One PLAN key covers every mirrored job that carries
+  // the identically-named step.
+  ["Path-class skip proof", {
+    tier: "ci-only",
+    why: "skip proofs run only when run_heavy!=true on hosted CI; local mirror always exercises the heavy path / docs_only is CI scheduling",
+  }],
 
   // ---- backend -----------------------------------------------------------
   ["rustfmt check", { tier: "fast" }],

@@ -94,7 +94,12 @@ test("a plan entry whose CI step disappeared fails the guard", () => {
 
 test("domain-unit is part of the local mirror", () => {
   const domain = assertPlanCoversCi().filter((step) => step.job === "domain-unit");
-  assert.deepEqual(domain.map((step) => step.name), ["Domain crate unit tests"]);
+  // Path-class skip proof is ci-only (docs_only scheduling); Domain crate unit
+  // tests is the load-bearing local mirror step for this job.
+  assert.deepEqual(domain.map((step) => step.name), [
+    "Path-class skip proof",
+    "Domain crate unit tests",
+  ]);
 });
 
 test("reasoning-lens admission uses the merge-base local override", () => {

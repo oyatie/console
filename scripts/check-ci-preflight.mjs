@@ -1,6 +1,7 @@
 #!/usr/bin/env node
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { appendFileSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -68,6 +69,199 @@ const consoleFanoutPlannerTestCommand = "node --test scripts/console/plan-fanout
 const consoleBootstrapTestCommand = "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs";
 const consoleFanoutPlannerAdmissionCommand = 'node scripts/console/plan-fanout.mjs --candidate "$CONSOLE_CANDIDATE_SHA" --authority-tip "$CONSOLE_AUTHORITY_TIP_SHA" --synthetic-merge "$CONSOLE_SYNTHETIC_MERGE_SHA"';
 const consolePrCondition = "${{ github.event_name == 'pull_request' }}";
+/** Sibling jobs: run expensive body only when preflight classified a non-docs change. */
+const runHeavyCondition = "${{ needs.preflight.outputs.run_heavy == 'true' }}";
+/** Sibling jobs: emit explicit skip-proof success when docs-only. */
+const skipProofCondition = "${{ needs.preflight.outputs.run_heavy != 'true' }}";
+/** Preflight-local: thin Rust/Buck/cargo steps on docs-only. */
+const preflightRunHeavyCondition = "${{ steps.path_class.outputs.run_heavy == 'true' }}";
+/** repo-gates / leaves that already gate on !cancelled(): keep cancel semantics AND run_heavy. */
+const runHeavyUnlessCancelledCondition =
+  "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}";
+const runHeavyAlwaysCondition =
+  "${{ always() && needs.preflight.outputs.run_heavy == 'true' }}";
+
+export const PATH_CLASS_RULES_VERSION = "3";
+const docsOnlyRootFiles = new Set([
+  "README.md",
+  "CHANGELOG.md",
+  "SPEC.md",
+  "DESIGN.md",
+  "HANDOFF.md",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "Agents.md",
+  "Claude.md",
+]);
+
+/**
+ * Fail-closed path-class classifier (S-CI2 / console-7rc mechanism B).
+ * Only `docs-only` sets runHeavy=false; every other class keeps the full matrix.
+ */
+export function classifyChangedPaths(paths) {
+  if (!Array.isArray(paths) || paths.length === 0) {
+    return {
+      pathClass: "unknown",
+      docsOnly: false,
+      runHeavy: true,
+      reason: "empty-or-unreadable",
+    };
+  }
+  const classes = new Set();
+  for (const raw of paths) {
+    if (typeof raw !== "string" || raw.length === 0
+      || raw.includes("\0") || raw.includes("\\") || /(^|\/)\.\.(\/|$)/.test(raw)) {
+      return {
+        pathClass: "unknown",
+        docsOnly: false,
+        runHeavy: true,
+        reason: "hostile-path",
+      };
+    }
+    const p = raw.replace(/^\.\//, "");
+    if (p === ".github" || p.startsWith(".github/")
+      || p === "security" || p.startsWith("security/")
+      || p === "backend/rust-toolchain.toml" || p === "backend/deny.toml"
+      || p === "renovate.json5" || p === "release-please-config.json") {
+      return {
+        pathClass: "unknown",
+        docsOnly: false,
+        runHeavy: true,
+        reason: "always-full",
+      };
+    }
+    if (p.startsWith("backend/") || p.startsWith("third-party/rust/")) {
+      classes.add("backend");
+    } else if (p.startsWith("deploy/") || p.startsWith("ops/")) {
+      classes.add("deploy");
+    } else if (
+      p.startsWith("scripts/")
+      || p.startsWith("tools/")
+      || p === "package.json"
+      || p === "package-lock.json"
+      || p === "BUCK"
+    ) {
+      classes.add("scripts-tools");
+    } else if (p.startsWith("docs/") || docsOnlyRootFiles.has(p)) {
+      classes.add("docs-only");
+    } else {
+      return {
+        pathClass: "unknown",
+        docsOnly: false,
+        runHeavy: true,
+        reason: "unmapped-path",
+      };
+    }
+  }
+  if (classes.size === 1 && classes.has("docs-only")) {
+    return {
+      pathClass: "docs-only",
+      docsOnly: true,
+      runHeavy: false,
+      reason: "docs-allowlist",
+    };
+  }
+  if (classes.size === 1) {
+    return {
+      pathClass: [...classes][0],
+      docsOnly: false,
+      runHeavy: true,
+      reason: "single-class",
+    };
+  }
+  if (classes.size > 1) {
+    return {
+      pathClass: "mixed",
+      docsOnly: false,
+      runHeavy: true,
+      reason: "mixed",
+    };
+  }
+  return {
+    pathClass: "unknown",
+    docsOnly: false,
+    runHeavy: true,
+    reason: "empty-classes",
+  };
+}
+
+export function listChangedPathsForPathClass(env = process.env) {
+  const event = env.PATH_CLASS_EVENT_NAME || "";
+  let range = null;
+  if (event === "pull_request") {
+    const base = env.PATH_CLASS_PR_BASE_SHA;
+    const head = env.PATH_CLASS_PR_HEAD_SHA || env.PATH_CLASS_SHA;
+    if (!base || !head) return { ok: false, reason: "missing-pr-shas", paths: [] };
+    range = `${base}...${head}`;
+  } else if (event === "push") {
+    const before = env.PATH_CLASS_PUSH_BEFORE_SHA;
+    const sha = env.PATH_CLASS_SHA;
+    if (!before || !sha) return { ok: false, reason: "missing-push-shas", paths: [] };
+    if (/^0{40}$/.test(before)) return { ok: false, reason: "new-branch", paths: [] };
+    range = `${before}...${sha}`;
+  } else {
+    return { ok: false, reason: "unsupported-event", paths: [] };
+  }
+  // Include deletions (D). ACMR alone drops product deletes beside docs edits and
+  // false-greens docs_only + Path-class skip proofs (console-7rc critic E6).
+  // --no-renames: default rename detection emits only the destination path, so a
+  // product→docs rename would inventory as docs-only (console-q58y residual).
+  const result = spawnSync(
+    "git",
+    ["diff", "--name-only", "--no-renames", range],
+    { encoding: "utf8" },
+  );
+  if (result.status !== 0) {
+    return { ok: false, reason: "git-diff-failed", paths: [] };
+  }
+  const paths = result.stdout.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  return { ok: true, reason: "ok", paths };
+}
+
+export function resolvePathClassFromEnv(env = process.env) {
+  const listed = listChangedPathsForPathClass(env);
+  if (!listed.ok) {
+    return {
+      pathClass: "unknown",
+      docsOnly: false,
+      runHeavy: true,
+      reason: listed.reason,
+      paths: listed.paths,
+      rulesVersion: PATH_CLASS_RULES_VERSION,
+    };
+  }
+  const classified = classifyChangedPaths(listed.paths);
+  return {
+    ...classified,
+    paths: listed.paths,
+    rulesVersion: PATH_CLASS_RULES_VERSION,
+  };
+}
+
+export function emitPathClassGithubOutput(env = process.env, outputPath = env.GITHUB_OUTPUT) {
+  const resolved = resolvePathClassFromEnv(env);
+  const lines = [
+    `path_class=${resolved.pathClass}`,
+    `docs_only=${resolved.docsOnly ? "true" : "false"}`,
+    `run_heavy=${resolved.runHeavy ? "true" : "false"}`,
+    `path_class_reason=${resolved.reason}`,
+    `path_class_rules_version=${resolved.rulesVersion}`,
+  ];
+  if (outputPath) {
+    appendFileSync(outputPath, `${lines.join("\n")}\n`);
+  }
+  return resolved;
+}
+
+const pathClassSkipProofScript = [
+  "set -euo pipefail",
+  "printf 'path-class skip proof: %s not required for class=%s\\n' \"${GITHUB_JOB}\" \"${{ needs.preflight.outputs.path_class }}\"",
+];
+const pathClassEmitScript = [
+  "set -euo pipefail",
+  "node scripts/check-ci-preflight.mjs --emit-path-class",
+];
+
 const consoleTrainDerivation = [
   "set -euo pipefail",
   'CONSOLE_SYNTHETIC_MERGE_SHA="$(git rev-parse "$GITHUB_SHA^{commit}")"',
@@ -487,24 +681,30 @@ const ontologyRestCrateBuildFile = readFileSync(
   new URL("../backend/crates/ontology/rest/BUCK", import.meta.url),
   "utf8",
 );
-const requiredPreflightCommands = [
-  "tools/buck/preflight.sh",
+// Always-run preflight commands (docs-only thin path still executes these).
+const requiredAlwaysPreflightCommands = [
   "npm run check:foundation-gates",
   reasoningLensTestCommand,
   ciPreflightTestCommand,
   consoleRouteInventoryTestCommand,
-  buckPostgresEnvironmentTestCommand,
-  buckPostgresHarnessTestCommand,
   "npm run check:ci-preflight",
   "npm run check:package-lock",
-  "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null",
   // Locked on arrival. repo-gates taught this repository that a step wired into
   // ci.yml is not thereby protected — deleting `run: npm run check:adrs` from it
-  // returned zero preflight failures. These two are the only thing standing
-  // between the Buck2 exit and a silently smaller test population, so they are
-  // locked in the same commit that moves them here rather than a commit later.
-  "npm run check:executed-tests",
+  // returned zero preflight failures. Credential literals stay always-on.
   "npm run check:test-credentials",
+];
+// Heavy preflight commands — gated on steps.path_class.outputs.run_heavy (mechanism B).
+const requiredHeavyPreflightCommands = [
+  "tools/buck/preflight.sh",
+  buckPostgresEnvironmentTestCommand,
+  buckPostgresHarnessTestCommand,
+  "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null",
+  "npm run check:executed-tests",
+];
+const requiredPreflightCommands = [
+  ...requiredAlwaysPreflightCommands,
+  ...requiredHeavyPreflightCommands,
 ];
 const protectedJobs = [
   "backend",
@@ -559,16 +759,17 @@ const proofDigest = (name, digest, options) => runDigestContract("proof", name, 
 // text cannot be retained behind an early successful exit or changed under a
 // familiar name.
 const requiredJobRunContracts = Object.freeze({
-  preflight: [
+  "preflight": [
     setupDigest("Derive exact console C/T/M train", "b8e69e979347fa526773bb2a740bdb198be414077281026c23be96501ffd4da1", { if: consolePrCondition, shell: "bash" }),
-    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh"),
     setupRun("Install workspace dependencies", "npm ci"),
-    proofRun("Cheap Buck2 generated-face admission", "tools/buck/preflight.sh"),
+    setupDigest("Classify path class", "d963a8aa99e66c44a4ed8e3ef25725d206a11973545758d6c67a055b1f48cbbd", { shell: "bash" }),
+    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: preflightRunHeavyCondition }),
+    proofRun("Cheap Buck2 generated-face admission", "tools/buck/preflight.sh", { if: preflightRunHeavyCondition }),
     proofRun("Foundation gate contract", "npm run check:foundation-gates"),
     proofRun("Reasoning lens contract regression", "node --test scripts/check-reasoning-lens-contract.test.mjs"),
     proofDigest("Reasoning lens changed-record admission", "b4d78de511586e6f3cb7edafcf780fbc0361279dc8f0fe544b6128cfad9d3ab9", { shell: "bash" }),
     proofRun("Console truth-ledger exact-M admission", "npm run check:console-truth-ledger", { if: consolePrCondition }),
-    proofRun("Console fanout planner exact-M admission", 'node scripts/console/plan-fanout.mjs --candidate "$CONSOLE_CANDIDATE_SHA" --authority-tip "$CONSOLE_AUTHORITY_TIP_SHA" --synthetic-merge "$CONSOLE_SYNTHETIC_MERGE_SHA"', { if: consolePrCondition }),
+    proofRun("Console fanout planner exact-M admission", "node scripts/console/plan-fanout.mjs --candidate \"$CONSOLE_CANDIDATE_SHA\" --authority-tip \"$CONSOLE_AUTHORITY_TIP_SHA\" --synthetic-merge \"$CONSOLE_SYNTHETIC_MERGE_SHA\"", { if: consolePrCondition }),
     proofRun("CI preflight contract tests", "node --test scripts/check-ci-preflight.test.mjs"),
     proofRun("Console route inventory regression", "node --test scripts/console/route-inventory.test.mjs"),
     proofRun("Console authority-train regression", "node --test scripts/console/verify-console-authority-train.test.mjs"),
@@ -577,61 +778,65 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Local CI mirror contract", "node --test scripts/verify.test.mjs"),
     proofRun("Console truth-ledger validator exact-M regression", "node --test scripts/console/validate-console-truth-ledger.test.mjs"),
     proofRun("Console fanout planner exact-M regression", "node --test scripts/console/plan-fanout.test.mjs"),
-    proofRun("Buck PostgreSQL environment wrapper regression", "tools/buck/run_test_with_postgres_env.test.sh"),
-    proofRun("Buck disposable PostgreSQL harness regression", "tools/buck/test_needs_postgres.test.sh"),
+    proofRun("Buck PostgreSQL environment wrapper regression", "tools/buck/run_test_with_postgres_env.test.sh", { if: preflightRunHeavyCondition }),
+    proofRun("Buck disposable PostgreSQL harness regression", "tools/buck/test_needs_postgres.test.sh", { if: preflightRunHeavyCondition }),
     proofRun("CI preflight contract", "npm run check:ci-preflight"),
     proofRun("Canonical npm lockfile", "npm run check:package-lock"),
-    proofRun("Cargo.lock consistency", "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null"),
-    proofRun("Executed-tests ratchet — a test binary must have a path from a workflow step", "npm run check:executed-tests"),
+    proofRun("Cargo.lock consistency", "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null", { if: preflightRunHeavyCondition }),
+    proofRun("Executed-tests ratchet — a test binary must have a path from a workflow step", "npm run check:executed-tests", { if: preflightRunHeavyCondition }),
     proofRun("JavaScript test reachability ratchet", "npm run check:js-test-reachability"),
     proofRun("JavaScript test reachability unit tests", "npm run test:js-test-reachability"),
     proofRun("Lane fan-out harness preflight", "node .claude/workflows/lane-fanout.test.mjs"),
     proofRun("Workflow test-runner credential literals", "npm run check:test-credentials"),
   ],
   "domain-unit": [
-    proofDigest("Domain crate unit tests", "fe8364ca98090845779a8db53a026e76fb7018b76907ee9ec2d39cfe979a8a01"),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    proofDigest("Domain crate unit tests", "fe8364ca98090845779a8db53a026e76fb7018b76907ee9ec2d39cfe979a8a01", { if: runHeavyCondition }),
   ],
-  backend: [
-    setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh"),
-    proofRun("rustfmt check", "cargo fmt --all -- --check"),
-    proofRun("clippy -D warnings", "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings"),
-    proofRun("Layer-boundary gate", "cargo run -p console-gate-layer-boundary"),
-    proofRun("Audit-coverage gate", "cargo run -p console-gate-audit-coverage"),
-    proofRun("Migration-safety gate", "cargo run -p console-gate-migration-safety"),
-    proofRun("Tenant-isolation gate", "cargo run -p console-gate-tenant-isolation"),
-    proofRun("PII-no-logs gate", "cargo run -p console-gate-pii-no-logs"),
-    proofRun("RLS-arming gate", "cargo run -p console-gate-rls-arming"),
-    proofRun("Dev-auth-absence gate", "cargo run -p console-gate-dev-auth-absence"),
-    proofRun("IaC tier-discipline gate", "cargo run -p console-gate-iac-tier"),
-    proofRun("Fabricated-branch gate", "cargo run -p console-gate-fabricated-branch"),
-    proofRun("Personal-data-classification gate", "cargo run -p console-gate-personal-data-classification"),
-    proofRun("Writer-ownership gate", "cargo run -p console-gate-writer-ownership"),
-    proofDigest("Buck2 CI-gate mutation suites — every gate proven to still reject", "f6614509bd73220754a83d449b8bf422e616309ba48965f730f0d3dcff9d2cf4", { workingDirectory: "." }),
-    proofRun("PR 473 migration operational contract tests", "python3 scripts/check-pr473-migration-operational.test.py -v", { workingDirectory: "." }),
-    setupDigest("Reconcile portable PostgreSQL role topology", "5da0f2d8c399657dbc0a9d358c81d71399af1ea6c659074a365653db21fcaded"),
-    proofRun("PR 473 migration operational gate", "npm run check:pr473-migration-operational", { workingDirectory: "." }),
-    proofDigest("Boot smoke — migrate + serve + /readyz", "d51d75f8cd49be1557c5b5c1f5f641345bc82f842d2384e9608e9872b0714d79"),
-    proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { workingDirectory: "." }),
-    proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit", { workingDirectory: "." }),
-    proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { workingDirectory: "." }),
-    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { workingDirectory: "." }),
-    proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { workingDirectory: "." }),
+  "backend": [
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh", { if: runHeavyCondition }),
+    proofRun("rustfmt check", "cargo fmt --all -- --check", { if: runHeavyCondition }),
+    proofRun("clippy -D warnings", "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings", { if: runHeavyCondition }),
+    proofRun("Layer-boundary gate", "cargo run -p console-gate-layer-boundary", { if: runHeavyCondition }),
+    proofRun("Audit-coverage gate", "cargo run -p console-gate-audit-coverage", { if: runHeavyCondition }),
+    proofRun("Migration-safety gate", "cargo run -p console-gate-migration-safety", { if: runHeavyCondition }),
+    proofRun("Tenant-isolation gate", "cargo run -p console-gate-tenant-isolation", { if: runHeavyCondition }),
+    proofRun("PII-no-logs gate", "cargo run -p console-gate-pii-no-logs", { if: runHeavyCondition }),
+    proofRun("RLS-arming gate", "cargo run -p console-gate-rls-arming", { if: runHeavyCondition }),
+    proofRun("Dev-auth-absence gate", "cargo run -p console-gate-dev-auth-absence", { if: runHeavyCondition }),
+    proofRun("IaC tier-discipline gate", "cargo run -p console-gate-iac-tier", { if: runHeavyCondition }),
+    proofRun("Fabricated-branch gate", "cargo run -p console-gate-fabricated-branch", { if: runHeavyCondition }),
+    proofRun("Personal-data-classification gate", "cargo run -p console-gate-personal-data-classification", { if: runHeavyCondition }),
+    proofRun("Writer-ownership gate", "cargo run -p console-gate-writer-ownership", { if: runHeavyCondition }),
+    proofDigest("Buck2 CI-gate mutation suites — every gate proven to still reject", "f6614509bd73220754a83d449b8bf422e616309ba48965f730f0d3dcff9d2cf4", { if: runHeavyCondition, workingDirectory: "." }),
+    proofRun("PR 473 migration operational contract tests", "python3 scripts/check-pr473-migration-operational.test.py -v", { if: runHeavyCondition, workingDirectory: "." }),
+    setupDigest("Reconcile portable PostgreSQL role topology", "5da0f2d8c399657dbc0a9d358c81d71399af1ea6c659074a365653db21fcaded", { if: runHeavyCondition }),
+    proofRun("PR 473 migration operational gate", "npm run check:pr473-migration-operational", { if: runHeavyCondition, workingDirectory: "." }),
+    proofDigest("Boot smoke — migrate + serve + /readyz", "d51d75f8cd49be1557c5b5c1f5f641345bc82f842d2384e9608e9872b0714d79", { if: runHeavyCondition }),
+    proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { if: runHeavyCondition, workingDirectory: "." }),
+    proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit", { if: runHeavyCondition, workingDirectory: "." }),
+    proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { if: runHeavyCondition, workingDirectory: "." }),
+    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: runHeavyCondition, workingDirectory: "." }),
+    proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { if: runHeavyCondition, workingDirectory: "." }),
   ],
   "dev-up-smoke": [
-    proofRun("dev-up compose contract unit test", "node --test scripts/dev-up-compose.test.mjs"),
-    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh"),
-    proofRun("PostgreSQL topology integration regression", "ops/postgres-topology.integration.test.sh"),
-    proofRun("dev-up bootstrap (compose deps + migrate + backend readyz)", "node scripts/dev-up.mjs bootstrap"),
-    proofRun("Confirm /readyz reachable", 'curl -fsS "http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz"'),
-    cleanupRun("dev-up down", "node scripts/dev-up.mjs down", { if: "always()" }),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    proofRun("dev-up compose contract unit test", "node --test scripts/dev-up-compose.test.mjs", { if: runHeavyCondition }),
+    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: runHeavyCondition }),
+    proofRun("PostgreSQL topology integration regression", "ops/postgres-topology.integration.test.sh", { if: runHeavyCondition }),
+    proofRun("dev-up bootstrap (compose deps + migrate + backend readyz)", "node scripts/dev-up.mjs bootstrap", { if: runHeavyCondition }),
+    proofRun("Confirm /readyz reachable", "curl -fsS \"http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz\"", { if: runHeavyCondition }),
+    cleanupRun("dev-up down", "node scripts/dev-up.mjs down", { if: runHeavyAlwaysCondition }),
   ],
   "kubernetes-manifests": [
-    setupDigest("Install kubectl (for kustomize renderer)", "ed237728d562e10247b2ae17f435525b3b71d94efe5c0c63afa3c73cd16e096b"),
-    setupDigest("Install kustomize (NetworkPolicy static render proof)", "4cc1bf875027906f3b8a9878c0f13ce9b1438490390d858088c5ca279e4b9b3c"),
-    proofRun("Governed command-database DARK wiring regression", "node --test scripts/check-command-database-wiring.test.mjs"),
-    proofRun("Render manifests and NetworkPolicy enforcement preflight", "npm run check:k8s", { if: "${{ !cancelled() }}" }),
-    proofRun("Production hardening contract", "npm run check:production-hardening", { if: "${{ !cancelled() }}" }),
-    proofRun("Production hardening regression tests", "npm run test:production-hardening", { if: "${{ !cancelled() }}" }),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    setupDigest("Install kubectl (for kustomize renderer)", "ed237728d562e10247b2ae17f435525b3b71d94efe5c0c63afa3c73cd16e096b", { if: runHeavyCondition }),
+    setupDigest("Install kustomize (NetworkPolicy static render proof)", "4cc1bf875027906f3b8a9878c0f13ce9b1438490390d858088c5ca279e4b9b3c", { if: runHeavyCondition }),
+    proofRun("Governed command-database DARK wiring regression", "node --test scripts/check-command-database-wiring.test.mjs", { if: runHeavyCondition }),
+    proofRun("Render manifests and NetworkPolicy enforcement preflight", "npm run check:k8s", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Production hardening contract", "npm run check:production-hardening", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Production hardening regression tests", "npm run test:production-hardening", { if: runHeavyUnlessCancelledCondition }),
   ],
   "repo-gates": [
     setupRun("Install workspace dependencies", "npm ci"),
@@ -646,64 +851,84 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Shared text gate unit tests", "npm run test:text-gate", { if: "${{ !cancelled() }}" }),
     proofRun("Gate-input provenance instrument", "npm run check:gate-input-provenance", { if: "${{ !cancelled() }}" }),
     proofRun("Gate-input provenance unit tests", "npm run test:gate-input-provenance", { if: "${{ !cancelled() }}" }),
-    proofRun("G004 identity group org people policy foundation gate", "npm run check:g004-identity-foundation", { if: "${{ !cancelled() }}" }),
-    proofRun("G005 workflow approval Work Hub lifecycle gate", "npm run check:g005-workflow-lifecycle", { if: "${{ !cancelled() }}" }),
-    proofRun("Workflow runtime spine gate", "npm run check:workflow-runtime-spine", { if: "${{ !cancelled() }}" }),
-    proofRun("Workflow runtime M2 strangler dark-landing gate", "npm run check:workflow-runtime-m2-strangler", { if: "${{ !cancelled() }}" }),
-    proofRun("Workflow runtime M2 Cedar-guard observe-and-record gate", "npm run check:workflow-runtime-m2-cedar-guards", { if: "${{ !cancelled() }}" }),
-    proofRun("Workflow runtime M2 flag-ON runtime gate", "npm run check:workflow-runtime-m2-runtime", { if: "${{ !cancelled() }}" }),
-    proofRun("Workflow runtime M2 outbox-drainer transactional-idempotency gate", "npm run check:workflow-runtime-m2-drainer", { if: "${{ !cancelled() }}" }),
-    proofRun("G006 asset equipment dispatch lifecycle gate", "npm run check:g006-asset-dispatch-lifecycle", { if: "${{ !cancelled() }}" }),
-    proofRun("G007 collaboration mail calendar poll mobile lifecycle gate", "npm run check:g007-collaboration-mobile-lifecycle", { if: "${{ !cancelled() }}" }),
-    proofRun("G008 import HR payroll readiness gate", "npm run check:g008-payroll-readiness", { if: "${{ !cancelled() }}" }),
-    proofRun("People HR lifecycle maturity gate", "npm run check:people-hr-maturity", { if: "${{ !cancelled() }}" }),
-    proofRun("Payroll release-gate contract", "npm run check:payroll-release-gate", { if: "${{ !cancelled() }}" }),
-    proofRun("Undeclared imports — every bare specifier must be declared", "npm run check:undeclared-imports", { if: "${{ !cancelled() }}" }),
-    proofRun("Request-body contract — spec fields must exist on the handler", "npm run check:request-body-contract", { if: "${{ !cancelled() }}" }),
+    proofRun("G004 identity group org people policy foundation gate", "npm run check:g004-identity-foundation", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("G005 workflow approval Work Hub lifecycle gate", "npm run check:g005-workflow-lifecycle", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Workflow runtime spine gate", "npm run check:workflow-runtime-spine", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Workflow runtime M2 strangler dark-landing gate", "npm run check:workflow-runtime-m2-strangler", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Workflow runtime M2 Cedar-guard observe-and-record gate", "npm run check:workflow-runtime-m2-cedar-guards", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Workflow runtime M2 flag-ON runtime gate", "npm run check:workflow-runtime-m2-runtime", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Workflow runtime M2 outbox-drainer transactional-idempotency gate", "npm run check:workflow-runtime-m2-drainer", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("G006 asset equipment dispatch lifecycle gate", "npm run check:g006-asset-dispatch-lifecycle", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("G007 collaboration mail calendar poll mobile lifecycle gate", "npm run check:g007-collaboration-mobile-lifecycle", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("G008 import HR payroll readiness gate", "npm run check:g008-payroll-readiness", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("People HR lifecycle maturity gate", "npm run check:people-hr-maturity", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Payroll release-gate contract", "npm run check:payroll-release-gate", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Undeclared imports — every bare specifier must be declared", "npm run check:undeclared-imports", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Request-body contract — spec fields must exist on the handler", "npm run check:request-body-contract", { if: runHeavyUnlessCancelledCondition }),
   ],
   "api-contract": [
-    setupRun("Install Node tooling", "npm ci"),
-    proofRun("Platform contract drift gate", "npm run check:platform-contract-drift", { if: "${{ !cancelled() }}" }),
-    proofRun("Employee import replay contract", "npm run test:employee-import-contract", { if: "${{ !cancelled() }}" }),
-    proofRun("Ontology write precondition contract", "npm run test:ontology-write-precondition", { if: "${{ !cancelled() }}" }),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    setupRun("Install Node tooling", "npm ci", { if: runHeavyCondition }),
+    proofRun("Platform contract drift gate", "npm run check:platform-contract-drift", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Employee import replay contract", "npm run test:employee-import-contract", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Ontology write precondition contract", "npm run test:ontology-write-precondition", { if: runHeavyUnlessCancelledCondition }),
   ],
   "generated-face-authority": [
-    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh"),
-    setupDigest("Install lock-pinned Reindeer Rust toolchain", "e138ce62e419d3461df6e45108f0cb5a032e966486527b918d504c6ae604ed4e", { shell: "bash" }),
-    setupRun("Install workspace dependencies", "npm ci"),
-    proofRun("Full generated-face closure", "tools/buck/preflight.sh --full-generated-faces"),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: runHeavyCondition }),
+    setupDigest("Install lock-pinned Reindeer Rust toolchain", "e138ce62e419d3461df6e45108f0cb5a032e966486527b918d504c6ae604ed4e", { if: runHeavyCondition, shell: "bash" }),
+    setupRun("Install workspace dependencies", "npm ci", { if: runHeavyCondition }),
+    proofRun("Full generated-face closure", "tools/buck/preflight.sh --full-generated-faces", { if: runHeavyCondition }),
   ],
   "company-conformance": [
-    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh"),
-    proofDigest("Company conformance against disposable PostgreSQL", "f2e478d7571d3dd31977783d4a13deeffd8bb09e045cdb8e3d205528ea6fe3c7"),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: runHeavyCondition }),
+    proofDigest("Company conformance against disposable PostgreSQL", "f2e478d7571d3dd31977783d4a13deeffd8bb09e045cdb8e3d205528ea6fe3c7", { if: runHeavyCondition }),
   ],
   "postgres-reachability-app": [
-    proofDigest("Run disposable PostgreSQL integration targets", "dec004b51611ecfc41bd089768de8e426f3793824265115b220099b6287a8f37"),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    proofDigest("Run disposable PostgreSQL integration targets", "dec004b51611ecfc41bd089768de8e426f3793824265115b220099b6287a8f37", { if: runHeavyCondition }),
   ],
   "postgres-reachability-platform": [
-    proofDigest("Run disposable PostgreSQL integration targets", "28c6206d6f41065a7c007db0d17f9bee193f8344e14e239e56dd4563b4627d90"),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    proofDigest("Run disposable PostgreSQL integration targets", "28c6206d6f41065a7c007db0d17f9bee193f8344e14e239e56dd4563b4627d90", { if: runHeavyCondition }),
   ],
   "postgres-reachability-ontology": [
-    proofDigest("Run disposable PostgreSQL integration targets", "b1a2666e7aa08ebc7fdbcca5d216f8f7a75878e94a73ec60a73e18bdeb2d1339"),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    proofDigest("Run disposable PostgreSQL integration targets", "b1a2666e7aa08ebc7fdbcca5d216f8f7a75878e94a73ec60a73e18bdeb2d1339", { if: runHeavyCondition }),
   ],
   "postgres-reachability-domain-a": [
-    proofDigest("Run disposable PostgreSQL integration targets", "52d06f35b2f6f7b65b7b873af1d1c896eb496d96758b163e9f2cf3a727501096"),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    proofDigest("Run disposable PostgreSQL integration targets", "52d06f35b2f6f7b65b7b873af1d1c896eb496d96758b163e9f2cf3a727501096", { if: runHeavyCondition }),
   ],
   "postgres-reachability-domain-b": [
-    proofDigest("Run disposable PostgreSQL integration targets", "f51451ca90071e2b657f759b6fb08a8aa10dfa6e18e26eb2984d8a004a7b53c9"),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    proofDigest("Run disposable PostgreSQL integration targets", "f51451ca90071e2b657f759b6fb08a8aa10dfa6e18e26eb2984d8a004a7b53c9", { if: runHeavyCondition }),
   ],
   "postgres-domain-reachability": [
-    proofDigest("Require all PostgreSQL reachability facets", "7f9e079d4f3b5f15d81f9fffdb00ab11b8ca881e1d5842fbe448c5490af1152a"),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    proofDigest("Require all PostgreSQL reachability facets", "7f9e079d4f3b5f15d81f9fffdb00ab11b8ca881e1d5842fbe448c5490af1152a", { if: runHeavyCondition }),
   ],
 });
 
-function actionStep(index, name, uses, withInputs) {
-  return {
-    index,
-    step: withInputs === undefined
-      ? { name, uses }
-      : { name, uses, with: withInputs },
-  };
+function actionStep(index, name, uses, withInputs, options = {}) {
+  // Allow `actionStep(i, name, uses, { if })` when the action has no `with:`.
+  if (
+    options
+    && Object.keys(options).length === 0
+    && withInputs
+    && typeof withInputs === "object"
+    && !Array.isArray(withInputs)
+    && Object.keys(withInputs).every((key) => key === "if")
+  ) {
+    options = withInputs;
+    withInputs = undefined;
+  }
+  const step = withInputs === undefined
+    ? { name, uses }
+    : { name, uses, with: withInputs };
+  if (options.if != null) step.if = options.if;
+  return { index, step };
 }
 
 // Action setup is executable too. Pin the full parsed step object, including
@@ -711,90 +936,91 @@ function actionStep(index, name, uses, withInputs) {
 // skipped checkout/toolchain/cache action from inheriting whatever happens to
 // be installed on a hosted runner and presenting that accident as proof.
 const requiredJobActionContracts = Object.freeze({
-  preflight: [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false, "fetch-depth": 0 }),
-    actionStep(3, "Install Rust toolchain for Cargo.lock consistency", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
-    actionStep(4, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", { "node-version": "24.16.0", cache: "npm" }),
+  "preflight": [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false,"fetch-depth":0}),
+    actionStep(2, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24.16.0","cache":"npm"}),
+    actionStep(6, "Install Rust toolchain for Cargo.lock consistency", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: preflightRunHeavyCondition }),
   ],
   "domain-unit": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
-    actionStep(1, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
-    actionStep(2, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": false }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
+    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
   ],
-  backend: [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
-    actionStep(2, "Free runner disk for Rust backend", "./.github/actions/free-runner-disk"),
-    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1", components: "rustfmt, clippy" }),
-    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": "${{ github.ref == 'refs/heads/main' }}" }),
+  "backend": [
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(3, "Free runner disk for Rust backend", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
+    actionStep(4, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1","components":"rustfmt, clippy"}, { if: runHeavyCondition }),
+    actionStep(5, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/main' }}"}, { if: runHeavyCondition }),
   ],
   "dev-up-smoke": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
-    actionStep(3, "Free runner disk for Rust backend", "./.github/actions/free-runner-disk"),
-    actionStep(4, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
-    actionStep(5, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", { "node-version": "24", cache: "npm" }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(4, "Free runner disk for Rust backend", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
+    actionStep(5, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
+    actionStep(6, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24","cache":"npm"}, { if: runHeavyCondition }),
   ],
   "kubernetes-manifests": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "fetch-depth": 0 }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"fetch-depth":0}, { if: runHeavyCondition }),
   ],
   "repo-gates": [
     actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0"),
-    actionStep(1, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", { "node-version": "24.16.0", cache: "npm" }),
+    actionStep(1, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24.16.0","cache":"npm"}),
   ],
   "api-contract": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0"),
-    actionStep(1, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", { "node-version": "24", cache: "npm" }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { if: runHeavyCondition }),
+    actionStep(2, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24","cache":"npm"}, { if: runHeavyCondition }),
   ],
   "generated-face-authority": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
-    actionStep(2, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", { "node-version": "24.16.0", cache: "npm" }),
-    actionStep(3, "Set up Java", "actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520", { distribution: "temurin", "java-version": "21" }),
-    actionStep(4, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(3, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24.16.0","cache":"npm"}, { if: runHeavyCondition }),
+    actionStep(4, "Set up Java", "actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520", {"distribution":"temurin","java-version":"21"}, { if: runHeavyCondition }),
+    actionStep(5, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
   ],
   "company-conformance": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
-    actionStep(2, "Free runner disk for PostgreSQL Buck2 tests", "./.github/actions/free-runner-disk"),
-    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(3, "Free runner disk for PostgreSQL Buck2 tests", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
+    actionStep(4, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
   ],
   "postgres-reachability-app": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
-    actionStep(1, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk"),
-    actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
-    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": false }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(2, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
+    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
   ],
   "postgres-reachability-platform": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
-    actionStep(1, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk"),
-    actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
-    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": false }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(2, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
+    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
   ],
   "postgres-reachability-ontology": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
-    actionStep(1, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk"),
-    actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
-    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": false }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(2, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
+    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
   ],
   "postgres-reachability-domain-a": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
-    actionStep(1, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk"),
-    actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
-    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": false }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(2, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
+    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
   ],
   "postgres-reachability-domain-b": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { "persist-credentials": false }),
-    actionStep(1, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk"),
-    actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", { toolchain: "1.97.1" }),
-    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", { workspaces: "backend", "shared-key": "backend-cargo", "cache-all-crates": "true", "save-if": false }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(2, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
+    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
   ],
-  "postgres-domain-reachability": [],
+  "postgres-domain-reachability": [
+  ],
 });
 
 // Digest the complete parsed job envelope except `steps`: runner selection,
 // needs, timeout, services, environment, defaults, container, strategy and
 // permissions are all executable inputs and must change deliberately together.
 const requiredJobMetadataSha256 = Object.freeze({
-  preflight: "de92ba05f83032730db75242c9422c62ee5957433ab408ff5469215a85626f63",
+  "preflight": "1f3b5c6437ba04ccda98e2cbdf78506a69c6f82be7ce2abf7c661660c88fe87f",
   "domain-unit": "4948a02022fffb8b39aa14b4cb9ee3f776fe20c04844942dedd31f90ebe90bef",
-  backend: "f4f6b9faa5c4382a00d5639bebfb9ab8db664ecf38b79752d80afa567161393f",
+  "backend": "f4f6b9faa5c4382a00d5639bebfb9ab8db664ecf38b79752d80afa567161393f",
   "dev-up-smoke": "39ca186b8c6093adb4f30f8b2ed82c3eabb34fc5b9721652757d34a86c7922d8",
   "kubernetes-manifests": "1b215a62dac6d9a3decea6d6912792de3d033986833356b403fb157a15cb8b96",
   "repo-gates": "da8a07f3a19a6f46a5901e6a6d8eac2f7f1c11f52818b7dea25caf362335ee92",
@@ -806,7 +1032,7 @@ const requiredJobMetadataSha256 = Object.freeze({
   "postgres-reachability-ontology": "4a4e5c51ca540f183445ff18df800b6c0534d76e12fdf143a4e6aea0cf611e1b",
   "postgres-reachability-domain-a": "917142d29d3469ab88a68fee4946045576764bdc4f0304d2621904c2093920dd",
   "postgres-reachability-domain-b": "80669c99278f0574a6795d4eaa3cb3314958e1695e274cccd5ef5a22a1315c5d",
-  "postgres-domain-reachability": "ac2f47d4fe60725610c175e03651324d77a7480668052d8c34a152d72253b9af",
+  "postgres-domain-reachability": "a550cd1d598d606236777ed184ee873c60a3a0e8844401c3ac14a5dc4bf8f074",
 });
 
 const workflowExecutionEnvelopeSha256 = "e91330f0f5ccd53cb457ef43231e1c8e59d9f986ec7a2fa68f98e93665b439bd";
@@ -871,6 +1097,15 @@ const requiredCiAggregator = Object.freeze({
 const protectedJobExecutionMetadata = {
   preflight: {
     stepEnv: [{
+      name: "Classify path class",
+      env: {
+        PATH_CLASS_EVENT_NAME: "${{ github.event_name }}",
+        PATH_CLASS_PR_BASE_SHA: "${{ github.event.pull_request.base.sha }}",
+        PATH_CLASS_PR_HEAD_SHA: "${{ github.event.pull_request.head.sha }}",
+        PATH_CLASS_PUSH_BEFORE_SHA: "${{ github.event.before }}",
+        PATH_CLASS_SHA: "${{ github.sha }}",
+      },
+    }, {
       name: reasoningLensAdmissionName,
       env: Object.fromEntries(
         reasoningLensAdmissionEnvironment.map((entry) => entry.split(": ", 2)),
@@ -1224,6 +1459,19 @@ function requireUnconditionalRun(steps, command, job, failures) {
   }
 }
 
+function requireRunWithCondition(steps, command, job, expectedIf, failures) {
+  const matchingSteps = steps.filter((step) => runScalar(step) === command);
+  if (matchingSteps.length === 0) {
+    failures.push(`${job} must run ${command}`);
+  } else if (matchingSteps.some((step) => !hasOnlyExpectedCondition(step, expectedIf))) {
+    failures.push(
+      expectedIf == null
+        ? `${job} must run ${command} unconditionally without if or continue-on-error`
+        : `${job} must run ${command} only when ${expectedIf}`,
+    );
+  }
+}
+
 function requireReasoningLensContracts(steps, failures) {
   const regressionByName = steps.filter((step) => stepName(step) === reasoningLensRegressionName);
   const regressionByCommand = steps.filter((step) => runScalar(step) === reasoningLensTestCommand);
@@ -1396,8 +1644,8 @@ function requireUnconditionalMultilineRun(steps, commands, job, failures) {
   const matchingSteps = steps.filter((step) => multilineRunCommands(step).join("\n") === commands.join("\n"));
   if (matchingSteps.length === 0) {
     failures.push(`${job} must run the locked PostgreSQL reachability targets`);
-  } else if (matchingSteps.some((step) => !isUnconditional(step))) {
-    failures.push(`${job} must run the locked PostgreSQL reachability targets unconditionally without if or continue-on-error`);
+  } else if (matchingSteps.some((step) => !hasOnlyExpectedCondition(step, runHeavyCondition))) {
+    failures.push(`${job} must run the locked PostgreSQL reachability targets only when run_heavy`);
   }
 }
 
@@ -1562,12 +1810,13 @@ function requireExactRequiredJobContracts(workflowModel, failures) {
 // tautological because backend/app/src/lib.rs:214 include_str!s that exact file. What
 // remains in this job is text-only, so it needs neither Rust nor a built binary.
 const apiContractAllowedSteps = [
-  "name: Checkout\n        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7",
-  "name: Set up Node.js\n        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0\n        with:\n          node-version: \"24\"\n          cache: npm",
-  "name: Install Node tooling\n        run: npm ci",
-  "name: Platform contract drift gate\n        if: ${{ !cancelled() }}\n        run: npm run check:platform-contract-drift",
-  "name: Employee import replay contract\n        if: ${{ !cancelled() }}\n        run: npm run test:employee-import-contract",
-  "name: Ontology write precondition contract\n        if: ${{ !cancelled() }}\n        run: npm run test:ontology-write-precondition",
+  "name: Path-class skip proof\n        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}\n        shell: bash\n        run: |\n          set -euo pipefail\n          printf 'path-class skip proof: %s not required for class=%s\\n' \"${GITHUB_JOB}\" \"${{ needs.preflight.outputs.path_class }}\"",
+  "name: Checkout\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7",
+  "name: Set up Node.js\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0\n        with:\n          node-version: \"24\"\n          cache: npm",
+  "name: Install Node tooling\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        run: npm ci",
+  "name: Platform contract drift gate\n        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}\n        run: npm run check:platform-contract-drift",
+  "name: Employee import replay contract\n        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}\n        run: npm run test:employee-import-contract",
+  "name: Ontology write precondition contract\n        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}\n        run: npm run test:ontology-write-precondition",
 ];
 function hasOnlyAllowedApiContractSteps(steps) {
   return steps.length === apiContractAllowedSteps.length
@@ -1595,8 +1844,8 @@ function requireReindeerToolchainBefore(steps, command, failures) {
   if (commands.some((entry) => reindeerToolchainOverride.test(entry))) {
     failures.push(`generated-face-authority must not override REINDEER_TOOLCHAIN after sourcing ${reindeerToolchainLock}`);
   }
-  if (!isUnconditional(steps[toolchainIndex])) {
-    failures.push("generated-face-authority must install the Reindeer Rust toolchain unconditionally");
+  if (!hasOnlyExpectedCondition(steps[toolchainIndex], runHeavyCondition)) {
+    failures.push("generated-face-authority must install the Reindeer Rust toolchain only when run_heavy");
   }
   if (commandIndex >= 0 && toolchainIndex > commandIndex) {
     failures.push("generated-face-authority must install the lock-pinned Reindeer Rust toolchain before full generated-face closure");
@@ -1611,28 +1860,25 @@ function requirePreflightRustToolchainBefore(steps, failures) {
     failures.push("preflight must install the pinned Rust toolchain before Cargo-dependent CI preflight tests");
     return;
   }
-  if (!isUnconditional(steps[setupIndex])) {
-    failures.push("preflight must install the pinned Rust toolchain unconditionally");
+  if (!hasOnlyExpectedCondition(steps[setupIndex], preflightRunHeavyCondition)) {
+    failures.push("preflight must install the pinned Rust toolchain only when run_heavy");
     return;
   }
-  for (const command of [
-    ciPreflightTestCommand,
-    "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null",
-  ]) {
-    const commandIndex = steps.findIndex((step) => runScalar(step) === command);
-    if (commandIndex >= 0 && setupIndex > commandIndex) {
-      failures.push(`preflight must install the pinned Rust toolchain before ${command}`);
-    }
+  const cargoMeta = "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null";
+  const commandIndex = steps.findIndex((step) => runScalar(step) === cargoMeta);
+  if (commandIndex >= 0 && setupIndex > commandIndex) {
+    failures.push(`preflight must install the pinned Rust toolchain before ${cargoMeta}`);
   }
 }
 
 function requireDotSlashBefore(steps, command, job, failures) {
   const commandIndex = steps.findIndex((step) => runScalar(step) === command);
   const dotSlashIndex = steps.findIndex((step) => runScalar(step) === dotSlashBootstrap);
+  const expectedIf = job === "preflight" ? preflightRunHeavyCondition : runHeavyCondition;
   if (dotSlashIndex < 0) {
     failures.push(`${job} must install pinned DotSlash before Buck2`);
-  } else if (!isUnconditional(steps[dotSlashIndex])) {
-    failures.push(`${job} must install DotSlash unconditionally`);
+  } else if (!hasOnlyExpectedCondition(steps[dotSlashIndex], expectedIf)) {
+    failures.push(`${job} must install DotSlash only when run_heavy`);
   } else if (commandIndex >= 0 && dotSlashIndex > commandIndex) {
     failures.push(`${job} must install DotSlash before ${command}`);
   }
@@ -1722,8 +1968,32 @@ export function evaluateCiPreflight(
   }
   requireDotSlashBefore(preflightSteps, "tools/buck/preflight.sh", "preflight", failures);
   requirePreflightRustToolchainBefore(preflightSteps, failures);
-  for (const command of requiredPreflightCommands) {
+  for (const command of requiredAlwaysPreflightCommands) {
     requireUnconditionalRun(preflightSteps, command, "preflight", failures);
+  }
+  for (const command of requiredHeavyPreflightCommands) {
+    requireRunWithCondition(
+      preflightSteps,
+      command,
+      "preflight",
+      preflightRunHeavyCondition,
+      failures,
+    );
+  }
+  {
+    const classify = preflightSteps.filter((step) => stepName(step) === "Classify path class");
+    if (
+      classify.length !== 1
+      || !hasOnlyExpectedCondition(classify[0], null)
+      || multilineRunCommands(classify[0]).join("\n") !== pathClassEmitScript.join("\n")
+    ) {
+      failures.push("preflight must classify path class before thin/heavy step gating");
+    }
+    if (!/^    outputs:\n(?:      [^\n]+\n)*      path_class:/m.test(preflight)
+      || !/^      docs_only:/m.test(preflight)
+      || !/^      run_heavy:/m.test(preflight)) {
+      failures.push("preflight must expose path_class, docs_only, and run_heavy job outputs");
+    }
   }
   requireReasoningLensContracts(preflightSteps, failures);
   requireConsoleExactMergeProof(workflow, preflightSteps, failures);
@@ -1741,11 +2011,11 @@ export function evaluateCiPreflight(
         !command.malformed
         && JSON.stringify(command.tokens) === JSON.stringify(domainUnitExpectedCommands[index])
       ));
-    if (!domainCommandsMatch || !isUnconditional(domainStep)) {
-      failures.push("domain-unit must execute the locked Cargo test commands directly and unconditionally");
+    if (!domainCommandsMatch || !hasOnlyExpectedCondition(domainStep, runHeavyCondition)) {
+      failures.push("domain-unit must execute the locked Cargo test commands directly when run_heavy");
     }
     if (/^    (?:env|defaults):/m.test(domainUnit)
-      || /^        (?:env|shell):/m.test(domainUnit)) {
+      || /^        env:/m.test(domainUnit)) {
       failures.push("domain-unit must use the default shell with no job or step env/defaults overrides");
     }
     const directTokens = parsedDomainCommands.flatMap((command) => command.tokens);
@@ -1762,7 +2032,7 @@ export function evaluateCiPreflight(
     }
 
     const runStepNames = steps.filter((step) => runCommand(step) !== null).map(stepName);
-    if (JSON.stringify(runStepNames) !== JSON.stringify(["Domain crate unit tests"])) {
+    if (JSON.stringify(runStepNames) !== JSON.stringify(["Path-class skip proof", "Domain crate unit tests"])) {
       failures.push(`domain-unit must contain only the locked ordered run steps; found ${runStepNames.length} run steps`);
     }
   }
@@ -1785,7 +2055,7 @@ export function evaluateCiPreflight(
     );
     requireOnlyLockedRuns(
       steps,
-      [command],
+      [pathClassSkipProofScript.join("\n"), command],
       jobName,
       failures,
     );
@@ -1801,12 +2071,21 @@ export function evaluateCiPreflight(
     );
     requireOnlyLockedRuns(
       steps,
-      [postgresDomainReachabilityAggregatorCommands.join("\n")],
+      [
+        pathClassSkipProofScript.join("\n"),
+        postgresDomainReachabilityAggregatorCommands.join("\n"),
+      ],
       "postgres-domain-reachability",
       failures,
     );
     if (!/name:\s*Dispatch, attendance and ontology — disposable PostgreSQL reachability/.test(postgresDomainReachability)) {
       failures.push("postgres-domain-reachability must keep load-bearing display name");
+    }
+    // needs.preflight is not transitive from facet jobs; without a direct need,
+    // run_heavy/path_class are empty and the aggregator always takes the skip-proof path.
+    const needsBlock = postgresDomainReachability.match(/\n    needs:\n((?:      - .+\n)+)/);
+    if (!needsBlock || !needsBlock[1].includes("      - preflight\n")) {
+      failures.push("postgres-domain-reachability must declare preflight as a direct need");
     }
     requireCargoPostgresMapCoversWorkflow(failures);
   }
@@ -1817,20 +2096,24 @@ export function evaluateCiPreflight(
     requireOrderedStepContracts(
       steps,
       [{
+        name: "Path-class skip proof",
+        run: pathClassSkipProofScript.join("\n"),
+        if: skipProofCondition,
+      }, {
         name: "Install pinned DotSlash runtime",
         run: dotSlashBootstrap,
-        if: null,
+        if: runHeavyCondition,
       }, {
         name: "Company conformance against disposable PostgreSQL",
         run: companyConformanceCommands.join("\n"),
-        if: null,
+        if: runHeavyCondition,
       }],
       "company-conformance",
       failures,
     );
     requireOnlyLockedRuns(
       steps,
-      [dotSlashBootstrap, companyConformanceCommands.join("\n")],
+      [pathClassSkipProofScript.join("\n"), dotSlashBootstrap, companyConformanceCommands.join("\n")],
       "company-conformance",
       failures,
     );
@@ -1839,7 +2122,7 @@ export function evaluateCiPreflight(
   const backend = jobBlock(workflow, "backend");
   if (backend) {
     const steps = stepBlocks(backend);
-    const failFastIf = null;
+    const failFastIf = runHeavyCondition;
     const pr473ContractTestCommand = "python3 scripts/check-pr473-migration-operational.test.py -v";
     if (steps.some((step) => step.includes("if: ${{ !cancelled() }}"))) {
       failures.push("backend must not use !cancelled() on protected fail-fast steps");
@@ -1945,23 +2228,25 @@ export function evaluateCiPreflight(
   if (devUpSmoke) {
     const devUpSteps = stepBlocks(devUpSmoke);
     const devUpRunContracts = [
-      { name: "dev-up compose contract unit test", run: "node --test scripts/dev-up-compose.test.mjs", if: null },
-      { name: "Install pinned DotSlash runtime", run: dotSlashBootstrap, if: null },
-      { name: "PostgreSQL topology integration regression", run: "ops/postgres-topology.integration.test.sh", if: null },
-      { name: "dev-up bootstrap (compose deps + migrate + backend readyz)", run: "node scripts/dev-up.mjs bootstrap", if: null },
-      { name: "Confirm /readyz reachable", run: 'curl -fsS "http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz"', if: null },
-      { name: "dev-up down", run: "node scripts/dev-up.mjs down", if: "always()" },
+      { name: "Path-class skip proof", run: pathClassSkipProofScript.join("\n"), if: skipProofCondition },
+      { name: "dev-up compose contract unit test", run: "node --test scripts/dev-up-compose.test.mjs", if: runHeavyCondition },
+      { name: "Install pinned DotSlash runtime", run: dotSlashBootstrap, if: runHeavyCondition },
+      { name: "PostgreSQL topology integration regression", run: "ops/postgres-topology.integration.test.sh", if: runHeavyCondition },
+      { name: "dev-up bootstrap (compose deps + migrate + backend readyz)", run: "node scripts/dev-up.mjs bootstrap", if: runHeavyCondition },
+      { name: "Confirm /readyz reachable", run: 'curl -fsS "http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz"', if: runHeavyCondition },
+      { name: "dev-up down", run: "node scripts/dev-up.mjs down", if: runHeavyAlwaysCondition },
     ];
     requireOrderedStepContracts(
       devUpSteps,
       [
-        { name: "Checkout", run: null, if: null },
-        { name: "dev-up compose contract unit test", run: "node --test scripts/dev-up-compose.test.mjs", if: null },
-        { name: "Install pinned DotSlash runtime", run: dotSlashBootstrap, if: null },
-        { name: "Free runner disk for Rust backend", run: null, if: null },
-        { name: "Install Rust toolchain (pinned via rust-toolchain.toml)", run: null, if: null },
-        { name: "Set up Node.js", run: null, if: null },
-        ...devUpRunContracts.slice(2),
+        { name: "Path-class skip proof", run: pathClassSkipProofScript.join("\n"), if: skipProofCondition },
+        { name: "Checkout", run: null, if: runHeavyCondition },
+        { name: "dev-up compose contract unit test", run: "node --test scripts/dev-up-compose.test.mjs", if: runHeavyCondition },
+        { name: "Install pinned DotSlash runtime", run: dotSlashBootstrap, if: runHeavyCondition },
+        { name: "Free runner disk for Rust backend", run: null, if: runHeavyCondition },
+        { name: "Install Rust toolchain (pinned via rust-toolchain.toml)", run: null, if: runHeavyCondition },
+        { name: "Set up Node.js", run: null, if: runHeavyCondition },
+        ...devUpRunContracts.slice(3),
       ],
       "dev-up-smoke",
       failures,
@@ -1980,8 +2265,8 @@ export function evaluateCiPreflight(
     const matchingFullGateSteps = fullGeneratedFaceSteps.filter((step) => runScalar(step) === fullGeneratedFaceCommand);
     if (matchingFullGateSteps.length === 0) {
       failures.push("generated-face-authority must run the complete generated-face closure");
-    } else if (matchingFullGateSteps.some((step) => !isUnconditional(step))) {
-      failures.push("generated-face-authority must run the complete generated-face closure unconditionally");
+    } else if (matchingFullGateSteps.some((step) => !hasOnlyExpectedCondition(step, runHeavyCondition))) {
+      failures.push("generated-face-authority must run the complete generated-face closure only when run_heavy");
     }
     requireDotSlashBefore(
       fullGeneratedFaceSteps,
@@ -2002,14 +2287,14 @@ export function evaluateCiPreflight(
       [{
         name: "Undeclared imports — every bare specifier must be declared",
         run: "npm run check:undeclared-imports",
-        if: "${{ !cancelled() }}",
+        if: runHeavyUnlessCancelledCondition,
       }, {
         // Wired in 4e7da6b52 and unprotected until now: deleting this step returned zero
         // preflight failures, which is the same one-line-from-silent-removal state the
         // undeclared-imports step above was added to escape.
         name: "Request-body contract — spec fields must exist on the handler",
         run: "npm run check:request-body-contract",
-        if: "${{ !cancelled() }}",
+        if: runHeavyUnlessCancelledCondition,
       }],
       "repo-gates",
       failures,
@@ -2021,9 +2306,13 @@ export function evaluateCiPreflight(
     requireOrderedStepContracts(
       stepBlocks(kubernetesManifests),
       [{
+        name: "Path-class skip proof",
+        run: pathClassSkipProofScript.join("\n"),
+        if: skipProofCondition,
+      }, {
         name: "Production hardening contract",
         run: "npm run check:production-hardening",
-        if: "${{ !cancelled() }}",
+        if: runHeavyUnlessCancelledCondition,
       }],
       "kubernetes-manifests",
       failures,
@@ -2139,6 +2428,13 @@ export function evaluateCiPreflight(
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  if (process.argv.includes("--emit-path-class")) {
+    const resolved = emitPathClassGithubOutput();
+    console.log(
+      `path_class=${resolved.pathClass} docs_only=${resolved.docsOnly} run_heavy=${resolved.runHeavy} reason=${resolved.reason}`,
+    );
+    process.exit(0);
+  }
   const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
   const { failures } = evaluateCiPreflight(readFileSync(resolve(root, ".github/workflows/ci.yml"), "utf8"));
   if (failures.length > 0) {

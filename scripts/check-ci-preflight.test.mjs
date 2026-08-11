@@ -1,12 +1,18 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import yaml from "js-yaml";
 
-import { evaluateCiPreflight } from "./check-ci-preflight.mjs";
+import {
+  classifyChangedPaths,
+  evaluateCiPreflight,
+  emitPathClassGithubOutput,
+  listChangedPathsForPathClass,
+  resolvePathClassFromEnv,
+} from "./check-ci-preflight.mjs";
 
 const workflow = readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
 const postgresWrapperBuildFile = readFileSync(new URL("../tools/buck/BUCK", import.meta.url), "utf8");
@@ -68,11 +74,16 @@ const reachabilityPreflightCommands = [
   "tools/buck/test_needs_postgres.test.sh",
 ];
 const preflightRustToolchainSetup = `      - name: Install Rust toolchain for Cargo.lock consistency
+        if: \${{ steps.path_class.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
 
 `;
+const runHeavyIf = "${{ needs.preflight.outputs.run_heavy == 'true' }}";
+const preflightRunHeavyIf = "${{ steps.path_class.outputs.run_heavy == 'true' }}";
+const runHeavyUnlessCancelledIf =
+  "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}";
 
 function expectFailure(
   source,
@@ -189,6 +200,147 @@ function swapNamedSteps(source, job, firstName, secondName) {
 }
 
 describe("CI preflight contract", () => {
+  it("classifies docs-only fail-closed and keeps every other class heavy", () => {
+    assert.deepEqual(classifyChangedPaths(["docs/program/foo.md"]), {
+      pathClass: "docs-only",
+      docsOnly: true,
+      runHeavy: false,
+      reason: "docs-allowlist",
+    });
+    assert.equal(classifyChangedPaths(["README.md"]).docsOnly, true);
+    assert.equal(classifyChangedPaths(["docs/a.md", "backend/app/src/lib.rs"]).pathClass, "mixed");
+    assert.equal(classifyChangedPaths([".github/workflows/ci.yml"]).pathClass, "unknown");
+    assert.equal(classifyChangedPaths(["docs/a.md", "../etc/passwd"]).pathClass, "unknown");
+    assert.equal(classifyChangedPaths([]).runHeavy, true);
+    assert.equal(
+      resolvePathClassFromEnv({ PATH_CLASS_EVENT_NAME: "workflow_dispatch" }).runHeavy,
+      true,
+    );
+  });
+
+  it("empty successful changed-path list keeps runHeavy / non-docs-only", () => {
+    const empty = classifyChangedPaths([]);
+    assert.equal(empty.runHeavy, true);
+    assert.equal(empty.docsOnly, false);
+    assert.notEqual(empty.pathClass, "docs-only");
+    assert.equal(empty.reason, "empty-or-unreadable");
+  });
+
+  it("lists rename sources so product→docs rename is not docs-only", () => {
+    const repo = mkdtempSync(join(tmpdir(), "ci-preflight-rename-inventory-"));
+    const git = (args) => {
+      const result = spawnSync("git", args, { cwd: repo, encoding: "utf8" });
+      assert.equal(result.status, 0, result.stderr || result.stdout);
+      return result;
+    };
+    try {
+      git(["init", "-q"]);
+      git(["config", "user.email", "ci-preflight@example.test"]);
+      git(["config", "user.name", "ci-preflight"]);
+      mkdirSync(join(repo, "docs"));
+      mkdirSync(join(repo, "backend"));
+      writeFileSync(join(repo, "docs/a.md"), "a\n");
+      writeFileSync(join(repo, "backend/x.rs"), "fn main() {}\n");
+      git(["add", "."]);
+      git(["commit", "-qm", "base"]);
+      const base = git(["rev-parse", "HEAD"]).stdout.trim();
+      git(["mv", "backend/x.rs", "docs/x.md"]);
+      git(["commit", "-qm", "rename product to docs"]);
+      const head = git(["rev-parse", "HEAD"]).stdout.trim();
+
+      // Hostile control: default rename detection drops the source path.
+      const defaultListed = spawnSync(
+        "git",
+        ["diff", "--name-only", `${base}...${head}`],
+        { cwd: repo, encoding: "utf8" },
+      );
+      assert.equal(defaultListed.status, 0, defaultListed.stderr || defaultListed.stdout);
+      const defaultPaths = defaultListed.stdout.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      assert.ok(
+        defaultPaths.includes("docs/x.md") && !defaultPaths.includes("backend/x.rs"),
+        `expected rename false-green inventory, got ${defaultPaths}`,
+      );
+      assert.equal(classifyChangedPaths(defaultPaths).pathClass, "docs-only");
+      assert.equal(classifyChangedPaths(defaultPaths).runHeavy, false);
+
+      const prev = process.cwd();
+      process.chdir(repo);
+      try {
+        const listed = listChangedPathsForPathClass({
+          PATH_CLASS_EVENT_NAME: "pull_request",
+          PATH_CLASS_PR_BASE_SHA: base,
+          PATH_CLASS_PR_HEAD_SHA: head,
+        });
+        assert.equal(listed.ok, true);
+        assert.ok(listed.paths.includes("backend/x.rs"), `rename source missing: ${listed.paths}`);
+        assert.ok(listed.paths.includes("docs/x.md"), `rename dest missing: ${listed.paths}`);
+        const resolved = resolvePathClassFromEnv({
+          PATH_CLASS_EVENT_NAME: "pull_request",
+          PATH_CLASS_PR_BASE_SHA: base,
+          PATH_CLASS_PR_HEAD_SHA: head,
+        });
+        assert.notEqual(resolved.pathClass, "docs-only");
+        assert.equal(resolved.runHeavy, true);
+        assert.equal(resolved.docsOnly, false);
+      } finally {
+        process.chdir(prev);
+      }
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
+  it("lists deletions so docs edit + product delete is mixed / runHeavy", () => {
+    const repo = mkdtempSync(join(tmpdir(), "ci-preflight-delete-inventory-"));
+    const git = (args) => {
+      const result = spawnSync("git", args, { cwd: repo, encoding: "utf8" });
+      assert.equal(result.status, 0, result.stderr || result.stdout);
+      return result;
+    };
+    try {
+      git(["init", "-q"]);
+      git(["config", "user.email", "ci-preflight@example.test"]);
+      git(["config", "user.name", "ci-preflight"]);
+      mkdirSync(join(repo, "docs"));
+      mkdirSync(join(repo, "backend"));
+      writeFileSync(join(repo, "docs/a.md"), "a\n");
+      writeFileSync(join(repo, "backend/x.rs"), "fn main() {}\n");
+      git(["add", "."]);
+      git(["commit", "-qm", "base"]);
+      const base = git(["rev-parse", "HEAD"]).stdout.trim();
+      writeFileSync(join(repo, "docs/a.md"), "a edited\n");
+      unlinkSync(join(repo, "backend/x.rs"));
+      git(["add", "-A"]);
+      git(["commit", "-qm", "docs edit + backend delete"]);
+      const head = git(["rev-parse", "HEAD"]).stdout.trim();
+
+      const prev = process.cwd();
+      process.chdir(repo);
+      try {
+        const listed = listChangedPathsForPathClass({
+          PATH_CLASS_EVENT_NAME: "pull_request",
+          PATH_CLASS_PR_BASE_SHA: base,
+          PATH_CLASS_PR_HEAD_SHA: head,
+        });
+        assert.equal(listed.ok, true);
+        assert.ok(listed.paths.includes("backend/x.rs"), `delete missing from inventory: ${listed.paths}`);
+        assert.ok(listed.paths.includes("docs/a.md"), `docs edit missing: ${listed.paths}`);
+        const resolved = resolvePathClassFromEnv({
+          PATH_CLASS_EVENT_NAME: "pull_request",
+          PATH_CLASS_PR_BASE_SHA: base,
+          PATH_CLASS_PR_HEAD_SHA: head,
+        });
+        assert.notEqual(resolved.pathClass, "docs-only");
+        assert.equal(resolved.runHeavy, true);
+        assert.equal(resolved.pathClass, "mixed");
+      } finally {
+        process.chdir(prev);
+      }
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
   it("accepts the workflow's cheap preflight and protected expensive jobs", () => {
     assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
   });
@@ -286,21 +438,21 @@ describe("CI preflight contract", () => {
 
   it("rejects every run-step condition, soft-failure, and retained-text early-exit bypass", () => {
     const requiredRunStepCounts = {
-      preflight: 27,
-      "domain-unit": 1,
-      backend: 24,
-      "dev-up-smoke": 6,
-      "kubernetes-manifests": 6,
+      preflight: 28,
+      "domain-unit": 2,
+      backend: 25,
+      "dev-up-smoke": 7,
+      "kubernetes-manifests": 7,
       "repo-gates": 26,
-      "api-contract": 4,
-      "generated-face-authority": 4,
-      "company-conformance": 2,
-      "postgres-reachability-app": 1,
-      "postgres-reachability-platform": 1,
-      "postgres-reachability-ontology": 1,
-      "postgres-reachability-domain-a": 1,
-      "postgres-reachability-domain-b": 1,
-      "postgres-domain-reachability": 1,
+      "api-contract": 5,
+      "generated-face-authority": 5,
+      "company-conformance": 3,
+      "postgres-reachability-app": 2,
+      "postgres-reachability-platform": 2,
+      "postgres-reachability-ontology": 2,
+      "postgres-reachability-domain-a": 2,
+      "postgres-reachability-domain-b": 2,
+      "postgres-domain-reachability": 2,
       "required-ci": 1,
     };
     const workflowModel = yaml.load(workflow);
@@ -332,14 +484,10 @@ describe("CI preflight contract", () => {
       }
     }
 
-    // 106 -> 107: the writer-ownership gate's own run step in the backend job. The harness
-    // preflight step this branch also adds was already counted in main's 106, so the delta is
-    // one and not two -- worth stating, because the obvious arithmetic gives the wrong answer.
-    assert.equal(runStepCount, 107, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step, so this tracks runStepCount exactly: 106*3 = 318 became
-    // 107*3 = 321. If these two ever stop moving together, the matrix has stopped covering
-    // every step and the number is hiding it rather than reporting it.
-    assert.equal(mutationCount, 321, "exhaustive bypass matrix must not shrink");
+    // 107 -> 121: path-class skip proofs on skip-proof jobs (+classify in preflight).
+    assert.equal(runStepCount, 121, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 121*3 = 363.
+    assert.equal(mutationCount, 363, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -634,7 +782,7 @@ describe("CI preflight contract", () => {
   it("rejects Buck2 jobs that do not bootstrap pinned DotSlash before invocation", () => {
     expectFailure(
       workflow.replace(
-        "      - name: Install pinned DotSlash runtime\n        run: tools/buck/install_dotslash.sh\n",
+        `      - name: Install pinned DotSlash runtime\n        if: ${preflightRunHeavyIf}\n        run: tools/buck/install_dotslash.sh\n`,
         "",
       ),
       "preflight must install pinned DotSlash before Buck2",
@@ -659,8 +807,8 @@ describe("CI preflight contract", () => {
     ]) {
       expectFailure(
         workflow.replace(
-          `      - name: ${stepName}\n        working-directory: .\n`,
-          `      - name: ${stepName}\n`,
+          `      - name: ${stepName}\n        if: ${runHeavyIf}\n        working-directory: .\n`,
+          `      - name: ${stepName}\n        if: ${runHeavyIf}\n`,
         ),
         "backend must preserve the locked fail-fast step multiset and failure semantics",
       );
@@ -670,7 +818,7 @@ describe("CI preflight contract", () => {
   it("requires dev-up smoke to install pinned DotSlash before its indirect Buck2 build", () => {
     const devUp = workflow.indexOf("  dev-up-smoke:\n");
     const installStep =
-      "      - name: Install pinned DotSlash runtime\n        run: tools/buck/install_dotslash.sh\n\n";
+      `      - name: Install pinned DotSlash runtime\n        if: ${runHeavyIf}\n        run: tools/buck/install_dotslash.sh\n\n`;
     const devUpWorkflow = workflow.slice(devUp);
     const withoutDotSlash = workflow.slice(0, devUp) + devUpWorkflow.replace(installStep, "");
     expectFailure(
@@ -783,8 +931,9 @@ describe("CI preflight contract", () => {
     for (const command of ["tools/buck2 --version", "dotslash run //backend/app:console-app"]) {
       expectFailure(
         workflow.replace(
-          "      - name: Install pinned DotSlash runtime\n        run: ../tools/buck/install_dotslash.sh\n",
-          `      - name: First Buck invocation\n        run: ${command}\n\n      - name: Install pinned DotSlash runtime\n        run: ../tools/buck/install_dotslash.sh\n`,
+          `      - name: Install pinned DotSlash runtime\n        if: ${runHeavyIf}\n        run: ../tools/buck/install_dotslash.sh\n`,
+          `      - name: First Buck invocation\n        if: ${runHeavyIf}\n        run: ${command}\n\n`
+            + `      - name: Install pinned DotSlash runtime\n        if: ${runHeavyIf}\n        run: ../tools/buck/install_dotslash.sh\n`,
         ),
         "backend must install pinned DotSlash before its first Buck invocation",
       );
@@ -803,6 +952,7 @@ describe("CI preflight contract", () => {
 
   it("requires the lock-sourced Reindeer toolchain before the full generated-face closure", () => {
     const toolchainSetup = `      - name: Install lock-pinned Reindeer Rust toolchain
+        if: \${{ needs.preflight.outputs.run_heavy == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -812,6 +962,7 @@ describe("CI preflight contract", () => {
 
 `;
     const fullGate = `      - name: Full generated-face closure
+        if: \${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: tools/buck/preflight.sh --full-generated-faces
 `;
 
@@ -856,13 +1007,10 @@ describe("CI preflight contract", () => {
   it("requires the pinned Rust toolchain before Cargo-dependent preflight tests", () => {
     expectFailure(
       workflow.replace(preflightRustToolchainSetup, "").replace(
-        `      - name: CI preflight contract tests\n        run: ${ciPreflightTests}`,
-        `      - name: CI preflight contract tests
-        run: ${ciPreflightTests}
-
-${preflightRustToolchainSetup.trimEnd()}`,
+        `      - name: Cargo.lock consistency\n        if: ${preflightRunHeavyIf}\n        run: ${cargoLockGate}\n`,
+        `      - name: Cargo.lock consistency\n        if: ${preflightRunHeavyIf}\n        run: ${cargoLockGate}\n\n${preflightRustToolchainSetup.trimEnd()}\n`,
       ),
-      `preflight must install the pinned Rust toolchain before ${ciPreflightTests}`,
+      `preflight must install the pinned Rust toolchain before ${cargoLockGate}`,
     );
   });
 
@@ -938,21 +1086,47 @@ ${preflightRustToolchainSetup.trimEnd()}`,
   });
 
   it("rejects omission and comment-only reachability regressions", () => {
-    for (const command of reachabilityPreflightCommands) {
-      expectFailure(workflow.replace(`        run: ${command}\n`, ""), command);
-      expectFailure(workflow.replace(`        run: ${command}\n`, `        # ${command}\n`), command);
+    const alwaysCommand = "node --test scripts/console/route-inventory.test.mjs";
+    expectFailure(workflow.replace(`        run: ${alwaysCommand}\n`, ""), alwaysCommand);
+    expectFailure(workflow.replace(`        run: ${alwaysCommand}\n`, `        # ${alwaysCommand}\n`), alwaysCommand);
+    for (const command of [
+      "tools/buck/run_test_with_postgres_env.test.sh",
+      "tools/buck/test_needs_postgres.test.sh",
+    ]) {
+      const gated = `        if: ${preflightRunHeavyIf}\n        run: ${command}\n`;
+      assert.ok(workflow.includes(gated), `missing gated reachability command ${command}`);
+      expectFailure(workflow.replace(gated, ""), command);
+      expectFailure(workflow.replace(gated, `        if: ${preflightRunHeavyIf}\n        # ${command}\n`), command);
     }
   });
 
   it("rejects conditional and continue-on-error reachability regressions", () => {
-    for (const command of reachabilityPreflightCommands) {
+    const alwaysCommand = "node --test scripts/console/route-inventory.test.mjs";
+    expectFailure(
+      workflow.replace(`        run: ${alwaysCommand}\n`, `        if: \${{ false }}\n        run: ${alwaysCommand}\n`),
+      "unconditionally",
+    );
+    expectFailure(
+      workflow.replace(`        run: ${alwaysCommand}\n`, `        continue-on-error: true\n        run: ${alwaysCommand}\n`),
+      "unconditionally",
+    );
+    for (const command of [
+      "tools/buck/run_test_with_postgres_env.test.sh",
+      "tools/buck/test_needs_postgres.test.sh",
+    ]) {
       expectFailure(
-        workflow.replace(`        run: ${command}\n`, `        if: \${{ false }}\n        run: ${command}\n`),
-        "unconditionally",
+        workflow.replace(
+          `        if: ${preflightRunHeavyIf}\n        run: ${command}\n`,
+          `        if: \${{ false }}\n        run: ${command}\n`,
+        ),
+        "only when",
       );
       expectFailure(
-        workflow.replace(`        run: ${command}\n`, `        continue-on-error: true\n        run: ${command}\n`),
-        "unconditionally",
+        workflow.replace(
+          `        if: ${preflightRunHeavyIf}\n        run: ${command}\n`,
+          `        if: ${preflightRunHeavyIf}\n        continue-on-error: true\n        run: ${command}\n`,
+        ),
+        "only when",
       );
     }
   });
@@ -1398,63 +1572,47 @@ ${preflightRustToolchainSetup.trimEnd()}`,
   });
 
   it("rejects non-executing or non-gating domain-unit command surfaces", () => {
-    const domainStart = workflow.indexOf("  domain-unit:\n");
-    const domainEnd = workflow.indexOf("\n  postgres-domain-reachability:", domainStart);
-    const domainBlock = workflow.slice(domainStart, domainEnd);
-    const replaceDomain = (mutate) => (
-      workflow.slice(0, domainStart) + mutate(domainBlock) + workflow.slice(domainEnd)
-    );
-
     expectFailure(
-      replaceDomain((block) => block.replace(
-        /^(\s*)(SQLX_OFFLINE=true cargo test)/gm,
-        "$1echo $2",
-      )),
-      "domain-unit must execute the locked Cargo test commands directly and unconditionally",
+      mutateNamedStep(workflow, "domain-unit", "Domain crate unit tests", (step) =>
+        step.replace(/^(\s*)(SQLX_OFFLINE=true cargo test)/gm, "$1echo $2")),
+      "domain-unit must execute the locked Cargo test commands directly when run_heavy",
     );
     expectFailure(
-      replaceDomain((block) => block.replace("        run: |\n", "        run: |\n          exit 0\n")),
-      "domain-unit must execute the locked Cargo test commands directly and unconditionally",
+      mutateNamedStep(workflow, "domain-unit", "Domain crate unit tests", (step) =>
+        step.replace(/^        run: \|$/m, "        run: |\n          exit 0")),
+      "domain-unit must execute the locked Cargo test commands directly when run_heavy",
     );
     for (const condition of ["false", "${{ false }}"]) {
       expectFailure(
-        replaceDomain((block) => block.replace(
-          "      - name: Domain crate unit tests\n",
-          `      - name: Domain crate unit tests\n        if: ${condition}\n`,
-        )),
-        "domain-unit must execute the locked Cargo test commands directly and unconditionally",
+        mutateNamedStep(workflow, "domain-unit", "Domain crate unit tests", (step) =>
+          step.replace(/^        if: .*$/m, `        if: ${condition}`)),
+        "domain-unit must execute the locked Cargo test commands directly when run_heavy",
       );
     }
     expectFailure(
-      replaceDomain((block) => block.replace(
-        "      - name: Domain crate unit tests\n",
-        "      - name: Domain crate unit tests\n        continue-on-error: true\n",
-      )),
-      "domain-unit must execute the locked Cargo test commands directly and unconditionally",
+      mutateNamedStep(workflow, "domain-unit", "Domain crate unit tests", (step) =>
+        step.replace(/^        if: .*$/m, `        if: ${runHeavyIf}\n        continue-on-error: true`)),
+      "domain-unit must execute the locked Cargo test commands directly when run_heavy",
     );
     expectFailure(
-      replaceDomain((block) => block.replace(
-        "      - name: Domain crate unit tests\n",
-        "      - name: Domain crate unit tests\n        shell: bash -c 'exit 0' {0}\n",
-      )),
-      "domain-unit must use the default shell with no job or step env/defaults overrides",
+      mutateNamedStep(workflow, "domain-unit", "Domain crate unit tests", (step) =>
+        step.replace(/^        if: .*$/m, `        if: ${runHeavyIf}\n        shell: bash -c 'exit 0' {0}`)),
+      "domain-unit may use only the default shell or canonical shell: bash",
     );
     expectFailure(
-      replaceDomain((block) => block.replace(
+      replaceJob(workflow, "domain-unit", (block) => block.replace(
         "  domain-unit:\n",
         "  domain-unit:\n    defaults:\n      run:\n        shell: bash -c 'exit 0' {0}\n",
       )),
       "domain-unit must use the default shell with no job or step env/defaults overrides",
     );
     expectFailure(
-      replaceDomain((block) => block.replace(
-        "      - name: Domain crate unit tests\n",
-        "      - name: Domain crate unit tests\n        env:\n          RUSTFLAGS: --cfg skip_tests\n",
-      )),
+      mutateNamedStep(workflow, "domain-unit", "Domain crate unit tests", (step) =>
+        step.replace(/^        if: .*$/m, `        if: ${runHeavyIf}\n        env:\n          RUSTFLAGS: --cfg skip_tests`)),
       "domain-unit must use the default shell with no job or step env/defaults overrides",
     );
     expectFailure(
-      replaceDomain((block) => block.replace(
+      replaceJob(workflow, "domain-unit", (block) => block.replace(
         "  domain-unit:\n",
         "  domain-unit:\n    env:\n      CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER: true\n",
       )),
@@ -1482,7 +1640,7 @@ ${preflightRustToolchainSetup.trimEnd()}`,
   it("locks the complete dev-up proof and cleanup", () => {
     expectFailure(
       workflow.replace(
-        "      - name: PostgreSQL topology integration regression\n        run: ops/postgres-topology.integration.test.sh\n",
+        `      - name: PostgreSQL topology integration regression\n        if: ${runHeavyIf}\n        run: ops/postgres-topology.integration.test.sh\n`,
         "",
       ),
       "dev-up-smoke must preserve the locked fail-fast step multiset and failure semantics",
@@ -1542,8 +1700,8 @@ ${preflightRustToolchainSetup.trimEnd()}`,
   it("locks the Kubernetes production-hardening proof", () => {
     expectFailure(
       workflow.replace(
-        "      - name: Production hardening contract\n        if: ${{ !cancelled() }}\n",
-        "      - name: Production hardening contract\n        if: ${{ !cancelled() }}\n        continue-on-error: true\n",
+        `      - name: Production hardening contract\n        if: ${runHeavyUnlessCancelledIf}\n`,
+        `      - name: Production hardening contract\n        if: ${runHeavyUnlessCancelledIf}\n        continue-on-error: true\n`,
       ),
       "kubernetes-manifests must preserve the locked fail-fast step multiset and failure semantics",
     );
@@ -1566,22 +1724,22 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     );
     expectFailure(
       workflow.replace(
-        "      - name: Audit-coverage gate\n",
-        "      - name: Audit-coverage gate\n        if: ${{ false }}\n",
+        `      - name: Audit-coverage gate\n        if: ${runHeavyIf}\n`,
+        `      - name: Audit-coverage gate\n        if: \${{ false }}\n`,
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     expectFailure(
       workflow.replace(
-        "      - name: Migration-safety gate\n",
-        "      - name: Migration-safety gate\n        continue-on-error: true\n",
+        `      - name: Migration-safety gate\n        if: ${runHeavyIf}\n`,
+        `      - name: Migration-safety gate\n        if: ${runHeavyIf}\n        continue-on-error: true\n`,
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     expectFailure(
       workflow.replace(
-        "      - name: Audit-coverage gate\n",
-        "      - name: Layer-boundary gate\n        if: ${{ !cancelled() }}\n        run: cargo run -p console-gate-layer-boundary\n\n      - name: Audit-coverage gate\n",
+        `      - name: Audit-coverage gate\n        if: ${runHeavyIf}\n`,
+        `      - name: Layer-boundary gate\n        if: \${{ !cancelled() }}\n        run: cargo run -p console-gate-layer-boundary\n\n      - name: Audit-coverage gate\n        if: ${runHeavyIf}\n`,
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
@@ -1594,8 +1752,8 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     );
     expectFailure(
       workflow.replace(
-        "      - name: dev-up compose contract unit test\n        run: node --test scripts/dev-up-compose.test.mjs",
-        "      - name: dev-up compose contract unit test\n        continue-on-error: true\n        run: node --test scripts/dev-up-compose.test.mjs",
+        `      - name: dev-up compose contract unit test\n        if: ${runHeavyIf}\n        run: node --test scripts/dev-up-compose.test.mjs`,
+        `      - name: dev-up compose contract unit test\n        if: ${runHeavyIf}\n        continue-on-error: true\n        run: node --test scripts/dev-up-compose.test.mjs`,
       ),
       "dev-up-smoke must preserve the locked fail-fast step multiset and failure semantics",
     );
@@ -1604,8 +1762,8 @@ ${preflightRustToolchainSetup.trimEnd()}`,
   it("keeps protected backend steps fail-fast and runs PR 473 contract tests before topology", () => {
     expectFailure(
       workflow.replace(
-        "      - name: rustfmt check\n",
-        "      - name: rustfmt check\n        if: ${{ !cancelled() }}\n",
+        `      - name: rustfmt check\n        if: ${runHeavyIf}\n`,
+        `      - name: rustfmt check\n        if: \${{ !cancelled() }}\n`,
       ),
       "backend must not use !cancelled() on protected fail-fast steps",
     );
@@ -1697,7 +1855,7 @@ ${preflightRustToolchainSetup.trimEnd()}`,
   // and an unprotected step is a slot in the job list that reads as coverage.
   it("locks the undeclared-imports gate step in repo-gates", () => {
     const step = "      - name: Undeclared imports — every bare specifier must be declared\n"
-      + "        if: ${{ !cancelled() }}\n"
+      + `        if: ${runHeavyUnlessCancelledIf}\n`
       + "        run: npm run check:undeclared-imports\n";
     assert.ok(workflow.includes(step), "repo-gates does not run the undeclared-imports gate");
 
@@ -1711,7 +1869,7 @@ ${preflightRustToolchainSetup.trimEnd()}`,
   // returned zero preflight failures. Being wired into ci.yml is not the same as being protected.
   it("locks the request-body-contract gate step in repo-gates", () => {
     const step = "      - name: Request-body contract — spec fields must exist on the handler\n"
-      + "        if: ${{ !cancelled() }}\n"
+      + `        if: ${runHeavyUnlessCancelledIf}\n`
       + "        run: npm run check:request-body-contract\n";
     assert.ok(workflow.includes(step), "repo-gates does not run the request-body-contract gate");
 
@@ -1738,6 +1896,7 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     const run = "        run: env -u DATABASE_URL tools/buck2 test"
       + " //backend/app:console-app-itest-openapi_drift\n";
     const step = "      - name: Buck2 console-app OpenAPI drift suite\n"
+      + `        if: ${runHeavyIf}\n`
       + "        working-directory: .\n"
       + run;
     assert.ok(workflow.includes(step), "backend does not run the openapi_drift suite");
@@ -1756,8 +1915,11 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     );
     // `if: ${{ !cancelled() }}` here would let a red drift suite pass the job as a soft warning.
     expectFailure(
-      workflow.replace(run, `        if: \${{ !cancelled() }}\n${run}`),
-      "backend must preserve the locked fail-fast step multiset and failure semantics",
+      workflow.replace(
+        `      - name: Buck2 console-app OpenAPI drift suite\n        if: ${runHeavyIf}\n`,
+        "      - name: Buck2 console-app OpenAPI drift suite\n        if: ${{ !cancelled() }}\n",
+      ),
+      "backend must not use !cancelled() on protected fail-fast steps",
     );
   });
 });
