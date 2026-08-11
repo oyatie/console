@@ -1,36 +1,30 @@
 {
-  "lane": "console-gc9z",
-  "role": "implementer",
-  "status": "done",
-  "headSha": "9377d6077b357468c4919bd89c6626206b1cac58",
-  "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z",
-  "branch": "lane/console-gc9z",
-  "baseSha": "eca122ad0122457a77b85ca55fc1e8b2e4869e74",
-  "summary": "Map LifecycleError arms through into_kernel_error into PgPayrollError::Domain instead of flattening non-NotFound to Internal; aligns store/REST lifecycle path with CanonicalPort PayRun mapping (0a7z/#741 residual).",
+  "laneId": "console-gc9z",
+  "status": "blocked",
+  "summary": "STOP\u2192CAPTURE\u2192ELEVATE: sole-writer premise broken mid-flight. Product LifecycleError\u2192PgPayrollError kind map already on origin/lane/console-gc9z (C=8fd1d85f8, T=222199b9a) with OPEN PR #748 and critic APPROVE; this dispatch also observed foreign dirty docs/program/executed-tests-baseline.json (14\u219215) and an in-progress packaging receipt (PLACEHOLDER_PRODUCT_C). Did not force-push, did not touch Wave/leave roots, did not close bead.",
   "filesChanged": [
     "backend/crates/payroll/adapter-postgres/src/lifecycle.rs"
   ],
-  "redBaseline": "On pre-fix store path, LifecycleError::From into PgPayrollError / into_kernel_error flattened Validation/InvalidState/SodViolation to Internal (same class as pre-0a7z CanonicalPort). Hostile expectation: Validation arm must surface as KernelError::validation after fix. Base after restack: eca122ad0.",
-  "verification": "Restacked onto origin/main eca122ad0 (#745). Inspected lifecycle.rs: into_kernel_error maps NotFound/Validation/InvalidState/SodViolation/Conflict distinctly; From<LifecycleError> for PgPayrollError uses Domain(other.into_kernel_error()) for non-Db arms. Product C signed G; tip-bind receipt folded under C; jurisdiction T minted after.",
-  "commands": [
-    "git -C /Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z fetch origin main",
-    "git -C /Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z rebase origin/main",
-    "git -C /Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z log -2 --format='%H %G? %s'",
-    "bash /Users/jasonlee/Developer/console/scripts/cursor/preflight-forge.sh",
-    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs /Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z/.cursor/receipts/gc9z.json"
-  ],
-  "contractBreaches": "Error-kind surfacing only; no PayRun wire/OpenAPI change; does not reopen pay_run.rs CanonicalPort mapping.",
-  "enforcementPlacement": "WHERE: lifecycle.rs From/into_kernel_error at convert boundary (subject exists). Finest: LifecycleError enum arm \u2192 KernelError kind. Examined-zero fails: empty match would not compile / miss arms.",
-  "peripheralsUpdated": "n/a - nothing described this behaviour beyond lifecycle.rs mapping; 0a7z residual bead remains the authority note.",
-  "followUps": [
-    "Chesterton: dual path (lifecycle store vs CanonicalPort pay_run) remains \u2014 keep both mapped; do not delete either converter.",
-    "Bead console-gc9z left OPEN per brief; CI babysit owned by orchestrator."
-  ],
-  "lensesApplied": [
+  "redBaseline": "This dispatch proved RED locally on base be7b3e14b by restoring flatten-to-Internal From impl: lifecycle_into_pg_payroll_error_preserves_kernel_kinds failed left=Internal right=Validation. GREEN after restore: lifecycle:: 13 passed. That product content matches already-published C=8fd1d85f8.",
+  "verification": "Collision evidence only \u2014 not a land claim. See followUps CAPTURE.",
+  "contractBreaches": "process: another writer on same worktree/branch (restack+tip-bind+PR) while this implementer held the brief; porcelain escaped owned roots (executed-tests-baseline.json). No product rewrite attempted after capture.",
+  "enforcementPlacement": "n/a - adds no enforcement",
+  "peripheralsUpdated": "n/a - nothing described this behaviour \u2014 elevate only; did not apply baseline lock (out of owned roots for this brief).",
+  "lenses": [
     "Cartesian doubt",
+    "Essentialism / YAGNI",
     "Red Team",
     "Blast-radius / cell-based",
     "Zero-trust / defense-in-depth"
   ],
-  "completedBy": "lane-implementer restack onto eca122ad0 after #745; mint C+T; open PR + squash auto-merge"
+  "challenges": [
+    "Brief claimed sole writer + immutable tip be7b3e14b; observed origin/main moved to eca122ad0 (#745) and remote lane tip already C+T published \u2014 acting further would be a second spelling / force-push collision.",
+    "Chesterton: dual LifecycleError\u2192KernelError converters remain (lifecycle.rs vs pay_run.rs); critic already filed ownerLease consolidation \u2014 do not patch here."
+  ],
+  "followUps": [
+    "ELEVATE to orchestrator a917854c / phase b16e00d7: CAPTURE worktree=/Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z localHEAD=8fd1d85f8 remoteTip=222199b9a origin/main=eca122ad0 PR=#748 https://github.com/jason931225/console/pull/748 critic=.cursor/receipts/gc9z-critic.json verdict=APPROVE. Foreign dirt: docs/program/executed-tests-baseline.json (lib.rs 14\u219215 uncommitted) + HEAD receipt had headSha=PLACEHOLDER_PRODUCT_C (packaging in flight). This agent overwrote working-tree gc9z.json once \u2014 recover prior WIP via git show HEAD:.cursor/receipts/gc9z.json if needed.",
+    "ownerLease: do NOT force-with-lease from this dispatch; babysit/admit owns PR #748 + baseline lock packaging.",
+    "This dispatch local product commit 3f24cd0b7 (on be7b3e14b) was superseded by restack to 8fd1d85f8; %G?=G was proven on both signed product leaves before stop."
+  ],
+  "headSha": "7adf26fde53b2559628f3084616459f00ee545d5"
 }
