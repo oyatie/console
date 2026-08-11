@@ -220,12 +220,37 @@ impl From<KernelError> for LifecycleError {
     }
 }
 
+/// Map lifecycle failures onto [`KernelError`] kinds that match the REST
+/// `from_lifecycle` status surface (404 / 422 / 409 / 500) and the CanonicalPort
+/// PayRun path (`pay_run::lifecycle_into_kernel_error`). Store/REST callers that
+/// convert via [`PgPayrollError`] must not flatten Validation / Conflict /
+/// InvalidTransition arms to `Internal` (5xx).
+impl LifecycleError {
+    #[must_use]
+    pub fn into_kernel_error(self) -> KernelError {
+        let message = self.to_string();
+        match self {
+            Self::NotFound => KernelError::not_found("run not found"),
+            Self::Validation(_) => KernelError::validation(message),
+            Self::InvalidTransition(_) => KernelError::invalid_transition(message),
+            Self::InvalidState(_)
+            | Self::PreflightBlocked(_)
+            | Self::ExceptionsOpen(_)
+            | Self::SodViolation
+            | Self::AlreadyResolved
+            | Self::LegalGate(_) => KernelError::conflict(message),
+            Self::Db(_) => KernelError::internal(message),
+        }
+    }
+}
+
 impl From<LifecycleError> for crate::PgPayrollError {
     fn from(value: LifecycleError) -> Self {
         match value {
+            // Preserve Db so `PgPayrollError::kind` can still distinguish
+            // sqlx RowNotFound from other DB failures.
             LifecycleError::Db(err) => Self::Db(err),
-            LifecycleError::NotFound => Self::Domain(KernelError::not_found("run not found")),
-            other => Self::Domain(KernelError::internal(other.to_string())),
+            other => Self::Domain(other.into_kernel_error()),
         }
     }
 }
@@ -1447,6 +1472,50 @@ pub async fn payslip_delivery_in_tx(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use console_kernel_core::ErrorKind;
+    use console_platform_db::DbError;
+
+    /// Hostile pin: store-path `From<LifecycleError> for PgPayrollError` must
+    /// preserve kinds (0a7z residual). Flattening non-NotFound arms to
+    /// `Internal` is the failure this lane closes.
+    fn assert_pg_kind(err: LifecycleError, expected: ErrorKind) {
+        assert_eq!(crate::PgPayrollError::from(err).kind(), expected);
+    }
+
+    #[test]
+    fn lifecycle_into_pg_payroll_error_preserves_kernel_kinds() {
+        assert_pg_kind(LifecycleError::NotFound, ErrorKind::NotFound);
+        assert_pg_kind(
+            LifecycleError::Validation("bad input".into()),
+            ErrorKind::Validation,
+        );
+        assert_pg_kind(
+            LifecycleError::InvalidTransition("draft→paid".into()),
+            ErrorKind::InvalidTransition,
+        );
+        assert_pg_kind(
+            LifecycleError::InvalidState("cannot decide a run in status OPEN".into()),
+            ErrorKind::Conflict,
+        );
+        assert_pg_kind(
+            LifecycleError::PreflightBlocked(ClosePreflight {
+                checks: Vec::new(),
+                can_close: false,
+            }),
+            ErrorKind::Conflict,
+        );
+        assert_pg_kind(LifecycleError::ExceptionsOpen(3), ErrorKind::Conflict);
+        assert_pg_kind(LifecycleError::SodViolation, ErrorKind::Conflict);
+        assert_pg_kind(LifecycleError::AlreadyResolved, ErrorKind::Conflict);
+        assert_pg_kind(
+            LifecycleError::LegalGate("missing reviewed_on".into()),
+            ErrorKind::Conflict,
+        );
+        assert_pg_kind(
+            LifecycleError::Db(DbError::Sqlx(sqlx::Error::RowNotFound)),
+            ErrorKind::NotFound,
+        );
+    }
 
     fn payroll_row(gross: i64, income_tax: i64) -> Value {
         json!({
