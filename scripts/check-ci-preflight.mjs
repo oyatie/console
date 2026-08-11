@@ -65,7 +65,7 @@ const consoleFanoutPlannerTestCommand = "node --test scripts/console/plan-fanout
 // bootstrap verifier — and executed NOWHERE until it was wired: `package.json` declared
 // `test:console-authority-bootstrap` and no workflow ever invoked it. Breaking the verifier
 // turned all its tests red locally while CI stayed green.
-const consoleBootstrapTestCommand = "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs";
+const consoleBootstrapTestCommand = "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs";
 const consoleFanoutPlannerAdmissionCommand = 'node scripts/console/plan-fanout.mjs --candidate "$CONSOLE_CANDIDATE_SHA" --authority-tip "$CONSOLE_AUTHORITY_TIP_SHA" --synthetic-merge "$CONSOLE_SYNTHETIC_MERGE_SHA"';
 const consolePrCondition = "${{ github.event_name == 'pull_request' }}";
 const consoleTrainDerivation = [
@@ -568,7 +568,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("CI preflight contract tests", "node --test scripts/check-ci-preflight.test.mjs"),
     proofRun("Console route inventory regression", "node --test scripts/console/route-inventory.test.mjs"),
     proofRun("Console authority-train regression", "node --test scripts/console/verify-console-authority-train.test.mjs"),
-    proofRun("Console PR authority bootstrap regression", "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs"),
+    proofRun("Console PR authority bootstrap regression", "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs"),
     proofRun("Executed-tests baseline set regression", "npm run test:executed-tests-baseline"),
     proofRun("Local CI mirror contract", "node --test scripts/verify.test.mjs"),
     proofRun("Console truth-ledger validator exact-M regression", "node --test scripts/console/validate-console-truth-ledger.test.mjs"),

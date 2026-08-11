@@ -57,12 +57,25 @@ their unit tests.  It has no secrets, cache restore, npm install, or PR executab
 step before authentication. This bootstrap must remain protected-target code; a
 workflow supplied by the PR cannot establish its own trust root.
 
+**Release-please exception (fail-closed class, not a broad unsigned allow):** when the
+PR tip is exactly a github-actions[bot] / GitHub-noreply commit whose subject matches
+`chore(<scope>): release X.Y.Z` and whose parent..tip diff is only
+`.release-please-manifest.json` + `CHANGELOG.md` (regular mode-100644 modifications),
+and the GitHub event author is `github-actions[bot]` with a
+`release-please--branches--main--components--*` head ref, the bootstrap admits that tip
+without pinned SSH signatures and skips the detached-C validator suite. Any extra path,
+forged human PR author, or non-release subject falls back to the SSH C/T train and
+fails closed. CI `check:console-truth-ledger` / `plan-fanout` share the same class via
+`verify-console-authority-train.mjs`. See bead `console-9ry` /
+`process.release-candidate-unsigned`.
+
 The five required Security contexts inspect a candidate checkout and therefore
 are not, by themselves, an isolation boundary against deliberately hostile PR
 code. Their workflow shape and proof order are locked against accidental drift,
 but merge admission additionally depends on `authenticate-console-authority`,
 which runs protected-target code and rejects every PR—including forks and
-Dependabot—whose exact C/T train is not signed by the pinned authority. Never
+Dependabot—whose exact C/T train is not signed by the pinned authority (except the
+narrow release-please class above). Never
 remove that required-context composition or treat a green scanner context alone
 as authentication of an untrusted contribution.
 

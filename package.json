@@ -66,7 +66,7 @@
     "kic:generate-nhis-loss-report-fixture": "node scripts/korean-connectivity/nhis-edi-loss-report.mjs",
     "kic:local-cert-login-fixture": "node scripts/korean-connectivity/local-certificate-agent.mjs",
     "check:console-truth-ledger": "node scripts/console/validate-console-truth-ledger.mjs",
-    "test:console-authority-bootstrap": "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs",
+    "test:console-authority-bootstrap": "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs",
     "check:node-audit-exceptions": "node scripts/check-node-audit-exceptions.mjs",
     "test:node-audit-exceptions": "node --test scripts/check-node-audit-exceptions.test.mjs",
     "check:trivy-dev-codegen-exceptions": "node scripts/generate-trivy-dev-codegen-exceptions.mjs --check",

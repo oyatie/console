@@ -32,12 +32,16 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           node scripts/console/verify-console-pr-authority-bootstrap.mjs \
           --pr-number "$PR_NUMBER" \
           --head "$PR_HEAD_SHA" \
           --merge "$PR_MERGE_SHA" \
-          --base "$PR_BASE_REF"
+          --base "$PR_BASE_REF" \
+          --author "$PR_AUTHOR" \
+          --head-ref "$PR_HEAD_REF"
 
   bind-merged-console-authority-squash:
     if: >-
@@ -61,6 +65,8 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           SQUASH_SHA: ${{ github.event.pull_request.merge_commit_sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           RECEIPT_PATH: ${{ runner.temp }}/console-squash-binding.json
           GIT_CONFIG_NOSYSTEM: '1'
           GIT_CONFIG_GLOBAL: /dev/null
@@ -74,7 +80,9 @@ jobs:
           --pr-number "$PR_NUMBER" \
           --head "$AUTHORITY_TIP_SHA" \
           --squash "$SQUASH_SHA" \
-          --base "$PR_BASE_REF" > "$RECEIPT_PATH"
+          --base "$PR_BASE_REF" \
+          --author "$PR_AUTHOR" \
+          --head-ref "$PR_HEAD_REF" > "$RECEIPT_PATH"
       - name: Upload squash binding receipt
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

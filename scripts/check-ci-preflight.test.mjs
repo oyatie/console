@@ -912,15 +912,15 @@ ${preflightRustToolchainSetup.trimEnd()}`,
     // turned every one of its tests red locally while CI stayed green. Wiring it into ci.yml is
     // not the same as protecting it, hence both halves below.
     assert.ok(
-      workflow.includes('      - name: Console PR authority bootstrap regression\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs\n'),
+      workflow.includes('      - name: Console PR authority bootstrap regression\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs\n'),
       "preflight does not run the console PR authority bootstrap regression",
     );
     expectFailure(
-      workflow.replace('      - name: Console PR authority bootstrap regression\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs\n\n', ''),
+      workflow.replace('      - name: Console PR authority bootstrap regression\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs\n\n', ''),
       "verify-console-pr-authority-bootstrap.test.mjs",
     );
     expectFailure(
-      workflow.replace('        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs', '        if: ${{ github.event_name == \'pull_request\' }}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs'),
+      workflow.replace('        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs', '        if: ${{ github.event_name == \'pull_request\' }}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs'),
       "verify-console-pr-authority-bootstrap.test.mjs",
     );
     expectFailure(

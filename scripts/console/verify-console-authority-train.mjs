@@ -1,6 +1,12 @@
 import { execFileSync } from 'node:child_process';
 import { CONSOLE_CANDIDATE_SIGNING_AUTHORITY, verifyCommitWithCandidateSshPolicy } from './ssh-signature-policy.mjs';
 import { AUTHORITY_DIFF_ARGS, LEDGER_DIRECTORY, isLedgerEntryPath } from './authority-ledger-path.mjs';
+import {
+  RELEASE_PLEASE_TRAIN_CLASS,
+  classifyReleasePleaseBotTip,
+  gitOpsForReleasePlease,
+  verifyReleasePleaseBotTrain,
+} from './release-please-bot-candidate.mjs';
 
 const SHA = /^[0-9a-f]{40}$/;
 const AUTHORITY_PATHS = new Set([
@@ -48,6 +54,24 @@ function assertAuthorityDiff(repoRoot, candidateSha, authorityTipSha) {
 /** Validates signed candidate C, signed authority tip T, and structural-only GitHub merge M. */
 export function verifyConsoleAuthorityTrain(repoRoot, candidateSha, authorityTipSha, syntheticMergeSha, authority = CONSOLE_CANDIDATE_SIGNING_AUTHORITY) {
   sha(candidateSha, 'candidate SHA'); sha(authorityTipSha, 'authority tip SHA'); sha(syntheticMergeSha, 'synthetic merge SHA');
+  const ops = gitOpsForReleasePlease(repoRoot, git, gitSucceeds);
+  const releaseTip = classifyReleasePleaseBotTip(ops, authorityTipSha);
+  if (releaseTip) {
+    if (releaseTip.candidateSha !== candidateSha) {
+      fail('release-please bot tip parent must equal CONSOLE_CANDIDATE_SHA');
+    }
+    const admitted = verifyReleasePleaseBotTrain(ops, {
+      headSha: authorityTipSha,
+      mergeSha: syntheticMergeSha,
+      requirePrMeta: false,
+    });
+    return Object.freeze({
+      candidateSha: admitted.candidateSha,
+      authorityTipSha: admitted.authorityTipSha,
+      syntheticMergeSha: admitted.mergeSha,
+      trainClass: RELEASE_PLEASE_TRAIN_CLASS,
+    });
+  }
   verifySigned(repoRoot, candidateSha, candidateSha, 'candidate C', authority);
   verifySigned(repoRoot, candidateSha, authorityTipSha, 'authority tip T', authority);
   const tipParents = git(repoRoot, ['show', '-s', '--format=%P', authorityTipSha]).trim().split(/\s+/).filter(Boolean);
@@ -57,5 +81,5 @@ export function verifyConsoleAuthorityTrain(repoRoot, candidateSha, authorityTip
   const mergeParents = git(repoRoot, ['show', '-s', '--format=%P', syntheticMergeSha]).trim().split(/\s+/).filter(Boolean);
   if (mergeParents.length !== 2 || mergeParents[1] !== authorityTipSha) fail('M must have exactly two parents with T as parent 2');
   if (git(repoRoot, ['show', '-s', '--format=%T', syntheticMergeSha]).trim() !== git(repoRoot, ['show', '-s', '--format=%T', authorityTipSha]).trim() || !gitSucceeds(repoRoot, ['diff', '--quiet', '--no-ext-diff', syntheticMergeSha, authorityTipSha])) fail('M tree and content diff must equal T exactly');
-  return Object.freeze({ candidateSha, authorityTipSha, syntheticMergeSha });
+  return Object.freeze({ candidateSha, authorityTipSha, syntheticMergeSha, trainClass: 'ssh-authority' });
 }

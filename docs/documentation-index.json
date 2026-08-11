@@ -570,7 +570,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "3adb61114b73c14685e7c8168eb51235d5408fc1",
+      "blob_sha": "adcfa1d59dfeb4e54b5e40cf7a4467dae05013a2",
       "archive_tag": null
     },
     {
@@ -3596,6 +3596,16 @@
     {
       "path": "docs/program/ledger/2026-08-09-p4-canonical-writer-ownership.md",
       "blob_sha": "4f0ad5b40394481f94626dd490828a87adc347ca",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-10-release-please-bot-candidate-class.md",
+      "blob_sha": "26dc85d0ddf1c1607b82dc46a34edc6bc8c1c217",
       "class": "evidence",
       "owner": "repository maintainers",
       "status": "frozen",

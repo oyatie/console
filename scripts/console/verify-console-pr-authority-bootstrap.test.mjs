@@ -31,7 +31,7 @@ function fixture(overrides = {}) {
   return { data, calls };
 }
 function rejects(overrides, pattern) { const { data } = fixture(overrides); assert.throws(() => verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), pattern); }
-function accepts(overrides) { const { data } = fixture(overrides); assert.deepEqual(verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), { candidateSha: C, integrationTipSha: T, mergeSha: M }); }
+function accepts(overrides) { const { data } = fixture(overrides); assert.deepEqual(verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), { candidateSha: C, integrationTipSha: T, mergeSha: M, trainClass: 'ssh-authority' }); }
 const modified = (file) => ({ path: file, status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' });
 const addedFile = (file) => ({ path: file, status: 'A', oldMode: '000000', newMode: '100644', oldType: null, newType: 'blob' });
 
@@ -41,7 +41,7 @@ test('accepts signed C/T plus an unsigned synthetic merge M without executing ma
     if (file !== POLICY_PATH) throw new Error(`unexpected read of ${file}`);
     return policy;
   } });
-  assert.deepEqual(verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), { candidateSha: C, integrationTipSha: T, mergeSha: M });
+  assert.deepEqual(verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), { candidateSha: C, integrationTipSha: T, mergeSha: M, trainClass: 'ssh-authority' });
   assert.deepEqual(calls.map(({ sha }) => sha), [C, T]);
   assert.ok(calls.every(({ authority }) => authority.policy === policy && authority.principal === TRUSTED_PRINCIPAL && authority.fingerprint === TRUSTED_FINGERPRINT));
 });
@@ -112,7 +112,7 @@ test('C is located from Git parentage alone; no pull-request-controlled document
   // is the assertion: this gate cannot be steered by anything the pull request writes into a
   // file. The registry's `candidate.sha` used to be that steering wheel.
   const { data, calls } = fixture();
-  assert.deepEqual(verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), { candidateSha: C, integrationTipSha: T, mergeSha: M });
+  assert.deepEqual(verifyBootstrapGraph(data, { headSha: T, mergeSha: M }), { candidateSha: C, integrationTipSha: T, mergeSha: M, trainClass: 'ssh-authority' });
   assert.deepEqual(calls.map(({ sha }) => sha), [C, T]);
   // Parentage is the whole locator, so a tip with no parent or more than one has no C at all.
   rejects({ parents: (sha) => sha === T ? [] : [BASE, T] }, /direct single-parent/);
@@ -137,7 +137,7 @@ test('binds a one-parent squash S to signed C/T without reading T or S executabl
     parents: (sha) => sha === T ? [C] : sha === S ? [BASE] : [],
     tree: (sha) => sha === S || sha === T ? 'tree-t' : 'tree-c',
   });
-  assert.deepEqual(verifySquashBinding(data, { authorityTipSha: T, squashSha: S, preMergeBaseSha: BASE }), { candidateSha: C, authorityTipSha: T, squashSha: S, preMergeBaseSha: BASE });
+  assert.deepEqual(verifySquashBinding(data, { authorityTipSha: T, squashSha: S, preMergeBaseSha: BASE }), { candidateSha: C, authorityTipSha: T, squashSha: S, preMergeBaseSha: BASE, trainClass: 'ssh-authority' });
   assert.deepEqual(calls.map(({ sha }) => sha), [C, T]);
 });
 test('rejects merge, rebase, wrong-base, and tree-drift squash bindings', () => {
@@ -173,7 +173,7 @@ test('candidate compatibility fixture receives only C/T/M environment facts and 
   // This file gates the highest-privilege script in the repository and was absent from the list,
   // so the `pull_request_target` path — the one that actually decides the merge — ran every
   // console check EXCEPT the one covering the verifier making the decision.
-  assert.deepEqual(plan.commands[2][1], ['--test', 'scripts/console/validate-console-truth-ledger.test.mjs', 'scripts/console/plan-fanout.test.mjs', 'scripts/console/verify-console-authority-train.test.mjs', 'scripts/console/verify-console-pr-authority-bootstrap.test.mjs']);
+  assert.deepEqual(plan.commands[2][1], ['--test', 'scripts/console/validate-console-truth-ledger.test.mjs', 'scripts/console/plan-fanout.test.mjs', 'scripts/console/verify-console-authority-train.test.mjs', 'scripts/console/verify-console-pr-authority-bootstrap.test.mjs', 'scripts/console/release-please-bot-candidate.test.mjs']);
 });
 test('workflow separates open PR authentication from closed merged squash binding', () => {
   const workflow = readFileSync(new URL('../../.github/workflows/console-authority-bootstrap.yml', import.meta.url), 'utf8');
@@ -183,7 +183,7 @@ test('workflow separates open PR authentication from closed merged squash bindin
   // parses this workflow with js-yaml after the lockfile install boundary.
   assert.equal(
     createHash('sha256').update(workflow).digest('hex'),
-    '91724bb72a5653a9ac6c5b36487497dbba45d94eade39860cd5a5bca21faeca3',
+    'ec6d1b8d96e7850f8bd433e8d878d9098980fdf4ef068823529c7b468c9af709',
   );
   assert.match(workflow, /^on:\n  pull_request_target:\n    types: \[opened, synchronize, reopened, closed\]\n    branches:\n      - main$/m);
   assert.doesNotMatch(workflow, /^  pull_request:$/m);
@@ -208,6 +208,8 @@ test('workflow separates open PR authentication from closed merged squash bindin
   assert.equal([...authenticate.matchAll(/^      - name:/gm)].length, 2);
   const verificationStep = authenticate.slice(authenticate.indexOf('      - name: Verify C/T authority train before candidate execution'));
   assert.match(verificationStep, /run: \|\n          node scripts\/console\/verify-console-pr-authority-bootstrap\.mjs \\/);
+  assert.match(verificationStep, /--author "\$PR_AUTHOR"/);
+  assert.match(verificationStep, /--head-ref "\$PR_HEAD_REF"/);
   assert.doesNotMatch(verificationStep, /checkout|npm|candidateCheckPlan|runAuthenticatedCandidateChecks/);
   const verifier = readFileSync(new URL('./verify-console-pr-authority-bootstrap.mjs', import.meta.url), 'utf8');
   const openMain = verifier.slice(verifier.indexOf('function main()'), verifier.indexOf('function squashBindingMain()'));
@@ -217,6 +219,79 @@ test('workflow separates open PR authentication from closed merged squash bindin
   const squashMain = verifier.slice(verifier.indexOf('function squashBindingMain()'));
   assert.ok(squashMain.indexOf('fetchExactAuthorityTip') < squashMain.indexOf('verifySquashBinding'));
 });
+
+test('admits release-please bot tip only with event author/ref + docs-only diff; never calls SSH verify', () => {
+  const {
+    RELEASE_PLEASE_BOT_EMAIL,
+    RELEASE_PLEASE_BOT_NAME,
+    RELEASE_PLEASE_COMMITTER_EMAIL,
+    RELEASE_PLEASE_COMMITTER_NAME,
+    RELEASE_PLEASE_PATHS,
+    RELEASE_PLEASE_TRAIN_CLASS,
+  } = requireReleasePleaseConstants();
+  const releaseDiff = RELEASE_PLEASE_PATHS.map((path) => ({
+    path, status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob',
+  }));
+  const calls = [];
+  const { data } = fixture({
+    commitIdentity: () => ({
+      authorName: RELEASE_PLEASE_BOT_NAME,
+      authorEmail: RELEASE_PLEASE_BOT_EMAIL,
+      committerName: RELEASE_PLEASE_COMMITTER_NAME,
+      committerEmail: RELEASE_PLEASE_COMMITTER_EMAIL,
+      subject: 'chore(main): release 0.3.4',
+    }),
+    diff: () => releaseDiff,
+    verifyCommit: (sha) => { calls.push(sha); return { ok: false }; },
+    readFile: () => { throw new Error('release class must not read signing policy'); },
+  });
+  assert.deepEqual(verifyBootstrapGraph(data, {
+    headSha: T,
+    mergeSha: M,
+    prAuthorLogin: 'github-actions[bot]',
+    prHeadRef: 'release-please--branches--main--components--console',
+  }), {
+    candidateSha: C,
+    integrationTipSha: T,
+    mergeSha: M,
+    trainClass: RELEASE_PLEASE_TRAIN_CLASS,
+  });
+  assert.deepEqual(calls, [], 'release-please class must not invoke SSH verify-commit');
+  assert.throws(() => verifyBootstrapGraph(data, {
+    headSha: T,
+    mergeSha: M,
+    prAuthorLogin: 'jason931225',
+    prHeadRef: 'release-please--branches--main--components--console',
+  }), /PR author/);
+  assert.throws(() => verifyBootstrapGraph(fixture({
+    commitIdentity: () => ({
+      authorName: RELEASE_PLEASE_BOT_NAME,
+      authorEmail: RELEASE_PLEASE_BOT_EMAIL,
+      committerName: RELEASE_PLEASE_COMMITTER_NAME,
+      committerEmail: RELEASE_PLEASE_COMMITTER_EMAIL,
+      subject: 'chore(main): release 0.3.4',
+    }),
+    diff: () => [...releaseDiff, { path: 'README.md', status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' }],
+    verifyCommit: () => ({ ok: false }),
+  }).data, {
+    headSha: T,
+    mergeSha: M,
+    prAuthorLogin: 'github-actions[bot]',
+    prHeadRef: 'release-please--branches--main--components--console',
+  }), /not a release-please bot|authority documents|C is not signed/);
+});
+
+function requireReleasePleaseConstants() {
+  // Keep this suite dependency-free of a second import graph in the hermetic pin section above.
+  return {
+    RELEASE_PLEASE_BOT_NAME: 'github-actions[bot]',
+    RELEASE_PLEASE_BOT_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com',
+    RELEASE_PLEASE_COMMITTER_NAME: 'GitHub',
+    RELEASE_PLEASE_COMMITTER_EMAIL: 'noreply@github.com',
+    RELEASE_PLEASE_PATHS: ['.release-please-manifest.json', 'CHANGELOG.md'],
+    RELEASE_PLEASE_TRAIN_CLASS: 'release-please-bot',
+  };
+}
 test('fetches a deleted, non-reachable PR authority tip exactly and rejects mismatch', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'console-authority-fetch-'));
   const remote = path.join(directory, 'remote.git'), source = path.join(directory, 'source'), checkout = path.join(directory, 'checkout');

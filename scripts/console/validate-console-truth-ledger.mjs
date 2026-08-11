@@ -10,6 +10,7 @@ import { ABSENT_CONSOLE_ROUTE_FACTS, CONSOLE_NAV_SOURCE, CONSOLE_REGISTRY_SOURCE
 import { CONSOLE_CANDIDATE_SIGNING_AUTHORITY, sshSignatureMatchesAuthority, verifyCommitWithCandidateSshPolicy } from './ssh-signature-policy.mjs';
 import { verifyConsoleAuthorityTrain } from './verify-console-authority-train.mjs';
 import { AUTHORITY_DIFF_ARGS, LEDGER_DIRECTORY, isLedgerEntryPath } from './authority-ledger-path.mjs';
+import { RELEASE_PLEASE_TRAIN_CLASS } from './release-please-bot-candidate.mjs';
 
 const SHA = /^[0-9a-f]{40}$/;
 const SHA256 = /^[0-9a-f]{64}$/;
@@ -468,7 +469,19 @@ function main() {
   if (!SHA.test(candidateSha ?? '')) fail('CONSOLE_CANDIDATE_SHA must be a full lowercase Git SHA');
   if (!SHA.test(authorityTipSha ?? '')) fail('CONSOLE_AUTHORITY_TIP_SHA must be a full lowercase Git SHA');
   if (!SHA.test(syntheticMergeSha ?? '')) fail('CONSOLE_SYNTHETIC_MERGE_SHA must be a full lowercase Git SHA');
-  verifyConsoleAuthorityTrain(root, candidateSha, authorityTipSha, syntheticMergeSha);
+  const train = verifyConsoleAuthorityTrain(root, candidateSha, authorityTipSha, syntheticMergeSha);
+  // Release-please bot tips are docs-only (manifest + CHANGELOG). They have no signed product
+  // candidate C and must not enter createConsoleCandidateSourceResolver's SSH/authority path.
+  if (train.trainClass === RELEASE_PLEASE_TRAIN_CLASS) {
+    console.log(JSON.stringify({
+      verdict: 'RELEASE_PLEASE_BOT_CANDIDATE_ADMITTED',
+      train_class: RELEASE_PLEASE_TRAIN_CLASS,
+      candidate_sha: train.candidateSha,
+      authority_tip_sha: train.authorityTipSha,
+      synthetic_merge_sha: train.syntheticMergeSha,
+    }, null, 2));
+    return;
+  }
   const registry = parseImmutableJson(git(root, ['show', `${authorityTipSha}:docs/program/console-capability-registry.json`]), 'console capability registry').value;
   const jurisdiction = parseImmutableJson(git(root, ['show', `${authorityTipSha}:docs/program/console-jurisdiction-register.json`]), 'console jurisdiction register').value;
   const candidateSource = createConsoleCandidateSourceResolver(root, candidateSha, authorityTipSha);

@@ -13,6 +13,12 @@ import path from 'node:path';
 // third copy of the ledger-prefix rule that has already drifted once; see
 // authority-ledger-path.mjs.
 import { AUTHORITY_DIFF_ARGS, LEDGER_DIRECTORY, isLedgerEntryPath } from './authority-ledger-path.mjs';
+import {
+  RELEASE_PLEASE_TRAIN_CLASS,
+  assertTrustedReleasePleasePrMeta,
+  classifyReleasePleaseBotTip,
+  verifyReleasePleaseBotTrain,
+} from './release-please-bot-candidate.mjs';
 
 export const TRUSTED_PRINCIPAL = 'jason19931225@gmail.com';
 export const TRUSTED_FINGERPRINT = 'SHA256:5grGNUtX9Zgmy1SWne6wF9DR8W1ElUQaF/Z8SYRz8E8';
@@ -37,6 +43,11 @@ const SAFE_ENVIRONMENT_KEYS = Object.freeze(['PATH', 'SystemRoot', 'SYSTEMROOT',
 const fail = (message) => { throw new Error(`console authority bootstrap: ${message}`); };
 const exactSha = (value, label) => { if (!SHA.test(value ?? '')) fail(`${label} must be a lowercase 40-character SHA`); return value; };
 
+function mapReleasePleaseError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  fail(message.replace(/^release-please bot candidate: /, ''));
+}
+
 function sanitizedGitEnvironment(source = process.env) {
   const environment = {};
   for (const key of SAFE_ENVIRONMENT_KEYS) if (source[key] !== undefined) environment[key] = source[key];
@@ -60,8 +71,8 @@ function assertSigned(status, label) {
   if (status?.ok !== true || status.principal !== TRUSTED_PRINCIPAL || status.fingerprint !== TRUSTED_FINGERPRINT) fail(`${label} is not signed by the pinned SSH authority`);
 }
 
-/** A pure seam used by hermetic tests; ops only reads Git object facts. */
-function verifyAuthorityTrain(ops, authorityTipSha) {
+/** SSH-signed C/T authority train (product / docs authority PRs). */
+function verifySignedAuthorityTrain(ops, authorityTipSha) {
   const T = exactSha(authorityTipSha, 'PR head');
   if (!ops.hasCommit(T)) fail('PR head object is unavailable');
   // C is Git's own answer, not the PR's: T's single parent. This gate reads NOTHING out of a
@@ -87,31 +98,76 @@ function verifyAuthorityTrain(ops, authorityTipSha) {
   }
   // Allow-list, not a checklist — see verify-console-authority-train.mjs for why "all three" is gone.
   if (changed.size === 0) fail('C..T must modify at least one authority document');
-  return { candidateSha: C, authorityTipSha: T };
+  return { candidateSha: C, authorityTipSha: T, trainClass: 'ssh-authority' };
 }
 
 /** A pure seam used by hermetic tests; ops only reads Git object facts. */
-export function verifyBootstrapGraph(ops, { headSha, mergeSha }) {
-  const train = verifyAuthorityTrain(ops, headSha);
-  const { candidateSha: C, authorityTipSha: T } = train;
+export function verifyBootstrapGraph(ops, { headSha, mergeSha, prAuthorLogin, prHeadRef }) {
+  const T = exactSha(headSha, 'PR head');
+  if (!ops.hasCommit(T)) fail('PR head object is unavailable');
+  // Release-please bot tips cannot carry the pinned SSH signature. Admit them only through the
+  // fail-closed bot+docs-only class, and only when the GitHub event author/ref match (commit
+  // headers alone are forgeable by anyone with write access).
+  if (typeof ops.commitIdentity === 'function' && classifyReleasePleaseBotTip(ops, T)) {
+    try {
+      const admitted = verifyReleasePleaseBotTrain(ops, {
+        headSha: T,
+        mergeSha: exactSha(mergeSha, 'PR merge'),
+        prAuthorLogin,
+        prHeadRef,
+        requirePrMeta: true,
+      });
+      return Object.freeze({
+        candidateSha: admitted.candidateSha,
+        integrationTipSha: admitted.integrationTipSha,
+        mergeSha: admitted.mergeSha,
+        trainClass: RELEASE_PLEASE_TRAIN_CLASS,
+      });
+    } catch (error) {
+      mapReleasePleaseError(error);
+    }
+  }
+  const train = verifySignedAuthorityTrain(ops, headSha);
+  const { candidateSha: C, authorityTipSha: tip } = train;
   const M = exactSha(mergeSha, 'PR merge');
   if (!ops.hasCommit(M)) fail('PR merge object is unavailable');
   const mergeParents = ops.parents(M);
-  if (!Array.isArray(mergeParents) || mergeParents.length !== 2 || mergeParents[1] !== T) fail('M must be a two-parent merge whose second parent is T');
-  if (ops.tree(M) !== ops.tree(T) || !ops.sameTreeDiff(M, T)) fail('M tree/diff must equal T exactly');
-  return Object.freeze({ candidateSha: C, integrationTipSha: T, mergeSha: M });
+  if (!Array.isArray(mergeParents) || mergeParents.length !== 2 || mergeParents[1] !== tip) fail('M must be a two-parent merge whose second parent is T');
+  if (ops.tree(M) !== ops.tree(tip) || !ops.sameTreeDiff(M, tip)) fail('M tree/diff must equal T exactly');
+  return Object.freeze({ candidateSha: C, integrationTipSha: tip, mergeSha: M, trainClass: train.trainClass });
 }
 
 /** A pure post-merge seam. It never reads candidate, T, or S executable content. */
-export function verifySquashBinding(ops, { authorityTipSha, squashSha, preMergeBaseSha }) {
-  const train = verifyAuthorityTrain(ops, authorityTipSha);
+export function verifySquashBinding(ops, { authorityTipSha, squashSha, preMergeBaseSha, prAuthorLogin, prHeadRef }) {
+  const T = exactSha(authorityTipSha, 'PR head');
+  let train;
+  if (typeof ops.commitIdentity === 'function' && classifyReleasePleaseBotTip(ops, T)) {
+    try {
+      assertTrustedReleasePleasePrMeta({ prAuthorLogin, prHeadRef });
+    } catch (error) {
+      mapReleasePleaseError(error);
+    }
+    train = {
+      candidateSha: classifyReleasePleaseBotTip(ops, T).candidateSha,
+      authorityTipSha: T,
+      trainClass: RELEASE_PLEASE_TRAIN_CLASS,
+    };
+  } else {
+    train = verifySignedAuthorityTrain(ops, authorityTipSha);
+  }
   const S = exactSha(squashSha, 'squash commit');
   const B = exactSha(preMergeBaseSha, 'pre-merge base');
   if (!ops.hasCommit(S) || !ops.hasCommit(B)) fail('squash commit or pre-merge base object is unavailable');
   const squashParents = ops.parents(S);
   if (!Array.isArray(squashParents) || squashParents.length !== 1 || squashParents[0] !== B) fail('S must be a one-parent squash commit on the trusted pre-merge base');
   if (ops.tree(S) !== ops.tree(train.authorityTipSha) || !ops.sameTreeDiff(S, train.authorityTipSha)) fail('S tree/diff must equal T exactly');
-  return Object.freeze({ candidateSha: train.candidateSha, authorityTipSha: train.authorityTipSha, squashSha: S, preMergeBaseSha: B });
+  return Object.freeze({
+    candidateSha: train.candidateSha,
+    authorityTipSha: train.authorityTipSha,
+    squashSha: S,
+    preMergeBaseSha: B,
+    trainClass: train.trainClass,
+  });
 }
 export function squashBindingReceipt(binding) {
   return Object.freeze({ schema: 'console-squash-binding-v1', verdict: 'TREE_BOUND_HOLD_PRESERVED', release_disposition: 'HOLD', ...binding });
@@ -143,18 +199,43 @@ export function verifyPinnedSshCommit(repo, sha, policy, environment = process.e
   } finally { rmSync(directory, { recursive: true, force: true }); }
 }
 function gitOps(repo) {
-  return { hasCommit: (sha) => gitOk(repo, ['cat-file', '-e', `${sha}^{commit}`]), readFile: (sha, file) => git(repo, ['show', `${sha}:${file}`]), treeEntry: (sha, file) => treeEntry(repo, sha, file), parents: (sha) => git(repo, ['show', '-s', '--format=%P', sha]).trim().split(/\s+/).filter(Boolean), diff: (from, to) => rawDiff(repo, from, to), tree: (sha) => git(repo, ['show', '-s', '--format=%T', sha]).trim(), sameTreeDiff: (left, right) => git(repo, ['diff', '--quiet', '--no-ext-diff', left, right]) === '', verifyCommit: (sha, authority) => verifyPinnedSshCommit(repo, sha, authority.policy) };
+  return {
+    hasCommit: (sha) => gitOk(repo, ['cat-file', '-e', `${sha}^{commit}`]),
+    readFile: (sha, file) => git(repo, ['show', `${sha}:${file}`]),
+    treeEntry: (sha, file) => treeEntry(repo, sha, file),
+    parents: (sha) => git(repo, ['show', '-s', '--format=%P', sha]).trim().split(/\s+/).filter(Boolean),
+    commitIdentity: (sha) => {
+      const raw = git(repo, ['show', '-s', '--format=%an%x00%ae%x00%cn%x00%ce%x00%s', sha]);
+      const [authorName, authorEmail, committerName, committerEmail, subject] = raw.replace(/\n$/, '').split('\0');
+      return { authorName, authorEmail, committerName, committerEmail, subject };
+    },
+    diff: (from, to) => rawDiff(repo, from, to),
+    tree: (sha) => git(repo, ['show', '-s', '--format=%T', sha]).trim(),
+    sameTreeDiff: (left, right) => git(repo, ['diff', '--quiet', '--no-ext-diff', left, right]) === '',
+    verifyCommit: (sha, authority) => verifyPinnedSshCommit(repo, sha, authority.policy),
+  };
 }
 function safeBaseBranch(base) { return base === 'main'; }
 function parseArgs(argv) {
-  const result = {}; for (let index = 0; index < argv.length; index += 2) { const key = argv[index]; const value = argv[index + 1]; if (!['--pr-number', '--head', '--merge', '--base'].includes(key) || value === undefined) fail('usage: --pr-number N --head SHA --merge SHA --base branch'); result[key.slice(2)] = value; }
+  const result = {};
+  for (let index = 0; index < argv.length; index += 2) {
+    const key = argv[index];
+    const value = argv[index + 1];
+    if (!['--pr-number', '--head', '--merge', '--base', '--author', '--head-ref'].includes(key) || value === undefined) {
+      fail('usage: --pr-number N --head SHA --merge SHA --base branch --author LOGIN --head-ref REF');
+    }
+    result[key.slice(2)] = value;
+  }
   if (!/^\d+$/.test(result['pr-number'] ?? '')) fail('PR number is invalid'); exactSha(result.head, 'PR head');
   // `--merge` is informational only. GitHub computes `merge_commit_sha`
   // asynchronously, so it is null on `opened` and stale on `synchronize`; the
   // authoritative value is the `refs/pull/N/merge` ref resolved at fetch time.
   // Validate it only when the event actually supplied one.
   if (result.merge !== undefined && result.merge !== '' && result.merge !== 'null') exactSha(result.merge, 'PR merge');
-  if (!safeBaseBranch(result.base)) fail('PR base is outside the console foundation trust scope'); return result;
+  if (!safeBaseBranch(result.base)) fail('PR base is outside the console foundation trust scope');
+  if (typeof result.author !== 'string' || result.author.trim() === '') fail('PR author is required');
+  if (typeof result['head-ref'] !== 'string' || result['head-ref'].trim() === '') fail('PR head ref is required');
+  return result;
 }
 /**
  * Fetch the pull request's head and synthetic merge objects, and return the
@@ -199,7 +280,7 @@ export function candidateCheckPlan(C, T, M) {
       // This file's OWN regression suite is in the list. It was not, so the highest-privilege
       // script in the repository was the one console script uncovered on the `pull_request_target`
       // path — the path that actually gates the merge.
-      ['node', ['--test', 'scripts/console/validate-console-truth-ledger.test.mjs', 'scripts/console/plan-fanout.test.mjs', 'scripts/console/verify-console-authority-train.test.mjs', 'scripts/console/verify-console-pr-authority-bootstrap.test.mjs']],
+      ['node', ['--test', 'scripts/console/validate-console-truth-ledger.test.mjs', 'scripts/console/plan-fanout.test.mjs', 'scripts/console/verify-console-authority-train.test.mjs', 'scripts/console/verify-console-pr-authority-bootstrap.test.mjs', 'scripts/console/release-please-bot-candidate.test.mjs']],
     ]),
   });
 }
@@ -215,15 +296,52 @@ function runAuthenticatedCandidateChecks(repo, C, T, M) {
   } finally { try { git(repo, ['worktree', 'remove', '--force', candidate]); } catch { rmSync(candidate, { recursive: true, force: true }); } }
 }
 function parseSquashBindingArgs(argv) {
-  const result = {}; for (let index = 0; index < argv.length; index += 2) { const key = argv[index]; const value = argv[index + 1]; if (!['--pr-number', '--head', '--squash', '--base'].includes(key) || value === undefined) fail('usage: squash-binding --pr-number N --head SHA --squash SHA --base main'); result[key.slice(2)] = value; }
-  if (!/^\d+$/.test(result['pr-number'] ?? '')) fail('PR number is invalid'); exactSha(result.head, 'PR head'); exactSha(result.squash, 'squash commit'); if (!safeBaseBranch(result.base)) fail('PR base is outside the protected main trust scope'); return result;
+  const result = {};
+  for (let index = 0; index < argv.length; index += 2) {
+    const key = argv[index];
+    const value = argv[index + 1];
+    if (!['--pr-number', '--head', '--squash', '--base', '--author', '--head-ref'].includes(key) || value === undefined) {
+      fail('usage: squash-binding --pr-number N --head SHA --squash SHA --base main --author LOGIN --head-ref REF');
+    }
+    result[key.slice(2)] = value;
+  }
+  if (!/^\d+$/.test(result['pr-number'] ?? '')) fail('PR number is invalid');
+  exactSha(result.head, 'PR head');
+  exactSha(result.squash, 'squash commit');
+  if (!safeBaseBranch(result.base)) fail('PR base is outside the protected main trust scope');
+  if (typeof result.author !== 'string' || result.author.trim() === '') fail('PR author is required');
+  if (typeof result['head-ref'] !== 'string' || result['head-ref'].trim() === '') fail('PR head ref is required');
+  return result;
 }
-function main() { const args = parseArgs(process.argv.slice(2)); const repo = process.cwd(); const mergeSha = fetchExactPullObjects(repo, args['pr-number'], args.head); const graph = verifyBootstrapGraph(gitOps(repo), { headSha: args.head, mergeSha }); runAuthenticatedCandidateChecks(repo, graph.candidateSha, graph.integrationTipSha, graph.mergeSha); process.stdout.write(`${JSON.stringify({ verdict: 'PASS', ...graph }, null, 2)}\n`); }
+function main() {
+  const args = parseArgs(process.argv.slice(2));
+  const repo = process.cwd();
+  const mergeSha = fetchExactPullObjects(repo, args['pr-number'], args.head);
+  const graph = verifyBootstrapGraph(gitOps(repo), {
+    headSha: args.head,
+    mergeSha,
+    prAuthorLogin: args.author,
+    prHeadRef: args['head-ref'],
+  });
+  // Release-please bot tips have no signed product candidate C to re-check; the class itself is
+  // the admission. SSH trains still run the detached-C validator/planner suite.
+  if (graph.trainClass !== RELEASE_PLEASE_TRAIN_CLASS) {
+    runAuthenticatedCandidateChecks(repo, graph.candidateSha, graph.integrationTipSha, graph.mergeSha);
+  }
+  process.stdout.write(`${JSON.stringify({ verdict: 'PASS', ...graph }, null, 2)}\n`);
+}
 function squashBindingMain() {
-  const args = parseSquashBindingArgs(process.argv.slice(3)); const repo = process.cwd();
+  const args = parseSquashBindingArgs(process.argv.slice(3));
+  const repo = process.cwd();
   const preMergeBaseSha = git(repo, ['rev-parse', 'HEAD']).trim();
   const authorityTipSha = fetchExactAuthorityTip(repo, args['pr-number'], args.head);
-  const binding = verifySquashBinding(gitOps(repo), { authorityTipSha, squashSha: args.squash, preMergeBaseSha });
+  const binding = verifySquashBinding(gitOps(repo), {
+    authorityTipSha,
+    squashSha: args.squash,
+    preMergeBaseSha,
+    prAuthorLogin: args.author,
+    prHeadRef: args['head-ref'],
+  });
   process.stdout.write(`${JSON.stringify(squashBindingReceipt(binding), null, 2)}\n`);
 }
 if (import.meta.url === new URL(`file://${process.argv[1]}`).href) {
