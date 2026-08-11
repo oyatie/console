@@ -2540,6 +2540,7 @@ version = "0.1.0"
 dependencies = [
  "console-governance-domain",
  "console-kernel-core",
+ "console-ontology-canonical-adapter-postgres",
  "console-ontology-canonical-domain",
  "console-orgchange-domain",
  "console-platform-db",

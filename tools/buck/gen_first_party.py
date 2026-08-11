@@ -714,6 +714,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
         'integration': {
             'tests/employment_port_as_runtime_role.rs': 'postgres',
+            'tests/org_reference_surface.rs': 'postgres',
             'tests/preflight_persists_nothing.rs': 'postgres',
         },
     },

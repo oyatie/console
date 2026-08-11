@@ -29,10 +29,11 @@ use console_kernel_core::{
     UserId,
 };
 use console_orgchange_domain::{
-    ApprovalRoleKey, ApprovalStepView, OrgChangeDetail, OrgChangeEventView, OrgChangeKind,
-    OrgChangePage, OrgChangeStatus, OrgChangeSummary, OrgChangeTarget, OrgEntitySummary,
-    OrgProposalOp, PreflightBlocker, PreflightReport, PreflightWarning, SettlementItemView,
-    SettlementKey, StepDecision, TargetKind, validate_proposal,
+    ApprovalRoleKey, ApprovalStepView, CanonicalResolutionStatus, OrgChangeDetail,
+    OrgChangeEventView, OrgChangeKind, OrgChangePage, OrgChangeStatus, OrgChangeSummary,
+    OrgChangeTarget, OrgEntitySummary, OrgProposalOp, OrgUnitReference, PreflightBlocker,
+    PreflightReport, PreflightWarning, SettlementItemView, SettlementKey, StepDecision, TargetKind,
+    validate_proposal,
 };
 use console_platform_db::{
     DbError, PeriodLockDomain, assert_period_open, with_audit, with_audits, with_org_conn,
@@ -775,6 +776,7 @@ async fn apply_ops(
     tx: Tx<'_, '_>,
     org: OrgId,
     actor: UserId,
+    _request_id: Uuid,
     ops: &[OrgProposalOp],
     effective_date: Date,
     now: OffsetDateTime,
@@ -785,15 +787,18 @@ async fn apply_ops(
     assert_change_window_open(tx, effective_date).await?;
     let mut audits = Vec::with_capacity(ops.len());
     for (index, op) in ops.iter().enumerate() {
-        let event = apply_op(tx, org, actor, op, now).await.map_err(|e| {
-            let message = match &e {
-                PgOrgChangeError::Domain(k) | PgOrgChangeError::Frozen(k) => k.message.clone(),
-                PgOrgChangeError::Db(_) => "database rejected the operation".to_owned(),
-            };
-            PgOrgChangeError::from(KernelError::conflict(format!(
-                "proposal op {index} failed: {message}"
-            )))
-        })?;
+        let command_id = Uuid::new_v4();
+        let event = apply_op(tx, org, actor, command_id, op, now)
+            .await
+            .map_err(|e| {
+                let message = match &e {
+                    PgOrgChangeError::Domain(k) | PgOrgChangeError::Frozen(k) => k.message.clone(),
+                    PgOrgChangeError::Db(_) => "database rejected the operation".to_owned(),
+                };
+                PgOrgChangeError::from(KernelError::conflict(format!(
+                    "proposal op {index} failed: {message}"
+                )))
+            })?;
         audits.push(event);
     }
     Ok(audits)
@@ -803,6 +808,7 @@ async fn apply_op(
     tx: Tx<'_, '_>,
     org: OrgId,
     actor: UserId,
+    command_id: Uuid,
     op: &OrgProposalOp,
     now: OffsetDateTime,
 ) -> Result<AuditEvent, PgOrgChangeError> {
@@ -817,6 +823,16 @@ async fn apply_op(
             .bind(now)
             .bind(*org.as_uuid())
             .execute(tx.as_mut())
+            .await?;
+            emit_region_or_branch_binding(
+                tx,
+                org,
+                actor,
+                command_id,
+                console_ontology_canonical_adapter_postgres::org_unit::SOURCE_KIND_REGION,
+                id,
+                name,
+            )
             .await?;
             ("region", id)
         }
@@ -874,6 +890,16 @@ async fn apply_op(
             .bind(now)
             .bind(*org.as_uuid())
             .execute(tx.as_mut())
+            .await?;
+            emit_region_or_branch_binding(
+                tx,
+                org,
+                actor,
+                command_id,
+                console_ontology_canonical_adapter_postgres::org_unit::SOURCE_KIND_BRANCH,
+                id,
+                name,
+            )
             .await?;
             ("branch", id)
         }
@@ -1025,6 +1051,36 @@ async fn apply_op(
         target_id.to_string(),
         now,
     )?)
+}
+
+/// L5-ORG production binding: unambiguous region/branch UUID → OrgUnit owner seam.
+/// Free-text team labels never reach this helper (typed `Uuid` only).
+async fn emit_region_or_branch_binding(
+    tx: Tx<'_, '_>,
+    org: OrgId,
+    actor: UserId,
+    command_id: Uuid,
+    source_kind: &str,
+    legacy_id: Uuid,
+    name: &str,
+) -> Result<(), PgOrgChangeError> {
+    use console_ontology_canonical_adapter_postgres::org_unit::ensure_unambiguous_legacy_binding_in_tx;
+    ensure_unambiguous_legacy_binding_in_tx(
+        tx,
+        org,
+        actor,
+        source_kind,
+        legacy_id,
+        serde_json::json!({ "name": name }),
+        command_id,
+    )
+    .await
+    .map_err(|err| {
+        PgOrgChangeError::from(KernelError::conflict(format!(
+            "org-unit binding for {source_kind}/{legacy_id} failed: {err}"
+        )))
+    })?;
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------
@@ -1620,6 +1676,7 @@ impl PgOrgChangeStore {
                             tx,
                             org,
                             actor,
+                            id,
                             &request.proposal,
                             request.effective_date,
                             now,
@@ -1802,6 +1859,7 @@ impl PgOrgChangeStore {
                     tx,
                     org,
                     actor,
+                    id,
                     &request.proposal,
                     request.effective_date,
                     now,
@@ -1947,6 +2005,9 @@ impl PgOrgChangeStore {
 
     /// The 법인 list = active member orgs of every group the actor holds a
     /// live grant for (fail-closed empty; design gap-analysis §2).
+    ///
+    /// L5-ORG: each row also carries Company/OrgUnit canonical reference fields
+    /// on the preserved `/api/v1/org-entities` namespace (no parallel `/companies`).
     pub async fn org_entities(
         &self,
         actor: UserId,
@@ -1969,15 +2030,87 @@ impl PgOrgChangeStore {
             {
                 by_org.insert(
                     *member.org_id.as_uuid(),
-                    OrgEntitySummary {
-                        org_id: *member.org_id.as_uuid(),
-                        slug: member.slug,
-                        name: member.name,
-                        status: member.status,
-                    },
+                    (member.slug, member.name, member.status, member.org_id),
                 );
             }
         }
-        Ok(by_org.into_values().collect())
+        let mut out = Vec::with_capacity(by_org.len());
+        for (org_uuid, (slug, name, status, org_id)) in by_org {
+            let company_resolved: bool = sqlx::query_scalar(
+                "SELECT EXISTS(SELECT 1 FROM company_revisions WHERE org_id = $1)",
+            )
+            .bind(org_uuid)
+            .fetch_one(&self.pool)
+            .await?;
+            let org_units = load_org_unit_references(&self.pool, org_id).await?;
+            out.push(OrgEntitySummary {
+                org_id: org_uuid,
+                slug,
+                name,
+                status,
+                company_id: org_uuid,
+                company_resolution_status: if company_resolved {
+                    CanonicalResolutionStatus::Resolved
+                } else {
+                    CanonicalResolutionStatus::Unbound
+                },
+                org_units,
+            });
+        }
+        Ok(out)
     }
+}
+
+/// Region/branch rows for a tenant, LEFT JOIN'd to `org_unit_source_bindings`.
+/// Unbound legacy rows stay visible with `org_unit_id: None` (gap is observable).
+async fn load_org_unit_references(
+    pool: &PgPool,
+    org_id: OrgId,
+) -> Result<Vec<OrgUnitReference>, PgOrgChangeError> {
+    let org = *org_id.as_uuid();
+    let rows = sqlx::query(
+        "SELECT source_kind, source_id, org_unit_id, resolution FROM ( \
+             SELECT 'region'::text AS source_kind, \
+                    r.id::text AS source_id, \
+                    b.org_unit_id AS org_unit_id, \
+                    CASE WHEN b.org_unit_id IS NULL THEN 'UNBOUND' ELSE 'RESOLVED' END AS resolution \
+             FROM regions r \
+             LEFT JOIN org_unit_source_bindings b \
+               ON b.org_id = r.org_id \
+              AND b.source_kind = 'region' \
+              AND b.source_id = r.id::text \
+             WHERE r.org_id = $1 \
+             UNION ALL \
+             SELECT 'branch'::text, \
+                    br.id::text, \
+                    b.org_unit_id, \
+                    CASE WHEN b.org_unit_id IS NULL THEN 'UNBOUND' ELSE 'RESOLVED' END \
+             FROM branches br \
+             LEFT JOIN org_unit_source_bindings b \
+               ON b.org_id = br.org_id \
+              AND b.source_kind = 'branch' \
+              AND b.source_id = br.id::text \
+             WHERE br.org_id = $1 \
+         ) ref \
+         ORDER BY source_kind, source_id",
+    )
+    .bind(org)
+    .fetch_all(pool)
+    .await?;
+
+    let mut refs = Vec::with_capacity(rows.len());
+    for row in rows {
+        let status: String = row.get("resolution");
+        let resolution_status = match status.as_str() {
+            "RESOLVED" => CanonicalResolutionStatus::Resolved,
+            _ => CanonicalResolutionStatus::Unbound,
+        };
+        refs.push(OrgUnitReference {
+            org_unit_id: row.get("org_unit_id"),
+            source_kind: row.get("source_kind"),
+            source_id: row.get("source_id"),
+            resolution_status,
+        });
+    }
+    Ok(refs)
 }

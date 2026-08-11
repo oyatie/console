@@ -542,6 +542,29 @@ pub struct OrgChangePage {
     pub total: i64,
 }
 
+/// How a legacy org-structure row resolves onto a canonical Company/OrgUnit id.
+///
+/// `Ambiguous` is reserved for name/text resolution attempts: it MUST NOT be
+/// treated as authority to mint a binding (L5-ORG / handoff P5).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CanonicalResolutionStatus {
+    Resolved,
+    Unbound,
+    Ambiguous,
+}
+
+/// One legacy region/branch (or already-bound source) projected onto OrgUnit.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrgUnitReference {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub org_unit_id: Option<Uuid>,
+    pub source_kind: String,
+    pub source_id: String,
+    pub resolution_status: CanonicalResolutionStatus,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrgEntitySummary {
@@ -549,6 +572,13 @@ pub struct OrgEntitySummary {
     pub slug: String,
     pub name: String,
     pub status: String,
+    /// Tenant identity IS the Company (`organizations.id`); never a parallel
+    /// `/companies` id space.
+    pub company_id: Uuid,
+    pub company_resolution_status: CanonicalResolutionStatus,
+    /// Region/branch → OrgUnit projections for this tenant (unbound rows stay
+    /// visible with `orgUnitId: null` so clients can see gaps deny-by-field).
+    pub org_units: Vec<OrgUnitReference>,
 }
 
 #[cfg(test)]

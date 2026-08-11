@@ -15,6 +15,9 @@ console-orgchange-domain = { path = "../domain" }
 # depended on by path. Required, not optional: this crate is named as
 # `ObjectKey::Employment`'s owner, and `CanonicalPort` is declared there.
 console-ontology-canonical-domain = { path = "../../ontology/canonical-domain" }
+# L5-ORG: apply-path region/branch binding calls the OrgUnit owner seam
+# (`ensure_unambiguous_legacy_binding_in_tx`) so writer-ownership stays total.
+console-ontology-canonical-adapter-postgres = { path = "../../ontology/canonical-adapter-postgres" }
 console-platform-db = { workspace = true }
 console-platform-group = { path = "../../platform/group" }
 console-platform-request-context = { workspace = true }
