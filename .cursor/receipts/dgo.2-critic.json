@@ -1,0 +1,52 @@
+{
+  "verdict": "APPROVE",
+  "tipSha": "54a5a10842082720c59e09aae9a9c6edbb387990",
+  "candidateSha": "273aa5383cade4375107edd5c227bf738d4aa90c",
+  "baseSha": "be7b3e14b2f126e8c24a2bf99758d0de00aaa23d",
+  "lane": "console-dgo.2",
+  "role": "critic",
+  "lensesApplied": [
+    "ORACLE INTEGRITY",
+    "PERIPHERAL DRIFT",
+    "ENFORCEMENT PLACEMENT",
+    "FALSE GREEN",
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Red Team",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "findings": [
+    {
+      "severity": "minor",
+      "claim": "Implementer receipt status=done lists only git/ls/validate commands \u2014 no cargo_needs_postgres / person_port_as_runtime_role execution \u2014 so the build receipt alone cannot certify the equality pin.",
+      "failureScenario": "A future tip that reverts person_id=employee_id while keeping prose could still validate the implementer receipt schema and look done until a critic or CI runs the itest.",
+      "location": ".cursor/receipts/dgo.2.json commands[]",
+      "provenByExecution": true,
+      "ownerLease": false
+    },
+    {
+      "severity": "minor",
+      "claim": "a_second_binding_for_the_same_employee_is_refused now proves binding uniqueness via Create(unbound)+Revise rather than a second Create; the comment that duplicate Create fails at persons_pkey is not a separate executable pin.",
+      "failureScenario": "A Create-path change that soft-fails or upserts persons while leaving Revise uniqueness intact would not trip this renamed scenario (equality pin would still catch random ids).",
+      "location": "backend/crates/ontology/canonical-adapter-postgres/tests/person_port_as_runtime_role.rs:a_second_binding_for_the_same_employee_is_refused",
+      "provenByExecution": false,
+      "ownerLease": false
+    }
+  ],
+  "notes": "Standing lenses on packaging tip b2718c9cb / product 273aa5383 vs base be7b3e14b. Diff is only person.rs + person_port_as_runtime_role.rs; migration tree untouched (0213 present; no 0217 added \u2014 we1 slot preserved). ORACLE: trusted equality + unbound-despite-name/phone/org pins present; 16/16 green after clean rebuild via `bash tools/ci/cargo_needs_postgres.sh --only ontology-canonical-adapter-postgres-person-port-as-runtime-role-pg --num-threads=1`. Hostile evidence: first run against stale incremental rlib (strings showed only old `INSERT INTO persons (org_id)`) failed both equality asserts; after fingerprint wipe, rlib contained `(org_id, id)` INSERT and suite passed \u2014 mutate/remove of deterministic bind goes red. No #[ignore]/ no deleted controls; second-binding rewrite preserves employee_person_bindings_pkey refuse. PERIPHERAL: module docs + query docs updated; no OpenAPI/docs/current/migrations in leaf. ENFORCEMENT: write path sets persons.id from explicit employee_id only; binding insert gated on Some(employee_id); examined-zero fails via assert_eq on person_id/employee_id and binding counts. FALSE GREEN: no --workflow-only; critic executed real Postgres itest (implementer commands gap filed minor). Red Team: no name/phone/org inference path in person.rs (only employee_id match arm); Revise further-employment person_id\u2260employee_id remains intentional. No blocker / no proven major. Challenges: (1) Chesterton \u2014 rewriting second-binding from Create+Create to Revise was required because person_id=employee_id makes duplicate Create fail at persons_pkey before bindings_pkey; kept uniqueness pin. (2) Cartesian \u2014 packaging tip headSha\u2260product tip; product commit is ancestor of packaging tip and is the reviewed leaf. | tip-bound on heal after restack onto eca122ad0; APPROVE class retained (27af243c).",
+  "followUps": [
+    "console-e0v still owns broader L4-PORT-PE Person port proof if not closed",
+    "optional: add explicit duplicate-Create persons_pkey pin if Create-path refuse messaging becomes a contract",
+    "process: critics/CI should treat missing SQL string in rlib as stale incremental \u2014 wipe fingerprint before trusting red/green on SQL-literal changes"
+  ],
+  "commandsRun": [
+    "git -C .worktrees/lane-console-dgo.2 rev-parse HEAD",
+    "git -C .worktrees/lane-console-dgo.2 show --stat 273aa5383cade4375107edd5c227bf738d4aa90c",
+    "bash tools/ci/cargo_needs_postgres.sh --only ontology-canonical-adapter-postgres-person-port-as-runtime-role-pg --num-threads=1",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs --schema critic .worktrees/lane-console-dgo.2/.cursor/receipts/dgo.2-critic.json"
+  ],
+  "productTip": "eba06295b7a2dd2f446b5b2b8d583073151f4169",
+  "headSha": "54a5a10842082720c59e09aae9a9c6edbb387990",
+  "lineageNote": "Product eba06295b (cherry-pick 560261fcb); critic APPROVE from tip b2718c9cb lineage applies to same person_id=employee_id binding."
+}

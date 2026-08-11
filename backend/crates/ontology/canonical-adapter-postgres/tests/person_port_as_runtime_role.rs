@@ -509,6 +509,89 @@ async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_
     );
 }
 
+/// P5 handoff: a trusted uniquely-resolved employee binds with
+/// `person_id = employee_id`. A random UUID here would break the deterministic
+/// identity map console-dgo.1 reads.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn trusted_uniquely_resolved_employee_binds_with_person_id_equal_employee_id(
+    owner_pool: PgPool,
+) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let employee = seed_employee(&owner_pool, ORG, "trusted-1").await;
+
+    let receipt = execute(
+        &port,
+        command(org, actor, create(Some(employee), "신뢰직원")),
+    )
+    .await
+    .unwrap();
+    let person_id = person_of(&receipt);
+
+    assert_eq!(
+        person_id, employee,
+        "trusted uniquely-resolved create must use person_id = employee_id; got person={person_id} employee={employee}"
+    );
+
+    let bound: Uuid = sqlx::query_scalar(
+        "SELECT person_id FROM employee_person_bindings \
+         WHERE org_id = $1 AND employee_id = $2",
+    )
+    .bind(ORG)
+    .bind(employee)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(bound, employee);
+}
+
+/// Duplicate / review-required imports stay unbound: omitting `employee_id`
+/// must create the person with ZERO binding rows, even when attributes carry
+/// name/phone/org text that a fuzzy matcher could abuse.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn create_without_employee_id_stays_unbound_despite_name_phone_org_attributes(
+    owner_pool: PgPool,
+) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    // A peer employee whose name/phone match the attributes below — tempting
+    // bait for an inference path. The port must ignore it.
+    let _peer = seed_employee(&owner_pool, ORG, "동명이인-peer").await;
+
+    let query = PersonQuery::Create {
+        employee_id: None,
+        attributes: json!({
+            "legal_name": "동명이인",
+            "phone": "+82-10-1234-5678",
+            "org_text": "ACME / 서울지사",
+            "source_key": "동명이인-peer",
+        }),
+    };
+    let receipt = execute(&port, command(org, actor, query)).await.unwrap();
+    let person_id = person_of(&receipt);
+
+    let bindings: i64 = sqlx::query_scalar(
+        "SELECT count(*)::bigint FROM employee_person_bindings WHERE org_id = $1",
+    )
+    .bind(ORG)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        bindings, 0,
+        "review-required / unbound create must never invent a binding from name/phone/org text"
+    );
+
+    let person_bindings: i64 = sqlx::query_scalar(
+        "SELECT count(*)::bigint FROM employee_person_bindings \
+         WHERE org_id = $1 AND person_id = $2",
+    )
+    .bind(ORG)
+    .bind(person_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(person_bindings, 0);
+}
+
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn a_second_binding_for_the_same_employee_is_refused(owner_pool: PgPool) {
     let (org, actor, port) = fixture(&owner_pool).await;
@@ -518,10 +601,20 @@ async fn a_second_binding_for_the_same_employee_is_refused(owner_pool: PgPool) {
         .await
         .unwrap();
     let person_id = person_of(&first);
+    assert_eq!(person_id, employee);
+
+    // A second Create with the same employee_id fails closed at persons_pkey
+    // under person_id = employee_id. Prove the BINDING uniqueness independently:
+    // an unbound person revised to claim the already-bound employee is refused
+    // by employee_person_bindings_pkey.
+    let other = execute(&port, command(org, actor, create(None, "동명이인")))
+        .await
+        .unwrap();
+    let other_person = person_of(&other);
 
     let refused = execute(
         &port,
-        command(org, actor, create(Some(employee), "동명이인")),
+        command(org, actor, revise(other_person, Some(employee), "동명이인")),
     )
     .await
     .unwrap_err();
@@ -532,7 +625,7 @@ async fn a_second_binding_for_the_same_employee_is_refused(owner_pool: PgPool) {
         "the primary key (org_id, employee_id) must be what refuses it; got {message}"
     );
 
-    // The refused command rolled back whole: one binding, no orphan person.
+    // The refused command rolled back whole: one binding, no orphan rebind.
     let bound: Vec<Uuid> = sqlx::query_scalar(
         "SELECT person_id FROM employee_person_bindings \
          WHERE org_id = $1 AND employee_id = $2",
@@ -549,7 +642,10 @@ async fn a_second_binding_for_the_same_employee_is_refused(owner_pool: PgPool) {
         .fetch_one(&owner_pool)
         .await
         .unwrap();
-    assert_eq!(persons, 1, "the refused command must persist no person");
+    assert_eq!(
+        persons, 2,
+        "the refused revise must leave both persons; the second create already committed"
+    );
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]

@@ -34,6 +34,16 @@
 //! ONE person stays representable on purpose, because that is what the
 //! distinct-natural-person four-eyes bar has to detect.
 //!
+//! # Deterministic bindings (P5 / console-dgo.2)
+//!
+//! A trusted uniquely-resolved employee is bound with `person_id = employee_id`:
+//! `PersonQuery::Create` with `Some(employee_id)` inserts `persons.id` equal to
+//! that employee id, then writes the binding row. Omitting `employee_id`
+//! (duplicate / review-required imports) creates the person with **no** binding.
+//! Bindings are never inferred from name, phone, org text, or other attributes —
+//! only an explicit `employee_id` on the command creates a row in
+//! `employee_person_bindings`.
+//!
 //! The TRIGGER is the whole of that enforcement, not a privilege:
 //! `ops/postgres-reconcile-topology.sh` grants `console_rt` UPDATE and DELETE on
 //! every table a migration creates, which 0213's own header states, so the
@@ -66,8 +76,10 @@ use uuid::Uuid;
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(tag = "target")]
 pub enum PersonQuery {
-    /// `people.create_person`. Optionally binds the new person to an employee
-    /// record in the same command.
+    /// `people.create_person`. When `employee_id` is set (trusted uniquely
+    /// resolved), the new person's id **is** that employee id and a binding
+    /// row is written. When omitted, the person is created unbound — attributes
+    /// never invent a binding.
     #[serde(rename = "people.create_person")]
     Create {
         #[serde(default)]
@@ -75,7 +87,8 @@ pub enum PersonQuery {
         attributes: serde_json::Value,
     },
     /// `people.revise_person`. Appends a revision, and optionally binds a
-    /// FURTHER employee record to the same natural person.
+    /// FURTHER employee record to the same natural person (second employment
+    /// of one person — person_id need not equal that further employee_id).
     #[serde(rename = "people.revise_person")]
     Revise {
         person_id: Uuid,
@@ -219,12 +232,26 @@ impl PgPersonPort {
 
         let target = command.query.target();
         let (person_id, version) = match &command.query {
-            PersonQuery::Create { .. } => {
-                let person_id: Uuid =
-                    sqlx::query_scalar("INSERT INTO persons (org_id) VALUES ($1) RETURNING id")
+            PersonQuery::Create { employee_id, .. } => {
+                // Trusted uniquely-resolved: person_id = employee_id (P5).
+                // Unbound / review-required: omit employee_id → random id, no binding.
+                let person_id: Uuid = match employee_id {
+                    Some(trusted) => {
+                        sqlx::query_scalar(
+                            "INSERT INTO persons (org_id, id) VALUES ($1, $2) RETURNING id",
+                        )
                         .bind(org)
+                        .bind(trusted)
                         .fetch_one(&mut *tx)
-                        .await?;
+                        .await?
+                    }
+                    None => {
+                        sqlx::query_scalar("INSERT INTO persons (org_id) VALUES ($1) RETURNING id")
+                            .bind(org)
+                            .fetch_one(&mut *tx)
+                            .await?
+                    }
+                };
                 (person_id, 1_i64)
             }
             PersonQuery::Revise { person_id, .. } => {

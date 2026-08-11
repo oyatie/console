@@ -1,0 +1,38 @@
+{
+  "lane": "console-dgo.2",
+  "role": "implementer",
+  "status": "done",
+  "headSha": "273aa5383cade4375107edd5c227bf738d4aa90c",
+  "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-console-dgo.2",
+  "branch": "lane/console-dgo.2",
+  "baseSha": "be7b3e14b2f126e8c24a2bf99758d0de00aaa23d",
+  "summary": "0213 person tables already on main; added deterministic trusted binding person_id=employee_id in canonical-adapter-postgres person port + runtime-role pin. No new migration (0217 reserved by we1).",
+  "filesChanged": [
+    "backend/crates/ontology/canonical-adapter-postgres/src/person.rs",
+    "backend/crates/ontology/canonical-adapter-postgres/tests/person_port_as_runtime_role.rs"
+  ],
+  "redBaseline": "Trusted uniquely-resolved employees lacked person_id=employee_id deterministic bind semantics / pin coverage on tip be7b3e14b despite 0213 tables existing.",
+  "verification": "Tip 273aa5383 signed G changes person.rs (+tests). Migration 0213 retained; no 0216/0217/0218 added.",
+  "commands": [
+    "git -C .worktrees/lane-console-dgo.2 log -1 --format='%H %G? %s'",
+    "git -C .worktrees/lane-console-dgo.2 show --stat HEAD",
+    "ls backend/crates/platform/db/migrations/0213_create_canonical_person_tables.sql",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs .worktrees/lane-console-dgo.2/.cursor/receipts/dgo.2.json"
+  ],
+  "contractBreaches": "Binding uses employee_id equality only; no name/phone/org inference. Does not implement L4-PORT-PE (console-e0v).",
+  "enforcementPlacement": "WHERE: person port adapter + person_port_as_runtime_role itest (subject exists). Finest: trusted bind path sets person_id=employee_id. Examined-zero fails: runtime-role test asserts bind outcome.",
+  "peripheralsUpdated": "person_port_as_runtime_role.rs pin extended; no docs/current; no OpenAPI.",
+  "followUps": [
+    "console-e0v L4-PORT-PE may still own broader Person port proof",
+    "critic not yet run on 273aa5383"
+  ],
+  "lensesApplied": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Red Team",
+    "Blast-radius / cell-based"
+  ],
+  "migrationUsed": "none \u2014 0213 already present",
+  "completedBy": "admit-coordinator parent after stalled implementer 8eb77d64 (product tip already signed+pushed)"
+}
