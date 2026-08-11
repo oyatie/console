@@ -41,6 +41,16 @@ fn run_gate(workspace_dir: &Path) {
         }
     }
 
+    // ADR-0030 §8 residual: Ui classification + source-level smuggled UI surfaces.
+    // Examined-zero / unreadable sources fail closed (Err → exit 1).
+    match console_gate_layer_boundary::check_ui_surfaces(&metadata) {
+        Ok(ui_violations) => result.violations.extend(ui_violations),
+        Err(e) => {
+            eprintln!("ERROR: ui-surface scan: {e}");
+            std::process::exit(1);
+        }
+    }
+
     if result.passed() {
         eprintln!(
             "console-gate-layer-boundary: PASSED — {} workspace crates checked, 0 violations",

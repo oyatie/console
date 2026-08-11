@@ -4,7 +4,9 @@
 //! Tests return `Result<(), Box<dyn std::error::Error>>` so they can use `?`
 //! without triggering the `expect_used` / `unwrap_used` / `panic` lints.
 
-use console_gate_layer_boundary::{Layer, ViolationKind, check, classify_crate, load_metadata};
+use console_gate_layer_boundary::{
+    Layer, ViolationKind, check, check_ui_surfaces, classify_crate, load_metadata,
+};
 use std::fs;
 use std::path::PathBuf;
 
@@ -616,6 +618,196 @@ workspace = true
         result.passed(),
         "rest → console-contracts must be allowed, got: {:#?}",
         result.violations
+    );
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// ADR-0030 §8 residual (console-cvh): Ui classification + smuggled HTML sighting
+// ---------------------------------------------------------------------------
+
+#[test]
+fn gate_detects_html_smuggled_inside_existing_rest_crate() -> Result<(), Box<dyn std::error::Error>>
+{
+    let ws = temp_workspace("smuggled-html")?;
+
+    write_file(
+        &ws.join("Cargo.toml"),
+        r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/rest"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+    )?;
+
+    let rest_dir = ws.join("crates/demo/rest");
+    write_file(
+        &rest_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-rest"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+    )?;
+    // Hostile: browser HTML served from a conforming -rest crate with no -ui
+    // name and no leptos dependency — invisible to route-inventory's build-graph
+    // tiers, which is exactly the 9ze residual this lane closes.
+    write_file(
+        &rest_dir.join("src/lib.rs"),
+        "use axum::response::Html;\n\
+         pub async fn page() -> Html<&'static str> {\n\
+             Html(\"<!DOCTYPE html><html><body>payroll</body></html>\")\n\
+         }\n",
+    )?;
+
+    let (metadata, edition) = load_metadata(&ws)?;
+    let layer_result = check(&metadata, &edition);
+    assert!(
+        layer_result.passed(),
+        "manifest/layer checks alone must stay green for a conforming -rest crate; got: {:#?}",
+        layer_result.violations
+    );
+
+    let ui_violations = check_ui_surfaces(&metadata)?;
+    let smuggled = ui_violations
+        .iter()
+        .find(|v| v.kind == ViolationKind::SmuggledUiSurface);
+    assert!(
+        smuggled.is_some(),
+        "expected SmuggledUiSurface for axum Html inside -rest, got: {ui_violations:#?}"
+    );
+    let detail = smuggled.map(|v| v.detail.clone()).unwrap_or_default();
+    assert!(
+        detail.contains("console-demo-rest"),
+        "violation must name the smuggling crate, got: {detail}"
+    );
+    assert!(
+        detail.contains("ADR-0030 §8"),
+        "violation must cite ADR-0030 §8, got: {detail}"
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_detects_planning_only_ui_crate_not_adapter_fallback()
+-> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("planning-ui")?;
+
+    write_file(
+        &ws.join("Cargo.toml"),
+        r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/ui"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+    )?;
+
+    let ui_dir = ws.join("crates/demo/ui");
+    write_file(
+        &ui_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-ui"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(&ui_dir.join("src/lib.rs"), "// empty ui shell\n")?;
+
+    assert_eq!(
+        classify_crate(
+            "console-demo-ui",
+            &ui_dir.join("Cargo.toml").to_string_lossy(),
+            &ws.to_string_lossy()
+        ),
+        Layer::Ui
+    );
+
+    let (metadata, _edition) = load_metadata(&ws)?;
+    let ui_violations = check_ui_surfaces(&metadata)?;
+    let planning = ui_violations
+        .iter()
+        .find(|v| v.kind == ViolationKind::PlanningOnlyUiCrate);
+    assert!(
+        planning.is_some(),
+        "expected PlanningOnlyUiCrate, got: {ui_violations:#?}"
+    );
+    assert_eq!(
+        planning.map(|v| v.crate_name.as_str()),
+        Some("console-demo-ui")
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_passes_clean_rest_crate_without_ui_markers() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("clean-rest-ui")?;
+
+    write_file(
+        &ws.join("Cargo.toml"),
+        r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/rest"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+    )?;
+
+    let rest_dir = ws.join("crates/demo/rest");
+    write_file(
+        &rest_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-rest"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(
+        &rest_dir.join("src/lib.rs"),
+        "// JSON REST handler — no browser markup\n\
+         pub fn health() -> &'static str { \"ok\" }\n",
+    )?;
+
+    let (metadata, edition) = load_metadata(&ws)?;
+    assert!(check(&metadata, &edition).passed());
+    let ui_violations = check_ui_surfaces(&metadata)?;
+    assert!(
+        ui_violations.is_empty(),
+        "clean -rest must not trip ui-surface scan, got: {ui_violations:#?}"
     );
     Ok(())
 }
