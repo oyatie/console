@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Deny destructive / multi-writer git that caused Bun-rewrite and console collisions.
+# Also deny cross-agent pkill/killall of git and unlock-by-rm (process.git-pkill-lock-race).
 set -euo pipefail
 INPUT="$(cat || true)"
 CMD="$(python3 -c 'import json,sys
@@ -20,7 +21,77 @@ allow() {
   exit 0
 }
 
-# Integration owner / explicit SKIP escapes
+# ---------------------------------------------------------------------------
+# process.git-pkill-lock-race — apply BEFORE CURSOR_ALLOW_GIT_DANGEROUS.
+# Agents were unsticking hung shells with `pkill -f git` / `killall git` /
+# `rm …/index.lock`, racing sibling writers on the shared hub .git.
+# Escape only: CURSOR_ALLOW_GIT_PKILL=1 (human operator), or the allowlisted
+# safe-stale helper below.
+# ---------------------------------------------------------------------------
+_PKILL_MSG='BASE_LOCK: process.git-pkill-lock-race — do not pkill/killall/kill-by-pattern git (or git hooks) across worktrees. Wait/timeout/flock; escalate. Stale locks: bash scripts/cursor/safe-stale-git-lock.sh <lock-path>. Escape: CURSOR_ALLOW_GIT_PKILL=1 (operator only).'
+_LOCK_RM_MSG='BASE_LOCK: process.git-pkill-lock-race — do not rm git *.lock / gc.pid. Use bash scripts/cursor/safe-stale-git-lock.sh <lock-path> (PID dead + age gate). Escape: CURSOR_ALLOW_GIT_PKILL=1 (operator only).'
+
+# Escape if env is set on the hook process OR assigned in the shell command
+# (Cursor may not forward prefixed assignments into the hook environment).
+if [[ "${CURSOR_ALLOW_GIT_PKILL:-}" != "1" ]] \
+  && ! printf '%s' "$CMD" | grep -Eq '(^|[[:space:];|&])CURSOR_ALLOW_GIT_PKILL=1([[:space:];|&]|$)'; then
+  # Allow the safe helper itself when invoked as a command (not nested after pkill).
+  if printf '%s' "$CMD" | grep -Eq '(^|[[:space:];|&])(bash[[:space:]]+)?([^[:space:]]*/)?scripts/cursor/safe-stale-git-lock\.sh([[:space:]]|$)' \
+    && ! printf '%s' "$CMD" | grep -Eq '(^|[[:space:];|&])(pkill|killall)([[:space:]]|$)'; then
+    :
+  else
+    # Collapse newlines so multi-line agent shells still match.
+    # Match pkill/killall/pgrep as COMMANDS (word boundaries), never as path substrings
+    # like lane-console-pkill-lock-ban/.../git-lock-enforcer.sh.
+    _FLAT="$(printf '%s' "$CMD" | tr '\n' ' ')"
+    _HAS_PKILL=0
+    _HAS_KILLALL=0
+    _HAS_PGREP=0
+    _HAS_KILL_CMD=0
+    printf '%s' "$_FLAT" | grep -Eq '(^|[[:space:];|&])pkill([[:space:]]|$)' && _HAS_PKILL=1
+    printf '%s' "$_FLAT" | grep -Eq '(^|[[:space:];|&])killall([[:space:]]|$)' && _HAS_KILLALL=1
+    printf '%s' "$_FLAT" | grep -Eq '(^|[[:space:];|&])pgrep([[:space:]]|$)' && _HAS_PGREP=1
+    printf '%s' "$_FLAT" | grep -Eq '(^|[[:space:];|&])kill([[:space:]]|$)' && _HAS_KILL_CMD=1
+
+    _GIT_TARGET=0
+    # Args / patterns that mean "aimed at git or shared console git state".
+    if printf '%s' "$_FLAT" | grep -Eqi \
+      '(^|[[:space:]-/'\''\"])git([[:space:]'\''\"/]|$)|git-lock|hooks/git|Cellar/git|/opt/homebrew[^;&|]*bin/git|admission-[A-Za-z0-9_-]+|/\.worktrees/'; then
+      _GIT_TARGET=1
+    fi
+
+    if [[ "$_HAS_PKILL" -eq 1 || "$_HAS_KILLALL" -eq 1 ]]; then
+      if [[ "$_GIT_TARGET" -eq 1 ]]; then
+        deny "$_PKILL_MSG"
+      fi
+      # killall git / pkill git with bare name
+      if printf '%s' "$_FLAT" | grep -Eqi '(^|[[:space:];|&])(pkill|killall)[[:space:]]+(-[A-Za-z0-9]+[[:space:]]+)*[`'\''\"]?git[`'\''\"]?([[:space:]]|$)'; then
+        deny "$_PKILL_MSG"
+      fi
+    fi
+
+    # pgrep … git piped/looped into kill — diagnostic pgrep alone is fine.
+    if [[ "$_HAS_PGREP" -eq 1 && "$_HAS_KILL_CMD" -eq 1 && "$_GIT_TARGET" -eq 1 ]]; then
+      deny "$_PKILL_MSG"
+    fi
+    # pgrep -x git is almost always a prelude to killing every git on the machine.
+    if printf '%s' "$_FLAT" | grep -Eq '(^|[[:space:];|&])pgrep[[:space:]]+(-[A-Za-z0-9]+[[:space:]]+)*-x[[:space:]]+git([[:space:]]|$)'; then
+      deny "$_PKILL_MSG"
+    fi
+    # lsof -t <git-binary> | kill
+    if printf '%s' "$_FLAT" | grep -Eqi 'lsof[[:space:]]+-t[^;&|]*git[^;&|]*(^|[[:space:];|&])kill([[:space:]]|$)'; then
+      deny "$_PKILL_MSG"
+    fi
+
+    # Raw unlock-by-rm of git lock files (command-shaped rm).
+    if printf '%s' "$_FLAT" | grep -Eq \
+      '(^|[[:space:];|&])rm[[:space:]]+[^;&|]*index\.lock|(^|[[:space:];|&])rm[[:space:]]+[^;&|]*HEAD\.lock|(^|[[:space:];|&])rm[[:space:]]+[^;&|]*gc\.pid|(^|[[:space:];|&])rm[[:space:]]+[^;&|]*MERGE_RR\.lock|(^|[[:space:];|&])rm[[:space:]]+[^;&|]*/\.git/[^;&|]*\.lock'; then
+      deny "$_LOCK_RM_MSG"
+    fi
+  fi
+fi
+
+# Integration owner / explicit SKIP escapes (other destructive git)
 if [[ "${CURSOR_ALLOW_GIT_DANGEROUS:-}" == "1" ]]; then
   allow
 fi

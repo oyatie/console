@@ -25,7 +25,7 @@ Two instruction tiers exist. **Tier 1 (north-star):** the programme SSOT plan �
 - **Worktrees live under `<hub>/.worktrees/<name>`** (not sibling `../console-lane-*`). Sibling paths are outside the Cursor workspace and force allow-edit prompts. Prefer `scripts/cursor/provision-lane-worktree.sh`.
 - Evidence keyed to THIS tip SHA; commands recorded verbatim (no empty strings).
 - Friction (path outside roots, hub collision, hook block, policy gap): **STOP → CAPTURE (worktree, tip, paths, exact error) → ELEVATE**. No workaround commits, no bypass, no scope expansion.
-- Forbidden always: mm-role/CLI critics, `*-fast` model slugs, oracle weakening, `#[ignore]`, update-branch button, unsigned commits on authority paths, manifest/index on T.
+- Forbidden always: mm-role/CLI critics, `*-fast` model slugs, oracle weakening, `#[ignore]`, update-branch button, unsigned commits on authority paths, manifest/index on T, **`pkill`/`killall` of git across worktrees**, **`rm` of `index.lock`/`gc.pid`** (`process.git-pkill-lock-race` — wait or `scripts/cursor/safe-stale-git-lock.sh`).
 
 ## D. Close (before you exit)
 

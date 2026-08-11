@@ -41,3 +41,4 @@ On process/hub/envelope/CI-policy friction (path outside owned roots, hub collis
 - Any `*-fast` model slug for sub-dispatch (never pay extra inference for speed)
 - `--workflow-only`, bare `cargo test`, oracle weakening, `gh pr update-branch`, bare `--force`
 - Second fix round to invent receipt fields or chase unproven Codex P2s
+- **`pkill`/`killall`/`pgrep|kill` of git** (or `rm` of `index.lock` / `gc.pid`) to unstick a hung shell — that races sibling writers on the hub `.git` (`process.git-pkill-lock-race`). Wait, timeout, or `bash scripts/cursor/safe-stale-git-lock.sh <lock>`; elevate. Do not set `CURSOR_ALLOW_GIT_DANGEROUS` to bypass this.
