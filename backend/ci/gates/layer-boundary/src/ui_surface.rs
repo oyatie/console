@@ -168,10 +168,10 @@ fn rust_sources_under(root: &Path) -> Result<Vec<PathBuf>, String> {
                     continue;
                 }
                 stack.push(path);
-            } else if file_type.is_file() {
-                if path.extension().and_then(|s| s.to_str()) == Some("rs") {
-                    out.push(path);
-                }
+            } else if file_type.is_file()
+                && path.extension().and_then(|s| s.to_str()) == Some("rs")
+            {
+                out.push(path);
             }
         }
     }
@@ -188,9 +188,9 @@ mod tests {
     fn needles_include_view_macro_and_axum_html() {
         let needles = ui_surface_needles();
         let joined: Vec<&str> = needles.iter().map(|(_, n)| n.as_str()).collect();
-        assert!(joined.iter().any(|n| *n == "view!"));
-        assert!(joined.iter().any(|n| *n == "axum::response::Html"));
-        assert!(joined.iter().any(|n| *n == "Html("));
+        assert!(joined.contains(&"view!"));
+        assert!(joined.contains(&"axum::response::Html"));
+        assert!(joined.contains(&"Html("));
     }
 
     #[test]
