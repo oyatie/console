@@ -1,0 +1,55 @@
+{
+  "verdict": "APPROVE",
+  "lane": "console-kwm",
+  "role": "critic",
+  "tipSha": "fe10d8a4d64e2670640251efc80cfeb0c726019e",
+  "baseSha": "be7b3e14b2f126e8c24a2bf99758d0de00aaa23d",
+  "candidateSha": "fe10d8a4d64e2670640251efc80cfeb0c726019e",
+  "packagingSha": "59510a6bb8046455a67f0f7cfd7f17599b54ecd1",
+  "signature": "G",
+  "lensesApplied": [
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Red Team",
+    "Blast-radius / cell-based",
+    "ORACLE INTEGRITY",
+    "PERIPHERAL DRIFT",
+    "ENFORCEMENT PLACEMENT",
+    "FALSE GREEN"
+  ],
+  "challenges": [
+    "Chesterton: census-by-name alone can green a no-op body still named correctly — tip also ships a shape-legal console_rt INSERT carrying 사유 that asserts leave_write.kr_annual_no_reason (23514), so existence+behavior are both pinned.",
+    "Cartesian: packaging commit body still narrates pre-rebase tip e8953d484 / base 1af779cac while working receipt + product tip bind fe10d8a4d / be7b3e14b after origin/main restack — receipt headSha→product is correct; commit prose is stale narrative only."
+  ],
+  "findings": [
+    {
+      "severity": "minor",
+      "claim": "Packaging commit 59510a6bb message body cites restacked product tip e8953d484 / origin/main 1af779cac, but .cursor/receipts/kwm.json correctly binds headSha=fe10d8a4d64e2670640251efc80cfeb0c726019e and baseSha=be7b3e14b2f126e8c24a2bf99758d0de00aaa23d (product tip after rebase).",
+      "failureScenario": "Admit/babysit that scrapes packaging commit prose instead of receipt headSha could inventory a pre-rebase twin SHA even though product content and receipt binding are correct.",
+      "location": "git show 59510a6bb commit message vs .cursor/receipts/kwm.json:headSha",
+      "provenByExecution": true,
+      "ownerLease": false
+    }
+  ],
+  "standingLenses": {
+    "oracleIntegrity": "PASS — product tip green 13/13 on leave-adapter-postgres-leave-rls-surfaces-as-runtime-role-pg; hostile mutate WHERE tgname → trg_leave_requests_kr_labor_MISSING → leave_command_preprovision_and_privilege_matrix_are_fail_closed FAILED RowNotFound at fetch_one expect (12 passed / 1 failed); restored → GREEN 13/13. No #[ignore]/deleted tests in product diff. Pin is live pg_catalog fetch_one by proname/tgname (not source-contains). INSERT oracle asserts 23514 / leave_write.kr_annual_no_reason matching 0216.",
+    "peripheralDrift": "PASS — product range touches only leave_rls_surfaces_as_runtime_role.rs (+ receipt). Module doc lists §60 pin; migration 0216 untouched; no OpenAPI/wire/docs/**/we1 consult reopen in be7b3e14b..HEAD product paths.",
+    "enforcementPlacement": "PASS — pin runs inside leave_command_preprovision_and_privilege_matrix_are_fail_closed after sqlx::test applies platform/db migrations (0216 subject exists). Named pg_proc/pg_trigger fetch_one (not a count); tgtype=23 / tgenabled=O / tgfoid→kr_labor_guardrails_guard; examined-zero fails via RowNotFound. Target mapped in tools/ci/postgres-cargo-map.json + tools/buck/BUCK wrapper leave-adapter-postgres-leave-rls-surfaces-as-runtime-role-pg.",
+    "falseGreen": "PASS — no --workflow-only; critic re-ran full PG harness (13/13) on restored tip; hostile red proven independently this turn; Buck/cargo map wires the exact test binary; product+packaging %G?=G."
+  },
+  "commandsRun": [
+    "git rev-parse HEAD → 59510a6bb8046455a67f0f7cfd7f17599b54ecd1 (packaging)",
+    "git log -1 --format='%H %G?' fe10d8a4d → fe10d8a4d… G; 59510a6bb… G",
+    "git diff be7b3e14b..fe10d8a4d — leave_rls_surfaces_as_runtime_role.rs + kwm.json only; fe10d8a4d..HEAD — receipt only",
+    "python3: kwm.json headSha == fe10d8a4d64e2670640251efc80cfeb0c726019e (binds_product True)",
+    "bash tools/ci/cargo_needs_postgres.sh --only leave-adapter-postgres-leave-rls-surfaces-as-runtime-role-pg --num-threads=1 → GREEN 13 passed / 0 failed",
+    "hostile: WHERE tgname → trg_leave_requests_kr_labor_MISSING → 12 passed / 1 failed RowNotFound at fetch_one expect; git checkout -- restore → GREEN"
+  ],
+  "notes": "Overwrites stale kwm-critic.json that bound tipSha to pre-restack 05e53cd2. Scope: leave privilege-matrix named §60 pins only; no we1 consult / OpenAPI reopen. Challenge UPDATE-with-reason residual: bd show console-4fik → CLOSED (critic APPROVE tip c250dde2a) — not re-opened as ownerLease on kwm. No #622 admit from this lane. No blocker / no proven major against product tip.",
+  "followUps": [
+    "Parent: treat product tip as fe10d8a4d64e2670640251efc80cfeb0c726019e (signed G); packaging 59510a6bb only rebinds receipt headSha→product.",
+    "console-4fik already CLOSED for UPDATE-with-reason residual — do not open a second kwm fix round; admit 4fik on its own train-2 path if not yet landed.",
+    "Parent: close bead console-kwm after separate admit path; no #622 fold; no PR from this lane."
+  ],
+  "flowDelta": "leaf ready to admit on product tip fe10d8a4d (APPROVE); critic rebound off stale 05e53cd2; packaging 59510a6bb verified headSha→product"
+}
