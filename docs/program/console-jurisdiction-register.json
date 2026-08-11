@@ -1,6 +1,6 @@
 {
   "schema_version": "console-jurisdiction-register-v2",
-  "last_refreshed": "2026-08-11T09:35:00-04:00",
+  "last_refreshed": "2026-08-11T11:01:00-04:00",
   "target_jurisdiction_set": [
     "KR"
   ],
@@ -1026,5 +1026,5 @@
     "historical_implementation_freeze_ref": "refs/tags/archive/pre-pivot-implementation-freeze-2026-07-24",
     "candidate_evidence_status": "HOLD"
   },
-  "authority_train_note": "C+T repair after tip-bind-above-T / post-#742 we1: tip-bind critic receipt folded under product C; fresh jurisdiction tip records custody. No jurisdiction, control, or coverage claim changed."
+  "authority_train_note": "Refreshed with residual admit tip after #745 (kwm/cvh/gc9z/0lj) including cvh clippy heal, canonical lens evidence, and path-sorted doc custody. No jurisdiction claim changed."
 }
