@@ -93,10 +93,10 @@
 //! ponytail: one runtime handle, no thread pool of its own — revisit only if the
 //! trait ever gains an async form.
 
-use console_kernel_core::{OrgId, UserId};
+use console_kernel_core::{KernelError, OrgId, UserId};
 use console_ontology_canonical_domain::{
-    CanonicalPort, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget, ObjectKey, PayRun,
-    Preflight, ReceiptOwner,
+    CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget,
+    ObjectKey, PayRun, Preflight, ReceiptOwner,
 };
 use console_workflow_domain::{PayrollDraftStaging, PortFuture, StagePayrollDraft};
 use serde::Deserialize;
@@ -281,6 +281,19 @@ pub enum PayRunError {
     DigestConflict(Uuid),
     #[error("stored receipt for command {0} names no dispatch target: {1}")]
     UnreadableReceipt(Uuid, String),
+}
+
+impl CanonicalPortError for PayRunError {
+    fn into_kernel_error(self) -> KernelError {
+        let message = self.to_string();
+        match self {
+            Self::Blocked(_) => KernelError::validation(message),
+            Self::DigestConflict(_) => KernelError::conflict(message),
+            Self::Database(_) | Self::Lifecycle(_) | Self::UnreadableReceipt(_, _) => {
+                KernelError::internal(message)
+            }
+        }
+    }
 }
 
 /// The one permitted holder of production DML against the six `payroll_*` tables
@@ -603,4 +616,21 @@ fn payload_digest(command: &PayRunCommand) -> [u8; 32] {
         }
     }
     hasher.finalize().into()
+}
+
+#[cfg(test)]
+mod port_error_kind_tests {
+    use super::*;
+    use console_kernel_core::ErrorKind;
+    use console_ontology_canonical_domain::CanonicalPortError;
+
+    #[test]
+    fn digest_conflict_is_conflict_not_internal() {
+        assert_eq!(
+            PayRunError::DigestConflict(Uuid::nil())
+                .into_kernel_error()
+                .kind,
+            ErrorKind::Conflict
+        );
+    }
 }

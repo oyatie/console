@@ -11,12 +11,12 @@
 use std::collections::BTreeSet;
 
 use super::{
-    CanonicalObject, CanonicalPort, CanonicalQuery, CommandId, CommandReceipt, Company,
-    CompanyPort, DispatchTarget, Employment, EmploymentPort, JobPosition, JobPositionPort,
+    CanonicalObject, CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt,
+    Company, CompanyPort, DispatchTarget, Employment, EmploymentPort, JobPosition, JobPositionPort,
     ObjectKey, OrgUnit, OrgUnitPort, PayRun, PayRunPort, Person, PersonPort, Preflight,
     ReceiptOwner,
 };
-use console_kernel_core::{OrgId, UserId};
+use console_kernel_core::{ErrorKind, KernelError, OrgId, UserId};
 
 /// A port that exists only to witness that the six named traits are reachable
 /// and that each pins its object. Never constructed.
@@ -31,13 +31,17 @@ impl CanonicalQuery for NoQuery {
     fn dispatch_target(&self) -> DispatchTarget {
         DispatchTarget::CompanyRevise
     }
+
+    fn subject_id(&self) -> Option<uuid::Uuid> {
+        None
+    }
 }
 
 impl<O: CanonicalObject> CanonicalPort for NoPort<O> {
     type Object = O;
     type Query = NoQuery;
     type Command = ();
-    type Error = ();
+    type Error = std::convert::Infallible;
 
     fn preflight(_query: &Self::Query) -> Preflight {
         Preflight::ok()
@@ -52,8 +56,63 @@ impl<O: CanonicalObject> CanonicalPort for NoPort<O> {
     }
 
     fn execute(&self, _command: &Self::Command) -> Result<CommandReceipt, Self::Error> {
-        Err(())
+        // Witness is never constructed; Infallible keeps the Error bound honest.
+        match Option::<std::convert::Infallible>::None {
+            Some(never) => Err(never),
+            None => unreachable!("NoPort is never constructed"),
+        }
     }
+}
+
+/// Fixture that proves the kind mapping the dispatcher must preserve.
+#[derive(Debug)]
+enum KindMapFixture {
+    Blocked(Vec<String>),
+    DigestConflict(uuid::Uuid),
+    Database(&'static str),
+}
+
+impl std::fmt::Display for KindMapFixture {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Blocked(blockers) => write!(f, "blocked: {blockers:?}"),
+            Self::DigestConflict(id) => write!(f, "digest conflict {id}"),
+            Self::Database(msg) => write!(f, "database: {msg}"),
+        }
+    }
+}
+
+impl CanonicalPortError for KindMapFixture {
+    fn into_kernel_error(self) -> KernelError {
+        let message = self.to_string();
+        match self {
+            Self::Blocked(_) => KernelError::validation(message),
+            Self::DigestConflict(_) => KernelError::conflict(message),
+            Self::Database(_) => KernelError::internal(message),
+        }
+    }
+}
+
+#[test]
+fn digest_conflict_maps_to_conflict_not_internal() {
+    let err = KindMapFixture::DigestConflict(uuid::Uuid::nil());
+    let kernel = err.into_kernel_error();
+    assert_eq!(kernel.kind, ErrorKind::Conflict);
+    assert_ne!(kernel.kind, ErrorKind::Internal);
+}
+
+#[test]
+fn blocked_maps_to_validation_and_database_to_internal() {
+    assert_eq!(
+        KindMapFixture::Blocked(vec!["x".into()])
+            .into_kernel_error()
+            .kind,
+        ErrorKind::Validation
+    );
+    assert_eq!(
+        KindMapFixture::Database("fk").into_kernel_error().kind,
+        ErrorKind::Internal
+    );
 }
 
 #[test]

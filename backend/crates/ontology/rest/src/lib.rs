@@ -53,7 +53,8 @@ use console_ontology_application::{
     WritebackInputs,
 };
 use console_ontology_canonical_domain::{
-    CanonicalObject, CanonicalPort, CanonicalQuery, CommandId, DispatchTarget, ObjectKey,
+    CanonicalObject, CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, DispatchTarget,
+    ObjectKey,
 };
 use console_ontology_domain::{
     FieldKind, InstanceId, InstanceLifecycleState, LinkTypeId, ObjectTypeId, SchemaLifecycleState,
@@ -247,7 +248,9 @@ impl ProjectedDispatchRegistry {
         P: CanonicalPort + Send + Sync + 'static,
         P::Query: DeserializeOwned + Send,
         P::Command: Send + 'static,
-        P::Error: std::fmt::Display + Send + 'static,
+        // `CanonicalPortError: Send` is on the associated type, but
+        // `spawn_blocking` needs the bound named here for Result<_, P::Error>.
+        P::Error: Send + 'static,
     {
         self.ports.insert(
             <P::Object as CanonicalObject>::KEY,
@@ -304,7 +307,7 @@ where
     P: CanonicalPort + Send + Sync + 'static,
     P::Query: DeserializeOwned + Send,
     P::Command: Send + 'static,
-    P::Error: std::fmt::Display + Send + 'static,
+    P::Error: Send + 'static,
 {
     let port = Arc::new(port);
     Arc::new(move |input: ProjectedDispatch| {
@@ -411,7 +414,7 @@ where
                         target.as_str()
                     )))
                 })?
-                .map_err(|error| ActionError::domain(KernelError::internal(error.to_string())))?;
+                .map_err(|error| ActionError::domain(error.into_kernel_error()))?;
 
             Ok(serde_json::json!({
                 "owner": receipt.owner().as_str(),

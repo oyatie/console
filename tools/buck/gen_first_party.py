@@ -680,9 +680,8 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
     },
     'console-ontology-canonical-adapter-postgres': {
-        # No 'unit' key on purpose: nothing under src/ carries #[cfg(test)], and
-        # validate_resource_metadata raises on a STALE declaration just as loudly
-        # as on a missing one.
+        # unit: port_error_kind pins under src/company.rs (avb CanonicalPortError).
+        'unit': 'none',
         'integration': {
             'tests/company_port_as_runtime_role.rs': 'postgres',
             'tests/job_position_port_as_runtime_role.rs': 'postgres',
@@ -711,6 +710,8 @@ TEST_RESOURCE_REQUIREMENTS = {
         },
     },
     'console-orgchange-adapter-postgres': {
+        # unit: port_error_kind pins under src/employment.rs (avb CanonicalPortError).
+        'unit': 'none',
         'integration': {
             'tests/employment_port_as_runtime_role.rs': 'postgres',
             'tests/preflight_persists_nothing.rs': 'postgres',

@@ -145,6 +145,12 @@ impl CanonicalQuery for EchoQuery {
             .parse()
             .expect("dispatcher injects a roster member")
     }
+
+    // company.revise is tenant-scoped (`org_id`), not a payload row id — same as
+    // CompanyQuery after h3e deleted the CanonicalQuery::subject_id default.
+    fn subject_id(&self) -> Option<Uuid> {
+        None
+    }
 }
 
 /// Records what reached the port and writes nothing — isolates the engine's

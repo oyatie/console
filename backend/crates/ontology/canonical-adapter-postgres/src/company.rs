@@ -68,10 +68,10 @@
 //! ponytail: one runtime handle, no thread pool of its own — revisit only if the
 //! trait ever gains an async form.
 
-use console_kernel_core::{OrgId, UserId};
+use console_kernel_core::{KernelError, OrgId, UserId};
 use console_ontology_canonical_domain::{
-    CanonicalPort, CanonicalQuery, CommandId, CommandReceipt, Company, DispatchTarget, ObjectKey,
-    Preflight, ReceiptOwner,
+    CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, Company,
+    DispatchTarget, ObjectKey, Preflight, ReceiptOwner,
 };
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
@@ -135,6 +135,17 @@ pub enum CompanyError {
     DigestConflict(Uuid),
     #[error("stored receipt for command {0} names no dispatch target: {1}")]
     UnreadableReceipt(Uuid, String),
+}
+
+impl CanonicalPortError for CompanyError {
+    fn into_kernel_error(self) -> KernelError {
+        let message = self.to_string();
+        match self {
+            Self::Blocked(_) => KernelError::validation(message),
+            Self::DigestConflict(_) => KernelError::conflict(message),
+            Self::Database(_) | Self::UnreadableReceipt(_, _) => KernelError::internal(message),
+        }
+    }
 }
 
 /// The one permitted holder of production DML against `company_revisions`, and
@@ -370,5 +381,34 @@ fn canonical_json(value: &serde_json::Value) -> serde_json::Value {
             serde_json::Value::Object(entries.into_iter().collect())
         }
         primitive => primitive.clone(),
+    }
+}
+
+#[cfg(test)]
+mod port_error_kind_tests {
+    use super::*;
+    use console_kernel_core::ErrorKind;
+    use console_ontology_canonical_domain::CanonicalPortError;
+
+    #[test]
+    fn digest_conflict_is_conflict_not_internal() {
+        let kernel = CompanyError::DigestConflict(Uuid::nil()).into_kernel_error();
+        assert_eq!(kernel.kind, ErrorKind::Conflict);
+    }
+
+    #[test]
+    fn blocked_is_validation_and_database_is_internal() {
+        assert_eq!(
+            CompanyError::Blocked(vec!["x".into()])
+                .into_kernel_error()
+                .kind,
+            ErrorKind::Validation
+        );
+        assert_eq!(
+            CompanyError::Database(sqlx::Error::RowNotFound)
+                .into_kernel_error()
+                .kind,
+            ErrorKind::Internal
+        );
     }
 }

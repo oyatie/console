@@ -70,10 +70,10 @@
 //! ponytail: one runtime handle, no thread pool of its own — revisit only if the
 //! trait ever gains an async form.
 
-use console_kernel_core::{OrgId, UserId};
+use console_kernel_core::{KernelError, OrgId, UserId};
 use console_ontology_canonical_domain::{
-    CanonicalPort, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget, Employment,
-    ObjectKey, Preflight, ReceiptOwner,
+    CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget,
+    Employment, ObjectKey, Preflight, ReceiptOwner,
 };
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
@@ -343,6 +343,19 @@ pub enum EmploymentError {
         employment_id: Uuid,
         binding_count: usize,
     },
+}
+
+impl CanonicalPortError for EmploymentError {
+    fn into_kernel_error(self) -> KernelError {
+        let message = self.to_string();
+        match self {
+            Self::Blocked(_) | Self::AmbiguousSourceBinding { .. } => {
+                KernelError::validation(message)
+            }
+            Self::DigestConflict(_) => KernelError::conflict(message),
+            Self::Database(_) | Self::UnreadableReceipt(_, _) => KernelError::internal(message),
+        }
+    }
 }
 
 /// The one permitted holder of production DML against `employees`,
@@ -704,4 +717,34 @@ fn payload_digest(command: &EmploymentCommand) -> [u8; 32] {
         }
     }
     hasher.finalize().into()
+}
+
+#[cfg(test)]
+mod port_error_kind_tests {
+    use super::*;
+    use console_kernel_core::ErrorKind;
+    use console_ontology_canonical_domain::CanonicalPortError;
+
+    #[test]
+    fn digest_conflict_is_conflict_not_internal() {
+        assert_eq!(
+            EmploymentError::DigestConflict(Uuid::nil())
+                .into_kernel_error()
+                .kind,
+            ErrorKind::Conflict
+        );
+    }
+
+    #[test]
+    fn ambiguous_binding_is_validation() {
+        assert_eq!(
+            EmploymentError::AmbiguousSourceBinding {
+                employment_id: Uuid::nil(),
+                binding_count: 2,
+            }
+            .into_kernel_error()
+            .kind,
+            ErrorKind::Validation
+        );
+    }
 }

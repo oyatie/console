@@ -196,6 +196,10 @@ const domainUnitPackages = [
   // through. Pure #[test], no database; its lib binary executed nowhere until
   // the gate was wired.
   "console-ontology-canonical-domain",
+  // avb CanonicalPortError port_error_kind pins (company + employment). Pure
+  // #[test], no database; lib binaries darkened until wired into domain-unit.
+  "console-ontology-canonical-adapter-postgres",
+  "console-orgchange-adapter-postgres",
   // The writer-ownership gate's own lib. Cargo and not the Buck2 mutation-suite
   // step: its integration suite reads the real checkout, so the whole crate
   // stays in one job rather than being split across two build systems.
@@ -585,7 +589,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Workflow test-runner credential literals", "npm run check:test-credentials"),
   ],
   "domain-unit": [
-    proofDigest("Domain crate unit tests", "27e92fd9609075c9d15ed5bcac25f3a1ef4c54bcc254a5e68c1e78e1b1d9a947"),
+    proofDigest("Domain crate unit tests", "fe8364ca98090845779a8db53a026e76fb7018b76907ee9ec2d39cfe979a8a01"),
   ],
   backend: [
     setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh"),

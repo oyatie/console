@@ -57,10 +57,10 @@
 //! ponytail: one runtime handle, no thread pool of its own — revisit only if
 //! the trait ever gains an async form.
 
-use console_kernel_core::{OrgId, UserId};
+use console_kernel_core::{KernelError, OrgId, UserId};
 use console_ontology_canonical_domain::{
-    CanonicalPort, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget, JobPosition,
-    ObjectKey, Preflight, ReceiptOwner,
+    CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget,
+    JobPosition, ObjectKey, Preflight, ReceiptOwner,
 };
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
@@ -157,6 +157,17 @@ pub enum JobPositionError {
     DigestConflict(Uuid),
     #[error("stored receipt for command {0} names no dispatch target: {1}")]
     UnreadableReceipt(Uuid, String),
+}
+
+impl CanonicalPortError for JobPositionError {
+    fn into_kernel_error(self) -> KernelError {
+        let message = self.to_string();
+        match self {
+            Self::Blocked(_) => KernelError::validation(message),
+            Self::DigestConflict(_) => KernelError::conflict(message),
+            Self::Database(_) | Self::UnreadableReceipt(_, _) => KernelError::internal(message),
+        }
+    }
 }
 
 /// The one permitted holder of production DML against `job_positions` and

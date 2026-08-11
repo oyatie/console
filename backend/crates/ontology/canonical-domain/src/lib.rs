@@ -21,7 +21,7 @@
 //! Layer: domain. No sqlx, no axum, no tokio — the layer-boundary gate enforces
 //! that, which is what keeps `preflight` honest about being pure.
 
-use console_kernel_core::{OrgId, UserId};
+use console_kernel_core::{KernelError, OrgId, UserId};
 
 // ---------------------------------------------------------------------------
 // Object keys and the writer-ownership registry
@@ -538,11 +538,29 @@ pub trait CanonicalQuery {
     /// The payload subject this query would write, when the command names one.
     ///
     /// `None` for create-style commands and for writes whose subject is the
-    /// tenant itself (company revise). Default so ports that do not yet bind a
-    /// subject keep compiling; the dispatcher only compares when both
+    /// tenant itself (company revise). No default: every `CanonicalQuery` impl
+    /// must spell the bind (or explicitly return `None`) so a new query cannot
+    /// silently inherit "no subject" and skip projected-dispatch `target_id`
+    /// comparison. The dispatcher only compares when both
     /// `ProjectedDispatch::target_id` and this value are present.
-    fn subject_id(&self) -> Option<uuid::Uuid> {
-        None
+    fn subject_id(&self) -> Option<uuid::Uuid>;
+}
+
+/// Maps a port [`CanonicalPort::Error`] into the shared kernel taxonomy.
+///
+/// The projected dispatcher used to flatten every port failure through
+/// [`KernelError::internal`], so a `DigestConflict` (retry-never) surfaced as
+/// HTTP 500 and a `Blocked` preflight as an opaque internal fault. Implementors
+/// must preserve the real distinction: conflict → 409, validation → 422,
+/// database / unreadable receipt → 500.
+pub trait CanonicalPortError: std::fmt::Display + Send {
+    /// Consume the port error into a [`KernelError`].
+    fn into_kernel_error(self) -> KernelError;
+}
+
+impl CanonicalPortError for std::convert::Infallible {
+    fn into_kernel_error(self) -> KernelError {
+        match self {}
     }
 }
 
@@ -555,8 +573,9 @@ pub trait CanonicalPort {
     type Query: CanonicalQuery;
     /// The typed write this port accepts.
     type Command;
-    /// Failure of [`Self::execute`].
-    type Error;
+    /// Failure of [`Self::execute`]. Bound so the dispatcher cannot forget the
+    /// kind mapping and flatten every variant to internal again.
+    type Error: CanonicalPortError;
 
     /// PURE. No `&self`, no IO, no async, no persistence: a preflight that
     /// cannot reach a connection cannot write PRECHECKED rows, events, audits,

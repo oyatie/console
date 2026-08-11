@@ -3604,6 +3604,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-10-batch-b-h3e-avb-micro-train.md",
+      "blob_sha": "a8278095e204caad1f89079a7cb1500af8ba75fa",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/ledger/2026-08-10-batch-b-split-ugg-6n4-nuc-pnb1.md",
       "blob_sha": "97bdb92653c5b3bb6f2981e042592e22f612fff2",
       "class": "evidence",

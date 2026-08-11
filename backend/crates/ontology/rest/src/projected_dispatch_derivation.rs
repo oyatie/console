@@ -20,17 +20,23 @@
 //!   dispatcher injects the CONTRACT's target string and then asks the decoded
 //!   query what it actually is; a port whose variants and serde tags ever
 //!   disagree is refused instead of writing under the wrong target.
+//! * `digest_conflict_from_port_surfaces_as_conflict_not_internal` — call-site
+//!   control for the spawn_blocking `map_err`. A port whose Error maps
+//!   DigestConflict → Conflict must still surface Conflict through the
+//!   dispatcher; reverting to `KernelError::internal(error.to_string())` goes
+//!   red here even when adapter `into_kernel_error` unit pins stay green.
 //!
 //! `EchoQuery` is deliberately target-agnostic: one stub port type serves all
 //! six objects and every target, present or future, which is only possible
 //! because nothing in the dispatcher names an action.
 
 use super::{ActionError, ProjectedDispatch, ProjectedDispatchRegistry};
-use console_kernel_core::{BranchScope, OrgId, UserId};
+use console_kernel_core::{BranchScope, ErrorKind, KernelError, OrgId, UserId};
+use console_ontology_adapter_postgres::PgOntologyError;
 use console_ontology_canonical_domain::{
-    CanonicalObject, CanonicalPort, CanonicalQuery, CommandId, CommandReceipt as CanonicalReceipt,
-    Company, DispatchTarget, Employment, JobPosition, ObjectKey, OrgUnit, PayRun, Person,
-    Preflight, ReceiptOwner,
+    CanonicalObject, CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId,
+    CommandReceipt as CanonicalReceipt, Company, DispatchTarget, Employment, JobPosition,
+    ObjectKey, OrgUnit, PayRun, Person, Preflight, ReceiptOwner,
 };
 use console_platform_authz::Principal;
 use serde::Deserialize;
@@ -89,6 +95,61 @@ struct LyingQuery {
 impl CanonicalQuery for LyingQuery {
     fn dispatch_target(&self) -> DispatchTarget {
         DispatchTarget::CompanyRevise
+    }
+
+    fn subject_id(&self) -> Option<Uuid> {
+        None
+    }
+}
+
+/// Port Error that preserves DigestConflict as Conflict — the shape a real
+/// adapter returns, used only to pin the dispatcher's `map_err` call site.
+#[derive(Debug)]
+enum StubPortError {
+    DigestConflict(Uuid),
+}
+
+impl std::fmt::Display for StubPortError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::DigestConflict(id) => write!(f, "digest conflict {id}"),
+        }
+    }
+}
+
+impl CanonicalPortError for StubPortError {
+    fn into_kernel_error(self) -> KernelError {
+        match self {
+            Self::DigestConflict(id) => KernelError::conflict(format!("digest conflict {id}")),
+        }
+    }
+}
+
+/// Always fails with DigestConflict so the dispatcher call-site mapping is the
+/// only thing under test (no DB, no adapter match arms).
+struct DigestConflictPort;
+
+impl CanonicalPort for DigestConflictPort {
+    type Object = Company;
+    type Query = EchoQuery;
+    type Command = (OrgId, CommandId, UserId, DispatchTarget);
+    type Error = StubPortError;
+
+    fn preflight(_query: &Self::Query) -> Preflight {
+        Preflight::ok()
+    }
+
+    fn command(
+        org_id: OrgId,
+        command_id: CommandId,
+        actor_id: UserId,
+        query: Self::Query,
+    ) -> Self::Command {
+        (org_id, command_id, actor_id, query.dispatch_target())
+    }
+
+    fn execute(&self, _command: &Self::Command) -> Result<CanonicalReceipt, Self::Error> {
+        Err(StubPortError::DigestConflict(Uuid::nil()))
     }
 }
 
@@ -377,7 +438,7 @@ async fn a_payload_whose_subject_differs_from_target_id_is_refused() {
 
 /// Employment promote/transfer (and any subject-bearing query) must not skip the
 /// bind by omitting `target_id` — that was the live fail-open for EmploymentQuery
-/// while `subject_id()` defaulted to `None` / when the guard only matched Some/Some.
+/// while `subject_id()` was omitted / when the guard only matched Some/Some.
 #[tokio::test]
 async fn a_subject_bearing_payload_without_target_id_is_refused() {
     let seen = Arc::new(Mutex::new(Vec::new()));
@@ -428,4 +489,35 @@ async fn a_canonical_target_requires_the_idempotency_key() {
         other => panic!("expected Validation, got {other:?}"),
     }
     assert!(seen.lock().expect("stub mutex").is_empty());
+}
+
+/// CALL-SITE pin: DigestConflict through `canonical_port_handler`'s map_err must
+/// remain Conflict. Adapter `into_kernel_error` unit tests alone do not cover
+/// this — reverting the dispatcher to `KernelError::internal(error.to_string())`
+/// leaves those green and fails here.
+#[tokio::test]
+async fn digest_conflict_from_port_surfaces_as_conflict_not_internal() {
+    let registry = ProjectedDispatchRegistry::new().register_port(DigestConflictPort);
+
+    let error = registry
+        .dispatch(input(
+            "company.revise",
+            json!({ "attributes": {} }),
+            Some(Uuid::nil()),
+        ))
+        .await
+        .expect_err("digest conflict must surface from the port");
+
+    match error {
+        ActionError::Store(PgOntologyError::Domain(kernel)) => {
+            assert_eq!(
+                kernel.kind,
+                ErrorKind::Conflict,
+                "dispatcher must preserve Conflict via into_kernel_error; \
+                 flattening with KernelError::internal(Display) yields Internal"
+            );
+            assert_ne!(kernel.kind, ErrorKind::Internal);
+        }
+        other => panic!("expected Store(Domain(Conflict)), got {other:?}"),
+    }
 }
