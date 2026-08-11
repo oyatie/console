@@ -1,0 +1,84 @@
+{
+  "laneId": "console-9sxn",
+  "role": "critic",
+  "verdict": "APPROVE",
+  "tipSha": "b6fbfa705026289b0eff7fe799a2079dcafbccdf",
+  "productTip": "b6fbfa705026289b0eff7fe799a2079dcafbccdf",
+  "headSha": "b6fbfa705026289b0eff7fe799a2079dcafbccdf",
+  "baseSha": "57fddda198ef3a6e0670aa60ad365417c9f22b2d",
+  "we1ProductTipReadOnly": "109ac1425b44897ab9512ccab8d33cc8e49f78d4",
+  "lenses": [
+    "ORACLE INTEGRITY",
+    "PERIPHERAL DRIFT",
+    "ENFORCEMENT PLACEMENT",
+    "FALSE GREEN",
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "challenges": [
+    "Chesterton: publishing OpenAPI before we1 REST lands forces platform-contract-drift red on this leaf alone \u2014 kept as admit-pair rather than UNDOCUMENTED_BY_DESIGN; confirmed drift names only POST alternate-dates and exits 1.",
+    "FALSE GREEN: receipt enforcementPlacement claims request-body serde equality for LeaveProposeAlternateDatesRequest, but this tree has no ProposeAlternateDates handler \u2014 gate skips the op. Manual OpenAPI\u2194we1 field compare still matches; do not treat gate green as body proof for the new route."
+  ],
+  "standingLenses": {
+    "oracleIntegrity": "Leaf touches only backend/openapi/openapi.yaml + receipt; no tests deleted/ignored/conformed. RED baseline on e7f207eab: zero alternate-dates|time_change_grounds matches. No oracle weakening.",
+    "peripheralDrift": "New TimeChangeGroundsCode enum is closed (branch_coverage_shortfall only) and referenced from LeaveRequestV2View; no list-filter occurrence needed. Status enums already included time_change_consult. alternate_partial_day_period [am,pm] matches PartialDayPeriod. v1 LeaveRequestView consult keys absent. v2 decide prose + LeaveDecideV2Request decision text updated for automatic eligibility; v1 decide path still narrates manager grounds (minor).",
+    "enforcementPlacement": "check-openapi-refs sees subject (4974 refs / 0 findings). check-request-body-contract stays green on anchors/floor but skips the new path without we1 rust in-tree. Route totality is check-platform-contract-drift / openapi_drift \u2014 red until we1 co-admit (intentional).",
+    "falseGreen": "commands non-empty; no --workflow-only. Drift exit=1 proven. Request-body green does not certify LeaveProposeAlternateDatesRequest (skipped) \u2014 noted as minor overclaim, not product defect."
+  },
+  "highRiskLenses": {
+    "redTeam": "additionalProperties:false on LeaveProposeAlternateDatesRequest mirrors deny_unknown_fields; body is start_date/end_date only (no leave_type mutation). Grounds enum closed \u2014 no free-text manager narrative code.",
+    "operability": "503 on alternate-dates matches sibling leave command-DB pattern. Admit must pair with we1 or drift stays red on main.",
+    "blastRadius": "Owned root backend/openapi only; leave/** untouched. Packaging tip 4b73b8825 vs product 0647a6293 is receipt-only (openapi identical).",
+    "zeroTrust": "Path docs: self-service requester-only; manage capability neither required nor sufficient. Matches we1 ProposeAlternateDatesBody + REST comments."
+  },
+  "summary": "APPROVE OpenAPI lease for we1 \u00a760\u2464 consult. POST /api/v2/leave/requests/{id}/alternate-dates + LeaveProposeAlternateDatesRequest + LeaveRequestV2View consult fields + TimeChangeGroundsCode/TimeChangeCoverageEvidence match we1 tip 109ac1425 wire (including projected_available on persisted JSONB). v1 LeaveRequestView frozen. Refs/request-body gates green; platform-contract-drift red on alternate-dates alone until we1 co-admit. No blocker / no proven major on product tree.",
+  "findings": [
+    {
+      "severity": "minor",
+      "claim": "Implementer enforcementPlacement overclaims that check-request-body-contract proves LeaveProposeAlternateDatesRequest field equality; with leave REST absent from this leaf the new operation is undecidable/skipped (resolved 51 unchanged).",
+      "failureScenario": "A later reader treats request-body green as evidence the alternate-dates body was serde-compared and skips manual/we1 co-admit body checks.",
+      "location": ".cursor/receipts/9sxn.json:enforcementPlacement; scripts/check-request-body-contract.mjs (skip when Json<T> undecidable)",
+      "provenByExecution": true,
+      "ownerLease": false
+    },
+    {
+      "severity": "minor",
+      "claim": "v1 decideLeaveRequest path description still says time_change requires a comment stating \uc0ac\uc5c5 \uc6b4\uc601\uc5d0 \ub9c9\ub300\ud55c \uc9c0\uc7a5 grounds, while we1 decide_v1 shares perform_decide \u2192 SQL leave_decide.time_change_ineligible automatic eligibility. Only v2 decide prose / LeaveDecideV2Request were updated.",
+      "failureScenario": "v1 OpenAPI consumers believe manager narrative is the eligibility gate and miss the coverage-shortfall 422 that both decide surfaces now emit.",
+      "location": "backend/openapi/openapi.yaml:decideLeaveRequest description (~6786+); we1 rest decide_v1\u2192perform_decide",
+      "provenByExecution": true,
+      "ownerLease": false
+    }
+  ],
+  "notes": [
+    "TIP-BINDING: receipt headSha pins product 0647a6293; branch HEAD 4b73b8825 differs only in .cursor/receipts/9sxn.json (openapi byte-identical). Critique bound to product tree; packaging not a blocker.",
+    "PLATFORM-CONTRACT-DRIFT: node scripts/check-platform-contract-drift.mjs exit 1 naming POST /api/v2/leave/requests/{}/alternate-dates \u2014 expected until we1 co-admit; not a merge bar on this leaf alone.",
+    "we1 ACTIVE-only headcount (34cab73c7) is after pinned 109ac1425; do not demand that fix or OpenAPI headcount ACTIVE prose here (parent instruction).",
+    "Projected_available is a domain method but is present on wire via migration 0217 jsonb_build_object \u2014 OpenAPI required set matches persisted JSON."
+  ],
+  "commandsRun": [
+    "git -C .worktrees/lane-console-9sxn rev-parse HEAD \u2192 4b73b88250bb2694fc6de71b58539678d39b60fd",
+    "git diff 0647a6293 HEAD --stat \u2192 .cursor/receipts/9sxn.json only; openapi identical",
+    "git diff e7f207eab HEAD -- backend/openapi/openapi.yaml (product review)",
+    "rg/python: v1 LeaveRequestView lacks time_change_grounds|alternate_*; v2 has consult keys; path present",
+    "node scripts/check-openapi-refs.mjs \u2192 4974 refs / 0 findings",
+    "node --test scripts/check-openapi-refs.test.mjs \u2192 15/15",
+    "node scripts/check-request-body-contract.mjs \u2192 resolved 51 / skipped 171",
+    "node --test scripts/check-request-body-contract.test.mjs \u2192 22/22",
+    "node scripts/check-platform-contract-drift.mjs \u2192 exit 1 (POST alternate-dates undeclared in backend)",
+    "we1 109ac1425: ProposeAlternateDatesBody {start_date,end_date}+deny_unknown; TimeChangeGroundsCode::BranchCoverageShortfall; evidence JSONB includes projected_available; LegacyLeaveRequestView omits consult fields",
+    "node \u2026/validate-lane-receipt.mjs .worktrees/lane-console-9sxn/.cursor/receipts/9sxn.json \u2192 OK"
+  ],
+  "followUps": [
+    "ADMIT PAIR: land 9sxn with we1 so platform-contract-drift / openapi_drift see alternate-dates on both sides; do not merge this leaf alone.",
+    "Optional polish (non-blocking): align decideLeaveRequest (v1) prose with automatic eligibility / time_change_ineligible; when admitting we1 tip that includes ACTIVE headcount, tighten TimeChangeCoverageEvidence.headcount description.",
+    "Parent: we1 still owns ACTIVE-headcount critic finding \u2014 not this leaf.",
+    "Class: none new \u2014 OpenAPI/we1 co-admit pairing already named in implementer followUps."
+  ],
+  "originMainAtReview": "57fddda198ef3a6e0670aa60ad365417c9f22b2d"
+}
