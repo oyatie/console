@@ -1,0 +1,46 @@
+{
+  "lane": "console-gla1",
+  "role": "implementer",
+  "status": "done",
+  "headSha": "f0569f28da60414a135db8483a427e9a8c692415",
+  "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-console-gla1",
+  "branch": "lane/console-gla1",
+  "baseSha": "1cb9de9df992a2920398d62c07890e474116d875",
+  "summary": "Strip Rust comments and string/char/raw-string literals before countDeclaredTestAttributes so doc-comment / prose #[test] lines cannot inflate the static attribute ratchet; live attributes still count.",
+  "filesChanged": [
+    "scripts/lib/executed-tests-baseline.mjs",
+    "scripts/lib/executed-tests-baseline.test.mjs",
+    ".cursor/receipts/gla1.json"
+  ],
+  "redBaseline": "Hostile probe on tip 1cb9de9df before strip: block-doc bare #[test] counted 1 (want 0); multiline string #[sqlx::test] counted 1 (want 0); mixed doc+live counted 2 (want 1). Mid-line /// mentions already 0 via ^-anchored regex.",
+  "verification": "After strip: same fixtures 0/0/2/1; node --test scripts/lib/executed-tests-baseline.test.mjs → 27 pass; node scripts/check-executed-tests.mjs → exit 0 (356/355/2584 attrs/1 dark) — zero tree false-count delta so baseline JSON untouched.",
+  "commands": [
+    "node --input-type=module -e '…countDeclaredTestAttributes hostile DOC/BLOCK/STRING/LIVE/MIXED…' (RED: block=1 string=1 mixed=2)",
+    "node --test scripts/lib/executed-tests-baseline.test.mjs",
+    "node scripts/check-executed-tests.mjs",
+    "git -C .worktrees/lane-console-gla1 log -1 --format='%H %G?'",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs .worktrees/lane-console-gla1/.cursor/receipts/gla1.json"
+  ],
+  "contractBreaches": "none — still cfg-/ignore-unaware lexical static evidence; only comment/literal false counts removed. Do NOT admit #622.",
+  "enforcementPlacement": "WHERE: countDeclaredTestAttributes in scripts/lib/executed-tests-baseline.mjs (subject exists; called from check-executed-tests over reachable .rs). Finest: line-anchored #[test]/#[tokio::test]/#[sqlx::test] after comment/literal strip. Examined-zero fails via evaluateTestAttributeBaseline / gate when reachable sources lose attributes; new hostile unit cases fail closed if strip regresses.",
+  "peripheralsUpdated": "scripts/lib/executed-tests-baseline.test.mjs hostile pins added; docs/program/executed-tests-baseline.json unchanged (repo scan false-count delta 0). Duplicate strip vs lane-console-m68 check-executed-tests-cfg.mjs noted in followUps for post-land consolidate.",
+  "followUps": [
+    "Consolidate stripRustCommentsAndStringLiterals with scripts/check-executed-tests-cfg.mjs once console-m68 lands (shared helper, one spelling).",
+    "Do NOT admit #622 from this lane.",
+    "Critic on tip after push; orchestrator admits — not this leaf."
+  ],
+  "lensesApplied": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Blast-radius / cell-based"
+  ],
+  "challenges": [
+    "Chesterton: m68 already chose comment/literal strip over regex tweaks for #[cfg(test)]; gla1 reuses that mechanism for #[test] rather than inventing a third spelling (line filters alone miss bare attribute lines inside /** */ and multiline strings).",
+    "Essentialism: inline strip in executed-tests-baseline.mjs because check-executed-tests-cfg.mjs is not on origin/main yet — avoid owning m68 paths; consolidate after land."
+  ],
+  "inventoryKnownBlockers": [
+    "console-m68 critic ownerLease: countDeclaredTestAttributes raw-matches #[test] (doc-comment false count) — this leaf",
+    "No open PR / review threads for console-gla1 at implement time"
+  ]
+}

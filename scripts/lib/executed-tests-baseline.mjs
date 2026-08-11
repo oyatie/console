@@ -81,13 +81,90 @@ export function evaluateBaseline(dark, doc, label) {
   return { fatal: null, advisory: null };
 }
 
-// This is deliberately lexical. It counts declared test attributes without evaluating
+// Lexical static evidence only: counts declared test attributes without evaluating
 // cfg expressions or `#[ignore]`, so callers must never describe the result as executed
-// runtime cases. Keeping it here makes that limitation independently regression-testable.
+// runtime cases. Comments and string/char/raw-string literals are stripped first so a
+// doc-comment or prose paste of `#[test]` (process.doc-comment-test-attr-false-count)
+// cannot inflate the ratchet — same class as process.doc-comment-cfg-test-false-dark.
 const TEST_ATTRIBUTE = /^[ \t]*#\[(?:tokio::|sqlx::)?test(?:\([^\n)]*\))?\]/gm;
 
+/**
+ * Strip line/block comments and string/char/raw-string literals, replacing each
+ * with a space. Doc comments (`///`, `//!`, `/**`) are ordinary comments here.
+ *
+ * @param {string} source
+ * @returns {string}
+ */
+export function stripRustCommentsAndStringLiterals(source) {
+  let output = "";
+  let index = 0;
+  while (index < source.length) {
+    const char = source[index];
+    const next = source[index + 1];
+
+    if (char === "/" && next === "/") {
+      while (index < source.length && source[index] !== "\n") index += 1;
+      output += " ";
+      continue;
+    }
+    if (char === "/" && next === "*") {
+      let depth = 1;
+      index += 2;
+      while (index < source.length && depth > 0) {
+        if (source[index] === "/" && source[index + 1] === "*") {
+          depth += 1;
+          index += 2;
+        } else if (source[index] === "*" && source[index + 1] === "/") {
+          depth -= 1;
+          index += 2;
+        } else {
+          index += 1;
+        }
+      }
+      output += " ";
+      continue;
+    }
+    if (char === "r" && (next === '"' || next === "#")) {
+      const raw = source.slice(index).match(/^r(#*)"/);
+      if (raw) {
+        const terminator = `"${raw[1]}`;
+        const end = source.indexOf(terminator, index + raw[0].length);
+        index = end === -1 ? source.length : end + terminator.length;
+        output += " ";
+        continue;
+      }
+    }
+    if (char === "'") {
+      const literal = source.slice(index).match(/^'(?:\\.|[^\\'])'/);
+      if (literal) {
+        index += literal[0].length;
+        output += " ";
+        continue;
+      }
+    }
+    if (char === '"') {
+      index += 1;
+      while (index < source.length) {
+        const inner = source[index];
+        index += 1;
+        if (inner === "\\") {
+          if (index < source.length) index += 1;
+          continue;
+        }
+        if (inner === '"') break;
+      }
+      output += " ";
+      continue;
+    }
+
+    output += char;
+    index += 1;
+  }
+  return output;
+}
+
 export function countDeclaredTestAttributes(source) {
-  return (source.match(TEST_ATTRIBUTE) ?? []).length;
+  return (stripRustCommentsAndStringLiterals(source).match(TEST_ATTRIBUTE) ?? []).length;
 }
 
 export function evaluateTestAttributeBaseline(current, baseline, label) {

@@ -124,6 +124,51 @@ async fn ignored_by_default() {}
 `;
     assert.equal(countDeclaredTestAttributes(source), 2);
   });
+
+  // RED shape (pre-fix): raw /^[ \\t]*#\\[…test/ matched bare attribute lines inside
+  // block comments and multiline string literals, inflating the static ratchet.
+  const BLOCK_DOC_ONLY = `/**
+#[test]
+fn only_in_doc_prose() {}
+*/`;
+  const LINE_DOC_MENTION = `/// Mask \`#[test]\` / \`#[tokio::test]\` so prose cannot inflate the ratchet.
+fn not_a_test() {}
+`;
+  const STRING_ONLY = `const PROSE: &str = "
+#[sqlx::test]
+";
+`;
+  const LIVE = `#[test]
+fn a() {}
+#[tokio::test]
+async fn b() {}
+`;
+  const MIXED = `/**
+#[test]
+*/
+#[test]
+fn real() {}
+`;
+
+  it("does not count #[test] lines that live only inside block doc comments", () => {
+    assert.equal(countDeclaredTestAttributes(BLOCK_DOC_ONLY), 0);
+  });
+
+  it("does not count mid-line doc-comment mentions of #[test]", () => {
+    assert.equal(countDeclaredTestAttributes(LINE_DOC_MENTION), 0);
+  });
+
+  it("does not count #[test] lines inside string literals", () => {
+    assert.equal(countDeclaredTestAttributes(STRING_ONLY), 0);
+  });
+
+  it("still counts live #[test] / #[tokio::test] attributes", () => {
+    assert.equal(countDeclaredTestAttributes(LIVE), 2);
+  });
+
+  it("counts only the live attribute when doc prose also mentions #[test]", () => {
+    assert.equal(countDeclaredTestAttributes(MIXED), 1);
+  });
 });
 
 describe("evaluateTestAttributeBaseline", () => {
