@@ -30,7 +30,7 @@
 
 use console_kernel_core::{OrgId, UserId};
 use console_ontology_canonical_adapter_postgres::job_position::{
-    JobPositionCommand, JobPositionError, JobPositionQuery, PgJobPositionPort,
+    JobPositionCommand, JobPositionError, JobPositionQuery, JobPositionView, PgJobPositionPort,
 };
 use console_ontology_canonical_domain::{
     CanonicalPort, CommandId, CommandReceipt, DispatchTarget, JobPositionPort, ObjectKey,
@@ -121,6 +121,28 @@ async fn execute(
 ) -> Result<CommandReceipt, JobPositionError> {
     let port = port.clone();
     tokio::task::spawn_blocking(move || port.execute(&command))
+        .await
+        .unwrap()
+}
+
+async fn get(
+    port: &PgJobPositionPort,
+    org: OrgId,
+    job_position_id: Uuid,
+) -> Result<Option<JobPositionView>, JobPositionError> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.get(org, job_position_id))
+        .await
+        .unwrap()
+}
+
+async fn list_for_org_unit(
+    port: &PgJobPositionPort,
+    org: OrgId,
+    org_unit_id: Uuid,
+) -> Result<Vec<JobPositionView>, JobPositionError> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.list_for_org_unit(org, org_unit_id))
         .await
         .unwrap()
 }
@@ -297,6 +319,11 @@ async fn a_job_position_is_created_and_read_back(owner_pool: PgPool) {
         DispatchTarget::OrganizationCreateJobPosition
     );
     assert_eq!(receipt.result()["version"].as_i64(), Some(1));
+    assert_eq!(
+        receipt.result()["org_unit_id"].as_str().unwrap(),
+        unit.to_string(),
+        "receipt must carry the head org_unit_id for REST/action readback"
+    );
 
     let position_id = position_of(&receipt);
     let row = sqlx::query(
@@ -330,6 +357,80 @@ async fn a_job_position_is_created_and_read_back(owner_pool: PgPool) {
         receipt.payload_digest().to_vec(),
         "the stored digest is the 32 bytes the receipt carries"
     );
+
+    // First-class query surface: create → get round-trips the same IDs.
+    let viewed = get(&port, org, position_id)
+        .await
+        .unwrap()
+        .expect("created JobPosition must be queryable");
+    assert_eq!(viewed.job_position_id, position_id);
+    assert_eq!(viewed.org_unit_id, unit);
+    assert_eq!(viewed.version, 1);
+    assert_eq!(viewed.attributes, json!({ "title": "백엔드 엔지니어" }));
+    let listed = list_for_org_unit(&port, org, unit).await.unwrap();
+    assert_eq!(listed, vec![viewed]);
+}
+
+/// Free-text `employees.position` and `recruit_postings` are excluded by the
+/// contract. Seeding both must NOT create or imply a JobPosition; only the port
+/// create path does — and its attributes come from the command, not job text.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn free_text_and_recruiting_are_never_inferred_as_job_positions(owner_pool: PgPool) {
+    let (org, actor, unit, port) = fixture(&owner_pool).await;
+
+    // Legacy free-text seat label on employees (migration 0066).
+    sqlx::query(
+        "INSERT INTO employees \
+         (org_id, company, name, source_filename, source_sheet, source_row, source_key, \
+          position, org_unit) \
+         VALUES ($1, 'Acme', '이직원', 'seed.xlsx', 'Sheet1', 1, 'emp-free-text', \
+                 '백엔드 엔지니어', '팀')",
+    )
+    .bind(ORG)
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+
+    // Recruiting posting (migration 0187) — not a canonical position. `position_ref`
+    // may hold free text; it must never become a job_positions row by itself.
+    sqlx::query(
+        "INSERT INTO recruit_postings \
+         (org_id, posting_no, role_title, company, worksite, employment_type, scope, \
+          headcount, position_ref, status, created_by) \
+         VALUES ($1, 'JP-1001', '백엔드 엔지니어', 'Acme', '서울', 'REGULAR', 'EXTERNAL', \
+                 1, '백엔드 엔지니어', 'DRAFT', $2)",
+    )
+    .bind(ORG)
+    .bind(*actor.as_uuid())
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        count_rows(&owner_pool, COUNT_POSITIONS).await,
+        0,
+        "legacy free-text / recruiting must not materialize job_positions"
+    );
+    assert!(
+        get(&port, org, Uuid::new_v4()).await.unwrap().is_none(),
+        "querying an unknown id must not invent a JobPosition"
+    );
+
+    let created = execute(&port, command(org, actor, create(unit, "정규 직위")))
+        .await
+        .unwrap();
+    let position_id = position_of(&created);
+    let viewed = get(&port, org, position_id)
+        .await
+        .unwrap()
+        .expect("port-created JobPosition is the authority surface");
+    assert_eq!(viewed.attributes, json!({ "title": "정규 직위" }));
+    assert_ne!(
+        viewed.attributes.get("title").and_then(|v| v.as_str()),
+        Some("백엔드 엔지니어"),
+        "port must not copy employees.position / recruit title into attributes"
+    );
+    assert_eq!(count_rows(&owner_pool, COUNT_POSITIONS).await, 1);
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]

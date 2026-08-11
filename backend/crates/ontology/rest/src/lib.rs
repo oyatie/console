@@ -86,6 +86,11 @@ use std::sync::Arc;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
+mod job_position;
+pub use job_position::{
+    JobPositionIdentity, JobPositionProjectionError, identity_from_receipt_result,
+};
+
 // ---------------------------------------------------------------------------
 // State + router
 // ---------------------------------------------------------------------------
