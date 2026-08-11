@@ -59,13 +59,19 @@ workflow supplied by the PR cannot establish its own trust root.
 
 **Release-please exception (fail-closed class, not a broad unsigned allow):** when the
 PR tip is exactly a github-actions[bot] / GitHub-noreply commit whose subject matches
-`chore(<scope>): release X.Y.Z` and whose parent..tip diff is only
-`.release-please-manifest.json` + `CHANGELOG.md` (regular mode-100644 modifications),
+`chore(<scope>): release X.Y.Z` and whose parent..tip diff changes
+`.release-please-manifest.json` + `CHANGELOG.md` (required) and may also change the
+documentation custody pair `docs/documentation-manifest.seed.json` +
+`docs/documentation-index.json` (all-or-nothing; regular mode-100644 modifications),
 and the GitHub event author is `github-actions[bot]` with a
 `release-please--branches--main--components--*` head ref, the bootstrap admits that tip
-without pinned SSH signatures and skips the detached-C validator suite. Any extra path,
-forged human PR author, or non-release subject falls back to the SSH C/T train and
-fails closed. CI `check:console-truth-ledger` / `plan-fanout` share the same class via
+without pinned SSH signatures and skips the detached-C validator suite. Custody paths
+exist so CHANGELOG blob_sha can converge with `check:doc-manifest` /
+`check:doc-links`; `release-please.yml` rewrites the tip through
+`converge-release-please-doc-custody.mjs` when needed (protected generator only;
+`RELEASE_PLEASE_TOKEN` required for rewrites so Required checks schedule). Any other path, forged human PR
+author, or non-release subject falls back to the SSH C/T train and fails closed. CI
+`check:console-truth-ledger` / `plan-fanout` share the same class via
 `verify-console-authority-train.mjs`. See bead `console-9ry` /
 `process.release-candidate-unsigned`.
 

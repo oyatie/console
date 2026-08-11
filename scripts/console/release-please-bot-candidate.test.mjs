@@ -5,6 +5,7 @@ import {
   RELEASE_PLEASE_BOT_NAME,
   RELEASE_PLEASE_COMMITTER_EMAIL,
   RELEASE_PLEASE_COMMITTER_NAME,
+  RELEASE_PLEASE_CUSTODY_PATHS,
   RELEASE_PLEASE_PATHS,
   RELEASE_PLEASE_TRAIN_CLASS,
   assertReleasePleaseBotIdentity,
@@ -35,6 +36,17 @@ const releaseDiff = RELEASE_PLEASE_PATHS.map((path) => ({
   oldType: 'blob',
   newType: 'blob',
 }));
+
+const custodyDiff = RELEASE_PLEASE_CUSTODY_PATHS.map((path) => ({
+  path,
+  status: 'M',
+  oldMode: '100644',
+  newMode: '100644',
+  oldType: 'blob',
+  newType: 'blob',
+}));
+
+const releaseWithCustodyDiff = [...releaseDiff, ...custodyDiff];
 
 function ops(overrides = {}) {
   return {
@@ -76,6 +88,26 @@ test('accepts exact bot identity, subject, and two-file path allow-list', () => 
   );
 });
 
+test('accepts core release paths plus regenerated documentation custody pair', () => {
+  assert.doesNotThrow(() => assertReleasePleaseBotPathDiff(releaseWithCustodyDiff));
+  const classified = classifyReleasePleaseBotTip(ops({ diff: () => releaseWithCustodyDiff }), T);
+  assert.equal(classified.trainClass, RELEASE_PLEASE_TRAIN_CLASS);
+  assert.deepEqual(
+    verifyReleasePleaseBotTrain(ops({ diff: () => releaseWithCustodyDiff }), {
+      headSha: T,
+      mergeSha: M,
+      requirePrMeta: false,
+    }),
+    {
+      trainClass: RELEASE_PLEASE_TRAIN_CLASS,
+      candidateSha: C,
+      integrationTipSha: T,
+      authorityTipSha: T,
+      mergeSha: M,
+    },
+  );
+});
+
 test('rejects forged author, wrong committer, bad subject, and path sprawl', () => {
   assert.throws(
     () => assertReleasePleaseBotIdentity({ ...botIdentity, authorEmail: 'attacker@example.invalid' }),
@@ -91,7 +123,7 @@ test('rejects forged author, wrong committer, bad subject, and path sprawl', () 
   );
   assert.throws(
     () => assertReleasePleaseBotPathDiff([...releaseDiff, { path: 'README.md', status: 'M', oldMode: '100644', newMode: '100644' }]),
-    /only \.release-please-manifest\.json and CHANGELOG\.md/,
+    /documentation custody pair/,
   );
   assert.throws(
     () => assertReleasePleaseBotPathDiff([releaseDiff[0]]),
@@ -100,6 +132,14 @@ test('rejects forged author, wrong committer, bad subject, and path sprawl', () 
   assert.throws(
     () => assertReleasePleaseBotPathDiff(releaseDiff.map((entry) => ({ ...entry, status: 'A', oldMode: '000000' }))),
     /mode-100644 modifications/,
+  );
+  assert.throws(
+    () => assertReleasePleaseBotPathDiff([...releaseDiff, custodyDiff[0]]),
+    /documentation custody paths must be regenerated together/,
+  );
+  assert.throws(
+    () => assertReleasePleaseBotPathDiff(custodyDiff),
+    /must change both/,
   );
   assert.equal(classifyReleasePleaseBotTip(ops({ commitIdentity: () => ({ ...botIdentity, authorName: 'Eve' }) }), T), null);
   assert.equal(
