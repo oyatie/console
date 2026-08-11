@@ -1,0 +1,36 @@
+{
+  "lane": "console-gc9z",
+  "role": "implementer",
+  "status": "done",
+  "headSha": "9377d6077b357468c4919bd89c6626206b1cac58",
+  "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z",
+  "branch": "lane/console-gc9z",
+  "baseSha": "eca122ad0122457a77b85ca55fc1e8b2e4869e74",
+  "summary": "Map LifecycleError arms through into_kernel_error into PgPayrollError::Domain instead of flattening non-NotFound to Internal; aligns store/REST lifecycle path with CanonicalPort PayRun mapping (0a7z/#741 residual).",
+  "filesChanged": [
+    "backend/crates/payroll/adapter-postgres/src/lifecycle.rs"
+  ],
+  "redBaseline": "On pre-fix store path, LifecycleError::From into PgPayrollError / into_kernel_error flattened Validation/InvalidState/SodViolation to Internal (same class as pre-0a7z CanonicalPort). Hostile expectation: Validation arm must surface as KernelError::validation after fix. Base after restack: eca122ad0.",
+  "verification": "Restacked onto origin/main eca122ad0 (#745). Inspected lifecycle.rs: into_kernel_error maps NotFound/Validation/InvalidState/SodViolation/Conflict distinctly; From<LifecycleError> for PgPayrollError uses Domain(other.into_kernel_error()) for non-Db arms. Product C signed G; tip-bind receipt folded under C; jurisdiction T minted after.",
+  "commands": [
+    "git -C /Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z fetch origin main",
+    "git -C /Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z rebase origin/main",
+    "git -C /Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z log -2 --format='%H %G? %s'",
+    "bash /Users/jasonlee/Developer/console/scripts/cursor/preflight-forge.sh",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs /Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z/.cursor/receipts/gc9z.json"
+  ],
+  "contractBreaches": "Error-kind surfacing only; no PayRun wire/OpenAPI change; does not reopen pay_run.rs CanonicalPort mapping.",
+  "enforcementPlacement": "WHERE: lifecycle.rs From/into_kernel_error at convert boundary (subject exists). Finest: LifecycleError enum arm \u2192 KernelError kind. Examined-zero fails: empty match would not compile / miss arms.",
+  "peripheralsUpdated": "n/a - nothing described this behaviour beyond lifecycle.rs mapping; 0a7z residual bead remains the authority note.",
+  "followUps": [
+    "Chesterton: dual path (lifecycle store vs CanonicalPort pay_run) remains \u2014 keep both mapped; do not delete either converter.",
+    "Bead console-gc9z left OPEN per brief; CI babysit owned by orchestrator."
+  ],
+  "lensesApplied": [
+    "Cartesian doubt",
+    "Red Team",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "completedBy": "lane-implementer restack onto eca122ad0 after #745; mint C+T; open PR + squash auto-merge"
+}
