@@ -486,7 +486,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "adcfa1d59dfeb4e54b5e40cf7a4467dae05013a2",
+    "blob_sha": "3b912c6b25e4b11f0b9c237f3264e616a61b5585",
     "archive_tag": null
   },
   {
@@ -3562,6 +3562,16 @@
   {
     "path": "docs/program/ledger/2026-08-10-wave1-canonical-hardening.md",
     "blob_sha": "11258ee8e470d15331de70beb338825b6e2a7f3d",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/program/ledger/2026-08-11-release-please-bot-doc-custody.md",
+    "blob_sha": "e76c27d6bf5b02930291e18851ec0656abf1360e",
     "class": "evidence",
     "owner": "repository maintainers",
     "status": "frozen",

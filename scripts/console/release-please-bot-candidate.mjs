@@ -8,8 +8,11 @@
  *
  * 1. Exact github-actions[bot] author + GitHub noreply committer
  * 2. Subject `chore(<scope>): release X.Y.Z`
- * 3. Parent..tip diff is exactly `.release-please-manifest.json` + `CHANGELOG.md`
- *    (regular mode-100644 modifications, no adds/deletes/renames)
+ * 3. Parent..tip MUST change `.release-please-manifest.json` + `CHANGELOG.md`,
+ *    and MAY also change the documentation custody pair
+ *    (`docs/documentation-manifest.seed.json` + `docs/documentation-index.json`)
+ *    so CHANGELOG blob_sha can converge. All are regular mode-100644
+ *    modifications (no adds/deletes/renames). Custody paths are all-or-nothing.
  * 4. On the pull_request_target bootstrap path: GitHub event PR author is
  *    `github-actions[bot]` and head ref matches the release-please branch pattern
  *    (commit headers alone are forgeable by a write-access collaborator)
@@ -25,6 +28,10 @@ export const RELEASE_PLEASE_PR_AUTHORS = Object.freeze(['github-actions[bot]']);
 export const RELEASE_PLEASE_HEAD_REF = /^release-please--branches--main--components--[A-Za-z0-9._-]+$/;
 export const RELEASE_PLEASE_SUBJECT = /^chore\([^)]+\): release \d+\.\d+\.\d+$/;
 export const RELEASE_PLEASE_PATHS = Object.freeze(['.release-please-manifest.json', 'CHANGELOG.md']);
+export const RELEASE_PLEASE_CUSTODY_PATHS = Object.freeze([
+  'docs/documentation-manifest.seed.json',
+  'docs/documentation-index.json',
+]);
 export const RELEASE_PLEASE_TRAIN_CLASS = 'release-please-bot';
 
 const SHA = /^[0-9a-f]{40}$/;
@@ -58,12 +65,16 @@ export function assertReleasePleaseBotIdentity(identity) {
 
 export function assertReleasePleaseBotPathDiff(changes) {
   if (!Array.isArray(changes)) fail('parent..tip diff is unavailable');
-  const expected = new Set(RELEASE_PLEASE_PATHS);
+  const required = new Set(RELEASE_PLEASE_PATHS);
+  const custody = new Set(RELEASE_PLEASE_CUSTODY_PATHS);
+  const allowed = new Set([...required, ...custody]);
   const seen = new Set();
   for (const change of changes) {
     if (!change || typeof change.path !== 'string') fail('parent..tip diff entry is malformed');
-    if (!expected.has(change.path) || seen.has(change.path)) {
-      fail('parent..tip may change only .release-please-manifest.json and CHANGELOG.md');
+    if (!allowed.has(change.path) || seen.has(change.path)) {
+      fail(
+        'parent..tip may change only .release-please-manifest.json, CHANGELOG.md, and the documentation custody pair',
+      );
     }
     if (change.status !== 'M' || change.oldMode !== '100644' || change.newMode !== '100644') {
       fail('release paths must be regular mode-100644 modifications');
@@ -72,8 +83,14 @@ export function assertReleasePleaseBotPathDiff(changes) {
     if (change.newType !== undefined && change.newType !== 'blob') fail('release paths must remain blobs');
     seen.add(change.path);
   }
-  if (seen.size !== expected.size) {
-    fail('parent..tip must change both .release-please-manifest.json and CHANGELOG.md');
+  for (const path of required) {
+    if (!seen.has(path)) {
+      fail('parent..tip must change both .release-please-manifest.json and CHANGELOG.md');
+    }
+  }
+  const custodySeen = [...custody].filter((path) => seen.has(path));
+  if (custodySeen.length !== 0 && custodySeen.length !== custody.size) {
+    fail('documentation custody paths must be regenerated together');
   }
 }
 
