@@ -3630,6 +3630,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-11-admit-leaves-kwm-cvh-gc9z-0lj.md",
+    "blob_sha": "5b292f56d93a5ddcf22337bbd0a2c11382b23d0f",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/legacy-intent-register.md",
     "class": "evidence",
     "owner": "repository maintainers",
