@@ -94,6 +94,46 @@
       "archive_tag": null
     },
     {
+      "path": ".cursor/PROCESS-SYNTHESIS.md",
+      "blob_sha": "8729fbd44d1b4659cff18004837b7702af143470",
+      "class": "current",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "archive_tag": null
+    },
+    {
+      "path": ".cursor/agents/lane-critic.md",
+      "blob_sha": "1227a8e4a9cef42b185882bdecc8e6b479a9256e",
+      "class": "current",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "archive_tag": null
+    },
+    {
+      "path": ".cursor/agents/lane-implementer.md",
+      "blob_sha": "ddbea3ace54cf539e255d797b15acbf8a46c8551",
+      "class": "current",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "archive_tag": null
+    },
+    {
+      "path": ".cursor/failure-classes-2026-08-10.md",
+      "blob_sha": "de18bc51b3cbb5a1c40b14e36141e237c0efcf03",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "archive_tag": null
+    },
+    {
       "path": ".omx/context/reasoning-lens-contract-20260803T101035Z.md",
       "class": "evidence",
       "owner": "repository maintainers",

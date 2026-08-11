@@ -1,0 +1,39 @@
+---
+description: Universal per-dispatch ritual — every agent (implementation, audit, review, planning, scout, recon) runs this checklist at start and end of every dispatch. North-star strategy lives in the programme SSOT plan; this card is the tactical ritual.
+alwaysApply: true
+---
+
+# Agent ritual v1 (run every dispatch)
+
+Two instruction tiers exist. **Tier 1 (north-star):** the programme SSOT plan — where we are going, waves, topology. **Tier 2 (this card):** the ritual you run on every single dispatch regardless of role. Trivial read-only tasks MAY use the short form (A1 + D1 only).
+
+## A. Orient (before your first tool call)
+
+1. **Role declaration** — state which ONE role you hold: `implementer | critic | auditor | scout | recon | planner | babysit | admit-coordinator`. Name the one thing you MUST NOT do in that role (implementer: babysit CI / open train PR; critic: implement the fix; scout: write product; babysit: write code; coordinator: serialize lanes yourself).
+2. **Position diagram** — draw your place in the flow (mermaid, 4–8 nodes): inputs (tip SHA, brief, owned roots) → you → output (receipt / verdict / patch / map) → who consumes it. If you cannot draw who consumes your output, STOP and elevate — you are about to do orphan work.
+3. **Premise check** — verify ground truth against HEAD before acting (new HEAD = new evidence; a brief's SHA may be stale). State what you verified.
+
+## B. Reasoning map (before implementing / verdicting / planning)
+
+1. **Lens selection** — pick the smallest task-fit subset (≥2) from `CANONICAL_LENSES_V1` (`scripts/check-reasoning-lens-contract.mjs`). Root-level decisions get the full battery; leaves inherit. High-risk domains (authz/migration/contracts/approval/HR-payroll/release/production/compliance) MUST include Red Team, Operability, Blast-radius, Zero-trust or record durable N/A.
+2. **Claim graph** — for each load-bearing claim, tag it `E` (evidence: observed via command/file), `I` (inference from evidence), or `U` (uncertainty/assumption). A verdict or plan built on untagged claims is narrative, not reasoning.
+3. **Challenges[]** — record at least one real challenge to the brief/plan/ADR you were handed (Chesterton first, then still replace if indefensible). Empty or templated challenges = stamp; reject your own work.
+
+## C. Doctrine (during execution)
+
+- Owned roots only; one writer per worktree; RED baseline before fix.
+- **Worktrees live under `<hub>/.worktrees/<name>`** (not sibling `../console-lane-*`). Sibling paths are outside the Cursor workspace and force allow-edit prompts. Prefer `scripts/cursor/provision-lane-worktree.sh`.
+- Evidence keyed to THIS tip SHA; commands recorded verbatim (no empty strings).
+- Friction (path outside roots, hub collision, hook block, policy gap): **STOP → CAPTURE (worktree, tip, paths, exact error) → ELEVATE**. No workaround commits, no bypass, no scope expansion.
+- Forbidden always: mm-role/CLI critics, `*-fast` model slugs, oracle weakening, `#[ignore]`, update-branch button, unsigned commits on authority paths, manifest/index on T.
+
+## D. Close (before you exit)
+
+1. **Receipt** — implementer: schema-valid `<lane-worktree>/.cursor/receipts/<id>.json` (lane, not hub — hub-only = `process.receipt-location-drift`); critic: verdict + `provenByExecution` per finding in the same lane worktree; scout/auditor/recon: findings map with E/I/U tags; planner: updated SSOT section, not a new plan file. Validate via hub absolute path until the ratchet lands: `node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs <lane-receipt>`.
+2. **Flow delta** — one line: what changed for whoever consumes your output (e.g. "leaf ready to admit", "BLOCK: regression pin missing", "lanes X/Y disjoint, Z collides").
+3. **Exit** — return and stop. No CI-watch loops after your receipt; watching belongs to babysit. If you learned a process defect, elevate one line for the SSOT/failure-classes — do not silently patch process.
+
+## Orchestrator-only (parent session)
+- After any admission rebuild: `scripts/cursor/check-admit-sync.sh <admit-worktree>` must be green or you push/re-dispatch **this turn** (`process.admit-tip-unpublished`).
+- Hot-set: when a lane exits, refill or explicitly PARK; babysit-only is banned.
+- Class findings from critics → open/confirm sweep beads the same turn.

@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "bash .cursor/hooks/session-start.sh"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "bash .cursor/hooks/git-lock-enforcer.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/no-mm-role.sh",
+        "matcher": "mm-role|claude -p|codex exec"
+      },
+      {
+        "command": "bash .cursor/hooks/cargo-scope-enforcer.sh",
+        "matcher": "cargo\\s"
+      },
+      {
+        "command": "bash .cursor/hooks/push-admission.sh",
+        "matcher": "git\\s+push|gh\\s+pr\\s+(create|merge)"
+      },
+      {
+        "command": "bash .cursor/hooks/forge-destructive-guard.sh",
+        "matcher": "gh\\s+(api|repo|release|secret|auth)|git\\s+push"
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash .cursor/hooks/stop-receipt-gate.sh",
+        "loop_limit": 2
+      }
+    ]
+  }
+}

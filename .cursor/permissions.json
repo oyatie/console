@@ -1,0 +1,13 @@
+{
+  "_comment": "Do NOT put terminalAllowlist/mcpAllowlist here if Auto-review must stay selectable (Cursor greys Auto-review when ~/.cursor/permissions.json has non-empty allowlists; project files may merge similarly). Put deterministic verbs in Settings → Agents → Approvals & Execution. Classifier steering: ~/.cursor/permissions.json autoRun. Hard denies: .cursor/hooks/git-lock-enforcer.sh, push-admission.sh, forge-destructive-guard.sh, no-mm-role.sh, cargo-scope-enforcer.sh. Suggested IDE allowlist: git, gh, bash, python3, node, npm run, npm test, cargo, buck2, sed, bd, rg, jq, kill.",
+  "autoRun": {
+    "allow_instructions": [
+      "Console autonomous workflow may run without asking when scoped to this workspace including <hub>/.worktrees/* and tmp: git (non-destructive), gh pr/api/run, npm run admit/check/verify, cargo scoped tests, buck2, python3, node scripts, bd, rg/jq."
+    ],
+    "block_instructions": [
+      "Block mm-role, .grok/bin/*, claude -p, and codex exec in Cursor — use native Cursor Task subagents (never *-fast model slugs) instead.",
+      "Block creating git worktrees outside <hub>/.worktrees/ (no ../console-lane-* siblings).",
+      "Block git push --force without --force-with-lease, remote branch deletion, and direct pushes to main."
+    ]
+  }
+}

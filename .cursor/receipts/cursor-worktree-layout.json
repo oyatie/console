@@ -1,0 +1,37 @@
+{
+  "status": "done",
+  "summary": "Root cause: sibling git worktrees under Developer/ sit outside the opened Cursor workspace and hit External-File Protection (allow-edit prompts). Fix: provision only under hub .worktrees/; tighten git-lock allowlist; add provision-lane-worktree.sh; update BASE_LOCK/ritual/agents/failure-classes.",
+  "filesChanged": [
+    ".cursor/hooks/git-lock-enforcer.sh",
+    ".cursor/hooks/session-start.sh",
+    ".cursor/hooks.json",
+    ".cursor/rules/console-base-lock.mdc",
+    ".cursor/rules/console-agent-ritual.mdc",
+    ".cursor/rules/console-standing-lenses.mdc",
+    ".cursor/agents/lane-implementer.md",
+    ".cursor/agents/lane-critic.md",
+    ".cursor/failure-classes-2026-08-10.md",
+    ".cursor/PROCESS-SYNTHESIS.md",
+    ".cursor/permissions.json",
+    "scripts/cursor/provision-lane-worktree.sh",
+    "scripts/cursor/probe-ratchet.py",
+    "scripts/cursor/validate-lane-receipt.mjs",
+    "scripts/cursor/preflight-forge.sh",
+    "scripts/cursor/check-admit-sync.sh",
+    ".cursor/receipts/cursor-worktree-layout.json"
+  ],
+  "redBaseline": "Hostile probe matrix in probe-ratchet.py: out-of-hub sibling worktree add denied; in-repo .worktrees/ absolute and relative adds allowed; worktree remove denied.",
+  "verification": "python3 scripts/cursor/probe-ratchet.py all OK (wt_inrepo_abs, wt_inrepo_rel, wt_sibling_deny, wt_remove_deny). Live provision via scripts/cursor/provision-lane-worktree.sh created this worktree under hub .worktrees/.",
+  "contractBreaches": "none",
+  "enforcementPlacement": "WHERE: .cursor/hooks/git-lock-enforcer.sh on Shell before git worktree add (subject exists at command time). Fineness: path must be .worktrees/<name> or */.worktrees/<name> plus -b lane/*|admission/* origin/main. Examined-zero fails: any worktree add/remove outside that shape is deny (not allow).",
+  "peripheralsUpdated": "BASE_LOCK, ritual, lane-implementer, session-start, failure-classes (process.worktree-outside-workspace), PROCESS-SYNTHESIS item 11, permissions.json block/allow instructions, probe-ratchet worktree cases.",
+  "commands": [
+    "python3 scripts/cursor/probe-ratchet.py",
+    "bash scripts/cursor/provision-lane-worktree.sh --kind lane cursor-worktree-layout"
+  ],
+  "headSha": "c9e8b6a2e7d5583a0b128d64b9f3da8c33e4eac6",
+  "followUps": [
+    "User action: keep Cursor workspace root as the hub console folder so .worktrees/* is in-workspace. New lanes use .worktrees only; existing sibling worktrees grandfathered until retired.",
+    "Do not migrate in-flight product sibling tips mid-flight."
+  ]
+}
