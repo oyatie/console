@@ -1,6 +1,9 @@
 //! Reporting REST API.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use axum::extract::{Query, State};
 use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};

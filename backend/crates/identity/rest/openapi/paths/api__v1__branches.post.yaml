@@ -1,0 +1,31 @@
+tags:
+  - branches
+operationId: createBranch
+summary: Create a branch inside a region
+security:
+- bearerAuth: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/CreateBranchRequest'
+responses:
+  '201':
+    description: Branch created.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/BranchSummary'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'
+  '422':
+    $ref: '#/components/responses/ValidationError'
+  '503':
+    description: JWT verification is not configured.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorBody'

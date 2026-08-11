@@ -2,6 +2,9 @@
 //! capability grant; there is no inherited registry or work-order permission.
 //! Transition routes carry no `branchId`: the branch is read from the locked
 //! row and authorized in-transaction.
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use axum::{
     Json, Router,
     extract::{Path, State},

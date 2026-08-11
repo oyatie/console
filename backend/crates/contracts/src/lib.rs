@@ -62,11 +62,10 @@
 //! `#/definitions/X`) is seen. This is two text scans and not a YAML parse, so
 //! it is not total over YAML; `ref_values` names the gap the two leave.
 //!
-//! What a fragment alone cannot settle is whether a well-formed pointer into a
-//! section [`Fragment`] does not model — `responses`, `parameters`, … — has a
-//! target: the published document supplies those sections and [`compose`]
-//! cannot see it, so those refs are checked for shape and then accepted. Only
-//! `schemas` is resolved.
+//! Non-schema component sections (`parameters`, `responses`, `securitySchemes`)
+//! are resolved when this compose run contributed at least one entry to that
+//! section; otherwise a well-formed pointer is shape-checked and accepted so a
+//! face can still compose alone before the shared fragment joins.
 //!
 //! Fragment bodies are raw YAML text rather than a typed model: the faces
 //! already author this YAML by hand, and a typed re-implementation of OpenAPI
@@ -88,6 +87,12 @@ pub struct Fragment {
     pub source: &'static str,
     pub paths: &'static [PathItem],
     pub schemas: &'static [NamedYaml],
+    /// `components/parameters` entries this face owns.
+    pub parameters: &'static [NamedYaml],
+    /// `components/responses` entries this face owns.
+    pub responses: &'static [NamedYaml],
+    /// `components/securitySchemes` entries this face owns.
+    pub security_schemes: &'static [NamedYaml],
     /// Schemas this face `$ref`s but does not own — shared components such as
     /// `Uuid` or `ErrorBody`. Anything referenced and not listed here must be
     /// defined by the composed set, so dropping an owned schema cannot pass
@@ -99,6 +104,16 @@ pub struct Fragment {
     /// and `ErrorBody`: every face's list becomes empty, and a laundered name
     /// is dangling again because no fragment defines it.
     pub external_schemas: &'static [&'static str],
+}
+
+/// Document preamble: the `openapi:` version and `info:` block. Owned by the
+/// generator's shared fragment, not by any REST face.
+#[derive(Debug, Clone, Copy)]
+pub struct DocumentPreamble {
+    /// Value of the top-level `openapi` field, e.g. `3.1.0`.
+    pub openapi: &'static str,
+    /// YAML body beneath `info:` (title, version, …) at any indentation.
+    pub info: &'static str,
 }
 
 /// One path and every operation served on it. A path is owned by exactly one
@@ -133,6 +148,9 @@ pub enum DuplicateKind {
     Path,
     Operation,
     Schema,
+    Parameter,
+    Response,
+    SecurityScheme,
 }
 
 impl DuplicateKind {
@@ -141,6 +159,9 @@ impl DuplicateKind {
             DuplicateKind::Path => "path",
             DuplicateKind::Operation => "operation",
             DuplicateKind::Schema => "schema",
+            DuplicateKind::Parameter => "parameter",
+            DuplicateKind::Response => "response",
+            DuplicateKind::SecurityScheme => "securityScheme",
         }
     }
 }
@@ -273,18 +294,36 @@ impl std::error::Error for ComposeError {}
 // Composition
 // ---------------------------------------------------------------------------
 
-/// Merge `fragments` into one OpenAPI document body: a `paths:` block, plus a
-/// `components:`/`schemas:` block when any fragment contributes a schema.
+/// Merge `fragments` into one OpenAPI paths+components body (no `openapi`/`info`
+/// preamble). Prefer [`compose_document`] when emitting the published file.
 ///
 /// # Errors
 ///
-/// Returns every duplicate path, operation and schema key found — not just the
-/// first, so one CI run reports the whole conflict set. Once the keys are
-/// unique, returns every malformed and every unresolvable schema `$ref`.
+/// Returns every duplicate path, operation and component key found — not just
+/// the first, so one CI run reports the whole conflict set. Once the keys are
+/// unique, returns every malformed and every unresolvable `$ref`.
 pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
+    compose_parts(fragments, None)
+}
+
+/// Merge `fragments` into a full OpenAPI document, including the preamble.
+pub fn compose_document(
+    fragments: &[&Fragment],
+    preamble: &DocumentPreamble,
+) -> Result<String, ComposeError> {
+    compose_parts(fragments, Some(preamble))
+}
+
+fn compose_parts(
+    fragments: &[&Fragment],
+    preamble: Option<&DocumentPreamble>,
+) -> Result<String, ComposeError> {
     // Value carries the owning source so a later collision can name both sides.
     let mut paths: BTreeMap<&str, (&'static str, BTreeMap<String, String>)> = BTreeMap::new();
     let mut schemas: BTreeMap<&str, (&'static str, String)> = BTreeMap::new();
+    let mut parameters: BTreeMap<&str, (&'static str, String)> = BTreeMap::new();
+    let mut responses: BTreeMap<&str, (&'static str, String)> = BTreeMap::new();
+    let mut security_schemes: BTreeMap<&str, (&'static str, String)> = BTreeMap::new();
     let mut duplicates = Vec::new();
 
     for fragment in fragments {
@@ -318,22 +357,38 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
             paths.insert(item.path, (fragment.source, operations));
         }
 
-        for schema in fragment.schemas {
-            if let Some((owner, _)) = schemas.get(schema.name) {
-                duplicates.push(DuplicateKey {
-                    kind: DuplicateKind::Schema,
-                    key: schema.name.to_owned(),
-                    first: owner,
-                    second: fragment.source,
-                });
-                continue;
-            }
-            schemas.insert(schema.name, (fragment.source, reindent(schema.body, 6)));
-        }
+        collect_named(
+            fragment.source,
+            fragment.schemas,
+            &mut schemas,
+            DuplicateKind::Schema,
+            &mut duplicates,
+        );
+        collect_named(
+            fragment.source,
+            fragment.parameters,
+            &mut parameters,
+            DuplicateKind::Parameter,
+            &mut duplicates,
+        );
+        collect_named(
+            fragment.source,
+            fragment.responses,
+            &mut responses,
+            DuplicateKind::Response,
+            &mut duplicates,
+        );
+        collect_named(
+            fragment.source,
+            fragment.security_schemes,
+            &mut security_schemes,
+            DuplicateKind::SecurityScheme,
+            &mut duplicates,
+        );
     }
 
     if !duplicates.is_empty() {
-        // Ref resolution needs the complete schema set, which a collision denies.
+        // Ref resolution needs the complete set, which a collision denies.
         return Err(ComposeError {
             duplicates,
             unresolvable: Vec::new(),
@@ -341,18 +396,30 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
         });
     }
 
-    let mut known: BTreeSet<&str> = schemas.keys().copied().collect();
+    let mut known_schemas: BTreeSet<&str> = schemas.keys().copied().collect();
+    let known_parameters: BTreeSet<&str> = parameters.keys().copied().collect();
+    let known_responses: BTreeSet<&str> = responses.keys().copied().collect();
+    let known_security: BTreeSet<&str> = security_schemes.keys().copied().collect();
+    // Only resolve a non-schema section when this compose run contributed at
+    // least one entry to it. A face composed alone still refs shared responses;
+    // that is shape-checked and accepted until the shared fragment joins.
+    let resolve_parameters = !known_parameters.is_empty();
+    let resolve_responses = !known_responses.is_empty();
+    let resolve_security = !known_security.is_empty();
     let mut unresolvable = Vec::new();
     let mut dangling = Vec::new();
     for fragment in fragments {
-        known.extend(fragment.external_schemas.iter().copied());
+        known_schemas.extend(fragment.external_schemas.iter().copied());
     }
     for fragment in fragments {
         let bodies = fragment
             .paths
             .iter()
             .flat_map(|item| item.operations.iter().map(|operation| operation.body))
-            .chain(fragment.schemas.iter().map(|schema| schema.body));
+            .chain(fragment.schemas.iter().map(|schema| schema.body))
+            .chain(fragment.parameters.iter().map(|item| item.body))
+            .chain(fragment.responses.iter().map(|item| item.body))
+            .chain(fragment.security_schemes.iter().map(|item| item.body));
         for value in bodies.flat_map(ref_values) {
             let Some((section, key)) = component_ref(value) else {
                 unresolvable.push(UnresolvableRef {
@@ -361,11 +428,16 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
                 });
                 continue;
             };
-            // A section OpenAPI defines but `Fragment` does not model —
-            // `responses`, `parameters`, … — is resolved by the published
-            // document, which `compose` cannot see. The pointer is still known
-            // to be well formed, which is all a fragment alone can settle.
-            if section == "schemas" && !known.contains(key) {
+            let dangling_here = match section {
+                "schemas" => !known_schemas.contains(key),
+                "parameters" => resolve_parameters && !known_parameters.contains(key),
+                "responses" => resolve_responses && !known_responses.contains(key),
+                "securitySchemes" => resolve_security && !known_security.contains(key),
+                // Other OpenAPI component sections are still modeled only as
+                // well-formed pointers (Fragment does not own them yet).
+                _ => false,
+            };
+            if dangling_here {
                 dangling.push(DanglingRef {
                     schema: key.to_owned(),
                     source: fragment.source,
@@ -381,7 +453,16 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
         });
     }
 
-    let mut out = String::from("paths:\n");
+    let mut out = String::new();
+    if let Some(preamble) = preamble {
+        out.push_str("openapi: ");
+        out.push_str(preamble.openapi.trim());
+        out.push('\n');
+        out.push_str("info:\n");
+        out.push_str(&reindent(preamble.info, 2));
+    }
+
+    out.push_str("paths:\n");
     for (path, (_, operations)) in &paths {
         out.push_str(&format!("  {path}:\n"));
         for (method, body) in operations {
@@ -390,15 +471,57 @@ pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
         }
     }
 
-    if !schemas.is_empty() {
-        out.push_str("components:\n  schemas:\n");
-        for (name, (_, body)) in &schemas {
-            out.push_str(&format!("    {name}:\n"));
-            out.push_str(body);
-        }
+    let has_components = !security_schemes.is_empty()
+        || !parameters.is_empty()
+        || !responses.is_empty()
+        || !schemas.is_empty();
+    if has_components {
+        out.push_str("components:\n");
+        emit_component_section(&mut out, "securitySchemes", &security_schemes);
+        emit_component_section(&mut out, "parameters", &parameters);
+        emit_component_section(&mut out, "responses", &responses);
+        emit_component_section(&mut out, "schemas", &schemas);
     }
 
     Ok(out)
+}
+
+fn collect_named(
+    source: &'static str,
+    items: &'static [NamedYaml],
+    into: &mut BTreeMap<&str, (&'static str, String)>,
+    kind: DuplicateKind,
+    duplicates: &mut Vec<DuplicateKey>,
+) {
+    for item in items {
+        if let Some((owner, _)) = into.get(item.name) {
+            duplicates.push(DuplicateKey {
+                kind,
+                key: item.name.to_owned(),
+                first: owner,
+                second: source,
+            });
+            continue;
+        }
+        into.insert(item.name, (source, reindent(item.body, 6)));
+    }
+}
+
+fn emit_component_section(
+    out: &mut String,
+    section: &str,
+    items: &BTreeMap<&str, (&'static str, String)>,
+) {
+    if items.is_empty() {
+        return;
+    }
+    out.push_str("  ");
+    out.push_str(section);
+    out.push_str(":\n");
+    for (name, (_, body)) in items {
+        out.push_str(&format!("    {name}:\n"));
+        out.push_str(body);
+    }
 }
 
 /// Every `#/components/schemas/…` key `body` names, from every position a

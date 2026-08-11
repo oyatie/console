@@ -12,6 +12,9 @@
 //! `PushNotifier` port, degrading gracefully (no-op) when FCM is unconfigured.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use std::collections::BTreeMap;
 use std::sync::Arc;
 

@@ -1,5 +1,8 @@
 //! Authenticated logistics-pilot routes.  Every write has a distinct
 //! capability grant; there is no inherited inventory or dispatch permission.
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use axum::{
     Json, Router,
     extract::{Path, State},

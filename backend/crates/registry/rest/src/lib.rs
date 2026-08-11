@@ -6,6 +6,9 @@
 //! through `with_audit`.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use axum::extract::{DefaultBodyLimit, Multipart, Path, Query, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};

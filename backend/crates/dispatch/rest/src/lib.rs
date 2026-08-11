@@ -1,6 +1,9 @@
 //! REST API for P1 emergency dispatch.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 

@@ -13,6 +13,9 @@
 //! surface and byte-for-byte match `permission_for` for the scout floors:
 //! read/draft `[D,D,D,A,A,A]`, approve/apply `[D,D,D,D,A,A]`. Swapping to
 //! `authorize(...)` once the variants land is mechanical.
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use axum::{
     Json, Router,
     extract::{Path, Query, State},

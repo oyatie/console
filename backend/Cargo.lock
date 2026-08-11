@@ -779,6 +779,7 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "console-analytics-quant-service",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -991,6 +992,7 @@ dependencies = [
  "console-attendance-adapter-postgres",
  "console-attendance-application",
  "console-attendance-domain",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -1048,6 +1050,7 @@ dependencies = [
  "console-benefit-adapter-postgres",
  "console-benefit-application",
  "console-benefit-domain",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -1192,6 +1195,7 @@ dependencies = [
  "console-comms-application",
  "console-comms-credential-cipher",
  "console-comms-domain",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -1260,6 +1264,7 @@ dependencies = [
  "console-compliance-adapter-postgres",
  "console-compliance-application",
  "console-compliance-domain",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -1275,6 +1280,7 @@ name = "console-consulting-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -1345,6 +1351,7 @@ name = "console-dispatch-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-dispatch-adapter-postgres",
  "console-dispatch-application",
  "console-dispatch-domain",
@@ -1426,6 +1433,7 @@ version = "0.0.0"
 dependencies = [
  "axum",
  "base64 0.22.1",
+ "console-contracts",
  "console-docs-adapter-postgres",
  "console-docs-application",
  "console-docs-domain",
@@ -1489,6 +1497,7 @@ name = "console-equipment-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-equipment-adapter-postgres",
  "console-equipment-application",
  "console-kernel-core",
@@ -1549,6 +1558,7 @@ name = "console-evaluation-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-evaluation-adapter-postgres",
  "console-evaluation-application",
  "console-evaluation-domain",
@@ -1566,6 +1576,7 @@ name = "console-facilities-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -1621,6 +1632,7 @@ name = "console-finance-gl-rest"
 version = "0.0.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-finance-gl-adapter-postgres",
  "console-finance-gl-application",
  "console-finance-gl-domain",
@@ -1678,6 +1690,7 @@ name = "console-financial-rest"
 version = "0.0.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-financial-adapter-postgres",
  "console-financial-application",
  "console-financial-domain",
@@ -1810,6 +1823,7 @@ name = "console-governance-rest"
 version = "0.0.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-governance-adapter-postgres",
  "console-governance-application",
  "console-governance-domain",
@@ -1869,6 +1883,7 @@ name = "console-identity-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-identity-adapter-postgres",
  "console-identity-application",
  "console-identity-domain",
@@ -1938,6 +1953,7 @@ name = "console-inbox-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-inbox-adapter-postgres",
  "console-inbox-application",
  "console-inbox-domain",
@@ -2002,6 +2018,7 @@ name = "console-inspection-rest"
 version = "0.0.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-inspection-adapter-postgres",
  "console-inspection-application",
  "console-inspection-domain",
@@ -2083,6 +2100,7 @@ name = "console-inventory-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-inventory-adapter-postgres",
  "console-inventory-application",
  "console-inventory-domain",
@@ -2160,6 +2178,7 @@ name = "console-leave-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-inbox-adapter-postgres",
  "console-kernel-core",
  "console-leave-adapter-postgres",
@@ -2220,6 +2239,7 @@ name = "console-logistics-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-logistics-adapter-postgres",
  "console-platform-auth",
@@ -2278,6 +2298,7 @@ name = "console-messenger-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-messenger-adapter-postgres",
  "console-messenger-application",
@@ -2341,6 +2362,7 @@ name = "console-notices-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-notices-adapter-postgres",
  "console-notices-application",
@@ -2407,6 +2429,7 @@ name = "console-notifications-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-notifications-adapter-postgres",
  "console-notifications-application",
@@ -2504,6 +2527,7 @@ name = "console-ontology-rest"
 version = "0.0.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-governance-adapter-postgres",
  "console-governance-application",
  "console-governance-domain",
@@ -2571,6 +2595,7 @@ name = "console-orgchange-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-orgchange-adapter-postgres",
  "console-orgchange-domain",
@@ -2617,6 +2642,7 @@ name = "console-payroll-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-inbox-adapter-postgres",
  "console-inbox-application",
  "console-inbox-domain",
@@ -3010,6 +3036,7 @@ version = "0.0.0"
 dependencies = [
  "axum",
  "base64 0.22.1",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -3068,6 +3095,7 @@ name = "console-recruiting-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -3125,6 +3153,7 @@ name = "console-registry-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -3193,6 +3222,7 @@ name = "console-reporting-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -3251,6 +3281,7 @@ name = "console-sales-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -3310,6 +3341,7 @@ name = "console-support-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",
@@ -3481,6 +3513,7 @@ name = "console-workorder-rest"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console-contracts",
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-authz",

@@ -34,6 +34,9 @@
 //! audited, mirroring `GET /api/v1/hr/attendance-records/me`.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 mod lifecycle;
 mod payslip_draft;
 
