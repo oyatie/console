@@ -6,6 +6,10 @@
 //! `org_unit_source_bindings`) must read back as `RESOLVED` with the canonical
 //! `orgUnitId`; unbound regions stay `UNBOUND` with a null id. Ambiguous free
 //! text never reaches the binding writer (typed UUID seam).
+//!
+//! Oracle integrity: `org_entities_readback_…` seeds as the migration owner then
+//! reads through a genuine `console_rt` pool (NOBYPASSRLS + FORCE RLS). An
+//! owner-pool-only green would mask an unarmed `app.current_org` read.
 
 use console_kernel_core::{OrgId, UserId};
 use console_ontology_canonical_adapter_postgres::org_unit::{
@@ -15,13 +19,30 @@ use console_ontology_canonical_adapter_postgres::org_unit::{
 use console_orgchange_adapter_postgres::PgOrgChangeStore;
 use console_orgchange_domain::CanonicalResolutionStatus;
 use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
 
+/// Inlined from employment_port_as_runtime_role: SET ROLE console_rt on connect.
+async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
+    let options = owner_pool.connect_options().as_ref().clone();
+    PgPoolOptions::new()
+        .max_connections(4)
+        .after_connect(|conn, _meta| {
+            Box::pin(async move {
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
+                Ok(())
+            })
+        })
+        .connect_with(options)
+        .await
+        .expect("connect console_rt-role test pool")
+}
+
 #[sqlx::test(migrations = "../../platform/db/migrations")]
-async fn org_entities_readback_company_and_bound_org_units(pool: PgPool) {
-    let org = seed_org(&pool, "7sx-ref").await;
-    let actor = seed_user(&pool, org, "EXECUTIVE").await;
-    let group = seed_group_with_member(&pool, org, actor).await;
+async fn org_entities_readback_company_and_bound_org_units(owner_pool: PgPool) {
+    let org = seed_org(&owner_pool, "7sx-ref").await;
+    let actor = seed_user(&owner_pool, org, "EXECUTIVE").await;
+    let group = seed_group_with_member(&owner_pool, org, actor).await;
 
     // CompanyPort-shaped revise: one company_revisions row ⇒ RESOLVED.
     sqlx::query(
@@ -33,23 +54,38 @@ async fn org_entities_readback_company_and_bound_org_units(pool: PgPool) {
     .bind(Uuid::new_v4())
     .bind(*actor.as_uuid())
     .bind(vec![0u8; 32])
-    .execute(&pool)
+    .execute(&owner_pool)
     .await
     .unwrap();
 
-    let region = seed_region(&pool, org, "리전-참조").await;
-    let unbound_region = seed_region(&pool, org, "리전-미결").await;
-    let branch = seed_branch(&pool, org, region, "지점-참조").await;
+    let region = seed_region(&owner_pool, org, "리전-참조").await;
+    let unbound_region = seed_region(&owner_pool, org, "리전-미결").await;
+    let branch = seed_branch(&owner_pool, org, region, "지점-참조").await;
 
     // Port-created unit shape: org_units + revision + source binding.
-    let unit =
-        seed_bound_org_unit(&pool, org, actor, SOURCE_KIND_REGION, region, "리전-참조").await;
-    let _branch_unit =
-        seed_bound_org_unit(&pool, org, actor, SOURCE_KIND_BRANCH, branch, "지점-참조").await;
+    let unit = seed_bound_org_unit(
+        &owner_pool,
+        org,
+        actor,
+        SOURCE_KIND_REGION,
+        region,
+        "리전-참조",
+    )
+    .await;
+    let _branch_unit = seed_bound_org_unit(
+        &owner_pool,
+        org,
+        actor,
+        SOURCE_KIND_BRANCH,
+        branch,
+        "지점-참조",
+    )
+    .await;
 
     let _ = group; // membership is what org_entities walks
+    let runtime_pool = runtime_role_pool(&owner_pool).await;
     console_platform_request_context::scope_org(org, async move {
-        let store = PgOrgChangeStore::new(pool.clone());
+        let store = PgOrgChangeStore::new(runtime_pool);
         let entities = store.org_entities(actor).await.unwrap();
         let entity = entities
             .iter()
@@ -59,7 +95,8 @@ async fn org_entities_readback_company_and_bound_org_units(pool: PgPool) {
         assert_eq!(entity.company_id, *org.as_uuid());
         assert_eq!(
             entity.company_resolution_status,
-            CanonicalResolutionStatus::Resolved
+            CanonicalResolutionStatus::Resolved,
+            "console_rt must see company_revisions when app.current_org is armed"
         );
 
         let bound_region = entity

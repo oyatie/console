@@ -35462,6 +35462,9 @@ components:
       - slug
       - name
       - status
+      - companyId
+      - companyResolutionStatus
+      - orgUnits
       properties:
         orgId:
           $ref: '#/components/schemas/Uuid'
@@ -35472,6 +35475,39 @@ components:
         status:
           type: string
           description: Tenant status; ACTIVE, SUSPENDED, or ARCHIVED.
+        companyId:
+          $ref: '#/components/schemas/Uuid'
+          description: Canonical Company id — identical to orgId (organizations IS the company).
+        companyResolutionStatus:
+          $ref: '#/components/schemas/CanonicalResolutionStatus'
+        orgUnits:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgUnitReference'
+    CanonicalResolutionStatus:
+      type: string
+      enum: [RESOLVED, UNBOUND, AMBIGUOUS]
+      description: >
+        How a legacy or tenant row resolves onto a canonical Company/OrgUnit id.
+        AMBIGUOUS is reserved for text probes and must never mint authority.
+    OrgUnitReference:
+      type: object
+      required:
+      - sourceKind
+      - sourceId
+      - resolutionStatus
+      properties:
+        orgUnitId:
+          $ref: '#/components/schemas/Uuid'
+          description: Present when resolutionStatus is RESOLVED.
+        sourceKind:
+          type: string
+          description: Legacy source kind; production values include region and branch.
+        sourceId:
+          type: string
+          description: Legacy source id (region/branch UUID as text when unambiguous).
+        resolutionStatus:
+          $ref: '#/components/schemas/CanonicalResolutionStatus'
     RecruitPostingStatus:
       type: string
       enum: [DRAFT, PUBLISHED, CLOSED]

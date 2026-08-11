@@ -2036,13 +2036,22 @@ impl PgOrgChangeStore {
         }
         let mut out = Vec::with_capacity(by_org.len());
         for (org_uuid, (slug, name, status, org_id)) in by_org {
-            let company_resolved: bool = sqlx::query_scalar(
-                "SELECT EXISTS(SELECT 1 FROM company_revisions WHERE org_id = $1)",
-            )
-            .bind(org_uuid)
-            .fetch_one(&self.pool)
+            // company_revisions / org_unit_source_bindings / regions / branches
+            // are FORCE RLS — arm app.current_org per member tenant (not the
+            // bare pool used for the identity-only grants resolver above).
+            let (company_resolved, org_units) = with_org_conn(&self.pool, org_id, |tx| {
+                Box::pin(async move {
+                    let company_resolved =
+                        console_ontology_canonical_adapter_postgres::company::company_has_revision(
+                            tx.as_mut(),
+                            org_id,
+                        )
+                        .await?;
+                    let org_units = load_org_unit_references_tx(tx, org_id).await?;
+                    Ok::<_, PgOrgChangeError>((company_resolved, org_units))
+                })
+            })
             .await?;
-            let org_units = load_org_unit_references(&self.pool, org_id).await?;
             out.push(OrgEntitySummary {
                 org_id: org_uuid,
                 slug,
@@ -2063,8 +2072,9 @@ impl PgOrgChangeStore {
 
 /// Region/branch rows for a tenant, LEFT JOIN'd to `org_unit_source_bindings`.
 /// Unbound legacy rows stay visible with `org_unit_id: None` (gap is observable).
-async fn load_org_unit_references(
-    pool: &PgPool,
+/// Caller must already have armed `app.current_org` for `org_id`.
+async fn load_org_unit_references_tx(
+    tx: Tx<'_, '_>,
     org_id: OrgId,
 ) -> Result<Vec<OrgUnitReference>, PgOrgChangeError> {
     let org = *org_id.as_uuid();
@@ -2095,7 +2105,7 @@ async fn load_org_unit_references(
          ORDER BY source_kind, source_id",
     )
     .bind(org)
-    .fetch_all(pool)
+    .fetch_all(tx.as_mut())
     .await?;
 
     let mut refs = Vec::with_capacity(rows.len());

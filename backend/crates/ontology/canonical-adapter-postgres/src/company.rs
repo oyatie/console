@@ -392,12 +392,10 @@ pub async fn company_has_revision<'e, E>(executor: E, org_id: OrgId) -> Result<b
 where
     E: sqlx::Executor<'e, Database = sqlx::Postgres>,
 {
-    let found: Option<i64> =
-        sqlx::query_scalar("SELECT 1 FROM company_revisions WHERE org_id = $1 LIMIT 1")
-            .bind(*org_id.as_uuid())
-            .fetch_optional(executor)
-            .await?;
-    Ok(found.is_some())
+    sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM company_revisions WHERE org_id = $1)")
+        .bind(*org_id.as_uuid())
+        .fetch_one(executor)
+        .await
 }
 
 #[cfg(test)]
