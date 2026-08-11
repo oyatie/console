@@ -17487,6 +17487,62 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
+  /api/v2/leave/requests/{id}/alternate-dates:
+    post:
+      tags:
+        - leave
+      operationId: proposeLeaveAlternateDatesV2
+      summary: Propose worker-chosen alternate 시기 on a §60⑤ consult
+      description: >-
+        Self-service only: the authenticated caller must be the original
+        requester of a `time_change_consult` leave request. No
+        `employee_directory_manage` capability is required (or sufficient) —
+        managers cannot choose the alternate dates. The body carries a new
+        inclusive date span that must differ from the original 시기; leave
+        type and partial-day period are preserved from the consult row.
+        Returns the updated v2 leave-request view with `alternate_*` fields
+        populated.
+      security:
+        - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveProposeAlternateDatesRequest'
+      responses:
+        '200':
+          description: The consult request with worker-proposed alternate dates.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequestV2View'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: >-
+            Request is not in `time_change_consult`, dates are invalid or
+            identical to the original 시기, or the body carries unknown fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '503':
+          description: The separately credentialed leave command database is not configured or unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
   /api/v2/leave/requests/{id}/charge-resolution:
     post:
       tags:
@@ -17555,7 +17611,12 @@ paths:
         decided by its own requester (403). 근로기준법 §60 forbids refusing 연차:
         `return`/`reject` are retired (422) and the only non-approve decision is
         `time_change` (§60⑤ 시기변경 협의), which requires a comment and never
-        touches the ledger.
+        touches the ledger. Eligibility for `time_change` is system-judged from
+        branch coverage evidence (요건 자동 판정); without a coverage shortfall
+        the decision fails closed with 422 `leave_decide.time_change_ineligible`.
+        A successful consult stamps `time_change_grounds` /
+        `time_change_evidence` on the v2 view; the worker then proposes
+        alternate dates via POST `/api/v2/leave/requests/{id}/alternate-dates`.
         Approval additionally requires a resolved exact charge and a distinct
         resolver. Clients must carry the current request_version as
         `expected_version`; omission is rejected so every v2 decision is an
@@ -17599,7 +17660,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
         '422':
-          description: Missing mandatory comment or unknown decision.
+          description: >-
+            Missing mandatory comment, unknown decision, or `time_change`
+            without automatic coverage-shortfall eligibility
+            (`leave_decide.time_change_ineligible`).
           content:
             application/json:
               schema:
@@ -25534,7 +25598,8 @@ components:
           enum: [approve, time_change]
           description: >-
             근로기준법 §60: refusal is not representable. `time_change` opens the
-            §60⑤ 시기변경 협의; `return`/`reject` are rejected with 422.
+            §60⑤ 시기변경 협의 only when system coverage evidence shows a
+            shortfall; `return`/`reject` are rejected with 422.
         comment:
           type: string
           description: Mandatory for time_change; optional for approve.
@@ -25578,6 +25643,21 @@ components:
           type: number
           format: double
           description: Unused annual-leave days motivating the push.
+    LeaveProposeAlternateDatesRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - start_date
+      - end_date
+      properties:
+        start_date:
+          type: string
+          format: date
+          description: Inclusive alternate 시기 start (YYYY-MM-DD); must differ from the original span.
+        end_date:
+          type: string
+          format: date
+          description: Inclusive alternate 시기 end (YYYY-MM-DD); must differ from the original span.
     LeaveRefusalRequest:
       type: object
       description: A 노무수령거부 notice served after a round-2 promotion.
@@ -25746,6 +25826,34 @@ components:
         decision_comment:
           type: string
           description: Mandatory on time_change; present only when set.
+        time_change_grounds:
+          $ref: '#/components/schemas/TimeChangeGroundsCode'
+          description: >-
+            System-judged §60⑤ grounds code when status is `time_change_consult`.
+            Omitted until a consult opens; never a free-text manager narrative.
+        time_change_evidence:
+          $ref: '#/components/schemas/TimeChangeCoverageEvidence'
+          description: >-
+            Coverage evidence snapshot that justified the grounds. Omitted until
+            a consult opens.
+        alternate_start_date:
+          type: string
+          format: date
+          description: Worker-chosen alternate 시기 start; omitted until proposed.
+        alternate_end_date:
+          type: string
+          format: date
+          description: Worker-chosen alternate 시기 end; omitted until proposed.
+        alternate_partial_day_period:
+          type: string
+          enum: [am, pm]
+          description: >-
+            Preserved partial-day period from the consult row when the original
+            leave_type is half_day; omitted otherwise / until proposed.
+        alternate_proposed_at:
+          type: string
+          format: date-time
+          description: When the requester proposed alternate dates; omitted until then.
         ap_run_id:
           type: string
           format: uuid
@@ -33936,6 +34044,45 @@ components:
       - PREVENTION
       - MANAGEMENT
       - RECEPTION
+    TimeChangeCoverageEvidence:
+      type: object
+      additionalProperties: false
+      required:
+      - headcount
+      - already_out
+      - minimum_on_duty
+      - projected_available
+      properties:
+        headcount:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Home-branch employees counted for coverage at decide time.
+        already_out:
+          type: integer
+          format: int32
+          minimum: 0
+          description: >-
+            Distinct other subjects with approved leave overlapping the
+            requested span on that branch.
+        minimum_on_duty:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Smallest non-vacuous on-duty floor used by the automatic gate.
+        projected_available:
+          type: integer
+          format: int64
+          description: >-
+            headcount − already_out − 1 (the requester). Negative or below
+            minimum_on_duty is what makes `time_change` eligible.
+    TimeChangeGroundsCode:
+      type: string
+      enum:
+      - branch_coverage_shortfall
+      description: >-
+        Closed set of system-judged §60⑤ grounds. Free-text manager narrative is
+        never a grounds code.
     Timestamp:
       type: string
       format: date-time

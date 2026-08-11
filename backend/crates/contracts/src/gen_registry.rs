@@ -4994,6 +4994,15 @@ const LEAVE_FRAGMENT_PATHS: &[PathItem] = &[
         ],
     },
     PathItem {
+        path: "/api/v2/leave/requests/{id}/alternate-dates",
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../../leave/rest/openapi/paths/api__v2__leave__requests__id__alternate-dates.post.yaml"),
+            },
+        ],
+    },
+    PathItem {
         path: "/api/v2/leave/requests/{id}/charge-resolution",
         operations: &[
             Operation {
@@ -5060,6 +5069,10 @@ const LEAVE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../leave/rest/openapi/schemas/LeavePromotionRequest.yaml"),
     },
     NamedYaml {
+        name: "LeaveProposeAlternateDatesRequest",
+        body: include_str!("../../leave/rest/openapi/schemas/LeaveProposeAlternateDatesRequest.yaml"),
+    },
+    NamedYaml {
         name: "LeaveRefusalRequest",
         body: include_str!("../../leave/rest/openapi/schemas/LeaveRefusalRequest.yaml"),
     },
@@ -5106,6 +5119,14 @@ const LEAVE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "SelfLeaveBalance",
         body: include_str!("../../leave/rest/openapi/schemas/SelfLeaveBalance.yaml"),
+    },
+    NamedYaml {
+        name: "TimeChangeCoverageEvidence",
+        body: include_str!("../../leave/rest/openapi/schemas/TimeChangeCoverageEvidence.yaml"),
+    },
+    NamedYaml {
+        name: "TimeChangeGroundsCode",
+        body: include_str!("../../leave/rest/openapi/schemas/TimeChangeGroundsCode.yaml"),
     },
 ];
 

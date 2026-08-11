@@ -82,6 +82,15 @@ const PATHS: &[PathItem] = &[
         ],
     },
     PathItem {
+        path: "/api/v2/leave/requests/{id}/alternate-dates",
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v2__leave__requests__id__alternate-dates.post.yaml"),
+            },
+        ],
+    },
+    PathItem {
         path: "/api/v2/leave/requests/{id}/charge-resolution",
         operations: &[
             Operation {
@@ -148,6 +157,10 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/LeavePromotionRequest.yaml"),
     },
     NamedYaml {
+        name: "LeaveProposeAlternateDatesRequest",
+        body: include_str!("../openapi/schemas/LeaveProposeAlternateDatesRequest.yaml"),
+    },
+    NamedYaml {
         name: "LeaveRefusalRequest",
         body: include_str!("../openapi/schemas/LeaveRefusalRequest.yaml"),
     },
@@ -194,5 +207,13 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "SelfLeaveBalance",
         body: include_str!("../openapi/schemas/SelfLeaveBalance.yaml"),
+    },
+    NamedYaml {
+        name: "TimeChangeCoverageEvidence",
+        body: include_str!("../openapi/schemas/TimeChangeCoverageEvidence.yaml"),
+    },
+    NamedYaml {
+        name: "TimeChangeGroundsCode",
+        body: include_str!("../openapi/schemas/TimeChangeGroundsCode.yaml"),
     },
 ];

@@ -101,6 +101,34 @@ properties:
   decision_comment:
     type: string
     description: Mandatory on time_change; present only when set.
+  time_change_grounds:
+    $ref: '#/components/schemas/TimeChangeGroundsCode'
+    description: >-
+      System-judged §60⑤ grounds code when status is `time_change_consult`.
+      Omitted until a consult opens; never a free-text manager narrative.
+  time_change_evidence:
+    $ref: '#/components/schemas/TimeChangeCoverageEvidence'
+    description: >-
+      Coverage evidence snapshot that justified the grounds. Omitted until
+      a consult opens.
+  alternate_start_date:
+    type: string
+    format: date
+    description: Worker-chosen alternate 시기 start; omitted until proposed.
+  alternate_end_date:
+    type: string
+    format: date
+    description: Worker-chosen alternate 시기 end; omitted until proposed.
+  alternate_partial_day_period:
+    type: string
+    enum: [am, pm]
+    description: >-
+      Preserved partial-day period from the consult row when the original
+      leave_type is half_day; omitted otherwise / until proposed.
+  alternate_proposed_at:
+    type: string
+    format: date-time
+    description: When the requester proposed alternate dates; omitted until then.
   ap_run_id:
     type: string
     format: uuid
