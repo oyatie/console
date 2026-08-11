@@ -18,7 +18,9 @@
  *   default GITHUB_TOKEN force-push does not schedule Required checks.
  *
  * Intended caller: `.github/workflows/release-please.yml` after the action, or
- * a workflow_dispatch heal.
+ * a workflow_dispatch heal. Heal also rewrites tips whose subject/parent/path
+ * set are valid but author/committer identity is poisoned — still fail-closed
+ * on path sprawl or wrong subject.
  */
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -34,8 +36,9 @@ import {
   RELEASE_PLEASE_HEAD_REF,
   RELEASE_PLEASE_PATHS,
   RELEASE_PLEASE_SUBJECT,
-  assertReleasePleaseBotIdentity,
   gitCommitIdentity,
+  gitRawDiff,
+  releasePleaseCustodyRewritePlan,
 } from './release-please-bot-candidate.mjs';
 
 const PROTECTED_ROOT = process.cwd();
@@ -134,8 +137,10 @@ export function main() {
     throw new Error(`origin/${pr.headRefName} tip ${tip} != PR head ${pr.headRefOid}`);
   }
 
-  const identity = gitCommitIdentity(PROTECTED_ROOT, tip, (root, args) => run('git', ['-C', root, ...args]));
-  assertReleasePleaseBotIdentity(identity);
+  const gitAt = (root, args) => run('git', ['-C', root, ...args]);
+  const identity = gitCommitIdentity(PROTECTED_ROOT, tip, gitAt);
+  const parent = gitAt(PROTECTED_ROOT, ['rev-parse', `${tip}^`]).trim();
+  const pathChanges = gitRawDiff(PROTECTED_ROOT, parent, tip, gitAt);
 
   const work = mkdtempSync(join(tmpdir(), 'console-rp-custody-'));
   try {
@@ -145,20 +150,29 @@ export function main() {
     run('node', [PROTECTED_GENERATOR, '--write'], { cwd: work });
 
     const dirty = ALLOWED.filter((path) => isDirty(work, path));
-    if (dirty.length === 0) {
-      console.log(`converge-release-please-doc-custody: PR #${pr.number} custody already converged`);
-      return { status: 'converged', pr: pr.number, tip };
-    }
+    const dirtyCustodyPaths = dirty.filter((path) => RELEASE_PLEASE_CUSTODY_PATHS.includes(path));
+    // Fail closed if the generator dirtied a non-custody allowlisted path.
     for (const path of dirty) {
       if (!RELEASE_PLEASE_CUSTODY_PATHS.includes(path)) {
         throw new Error(`unexpected dirty path outside custody pair: ${path}`);
       }
     }
 
+    // Structure (subject + path allow-list) first; identity may be poisoned and
+    // still rewrite. Path sprawl / wrong subject throw inside the plan helper.
+    const plan = releasePleaseCustodyRewritePlan({
+      identity,
+      pathChanges,
+      dirtyCustodyPaths,
+    });
+    if (plan.action === 'noop') {
+      console.log(`converge-release-please-doc-custody: PR #${pr.number} custody already converged`);
+      return { status: 'converged', pr: pr.number, tip };
+    }
+
     assertPushTokenCanScheduleChecks(token);
 
-    const parent = git(work, ['rev-parse', 'HEAD^']).trim();
-    const subject = git(work, ['show', '-s', '--format=%s', 'HEAD']).trim();
+    const subject = identity.subject;
     if (!RELEASE_PLEASE_SUBJECT.test(subject)) {
       throw new Error(`tip subject is not a release subject: ${subject}`);
     }
@@ -174,6 +188,7 @@ export function main() {
     }
 
     // Match release-please / GitHub web-flow identity exactly (author bot, committer GitHub).
+    // gpgsign=false: bot tips are unsigned by design; identity headers are the gate.
     run('git', ['-c', 'commit.gpgsign=false', 'commit', '--no-verify', '-m', subject], {
       cwd: work,
       env: {
@@ -185,6 +200,16 @@ export function main() {
       },
     });
     const newTip = git(work, ['rev-parse', 'HEAD']).trim();
+    const healed = gitCommitIdentity(work, newTip, (root, args) => git(root, args));
+    // Post-rewrite identity must be exact bot/GitHub — never leave a poisoned tip.
+    if (
+      healed.authorName !== RELEASE_PLEASE_BOT_NAME
+      || healed.authorEmail !== RELEASE_PLEASE_BOT_EMAIL
+      || healed.committerName !== RELEASE_PLEASE_COMMITTER_NAME
+      || healed.committerEmail !== RELEASE_PLEASE_COMMITTER_EMAIL
+    ) {
+      throw new Error('rewrite produced non-bot identity; refusing to push');
+    }
 
     // Push with the scheduling-capable token (not the Actions default).
     const remote = `https://x-access-token:${token}@github.com/${run('gh', ['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner']).trim()}.git`;
@@ -194,8 +219,11 @@ export function main() {
       remote,
       `HEAD:refs/heads/${pr.headRefName}`,
     ]);
-    console.log(`converge-release-please-doc-custody: PR #${pr.number} tip ${tip} -> ${newTip} (custody converged)`);
-    return { status: 'rewritten', pr: pr.number, tip, newTip };
+    console.log(
+      `converge-release-please-doc-custody: PR #${pr.number} tip ${tip} -> ${newTip}`
+      + ` (rewritten reason=${plan.reason})`,
+    );
+    return { status: 'rewritten', pr: pr.number, tip, newTip, reason: plan.reason };
   } finally {
     try { run('git', ['worktree', 'remove', '--force', work]); } catch { /* best-effort */ }
     try { rmSync(work, { recursive: true, force: true }); } catch { /* best-effort */ }

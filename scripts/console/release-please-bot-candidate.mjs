@@ -63,6 +63,49 @@ export function assertReleasePleaseBotIdentity(identity) {
   }
 }
 
+/**
+ * Structure-only admission for converge heal: subject + path allow-list without
+ * requiring bot identity. Lets a poisoned committer/author tip be rewritten
+ * when the release shape is otherwise valid; still fail-closed on sprawl.
+ */
+export function assertReleasePleaseHealableStructure({ subject, changes } = {}) {
+  if (typeof subject !== 'string' || !RELEASE_PLEASE_SUBJECT.test(subject)) {
+    fail('tip subject must match chore(<scope>): release X.Y.Z');
+  }
+  assertReleasePleaseBotPathDiff(changes);
+}
+
+/**
+ * Decide whether converge must rewrite the tip.
+ * - noop: exact bot identity and custody already clean
+ * - rewrite/identity: structure OK but author/committer poisoned (heal)
+ * - rewrite/custody: identity OK but custody pair dirty
+ * Path sprawl / bad subject throw (fail closed) before any rewrite plan.
+ */
+export function releasePleaseCustodyRewritePlan({ identity, pathChanges, dirtyCustodyPaths } = {}) {
+  if (!identity || typeof identity !== 'object') fail('commit identity is unavailable');
+  assertReleasePleaseHealableStructure({ subject: identity.subject, changes: pathChanges });
+  if (!Array.isArray(dirtyCustodyPaths)) fail('dirty custody path list is unavailable');
+  for (const path of dirtyCustodyPaths) {
+    if (!RELEASE_PLEASE_CUSTODY_PATHS.includes(path)) {
+      fail(`unexpected dirty path outside custody pair: ${path}`);
+    }
+  }
+  let identityOk = true;
+  try {
+    assertReleasePleaseBotIdentity(identity);
+  } catch {
+    identityOk = false;
+  }
+  if (identityOk && dirtyCustodyPaths.length === 0) {
+    return Object.freeze({ action: 'noop' });
+  }
+  return Object.freeze({
+    action: 'rewrite',
+    reason: identityOk ? 'custody' : 'identity',
+  });
+}
+
 export function assertReleasePleaseBotPathDiff(changes) {
   if (!Array.isArray(changes)) fail('parent..tip diff is unavailable');
   const required = new Set(RELEASE_PLEASE_PATHS);

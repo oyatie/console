@@ -10,9 +10,11 @@ import {
   RELEASE_PLEASE_TRAIN_CLASS,
   assertReleasePleaseBotIdentity,
   assertReleasePleaseBotPathDiff,
+  assertReleasePleaseHealableStructure,
   assertTrustedReleasePleasePrMeta,
   classifyReleasePleaseBotTip,
   classifyReleasePleaseSquashBinding,
+  releasePleaseCustodyRewritePlan,
   verifyReleasePleaseBotTrain,
 } from './release-please-bot-candidate.mjs';
 
@@ -249,3 +251,43 @@ test('admits main squash that tree-binds a classifiable release-please tip; forg
     'T0 that fails bot identity must not admit the squash',
   );
 });
+
+test('poisoned committer with valid release+custody paths is healable and plans rewrite', () => {
+  const poisoned = {
+    ...botIdentity,
+    committerName: 'Jason Lee',
+    committerEmail: 'jason19931225@gmail.com',
+  };
+  assert.throws(() => assertReleasePleaseBotIdentity(poisoned), /tip committer/);
+  assert.doesNotThrow(() => assertReleasePleaseHealableStructure({
+    subject: poisoned.subject,
+    changes: releaseWithCustodyDiff,
+  }));
+  assert.deepEqual(
+    releasePleaseCustodyRewritePlan({
+      identity: poisoned,
+      pathChanges: releaseWithCustodyDiff,
+      dirtyCustodyPaths: [],
+    }),
+    { action: 'rewrite', reason: 'identity' },
+  );
+  assert.deepEqual(
+    releasePleaseCustodyRewritePlan({
+      identity: botIdentity,
+      pathChanges: releaseWithCustodyDiff,
+      dirtyCustodyPaths: [],
+    }),
+    { action: 'noop' },
+  );
+  assert.throws(
+    () => releasePleaseCustodyRewritePlan({
+      identity: poisoned,
+      pathChanges: [...releaseWithCustodyDiff, {
+        path: 'README.md', status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob',
+      }],
+      dirtyCustodyPaths: [],
+    }),
+    /documentation custody pair|only .*release-please/,
+  );
+});
+
