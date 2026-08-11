@@ -17,6 +17,7 @@ rust_library(
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/inbox/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/inbox/adapter-postgres:console-inbox-adapter-postgres",
         "//backend/crates/inbox/application:console-inbox-application",
         "//backend/crates/kernel/core:console-kernel-core",
@@ -43,6 +44,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/inbox/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.inbox.rest", "domain.inbox", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/inbox/adapter-postgres:console-inbox-adapter-postgres",
         "//backend/crates/inbox/application:console-inbox-application",
         "//backend/crates/inbox/domain:console-inbox-domain",

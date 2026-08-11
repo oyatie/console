@@ -18,6 +18,7 @@ rust_library(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/analytics-quant/rest"},
     deps = [
         "//backend/crates/analytics-quant/service:console-analytics-quant-service",
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",

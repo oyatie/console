@@ -17,6 +17,7 @@ rust_library(
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/docs/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/docs/adapter-postgres:console-docs-adapter-postgres",
         "//backend/crates/docs/application:console-docs-application",
         "//backend/crates/docs/domain:console-docs-domain",
@@ -49,6 +50,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/docs/rest"},
     labels = ["owner.backend.crates.docs.rest", "domain.docs", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/docs/adapter-postgres:console-docs-adapter-postgres",
         "//backend/crates/docs/application:console-docs-application",
         "//backend/crates/docs/domain:console-docs-domain",
@@ -86,6 +88,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/docs/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.docs.rest", "domain.docs", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/docs/adapter-postgres:console-docs-adapter-postgres",
         "//backend/crates/docs/application:console-docs-application",
         "//backend/crates/docs/domain:console-docs-domain",

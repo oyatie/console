@@ -17,6 +17,7 @@ rust_library(
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/equipment/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/equipment/adapter-postgres:console-equipment-adapter-postgres",
         "//backend/crates/equipment/application:console-equipment-application",
         "//backend/crates/kernel/core:console-kernel-core",

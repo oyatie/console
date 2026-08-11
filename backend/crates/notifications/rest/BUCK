@@ -17,6 +17,7 @@ rust_library(
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/notifications/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/notifications/adapter-postgres:console-notifications-adapter-postgres",
         "//backend/crates/notifications/application:console-notifications-application",
@@ -43,6 +44,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/notifications/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.notifications.rest", "domain.notifications", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/notifications/adapter-postgres:console-notifications-adapter-postgres",
         "//backend/crates/notifications/application:console-notifications-application",

@@ -17,6 +17,7 @@ rust_library(
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/facilities/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
@@ -43,6 +44,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/facilities/rest"},
     labels = ["owner.backend.crates.facilities.rest", "domain.facilities", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",

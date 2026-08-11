@@ -17,6 +17,7 @@ rust_library(
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/dispatch/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/dispatch/adapter-postgres:console-dispatch-adapter-postgres",
         "//backend/crates/dispatch/application:console-dispatch-application",
         "//backend/crates/dispatch/domain:console-dispatch-domain",
@@ -48,6 +49,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/dispatch/rest"},
     labels = ["owner.backend.crates.dispatch.rest", "domain.dispatch", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/dispatch/adapter-postgres:console-dispatch-adapter-postgres",
         "//backend/crates/dispatch/application:console-dispatch-application",
         "//backend/crates/dispatch/domain:console-dispatch-domain",
