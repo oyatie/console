@@ -2,9 +2,9 @@
   "status": "done",
   "laneId": "console-b4z",
   "bead": "console-b4z: [ADR-0030 \u00a77.3] Generate backend/openapi/openapi.yaml from console-contracts",
-  "headSha": "f731ff1d544857707854783951156ee0abc87791",
+  "headSha": "ec1f375d8fee3b1b2345bd29429e513f50005e32",
   "branch": "lane/console-b4z",
-  "summary": "openapi.yaml is now produced by console-openapi-gen composing 35 Fragments (1 shared + 34 REST faces). Fragment/compose gained DocumentPreamble plus parameters/responses/securitySchemes; faces keep YAML via include_str! under rest/openapi/ (lazy shape). Split oracle: path/schema/operationId inventories unchanged (507/981/571). CI runs the generator then git diff --exit-code. ADR-0030 \u00a77 row 3 tip-bind left to admission/T. Product tip f731ff1d544857707854783951156ee0abc87791 (%G?=G).",
+  "summary": "openapi.yaml is now produced by console-openapi-gen composing 35 Fragments (1 shared + 34 REST faces). Fragment/compose gained DocumentPreamble plus parameters/responses/securitySchemes; faces keep YAML via include_str! under rest/openapi/ (lazy shape). Split oracle: path/schema/operationId inventories unchanged (507/981/571). CI runs the generator then git diff --exit-code. Restacked onto main tip eca122ad0 (#745) via signed re-split. ADR-0030 \u00a77 row 3 tip-bind left to admission/T.",
   "filesChanged": [
     "backend/crates/contracts/**",
     "backend/openapi/**",
