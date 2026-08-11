@@ -79,7 +79,11 @@ function requireArrayOfStrings(value, path, label) {
 }
 
 function requireContractSet(matrix, key, minCount, label) {
-  const contracts = matrix?.[key];
+  // Own-property only — matrix JSON inherits Object.prototype; a key colliding with
+  // a prototype name must not resolve to a Function / Object method.
+  const contracts = matrix && typeof matrix === "object" && Object.hasOwn(matrix, key)
+    ? matrix[key]
+    : undefined;
   assert(Array.isArray(contracts) && contracts.length >= minCount, label, `${matrixPath}: ${key} must have at least ${minCount} rows`);
   for (const contract of contracts ?? []) {
     requireFile(contract.file, `${key} ${contract.file}`);

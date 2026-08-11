@@ -1,6 +1,6 @@
 {
   "schema_version": "console-jurisdiction-register-v2",
-  "last_refreshed": "2026-08-11T07:30:00-04:00",
+  "last_refreshed": "2026-08-11T07:55:00-04:00",
   "target_jurisdiction_set": [
     "KR"
   ],
@@ -1026,5 +1026,5 @@
     "historical_implementation_freeze_ref": "refs/tags/archive/pre-pivot-implementation-freeze-2026-07-24",
     "candidate_evidence_status": "HOLD"
   },
-  "authority_train_note": "Refreshed with the console-0a7z PayRun Lifecycle kind-mapping tip after clean rebuild on #740 main (2026-08-11). No jurisdiction claim changed — C is executed-tests baseline lock; tip only records authority-train custody."
+  "authority_train_note": "Refreshed with the wave-2 admit authority tip after restack onto main 57fddda19 (#741) for PR #742 — critic-APPROVED leaves console-dgo.1 / console-ae5 / console-i91; console-we1 HOLD (not folded). No jurisdiction, control, or coverage claim changed in this commit."
 }

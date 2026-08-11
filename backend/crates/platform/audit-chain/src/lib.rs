@@ -11,6 +11,11 @@
 //! triggers/grants on `audit_events`: a **row edit / delete / insert / reorder**
 //! recomputes a divergent `batch_hash` → `seal_hash`. The signature over
 //! `seal_hash` means re-sealing a tampered suffix requires the signing key.
+//! Mid-chain seal deletion/splice is caught (`MissingSeq` / `BrokenContinuity`).
+//! **Residual:** a coordinated **tail rollback** (delete the newest seal(s)
+//! *and* the rows they cover, leaving a self-consistent signed prefix) still
+//! verifies `ok=true` under prefix-only verification — detecting that class
+//! requires an out-of-band head/seal anchor (future work; not claimed here).
 //!
 //! # What it does NOT defend against (custody boundary)
 //! A party who ALSO holds the seal signing key can rewrite history and re-sign.

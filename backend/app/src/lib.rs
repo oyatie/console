@@ -87,9 +87,7 @@ use console_orgchange_rest::OrgChangeRestState;
 use console_payroll_adapter_postgres::PgPayrollStore;
 use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
 use console_payroll_rest::PayrollRestState;
-use console_platform_audit_chain::{
-    ChainReport, InMemoryEd25519Signer, SealConfig, SealSigner, verify_org_chain,
-};
+use console_platform_audit_chain::{ChainReport, SealConfig, SealSigner, verify_org_chain};
 use console_platform_auth::{
     AccessClaims, AndroidAssetLinksConfig, AppleAppSiteAssociationConfig, JwtIssuer, JwtSettings,
     JwtVerifier, PasskeyService, WELL_KNOWN_AASA_PATH, WELL_KNOWN_ASSETLINKS_PATH,
@@ -160,6 +158,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 use url::Url;
 
 pub mod action_inbox;
+mod audit_chain_signer;
 pub mod cedar_parity;
 mod collaboration;
 mod console_telemetry;
@@ -566,18 +565,24 @@ pub struct AppConfig {
     /// unavailable with 503 rather than accepting unauthenticated deliveries.
     pub mail_mox_webhook_secret: Option<String>,
     /// Whether the L20 tamper-evident audit-chain seal worker runs
-    /// (`CONSOLE_AUDIT_CHAIN_SEAL_ENABLED`, default false). Post-merge review F3:
-    /// the PR-1 in-crate `InMemoryEd25519Signer` generates a FRESH keypair on
-    /// every worker restart and writes real seals under `key_ref =
-    /// test:ed25519:<hex>` — dev/test-grade, not yet the context-selected
-    /// external signer/key-custody adapter that makes the chain's evidentiary
-    /// guarantee real. Self-host custody is owner-controlled; OCI Vault is only
-    /// the OCI adapter and other clouds use their native KMS/HSM adapters.
-    /// Default OFF in production so it does not write throwaway-keyed seals
-    /// every tick until the external custody adapter lands; the attestation
-    /// REST endpoint (PR-2) reads whatever the worker has sealed regardless of
+    /// (`CONSOLE_AUDIT_CHAIN_SEAL_ENABLED`, default false). When true, the
+    /// worker requires [`Self::audit_chain_external`] (pinned anchors + custody
+    /// URL) unless [`Self::audit_chain_allow_dev_signer`] is explicitly set —
+    /// enabling sealing without custody fails closed (worker does not start).
+    /// Default OFF so a misconfigured deploy never writes throwaway-keyed seals.
+    /// The attestation REST endpoint reads whatever is sealed regardless of
     /// this flag.
     pub audit_chain_seal_enabled: bool,
+    /// Production external seal config: active `key_ref`, locally pinned trust
+    /// anchors, and HTTP custody URL (`CONSOLE_AUDIT_CHAIN_SEAL_KEY_REF` +
+    /// `CONSOLE_AUDIT_CHAIN_SEAL_ANCHORS` + `CONSOLE_AUDIT_CHAIN_CUSTODY_URL`).
+    /// `None` keeps attestation on the in-memory dev verifier (non-evidentiary).
+    pub audit_chain_external: Option<audit_chain_signer::AuditChainExternalConfig>,
+    /// Explicit escape hatch (`CONSOLE_AUDIT_CHAIN_ALLOW_DEV_SIGNER`, default
+    /// false) that lets the seal worker use `InMemoryEd25519Signer` when
+    /// external custody is unset. Never set in production — seals under
+    /// `test:ed25519:<hex>` are not tamper evidence.
+    pub audit_chain_allow_dev_signer: bool,
     /// The tenant that owns the PUBLIC storefront/CX channel
     /// (`STOREFRONT_ORG_ID`). `None` keeps the legacy KNL default for public
     /// sales/support intake routes. Set it to the storefront tenant's real
@@ -912,6 +917,16 @@ impl AppConfig {
             })?,
             None => false,
         };
+        let audit_chain_external =
+            audit_chain_signer::external_config_from_vars(|key| non_empty(vars.get(key)))?;
+        let audit_chain_allow_dev_signer = match vars.get("CONSOLE_AUDIT_CHAIN_ALLOW_DEV_SIGNER") {
+            Some(raw) => raw.parse::<bool>().map_err(|err| {
+                AppError::Config(format!(
+                    "invalid CONSOLE_AUDIT_CHAIN_ALLOW_DEV_SIGNER: {err}"
+                ))
+            })?,
+            None => false,
+        };
         let storefront_org = match non_empty(vars.get("STOREFRONT_ORG_ID")) {
             Some(raw) => Some(
                 OrgId::from_str(&raw)
@@ -972,6 +987,8 @@ impl AppConfig {
             mail_mox_base_url,
             mail_mox_webhook_secret,
             audit_chain_seal_enabled,
+            audit_chain_external,
+            audit_chain_allow_dev_signer,
             storefront_org,
             office,
             production_service_principal_hmac_key,
@@ -1427,10 +1444,10 @@ pub struct AppState {
     /// (no KEK / no storage / `CONSOLE_MAIL_ENABLED` unset). Held so its lifetime is
     /// tied to the running `AppState` and it stops on shutdown.
     mail_sync_handle: Option<Arc<mail_sync::MailSyncHandle>>,
-    /// Shared dev/test verifier used by the read-only audit-chain attestation
-    /// endpoint. `InMemoryEd25519Signer::verify` reconstructs the public key
-    /// from each seal's stored `key_ref`, so this throwaway signer is not a
-    /// trust root; it just avoids generating a fresh keypair on every poll.
+    /// Shared verifier for the read-only audit-chain attestation endpoint.
+    /// When [`AppConfig::audit_chain_external`] is set this is an
+    /// `ExternalSealSigner` (pinned anchors); otherwise an in-memory dev
+    /// verifier that is **not** a trust root.
     audit_attestation_signer: Arc<dyn SealSigner>,
 }
 
@@ -1478,10 +1495,8 @@ impl AppState {
             },
             DatabaseDependency::NotConfigured => None,
         };
-        let audit_attestation_signer: Arc<dyn SealSigner> =
-            Arc::new(InMemoryEd25519Signer::generate().map_err(|err| {
-                AppError::Internal(format!("audit-chain attestation signer init failed: {err}"))
-            })?);
+        let audit_attestation_signer =
+            audit_chain_signer::build_attestation_signer(config.audit_chain_external.as_ref())?;
         let realtime_hub = realtime_hub_from_database(&database);
 
         Ok(Self {
@@ -4321,24 +4336,26 @@ async fn run_dispatch_worker(config: AppConfig, state: AppState) -> Result<(), A
     let workflow_drain_handle = workflow_drain::spawn(pool.clone());
     // L20 tamper-evident audit-chain seal worker (charter §5.1). Seals batches of
     // audit_events into the append-only audit_chain_seals hash chain on the same
-    // `console_rt` pool, re-arming `app.current_org` per tenant each tick. Dev/test
-    // uses an in-process Ed25519 signer; production swaps in a context-selected
-    // external signer/key-custody adapter so the DB owner never holds the
-    // private key. Self-host uses owner-controlled custody first; OCI Vault is
-    // only the OCI adapter and other clouds use their native KMS/HSM adapters.
-    // The attestation REST endpoint (PR-2, `/api/v1/audit/attestation`) reads
-    // whatever is sealed regardless of this gate. F3 (post-merge review): default OFF in
-    // production — until the real signer lands, an always-on worker writes real
-    // seals every tick under a fresh `key_ref = test:ed25519:<hex>` keypair
-    // generated on every restart, which is not yet the evidentiary guarantee the
-    // chain is meant to provide. `CONSOLE_AUDIT_CHAIN_SEAL_ENABLED=true` opts a
-    // deployment in (dev/staging) ahead of the external custody adapter.
+    // `console_rt` pool, re-arming `app.current_org` per tenant each tick.
+    // Production path: ExternalSealSigner + HTTP SealSignTransport to an
+    // out-of-process custody daemon (console-ae5 wiring). Without custody config
+    // the worker fails closed unless CONSOLE_AUDIT_CHAIN_ALLOW_DEV_SIGNER=true.
+    // The attestation REST endpoint reads whatever is sealed regardless of this
+    // gate. Default OFF.
     let audit_chain_handle = if config.audit_chain_seal_enabled {
-        match console_platform_audit_chain::InMemoryEd25519Signer::generate() {
-            Ok(signer) => Some(console_platform_audit_chain::spawn(
-                pool.clone(),
-                Arc::new(signer),
-            )),
+        match audit_chain_signer::build_seal_worker_signer(
+            config.audit_chain_external.as_ref(),
+            config.audit_chain_allow_dev_signer,
+        ) {
+            Ok(Some(signer)) => {
+                tracing::info!(
+                    key_ref = %signer.key_ref(),
+                    external = config.audit_chain_external.is_some(),
+                    "starting audit-chain seal worker"
+                );
+                Some(console_platform_audit_chain::spawn(pool.clone(), signer))
+            }
+            Ok(None) => None,
             Err(err) => {
                 tracing::error!(error = %err, "audit-chain signer init failed; seal worker not started");
                 None

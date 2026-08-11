@@ -11,13 +11,17 @@
 //!       even when the decide command lies about `requested_by`, and writes no
 //!       decision row;
 //!   (c) the pending request row is append-only (UPDATE/DELETE rejected);
-//!   (d) a cross-org request is invisible under another tenant's GUC (RLS).
+//!   (d) a cross-org request is invisible under another tenant's GUC (RLS);
+//!   (e) console-dgo.1: Company/HR/Payroll kinds deny same-Person different
+//!       accounts (would pass a mere user_id inequality), fail closed for
+//!       unbound requesters, and leave the generic four-eyes path alone for
+//!       NULL `users.employee_id` accounts.
 
 use console_governance_adapter_postgres::PgGovernanceStore;
 use console_governance_application::{
-    ApprovalDecision, CreateApprovalCommand, DecideApprovalCommand,
+    ApprovalDecision, CreateApprovalCommand, DecideApprovalCommand, DecidePendingApprovalCommand,
 };
-use console_kernel_core::{OrgId, TraceContext, UserId};
+use console_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
 use console_platform_request_context::scope_org;
 use serde_json::json;
 use sqlx::PgPool;
@@ -284,4 +288,261 @@ async fn cross_org_requests_are_invisible(pool: PgPool) {
     .await
     .unwrap();
     assert_eq!(decision.requested_by, requester_b);
+}
+
+// ---------------------------------------------------------------------------
+// console-dgo.1 — distinct-natural-person four-eyes (Company/HR/Payroll only)
+// ---------------------------------------------------------------------------
+
+const NATURAL_PERSON_KIND: &str = "company.revise";
+
+async fn seed_employee(pool: &PgPool, org: Uuid, source_key: &str) -> Uuid {
+    sqlx::query_scalar(
+        "INSERT INTO employees \
+         (org_id, company, name, source_filename, source_sheet, source_row, source_key) \
+         VALUES ($1, 'ACME', $2, 'seed.xlsx', 'Sheet1', 1, $2) RETURNING id",
+    )
+    .bind(org)
+    .bind(source_key)
+    .fetch_one(pool)
+    .await
+    .unwrap()
+}
+
+async fn seed_person_bound_user(
+    pool: &PgPool,
+    org: Uuid,
+    name: &str,
+    employee_id: Uuid,
+    person_id: Uuid,
+    binder: UserId,
+) -> UserId {
+    let user = seed_user(pool, org, name).await;
+    sqlx::query("UPDATE users SET employee_id = $1 WHERE id = $2 AND org_id = $3")
+        .bind(employee_id)
+        .bind(*user.as_uuid())
+        .bind(org)
+        .execute(pool)
+        .await
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO employee_person_bindings \
+         (org_id, employee_id, person_id, actor_id, payload_digest) \
+         VALUES ($1, $2, $3, $4, $5)",
+    )
+    .bind(org)
+    .bind(employee_id)
+    .bind(person_id)
+    .bind(*binder.as_uuid())
+    .bind([7_u8; 32].as_slice())
+    .execute(pool)
+    .await
+    .unwrap();
+    user
+}
+
+async fn seed_person(pool: &PgPool, org: Uuid) -> Uuid {
+    sqlx::query_scalar("INSERT INTO persons (org_id) VALUES ($1) RETURNING id")
+        .bind(org)
+        .fetch_one(pool)
+        .await
+        .unwrap()
+}
+
+/// Two DISTINCT accounts bound to the SAME Person must be denied on
+/// Company/HR/Payroll kinds. A mere `user_id != user_id` check would ALLOW this
+/// fixture — that is the whole point of the bar.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn same_person_different_accounts_denied_on_company_kind(pool: PgPool) {
+    seed_org(&pool, ORG_A, "np-same").await;
+    let binder = seed_user(&pool, ORG_A, "Binder").await;
+    let person = seed_person(&pool, ORG_A).await;
+    let emp_a = seed_employee(&pool, ORG_A, "np-same-a").await;
+    let emp_b = seed_employee(&pool, ORG_A, "np-same-b").await;
+    let requester = seed_person_bound_user(&pool, ORG_A, "Cap-A", emp_a, person, binder).await;
+    let approver = seed_person_bound_user(&pool, ORG_A, "Cap-B", emp_b, person, binder).await;
+    assert_ne!(
+        requester, approver,
+        "fixture must use two accounts; otherwise the account-level bar masks the defect"
+    );
+
+    let store = PgGovernanceStore::new(runtime_role_pool(&pool).await);
+    let request_ref = Uuid::new_v4();
+
+    scope_org(OrgId::from_uuid(ORG_A), async {
+        store
+            .create_approval(CreateApprovalCommand {
+                requester,
+                request_ref,
+                kind: NATURAL_PERSON_KIND.to_owned(),
+                target_ref: Some(Uuid::new_v4()),
+                payload_summary: json!({"case": "same-person"}),
+                trace: trace(),
+                occurred_at: now(),
+            })
+            .await
+    })
+    .await
+    .expect("bound requester may open a Company/HR/Payroll request");
+
+    let refused = scope_org(OrgId::from_uuid(ORG_A), async {
+        store
+            .decide_pending_approval(DecidePendingApprovalCommand {
+                approver,
+                request_ref,
+                kind: NATURAL_PERSON_KIND.to_owned(),
+                decision: ApprovalDecision::Approved,
+                trace: trace(),
+                occurred_at: now(),
+            })
+            .await
+    })
+    .await
+    .expect_err("same Person under two capacities must be denied");
+
+    match refused {
+        console_governance_adapter_postgres::PgGovernanceError::Domain(err) => {
+            assert_eq!(err.kind, ErrorKind::Forbidden);
+            assert!(
+                err.message.contains("same Person"),
+                "refusal must name the Person bar, got {:?}",
+                err.message
+            );
+        }
+        other => panic!("expected Domain forbidden, got {other:?}"),
+    }
+
+    let decisions: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM gov_approvals WHERE request_ref = $1")
+            .bind(request_ref)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(decisions, 0, "denied same-Person decide must write no row");
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn distinct_persons_may_decide_company_kind(pool: PgPool) {
+    seed_org(&pool, ORG_A, "np-distinct").await;
+    let binder = seed_user(&pool, ORG_A, "Binder").await;
+    let person_a = seed_person(&pool, ORG_A).await;
+    let person_b = seed_person(&pool, ORG_A).await;
+    let emp_a = seed_employee(&pool, ORG_A, "np-dist-a").await;
+    let emp_b = seed_employee(&pool, ORG_A, "np-dist-b").await;
+    let requester = seed_person_bound_user(&pool, ORG_A, "Human-A", emp_a, person_a, binder).await;
+    let approver = seed_person_bound_user(&pool, ORG_A, "Human-B", emp_b, person_b, binder).await;
+
+    let store = PgGovernanceStore::new(runtime_role_pool(&pool).await);
+    let request_ref = Uuid::new_v4();
+
+    scope_org(OrgId::from_uuid(ORG_A), async {
+        store
+            .create_approval(CreateApprovalCommand {
+                requester,
+                request_ref,
+                kind: NATURAL_PERSON_KIND.to_owned(),
+                target_ref: None,
+                payload_summary: json!({"case": "distinct-person"}),
+                trace: trace(),
+                occurred_at: now(),
+            })
+            .await
+            .unwrap();
+        store
+            .decide_pending_approval(DecidePendingApprovalCommand {
+                approver,
+                request_ref,
+                kind: NATURAL_PERSON_KIND.to_owned(),
+                decision: ApprovalDecision::Approved,
+                trace: trace(),
+                occurred_at: now(),
+            })
+            .await
+            .unwrap()
+    })
+    .await;
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn unbound_requester_fails_closed_on_company_kind_open(pool: PgPool) {
+    seed_org(&pool, ORG_A, "np-unbound").await;
+    let unbound = seed_user(&pool, ORG_A, "Unbound").await;
+    let store = PgGovernanceStore::new(runtime_role_pool(&pool).await);
+
+    let refused = scope_org(OrgId::from_uuid(ORG_A), async {
+        store
+            .create_approval(CreateApprovalCommand {
+                requester: unbound,
+                request_ref: Uuid::new_v4(),
+                kind: NATURAL_PERSON_KIND.to_owned(),
+                target_ref: None,
+                payload_summary: json!({}),
+                trace: trace(),
+                occurred_at: now(),
+            })
+            .await
+    })
+    .await
+    .expect_err("unbound requester must fail closed on Company/HR/Payroll open");
+
+    match refused {
+        console_governance_adapter_postgres::PgGovernanceError::Domain(err) => {
+            assert_eq!(err.kind, ErrorKind::Forbidden);
+            assert!(
+                err.message.contains("unbound") || err.message.contains("natural person"),
+                "got {:?}",
+                err.message
+            );
+        }
+        other => panic!("expected Domain forbidden, got {other:?}"),
+    }
+}
+
+/// Regression pin: the generic four-eyes path must still accept NULL
+/// `users.employee_id` accounts — the failure mode of the P2 retrofit.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn generic_kind_still_allows_null_employee_id_accounts(pool: PgPool) {
+    seed_org(&pool, ORG_A, "np-generic").await;
+    let requester = seed_user(&pool, ORG_A, "NullEmp-Req").await;
+    let approver = seed_user(&pool, ORG_A, "NullEmp-App").await;
+
+    let null_emp: Option<Uuid> = sqlx::query_scalar("SELECT employee_id FROM users WHERE id = $1")
+        .bind(*requester.as_uuid())
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert!(
+        null_emp.is_none(),
+        "fixture must be the migration-0076 normal state"
+    );
+
+    let store = PgGovernanceStore::new(runtime_role_pool(&pool).await);
+    let request_ref = Uuid::new_v4();
+
+    scope_org(OrgId::from_uuid(ORG_A), async {
+        store
+            .create_approval(CreateApprovalCommand {
+                requester,
+                request_ref,
+                kind: "override".to_owned(),
+                target_ref: None,
+                payload_summary: json!({}),
+                trace: trace(),
+                occurred_at: now(),
+            })
+            .await
+            .unwrap();
+        store
+            .decide_pending_approval(DecidePendingApprovalCommand {
+                approver,
+                request_ref,
+                kind: "override".to_owned(),
+                decision: ApprovalDecision::Approved,
+                trace: trace(),
+                occurred_at: now(),
+            })
+            .await
+            .unwrap()
+    })
+    .await;
 }

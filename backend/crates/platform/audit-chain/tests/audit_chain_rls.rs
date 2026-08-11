@@ -1295,6 +1295,63 @@ async fn external_signer_detects_resign_attack(owner_pool: PgPool) {
 }
 
 // ---------------------------------------------------------------------------
+// §6.16b (mbl-critic F3): pinned key_ref + forged signature → BadSignature.
+// The resign-attack test covers anchors.get -> None; this covers Some(pk) where
+// ring::verify fails (attacker reuses the PINNED key_ref with a foreign sig).
+// ---------------------------------------------------------------------------
+#[sqlx::test(migrations = "../db/migrations")]
+async fn external_signer_detects_forged_signature_under_pinned_key_ref(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let custody = Arc::new(CustodyStub::generate());
+    let key_ref = "external:selfhost:active";
+    let signer = external_signer_from(custody, key_ref);
+    let org = *OrgId::knl().as_uuid();
+    let (branch, user) = seed_tenant(&owner_pool, org, "A").await;
+    write_events(&rt, org, user, branch, 2).await;
+    let now = db_now(&owner_pool).await;
+    let cfg = immediate();
+    seal_org_once(&rt, OrgId::from_uuid(org), &signer, now, &cfg)
+        .await
+        .unwrap()
+        .unwrap();
+
+    let seal_hash = owner_seal_hash(&owner_pool, org, 1).await;
+    // Attacker keeps the PINNED key_ref but replaces signature with one from a
+    // key that is NOT the pinned trust anchor.
+    let attacker = InMemoryEd25519Signer::generate().unwrap();
+    let forged_sig = attacker.sign(&seal_hash).unwrap();
+    let mut tx = owner_pool.begin().await.unwrap();
+    tamper_prelude(&mut tx).await;
+    sqlx::query("UPDATE audit_chain_seals SET signature = $3 WHERE org_id = $1 AND seq = $2")
+        .bind(org)
+        .bind(1_i64)
+        .bind(&forged_sig)
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    // key_ref must remain the pinned one — this is the Some(pk) verify arm.
+    let stored_key_ref: String =
+        sqlx::query_scalar("SELECT key_ref FROM audit_chain_seals WHERE org_id = $1 AND seq = $2")
+            .bind(org)
+            .bind(1_i64)
+            .fetch_one(&mut *tx)
+            .await
+            .unwrap();
+    assert_eq!(stored_key_ref, key_ref);
+    tx.commit().await.unwrap();
+
+    let report = verify_org_chain(&rt, OrgId::from_uuid(org), &signer, now, &cfg)
+        .await
+        .unwrap();
+    assert!(
+        !report.ok,
+        "forged signature under a pinned key_ref MUST be BadSignature: {report:?}"
+    );
+    assert_eq!(report.kind, ChainReportKind::BadSignature, "{report:?}");
+    assert_eq!(report.first_bad_seq, Some(1));
+}
+
+// ---------------------------------------------------------------------------
 // §6.17 fail-closed: an unreachable custody signer MUST NOT produce a seal
 // (no silent in-memory fallback).
 // ---------------------------------------------------------------------------

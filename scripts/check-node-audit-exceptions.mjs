@@ -26,6 +26,9 @@ if (registry.schema_version !== "node-audit-exceptions-v1" || !Array.isArray(reg
 const today = new Date().toISOString().slice(0, 10);
 const failures = [];
 const used = new Set();
+// Own-property only: package-lock maps inherit Object.prototype, so a hostile
+// exception path named `constructor`/`toString` must not resolve to a Function.
+const packages = lock.packages && typeof lock.packages === "object" ? lock.packages : null;
 for (const [index, entry] of registry.entries.entries()) {
   const label = `exception[${index}]`;
   for (const key of ["advisory", "package", "version", "path", "scope", "owner", "tracking", "rationale", "trivy_statement", "expires_on"]) {
@@ -36,7 +39,9 @@ for (const [index, entry] of registry.entries.entries()) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.expires_on ?? "") || entry.expires_on <= today) failures.push(`${label} is expired`);
   const expiresAt = Date.parse(`${entry.expires_on}T00:00:00Z`);
   if (!Number.isFinite(expiresAt) || expiresAt - Date.now() > 30 * 24 * 60 * 60 * 1000) failures.push(`${label} exceeds 30-day TTL`);
-  const installed = lock.packages[entry.path]?.version;
+  const installed = packages && Object.hasOwn(packages, entry.path)
+    ? packages[entry.path]?.version
+    : undefined;
   if (installed !== entry.version) failures.push(`${label} lockfile mismatch: expected ${entry.version}, got ${installed ?? "missing"}`);
 }
 const vulnerabilities = report.vulnerabilities ?? {};
@@ -65,7 +70,9 @@ if (mode === "production") {
     failures.push(`unmatchable ${finding.severity} vulnerability: ${finding.package} lacks an exact structured GHSA and lockfile path`);
   }
   for (const finding of directFindings) {
-    const version = lock.packages[finding.path]?.version;
+    const version = packages && Object.hasOwn(packages, finding.path)
+      ? packages[finding.path]?.version
+      : undefined;
     const matchIndex = registry.entries.findIndex((entry) => entry.advisory === finding.advisory && entry.package === finding.package && entry.version === version && entry.path === finding.path);
     if (matchIndex < 0) failures.push(`unmatched ${finding.severity} finding: ${finding.advisory} ${finding.package}@${version ?? "missing"} ${finding.path}`);
     else used.add(matchIndex);

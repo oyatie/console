@@ -303,6 +303,25 @@ fn fail_closed(reason: &str) -> GateStatus {
 }
 
 // ===========================================================================
+// Distinct-natural-person four-eyes scope (console-dgo.1 / PRODUCT invariant).
+// ===========================================================================
+
+/// Kind prefixes whose open/decide path must resolve requester and approver to
+/// distinct natural persons via `users.employee_id → employee_person_bindings →
+/// Person`.
+///
+/// Scoped to **new Company / HR / Payroll** surfaces only. Generic kinds
+/// (`override`, `ontology.lifecycle`, `console_view.team_deploy`, …) stay on the
+/// account-level `approver_id <> requested_by` bar — retrofitting the Person
+/// resolution onto them fails every normal account whose `users.employee_id` is
+/// NULL (migration 0076).
+#[must_use]
+pub fn requires_natural_person_four_eyes(kind: &str) -> bool {
+    let kind = kind.trim();
+    kind.starts_with("company.") || kind.starts_with("hr.") || kind.starts_with("payroll.")
+}
+
+// ===========================================================================
 // Impact preflight (arch §15) — dependency scan before archive/dispose.
 // ===========================================================================
 
@@ -509,5 +528,40 @@ mod tests {
             ]
             .as_slice()
         );
+    }
+
+    #[test]
+    fn natural_person_four_eyes_scopes_only_company_hr_payroll_kinds() {
+        for kind in [
+            "company.revise",
+            "hr.appoint",
+            "hr.promote",
+            "hr.transfer",
+            "payroll.create_run",
+            "payroll.submit_run",
+            "payroll.decide_run",
+            "  payroll.create_run  ",
+        ] {
+            assert!(
+                requires_natural_person_four_eyes(kind),
+                "{kind} must require natural-person four-eyes"
+            );
+        }
+        for kind in [
+            "override",
+            "ontology.lifecycle",
+            "console_view.team_deploy",
+            "ontology.schema.publish",
+            "organization.create_org_unit",
+            "people.create_person",
+            "",
+            "company",
+            "hr",
+        ] {
+            assert!(
+                !requires_natural_person_four_eyes(kind),
+                "{kind} must NOT retrofit natural-person four-eyes"
+            );
+        }
     }
 }

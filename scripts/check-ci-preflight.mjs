@@ -965,7 +965,11 @@ function requireProtectedExecutionMetadata(workflowModel, failures) {
   }
 
   for (const [jobName, expected] of Object.entries(protectedJobExecutionMetadata)) {
-    const job = workflowModel.jobs?.[jobName];
+    // Own-property only — YAML job maps inherit Object.prototype.
+    const job = workflowModel.jobs && typeof workflowModel.jobs === "object"
+      && Object.hasOwn(workflowModel.jobs, jobName)
+      ? workflowModel.jobs[jobName]
+      : undefined;
     if (!job || typeof job !== "object") continue;
 
     const expectedEnv = Object.hasOwn(expected, "env") ? expected.env : undefined;
@@ -1484,7 +1488,10 @@ function requireExactRequiredJobContracts(workflowModel, failures) {
   }
 
   for (const [jobName, contracts] of Object.entries(requiredJobRunContracts)) {
-    const job = workflowModel.jobs?.[jobName];
+    const job = workflowModel.jobs && typeof workflowModel.jobs === "object"
+      && Object.hasOwn(workflowModel.jobs, jobName)
+      ? workflowModel.jobs[jobName]
+      : undefined;
     if (!job || !Array.isArray(job.steps)) {
       failures.push(`${jobName} must define its complete ordered setup/proof/cleanup run contract`);
       continue;
@@ -1682,7 +1689,8 @@ export function evaluateCiPreflight(
   requireExactRequiredJobContracts(workflowModel, failures);
 
   for (const trigger of ["push", "pull_request"]) {
-    const triggerContract = workflowModel.on?.[trigger];
+    const on = workflowModel.on && typeof workflowModel.on === "object" ? workflowModel.on : null;
+    const triggerContract = on && Object.hasOwn(on, trigger) ? on[trigger] : undefined;
     if (triggerContract && typeof triggerContract === "object"
       && ["paths", "paths-ignore"].some((filter) => Object.hasOwn(triggerContract, filter))) {
       failures.push(`${trigger} must create required CI contexts for every change without path filters`);

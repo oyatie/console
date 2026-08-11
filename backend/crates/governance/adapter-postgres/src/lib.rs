@@ -4,6 +4,15 @@
 //! every read through `with_org_conn`, so `app.current_org` is armed before any
 //! statement and RLS scopes it to the tenant. All three tables run FORCE RLS;
 //! the two record tables are append-only (REVOKE UPDATE/DELETE).
+//!
+//! # Distinct-natural-person four-eyes (console-dgo.1)
+//!
+//! For kinds under `company.*` / `hr.*` / `payroll.*` only, open and decide
+//! resolve each party via `users.employee_id → employee_person_bindings →
+//! Person`. Unbound or non-person accounts fail closed; two accounts that map
+//! to the same `person_id` are denied even when `user_id` differs. Generic
+//! kinds keep the account-level `approver_id <> requested_by` bar so NULL
+//! `users.employee_id` (migration 0076's normal admin-gated state) still works.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 use console_governance_application::{
@@ -13,7 +22,8 @@ use console_governance_application::{
 };
 use console_governance_domain::{
     AuthorityEffect, GateChainConfig, GateChainOutcome, GateEvidence, LifecycleState,
-    TransitionRequirements, evaluate_gate_chain, validate_lifecycle_transition,
+    TransitionRequirements, evaluate_gate_chain, requires_natural_person_four_eyes,
+    validate_lifecycle_transition,
 };
 use console_kernel_core::{KernelError, UserId};
 use console_platform_authz::cedar_pbac::DecisionEffect;
@@ -210,6 +220,16 @@ impl PgGovernanceStore {
 
         with_audit::<_, ApprovalRequestSummary, PgGovernanceError>(&self.pool, event, |tx| {
             Box::pin(async move {
+                // Company/HR/Payroll opens fail closed when the requester cannot
+                // be resolved to a natural person. Generic kinds skip this so
+                // NULL employee_id accounts keep working.
+                require_natural_person_bound_conn(
+                    tx.as_mut(),
+                    command.kind.trim(),
+                    command.requester,
+                    "requester",
+                )
+                .await?;
                 sqlx::query(
                     r#"
                     INSERT INTO gov_approval_requests
@@ -371,6 +391,16 @@ impl PgGovernanceStore {
                     )
                     .into());
                 }
+                // Company/HR/Payroll: distinct *natural persons*, not merely
+                // distinct accounts. Same Person under two capacities is denied;
+                // unbound/service (non-person) parties fail closed.
+                enforce_natural_person_four_eyes_conn(
+                    tx.as_mut(),
+                    command.kind.trim(),
+                    requested_by,
+                    command.approver,
+                )
+                .await?;
                 sqlx::query(
                     r#"
                     INSERT INTO gov_approvals
@@ -706,6 +736,85 @@ async fn pending_request_binding_conn(
         kind: row.get("kind"),
         target_ref: row.get("target_ref"),
     }))
+}
+
+/// Resolve a platform account to its bound natural `person_id`, or `None` when
+/// the account has no `users.employee_id`, no binding row, or is otherwise not a
+/// natural person (service / unbound). RLS-scoped by the armed org.
+async fn natural_person_id_conn(
+    conn: &mut PgConnection,
+    user_id: Uuid,
+) -> Result<Option<Uuid>, PgGovernanceError> {
+    let person_id: Option<Uuid> = sqlx::query_scalar(
+        r#"
+        SELECT b.person_id
+        FROM users u
+        INNER JOIN employee_person_bindings b
+            ON b.org_id = u.org_id
+           AND b.employee_id = u.employee_id
+        WHERE u.id = $1
+          AND u.employee_id IS NOT NULL
+        "#,
+    )
+    .bind(user_id)
+    .fetch_optional(conn)
+    .await?;
+    Ok(person_id)
+}
+
+/// For Company/HR/Payroll kinds, the named party must resolve to a Person.
+/// No-op for every other kind (generic four-eyes path).
+async fn require_natural_person_bound_conn(
+    conn: &mut PgConnection,
+    kind: &str,
+    user: UserId,
+    role: &str,
+) -> Result<(), PgGovernanceError> {
+    if !requires_natural_person_four_eyes(kind) {
+        return Ok(());
+    }
+    match natural_person_id_conn(conn, *user.as_uuid()).await? {
+        Some(_) => Ok(()),
+        None => Err(KernelError::forbidden(format!(
+            "natural-person four-eyes: {role} is unbound or not a natural person"
+        ))
+        .into()),
+    }
+}
+
+/// Deny same-Person (different capacity) and fail closed on unbound parties for
+/// Company/HR/Payroll kinds. Account-level self-approval is already rejected
+/// before this runs; this layer catches two user_ids that share one Person.
+async fn enforce_natural_person_four_eyes_conn(
+    conn: &mut PgConnection,
+    kind: &str,
+    requester: UserId,
+    approver: UserId,
+) -> Result<(), PgGovernanceError> {
+    if !requires_natural_person_four_eyes(kind) {
+        return Ok(());
+    }
+    let requester_person = natural_person_id_conn(conn, *requester.as_uuid())
+        .await?
+        .ok_or_else(|| {
+            KernelError::forbidden(
+                "natural-person four-eyes: requester is unbound or not a natural person",
+            )
+        })?;
+    let approver_person = natural_person_id_conn(conn, *approver.as_uuid())
+        .await?
+        .ok_or_else(|| {
+            KernelError::forbidden(
+                "natural-person four-eyes: approver is unbound or not a natural person",
+            )
+        })?;
+    if requester_person == approver_person {
+        return Err(KernelError::forbidden(
+            "natural-person four-eyes: approver and requester resolve to the same Person",
+        )
+        .into());
+    }
+    Ok(())
 }
 
 async fn approval_row_conn(

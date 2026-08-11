@@ -55,7 +55,12 @@ function patternFullyCovers(parent, child) {
   return normalizedParent === normalizedChild || (isSubtree(normalizedParent) && boundaryPrefix(patternRoot(normalizedParent), patternRoot(normalizedChild)));
 }
 function validatePatternList(values, label) { return arrays(values).map((value) => { try { return normalizePattern(value); } catch (error) { throw new Error(`${label}: ${error.message}`); } }); }
-function stateText(capability, key) { return typeof capability.state?.[key] === 'string' ? capability.state[key] : ''; }
+function stateText(capability, key) {
+  // Own-property only — capability.state from JSON inherits Object.prototype.
+  const state = capability.state;
+  const value = state && typeof state === 'object' && Object.hasOwn(state, key) ? state[key] : undefined;
+  return typeof value === 'string' ? value : '';
+}
 function backendSettled(value) { return value === 'not_applicable' || value.startsWith('existing_real_') || ['integrated_on_local_train', 'integrated_dark_on_pr488', 'complete'].includes(value); }
 function frontendSettled(value) { return value === 'not_applicable' || ['integrated_on_local_train', 'integrated_dark_on_pr488', 'complete'].includes(value); }
 function sourceComplete(capability) { return backendSettled(stateText(capability, 'backend')) && frontendSettled(stateText(capability, 'frontend')); }
@@ -164,7 +169,10 @@ function trustedReviewer(authority, id) { return validateReviewAuthority(authori
 function runtimeReceipt(options, lane) {
   const attestations = options.validatedAttestations;
   if (!attestations || typeof attestations !== 'object' || !validatedAttestationTokens.has(attestations)) return null;
-  const receipt = attestations.receipts?.[lane.laneId];
+  const receipts = attestations.receipts;
+  const receipt = receipts && typeof receipts === 'object' && Object.hasOwn(receipts, lane.laneId)
+    ? receipts[lane.laneId]
+    : undefined;
   return staticReviewReceipt(receipt, options.anchorSha, lane, trustedReviewer(options.registry.review_authority, receipt?.reviewer)) ? receipt : null;
 }
 export function leafResultDigest(diff) { return createHash('sha256').update(diff).digest('hex'); }

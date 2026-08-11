@@ -80,10 +80,12 @@ function requirePackageScript(result, readText, name) {
     return;
   }
 
+  const scripts = pkg.scripts && typeof pkg.scripts === "object" ? pkg.scripts : null;
+  const scriptBody = scripts && Object.hasOwn(scripts, name) ? scripts[name] : undefined;
   requirement(
     result,
-    Boolean(pkg.scripts?.[name]),
-    `package script ${name}: ${pkg.scripts?.[name]}`,
+    typeof scriptBody === "string" && scriptBody.length > 0,
+    `package script ${name}: ${scriptBody}`,
     `package script ${name}: missing from package.json scripts`,
   );
 }

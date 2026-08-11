@@ -6,7 +6,17 @@ import { dirname, join } from "node:path";
 import { after, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { evaluateRequestBodyContract, renameField } from "./check-request-body-contract.mjs";
+import {
+  evaluateRequestBodyContract,
+  jsonRequestSchema,
+  renameField,
+} from "./check-request-body-contract.mjs";
+import {
+  hasOwnKey,
+  own,
+  PROTOTYPE_CHAIN_KEYS,
+} from "./own-property.mjs";
+import yaml from "js-yaml";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const cli = fileURLToPath(new URL("./check-request-body-contract.mjs", import.meta.url));
@@ -504,6 +514,76 @@ struct ConsumeWidgetBody {
     assert.deepEqual(unique.findings.map((finding) => finding.message), [
       'spec property "quantity_consumed_milli" is not a field of ConsumeWidgetBody (deny_unknown_fields => 422)',
     ]);
+  });
+});
+
+// Shared regression fixture pattern for the prototype-chain false-resolve class (console-i91 /
+// ann-critic on check-openapi-refs). Empty prototype-ful maps answer true for these keys under
+// `obj[key] !== undefined` / `obj?.[key]`; own()/hasOwnKey must not.
+describe("own-property helper rejects Object.prototype keys", () => {
+  it("own() and hasOwnKey() return nothing for every hostile key on an empty map", () => {
+    const empty = {};
+    for (const key of PROTOTYPE_CHAIN_KEYS) {
+      assert.equal(own(empty, key), undefined, `own empty[${key}]`);
+      assert.equal(hasOwnKey(empty, key), false, `hasOwnKey empty[${key}]`);
+      // Differential: the defect class is still live on plain index / !== undefined.
+      assert.notEqual(empty[key], undefined, `control: plain index still sees ${key}`);
+    }
+  });
+
+  it("own() still returns authored own properties", () => {
+    const map = { Todo: { type: "object" }, constructor: { type: "string" } };
+    assert.deepEqual(own(map, "Todo"), { type: "object" });
+    assert.deepEqual(own(map, "constructor"), { type: "string" });
+    assert.equal(own(map, "toString"), undefined);
+  });
+});
+
+describe("request-body contract rejects prototype-chain schema resolution", () => {
+  // Same class as openapi-refs hasTarget: js-yaml component maps inherit Object.prototype, so
+  // `components.schemas?.[name]` answered Function for constructor/toString/__proto__.
+  it("jsonRequestSchema resolves nothing through the JS prototype chain", () => {
+    for (const key of ["constructor", "toString", "__proto__"]) {
+      const document = yaml.load(`openapi: 3.1.0
+info: { title: Fixture, version: 0.0.1 }
+paths:
+  /api/v1/widgets/{widget_id}/consumptions:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/${key}'
+components:
+  schemas:
+    ConsumeWidgetRequest:
+      type: object
+      properties: { quantityConsumedMilli: { type: integer } }
+`);
+      assert.equal(
+        jsonRequestSchema(document, "/api/v1/widgets/{widget_id}/consumptions", "post"),
+        null,
+        `dangling $ref to ${key} must not resolve via the prototype chain`,
+      );
+    }
+  });
+
+  // Proven fail-open before the fix: a rust field named `constructor` with a rename made
+  // `schema.properties[field.name] !== undefined` true via Object.prototype, which suppressed
+  // the handler-required finding (0 findings). Own-property lookup reports it.
+  it("does not treat Object.prototype names as present in schema.properties", () => {
+    const root = widgetFixture({
+      derive: camelDeny,
+      fields:
+        '    #[serde(rename = "quantityConsumedMilli")]\n    constructor: i64,',
+      required: [],
+      properties: "quantityConsumedMilli: { type: integer }",
+    });
+
+    const { findings } = evaluateRequestBodyContract({ repoRoot: root });
+
+    assert.equal(findings.length, 1, JSON.stringify(findings, null, 2));
+    assert.match(findings[0].message, /constructor is required by the handler/);
   });
 });
 

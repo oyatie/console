@@ -258,7 +258,8 @@ function schema(value, expected) {
   const keys = Object.keys(expected);
   if (
     Object.keys(value).length !== keys.length ||
-    keys.some((key) => !(key in value))
+    // Own-property presence only — `key in value` answers true for Object.prototype names.
+    keys.some((key) => !Object.hasOwn(value, key))
   )
     return false;
   return keys.every((key) =>

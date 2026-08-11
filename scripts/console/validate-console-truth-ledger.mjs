@@ -400,7 +400,14 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
     if (route.production_exposed && !route.source_mounted) fail(`${cap.id} exposed route must be mounted`);
     if (truth.exposure === 'EXPOSED' && !route.production_exposed) fail(`${cap.id} exposed truth contradicts route presentation`);
     if (route.production_exposed && truth.exposure !== 'EXPOSED') fail(`${cap.id} route exposure contradicts truth state`);
-    if (routeFacts) for (const key of route.route_keys) { const fact=routeFacts.facts?.[key]; if (!fact || ROUTE_CLAIM_FIELDS.some((field)=>fact[field]!==route[field])) fail(`${cap.id} route source fact mismatch for ${key}`); }
+    if (routeFacts) for (const key of route.route_keys) {
+      // Own-property only — facts maps from JSON inherit Object.prototype; a route_key
+      // named constructor/toString must not resolve to a Function.
+      const fact = routeFacts.facts && typeof routeFacts.facts === 'object' && Object.hasOwn(routeFacts.facts, key)
+        ? routeFacts.facts[key]
+        : undefined;
+      if (!fact || ROUTE_CLAIM_FIELDS.some((field)=>fact[field]!==route[field])) fail(`${cap.id} route source fact mismatch for ${key}`);
+    }
     const ownership = object(cap.ownership, `${cap.id} ownership`);
     for (const key of ['frontend_roots', 'backend_roots', 'api_schema_roots']) for (const root of array(ownership[key])) nonempty(root, `${cap.id} ownership root`);
     for (const root of array(ownership.private_roots)) { nonempty(root, `${cap.id} private ownership root`); if (sharedRoots.has(root)) fail(`${cap.id} private root is declared shared`); privateRoots.push([cap.id, root]); }

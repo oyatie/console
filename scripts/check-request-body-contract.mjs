@@ -20,6 +20,8 @@ import { fileURLToPath } from "node:url";
 
 import yaml from "js-yaml";
 
+import { hasOwnKey, own } from "./own-property.mjs";
+
 // Each anchor exercises a route form that has already broken a resolver silently.
 const ANCHORS = [
   "POST /api/v1/equipment-3r/rental-cases/{case_id}/handover", // rustfmt-wrapped path const
@@ -147,12 +149,28 @@ function collectSources(repoRoot) {
   return { consts, structs, handlers, routes };
 }
 
-function jsonRequestSchema(document, path, method) {
-  const schema = document.paths?.[path]?.[method]?.requestBody?.content?.["application/json"]?.schema;
-  if (!schema) return null;
-  if (!schema.$ref) return schema;
-  const name = schema.$ref.replace("#/components/schemas/", "");
-  return document.components?.schemas?.[name] ?? null;
+/**
+ * Resolve the application/json requestBody schema for an operation.
+ * Component lookups are own-property only — js-yaml maps inherit Object.prototype,
+ * so `schemas?.[name]` false-resolved `constructor` / `toString` / `__proto__`.
+ *
+ * @param {unknown} document
+ * @param {string} path
+ * @param {string} method
+ * @returns {Record<string, unknown> | null}
+ */
+export function jsonRequestSchema(document, path, method) {
+  const schema = own(
+    own(own(own(own(own(document, "paths"), path), method), "requestBody"), "content"),
+    "application/json",
+  );
+  const bodySchema = own(schema, "schema");
+  if (!bodySchema || typeof bodySchema !== "object") return null;
+  const ref = own(bodySchema, "$ref");
+  if (typeof ref !== "string") return bodySchema;
+  const name = ref.replace("#/components/schemas/", "");
+  const resolved = own(own(own(document, "components"), "schemas"), name);
+  return resolved && typeof resolved === "object" ? resolved : null;
 }
 
 /**
@@ -178,7 +196,8 @@ export function evaluateRequestBodyContract({ repoRoot }) {
     if (!bodyType) continue;
     const operation = `${route.method.toUpperCase()} ${path}`;
     const schema = jsonRequestSchema(document, path, route.method);
-    if (!schema?.properties) {
+    const properties = own(schema, "properties");
+    if (!properties || typeof properties !== "object") {
       skipped += 1;
       continue;
     }
@@ -201,9 +220,10 @@ export function evaluateRequestBodyContract({ repoRoot }) {
 
     const wireName = (field) => field.rename ?? renameField(field.name, struct.renameAll);
     const wireNames = new Set(struct.fields.map(wireName));
-    const specRequired = new Set(schema.required ?? []);
+    const required = own(schema, "required");
+    const specRequired = new Set(Array.isArray(required) ? required : []);
 
-    for (const property of Object.keys(schema.properties)) {
+    for (const property of Object.keys(properties)) {
       if (!wireNames.has(property)) {
         findings.push({
           operation,
@@ -222,7 +242,9 @@ export function evaluateRequestBodyContract({ repoRoot }) {
       // under any rule — the loop above reported NOTHING, so an unconditional skip here disarmed
       // this entire direction for those fields. A handler-required field the spec published as
       // optional went unreported, and omitting it is a deserialization failure, not a default.
-      if (wireName(field) !== field.name && schema.properties[field.name] !== undefined) continue;
+      // Own-property only: `properties[field.name] !== undefined` answered true for every
+      // Object.prototype name (constructor/toString/…) and silenced the required[] finding.
+      if (wireName(field) !== field.name && hasOwnKey(properties, field.name)) continue;
       findings.push({
         operation,
         message: `${struct.name}.${field.name} is required by the handler but not in spec required[]`,

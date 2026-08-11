@@ -1,0 +1,72 @@
+{
+  "status": "done",
+  "laneId": "console-i91",
+  "bead": "console-i91 (P2): sweep scripts/check-*.mjs for prototype-chain false-resolve on untrusted-keyed lookups",
+  "headSha": "188b82e5488984945a804c119ef8c4f50964c0ac",
+  "branch": "lane/console-i91",
+  "summary": "Class sweep remainder after ann's openapi-refs Object.hasOwn fix landed in train-2 (#734). Shared total primitive scripts/own-property.mjs (own/hasOwnKey/PROTOTYPE_CHAIN_KEYS) plus RED regression in the already-wired request-body suite. Fixed untrusted-keyed lookups across request-body-contract (schemas?.[name] and properties[field] !== undefined \u2014 proven fail-open), node-audit-exceptions lock.packages[path], production-authority-blocked `key in value`, ci-preflight jobs/on maps, production-hardening scripts?.[name], g007 matrix?.[key], and console plan-fanout/validate-console-truth-ledger facts/receipts/state. Did not re-edit check-openapi-refs.mjs (already fixed on main).",
+  "filesChanged": [
+    "scripts/own-property.mjs",
+    "scripts/check-request-body-contract.mjs",
+    "scripts/check-request-body-contract.test.mjs",
+    "scripts/check-node-audit-exceptions.mjs",
+    "scripts/check-production-authority-blocked.mjs",
+    "scripts/check-ci-preflight.mjs",
+    "scripts/check-production-hardening.mjs",
+    "scripts/check-g007-collaboration-mobile-lifecycle.mjs",
+    "scripts/console/plan-fanout.mjs",
+    "scripts/console/validate-console-truth-ledger.mjs",
+    ".cursor/receipts/i91.json"
+  ],
+  "redBaseline": "Keyed to origin/main tip 9acd784f534bb25b0468139be8f9acb13bd8fbd8. Hostile probe: widget fixture with rust field `constructor` renamed to quantityConsumedMilli, empty required[], properties only quantityConsumedMilli \u2014 evaluateRequestBodyContract returned findings.length===0 (FAIL-OPEN) because schema.properties['constructor'] !== undefined via Object.prototype. Differential: plain index on {} still sees constructor/toString/__proto__/valueOf/hasOwnProperty; own()/hasOwnKey return undefined/false. Also schemas?.[constructor] typed function before the jsonRequestSchema own-property fix.",
+  "verification": "Product tip 188b82e5488984945a804c119ef8c4f50964c0ac (lane HEAD). PRODUCT TIP (lane HEAD after this receipt): see git rev-parse on lane/console-i91. GREEN in worktree /Users/jasonlee/Developer/console-lane-i91: (a) node --test scripts/check-request-body-contract.test.mjs \u2192 26/26 pass (was 22; +4 prototype-chain regressions); (b) node scripts/check-request-body-contract.mjs \u2192 resolved 51, skipped 171; (c) node --test scripts/check-openapi-refs.test.mjs \u2192 15/15; node scripts/check-openapi-refs.mjs \u2192 4964/27/0; (d) node --test scripts/check-node-audit-exceptions.test.mjs \u2192 5/5; (e) node --test scripts/console/plan-fanout.test.mjs \u2192 29/29; (f) node --test scripts/console/validate-console-truth-ledger.test.mjs \u2192 25/25; (g) node --test scripts/check-production-authority-blocked.test.mjs \u2192 33/33. Signing smoke via orphan commit-tree -S \u2192 %G?=G before product commit. package.json not edited (outside owned roots) \u2014 shared regressions ride the already-wired check-request-body-contract.test.mjs surface.",
+  "commands": [
+    "git -C /Users/jasonlee/Developer/console worktree add /Users/jasonlee/Developer/console-lane-i91 -b lane/console-i91 origin/main",
+    "echo 'i91 signing smoke' | git commit-tree HEAD^{tree} -S -p HEAD -m 'i91 signing smoke' && git log --show-signature --format='%H %G?' -1 <smoke>",
+    "node --input-type=module <<RED-probe: constructor field \u2192 findings_count 0 FAIL-OPEN",
+    "node --test scripts/check-request-body-contract.test.mjs",
+    "node scripts/check-request-body-contract.mjs",
+    "node --test scripts/check-openapi-refs.test.mjs",
+    "node scripts/check-openapi-refs.mjs",
+    "node --test scripts/check-node-audit-exceptions.test.mjs",
+    "node --test scripts/console/plan-fanout.test.mjs",
+    "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "node --test scripts/check-production-authority-blocked.test.mjs",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs /Users/jasonlee/Developer/console-lane-i91/.cursor/receipts/i91.json"
+  ],
+  "contractBreaches": "none",
+  "enforcementPlacement": "WHERE: regression lives inside scripts/check-request-body-contract.test.mjs, already executed by CI via npm run check:request-body-contract (.github/workflows/ci.yml repo-gates). SUBJECT EXISTS: yes \u2014 every js-yaml/JSON.parse map at gate runtime inherits Object.prototype; the hostile keys are language-fixed. FINEST DISTINCTION: own-property vs inherited (Object.hasOwn / own()), not a spelling list of bad keys \u2014 PROTOTYPE_CHAIN_KEYS are regression seeds only. EXAMINED-ZERO FAILS: the shared helper tests assert the control (plain index still sees the keys) so a no-op 'fix' that deletes the differential cannot stay green; request-body fixture requires exactly one finding naming constructor.",
+  "peripheralsUpdated": "Module comment on scripts/own-property.mjs states the class and points at ann-critic provenance. check-request-body-contract.mjs documents own-property reads at jsonRequestSchema and the properties suppression site. No docs/** / OpenAPI / registry / baseline enumerations list these helpers; package.json script body unchanged (new tests appended to already-exact-wired suite). openapi-refs left untouched (already fixed on main). Beads: bd close console-i91 owed by integrator on merge.",
+  "lensesApplied": {
+    "cartesianDoubt": "Separated proven fail-open (request-body properties[constructor] \u2192 0 findings) from fail-closed-looking sites (node-audit version mismatch on Function.version) \u2014 still hardened the latter for mechanism totality.",
+    "chesterton": "Did not re-edit ann's openapi-refs own() \u2014 already the correct total primitive on main; shared helper is the sweep mechanism, not a third spelling of the same local fix.",
+    "redTeam": "Hostile keys constructor/toString/__proto__/valueOf/hasOwnProperty exercised on empty maps and on $ref resolution; control proves the defect class still exists on plain index.",
+    "zeroTrust": "Every swept lookup now fails closed on inherited names; authored own properties named constructor still resolve when present (own() test).",
+    "blastRadius": "scripts/check-* + scripts/console only; no backend/ci/identity crates; no package.json (wiring via existing suite)."
+  },
+  "claims": {
+    "E-observed": [
+      "RED: constructor-renamed field fixture \u2192 0 findings on tip 9acd784f5 before fix",
+      "GREEN: 26/26 request-body tests; 51 resolved on real openapi; openapi-refs 4964/27/0 unchanged",
+      "Sibling suites green: node-audit 5/5, plan-fanout 29/29, truth-ledger 25/25, production-authority-blocked 33/33",
+      "Signing: commit-tree -S \u2192 Good git signature ED25519, %G?=G"
+    ],
+    "I-inferred": [
+      "package.json wiring unnecessary because regressions append to check-request-body-contract.test.mjs already exact-wired in CI",
+      "Sites using only trusted constant keys still benefit from Object.hasOwn for the same total primitive"
+    ],
+    "U-uncertain": [
+      "Whether a future census gate should fail on any remaining obj[var] !== undefined under scripts/ \u2014 residual low-risk trusted-key sites may remain; elevate if a second proven fail-open appears"
+    ]
+  },
+  "challenges": [
+    "Challenged re-editing openapi-refs to import the shared helper: brief forbids unless residual; ann's local own() already closes the proven hole; DRYing would expand the tip surface for zero behavioral gain.",
+    "Challenged adding scripts/own-property.test.mjs as a separate suite: package.json and docs reachability baseline are outside owned roots \u2014 a new dark .test.mjs would fail js-test-reachability/strict; folding into the wired request-body suite is the lane-viable shared fixture pattern.",
+    "Chesterton on production-authority `key in value`: schema keys are trusted constants today, so fail-open was latent not live; still replaced with Object.hasOwn because the suite already pins own-key JSON unknown precedence and leaving `in` is a second spelling of the same class."
+  ],
+  "followUps": [
+    "Integrator: bd close console-i91 on merge; hub .beads is a shared root.",
+    "ELEVATE (optional census lane): if a future critic proves another fail-open via trusted-looking keys that become author-controlled, add a mechanical check that flags obj[var] !== undefined / ?.[] on parsed YAML/JSON without Object.hasOwn \u2014 out of scope once this inventory is green.",
+    "package.json / reachability: if a later lane wants own-property.test.mjs as a standalone exact-wired suite, that edit owns package.json (not this lane)."
+  ]
+}

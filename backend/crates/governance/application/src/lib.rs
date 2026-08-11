@@ -85,6 +85,10 @@ pub struct CreateApprovalCommand {
 /// treats that request's recorded requester as authoritative (never the
 /// client-supplied `requested_by`), so the approver cannot spoof the requester
 /// to dodge the self-approval bar.
+///
+/// For `company.*` / `hr.*` / `payroll.*` kinds the store also requires distinct
+/// natural persons via `employee_person_bindings` (console-dgo.1). Generic kinds
+/// do not — see [`console_governance_domain::requires_natural_person_four_eyes`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DecideApprovalCommand {
     pub approver: UserId,
