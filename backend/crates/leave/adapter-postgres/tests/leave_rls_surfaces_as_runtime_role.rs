@@ -15,7 +15,10 @@
 //!  * another tenant sees none of the requests (RLS);
 //!  * a re-decide of a decided request is a Conflict;
 //!  * a §61 push delivers a locked legal notice into the target's 개인 수신함
-//!    and records the push, idempotently per (target, kind, round).
+//!    and records the push, idempotently per (target, kind, round);
+//!  * the §60 `kr_labor_guardrails_guard` / `trg_leave_requests_kr_labor_guardrails`
+//!    pair is pinned by name in the privilege-matrix census, and a shape-legal
+//!    `console_rt` INSERT that carries a 사유 fails closed (`leave_write.kr_annual_no_reason`).
 
 use std::collections::BTreeSet;
 use std::sync::Arc;
@@ -987,6 +990,84 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
         !cmd_request_delete && !rt_request_delete && !cmd_request_truncate && !rt_request_truncate
     );
     assert!(!cmd_resolution_dml && !rt_resolution_dml);
+
+    // Named, not counted (console-kwm / cm3 deferred): the §60 kr_labor
+    // guardrails function + trigger must be fetch_one'd by their migration
+    // names. A PUBLIC-execute count alone stays green if the trigger is
+    // dropped or renamed away — fetch_one fails closed on absence.
+    let (guard_cmd_execute, guard_rt_execute): (bool, bool) = sqlx::query_as(
+        "SELECT has_function_privilege('console_leave_cmd',p.oid,'EXECUTE'), \
+                has_function_privilege('console_rt',p.oid,'EXECUTE') \
+         FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace \
+         WHERE n.nspname='leave_api' AND p.proname='kr_labor_guardrails_guard'",
+    )
+    .fetch_one(&owner_pool)
+    .await
+    .expect("kr_labor_guardrails_guard must exist to be proven unreachable");
+    assert!(
+        !guard_cmd_execute && !guard_rt_execute,
+        "§60 kr_labor_guardrails_guard stays trigger-only (no role EXECUTE)"
+    );
+    let (tgname, tgenabled, tgtype, function_name): (String, String, i32, String) = sqlx::query_as(
+        "SELECT t.tgname, t.tgenabled::text, t.tgtype::integer, p.proname \
+             FROM pg_trigger t \
+             JOIN pg_class c ON c.oid = t.tgrelid \
+             JOIN pg_namespace ns ON ns.oid = c.relnamespace \
+             JOIN pg_proc p ON p.oid = t.tgfoid \
+             WHERE NOT t.tgisinternal \
+               AND ns.nspname = 'public' \
+               AND c.relname = 'leave_requests' \
+               AND t.tgname = 'trg_leave_requests_kr_labor_guardrails'",
+    )
+    .fetch_one(&owner_pool)
+    .await
+    .expect("trg_leave_requests_kr_labor_guardrails must exist by name");
+    assert_eq!(tgname, "trg_leave_requests_kr_labor_guardrails");
+    assert_eq!(tgenabled, "O", "§60 trigger must stay enabled (origin)");
+    assert_eq!(
+        tgtype, 23,
+        "§60 trigger must be BEFORE INSERT OR UPDATE FOR EACH ROW"
+    );
+    assert_eq!(function_name, "kr_labor_guardrails_guard");
+
+    // Hostile console_rt expand-bridge INSERT that is otherwise shape-legal
+    // (passes protected_request_writer_guard) but carries a 사유 — the named
+    // trigger must refuse with leave_write.kr_annual_no_reason (23514).
+    let rt = runtime_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let org_id = *org.as_uuid();
+    let branch = seed_branch(&owner_pool, org_id).await;
+    let requester = seed_user(&owner_pool, org_id).await;
+    let employee = seed_employee(&owner_pool, org_id, 10.0, 0.0, 10.0).await;
+    link_user_to_employee_and_branch(&owner_pool, org_id, requester, employee, branch).await;
+    let mut hostile = rt.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(org_id.to_string())
+        .execute(&mut *hostile)
+        .await
+        .unwrap();
+    let reason_err = sqlx::query(
+        "INSERT INTO leave_requests (\
+             org_id, branch_id, requester_user_id, subject_employee_id, leave_type, days, \
+             start_date, end_date, reason, status, charge_state, charge_review_reasons\
+         ) VALUES (\
+             $1, $2, $3, $4, 'annual', 1, DATE '2026-08-10', DATE '2026-08-10', \
+             'forbidden 사유', 'pending', 'review_required', ARRAY['missing_calendar']::text[]\
+         )",
+    )
+    .bind(org_id)
+    .bind(branch)
+    .bind(*requester.as_uuid())
+    .bind(employee)
+    .execute(&mut *hostile)
+    .await
+    .expect_err("console_rt INSERT with reason must fail closed under §60 guard");
+    let db = reason_err
+        .as_database_error()
+        .expect("§60 refusal is a database error");
+    assert_eq!(db.code().as_deref(), Some("23514"));
+    assert_eq!(db.message(), "leave_write.kr_annual_no_reason");
+    hostile.rollback().await.ok();
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]

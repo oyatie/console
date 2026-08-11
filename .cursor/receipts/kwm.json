@@ -1,0 +1,45 @@
+{
+  "lane": "console-kwm",
+  "role": "implementer",
+  "status": "done",
+  "headSha": "b360fc8edd9d2a0c584e09a2721de68eab1e85c4",
+  "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-console-kwm",
+  "branch": "lane/console-kwm",
+  "baseSha": "f94308a028868e735d61ca7857f3078f85d95598",
+  "summary": "Pin leave \u00a760 kr_labor_guardrails_guard / trg_leave_requests_kr_labor_guardrails by name in the privilege-matrix census (bead console-kwm; cm3 deferred unproven major). Census fetch_one fails closed on rename/drop; shape-legal console_rt INSERT with \uc0ac\uc720 refuses leave_write.kr_annual_no_reason (23514). No cm3 leave-domain product reopen; migration 0216 untouched.",
+  "filesChanged": [
+    "backend/crates/leave/adapter-postgres/tests/leave_rls_surfaces_as_runtime_role.rs",
+    ".cursor/receipts/kwm.json"
+  ],
+  "redBaseline": "Pre-pin: rg found zero kr_labor_guardrails / trg_leave_requests_kr_labor_guardrails references in leave_rls_surfaces_as_runtime_role.rs (exit 1) while migration 0216 defines both \u2014 missing-trigger false-green gap. Hostile control mutate: pin temporarily renamed to trg_leave_requests_kr_labor_MISSING \u2192 leave_command_preprovision_and_privilege_matrix_are_fail_closed FAILED with RowNotFound at fetch_one expect (12 passed / 1 failed). Restored real name \u2192 GREEN.",
+  "verification": "bash tools/ci/cargo_needs_postgres.sh --only leave-adapter-postgres-leave-rls-surfaces-as-runtime-role-pg --num-threads=1 \u2192 13/13 ok (privilege_matrix ok). cargo fmt -p console-leave-adapter-postgres -- --check clean. Signing: commit -S with %G?=G. Sibling brief path console-lane-kwm denied by git-lock-enforcer; provisioned under hub .worktrees/lane-console-kwm.",
+  "commands": [
+    "rg -n 'kr_labor_guardrails|trg_leave_requests_kr_labor' backend/crates/leave/adapter-postgres/tests/leave_rls_surfaces_as_runtime_role.rs  # RED gap: exit 1",
+    "bash tools/ci/cargo_needs_postgres.sh --only leave-adapter-postgres-leave-rls-surfaces-as-runtime-role-pg --num-threads=1  # RED with MISSING tgname: 12 pass / 1 fail RowNotFound",
+    "bash tools/ci/cargo_needs_postgres.sh --only leave-adapter-postgres-leave-rls-surfaces-as-runtime-role-pg --num-threads=1  # GREEN: 13/13",
+    "cargo fmt --manifest-path backend/Cargo.toml -p console-leave-adapter-postgres -- --check",
+    "git commit -S (product; %G? = G)",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs /Users/jasonlee/Developer/console/.worktrees/lane-console-kwm/.cursor/receipts/kwm.json"
+  ],
+  "contractBreaches": "none \u2014 census/oracle hardening only; no wire/OpenAPI/migration/domain change.",
+  "enforcementPlacement": "WHERE: leave_command_preprovision_and_privilege_matrix_are_fail_closed runs after sqlx::test applies platform/db migrations (0216 subject exists before the census). Finest distinction: pg_proc.proname + pg_trigger.tgname (not a count), plus tgtype=23 / tgenabled=O / tgfoid\u2192kr_labor_guardrails_guard, and a live console_rt INSERT carrying reason. Examined-zero fails: fetch_one RowNotFound if function or trigger absent/renamed; hostile INSERT expect_err if the trigger body stops refusing reason.",
+  "peripheralsUpdated": "Module doc for leave_rls_surfaces_as_runtime_role.rs now lists the named \u00a760 pin + hostile INSERT oracle. Migration 0216 comments already describe deny-by-default; no docs/** or OpenAPI edits (census-only lane).",
+  "lensesApplied": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Red Team",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth",
+    "Operability / Day-2"
+  ],
+  "challenges": [
+    "Chesterton: is a catalog fetch_one enough, or must the hostile INSERT live here? Kept both \u2014 existence alone would miss a no-op function body still named correctly; INSERT-with-reason proves the named trigger still enforces \u00a760.",
+    "Opportunity cost / we1 overlap: we1 tip also edits this RLS file (entrypoint 7\u21928) but left kwm PARKED; pin placed after the shared resolution_dml asserts so admit restack should be additive. Did not reopen cm3/we1 product."
+  ],
+  "followUps": [
+    "PROCESS ELEVATE: brief asked for sibling /Users/jasonlee/Developer/console-lane-kwm; git-lock-enforcer denies sibling worktree add \u2014 used hook-allowlisted hub .worktrees/lane-console-kwm instead. Receipt path follows the allowlisted worktree.",
+    "Admit restack: if console-we1 (16305e39f) lands first, expect a trivial merge on leave_rls_surfaces_as_runtime_role.rs (we1 adds propose_alternate_dates to the entrypoint vec; kwm appends the named \u00a760 pin after the privilege block).",
+    "Parent: close bead console-kwm after admit; no #622 admit from this lane."
+  ]
+}
