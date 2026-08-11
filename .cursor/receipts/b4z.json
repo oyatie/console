@@ -2,7 +2,7 @@
   "status": "done",
   "laneId": "console-b4z",
   "bead": "console-b4z: [ADR-0030 \u00a77.3] Generate backend/openapi/openapi.yaml from console-contracts",
-  "headSha": "ec1f375d8fee3b1b2345bd29429e513f50005e32",
+  "headSha": "a1f0425ec8726e057af03f5b0e93253e0d8be96b",
   "branch": "lane/console-b4z",
   "summary": "openapi.yaml is now produced by console-openapi-gen composing 35 Fragments (1 shared + 34 REST faces). Fragment/compose gained DocumentPreamble plus parameters/responses/securitySchemes; faces keep YAML via include_str! under rest/openapi/ (lazy shape). Split oracle: path/schema/operationId inventories unchanged (507/981/571). CI runs the generator then git diff --exit-code. Restacked onto main tip eca122ad0 (#745) via signed re-split. ADR-0030 \u00a77 row 3 tip-bind left to admission/T.",
   "filesChanged": [
@@ -17,7 +17,7 @@
     ".cursor/receipts/b4z.json"
   ],
   "redBaseline": "Keyed to origin/main tip be7b3e14b2f126e8c24a2bf99758d0de00aaa23d. RED: (1) console-contracts had no compose_document / non-schema component sections \u2014 new tests compose_document_emits_openapi_info_preamble, security_schemes_parameters_and_responses_compose_under_components, duplicate_parameter_key_is_rejected, a_response_ref_is_dangling_once_responses_are_contributed would not compile against tip; (2) no console-openapi-gen bin existed; (3) 1/34 faces had openapi.rs; published doc was hand-maintained include_str! SoT with zero CI regen assertion.",
-  "verification": "GREEN in worktree lane-console-b4z: cargo test -p console-contracts --test compose -> 35/35; cargo test -p console-todos-rest --test openapi_fragment -> 8/8 (drift + request-body-adjacent fragment checks retained); cargo run -p console-contracts --bin console-openapi-gen idempotent (cmp clean across two runs); inventory vs HEAD tip: paths 507=507, schemas 981=981, operationIds 571=571; generator refuses !=35 fragments (examined-zero).",
+  "verification": "GREEN in worktree lane-console-b4z: cargo test -p console-contracts --test compose -> 35/35; cargo test -p console-todos-rest --test openapi_fragment -> 8/8 (drift + request-body-adjacent fragment checks retained); cargo run -p console-contracts --bin console-openapi-gen idempotent (cmp clean across two runs); inventory vs HEAD tip: paths 507=507, schemas 981=981, operationIds 571=571; generator refuses !=35 fragments (examined-zero). Receipt rebound to tip a1f0425ec8726e057af03f5b0e93253e0d8be96b.",
   "commands": [
     "git rev-parse HEAD",
     "SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-contracts --test compose",
