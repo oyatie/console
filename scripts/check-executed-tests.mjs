@@ -74,6 +74,7 @@ import {
   evaluateTestAttributeBaseline,
 } from "./lib/executed-tests-baseline.mjs";
 import { directExecutable, executableWorkflowCommands } from "./lib/ci-workflow-executables.mjs";
+import { unitTestedCrateSrcRoots } from "./check-executed-tests-cfg.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CI = join(ROOT, ".github/workflows/ci.yml");
@@ -372,17 +373,26 @@ function definedBinaries() {
   const files = walk(join(ROOT, "backend"), [], (entry) => entry.endsWith(".rs"))
     .map((path) => [relative(ROOT, path), readFileSync(path, "utf8")]);
 
-  // A crate has a lib test binary if `#[cfg(test)]` appears ANYWHERE under its `src/`, not
-  // in `src/lib.rs` alone. Nine crates keep every one of theirs in `src/<module>.rs`, and
-  // `console-kernel-core` — 152 dependents, and the subject of the PR that landed four
-  // commits before this one for having run its tests nowhere — is one of them, with eleven
-  // such files and zero `#[cfg(test)]` in its own lib.rs. Keyed on lib.rs alone those nine
-  // binaries were not in `defined`, could never be `dark`, and deleting `-p
-  // console-kernel-core` from ci.yml moved no number here at all.
+  // A crate has a lib test binary if a *live* `#[cfg(test)]` appears ANYWHERE under its
+  // `src/`, not in `src/lib.rs` alone. Nine crates keep every one of theirs in
+  // `src/<module>.rs`, and `console-kernel-core` — 152 dependents, and the subject of the
+  // PR that landed four commits before this one for having run its tests nowhere — is one
+  // of them, with eleven such files and zero `#[cfg(test)]` in its own lib.rs. Keyed on
+  // lib.rs alone those nine binaries were not in `defined`, could never be `dark`, and
+  // deleting `-p console-kernel-core` from ci.yml moved no number here at all.
+  //
+  // Live means outside comments and string literals. A doc comment that pastes the
+  // attribute (process.doc-comment-cfg-test-false-dark) must not invent a dark lib binary;
+  // a raw substring scan of the file text did exactly that. Examined-zero fails closed
+  // inside unitTestedCrateSrcRoots.
+  let unitTested;
+  try {
+    unitTested = unitTestedCrateSrcRoots(files);
+  } catch (error) {
+    unresolved.push(error instanceof Error ? error.message : String(error));
+    unitTested = new Set();
+  }
   const crateSrc = (rel) => rel.slice(0, rel.indexOf("/src/") + 4);
-  const unitTested = new Set(
-    files.filter(([rel, text]) => rel.includes("/src/") && text.includes("#[cfg(test)]")).map(([rel]) => crateSrc(rel)),
-  );
 
   const out = new Set();
   for (const [rel, text] of files) {
