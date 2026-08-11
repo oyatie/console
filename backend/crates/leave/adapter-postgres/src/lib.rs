@@ -36,14 +36,16 @@ use console_leave_application::{
     ImportEmployeeLeaveBalanceCommand, ImportEmployeeLeaveBalanceResult, LeaveBalancePage,
     LeaveBalanceTone, LeaveBalanceView, LeaveChargeResolutionView, LeaveRequestPage,
     LeaveRequestView, ListLeaveRequestsQuery, ListSelfLeaveRequestsQuery,
-    ResolveLeaveChargeCommand, ResolveLeaveChargeQuery, SelfLeaveBalanceView, SelfLeaveFilingState,
-    StatutoryPushCommand, StatutoryPushView, WorkCalendarPort, leave_promotion_audit_event,
+    ProposeAlternateDatesCommand, ResolveLeaveChargeCommand, ResolveLeaveChargeQuery,
+    SelfLeaveBalanceView, SelfLeaveFilingState, StatutoryPushCommand, StatutoryPushView,
+    WorkCalendarPort, leave_promotion_audit_event,
 };
 use console_leave_domain::{
     LeaveBalanceAmount, LeaveChargeAssessment, LeaveChargeResolutionOrigin,
     LeaveChargeReviewReason, LeaveChargeState, LeaveDateCharge, LeaveStatus, LeaveType, LeaveUnits,
-    PartialDayPeriod, PromotionContext, PromotionKind, PromotionTrack, RecordedLeaveChargeSnapshot,
-    SourceRevisionRef, WorkObligation, first_round_window, second_round_deadline,
+    NewLeaveRequest, PartialDayPeriod, PromotionContext, PromotionKind, PromotionTrack,
+    RecordedLeaveChargeSnapshot, SourceRevisionRef, TimeChangeGroundsCode, WorkObligation,
+    alternate_leave_request, first_round_window, second_round_deadline, validate_alternate_dates,
     validate_designated_dates, validate_push,
 };
 use console_platform_db::{DbError, with_audit, with_org_conn};
@@ -62,7 +64,10 @@ const REQUEST_COLUMNS: &str = "id, branch_id, requester_user_id, subject_employe
        WHERE lcr.id = leave_requests.current_charge_resolution_id) AS charge_resolved_by, \
      (SELECT resolution_origin FROM leave_charge_resolutions lcr \
        WHERE lcr.id = leave_requests.current_charge_resolution_id) AS charge_resolution_origin, \
-     start_date, end_date, reason, status, decided_by, decided_at, decision_comment, ap_run_id, created_at";
+     start_date, end_date, reason, status, decided_by, decided_at, decision_comment, \
+     time_change_grounds, time_change_evidence, \
+     alternate_start_date, alternate_end_date, alternate_partial_day_period, alternate_proposed_at, \
+     ap_run_id, created_at";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum PromotionInsert {
@@ -928,6 +933,89 @@ impl PgLeaveStore {
             })
     }
 
+    /// Worker-only alternate 시기 on a `time_change_consult` row (§60⑤).
+    pub async fn propose_alternate_dates(
+        &self,
+        command: ProposeAlternateDatesCommand,
+    ) -> Result<LeaveRequestView, PgLeaveError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let existing = self
+            .fetch_request_for_requester(org, command.request_id, command.proposer)
+            .await?
+            .ok_or_else(|| KernelError::not_found("leave request not found"))?;
+        if existing.status != LeaveStatus::TimeChangeConsult {
+            return Err(KernelError::conflict(
+                "alternate dates may only be proposed on a time_change_consult request",
+            )
+            .into());
+        }
+        if existing.requester_user_id != command.proposer {
+            return Err(KernelError::forbidden(
+                "alternate dates may only be proposed by the original requester",
+            )
+            .into());
+        }
+        let original = NewLeaveRequest::new(
+            existing.leave_type,
+            existing.start_date,
+            existing.end_date,
+            existing.partial_day_period,
+        )?;
+        let proposed = alternate_leave_request(
+            existing.leave_type,
+            command.start_date,
+            command.end_date,
+            existing.partial_day_period,
+        )?;
+        validate_alternate_dates(&original, proposed)?;
+
+        let row = sqlx::query(
+            "SELECT * FROM leave_api.propose_alternate_dates(\
+             $1,$2,$3,$4,$5,$6,$7)",
+        )
+        .bind(org.as_uuid())
+        .bind(command.request_id.as_uuid())
+        .bind(command.proposer.as_uuid())
+        .bind(command.start_date)
+        .bind(command.end_date)
+        .bind(command.trace.trace_id())
+        .bind(command.trace.span_id())
+        .fetch_one(self.command_pool()?)
+        .await
+        .map_err(map_leave_command_sqlx)?;
+        let request_id = LeaveRequestId::from_uuid(row.try_get("request_id")?);
+        self.fetch_request_for_requester(org, request_id, command.proposer)
+            .await?
+            .ok_or_else(|| {
+                PgLeaveError::Domain(KernelError::internal(
+                    "leave command committed but consult request was not readable",
+                ))
+            })
+    }
+
+    async fn fetch_request_for_requester(
+        &self,
+        org: OrgId,
+        id: LeaveRequestId,
+        requester: UserId,
+    ) -> Result<Option<LeaveRequestView>, PgLeaveError> {
+        let id_uuid = *id.as_uuid();
+        let requester_uuid = *requester.as_uuid();
+        let row = with_org_conn::<_, _, PgLeaveError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                let mut builder = QueryBuilder::<Postgres>::new(format!(
+                    "SELECT {REQUEST_COLUMNS} FROM leave_requests WHERE id = "
+                ));
+                builder.push_bind(id_uuid);
+                builder.push(" AND requester_user_id = ");
+                builder.push_bind(requester_uuid);
+                Ok(builder.build().fetch_optional(tx.as_mut()).await?)
+            })
+        })
+        .await?;
+        row.as_ref().map(request_from_row).transpose()
+    }
+
     async fn fetch_request_scoped(
         &self,
         org: OrgId,
@@ -1425,12 +1513,25 @@ fn map_leave_command_sqlx(error: sqlx::Error) -> PgLeaveError {
         "leave_decide.insufficient_balance" => PgLeaveError::Domain(KernelError::validation(
             "insufficient exact leave balance for approval",
         )),
+        "leave_decide.time_change_ineligible" => PgLeaveError::Domain(KernelError::validation(
+            "time_change is ineligible: branch coverage evidence does not meet §60⑤ 요건",
+        )),
+        "leave_alternate.not_found" => {
+            PgLeaveError::Domain(KernelError::not_found("leave request not found"))
+        }
+        "leave_alternate.not_consult" | "leave_alternate.already_proposed" => {
+            PgLeaveError::Domain(KernelError::conflict(message.to_owned()))
+        }
+        "leave_alternate.requester_only" => PgLeaveError::Domain(KernelError::forbidden(
+            "alternate dates may only be proposed by the original requester",
+        )),
         message
             if message.starts_with("leave_create.")
                 || message.starts_with("employee_create.")
                 || message.starts_with("leave_charge.")
                 || message.starts_with("leave_resolve.")
                 || message.starts_with("leave_decide.")
+                || message.starts_with("leave_alternate.")
                 || message.starts_with("leave_home_branch.")
                 || message.starts_with("leave_balance_import.")
                 || message.starts_with("employee_import_batch.")
@@ -1648,6 +1749,18 @@ fn request_from_row(row: &sqlx::postgres::PgRow) -> Result<LeaveRequestView, PgL
         decided_by: decided_by.map(UserId::from_uuid),
         decided_at: row.try_get("decided_at")?,
         decision_comment: row.try_get("decision_comment")?,
+        time_change_grounds: row
+            .try_get::<Option<String>, _>("time_change_grounds")?
+            .map(|code| TimeChangeGroundsCode::parse(&code))
+            .transpose()?,
+        time_change_evidence: row.try_get("time_change_evidence")?,
+        alternate_start_date: row.try_get("alternate_start_date")?,
+        alternate_end_date: row.try_get("alternate_end_date")?,
+        alternate_partial_day_period: row
+            .try_get::<Option<String>, _>("alternate_partial_day_period")?
+            .map(|period| PartialDayPeriod::parse(&period))
+            .transpose()?,
+        alternate_proposed_at: row.try_get("alternate_proposed_at")?,
         ap_run_id,
         created_at: row.try_get("created_at")?,
     })

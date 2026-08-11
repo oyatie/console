@@ -751,6 +751,10 @@ async fn populated_upgrade_preserves_pre_0166_read_and_insert_contract(owner_poo
 
     // Versionless v1 command requests are first-writer-wins under the row lock;
     // modern callers still receive an exact stale-version conflict.
+    // NOTE: this test surgically restores pre-0166 + reapplies 0166 only, so
+    // leave_api.decide_request is the 0166 signature (approve|return|reject) —
+    // not the post-0216/0217 §60 surface. Keep reject here; §60 mechanics are
+    // covered by leave_rls / personas on the full migrator tip.
     let v1_request = Uuid::new_v4();
     let modern_request = Uuid::new_v4();
     let mut legacy_command_fixtures = runtime.begin().await.unwrap();

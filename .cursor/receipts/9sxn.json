@@ -1,0 +1,52 @@
+{
+  "lane": "console-9sxn",
+  "role": "implementer",
+  "status": "done",
+  "headSha": "0647a6293bcc579d1fc0f38a8e532f6873ce930c",
+  "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-console-9sxn",
+  "branch": "lane/console-9sxn",
+  "baseSha": "e7f207eab0186b024eaaa3d56de1f9caffc59eda",
+  "we1ProductTipReadOnly": "109ac1425b44897ab9512ccab8d33cc8e49f78d4",
+  "summary": "OpenAPI lease for we1 \u00a760\u2464 consult surface: publish POST /api/v2/leave/requests/{id}/alternate-dates with LeaveProposeAlternateDatesRequest, document LeaveRequestV2View consult fields (time_change_grounds, time_change_evidence, alternate_*), and add TimeChangeGroundsCode + TimeChangeCoverageEvidence schemas matching we1 tip 109ac1425. v1 LeaveRequestView key set left frozen. decideLeaveRequestV2 prose updated for automatic eligibility / time_change_ineligible.",
+  "filesChanged": [
+    "backend/openapi/openapi.yaml",
+    ".cursor/receipts/9sxn.json"
+  ],
+  "redBaseline": "On origin/main tip e7f207eab: rg alternate-dates|time_change_grounds|alternate_start_date backend/openapi/openapi.yaml \u2192 exit 1 (zero matches). LeaveRequestV2View ended at decision_comment/ap_run_id/created_at with no consult fields. Critic we1 finding 2 (major+proven, ownerLease) recorded the same absence against product tip 109ac1425.",
+  "verification": "After patch: path+schemas present; v1 LeaveRequestView still lacks consult keys. node scripts/check-openapi-refs.mjs \u2192 4974 refs / 0 findings. node --test scripts/check-openapi-refs.test.mjs \u2192 15/15. node scripts/check-request-body-contract.mjs \u2192 resolved 51 / skipped 171. node --test scripts/check-request-body-contract.test.mjs \u2192 22/22. node scripts/check-platform-contract-drift.mjs \u2192 exit 1 declaring POST /api/v2/leave/requests/{}/alternate-dates until we1 route lands (admit-pair expected). Signing smoke folded: commit -S with %G?=G.",
+  "commands": [
+    "rg alternate-dates|time_change_grounds|alternate_start_date backend/openapi/openapi.yaml (RED: exit 1)",
+    "rg alternate-dates|time_change_grounds|alternate_start_date|LeaveProposeAlternateDatesRequest|TimeChangeCoverageEvidence backend/openapi/openapi.yaml (GREEN: hits)",
+    "node scripts/check-openapi-refs.mjs",
+    "node --test scripts/check-openapi-refs.test.mjs",
+    "node scripts/check-request-body-contract.mjs",
+    "node --test scripts/check-request-body-contract.test.mjs",
+    "node scripts/check-platform-contract-drift.mjs (exit 1 until we1 co-admit \u2014 expected)",
+    "git commit -S (product; %G? = G)",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs /Users/jasonlee/Developer/console/.worktrees/lane-console-9sxn/.cursor/receipts/9sxn.json"
+  ],
+  "contractBreaches": "Additive OpenAPI only: new path + request schema + optional LeaveRequestV2View consult properties + shared grounds/evidence schemas. No leave/** edits. v1 LeaveRequestView unchanged. Bidirectional route-drift gate stays red on this leaf alone until we1 REST registers the same path \u2014 pair at admit.",
+  "enforcementPlacement": "WHERE: existing scripts/check-openapi-refs.mjs and scripts/check-request-body-contract.mjs read backend/openapi/openapi.yaml (subject exists after this commit). Finest distinction: $ref totality + request-body serde/OpenAPI field equality for LeaveProposeAlternateDatesRequest. Examined-zero fails: refs gate fails closed below floor; request-body gate refuses empty resolved set. Route drift (check-platform-contract-drift.mjs / openapi_drift.rs) is the cross-root totality check \u2014 green only when we1 product is co-present.",
+  "peripheralsUpdated": "backend/openapi/openapi.yaml path+schemas+decideLeaveRequestV2 description/422 text. No docs/** (not owned). No leave crate peripheral dual-write. Receipt recorded under lane worktree.",
+  "lensesApplied": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Systems Thinking",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "challenges": [
+    "Chesterton: OpenAPI was intentionally deferred from we1 (one writer per root) \u2014 publishing here before we1 lands makes platform-contract-drift red on this leaf alone; kept as admit-pair rather than inventing an UNDOCUMENTED_BY_DESIGN exemption that would hide the new customer route.",
+    "Red Team: documenting manager-chosen grounds or accepting alternate body fields beyond start_date/end_date would reintroduce discretion / leave-type mutation; schema mirrors deny_unknown_fields ProposeAlternateDatesBody and closed TimeChangeGroundsCode::BranchCoverageShortfall only."
+  ],
+  "followUps": [
+    "TIP-BINDING: headSha pins product tip 0647a6293bcc579d1fc0f38a8e532f6873ce930c (receipt self-hash folded via amend; validator requires non-empty tip bind).",
+    "ADMIT PAIR: land with we1 so check-platform-contract-drift / openapi_drift.rs see POST alternate-dates on both sides; do not merge this leaf alone onto main.",
+    "WORKTREE PATH: brief asked for sibling /Users/jasonlee/Developer/console-lane-9sxn; provisioned under hub .worktrees/lane-console-9sxn per BASE_LOCK (process.worktree-outside-workspace).",
+    "we1 still BLOCK on ACTIVE headcount filter (critic finding 1, ownerLease false) \u2014 OpenAPI lease does not unblock that; parent must re-critique we1 before train admit.",
+    "No PR / no push from this implementer (brief)."
+  ]
+}

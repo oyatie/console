@@ -28,13 +28,13 @@ use console_kernel_core::{BranchId, BranchScope, ErrorKind, OrgId, TraceContext,
 use console_leave_adapter_postgres::PgLeaveStore;
 use console_leave_application::{
     ApSubmission, CreateLeaveRequestCommand, DecideLeaveRequestCommand, ListLeaveRequestsQuery,
-    ListSelfLeaveRequestsQuery, ResolveLeaveChargeCommand, ResolveLeaveChargeQuery,
-    StatutoryPushCommand, WorkCalendarPort,
+    ListSelfLeaveRequestsQuery, ProposeAlternateDatesCommand, ResolveLeaveChargeCommand,
+    ResolveLeaveChargeQuery, StatutoryPushCommand, WorkCalendarPort,
 };
 use console_leave_domain::{
     LeaveChargeAssessment, LeaveChargeEvidence, LeaveChargeState, LeaveDateCharge, LeaveDecision,
     LeaveStatus, LeaveType, LeaveUnits, NewLeaveRequest, PromotionKind, PromotionTrack,
-    SourceRevisionRef, WorkObligation,
+    SourceRevisionRef, TimeChangeGroundsCode, WorkObligation,
 };
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
@@ -898,10 +898,11 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
             "create_request".to_owned(),
             "decide_request".to_owned(),
             "import_employee_leave_balance".to_owned(),
+            "propose_alternate_dates".to_owned(),
             "resolve_charge".to_owned(),
             "set_employee_home_branch".to_owned(),
         ],
-        "command role receives exactly seven public entrypoints and no helpers"
+        "command role receives exactly eight public entrypoints and no helpers"
     );
     // Named, not counted: the directory-manager predicate is SECURITY DEFINER
     // over users/role assignments and takes an arbitrary org, so it must stay
@@ -1896,6 +1897,19 @@ async fn approve_rejects_when_days_exceed_remaining_balance(owner_pool: PgPool) 
     .expect("time-change consult on a pending request");
     assert_eq!(consult.status, LeaveStatus::TimeChangeConsult);
     assert_eq!(consult.decided_by, Some(approver));
+    assert_eq!(
+        consult.time_change_grounds,
+        Some(TimeChangeGroundsCode::BranchCoverageShortfall),
+        "§60⑤ consult must record the automatic grounds code"
+    );
+    assert!(
+        consult
+            .time_change_evidence
+            .as_ref()
+            .and_then(|v| v.get("headcount"))
+            .is_some(),
+        "consult must persist coverage evidence, not manager narrative alone"
+    );
     let (used, remaining): (f64, f64) = sqlx::query_as(
         "SELECT leave_used::float8, leave_remaining::float8 FROM employees WHERE id = $1",
     )
@@ -2561,4 +2575,278 @@ async fn statutory_push_enforces_the_section_61_windows_as_runtime_role(owner_po
     .await
     .expect_err("no roster figure means no notice");
     assert_eq!(unknown_days.kind(), ErrorKind::Conflict);
+}
+
+/// §60⑤ consult mechanics (bead console-we1): automatic eligibility, worker
+/// alternate dates, repeat-exercise audit rollup.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn section_60_5_consult_mechanics_eligibility_alternate_and_repeat_audit(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let command_pool = leave_command_role_pool(&owner_pool).await;
+    let knl = OrgId::knl();
+    let knl_uuid = *knl.as_uuid();
+    let branch = seed_branch(&owner_pool, knl_uuid).await;
+    let requester = seed_user(&owner_pool, knl_uuid).await;
+    let approver = seed_user(&owner_pool, knl_uuid).await;
+    let store = test_store(&rt, &command_pool);
+
+    // Ample coverage: three home-branch employees → time_change ineligible.
+    let subject = seed_employee(&owner_pool, knl_uuid, 15.0, 0.0, 15.0).await;
+    let peer_a = seed_employee(&owner_pool, knl_uuid, 15.0, 0.0, 15.0).await;
+    let peer_b = seed_employee(&owner_pool, knl_uuid, 15.0, 0.0, 15.0).await;
+    let peer_user_a = seed_user(&owner_pool, knl_uuid).await;
+    let peer_user_b = seed_user(&owner_pool, knl_uuid).await;
+    link_user_to_employee_and_branch(&owner_pool, knl_uuid, requester, subject, branch).await;
+    link_user_to_employee_and_branch(&owner_pool, knl_uuid, peer_user_a, peer_a, branch).await;
+    link_user_to_employee_and_branch(&owner_pool, knl_uuid, peer_user_b, peer_b, branch).await;
+    link_user_to_branch(&owner_pool, knl_uuid, approver, branch).await;
+
+    let ample = console_platform_request_context::scope_org(knl, async {
+        store
+            .create_request(create_cmd(branch, requester, subject, 3.0))
+            .await
+    })
+    .await
+    .expect("create under ample coverage");
+    let ineligible = console_platform_request_context::scope_org(knl, async {
+        store
+            .decide(decide_cmd(
+                ample.id,
+                approver,
+                scope_of(branch),
+                LeaveDecision::TimeChange,
+            ))
+            .await
+    })
+    .await;
+    assert_eq!(
+        ineligible
+            .expect_err("time_change without coverage shortfall must fail closed")
+            .kind(),
+        ErrorKind::Validation
+    );
+
+    // Solo headcount → eligible consult; worker proposes alternate; manager cannot.
+    let solo_branch = seed_branch(&owner_pool, knl_uuid).await;
+    let solo_requester = seed_user(&owner_pool, knl_uuid).await;
+    let solo_approver = seed_user(&owner_pool, knl_uuid).await;
+    let solo_employee = seed_employee(&owner_pool, knl_uuid, 15.0, 0.0, 15.0).await;
+    link_user_to_employee_and_branch(
+        &owner_pool,
+        knl_uuid,
+        solo_requester,
+        solo_employee,
+        solo_branch,
+    )
+    .await;
+    link_user_to_branch(&owner_pool, knl_uuid, solo_approver, solo_branch).await;
+
+    let first = console_platform_request_context::scope_org(knl, async {
+        store
+            .create_request(create_cmd(solo_branch, solo_requester, solo_employee, 3.0))
+            .await
+    })
+    .await
+    .expect("solo create");
+    let consult = console_platform_request_context::scope_org(knl, async {
+        store
+            .decide(decide_cmd(
+                first.id,
+                solo_approver,
+                scope_of(solo_branch),
+                LeaveDecision::TimeChange,
+            ))
+            .await
+    })
+    .await
+    .expect("solo coverage shortfall opens consult");
+    assert_eq!(
+        consult.time_change_grounds,
+        Some(TimeChangeGroundsCode::BranchCoverageShortfall)
+    );
+
+    let manager_propose = console_platform_request_context::scope_org(knl, async {
+        store
+            .propose_alternate_dates(ProposeAlternateDatesCommand {
+                request_id: consult.id,
+                proposer: solo_approver,
+                start_date: date(2026, 8, 3),
+                end_date: date(2026, 8, 5),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await;
+    assert_eq!(
+        manager_propose
+            .expect_err("employer must not choose alternate dates")
+            .kind(),
+        ErrorKind::NotFound,
+        "non-requester writes are deny-by-omission (SQL also raises leave_alternate.requester_only)"
+    );
+
+    let proposed = console_platform_request_context::scope_org(knl, async {
+        store
+            .propose_alternate_dates(ProposeAlternateDatesCommand {
+                request_id: consult.id,
+                proposer: solo_requester,
+                start_date: date(2026, 8, 3),
+                end_date: date(2026, 8, 5),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("worker chooses alternate 시기");
+    assert_eq!(proposed.alternate_start_date, Some(date(2026, 8, 3)));
+    assert_eq!(proposed.alternate_end_date, Some(date(2026, 8, 5)));
+    assert!(proposed.alternate_proposed_at.is_some());
+
+    // Second exercise in the same leave-year raises the repeat-audit rollup.
+    let second = console_platform_request_context::scope_org(knl, async {
+        store
+            .create_request(CreateLeaveRequestCommand {
+                requester_user_id: solo_requester,
+                subject_employee_id: solo_employee,
+                idempotency_key: Uuid::new_v4(),
+                request: NewLeaveRequest::new(
+                    LeaveType::Annual,
+                    date(2026, 9, 1),
+                    date(2026, 9, 2),
+                    None,
+                )
+                .unwrap(),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            })
+            .await
+    })
+    .await
+    .expect("second request");
+    console_platform_request_context::scope_org(knl, async {
+        store
+            .decide(decide_cmd(
+                second.id,
+                solo_approver,
+                scope_of(solo_branch),
+                LeaveDecision::TimeChange,
+            ))
+            .await
+    })
+    .await
+    .expect("second consult");
+
+    let repeat_audits: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM audit_events \
+         WHERE org_id = $1 AND action = 'leave_request.time_change_repeat_audit' \
+           AND (after_snap->>'subject_employee_id')::uuid = $2",
+    )
+    .bind(knl_uuid)
+    .bind(solo_employee)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        repeat_audits, 1,
+        "second §60⑤ exercise in the leave-year must emit the audit rollup"
+    );
+}
+
+/// EXITED home-branch peers must not inflate §60⑤ coverage headcount
+/// (`leave.coverage-roster-status-filter`). Hostile: 1 ACTIVE + 2 EXITED →
+/// without ACTIVE filter, projected_available=2 refuses time_change; with it,
+/// projected_available=0 is eligible. Examined-zero remains fail-closed via
+/// headcount=0 in decide_request.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn section_60_5_exited_peers_do_not_inflate_coverage_headcount(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let command_pool = leave_command_role_pool(&owner_pool).await;
+    let knl = OrgId::knl();
+    let knl_uuid = *knl.as_uuid();
+    let branch = seed_branch(&owner_pool, knl_uuid).await;
+    let requester = seed_user(&owner_pool, knl_uuid).await;
+    let approver = seed_user(&owner_pool, knl_uuid).await;
+    let store = test_store(&rt, &command_pool);
+
+    let subject = seed_employee(&owner_pool, knl_uuid, 15.0, 0.0, 15.0).await;
+    let exited_a = seed_employee(&owner_pool, knl_uuid, 15.0, 0.0, 15.0).await;
+    let exited_b = seed_employee(&owner_pool, knl_uuid, 15.0, 0.0, 15.0).await;
+    let exited_user_a = seed_user(&owner_pool, knl_uuid).await;
+    let exited_user_b = seed_user(&owner_pool, knl_uuid).await;
+    link_user_to_employee_and_branch(&owner_pool, knl_uuid, requester, subject, branch).await;
+    link_user_to_employee_and_branch(&owner_pool, knl_uuid, exited_user_a, exited_a, branch).await;
+    link_user_to_employee_and_branch(&owner_pool, knl_uuid, exited_user_b, exited_b, branch).await;
+    link_user_to_branch(&owner_pool, knl_uuid, approver, branch).await;
+
+    sqlx::query(
+        "UPDATE employees SET employment_status = 'EXITED' \
+         WHERE org_id = $1 AND id = ANY($2)",
+    )
+    .bind(knl_uuid)
+    .bind(&[exited_a, exited_b][..])
+    .execute(&owner_pool)
+    .await
+    .expect("stamp EXITED peers retaining home_branch_id");
+
+    let roster: (i64, i64) = sqlx::query_as(
+        "SELECT \
+            count(*) FILTER (WHERE employment_status = 'ACTIVE')::BIGINT, \
+            count(*) FILTER (WHERE employment_status = 'EXITED')::BIGINT \
+         FROM employees \
+         WHERE org_id = $1 AND home_branch_id = $2",
+    )
+    .bind(knl_uuid)
+    .bind(branch)
+    .fetch_one(&owner_pool)
+    .await
+    .expect("roster census");
+    assert_eq!(
+        roster.0, 1,
+        "fixture must examine exactly one ACTIVE subject"
+    );
+    assert_eq!(
+        roster.1, 2,
+        "fixture must stamp two EXITED home-branch peers"
+    );
+
+    let pending = console_platform_request_context::scope_org(knl, async {
+        store
+            .create_request(create_cmd(branch, requester, subject, 3.0))
+            .await
+    })
+    .await
+    .expect("create with EXITED peers on roster");
+
+    let consult = console_platform_request_context::scope_org(knl, async {
+        store
+            .decide(decide_cmd(
+                pending.id,
+                approver,
+                scope_of(branch),
+                LeaveDecision::TimeChange,
+            ))
+            .await
+    })
+    .await
+    .expect("EXITED peers must not inflate headcount: ACTIVE-only shortfall opens §60⑤ consult");
+    assert_eq!(
+        consult.time_change_grounds,
+        Some(TimeChangeGroundsCode::BranchCoverageShortfall)
+    );
+    let evidence = consult
+        .time_change_evidence
+        .as_ref()
+        .expect("coverage evidence persisted");
+    assert_eq!(
+        evidence.get("headcount").and_then(|v| v.as_i64()),
+        Some(1),
+        "headcount must count ACTIVE only (not 1 ACTIVE + 2 EXITED = 3)"
+    );
+    assert_eq!(
+        evidence.get("projected_available").and_then(|v| v.as_i64()),
+        Some(0),
+        "projected_available must be ACTIVE shortfall, not inflated by EXITED"
+    );
 }

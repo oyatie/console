@@ -25,7 +25,7 @@ use console_leave_domain::{
     LeaveBalanceAmount, LeaveChargeAssessment, LeaveChargeResolutionOrigin,
     LeaveChargeReviewReason, LeaveChargeState, LeaveDateCharge, LeaveDecision, LeaveStatus,
     LeaveType, LeaveUnits, NewLeaveRequest, PartialDayPeriod, PromotionKind, PromotionTrack,
-    SourceRevisionRef,
+    SourceRevisionRef, TimeChangeGroundsCode,
 };
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -155,6 +155,19 @@ pub struct DecideLeaveRequestCommand {
     pub occurred_at: Timestamp,
 }
 
+/// Worker-only alternate 시기 proposal on a `time_change_consult` row (§60⑤ /
+/// charter §4-31: 대체 일자는 근로자 선택). The adapter binds the actor as the
+/// original requester and refuses employer/manager writes.
+#[derive(Debug, Clone)]
+pub struct ProposeAlternateDatesCommand {
+    pub request_id: LeaveRequestId,
+    pub proposer: UserId,
+    pub start_date: Date,
+    pub end_date: Date,
+    pub trace: TraceContext,
+    pub occurred_at: Timestamp,
+}
+
 /// Record a server-validated manual/reference resolution. The caller supplies
 /// per-date evidence and source identity, never a total or digest; the adapter
 /// canonicalizes, totals, hashes, and persists the immutable snapshot.
@@ -263,6 +276,30 @@ pub struct LeaveRequestView {
     pub decided_at: Option<Timestamp>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub decision_comment: Option<String>,
+    /// System-judged §60⑤ grounds code when status is `time_change_consult`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time_change_grounds: Option<TimeChangeGroundsCode>,
+    /// Coverage evidence snapshot that justified the grounds (JSON object).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time_change_evidence: Option<serde_json::Value>,
+    /// Worker-chosen alternate 시기; absent until the requester proposes.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "date_fmt_option"
+    )]
+    pub alternate_start_date: Option<Date>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "date_fmt_option"
+    )]
+    pub alternate_end_date: Option<Date>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub alternate_partial_day_period: Option<PartialDayPeriod>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub alternate_proposed_at: Option<Timestamp>,
     /// The engine AP- run started for a statutory push, when one exists.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ap_run_id: Option<Uuid>,
@@ -430,5 +467,32 @@ mod date_fmt {
     pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<Date, D::Error> {
         let s = String::deserialize(de)?;
         Date::parse(&s, &Iso8601::DATE).map_err(serde::de::Error::custom)
+    }
+}
+
+mod date_fmt_option {
+    use console_kernel_core::Date;
+    use serde::{self, Deserialize, Deserializer, Serializer};
+    use time::format_description::well_known::Iso8601;
+
+    pub fn serialize<S: Serializer>(date: &Option<Date>, ser: S) -> Result<S::Ok, S::Error> {
+        match date {
+            Some(date) => {
+                let s = date
+                    .format(&Iso8601::DATE)
+                    .map_err(serde::ser::Error::custom)?;
+                ser.serialize_some(&s)
+            }
+            None => ser.serialize_none(),
+        }
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<Option<Date>, D::Error> {
+        let Some(s) = Option::<String>::deserialize(de)? else {
+            return Ok(None);
+        };
+        Date::parse(&s, &Iso8601::DATE)
+            .map(Some)
+            .map_err(serde::de::Error::custom)
     }
 }

@@ -25,8 +25,8 @@ use console_kernel_core::{
 use console_leave_adapter_postgres::{PgLeaveError, PgLeaveStore};
 use console_leave_application::{
     CreateLeaveRequestCommand, DecideLeaveRequestCommand, LeaveRequestPage, LeaveRequestView,
-    ListLeaveRequestsQuery, ListSelfLeaveRequestsQuery, ResolveLeaveChargeCommand,
-    SelfLeaveBalanceView, StatutoryPushCommand,
+    ListLeaveRequestsQuery, ListSelfLeaveRequestsQuery, ProposeAlternateDatesCommand,
+    ResolveLeaveChargeCommand, SelfLeaveBalanceView, StatutoryPushCommand,
 };
 use console_leave_domain::{
     LeaveDateCharge, LeaveDecision, LeaveStatus, LeaveType, LeaveUnits, NewLeaveRequest,
@@ -49,6 +49,8 @@ pub const LEAVE_REQUESTS_V2_PATH: &str = "/api/v2/leave/requests";
 pub const LEAVE_DECIDE_V2_PATH_TEMPLATE: &str = "/api/v2/leave/requests/{id}/decide";
 pub const LEAVE_CHARGE_RESOLUTION_V2_PATH_TEMPLATE: &str =
     "/api/v2/leave/requests/{id}/charge-resolution";
+pub const LEAVE_ALTERNATE_DATES_V2_PATH_TEMPLATE: &str =
+    "/api/v2/leave/requests/{id}/alternate-dates";
 pub const MY_LEAVE_V2_PATH: &str = "/api/v2/me/leave";
 pub const LEAVE_BALANCES_PATH: &str = "/api/v1/leave/balances";
 pub const LEAVE_PROMOTIONS_PATH: &str = "/api/v1/leave/promotions";
@@ -60,6 +62,7 @@ pub const LEAVE_ROUTE_PATHS: &[&str] = &[
     LEAVE_REQUESTS_V2_PATH,
     LEAVE_DECIDE_V2_PATH_TEMPLATE,
     LEAVE_CHARGE_RESOLUTION_V2_PATH_TEMPLATE,
+    LEAVE_ALTERNATE_DATES_V2_PATH_TEMPLATE,
     MY_LEAVE_V2_PATH,
     LEAVE_BALANCES_PATH,
     LEAVE_PROMOTIONS_PATH,
@@ -104,6 +107,10 @@ pub fn router(state: LeaveRestState) -> Router {
         .route(
             LEAVE_CHARGE_RESOLUTION_V2_PATH_TEMPLATE,
             post(resolve_charge),
+        )
+        .route(
+            LEAVE_ALTERNATE_DATES_V2_PATH_TEMPLATE,
+            post(propose_alternate_dates_v2),
         )
         .route(MY_LEAVE_V2_PATH, get(get_my_leave_v2))
         .route(LEAVE_BALANCES_PATH, get(list_balances))
@@ -419,6 +426,39 @@ async fn decide_v2(
         body.comment.as_deref(),
     )
     .await?;
+    Ok(Json(view).into_response())
+}
+
+/// Worker-chosen alternate 시기 on a §60⑤ `time_change_consult` (charter
+/// §4-31). No manage capability — only the original requester may propose.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ProposeAlternateDatesBody {
+    start_date: String,
+    end_date: String,
+}
+
+async fn propose_alternate_dates_v2(
+    State(state): State<LeaveRestState>,
+    headers: HeaderMap,
+    Path(id): Path<LeaveRequestId>,
+    Json(body): Json<ProposeAlternateDatesBody>,
+) -> Result<Response, RestError> {
+    let principal = principal_from_headers(&state, &headers).await?;
+    let start_date = parse_iso_date(&body.start_date, "start_date")?;
+    let end_date = parse_iso_date(&body.end_date, "end_date")?;
+    let view = state
+        .store
+        .propose_alternate_dates(ProposeAlternateDatesCommand {
+            request_id: id,
+            proposer: principal.user_id,
+            start_date,
+            end_date,
+            trace: TraceContext::generate(),
+            occurred_at: time::OffsetDateTime::now_utc(),
+        })
+        .await
+        .map_err(RestError::from_store)?;
     Ok(Json(view).into_response())
 }
 

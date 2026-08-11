@@ -14,6 +14,11 @@
 //! The retired `returned`/`rejected` statuses survive only as read-only
 //! historical row states; no decision can produce them.
 //!
+//! Full §60⑤ consult mechanics live in [`consult`]: automatic coverage
+//! eligibility (요건 자동 판정), worker-only alternate-date proposals, and
+//! repeat-exercise audit rollup. Opening `time_change` without an eligible
+//! system verdict is refused fail-closed at the SQL gate.
+//!
 //! The statutory push ([`PromotionKind`]) is the employer's 연차 사용 촉진
 //! (§61, two rounds) and, after the second round, the 노무수령거부 notice. Each
 //! push is delivered as a receipt-gated document into the target's 개인 수신함.
@@ -21,8 +26,14 @@
 //! verbatim statute text and its live citations.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+pub mod consult;
 pub mod promotion;
 
+pub use consult::{
+    MINIMUM_ON_DUTY, TIME_CHANGE_REPEAT_AUDIT_THRESHOLD, TimeChangeCoverageEvidence,
+    TimeChangeEligibility, TimeChangeGroundsCode, TimeChangeRepeatRollup, alternate_leave_request,
+    judge_time_change_eligibility, rollup_time_change_exercises, validate_alternate_dates,
+};
 pub use promotion::{
     PromotionContext, PromotionTrack, PromotionWindow, first_round_window, second_round_deadline,
     validate_designated_dates, validate_promotion, validate_refusal,
@@ -454,8 +465,9 @@ pub enum LeaveStatus {
     Pending,
     Approved,
     /// 시기변경 협의 opened under the §60⑤ proviso — the lawful non-approve
-    /// outcome. The request row is terminal; the employee refiles once a new
-    /// 시기 is agreed.
+    /// outcome. The request row is terminal for ledger purposes; the worker
+    /// records a chosen alternate 시기 on the consult ([`consult`]) and
+    /// refiles from that proposal.
     TimeChangeConsult,
     /// Historical rows only (pre-guardrail 반려). Not reachable by decision.
     Returned,
@@ -493,8 +505,9 @@ impl LeaveStatus {
 /// writes the leave ledger (used += days, remaining -= days). 근로기준법 §60
 /// forbids refusing 연차 (charter §4-31: "거부 불가"), so the only other
 /// decision is `TimeChange` — opening a 시기변경 협의 under the §60⑤ proviso.
-/// `TimeChange` requires a comment: the employer must state the 사업 운영에
-/// 막대한 지장 grounds it invokes. `Approve`'s comment is optional.
+/// `TimeChange` requires a comment **and** a system-eligible coverage verdict
+/// ([`judge_time_change_eligibility`]); a comment alone cannot open a consult.
+/// `Approve`'s comment is optional.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum LeaveDecision {

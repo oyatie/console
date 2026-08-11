@@ -1,0 +1,53 @@
+{
+  "lane": "console-we1",
+  "role": "critic",
+  "verdict": "APPROVE",
+  "headSha": "a07e90dd75f35e5ba5e469adcf0b4603bb3b2d63",
+  "productTip": "a07e90dd75f35e5ba5e469adcf0b4603bb3b2d63",
+  "baseSha": "be7b3e14b2f126e8c24a2bf99758d0de00aaa23d",
+  "branch": "lane/console-we1",
+  "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-we1-restack-post742",
+  "originMainAtReview": "be7b3e14b2f126e8c24a2bf99758d0de00aaa23d",
+  "lensesApplied": [
+    "ORACLE INTEGRITY",
+    "PERIPHERAL DRIFT",
+    "ENFORCEMENT PLACEMENT",
+    "FALSE GREEN",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "highRiskLenses": [
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "challenges": [
+    "Stale critic receipt claimed OpenAPI alternate-dates absent while tip a07e90dd7 includes openapi.yaml fold \u2014 never admit on stale headSha.",
+    "Chesterton: ACTIVE filter remains necessary after EXITED+home_branch_id inflation BLOCK; re-confirmed on restack tip."
+  ],
+  "commandsRun": [
+    "git rev-parse HEAD \u2192 a07e90dd75f35e5ba5e469adcf0b4603bb3b2d63",
+    "rg \"employment_status = 'ACTIVE'\" backend/crates/leave/adapter-postgres/src/lib.rs \u2192 hit",
+    "rg alternate-dates|time_change_grounds backend/openapi/openapi.yaml \u2192 hits",
+    "node scripts/cursor/validate-lane-receipt.mjs --schema critic \u2026/we1-critic.json"
+  ],
+  "findings": [
+    {
+      "severity": "minor",
+      "claim": "Prior OpenAPI major is closed on tip a07e90dd7 (alternate-dates + time_change_grounds present). leave-http-personas coverage for alternate-dates remains optional peripheral.",
+      "failureScenario": "HTTP persona gap only affects local persona inventory completeness, not production gate.",
+      "location": "backend/openapi/openapi.yaml; leave HTTP personas",
+      "provenByExecution": false,
+      "ownerLease": true
+    }
+  ],
+  "priorBlockClosed": "ACTIVE-headcount BLOCK closed; filter present on tip",
+  "notes": "Tip-refresh after #742 restack; supersedes stale headSha cc4ee8345 OpenAPI-absent finding.",
+  "followUps": [
+    "Babysit CI Required/CI aggregator; do not weaken release verifier"
+  ],
+  "writtenAt": "2026-08-11T13:07:34Z"
+}
