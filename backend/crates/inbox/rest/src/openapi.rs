@@ -16,31 +16,40 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["ErrorBody", "PasskeyStepUpAssertion", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "ErrorBody",
+    "PasskeyStepUpAssertion",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/me/inbox-docs",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__me__inbox-docs.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__me__inbox-docs.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/inbox-docs/{id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__me__inbox-docs__id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__me__inbox-docs__id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/inbox-docs/{id}/confirm-receipt",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__me__inbox-docs__id__confirm-receipt.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__me__inbox-docs__id__confirm-receipt.post.yaml"),
+            },
+        ],
     },
 ];
 

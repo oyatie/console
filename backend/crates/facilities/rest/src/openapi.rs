@@ -16,7 +16,10 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["ErrorBody", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "ErrorBody",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
@@ -34,64 +37,66 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/facilities/cases/{case_id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__facilities__cases__case_id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__facilities__cases__case_id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/facilities/cases/{case_id}/acceptance",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__facilities__cases__case_id__acceptance.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__facilities__cases__case_id__acceptance.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/facilities/cases/{case_id}/assign",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__facilities__cases__case_id__assign.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__facilities__cases__case_id__assign.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/facilities/cases/{case_id}/observations",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__facilities__cases__case_id__observations.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__facilities__cases__case_id__observations.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/facilities/cases/{case_id}/start",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__facilities__cases__case_id__start.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__facilities__cases__case_id__start.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/facilities/cases/{case_id}/submit",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__facilities__cases__case_id__submit.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__facilities__cases__case_id__submit.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/facilities/cases/{case_id}/triage",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__facilities__cases__case_id__triage.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__facilities__cases__case_id__triage.post.yaml"),
+            },
+        ],
     },
 ];
 

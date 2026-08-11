@@ -16,7 +16,9 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
@@ -37,35 +39,31 @@ const PATHS: &[PathItem] = &[
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__v1__benefit-catalog__items__benefit_id.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__benefit-catalog__items__benefit_id.get.yaml"),
             },
             Operation {
                 method: "patch",
-                body: include_str!(
-                    "../openapi/paths/api__v1__benefit-catalog__items__benefit_id.patch.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__benefit-catalog__items__benefit_id.patch.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/v1/benefit-catalog/items/{benefit_id}/conditions",
-        operations: &[Operation {
-            method: "put",
-            body: include_str!(
-                "../openapi/paths/api__v1__benefit-catalog__items__benefit_id__conditions.put.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "put",
+                body: include_str!("../openapi/paths/api__v1__benefit-catalog__items__benefit_id__conditions.put.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/benefit-catalog/items/{benefit_id}/tiers",
-        operations: &[Operation {
-            method: "put",
-            body: include_str!(
-                "../openapi/paths/api__v1__benefit-catalog__items__benefit_id__tiers.put.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "put",
+                body: include_str!("../openapi/paths/api__v1__benefit-catalog__items__benefit_id__tiers.put.yaml"),
+            },
+        ],
     },
 ];
 

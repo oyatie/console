@@ -16,29 +16,39 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["ErrorBody", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "ErrorBody",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/objects/{kind}/{id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__objects__kind__id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__objects__kind__id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/objects/{kind}/{id}/graph",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__objects__kind__id__graph.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__objects__kind__id__graph.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/link-types",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__link-types.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__link-types.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/object-links",
@@ -55,92 +65,111 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/object-links/{id}",
-        operations: &[Operation {
-            method: "delete",
-            body: include_str!("../openapi/paths/api__v1__object-links__id.delete.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "delete",
+                body: include_str!("../openapi/paths/api__v1__object-links__id.delete.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/object-types",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__object-types.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__object-types.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/object-types/{kind}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__object-types__kind.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__object-types__kind.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/actions/{action_key}/execute",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/actions/{action_key}/preflight",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__ontology__actions__action_key__preflight.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__ontology__actions__action_key__preflight.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/instances",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__ontology__instances.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__ontology__instances.get.yaml"),
+            },
+        ],
+    },
+    PathItem {
+        path: "/api/v1/ontology/instances/aggregate",
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__ontology__instances__aggregate.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/instances/{id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__ontology__instances__id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__ontology__instances__id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/instances/{id}/acting",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__ontology__instances__id__acting.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__ontology__instances__id__acting.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/instances/{id}/history",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__ontology__instances__id__history.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__ontology__instances__id__history.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/instances/{id}/lifecycle",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__ontology__instances__id__lifecycle.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__ontology__instances__id__lifecycle.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/instances/{id}/traverse",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__ontology__instances__id__traverse.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__ontology__instances__id__traverse.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/object-types",
@@ -160,86 +189,94 @@ const PATHS: &[PathItem] = &[
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__v1__ontology__object-types__key.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__ontology__object-types__key.get.yaml"),
             },
             Operation {
                 method: "put",
-                body: include_str!(
-                    "../openapi/paths/api__v1__ontology__object-types__key.put.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__ontology__object-types__key.put.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/v1/ontology/object-types/{key}/acting",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__ontology__object-types__key__acting.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__ontology__object-types__key__acting.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/object-types/{key}/lifecycle",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__ontology__object-types__key__lifecycle.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__ontology__object-types__key__lifecycle.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/object-types/{key}/policies",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__ontology__object-types__key__policies.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__ontology__object-types__key__policies.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ontology/resolve",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__ontology__resolve.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__ontology__resolve.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/search",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__search.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__search.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/series",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__series.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__series.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/series/by-instance",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__series__by-instance.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__series__by-instance.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/series/{id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__series__id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__series__id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/series/{id}/instances",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__series__id__instances.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__series__id__instances.post.yaml"),
+            },
+        ],
     },
 ];
 
@@ -331,6 +368,10 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "OntologyActionRequest",
         body: include_str!("../openapi/schemas/OntologyActionRequest.yaml"),
+    },
+    NamedYaml {
+        name: "OntologyInstanceAggregateBucket",
+        body: include_str!("../openapi/schemas/OntologyInstanceAggregateBucket.yaml"),
     },
     NamedYaml {
         name: "ResolvedInstance",

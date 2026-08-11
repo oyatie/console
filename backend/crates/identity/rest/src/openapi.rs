@@ -28,17 +28,21 @@ const EXTERNAL_SCHEMAS: &[&str] = &[
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/.well-known/apple-app-site-association",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/.well-known__apple-app-site-association.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/.well-known__apple-app-site-association.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/.well-known/assetlinks.json",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/.well-known__assetlinks.json.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/.well-known__assetlinks.json.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/platform/groups",
@@ -55,10 +59,12 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/platform/groups/{id}",
-        operations: &[Operation {
-            method: "patch",
-            body: include_str!("../openapi/paths/api__platform__groups__id.patch.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "patch",
+                body: include_str!("../openapi/paths/api__platform__groups__id.patch.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/platform/groups/{id}/accounts",
@@ -69,44 +75,40 @@ const PATHS: &[PathItem] = &[
             },
             Operation {
                 method: "post",
-                body: include_str!(
-                    "../openapi/paths/api__platform__groups__id__accounts.post.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__platform__groups__id__accounts.post.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/platform/groups/{id}/accounts/{user_id}/roles/{group_role}",
-        operations: &[Operation {
-            method: "delete",
-            body: include_str!(
-                "../openapi/paths/api__platform__groups__id__accounts__user_id__roles__group_role.delete.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "delete",
+                body: include_str!("../openapi/paths/api__platform__groups__id__accounts__user_id__roles__group_role.delete.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/platform/groups/{id}/organizations/{org_id}",
         operations: &[
             Operation {
                 method: "delete",
-                body: include_str!(
-                    "../openapi/paths/api__platform__groups__id__organizations__org_id.delete.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__platform__groups__id__organizations__org_id.delete.yaml"),
             },
             Operation {
                 method: "put",
-                body: include_str!(
-                    "../openapi/paths/api__platform__groups__id__organizations__org_id.put.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__platform__groups__id__organizations__org_id.put.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/platform/ops",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__platform__ops.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__platform__ops.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/platform/orgs",
@@ -136,177 +138,219 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/platform/tenant-context",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__platform__tenant-context.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__platform__tenant-context.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/platform/tenant-context/exit",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__platform__tenant-context__exit.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__platform__tenant-context__exit.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/platform/view-as",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__platform__view-as.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__platform__view-as.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/platform/view-as/exit",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__platform__view-as__exit.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__platform__view-as__exit.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/admin/credential-reset",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__admin__credential-reset.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__admin__credential-reset.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/admin/otp/issue",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__admin__otp__issue.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__admin__otp__issue.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/device-login/approve",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__device-login__approve.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__device-login__approve.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/device-login/approve-session",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__auth__device-login__approve-session.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__device-login__approve-session.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/device-login/poll",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__device-login__poll.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__device-login__poll.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/device-login/start",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__device-login__start.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__device-login__start.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/logout",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__logout.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__logout.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/otp/redeem",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__otp__redeem.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__otp__redeem.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/passkey/enroll-handoff",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__passkey__enroll-handoff.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__passkey__enroll-handoff.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/passkey/login/finish",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__passkey__login__finish.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__passkey__login__finish.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/passkey/login/start",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__passkey__login__start.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__passkey__login__start.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/passkey/register/finish",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__auth__passkey__register__finish.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__passkey__register__finish.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/passkey/register/start",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__auth__passkey__register__start.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__passkey__register__start.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/passkey/step-up/start",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__passkey__step-up__start.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__passkey__step-up__start.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/passkeys",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__auth__passkeys.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__auth__passkeys.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/passkeys/{id}",
-        operations: &[Operation {
-            method: "delete",
-            body: include_str!("../openapi/paths/api__v1__auth__passkeys__id.delete.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "delete",
+                body: include_str!("../openapi/paths/api__v1__auth__passkeys__id.delete.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/privacy-consent/accept",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__privacy-consent__accept.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__privacy-consent__accept.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/privacy-consent/status",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__privacy-consent__status.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__privacy-consent__status.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/signup",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__signup.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__signup.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/auth/token/refresh",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__auth__token__refresh.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__auth__token__refresh.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/branches",
@@ -340,89 +384,111 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/console/kill-switch",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__console__kill-switch.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__console__kill-switch.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/console/rollout",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__console__rollout.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__console__rollout.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/console/rollout/opt-in",
-        operations: &[Operation {
-            method: "put",
-            body: include_str!("../openapi/paths/api__v1__console__rollout__opt-in.put.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "put",
+                body: include_str!("../openapi/paths/api__v1__console__rollout__opt-in.put.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/console/rollout/org-flag",
-        operations: &[Operation {
-            method: "put",
-            body: include_str!("../openapi/paths/api__v1__console__rollout__org-flag.put.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "put",
+                body: include_str!("../openapi/paths/api__v1__console__rollout__org-flag.put.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/console/telemetry/route",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__console__telemetry__route.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__console__telemetry__route.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/directory/people",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__directory__people.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__directory__people.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/group-admin/groups",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__group-admin__groups.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__group-admin__groups.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/group-admin/tenant-context",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__group-admin__tenant-context.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__group-admin__tenant-context.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/group-admin/tenant-context/exit",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__group-admin__tenant-context__exit.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__group-admin__tenant-context__exit.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/action-inbox",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__me__action-inbox.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__me__action-inbox.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/authz",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__me__authz.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__me__authz.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/workbench",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__me__workbench.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__me__workbench.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/workspace",
@@ -439,59 +505,75 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/passkeys",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__passkeys.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__passkeys.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/passkeys/{id}",
-        operations: &[Operation {
-            method: "delete",
-            body: include_str!("../openapi/paths/api__v1__passkeys__id.delete.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "delete",
+                body: include_str!("../openapi/paths/api__v1__passkeys__id.delete.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/assignments",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__policy__assignments.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__policy__assignments.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/audit-events",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__policy__audit-events.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__policy__audit-events.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/authorize",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__policy__authorize.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__policy__authorize.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/authorize/bulk",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__policy__authorize__bulk.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__policy__authorize__bulk.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/catalog",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__policy__catalog.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__policy__catalog.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/decisions",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__policy__decisions.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__policy__decisions.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/drafts",
@@ -521,44 +603,48 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/policy/drafts/{draft_id}/review",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__policy__drafts__draft_id__review.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__policy__drafts__draft_id__review.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/drafts/{draft_id}/submit",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__policy__drafts__draft_id__submit.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__policy__drafts__draft_id__submit.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/drafts/{draft_id}/validate",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__policy__drafts__draft_id__validate.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__policy__drafts__draft_id__validate.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/features",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__policy__features.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__policy__features.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/role-templates",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__policy__role-templates.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__policy__role-templates.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/roles",
@@ -575,49 +661,57 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/policy/roles/{id}",
-        operations: &[Operation {
-            method: "patch",
-            body: include_str!("../openapi/paths/api__v1__policy__roles__id.patch.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "patch",
+                body: include_str!("../openapi/paths/api__v1__policy__roles__id.patch.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/roles/{id}/status",
-        operations: &[Operation {
-            method: "patch",
-            body: include_str!("../openapi/paths/api__v1__policy__roles__id__status.patch.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "patch",
+                body: include_str!("../openapi/paths/api__v1__policy__roles__id__status.patch.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/roles/{id}/status-preview",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__policy__roles__id__status-preview.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__policy__roles__id__status-preview.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/simulate",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__policy__simulate.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__policy__simulate.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/users/{id}/assignment-preview",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__policy__users__id__assignment-preview.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__policy__users__id__assignment-preview.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/policy/users/{id}/assignments",
-        operations: &[Operation {
-            method: "put",
-            body: include_str!("../openapi/paths/api__v1__policy__users__id__assignments.put.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "put",
+                body: include_str!("../openapi/paths/api__v1__policy__users__id__assignments.put.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/regions",
@@ -686,31 +780,39 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/users/{id}/activate",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__users__id__activate.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__users__id__activate.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/users/{id}/deactivate",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__users__id__deactivate.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__users__id__deactivate.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/healthz",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/healthz.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/healthz.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/readyz",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/readyz.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/readyz.get.yaml"),
+            },
+        ],
     },
 ];
 

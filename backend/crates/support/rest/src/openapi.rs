@@ -16,29 +16,39 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["ErrorBody", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "ErrorBody",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/field/sites",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__field__sites.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__field__sites.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/field/sites/{id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__field__sites__id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__field__sites__id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/support/intake",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__support__intake.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__support__intake.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/support/tickets",
@@ -55,51 +65,57 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/support/tickets/{id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__support__tickets__id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__support__tickets__id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/support/tickets/{id}/acceptance",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__support__tickets__id__acceptance.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__support__tickets__id__acceptance.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/support/tickets/{id}/assign",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__support__tickets__id__assign.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__support__tickets__id__assign.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/support/tickets/{id}/comments",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__support__tickets__id__comments.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__support__tickets__id__comments.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/support/tickets/{id}/link",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__support__tickets__id__link.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__support__tickets__id__link.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/support/tickets/{id}/transition",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__support__tickets__id__transition.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__support__tickets__id__transition.post.yaml"),
+            },
+        ],
     },
 ];
 

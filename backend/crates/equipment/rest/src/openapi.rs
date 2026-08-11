@@ -39,12 +39,12 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/equipment-3r/dispositions/{disposition_id}/completion",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__equipment-3r__dispositions__disposition_id__completion.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__equipment-3r__dispositions__disposition_id__completion.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/equipment-3r/rental-cases",
@@ -55,74 +55,72 @@ const PATHS: &[PathItem] = &[
             },
             Operation {
                 method: "post",
-                body: include_str!(
-                    "../openapi/paths/api__v1__equipment-3r__rental-cases.post.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__equipment-3r__rental-cases.post.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/v1/equipment-3r/rental-cases/{case_id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__equipment-3r__rental-cases__case_id.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__equipment-3r__rental-cases__case_id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/equipment-3r/rental-cases/{case_id}/approval",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__approval.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__approval.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/equipment-3r/rental-cases/{case_id}/assessment",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__assessment.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__assessment.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/equipment-3r/rental-cases/{case_id}/dispatch",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__dispatch.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__dispatch.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/equipment-3r/rental-cases/{case_id}/handover",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__handover.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__handover.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/equipment-3r/rental-cases/{case_id}/inspections",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__inspections.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__inspections.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/equipment-3r/rental-cases/{case_id}/return",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__return.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__equipment-3r__rental-cases__case_id__return.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/equipment-3r/units",
@@ -139,19 +137,21 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/equipment-3r/units/{unit_id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__equipment-3r__units__unit_id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__equipment-3r__units__unit_id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/equipment-3r/units/{unit_id}/history",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__equipment-3r__units__unit_id__history.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__equipment-3r__units__unit_id__history.get.yaml"),
+            },
+        ],
     },
 ];
 

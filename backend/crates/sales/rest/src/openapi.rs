@@ -16,22 +16,29 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/sales/inquiries",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__sales__inquiries.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__sales__inquiries.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/sales/inquiries/{id}",
-        operations: &[Operation {
-            method: "patch",
-            body: include_str!("../openapi/paths/api__v1__sales__inquiries__id.patch.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "patch",
+                body: include_str!("../openapi/paths/api__v1__sales__inquiries__id.patch.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/sales/listings",
@@ -61,33 +68,39 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/storefront/inquiries",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__storefront__inquiries.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__storefront__inquiries.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/storefront/listings",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__storefront__listings.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__storefront__listings.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/storefront/listings/{id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__storefront__listings__id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__storefront__listings__id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/storefront/listings/{id}/media/{media_id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__storefront__listings__id__media__media_id.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__storefront__listings__id__media__media_id.get.yaml"),
+            },
+        ],
     },
 ];
 

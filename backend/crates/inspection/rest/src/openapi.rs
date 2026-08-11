@@ -16,15 +16,22 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Date", "ErrorBody", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Date",
+    "ErrorBody",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/inspections/my-schedules",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__inspections__my-schedules.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__inspections__my-schedules.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/inspections/schedules",
@@ -41,12 +48,12 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/inspections/schedules/{schedule_id}/rounds",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__inspections__schedules__schedule_id__rounds.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__inspections__schedules__schedule_id__rounds.post.yaml"),
+            },
+        ],
     },
 ];
 

@@ -16,15 +16,21 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["ErrorBody"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "ErrorBody",
+];
 
-const PATHS: &[PathItem] = &[PathItem {
-    path: "/api/v1/analytics/projection",
-    operations: &[Operation {
-        method: "post",
-        body: include_str!("../openapi/paths/api__v1__analytics__projection.post.yaml"),
-    }],
-}];
+const PATHS: &[PathItem] = &[
+    PathItem {
+        path: "/api/v1/analytics/projection",
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__analytics__projection.post.yaml"),
+            },
+        ],
+    },
+];
 
 const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {

@@ -16,7 +16,11 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["ErrorBody", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "ErrorBody",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
@@ -34,17 +38,21 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/me/todos/{todoId}",
-        operations: &[Operation {
-            method: "delete",
-            body: include_str!("../openapi/paths/api__v1__me__todos__todoId.delete.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "delete",
+                body: include_str!("../openapi/paths/api__v1__me__todos__todoId.delete.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/todos/{todoId}/done",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__me__todos__todoId__done.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__me__todos__todoId__done.post.yaml"),
+            },
+        ],
     },
 ];
 

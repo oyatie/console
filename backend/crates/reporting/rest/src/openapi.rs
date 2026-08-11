@@ -16,43 +16,58 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Date", "ErrorBody", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Date",
+    "ErrorBody",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/exports/daily-status",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__exports__daily-status.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__exports__daily-status.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/exports/kpi",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__exports__kpi.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__exports__kpi.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/exports/work-diary",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__exports__work-diary.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__exports__work-diary.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/kpi",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__kpi.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__kpi.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/ops/summary",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__ops__summary.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__ops__summary.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/reporting/work-diary",
@@ -69,12 +84,12 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/reporting/work-diary/confirm",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__reporting__work-diary__confirm.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__reporting__work-diary__confirm.post.yaml"),
+            },
+        ],
     },
 ];
 

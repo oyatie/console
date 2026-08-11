@@ -16,15 +16,19 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/production/capacity-slots",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__production__capacity-slots.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__production__capacity-slots.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/production/plans",
@@ -41,60 +45,66 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/production/plans/{plan_id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__production__plans__plan_id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__production__plans__plan_id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/production/plans/{plan_id}/operations/{operation_id}/records",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__production__plans__plan_id__operations__operation_id__records.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__production__plans__plan_id__operations__operation_id__records.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/production/plans/{plan_id}/release",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__production__plans__plan_id__release.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__production__plans__plan_id__release.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/production/source-ingress",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__production__source-ingress.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__production__source-ingress.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/production/source-systems",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__production__source-systems.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__production__source-systems.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/production/source-systems/{source_system_id}/disable",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__production__source-systems__source_system_id__disable.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__production__source-systems__source_system_id__disable.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/production/source-systems/{source_system_id}/rotate",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__production__source-systems__source_system_id__rotate.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__production__source-systems__source_system_id__rotate.post.yaml"),
+            },
+        ],
     },
 ];
 

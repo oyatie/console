@@ -20,6 +20,9 @@
       "get",
       "post"
     ],
+    "/api/v2/leave/requests/{id}/alternate-dates": [
+      "post"
+    ],
     "/api/v2/leave/requests/{id}/charge-resolution": [
       "post"
     ],
@@ -40,6 +43,7 @@
     "LeaveDecideRequest",
     "LeaveDecideV2Request",
     "LeavePromotionRequest",
+    "LeaveProposeAlternateDatesRequest",
     "LeaveRefusalRequest",
     "LeaveRequestPage",
     "LeaveRequestV2Page",
@@ -51,7 +55,9 @@
     "LeaveStatutoryPushView",
     "LeaveUnits",
     "MyLeaveV2Overview",
-    "SelfLeaveBalance"
+    "SelfLeaveBalance",
+    "TimeChangeCoverageEvidence",
+    "TimeChangeGroundsCode"
   ],
   "external_schemas": [
     "ErrorBody",

@@ -16,116 +16,121 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Date", "ErrorBody", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Date",
+    "ErrorBody",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/recruiting/applicants/{applicantId}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__applicants__applicantId.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__recruiting__applicants__applicantId.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/applicants/{applicantId}/advance",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__applicants__applicantId__advance.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__applicants__applicantId__advance.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/applicants/{applicantId}/assess",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__applicants__applicantId__assess.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__applicants__applicantId__assess.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/applicants/{applicantId}/hire",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__applicants__applicantId__hire.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__applicants__applicantId__hire.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/applicants/{applicantId}/hold",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__applicants__applicantId__hold.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__applicants__applicantId__hold.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/applicants/{applicantId}/offer",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__applicants__applicantId__offer.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__applicants__applicantId__offer.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/applicants/{applicantId}/reinstate",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__applicants__applicantId__reinstate.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__applicants__applicantId__reinstate.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/applicants/{applicantId}/reject",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__applicants__applicantId__reject.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__applicants__applicantId__reject.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/applicants/{applicantId}/request-documents",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__applicants__applicantId__request-documents.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__applicants__applicantId__request-documents.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/offers/{offerId}/adjust",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__offers__offerId__adjust.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__offers__offerId__adjust.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/offers/{offerId}/record-reply",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__offers__offerId__record-reply.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__offers__offerId__record-reply.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/offers/{offerId}/withdraw",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__offers__offerId__withdraw.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__offers__offerId__withdraw.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/postings",
@@ -145,60 +150,58 @@ const PATHS: &[PathItem] = &[
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__v1__recruiting__postings__postingId.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__recruiting__postings__postingId.get.yaml"),
             },
             Operation {
                 method: "put",
-                body: include_str!(
-                    "../openapi/paths/api__v1__recruiting__postings__postingId.put.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__recruiting__postings__postingId.put.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/v1/recruiting/postings/{postingId}/applicants",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__postings__postingId__applicants.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__postings__postingId__applicants.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/postings/{postingId}/close",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__postings__postingId__close.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__postings__postingId__close.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/postings/{postingId}/preflight",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__postings__postingId__preflight.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__postings__postingId__preflight.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/postings/{postingId}/publish",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__recruiting__postings__postingId__publish.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__recruiting__postings__postingId__publish.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/recruiting/talent-pool",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__recruiting__talent-pool.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__recruiting__talent-pool.get.yaml"),
+            },
+        ],
     },
 ];
 

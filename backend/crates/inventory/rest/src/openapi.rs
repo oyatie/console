@@ -16,7 +16,9 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
@@ -34,104 +36,106 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/inventory/cycle-counts/{count_id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__inventory__cycle-counts__count_id.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__inventory__cycle-counts__count_id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/inventory/cycle-counts/{count_id}/cancel",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__inventory__cycle-counts__count_id__cancel.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__inventory__cycle-counts__count_id__cancel.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/inventory/cycle-counts/{count_id}/decision",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__inventory__cycle-counts__count_id__decision.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__inventory__cycle-counts__count_id__decision.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/inventory/cycle-counts/{count_id}/lines",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__inventory__cycle-counts__count_id__lines.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__inventory__cycle-counts__count_id__lines.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/inventory/cycle-counts/{count_id}/submit",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__inventory__cycle-counts__count_id__submit.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__inventory__cycle-counts__count_id__submit.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/inventory/items",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__inventory__items.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__inventory__items.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/inventory/items/{item_id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__inventory__items__item_id.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__inventory__items__item_id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/inventory/items/{item_id}/consumptions",
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__v1__inventory__items__item_id__consumptions.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__inventory__items__item_id__consumptions.get.yaml"),
             },
             Operation {
                 method: "post",
-                body: include_str!(
-                    "../openapi/paths/api__v1__inventory__items__item_id__consumptions.post.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__inventory__items__item_id__consumptions.post.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/v1/inventory/items/{item_id}/movements",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__inventory__items__item_id__movements.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__inventory__items__item_id__movements.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/inventory/items/{item_id}/receipts",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__inventory__items__item_id__receipts.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__inventory__items__item_id__receipts.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/inventory/mrp",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__inventory__mrp.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__inventory__mrp.get.yaml"),
+            },
+        ],
     },
 ];
 

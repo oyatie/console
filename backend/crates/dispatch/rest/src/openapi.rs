@@ -27,68 +27,70 @@ const EXTERNAL_SCHEMAS: &[&str] = &[
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/console/dispatch/queue",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__console__dispatch__queue.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__console__dispatch__queue.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/me/dispatch-offers",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__me__dispatch-offers.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__me__dispatch-offers.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/p1-dispatches/{dispatchId}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!("../openapi/paths/api__v1__p1-dispatches__dispatchId.get.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__p1-dispatches__dispatchId.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/p1-dispatches/{dispatchId}/candidates",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__p1-dispatches__dispatchId__candidates.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__p1-dispatches__dispatchId__candidates.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/p1-dispatches/{dispatchId}/force-assign",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__p1-dispatches__dispatchId__force-assign.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__p1-dispatches__dispatchId__force-assign.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/p1-dispatches/{dispatchId}/responses",
         operations: &[
             Operation {
                 method: "get",
-                body: include_str!(
-                    "../openapi/paths/api__v1__p1-dispatches__dispatchId__responses.get.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__p1-dispatches__dispatchId__responses.get.yaml"),
             },
             Operation {
                 method: "post",
-                body: include_str!(
-                    "../openapi/paths/api__v1__p1-dispatches__dispatchId__responses.post.yaml"
-                ),
+                body: include_str!("../openapi/paths/api__v1__p1-dispatches__dispatchId__responses.post.yaml"),
             },
         ],
     },
     PathItem {
         path: "/api/v1/work-orders/{workOrderId}/p1-dispatch",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__work-orders__workOrderId__p1-dispatch.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__work-orders__workOrderId__p1-dispatch.post.yaml"),
+            },
+        ],
     },
 ];
 

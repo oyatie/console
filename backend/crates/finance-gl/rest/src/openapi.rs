@@ -16,17 +16,20 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
         path: "/api/v1/finance-gl/accounts/{account_code}/entries",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__finance-gl__accounts__account_code__entries.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__finance-gl__accounts__account_code__entries.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/finance-gl/vouchers",
@@ -43,48 +46,48 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/finance-gl/vouchers/{voucher_id}",
-        operations: &[Operation {
-            method: "get",
-            body: include_str!(
-                "../openapi/paths/api__v1__finance-gl__vouchers__voucher_id.get.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "get",
+                body: include_str!("../openapi/paths/api__v1__finance-gl__vouchers__voucher_id.get.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/finance-gl/vouchers/{voucher_id}/approve",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__finance-gl__vouchers__voucher_id__approve.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__finance-gl__vouchers__voucher_id__approve.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/finance-gl/vouchers/{voucher_id}/post",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__finance-gl__vouchers__voucher_id__post.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__finance-gl__vouchers__voucher_id__post.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/finance-gl/vouchers/{voucher_id}/reverse",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__finance-gl__vouchers__voucher_id__reverse.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__finance-gl__vouchers__voucher_id__reverse.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/finance-gl/vouchers/{voucher_id}/submit",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!(
-                "../openapi/paths/api__v1__finance-gl__vouchers__voucher_id__submit.post.yaml"
-            ),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__finance-gl__vouchers__voucher_id__submit.post.yaml"),
+            },
+        ],
     },
     PathItem {
         path: "/api/v1/period-locks",
@@ -101,10 +104,12 @@ const PATHS: &[PathItem] = &[
     },
     PathItem {
         path: "/api/v1/period-locks/{lockId}/unlock",
-        operations: &[Operation {
-            method: "post",
-            body: include_str!("../openapi/paths/api__v1__period-locks__lockId__unlock.post.yaml"),
-        }],
+        operations: &[
+            Operation {
+                method: "post",
+                body: include_str!("../openapi/paths/api__v1__period-locks__lockId__unlock.post.yaml"),
+            },
+        ],
     },
 ];
 
