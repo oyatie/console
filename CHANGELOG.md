@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.6](https://github.com/jason931225/console/compare/v0.3.5...v0.3.6) (2026-08-11)
+
+
+### Bug Fixes
+
+* **ci:** ignore doc-comment #[cfg(test)] in executed-tests scan (console-m68) ([#751](https://github.com/jason931225/console/issues/751)) ([59c9c88](https://github.com/jason931225/console/commit/59c9c8861d7a986dc5fc6a25337e38d38f985484))
+* **ci:** path-class inventory totals renames + empty-list pin (console-q58y / 7rc) ([#753](https://github.com/jason931225/console/issues/753)) ([76365d6](https://github.com/jason931225/console/commit/76365d67e10a24db1a3f2b9ff844fbe6a4c76f4c))
+* **ontology:** console-dgo.2 trusted person_id = employee_id bindings ([#747](https://github.com/jason931225/console/issues/747)) ([5fbd0b2](https://github.com/jason931225/console/commit/5fbd0b2df934cf7d48140e81ff160e63bdd3af0b))
+
 ## [0.3.5](https://github.com/jason931225/console/compare/v0.3.4...v0.3.5) (2026-08-11)
 
 
