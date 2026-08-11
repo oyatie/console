@@ -2,6 +2,9 @@
 //! copied here: observations retain KPI-definition and evidence references only.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used))]
 
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};

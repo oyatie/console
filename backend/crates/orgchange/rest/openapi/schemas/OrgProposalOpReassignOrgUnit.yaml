@@ -1,0 +1,22 @@
+type: object
+additionalProperties: false
+description: Bounded `employees.org_unit` rewrite; the source and target org units must differ.
+required:
+- op
+- fromOrgUnit
+- toOrgUnit
+- scope
+properties:
+  op:
+    type: string
+    enum: [REASSIGN_ORG_UNIT]
+  fromOrgUnit:
+    type: string
+    minLength: 1
+    maxLength: 120
+  toOrgUnit:
+    type: string
+    minLength: 1
+    maxLength: 120
+  scope:
+    $ref: '#/components/schemas/OrgProposalReassignScope'

@@ -311,6 +311,14 @@ jobs:
             -p console-contracts --test compose
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-todos-rest --test openapi_fragment
+          # openapi.yaml is generated from per-face console-contracts Fragments.
+          # Regeneration must be a no-op on a clean tree; a hand-edit that skips
+          # the owning face slice fails this diff. The generator itself refuses
+          # to run with fewer than 35 fragments (shared + 34 faces), so an empty
+          # registry cannot pass by rewriting nothing.
+          SQLX_OFFLINE=true cargo run --locked --manifest-path backend/Cargo.toml \
+            -p console-contracts --bin console-openapi-gen
+          git diff --exit-code -- backend/openapi/openapi.yaml
           # ONE -p PER INVOCATION whenever --test is used. Two packages and two --test names on
           # a single line is ambiguous to any reader that pairs them positionally, and
           # check-executed-tests.mjs pairs them as a CROSS PRODUCT — 2x2 candidates where only

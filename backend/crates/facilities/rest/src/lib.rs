@@ -2,6 +2,9 @@
 //! legacy equipment-required work-order model.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used))]
 
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use axum::{
     Json, Router,
     extract::{Path, State},

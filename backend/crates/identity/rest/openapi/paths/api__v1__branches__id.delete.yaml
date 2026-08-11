@@ -1,0 +1,35 @@
+tags:
+  - branches
+operationId: deactivateBranch
+summary: Soft-delete (deactivate) a branch
+description: Soft-deletes a branch. Refused with 409 while the branch still has active users or non-terminal equipment,
+  so live operational data is never orphaned. Returns the deactivated branch.
+security:
+- bearerAuth: []
+parameters:
+- name: id
+  in: path
+  required: true
+  schema:
+    $ref: '#/components/schemas/Uuid'
+responses:
+  '200':
+    description: Deactivated branch.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/BranchSummary'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'
+  '404':
+    $ref: '#/components/responses/NotFound'
+  '409':
+    $ref: '#/components/responses/Conflict'
+  '503':
+    description: JWT verification is not configured.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorBody'

@@ -1,0 +1,31 @@
+tags:
+  - regions
+operationId: createRegion
+summary: Create a region
+security:
+- bearerAuth: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/CreateRegionRequest'
+responses:
+  '201':
+    description: Region created.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/RegionSummary'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'
+  '422':
+    $ref: '#/components/responses/ValidationError'
+  '503':
+    description: JWT verification is not configured.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorBody'

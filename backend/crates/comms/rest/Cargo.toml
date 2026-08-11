@@ -8,6 +8,7 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+console-contracts = { path = "../../contracts" }
 axum = { workspace = true }
 base64 = { workspace = true }
 console-comms-adapter-imap = { workspace = true }

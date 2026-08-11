@@ -1,0 +1,31 @@
+tags:
+  - mail
+operationId: sendMail
+summary: Compose and send a new message
+description: Sends a new outbound message through the tenant's SMTP server and persists it as a direction=OUT message.
+  The From is constrained to the configured account address. Audited (email.send). Requires the MailUse feature.
+security:
+- bearerAuth: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/SendMailRequest'
+responses:
+  '201':
+    description: The message was sent and persisted.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/SendMailResult'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'
+  '422':
+    $ref: '#/components/responses/ValidationError'
+  '429':
+    $ref: '#/components/responses/TooManyRequests'
+  '503':
+    $ref: '#/components/responses/MailUnavailable'

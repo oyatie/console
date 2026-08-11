@@ -3,6 +3,9 @@
 //! all business decisions and database work to the private application layers.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use axum::{
     Json, Router,
     extract::{FromRequestParts, Query, State},

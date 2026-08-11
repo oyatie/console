@@ -10,7 +10,8 @@
 //! `unwrap_used` / `expect_used` / `panic` lints.
 
 use console_contracts::{
-    DuplicateKind, Fragment, NamedYaml, Operation, PathItem, compose, schema_refs,
+    DocumentPreamble, DuplicateKind, Fragment, NamedYaml, Operation, PathItem, compose,
+    compose_document, schema_refs,
 };
 
 // ---------------------------------------------------------------------------
@@ -37,6 +38,9 @@ const TODOS: Fragment = Fragment {
         body: "type: object\n",
     }],
     external_schemas: &[],
+    parameters: &[],
+    responses: &[],
+    security_schemes: &[],
 };
 
 const NOTES: Fragment = Fragment {
@@ -53,6 +57,9 @@ const NOTES: Fragment = Fragment {
         body: "type: object\n",
     }],
     external_schemas: &[],
+    parameters: &[],
+    responses: &[],
+    security_schemes: &[],
 };
 
 // ---------------------------------------------------------------------------
@@ -72,6 +79,9 @@ fn duplicate_path_key_across_fragments_is_rejected() -> Result<(), Box<dyn std::
         }],
         schemas: &[],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
 
     let errors = compose(&[&TODOS, &SHADOW])
@@ -110,6 +120,9 @@ fn duplicate_operation_key_is_rejected() -> Result<(), Box<dyn std::error::Error
         }],
         schemas: &[],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
 
     let errors = compose(&[&DOUBLE_GET])
@@ -134,6 +147,9 @@ fn duplicate_schema_key_across_fragments_is_rejected() -> Result<(), Box<dyn std
             body: "type: string\n",
         }],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
 
     let errors = compose(&[&TODOS, &CLASH])
@@ -166,6 +182,9 @@ fn every_duplicate_is_reported_not_just_the_first() -> Result<(), Box<dyn std::e
             body: "type: string\n",
         }],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
 
     let errors = compose(&[&TODOS, &CLASH])
@@ -190,6 +209,9 @@ fn duplicate_error_message_names_both_contributors() -> Result<(), Box<dyn std::
             body: "type: string\n",
         }],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     let errors = compose(&[&TODOS, &CLASH])
         .err()
@@ -265,6 +287,9 @@ fn composition_is_byte_identical_regardless_of_author_indentation()
         }],
         schemas: &[],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     // Same YAML, authored inside an indented raw string with blank padding lines.
     const INDENTED: Fragment = Fragment {
@@ -278,6 +303,9 @@ fn composition_is_byte_identical_regardless_of_author_indentation()
         }],
         schemas: &[],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
 
     assert_eq!(
@@ -330,6 +358,9 @@ fn components_block_is_omitted_when_no_fragment_contributes_a_schema()
         }],
         schemas: &[],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     let out = compose(&[&NO_SCHEMAS])?;
     assert!(
@@ -355,6 +386,9 @@ const DANGLING: Fragment = Fragment {
     }],
     schemas: &[],
     external_schemas: &[],
+    parameters: &[],
+    responses: &[],
+    security_schemes: &[],
 };
 
 #[test]
@@ -379,6 +413,9 @@ fn a_ref_to_a_schema_nobody_defines_is_rejected() -> Result<(), Box<dyn std::err
 fn a_ref_a_fragment_declares_external_is_not_dangling() -> Result<(), Box<dyn std::error::Error>> {
     const BORROWS: Fragment = Fragment {
         external_schemas: &["Missing"],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
         ..DANGLING
     };
     compose(&[&BORROWS])?;
@@ -395,6 +432,9 @@ fn a_ref_another_fragment_defines_is_not_dangling() -> Result<(), Box<dyn std::e
             body: "type: object\n",
         }],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     compose(&[&DANGLING, &DEFINES_MISSING])?;
     Ok(())
@@ -412,6 +452,9 @@ fn a_ref_from_a_schema_body_is_checked_too() -> Result<(), Box<dyn std::error::E
             body: "type: object\nproperties:\n  items:\n    $ref: '#/components/schemas/Item'\n",
         }],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     let error = compose(&[&SCHEMA_REF])
         .err()
@@ -452,6 +495,9 @@ fn a_dangling_ref_is_rejected_even_when_a_prefix_of_its_name_resolves()
             },
         ],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
 
     let error = compose(&[&PREFIX_TRAP])
@@ -485,6 +531,9 @@ fn a_ref_whose_name_contains_legal_punctuation_resolves() -> Result<(), Box<dyn 
             },
         ],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     compose(&[&PUNCTUATED])?;
     Ok(())
@@ -508,6 +557,9 @@ fn a_ref_target_that_is_not_a_component_key_is_rejected() -> Result<(), Box<dyn 
             },
         ],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     let error = compose(&[&NESTED])
         .err()
@@ -538,6 +590,9 @@ fn an_empty_ref_target_is_rejected() -> Result<(), Box<dyn std::error::Error>> {
             body: "type: object\nproperties:\n  item:\n    $ref: '#/components/schemas/'\n",
         }],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     let error = compose(&[&EMPTY])
         .err()
@@ -569,6 +624,9 @@ fn a_ref_is_terminated_by_the_yaml_delimiter_that_follows_it()
             },
         ],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     compose(&[&DELIMITED])?;
     Ok(())
@@ -599,6 +657,9 @@ fn a_ref_into_a_component_section_openapi_does_not_define_is_rejected()
         }],
         schemas: &[],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     let error = compose(&[&TYPO])
         .err()
@@ -623,12 +684,10 @@ fn a_ref_into_a_component_section_openapi_does_not_define_is_rejected()
 /// The converse, and the one that is load-bearing in production: a ref into a
 /// component section OpenAPI DOES define is legitimate and must still compose.
 ///
-/// `backend/crates/todos/rest/src/openapi.rs` ships exactly these refs and
-/// `backend/openapi/openapi.yaml` defines them under `components/responses` and
-/// `components/parameters`. `Fragment` models only schemas, so the published
-/// document — not the fragment set — is what resolves them. Rejecting them here
-/// would break the shipping todos face, so this test is the guard against
-/// "fixing" the section check by making it total over everything but `schemas`.
+/// `backend/crates/todos/rest/src/openapi.rs` ships exactly these refs.
+/// When no fragment in this compose run contributes `parameters`/`responses`
+/// entries, those pointers are shape-checked and accepted so a face can still
+/// compose alone; once a shared fragment joins, the same pointers resolve.
 #[test]
 fn a_ref_into_a_real_non_schema_component_section_composes()
 -> Result<(), Box<dyn std::error::Error>> {
@@ -643,6 +702,9 @@ fn a_ref_into_a_real_non_schema_component_section_composes()
         }],
         schemas: &[],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     compose(&[&BORROWED])?;
     Ok(())
@@ -670,6 +732,9 @@ fn a_cross_file_ref_is_rejected_even_when_the_local_set_knows_the_name()
             body: "type: object\nproperties:\n  id:\n    $ref: 'common.yaml#/components/schemas/Uuid'\n",
         }],
         external_schemas: &["Uuid"],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     const FOREIGN_HOST: Fragment = Fragment {
         source: "console-demo-foreign-host-rest",
@@ -685,6 +750,9 @@ fn a_cross_file_ref_is_rejected_even_when_the_local_set_knows_the_name()
             },
         ],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     for (fragment, value) in [
         (&BORROWED_NAME, "common.yaml#/components/schemas/Uuid"),
@@ -726,6 +794,9 @@ fn a_ref_truncated_before_its_target_is_rejected_in_every_section()
         }],
         schemas: &[],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     let error = compose(&[&TRUNCATED])
         .err()
@@ -806,6 +877,9 @@ fn a_ref_that_is_not_a_components_pointer_is_rejected() -> Result<(), Box<dyn st
                 body: "type: object\n",
             }],
             external_schemas: &[],
+            parameters: &[],
+            responses: &[],
+            security_schemes: &[],
         };
         let error = compose(&[&fragment])
             .err()
@@ -920,6 +994,9 @@ fn envelope_fragment(source: &'static str, body: &'static str) -> Fragment {
             },
         ])),
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     }
 }
 
@@ -982,6 +1059,9 @@ fn a_foreign_host_pointer_is_rejected_outside_a_ref_key() -> Result<(), Box<dyn 
             },
         ],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     let error = compose(&[&MAPPED_FOREIGN])
         .err()
@@ -1008,7 +1088,190 @@ fn prose_that_mentions_a_ref_key_is_not_a_ref() -> Result<(), Box<dyn std::error
             body: "type: object\ndescription: 'authors write $ref: pointers here'\n",
         }],
         external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
     };
     compose(&[&PROSE])?;
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// 6. Document preamble + non-schema component sections (console-b4z)
+// ---------------------------------------------------------------------------
+
+const PREAMBLE: DocumentPreamble = DocumentPreamble {
+    openapi: "3.1.0",
+    info: "title: Console API\nversion: 0.1.0\n",
+};
+
+#[test]
+fn compose_document_emits_openapi_info_preamble() -> Result<(), Box<dyn std::error::Error>> {
+    let out = compose_document(&[&TODOS], &PREAMBLE)?;
+    assert!(
+        out.starts_with("openapi: 3.1.0\ninfo:\n  title: Console API\n  version: 0.1.0\npaths:\n"),
+        "preamble must lead the document:\n{out}"
+    );
+    Ok(())
+}
+
+#[test]
+fn security_schemes_parameters_and_responses_compose_under_components()
+-> Result<(), Box<dyn std::error::Error>> {
+    const SHARED: Fragment = Fragment {
+        source: "console-demo-shared",
+        paths: &[],
+        schemas: &[],
+        parameters: &[NamedYaml {
+            name: "BranchId",
+            body: "name: branch_id\nin: path\nrequired: true\nschema:\n  type: string\n",
+        }],
+        responses: &[NamedYaml {
+            name: "Unauthorized",
+            body: "description: missing token\n",
+        }],
+        security_schemes: &[NamedYaml {
+            name: "bearerAuth",
+            body: "type: http\nscheme: bearer\n",
+        }],
+        external_schemas: &[],
+    };
+    let out = compose(&[&SHARED])?;
+    assert_eq!(
+        out,
+        concat!(
+            "paths:\n",
+            "components:\n",
+            "  securitySchemes:\n",
+            "    bearerAuth:\n",
+            "      type: http\n",
+            "      scheme: bearer\n",
+            "  parameters:\n",
+            "    BranchId:\n",
+            "      name: branch_id\n",
+            "      in: path\n",
+            "      required: true\n",
+            "      schema:\n",
+            "        type: string\n",
+            "  responses:\n",
+            "    Unauthorized:\n",
+            "      description: missing token\n",
+        ),
+        "component section order/shape changed:\n{out}"
+    );
+    Ok(())
+}
+
+#[test]
+fn duplicate_parameter_key_is_rejected() -> Result<(), Box<dyn std::error::Error>> {
+    const A: Fragment = Fragment {
+        source: "console-demo-a",
+        paths: &[],
+        schemas: &[],
+        parameters: &[NamedYaml {
+            name: "BranchId",
+            body: "name: a\n",
+        }],
+        responses: &[],
+        security_schemes: &[],
+        external_schemas: &[],
+    };
+    const B: Fragment = Fragment {
+        source: "console-demo-b",
+        paths: &[],
+        schemas: &[],
+        parameters: &[NamedYaml {
+            name: "BranchId",
+            body: "name: b\n",
+        }],
+        responses: &[],
+        security_schemes: &[],
+        external_schemas: &[],
+    };
+    let errors = compose(&[&A, &B])
+        .err()
+        .ok_or("duplicate parameter must fail")?
+        .duplicates;
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.kind == DuplicateKind::Parameter && e.key == "BranchId"),
+        "got {errors:#?}"
+    );
+    Ok(())
+}
+
+#[test]
+fn a_response_ref_is_dangling_once_responses_are_contributed()
+-> Result<(), Box<dyn std::error::Error>> {
+    const FACE: Fragment = Fragment {
+        source: "console-demo-face",
+        paths: &[PathItem {
+            path: "/api/v1/demo",
+            operations: &[Operation {
+                method: "get",
+                body: "responses:\n  '401':\n    $ref: '#/components/responses/Missing'\n",
+            }],
+        }],
+        schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
+        external_schemas: &[],
+    };
+    const SHARED: Fragment = Fragment {
+        source: "console-demo-shared",
+        paths: &[],
+        schemas: &[],
+        parameters: &[],
+        responses: &[NamedYaml {
+            name: "Unauthorized",
+            body: "description: missing token\n",
+        }],
+        security_schemes: &[],
+        external_schemas: &[],
+    };
+    let error = compose(&[&FACE, &SHARED])
+        .err()
+        .ok_or("Missing response must dangling once responses are in play")?;
+    assert_eq!(
+        error.dangling.first().map(|d| d.schema.as_str()),
+        Some("Missing"),
+        "got {error:#?}"
+    );
+    Ok(())
+}
+
+#[test]
+fn a_response_ref_resolves_against_a_contributed_response() -> Result<(), Box<dyn std::error::Error>>
+{
+    const FACE: Fragment = Fragment {
+        source: "console-demo-face",
+        paths: &[PathItem {
+            path: "/api/v1/demo",
+            operations: &[Operation {
+                method: "get",
+                body: "responses:\n  '401':\n    $ref: '#/components/responses/Unauthorized'\n",
+            }],
+        }],
+        schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
+        external_schemas: &[],
+    };
+    const SHARED: Fragment = Fragment {
+        source: "console-demo-shared",
+        paths: &[],
+        schemas: &[],
+        parameters: &[],
+        responses: &[NamedYaml {
+            name: "Unauthorized",
+            body: "description: missing token\n",
+        }],
+        security_schemes: &[],
+        external_schemas: &[],
+    };
+    compose(&[&FACE, &SHARED])?;
     Ok(())
 }
