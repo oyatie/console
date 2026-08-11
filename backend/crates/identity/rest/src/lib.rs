@@ -14,9 +14,9 @@
 //!
 //! Authorization mirrors the IDOR-hardening in `issue_admin_otp`: creating or
 //! newly promoting a user into EXECUTIVE/SUPER_ADMIN is restricted to
-//! SUPER_ADMIN callers, and a sub-admin may only create non-privileged users in
-//! branches it controls. Self-profile edits are open to every authenticated
-//! user.
+//! SUPER_ADMIN callers, and a sub-admin may only create or re-scope
+//! non-privileged users in branches it controls (additions and removals).
+//! Self-profile edits are open to every authenticated user.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 use std::collections::BTreeSet;
@@ -1275,7 +1275,12 @@ async fn preview_policy_assignments(
             .branch_ids
             .as_deref()
             .unwrap_or(user.branch_ids.as_slice());
-        authorize_user_write(&principal, &elevated_role_changes, target_branches)?;
+        authorize_user_write(
+            &principal,
+            &elevated_role_changes,
+            user.branch_ids.as_slice(),
+            target_branches,
+        )?;
     }
     let requested_ids = requested_roles
         .iter()
@@ -2836,7 +2841,7 @@ async fn create_user(
     let principal = principal_from_headers(&state, &headers).await?;
     let roles = parse_roles(&body.roles)?;
     let elevated_role_changes = elevated_roles_in(&roles);
-    authorize_user_write(&principal, &elevated_role_changes, &body.branch_ids)?;
+    authorize_user_write(&principal, &elevated_role_changes, &[], &body.branch_ids)?;
 
     let summary = state
         .store
@@ -2931,11 +2936,13 @@ async fn update_user(
         .await
         .map_err(RestError::from_store)?;
 
-    // Role/branch escalation guard: the *new* role set and the *new* branch set
-    // must both be within the caller's authority. Run whenever EITHER is being
-    // changed — a request that sets only `branch_ids` (roles absent) must still
-    // prove branch authority over every target branch, or a branch-scoped admin
-    // could move a visible user into branches they do not control.
+    // Role/branch escalation guard: the *new* role set and the union of current
+    // + requested branch sets must both be within the caller's authority. Run
+    // whenever EITHER is being changed — a request that sets only `branch_ids`
+    // (roles absent) must still prove branch authority over every branch the
+    // user is being added to OR removed from, or a branch-scoped admin could
+    // move a visible user into (or out of) branches they do not control
+    // (console-0lj).
     let roles = match &body.roles {
         Some(raw) => Some(parse_roles(raw)?),
         None => None,
@@ -2948,7 +2955,12 @@ async fn update_user(
             .branch_ids
             .as_deref()
             .unwrap_or(target.branch_ids.as_slice());
-        authorize_user_write(&principal, &elevated_role_changes, target_branches)?;
+        authorize_user_write(
+            &principal,
+            &elevated_role_changes,
+            target.branch_ids.as_slice(),
+            target_branches,
+        )?;
 
         // Only an actual assignment change needs an impact-preview receipt. A
         // profile-only edit (e.g. phone) that re-sends the user's existing roles
@@ -4493,16 +4505,19 @@ async fn persist_cedar_shadow_audit(
 }
 
 /// Authorize a user create/update for elevated-role membership changes and
-/// target branches, mirroring the `issue_admin_otp` IDOR hardening:
+/// branch membership mutations, mirroring the `issue_admin_otp` IDOR hardening:
 ///   * Adding OR removing EXECUTIVE/SUPER_ADMIN requires `ElevatedRoleGrant`
 ///     (SUPER_ADMIN). Preserving an existing elevated role while changing other
 ///     fields must not block a branch admin from granting ordinary branch
 ///     permissions such as ADMIN to an existing executive.
 ///   * Otherwise the caller needs `SubordinateUserCreate` (limited) in EVERY
-///     target branch, so a branch-scoped admin cannot mint users elsewhere.
+///     branch in the union of `current_branches` and `target_branches`, so a
+///     branch-scoped admin cannot mint users into — or strip users from —
+///     branches outside their scope (console-0lj). Pass `&[]` for create.
 fn authorize_user_write(
     principal: &Principal,
     elevated_role_changes: &BTreeSet<Role>,
+    current_branches: &[BranchId],
     target_branches: &[BranchId],
 ) -> Result<(), RestError> {
     // Baseline user-management authority.
@@ -4516,19 +4531,82 @@ fn authorize_user_write(
 
     // Non-privileged user: cross-branch principals are already covered by the
     // UserManage check above; branch-scoped principals must additionally hold
-    // SubordinateUserCreate in every branch the new user will belong to.
+    // SubordinateUserCreate in every branch the membership touches (add OR
+    // remove). Union is deliberate: authorizing only the post-state set left
+    // removals ungated (console-0lj).
     if matches!(principal.branch_scope, BranchScope::All) {
         return Ok(());
     }
-    for branch_id in target_branches {
+    let mut touched = BTreeSet::new();
+    for branch_id in current_branches.iter().chain(target_branches.iter()) {
+        touched.insert(*branch_id);
+    }
+    for branch_id in touched {
         authorize(
             principal,
             Action::limited(Feature::SubordinateUserCreate),
-            *branch_id,
+            branch_id,
         )
-        .map_err(|_| RestError::forbidden("not allowed to create users in that branch"))?;
+        .map_err(|_| RestError::forbidden("not allowed to manage users in that branch"))?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod authorize_user_write_tests {
+    use super::*;
+
+    fn admin_in(branches: impl IntoIterator<Item = BranchId>) -> Principal {
+        Principal::new(
+            UserId::new(),
+            OrgId::knl(),
+            BTreeSet::from([Role::Admin]),
+            BranchScope::Branches(branches.into_iter().collect()),
+        )
+    }
+
+    /// console-0lj: a Branches({A}) admin must not drop U from B by PATCHing
+    /// branch_ids to [A] alone. The guard authorizes the union of current and
+    /// requested sets; post-state-only authorization is the live defect.
+    #[test]
+    fn refuses_branch_removal_outside_caller_scope() {
+        let branch_a = BranchId::new();
+        let branch_b = BranchId::new();
+        let principal = admin_in([branch_a]);
+        let err = authorize_user_write(
+            &principal,
+            &BTreeSet::new(),
+            &[branch_a, branch_b],
+            &[branch_a],
+        )
+        .expect_err("removing B without SubordinateUserCreate in B must fail");
+        assert_eq!(err.status, StatusCode::FORBIDDEN);
+        assert_eq!(err.code, "forbidden");
+        assert_eq!(err.message, "not allowed to manage users in that branch");
+    }
+
+    #[test]
+    fn allows_in_scope_membership_rewrite() {
+        let branch_a = BranchId::new();
+        let principal = admin_in([branch_a]);
+        authorize_user_write(&principal, &BTreeSet::new(), &[branch_a], &[branch_a])
+            .expect("in-scope rewrite must pass");
+    }
+
+    #[test]
+    fn still_refuses_branch_addition_outside_caller_scope() {
+        let branch_a = BranchId::new();
+        let branch_b = BranchId::new();
+        let principal = admin_in([branch_a]);
+        let err = authorize_user_write(
+            &principal,
+            &BTreeSet::new(),
+            &[branch_a],
+            &[branch_a, branch_b],
+        )
+        .expect_err("adding B without SubordinateUserCreate in B must fail");
+        assert_eq!(err.status, StatusCode::FORBIDDEN);
+    }
 }
 
 fn elevated_roles_in(roles: &BTreeSet<Role>) -> BTreeSet<Role> {
