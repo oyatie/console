@@ -1,0 +1,66 @@
+{
+  "role": "critic",
+  "lane": "console-gc9z",
+  "verdict": "APPROVE",
+  "baseSha": "be7b3e14b2f126e8c24a2bf99758d0de00aaa23d",
+  "tipSha": "4c6638b63ac9a25549d57bb48aa9b0703110b284",
+  "productSha": "3f24cd0b7e12382c00781ef31093963f87b0f5a4",
+  "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z",
+  "premiseCheck": "Verified HEAD=40dfcd4f5abfe370481e7a7070e425b08b9f9d96 (packaging tip-bind); product leaf 3f24cd0b7e12382c00781ef31093963f87b0f5a4 signed G; base be7b3e14b is ancestor; porcelain clean of product edits; range be7b3e14b..40dfcd4f5 = lifecycle.rs + .cursor/receipts/gc9z.json only.",
+  "findings": [
+    {
+      "severity": "minor",
+      "claim": "Two parallel LifecycleError\u2192KernelError converters remain: LifecycleError::into_kernel_error (store/PgPayrollError path) and pay_run::lifecycle_into_kernel_error (CanonicalPort). Kind arms match for all non-Db variants, but NotFound messages diverge (hardcoded \"run not found\" vs Display \"payroll run not found\"). Db RowNotFound is NotFound via PgPayrollError::kind and Internal via CanonicalPort \u2014 intentional per tip comment, but a future arm edit can re-split kinds.",
+      "failureScenario": "A new LifecycleError variant or remapped arm is updated in only one converter; store and CanonicalPort then disagree on HTTP/kind again (the class this residual closed).",
+      "location": "backend/crates/payroll/adapter-postgres/src/lifecycle.rs:228-254 vs pay_run.rs:302-317",
+      "provenByExecution": true,
+      "ownerLease": true
+    },
+    {
+      "severity": "minor",
+      "claim": "Implementer receipt commandsRun omitted cargo test \u2014 verification was inspection/rg only. Hostile pin exists on tip and passes when executed by critic; receipt narrative alone was not execution evidence.",
+      "failureScenario": "A future stalled-agent tip-bind ships a broken pin while claiming done on inspection-only commands.",
+      "location": ".cursor/receipts/gc9z.json commands[]",
+      "provenByExecution": true,
+      "ownerLease": true
+    }
+  ],
+  "lensEvidence": {
+    "oracleIntegrity": "E: tip adds lifecycle::tests::lifecycle_into_pg_payroll_error_preserves_kernel_kinds covering NotFound/Validation/InvalidTransition/Conflict cluster/Db RowNotFound; no deletes/ignores. E: cargo test --lib lifecycle_into_pg PASS; pay_run::port_error_kind_tests::lifecycle_variants_preserve_kernel_kinds PASS. E: base From flattened non-NotFound to KernelError::internal (git show be7b3e14b lifecycle.rs) \u2014 tip pin expects Validation\u2192Validation (RED on base, GREEN on tip).",
+    "peripheralDrift": "E: diff surface = lifecycle.rs + gc9z.json receipt only; no OpenAPI/wire/enum change. Dual converter kept (Chesterton: do not delete CanonicalPort path). NotFound message drift filed minor+ownerLease, not merge-blocking.",
+    "enforcementPlacement": "WHERE: From<LifecycleError> for PgPayrollError + into_kernel_error at convert boundary (subject exists). Finest: enum arm \u2192 ErrorKind via PgPayrollError::kind. Examined-zero fails: non-exhaustive match does not compile; pin asserts every arm. Live consumer: stage_draft_run_in_tx.map_err(PgPayrollError::from) in pay_run.rs:550.",
+    "falseGreen": "No --workflow-only. Critic re-ran load-bearing unit tests on packaging tip (not trusting implementer narration). Implementer commands lacked cargo \u2014 minor process finding only."
+  },
+  "challenges": [
+    "Chesterton: should pay_run::lifecycle_into_kernel_error call LifecycleError::into_kernel_error to prevent dual-path drift? Rejected for this residual \u2014 consolidating would change CanonicalPort NotFound message (Display vs historical store \"run not found\") and Db RowNotFound kind (Internal vs PgPayrollError Db preserve). Keep both mapped; file consolidation as ownerLease follow-up, not a third spelling patch.",
+    "Cartesian: does REST from_lifecycle already make this store-path fix redundant? No \u2014 REST lifecycle handlers use from_lifecycle directly; the broken From was on stage_draft \u2192 PgPayrollError \u2192 KernelError (and any other store convert). Kind flatten was real on that edge."
+  ],
+  "claimGraph": [
+    "E: tip/product SHAs and signatures via git rev-parse / log %G?",
+    "E: base From flattened other\u2192internal; tip routes other\u2192into_kernel_error",
+    "E: kind tables match CanonicalPort for Validation/InvalidTransition/Conflict cluster/NotFound",
+    "E: hostile pin + CanonicalPort pin both green on tip",
+    "E: only caller of PgPayrollError::from(LifecycleError) outside tests is stage_draft path",
+    "I: dual NotFound message strings are intentional preservation of prior store wording",
+    "U: whether parent wants a later bead to collapse converters behind one total primitive"
+  ],
+  "commandsRun": [
+    "git -C .worktrees/lane-console-gc9z rev-parse HEAD  # 40dfcd4f5abfe370481e7a7070e425b08b9f9d96",
+    "git -C .worktrees/lane-console-gc9z log -1 --format='%H %G? %s' 3f24cd0b7  # G fix(payroll): preserve LifecycleError kinds",
+    "git -C .worktrees/lane-console-gc9z show be7b3e14b:backend/crates/payroll/adapter-postgres/src/lifecycle.rs | sed -n '220,245p'  # base flatten",
+    "git -C .worktrees/lane-console-gc9z diff --name-only be7b3e14b..40dfcd4f5  # lifecycle.rs + gc9z.json",
+    "cargo test -p console-payroll-adapter-postgres --manifest-path backend/Cargo.toml --lib lifecycle_into_pg  # 1 passed",
+    "cargo test -p console-payroll-adapter-postgres --manifest-path backend/Cargo.toml --lib lifecycle_variants_preserve  # 1 passed",
+    "rg -n 'map_err\\(crate::PgPayrollError::from\\)|into_kernel_error|lifecycle_into_kernel_error' backend/crates/payroll/adapter-postgres/src"
+  ],
+  "followUps": [
+    "ownerLease: optional later bead to route pay_run::lifecycle_into_kernel_error through LifecycleError::into_kernel_error (or shared total fn) once NotFound message + Db kind policy are deliberately unified \u2014 do not third-spell the mapping.",
+    "process: stalled-agent tip-bind receipts should include at least one executed cargo/hostile command before status=done."
+  ],
+  "notes": "APPROVE packaging tip 40dfcd4f5 / product 3f24cd0b7. LifecycleError\u2192PgPayrollError now preserves Validation/InvalidTransition/Conflict kinds via into_kernel_error, aligned with CanonicalPort pay_run mapping (0a7z residual). Standing lenses: no blocker, no proven major. Flow delta: leaf ready to admit. | tip-refresh on heal WT after #745 main + executed-tests baseline; same APPROVE class.",
+  "headSha": "4c6638b63ac9a25549d57bb48aa9b0703110b284",
+  "productTip": "2a47da337a34c7b4efb411f3049e471d90365d7a",
+  "packagingHeadSha": "4c6638b63ac9a25549d57bb48aa9b0703110b284",
+  "lineageNote": "Cherry-picks of 8fd1d85f8+6c0669b06 onto eca122ad0; critic APPROVE from fad09a3c retained for mapping class.",
+  "originMainAtReview": "eca122ad0122457a77b85ca55fc1e8b2e4869e74"
+}
