@@ -785,7 +785,7 @@ components:
           format: int64
     OrgEntitySummary:
       type: object
-      required: [orgId, slug, name, status]
+      required: [orgId, slug, name, status, companyId, companyResolutionStatus, orgUnits]
       properties:
         orgId:
           type: string
@@ -796,3 +796,28 @@ components:
           type: string
         status:
           type: string
+        companyId:
+          type: string
+          format: uuid
+        companyResolutionStatus:
+          $ref: '#/components/schemas/CanonicalResolutionStatus'
+        orgUnits:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgUnitReference'
+    CanonicalResolutionStatus:
+      type: string
+      enum: [RESOLVED, UNBOUND, AMBIGUOUS]
+    OrgUnitReference:
+      type: object
+      required: [sourceKind, sourceId, resolutionStatus]
+      properties:
+        orgUnitId:
+          type: string
+          format: uuid
+        sourceKind:
+          type: string
+        sourceId:
+          type: string
+        resolutionStatus:
+          $ref: '#/components/schemas/CanonicalResolutionStatus'

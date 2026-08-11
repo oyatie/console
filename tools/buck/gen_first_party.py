@@ -181,6 +181,15 @@ RESOURCE_CONFIG = {
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
         },
     },
+    # L5-ORG: org-change #[path]-compiles the OrgUnit owner binding seam so
+    # adapter→adapter Cargo edges stay illegal while writer-ownership still
+    # attributes DML to the owner-crate source path.
+    "console-orgchange-adapter-postgres": {
+        "external": {
+            "//backend/crates/ontology/canonical-adapter-postgres:crate-source-tree":
+                "backend/crates/ontology/canonical-adapter-postgres/src",
+        },
+    },
 }
 
 SQLX_MACRO_MARKERS = ("query!", "query_as!", "query_scalar!")
@@ -714,6 +723,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
         'integration': {
             'tests/employment_port_as_runtime_role.rs': 'postgres',
+            'tests/org_reference_surface.rs': 'postgres',
             'tests/preflight_persists_nothing.rs': 'postgres',
         },
     },

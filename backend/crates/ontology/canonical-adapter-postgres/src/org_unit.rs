@@ -486,3 +486,47 @@ fn canonical_json(value: &serde_json::Value) -> serde_json::Value {
         primitive => primitive.clone(),
     }
 }
+
+// ---------------------------------------------------------------------------
+// L5-ORG binding seam — re-export owner-crate module (also #[path]'d by org-change)
+// ---------------------------------------------------------------------------
+
+pub use crate::org_unit_binding::{
+    AmbiguousTextAuthority, SOURCE_KIND_BRANCH, SOURCE_KIND_REGION, SourceBindingResolution,
+    count_org_units_named, resolve_source_binding, unambiguous_legacy_source_id,
+};
+
+/// Bind a legacy region or branch UUID to a canonical OrgUnit inside an open
+/// transaction. Replays an existing binding; never accepts free-text source ids.
+///
+/// Thin wrapper preserving the historical `OrgUnitError` return type. SQL lives
+/// in [`crate::org_unit_binding`] so writer-ownership stays on this owner crate
+/// even when org-change compiles that file via `#[path]`.
+pub async fn ensure_unambiguous_legacy_binding_in_tx(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    org_id: OrgId,
+    actor_id: UserId,
+    source_kind: &str,
+    legacy_id: Uuid,
+    attributes: serde_json::Value,
+    command_id: Uuid,
+) -> Result<Uuid, OrgUnitError> {
+    crate::org_unit_binding::ensure_unambiguous_legacy_binding_in_tx(
+        tx,
+        org_id,
+        actor_id,
+        source_kind,
+        legacy_id,
+        attributes,
+        command_id,
+    )
+    .await
+    .map_err(|err| match err {
+        crate::org_unit_binding::OrgUnitBindingError::Blocked(blockers) => {
+            OrgUnitError::Blocked(blockers)
+        }
+        crate::org_unit_binding::OrgUnitBindingError::Database(error) => {
+            OrgUnitError::Database(error)
+        }
+    })
+}

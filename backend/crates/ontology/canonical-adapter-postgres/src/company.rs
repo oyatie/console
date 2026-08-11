@@ -384,6 +384,20 @@ fn canonical_json(value: &serde_json::Value) -> serde_json::Value {
     }
 }
 
+/// Whether `company_revisions` has any row for the tenant (CompanyPort has run).
+///
+/// `organizations.id` is always the company id; this only answers resolution
+/// status for the L5-ORG reference surface.
+pub async fn company_has_revision<'e, E>(executor: E, org_id: OrgId) -> Result<bool, sqlx::Error>
+where
+    E: sqlx::Executor<'e, Database = sqlx::Postgres>,
+{
+    sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM company_revisions WHERE org_id = $1)")
+        .bind(*org_id.as_uuid())
+        .fetch_one(executor)
+        .await
+}
+
 #[cfg(test)]
 mod port_error_kind_tests {
     use super::*;

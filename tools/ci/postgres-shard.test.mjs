@@ -87,7 +87,9 @@ test("real postgres-cargo-map workflow set partitions cleanly with balanced doma
   // ontology-family packages and are counted by the `ontology` shard, not here. That asymmetry
   // is why this number moved by 2 and not by 6, and it is worth stating: a reader who expects
   // +6 would "correct" this to 88 and turn the tripwire red for the wrong reason.
-  assert.equal(da + db, 84, `expected 84 domain entries, got ${da + db}`);
+  // 84 -> 85: orgchange org_reference_surface (console-7sx FORCE-RLS/console_rt pin) joined the
+  // domain workflow set via postgres-cargo-map.
+  assert.equal(da + db, 85, `expected 85 domain entries, got ${da + db}`);
 });
 
 test("shardIdForPackage with domain map resolves domain packages", () => {

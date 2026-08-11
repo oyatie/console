@@ -1,0 +1,49 @@
+{
+  "lane": "console-xxp",
+  "laneId": "console-xxp",
+  "bead": "console-xxp (gh#718 — L5-JOB JobPosition as first-class object)",
+  "role": "implementer",
+  "status": "done",
+  "baseSha": "be7b3e14b2f126e8c24a2bf99758d0de00aaa23d",
+  "headSha": "445e986998ead19d22d16c2de762831d37414cba",
+  "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-console-xxp (branch lane/console-xxp)",
+  "summary": "L5-JOB residual: JobPosition is the authority surface for position identity. Port gains get/list_for_org_unit readback; create/revise receipts now carry org_unit_id alongside job_position_id/version for the preserved ontology action namespace; REST projection parses that receipt shape and refuses free-text / OrgEntitySummary. Proven: create→get ID round-trip; employees.position + recruit_postings seed never materialize job_positions. Did not touch OrgEntitySummary (7sx), EmploymentAttributes (y0n), migrations, or orgchange.",
+  "filesChanged": [
+    "backend/crates/ontology/canonical-adapter-postgres/src/job_position.rs",
+    "backend/crates/ontology/canonical-adapter-postgres/tests/job_position_port_as_runtime_role.rs",
+    "backend/crates/ontology/rest/src/job_position.rs",
+    "backend/crates/ontology/rest/src/lib.rs"
+  ],
+  "redBaseline": "At base be7b3e14b: PgJobPositionPort had create/revise only — no get/list; receipt result lacked org_unit_id; ontology/rest had no JobPosition identity projection. Hostile gap: seeding employees.position + recruit_postings.position_ref left job_positions empty (non-vacuous negative) while a missing get would leave first-class query unproven. After this tip, free_text_and_recruiting_are_never_inferred_as_job_positions and create→get assertions are green; mutating identity_from_receipt_result to accept title-only JSON goes red on free_text_title_alone_is_not_a_job_position_identity.",
+  "verification": "GREEN. cargo fmt -p console-ontology-canonical-adapter-postgres -p console-ontology-rest. cargo test -p console-ontology-rest --lib (job_position::tests: receipt_result_round_trips_canonical_ids, free_text_title_alone_is_not_a_job_position_identity, org_entity_summary_shape_is_refused). bash tools/ci/cargo_needs_postgres.sh --only ontology-canonical-adapter-postgres-job-position-port-as-runtime-role-pg --num-threads=1 → 14 passed; 0 failed. git commit -S → %G?=G. Signing smoke folded into product commit 445e98699.",
+  "contractBreaches": "none. Owned roots only. Did not edit orgchange/**, employment.rs, EmploymentAttributes, payroll/**, governance/**, docs/current/**, migrations, OpenAPI, or sibling 7sx/y0n paths.",
+  "enforcementPlacement": "n/a - adds no enforcement",
+  "peripheralsUpdated": "job_position.rs module doc now states no SourceBinding / no recruit_postings|employees.position reads; REST job_position.rs documents preserved action-namespace readback vs OrgEntitySummary. Runtime-role suite gained free_text_and_recruiting_are_never_inferred_as_job_positions + get/list round-trip assertions on a_job_position_is_created_and_read_back.",
+  "commands": [
+    "git rev-parse HEAD",
+    "cargo fmt -p console-ontology-canonical-adapter-postgres -p console-ontology-rest --manifest-path backend/Cargo.toml",
+    "cargo test --manifest-path backend/Cargo.toml -p console-ontology-rest --lib receipt_result_round_trips",
+    "cargo test --manifest-path backend/Cargo.toml -p console-ontology-rest --lib free_text_title",
+    "cargo test --manifest-path backend/Cargo.toml -p console-ontology-rest --lib org_entity_summary",
+    "bash tools/ci/cargo_needs_postgres.sh --only ontology-canonical-adapter-postgres-job-position-port-as-runtime-role-pg --num-threads=1",
+    "git log -1 --format='%G?'"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "challenges": [
+    "Scout floated orgchange/rest or employees REST for JobPosition IDs; brief forbids OrgEntitySummary and y0n owns employment attrs — so authority readback stays on ontology action receipts + port get/list, not a parallel /job-positions family or OrgEntitySummary widen."
+  ],
+  "followUps": [
+    "Critic on tip 445e98699; admit after 7sx (path-disjoint).",
+    "ownerLease console-y0n: EmploymentAttributes UUID upgrade + ReassignOrgUnit→hr.transfer after 7sx∥xxp land.",
+    "ownerLease console-7sx: OrgEntitySummary Company/OrgUnit reference — do not fold JobPosition into that DTO."
+  ],
+  "flowDelta": "leaf ready to admit — JobPosition queryable/creatable with ID round-trip; y0n unblocked on position identity surface"
+}

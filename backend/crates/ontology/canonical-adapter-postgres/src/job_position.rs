@@ -2,7 +2,11 @@
 //!
 //! Owned tables, verbatim from the contract: `job_positions`,
 //! `job_position_revisions`. Recruiting postings and employee position strings
-//! are not canonical positions.
+//! are not canonical positions — this port never reads `recruit_postings` or
+//! `employees.position`, never invents a row from free text, and carries no
+//! legacy `SourceBinding` (unlike `OrgUnitPort`). Authority for position
+//! identity is the UUID returned on create/revise and readable via
+//! [`PgJobPositionPort::get`] / [`PgJobPositionPort::list_for_org_unit`].
 //!
 //! # The one asymmetry that is not copied from `PersonPort`
 //!
@@ -62,12 +66,23 @@ use console_ontology_canonical_domain::{
     CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget,
     JobPosition, ObjectKey, Preflight, ReceiptOwner,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
 use std::str::FromStr;
 use time::OffsetDateTime;
 use uuid::Uuid;
+
+/// The current head of one canonical JobPosition — the authority readback
+/// surface for position identity. Distinct from `employees.position` TEXT and
+/// from recruiting postings.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct JobPositionView {
+    pub job_position_id: Uuid,
+    pub org_unit_id: Uuid,
+    pub version: i64,
+    pub attributes: serde_json::Value,
+}
 
 /// The typed read this port answers: the write a caller intends, and nothing
 /// about how it is performed. Each variant is bound to exactly one of the two
@@ -184,6 +199,106 @@ impl PgJobPositionPort {
         Self { pool, runtime }
     }
 
+    /// Read the current head of a JobPosition. Tenant-armed via `app.current_org`;
+    /// a foreign tenant's id is omit-by-RLS (`None`), never disclosed.
+    pub fn get(
+        &self,
+        org_id: OrgId,
+        job_position_id: Uuid,
+    ) -> Result<Option<JobPositionView>, JobPositionError> {
+        self.runtime
+            .block_on(self.read_one(*org_id.as_uuid(), job_position_id))
+    }
+
+    /// List current heads under one OrgUnit. Empty when the unit has no
+    /// positions or is invisible to the armed tenant — never invents rows from
+    /// free-text employee/recruiting data.
+    pub fn list_for_org_unit(
+        &self,
+        org_id: OrgId,
+        org_unit_id: Uuid,
+    ) -> Result<Vec<JobPositionView>, JobPositionError> {
+        self.runtime
+            .block_on(self.read_for_unit(*org_id.as_uuid(), org_unit_id))
+    }
+
+    async fn arm_org<'e, E>(&self, executor: E, org: Uuid) -> Result<(), JobPositionError>
+    where
+        E: sqlx::Executor<'e, Database = sqlx::Postgres>,
+    {
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(org.to_string())
+            .execute(executor)
+            .await?;
+        Ok(())
+    }
+
+    async fn read_one(
+        &self,
+        org: Uuid,
+        job_position_id: Uuid,
+    ) -> Result<Option<JobPositionView>, JobPositionError> {
+        let mut tx = self.pool.begin().await?;
+        self.arm_org(&mut *tx, org).await?;
+        let row = sqlx::query(
+            "SELECT p.id AS job_position_id, p.org_unit_id, r.version, r.attributes \
+             FROM job_positions p \
+             JOIN job_position_revisions r \
+               ON r.org_id = p.org_id AND r.job_position_id = p.id \
+             WHERE p.org_id = $1 AND p.id = $2 \
+               AND r.version = ( \
+                 SELECT MAX(version) FROM job_position_revisions \
+                 WHERE org_id = p.org_id AND job_position_id = p.id \
+               )",
+        )
+        .bind(org)
+        .bind(job_position_id)
+        .fetch_optional(&mut *tx)
+        .await?;
+        tx.commit().await?;
+        Ok(row.map(|row| JobPositionView {
+            job_position_id: row.get("job_position_id"),
+            org_unit_id: row.get("org_unit_id"),
+            version: row.get("version"),
+            attributes: row.get("attributes"),
+        }))
+    }
+
+    async fn read_for_unit(
+        &self,
+        org: Uuid,
+        org_unit_id: Uuid,
+    ) -> Result<Vec<JobPositionView>, JobPositionError> {
+        let mut tx = self.pool.begin().await?;
+        self.arm_org(&mut *tx, org).await?;
+        let rows = sqlx::query(
+            "SELECT p.id AS job_position_id, p.org_unit_id, r.version, r.attributes \
+             FROM job_positions p \
+             JOIN job_position_revisions r \
+               ON r.org_id = p.org_id AND r.job_position_id = p.id \
+             WHERE p.org_id = $1 AND p.org_unit_id = $2 \
+               AND r.version = ( \
+                 SELECT MAX(version) FROM job_position_revisions \
+                 WHERE org_id = p.org_id AND job_position_id = p.id \
+               ) \
+             ORDER BY p.id",
+        )
+        .bind(org)
+        .bind(org_unit_id)
+        .fetch_all(&mut *tx)
+        .await?;
+        tx.commit().await?;
+        Ok(rows
+            .into_iter()
+            .map(|row| JobPositionView {
+                job_position_id: row.get("job_position_id"),
+                org_unit_id: row.get("org_unit_id"),
+                version: row.get("version"),
+                attributes: row.get("attributes"),
+            })
+            .collect())
+    }
+
     async fn write(
         &self,
         command: &JobPositionCommand,
@@ -235,7 +350,7 @@ impl PgJobPositionPort {
         }
 
         let target = command.query.target();
-        let (job_position_id, version) = match &command.query {
+        let (job_position_id, head_org_unit_id, version) = match &command.query {
             JobPositionQuery::Create { org_unit_id, .. } => {
                 let job_position_id: Uuid = sqlx::query_scalar(
                     "INSERT INTO job_positions (org_id, org_unit_id) VALUES ($1, $2) RETURNING id",
@@ -244,10 +359,12 @@ impl PgJobPositionPort {
                 .bind(org_unit_id)
                 .fetch_one(&mut *tx)
                 .await?;
-                (job_position_id, 1_i64)
+                (job_position_id, *org_unit_id, 1_i64)
             }
             JobPositionQuery::Revise {
-                job_position_id, ..
+                job_position_id,
+                org_unit_id,
+                ..
             } => {
                 // ponytail: MAX + 1 under the row's own transaction. A
                 // concurrent revise of the same position loses to
@@ -262,12 +379,28 @@ impl PgJobPositionPort {
                 .bind(job_position_id)
                 .fetch_one(&mut *tx)
                 .await?;
-                (*job_position_id, next)
+                let head_unit = match org_unit_id {
+                    Some(unit) => *unit,
+                    None => {
+                        sqlx::query_scalar(
+                            "SELECT org_unit_id FROM job_positions \
+                             WHERE org_id = $1 AND id = $2",
+                        )
+                        .bind(org)
+                        .bind(job_position_id)
+                        .fetch_one(&mut *tx)
+                        .await?
+                    }
+                };
+                (*job_position_id, head_unit, next)
             }
         };
 
+        // Receipt carries the canonical IDs clients round-trip on the preserved
+        // ontology action namespace. `org_unit_id` is the head after this write.
         let result = serde_json::json!({
             "job_position_id": job_position_id.to_string(),
+            "org_unit_id": head_org_unit_id.to_string(),
             "version": version,
             "target": target.as_str(),
         });

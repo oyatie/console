@@ -3724,6 +3724,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-11-wave3-7sx-xxp-admit.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "1fbd58bd5d682de25b3c0b838c892989b18ae63e",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/legacy-intent-register.md",
       "class": "evidence",
       "owner": "repository maintainers",

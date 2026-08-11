@@ -15,6 +15,9 @@ console-orgchange-domain = { path = "../domain" }
 # depended on by path. Required, not optional: this crate is named as
 # `ObjectKey::Employment`'s owner, and `CanonicalPort` is declared there.
 console-ontology-canonical-domain = { path = "../../ontology/canonical-domain" }
+# L5-ORG binding seam: compiled via `#[path]` onto the OrgUnit owner-crate
+# source file (no Cargo edge — adapter→adapter is illegal). SELECT-only
+# company_revisions probe is local in src/lib.rs.
 console-platform-db = { workspace = true }
 console-platform-group = { path = "../../platform/group" }
 console-platform-request-context = { workspace = true }

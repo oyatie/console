@@ -40,4 +40,6 @@
 pub mod company;
 pub mod job_position;
 pub mod org_unit;
+/// L5-ORG region/branch → OrgUnit binding seam (shared via `#[path]` with org-change).
+pub mod org_unit_binding;
 pub mod person;
