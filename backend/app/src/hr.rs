@@ -6560,9 +6560,10 @@ async fn insert_confirmed_exit_lifecycle_event(
     .await?;
 
     // The same Employment-owner statement the lifecycle handler calls: its
-    // `exit_date = CASE WHEN $6 = 'EXITED' THEN $7 …` arm fires here, and
-    // carrying the employee's CURRENT company/org-unit/position through leaves
-    // those three columns exactly as they stood — which is what the dedicated
+    // `exit_date = CASE WHEN $6 = 'EXITED' THEN $7 ELSE NULL` arm fires here
+    // (EXITED stamps; ACTIVE|UNKNOWN clears), and carrying the employee's
+    // CURRENT company/org-unit/position through leaves those three columns
+    // exactly as they stood — which is what the dedicated
     // `SET employment_status = 'EXITED', exit_date = $3` statement did.
     employment::apply_employment_change(
         tx,

@@ -608,6 +608,127 @@ async fn an_exited_promote_closes_the_employment_head_window(owner_pool: PgPool)
     );
 }
 
+/// Reactivation (EXITED → ACTIVE|UNKNOWN) must clear legacy `exit_date`.
+/// Preflight already accepts the status change; preserving the termination date
+/// leaves reads/exports disagreeing with status (console-90h / #692). Mutating
+/// `apply_employment_change` back to `ELSE exit_date` must turn this red.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn reactivating_an_exited_employee_clears_legacy_exit_date(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (employee, employment_id) = appointed(&owner_pool, org, actor, &port, "reactivate-1").await;
+
+    let exit_at = at(86_400);
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: exit_at,
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "EXITED"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    let exited_date: Option<String> =
+        sqlx::query_scalar("SELECT exit_date FROM employees WHERE org_id = $1 AND id = $2")
+            .bind(ORG)
+            .bind(employee)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    let expected_exit_date = exit_at.date().to_string();
+    assert_eq!(
+        exited_date.as_deref(),
+        Some(expected_exit_date.as_str()),
+        "control: EXITED promote must stamp exit_date before reactivation"
+    );
+
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: at(172_800),
+                attributes: attributes(ORG_UNIT_SALES, JOB_LEAD, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    let (status, exit_date): (String, Option<String>) = {
+        let row = sqlx::query(
+            "SELECT employment_status, exit_date FROM employees WHERE org_id = $1 AND id = $2",
+        )
+        .bind(ORG)
+        .bind(employee)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+        (row.get("employment_status"), row.get("exit_date"))
+    };
+    assert_eq!(status, "ACTIVE");
+    assert_eq!(
+        exit_date, None,
+        "ACTIVE reactivation must clear exit_date so status and exit date agree"
+    );
+
+    // Transfer path shares apply_employment_change; UNKNOWN is the other
+    // non-EXITED CHECK value. Seed a second exit then transfer to UNKNOWN.
+    let (employee2, employment2) =
+        appointed(&owner_pool, org, actor, &port, "reactivate-unknown").await;
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id: employment2,
+                valid_from: at(86_400),
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "EXITED"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Transfer {
+                employment_id: employment2,
+                valid_from: at(259_200),
+                attributes: attributes(ORG_UNIT_TECH, JOB_STAFF, "UNKNOWN"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+    let (status2, exit_date2): (String, Option<String>) = {
+        let row = sqlx::query(
+            "SELECT employment_status, exit_date FROM employees WHERE org_id = $1 AND id = $2",
+        )
+        .bind(ORG)
+        .bind(employee2)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+        (row.get("employment_status"), row.get("exit_date"))
+    };
+    assert_eq!(status2, "UNKNOWN");
+    assert_eq!(
+        exit_date2, None,
+        "UNKNOWN transfer reactivation must clear exit_date"
+    );
+}
+
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn a_transfer_appends_a_third_revision_and_the_intervals_stay_half_open(owner_pool: PgPool) {
     let (org, actor, port) = fixture(&owner_pool).await;

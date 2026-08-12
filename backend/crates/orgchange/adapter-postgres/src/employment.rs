@@ -35,7 +35,9 @@
 //! is that plus the company/org-unit/position triple, whose `CASE WHEN $6 =
 //! 'EXITED'` arm sets the same `exit_date`. Passing the employee's current
 //! company/org-unit/position through the lifecycle statement produces the
-//! identical row, so the exit path is a call to the general one.
+//! identical row, so the exit path is a call to the general one. The non-EXITED
+//! arm clears `exit_date`: reactivation (EXITED → ACTIVE|UNKNOWN) must not leave
+//! a termination date on a non-exited status (console-90h).
 //!
 //! # Append-only, enforced by the database
 //!
@@ -105,8 +107,9 @@ pub struct NewEmployeeRecord<'a> {
 }
 
 /// One employment change applied to the legacy head: the company/org-unit/
-/// position triple plus the status, with `effective_date` becoming `exit_date`
-/// exactly when the status is `EXITED`.
+/// position triple plus the status. `effective_date` becomes `exit_date` when
+/// the status is `EXITED`; any other admitted status clears `exit_date` so a
+/// reactivation cannot leave status and exit date disagreeing.
 #[derive(Debug, Clone, Copy)]
 pub struct EmploymentChange<'a> {
     pub company: &'a str,
@@ -172,7 +175,7 @@ pub async fn apply_employment_change(
             org_unit = $4,
             position = $5,
             employment_status = $6,
-            exit_date = CASE WHEN $6 = 'EXITED' THEN $7 ELSE exit_date END,
+            exit_date = CASE WHEN $6 = 'EXITED' THEN $7 ELSE NULL END,
             updated_at = now()
         WHERE org_id = $1 AND id = $2
         "#,
@@ -535,9 +538,10 @@ pub async fn write_in_tx(
         }
         // The legacy compatibility head carries the new state, through the
         // same statement the REST lifecycle handler calls. `valid_from` is
-        // the effective date, and the statement writes `exit_date` from it
-        // exactly when the status is `EXITED`. The canonical head closes in
-        // the same transaction: `valid_to` = this revision's `valid_from`.
+        // the effective date: EXITED stamps `exit_date` from it; ACTIVE|
+        // UNKNOWN clears `exit_date` so reactivation cannot disagree with
+        // status. The canonical head closes in the same transaction when
+        // EXITED: `valid_to` = this revision's `valid_from`.
         EmploymentQuery::Promote { .. } | EmploymentQuery::Transfer { .. } => {
             let employee_id = bound_employee(tx, org, employment_id).await?;
             let effective_date = valid_from.date().to_string();
