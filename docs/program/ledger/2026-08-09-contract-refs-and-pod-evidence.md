@@ -20,6 +20,8 @@ candidate. Shared CI/Buck wiring that landed with this tip is listed once under 
 
 ### `console-qjb` (contracts `$ref` composition)
 
+**Status:** CLOSED already-on-tip (GH #703); product on main via #620 / later Fragment work — no open residual in this ledger.
+
 | Field | Record |
 |---|---|
 | Pre-mortem | A `$ref` typo that names a non-existent component section composes clean and ships into the published contract; clients and generators follow a pointer that resolves nowhere. |
@@ -36,7 +38,7 @@ candidate. Shared CI/Buck wiring that landed with this tip is listed once under 
 | Blast radius | One schema property in `backend/openapi/openapi.yaml`; unit tests in `backend/crates/logistics/rest/`; CI domain-unit wiring + Buck resource metadata so the new test actually builds and runs. |
 | Detection | `cargo test -p console-logistics-rest --lib` — `published_schema_and_validator_agree_on_concrete_references` (1 passed); oracle proved RED by reverting to weak `^evidence://`. |
 | Rollback | Revert the logistics/OpenAPI/CI/Buck commits; constants 19/411/class remain in validator + migration 0212 until republished together. |
-| Stop conditions | Retyping 19/411/class into a fourth site; claiming `check:ci-preflight` inherited while `ci.yml` changed; full Unicode class enumeration or YAML-parser `$ref` totality without the tracked beads (`console-5yn`, `console-ann`). |
+| Stop conditions | Retyping 19/411/class into a fourth site; claiming `check:ci-preflight` inherited while `ci.yml` changed; full Unicode class enumeration or YAML-parser `$ref` totality without the tracked bead (`console-ann`). (`console-5yn` CLOSED via squash-merge #767 / `4417bb377`.) |
 
 ## Summary
 
@@ -86,10 +88,11 @@ their cause. A partial control is defensible; a partial control describing itsel
 is the exact failure this crate exists to prevent in published contracts, and it had
 committed that failure in its own module doc.
 
-Two of the logistics three are tracked as `console-5yn`, including the sharper one: the
+Two of the logistics three were tracked as `console-5yn`, including the sharper one: the
 agreement corpus derives from the published pattern it audits, so the two sides are not
-independent. The third — `gen_first_party.py` crashing on the crate's first `#[cfg(test)]`
-module — is fixed here.
+independent. That bead is CLOSED via squash-merge #767 (`4417bb377`); GH #691 closed with it.
+The third — `gen_first_party.py` crashing on the crate's first `#[cfg(test)]` module — is
+fixed here.
 
 ## Why one PR and not two
 

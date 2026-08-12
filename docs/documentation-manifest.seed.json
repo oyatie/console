@@ -3541,7 +3541,7 @@
   },
   {
     "path": "docs/program/ledger/2026-08-09-contract-refs-and-pod-evidence.md",
-    "blob_sha": "6e10ec4a54ae8ad47bc619ba4aa26bc6dd0f82ba",
+    "blob_sha": "9f0ff20e22c2bb3f508ac9da1c4e8bb197bc24ab",
     "class": "evidence",
     "owner": "repository maintainers",
     "status": "frozen",
