@@ -1717,8 +1717,8 @@ describe("CI preflight contract", () => {
   it("fails closed when optimized gates or targets are commented, weakened, or duplicated", () => {
     expectFailure(
       workflow.replace(
-        "        run: cargo run -p console-gate-layer-boundary",
-        "        # cargo run -p console-gate-layer-boundary",
+        "        run: ../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary",
+        "        # ../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
@@ -1739,7 +1739,7 @@ describe("CI preflight contract", () => {
     expectFailure(
       workflow.replace(
         `      - name: Audit-coverage gate\n        if: ${runHeavyIf}\n`,
-        `      - name: Layer-boundary gate\n        if: \${{ !cancelled() }}\n        run: cargo run -p console-gate-layer-boundary\n\n      - name: Audit-coverage gate\n        if: ${runHeavyIf}\n`,
+        `      - name: Layer-boundary gate\n        if: \${{ !cancelled() }}\n        run: ../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary\n\n      - name: Audit-coverage gate\n        if: ${runHeavyIf}\n`,
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );

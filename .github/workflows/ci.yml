@@ -839,9 +839,13 @@ jobs:
       - name: clippy -D warnings
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings
+      # Wave C (DN-0006): first Required-CI gate family on Buck2. Invoked from
+      # backend/ so the binary's cwd remains the Cargo workspace root it scans;
+      # Buck2 walks up to the repo .buckconfig. Keep warm-cache overlays opt-in
+      # (fail-closed) — do not attach --config-file infra/ci/buckconfig/warm-*.
       - name: Layer-boundary gate
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
-        run: cargo run -p console-gate-layer-boundary
+        run: ../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary
 
       - name: Audit-coverage gate
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
@@ -903,13 +907,14 @@ jobs:
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-writer-ownership
 
-      # The eleven `cargo run -p console-gate-*` steps above only prove the gates
-      # exit 0 against THIS tree. A gate whose scan root no longer resolves --
-      # e.g. after the 2026-07-28 deletion moved or emptied a directory it walks
-      # -- also exits 0, so "green" cannot be distinguished from "scanned
-      # nothing". These are the only artifacts that plant a violation in a
-      # throwaway tree and assert the gate rejects it; without this step they
-      # were compiled by clippy --all-targets and never executed.
+      # The ten remaining `cargo run -p console-gate-*` steps above (plus the
+      # Buck2-primary Layer-boundary gate) only prove the gates exit 0 against
+      # THIS tree. A gate whose scan root no longer resolves -- e.g. after the
+      # 2026-07-28 deletion moved or emptied a directory it walks -- also exits
+      # 0, so "green" cannot be distinguished from "scanned nothing". These are
+      # the only artifacts that plant a violation in a throwaway tree and assert
+      # the gate rejects it; without this step they were compiled by clippy
+      # --all-targets and never executed.
       #
       # `env -u DATABASE_URL` matches the other hermetic Buck2 steps: none of
       # these eight targets touches a database (audit-coverage carries a stale

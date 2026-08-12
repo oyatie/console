@@ -91,11 +91,17 @@ function compareInventory(label, documented, actual, docsPath, sourcePath) {
 }
 
 function extractCiBackendGatePackages(ciText) {
-  return uniqueSorted(
-    [...ciText.matchAll(/\bcargo\s+run(?:\s+-q)?\s+-p\s+(console-gate-[a-z0-9-]+)/g)].map(
-      ([, gatePackage]) => gatePackage,
-    ),
+  const cargo = [...ciText.matchAll(/\bcargo\s+run(?:\s+-q)?\s+-p\s+(console-gate-[a-z0-9-]+)/g)].map(
+    ([, gatePackage]) => gatePackage,
   );
+  // Wave C / DN-0006: Required CI may invoke the same binaries via Buck2.
+  // Match both `tools/buck2` (repo-root cwd) and `../tools/buck2` (backend/ cwd).
+  const buck = [
+    ...ciText.matchAll(
+      /\b(?:\.\.\/)?tools\/buck2\s+run\s+\/\/backend\/ci\/gates\/[a-z0-9-]+:(console-gate-[a-z0-9-]+)/g,
+    ),
+  ].map(([, gatePackage]) => gatePackage);
+  return uniqueSorted([...cargo, ...buck]);
 }
 
 function extractCiNpmRunInvocations(ciText) {

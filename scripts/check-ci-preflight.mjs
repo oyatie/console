@@ -824,7 +824,7 @@ const requiredJobRunContracts = Object.freeze({
     setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh", { if: runHeavyCondition }),
     proofRun("rustfmt check", "cargo fmt --all -- --check", { if: runHeavyCondition }),
     proofRun("clippy -D warnings", "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings", { if: runHeavyCondition }),
-    proofRun("Layer-boundary gate", "cargo run -p console-gate-layer-boundary", { if: runHeavyCondition }),
+    proofRun("Layer-boundary gate", "../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary", { if: runHeavyCondition }),
     proofRun("Audit-coverage gate", "cargo run -p console-gate-audit-coverage", { if: runHeavyCondition }),
     proofRun("Migration-safety gate", "cargo run -p console-gate-migration-safety", { if: runHeavyCondition }),
     proofRun("Tenant-isolation gate", "cargo run -p console-gate-tenant-isolation", { if: runHeavyCondition }),
@@ -2154,7 +2154,7 @@ export function evaluateCiPreflight(
       failures.push("backend must not use !cancelled() on protected fail-fast steps");
     }
     const sourceGateContracts = [
-      ["Layer-boundary gate", "cargo run -p console-gate-layer-boundary"],
+      ["Layer-boundary gate", "../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary"],
       ["Audit-coverage gate", "cargo run -p console-gate-audit-coverage"],
       ["Migration-safety gate", "cargo run -p console-gate-migration-safety"],
       ["Tenant-isolation gate", "cargo run -p console-gate-tenant-isolation"],

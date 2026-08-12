@@ -122,8 +122,11 @@ so a fresh session does not gain false confidence from a partial run.
 cargo fmt --all -- --check
 SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings
 SQLX_OFFLINE=true DATABASE_URL=postgres://<user>@localhost/console_dev cargo test
+# Wave C: layer-boundary is Buck2-primary in Required CI (DN-0006). Keep cwd
+# backend/ so the binary scans the Cargo workspace; Buck finds .buckconfig upward.
+../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary
 for g in \
-  layer-boundary audit-coverage migration-safety tenant-isolation pii-no-logs \
+  audit-coverage migration-safety tenant-isolation pii-no-logs \
   rls-arming dev-auth-absence iac-tier fabricated-branch \
   personal-data-classification; do
   cargo run -q -p console-gate-$g            # each must exit 0
@@ -329,7 +332,9 @@ ratchet nor clippy is represented here as execution of every workspace test.
 ### `console-gate-layer-boundary` — clean-architecture + manifest hygiene
 
 Source: `backend/ci/gates/layer-boundary/`. Enforces the dependency direction
-([ADR-0001](decisions/ADR-0001-modularmonolith-cargo-workspace-with-compilerenforced-cleanarchitecture.md)):
+([ADR-0001](decisions/ADR-0001-modularmonolith-cargo-workspace-with-compilerenforced-cleanarchitecture.md)).
+Required CI runs it via Buck2 (`../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary`
+from `backend/`; Wave C / DN-0006). Cargo remains valid for local ad-hoc runs:
 
 ```
 kernel      → (nothing)
