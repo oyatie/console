@@ -54,7 +54,8 @@ cargo-primary path.
 | Wave | Scope | Exit |
 |------|--------|------|
 | **A** (this lane) | Opt-in `infra/ci/buckconfig/*` + `scripts/cas/*` + this DN + handoff inventory | Overlays never in root `.buckconfig`; cold Buck2 still green |
-| **B** | Founder: `~/oyatie-cas/gha/bootstrap-cas-secrets.sh console`; trusted Access TCP sidecar composite | `gh secret list` shows CF_ACCESS_* + OYA_CAS_TLS_* on console; fork jobs have none |
+| **A.1** | Cache platform under `infra/ci/buck2/cache` (not `toolchains/`), `[cas_cache]` knobs, materialize `--profile` into `.buckconfig.local`, non-required `cas-warm-canary` workflow | Local upload + ActionCache hit proven; GHA canary cites run URL; no Required-CI warm; no license flip. Legacy `OYA_CAS_*` secret names are reorg debt behind `scripts/cas/load-cas-env.sh` |
+| **B** | Founder: `~/oyatie-cas/gha/bootstrap-cas-secrets.sh console`; trusted Access TCP sidecar composite | `gh secret list` shows CF_ACCESS_* + CAS TLS secrets on console (today still `OYA_CAS_*` names — rename later); fork jobs have none |
 | **C** | Flip `backend` job gates from `cargo run -p console-gate-*` → `tools/buck2 run //backend/ci/gates/...` | Preflight contracts updated; mutation suites already Buck |
 | **D** | Flip `domain-unit` cargo tests → Buck unit targets + CAS overlay on trusted pushes | Preflight “must pass --lib on cargo” retired; wall ≤ cargo+rust-cache or accepted |
 | **E** | Flip `cargo_needs_postgres.sh` → Buck `buck_inner` driver (map already dual-keyed) | Five PG facets + aggregator green; rename map away from cargo when idle |

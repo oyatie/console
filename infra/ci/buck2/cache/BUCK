@@ -1,0 +1,18 @@
+# Cache-only execution platform. Selected ONLY by opt-in warm-cache overlays via
+# `[build] execution_platforms = //infra/ci/buck2/cache:cache-platform`.
+# Root .buckconfig keeps prelude//platforms:default (dark-by-default).
+#
+# [cas_cache] knobs are read at parse time; without an overlay both default false.
+
+load("@prelude//platforms:defs.bzl", "host_configuration")
+load(":defs.bzl", "cache_execution_platform")
+
+cache_execution_platform(
+    name = "cache-platform",
+    allow_cache_uploads = read_root_config("cas_cache", "allow_cache_uploads", "false") == "true",
+    cpu_configuration = host_configuration.cpu,
+    os_configuration = host_configuration.os,
+    remote_cache_enabled = read_root_config("cas_cache", "remote_cache_enabled", "false") == "true",
+    use_windows_path_separators = host_info().os.is_windows,
+    visibility = ["PUBLIC"],
+)

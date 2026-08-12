@@ -1,9 +1,18 @@
 # Opt-in WARM READ-ONLY overlay — shared laptop NativeLink CAS reader listener.
 # Canary / probe only. allow_cache_upload stays false (no [buck2] upload default).
+# Buck2 OSS: host:port (no grpcs://); materialize --profile writes daemon-visible .buckconfig.local
+# (combined tls_client_cert PEM). --config-file alone is insufficient for REClientBuilder.
 
 [buck2_re_client]
-  engine_address = grpcs://127.0.0.1:50052
-  cas_address = grpcs://127.0.0.1:50052
-  action_cache_address = grpcs://127.0.0.1:50052
+  engine_address = 127.0.0.1:50052
+  cas_address = 127.0.0.1:50052
+  action_cache_address = 127.0.0.1:50052
   instance_name = main
   tls = true
+
+[cas_cache]
+  remote_cache_enabled = true
+  allow_cache_uploads = false
+
+[build]
+  execution_platforms = //infra/ci/buck2/cache:cache-platform

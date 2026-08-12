@@ -1,0 +1,172 @@
+# Non-required warm-cache canary — shared NativeLink CAS via Access TCP.
+#
+# NOT part of Required CI. Does NOT flip warm_reads_licensed. Does NOT edit ci.yml
+# (Wave C sole-writer owns that file). Fork PRs get no secrets / skip.
+#
+# Proof shape:
+#   Job A (upload): trusted writer overlay → Network Up > 0B
+#   Job B (hit):    fresh runner + reader overlay → Cache hits / cached > 0
+#
+# Canary target is a first-party gate outside toolchains/:
+#   //backend/ci/gates/layer-boundary:console-gate-layer-boundary
+
+name: cas-warm-canary
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/cas-warm-canary.yml"
+      - "infra/ci/buckconfig/warm-cache-*.buckconfig"
+      - "infra/ci/buck2/cache/**"
+      - "scripts/cas/**"
+
+concurrency:
+  group: cas-warm-canary-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Canary target — first-party gate; never toolchains//
+  CAS_CANARY_TARGET: //backend/ci/gates/layer-boundary:console-gate-layer-boundary
+  # Legacy secret names (OYA_CAS_*) are reorg debt — mapped in scripts/cas/load-cas-env.sh
+  OYA_CAS_WRITE_HOST: ${{ secrets.OYA_CAS_WRITE_HOST }}
+  OYA_CAS_READ_HOST: ${{ secrets.OYA_CAS_READ_HOST }}
+  OYA_CAS_INSTANCE: ${{ secrets.OYA_CAS_INSTANCE }}
+  OYA_CAS_TLS_CA: ${{ secrets.OYA_CAS_TLS_CA }}
+  OYA_CAS_TLS_CLIENT_CERT_WRITER: ${{ secrets.OYA_CAS_TLS_CLIENT_CERT_WRITER }}
+  OYA_CAS_TLS_CLIENT_KEY_WRITER: ${{ secrets.OYA_CAS_TLS_CLIENT_KEY_WRITER }}
+  OYA_CAS_TLS_CLIENT_CERT_READER: ${{ secrets.OYA_CAS_TLS_CLIENT_CERT_READER }}
+  OYA_CAS_TLS_CLIENT_KEY_READER: ${{ secrets.OYA_CAS_TLS_CLIENT_KEY_READER }}
+  CF_ACCESS_WRITE_CLIENT_ID: ${{ secrets.CF_ACCESS_WRITE_CLIENT_ID }}
+  CF_ACCESS_WRITE_CLIENT_SECRET: ${{ secrets.CF_ACCESS_WRITE_CLIENT_SECRET }}
+  CF_ACCESS_READ_CLIENT_ID: ${{ secrets.CF_ACCESS_READ_CLIENT_ID }}
+  CF_ACCESS_READ_CLIENT_SECRET: ${{ secrets.CF_ACCESS_READ_CLIENT_SECRET }}
+
+jobs:
+  upload:
+    name: cas-warm-upload
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain (pinned)
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: "1.97.1"
+
+      - name: Guard — CAS secrets present (names only)
+        run: |
+          set -euo pipefail
+          missing=0
+          for k in CF_ACCESS_WRITE_CLIENT_ID CF_ACCESS_WRITE_CLIENT_SECRET \
+                   OYA_CAS_TLS_CA OYA_CAS_TLS_CLIENT_CERT_WRITER OYA_CAS_TLS_CLIENT_KEY_WRITER; do
+            if [[ -z "${!k:-}" ]]; then
+              echo "missing secret/env: $k"
+              missing=1
+            else
+              echo "present: $k"
+            fi
+          done
+          [[ "$missing" -eq 0 ]]
+
+      - name: Materialize writer TLS + buckconfig.local
+        run: |
+          set -euo pipefail
+          TLS_DIR="${RUNNER_TEMP}/cas-tls-writer"
+          bash scripts/cas/materialize-tls-from-env.sh --role writer --out-dir "$TLS_DIR"
+          # --profile required: REClientBuilder ignores --config-file addresses
+          bash scripts/cas/materialize-buckconfig-local.sh --profile gha-rw --tls-dir "$TLS_DIR"
+
+      - name: Start Access TCP (writer)
+        run: bash scripts/cas/start-access-tcp.sh --role writer
+
+      - name: Buck2 warm upload (rw overlay)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cas-warm-canary
+          # Fresh daemon so overlay + .buckconfig.local are picked up
+          tools/buck2 kill || true
+          set +e
+          tools/buck2 build \
+            --config-file infra/ci/buckconfig/warm-cache-gha-rw.buckconfig \
+            "$CAS_CANARY_TARGET" \
+            2>&1 | tee /tmp/cas-warm-canary/upload.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          bash scripts/cas/assert-warm-metrics.sh --mode upload --log /tmp/cas-warm-canary/upload.log
+          exit "$rc"
+
+      - name: Cleanup Access TCP
+        if: always()
+        run: bash scripts/cas/start-access-tcp.sh --cleanup || true
+
+      - name: Upload upload log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cas-warm-upload-log
+          path: /tmp/cas-warm-canary/upload.log
+          if-no-files-found: warn
+
+  hit:
+    name: cas-warm-hit
+    needs: upload
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain (pinned)
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: "1.97.1"
+
+      - name: Materialize reader TLS + buckconfig.local
+        run: |
+          set -euo pipefail
+          TLS_DIR="${RUNNER_TEMP}/cas-tls-reader"
+          bash scripts/cas/materialize-tls-from-env.sh --role reader --out-dir "$TLS_DIR"
+          bash scripts/cas/materialize-buckconfig-local.sh --profile gha-ro --tls-dir "$TLS_DIR"
+
+      - name: Start Access TCP (reader)
+        run: bash scripts/cas/start-access-tcp.sh --role reader
+
+      - name: Buck2 warm hit (ro overlay, fresh buck-out)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cas-warm-canary
+          tools/buck2 kill || true
+          rm -rf buck-out
+          set +e
+          tools/buck2 build \
+            --config-file infra/ci/buckconfig/warm-cache-gha-ro.buckconfig \
+            "$CAS_CANARY_TARGET" \
+            2>&1 | tee /tmp/cas-warm-canary/hit.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          bash scripts/cas/assert-warm-metrics.sh --mode hit --log /tmp/cas-warm-canary/hit.log
+          exit "$rc"
+
+      - name: Cleanup Access TCP
+        if: always()
+        run: bash scripts/cas/start-access-tcp.sh --cleanup || true
+
+      - name: Upload hit log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cas-warm-hit-log
+          path: /tmp/cas-warm-canary/hit.log
+          if-no-files-found: warn
