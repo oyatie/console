@@ -318,8 +318,9 @@ pub enum OrgProposalOp {
     CreateSite { customer_id: Uuid, name: String },
     #[serde(rename_all = "camelCase")]
     UpdateSite { site_id: Uuid, name: String },
-    /// Team move/rename: bounded `employees.org_unit` rewrite (teams have no
-    /// first-class table yet — registered follow-up in the scout gap-analysis).
+    /// OrgUnit move: emits canonical `hr.transfer` per matched employee.
+    /// `from_org_unit` / `to_org_unit` are OrgUnit UUID strings (not free-text
+    /// team labels). Legacy `employees.org_unit` stores the same UUID text.
     #[serde(rename_all = "camelCase")]
     ReassignOrgUnit {
         from_org_unit: String,
@@ -369,6 +370,13 @@ impl OrgProposalOp {
                 bounded(from_org_unit, "fromOrgUnit", 120)?;
                 bounded(to_org_unit, "toOrgUnit", 120)?;
                 bounded(&scope.company, "scope.company", 120)?;
+                if Uuid::parse_str(from_org_unit.trim()).is_err()
+                    || Uuid::parse_str(to_org_unit.trim()).is_err()
+                {
+                    return Err(KernelError::validation(
+                        "REASSIGN_ORG_UNIT fromOrgUnit/toOrgUnit must be OrgUnit UUIDs",
+                    ));
+                }
                 if from_org_unit == to_org_unit {
                     return Err(KernelError::validation(
                         "REASSIGN_ORG_UNIT source and target must differ",
@@ -674,8 +682,8 @@ mod tests {
                 name: "수도권".into(),
             },
             OrgProposalOp::ReassignOrgUnit {
-                from_org_unit: "정비1팀".into(),
-                to_org_unit: "정비2팀".into(),
+                from_org_unit: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee".into(),
+                to_org_unit: "ffffffff-0000-1111-2222-333333333333".into(),
                 scope: ReassignScope {
                     company: "KNL".into(),
                 },
@@ -684,7 +692,10 @@ mod tests {
         let json = serde_json::to_value(&ops).unwrap();
         assert_eq!(json[0]["op"], "CREATE_REGION");
         assert_eq!(json[1]["op"], "REASSIGN_ORG_UNIT");
-        assert_eq!(json[1]["fromOrgUnit"], "정비1팀");
+        assert_eq!(
+            json[1]["fromOrgUnit"],
+            "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+        );
         let back: Vec<OrgProposalOp> = serde_json::from_value(json).unwrap();
         assert_eq!(back, ops);
     }
@@ -707,14 +718,26 @@ mod tests {
         );
         assert!(
             OrgProposalOp::ReassignOrgUnit {
-                from_org_unit: "같은팀".into(),
-                to_org_unit: "같은팀".into(),
+                from_org_unit: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee".into(),
+                to_org_unit: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee".into(),
                 scope: ReassignScope {
                     company: "KNL".into()
                 },
             }
             .validate()
             .is_err()
+        );
+        assert!(
+            OrgProposalOp::ReassignOrgUnit {
+                from_org_unit: "정비1팀".into(),
+                to_org_unit: "정비2팀".into(),
+                scope: ReassignScope {
+                    company: "KNL".into()
+                },
+            }
+            .validate()
+            .is_err(),
+            "free-text team labels must fail closed now that OrgUnit UUIDs are required"
         );
         let too_many = vec![
             OrgProposalOp::CreateRegion {

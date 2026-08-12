@@ -1,0 +1,48 @@
+{
+  "lane": "console-y0n",
+  "laneId": "console-y0n",
+  "bead": "console-y0n (gh#682 \u2014 L5-HR Canonical HR assignment writer)",
+  "role": "implementer",
+  "status": "done",
+  "baseSha": "84655ce7881c764bbe81081b193cdd2d85d523c1",
+  "headSha": "ad84e2d2ca4ad73377ac09230e6e29521a31fe08",
+  "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-console-y0n (branch lane/console-y0n)",
+  "summary": "Critic BLOCK peripheral fix: OrgProposalOpReassignOrgUnit OpenAPI + CAP-ORG fragment now document hr.transfer semantics and OrgUnit UUID wire (Uuid $ref / format:uuid). Closes process.openapi-enum-peripheral-drift for ReassignOrgUnit. REST hr.rs free-text dual-namespace left ownerLease.",
+  "filesChanged": [
+    "backend/crates/orgchange/rest/openapi/schemas/OrgProposalOpReassignOrgUnit.yaml",
+    "backend/openapi/openapi.yaml",
+    "docs/evidence/console/CAP-ORG-CONSOLE/manifests/openapi-fragment.yaml",
+    ".cursor/receipts/y0n.json"
+  ],
+  "redBaseline": "Before fix: OrgProposalOpReassignOrgUnit.yaml L3 description='Bounded employees.org_unit rewrite'; fromOrgUnit/toOrgUnit unconstrained string minLength/maxLength 120 (no Uuid). openapi.yaml OrgProposalOpReassignOrgUnit identical rewrite + unconstrained strings. CAP-ORG openapi-fragment.yaml fromOrgUnit/toOrgUnit type:string maxLength:120 without format:uuid or hr.transfer prose.",
+  "verification": "GREEN peripheral sync. python3 assert: rest schema + openapi.yaml Reassign section contain hr.transfer, Uuid $ref, no rewrite; CAP-ORG fragment fromOrgUnit/toOrgUnit format:uuid + hr.transfer, no maxLength:120 on those fields. Did not re-run product PG suites (no product code change). Product tip signed G.",
+  "contractBreaches": "none on allowlist. Did not touch hr.rs / employment.rs / domain. Only allowlisted OpenAPI/CAP-ORG + receipt.",
+  "enforcementPlacement": "n/a - adds no enforcement",
+  "peripheralsUpdated": "OrgProposalOpReassignOrgUnit.yaml description->hr.transfer + fromOrgUnit/toOrgUnit Uuid $ref; backend/openapi/openapi.yaml same section; CAP-ORG manifests/openapi-fragment.yaml fromOrgUnit/toOrgUnit format:uuid + hr.transfer descriptions. CAP-ORG design-contract.md / gap-analysis.md still mention employees.org_unit rewrite \u2014 outside allowlist; elevated.",
+  "commands": [
+    "python3 probe RED: rewrite description + unconstrained fromOrgUnit/toOrgUnit on three OpenAPI surfaces",
+    "python3 assert GREEN: three files hr.transfer + Uuid/format:uuid; no rewrite in Reassign sections",
+    "git commit -S docs(console-y0n): sync ReassignOrgUnit OpenAPI to hr.transfer UUIDs -> %G?=G",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs /Users/jasonlee/Developer/console/.worktrees/lane-console-y0n/.cursor/receipts/y0n.json",
+    "bash /Users/jasonlee/Developer/console/scripts/cursor/preflight-forge.sh",
+    "git push --force-with-lease origin lane/console-y0n"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Peripheral drift",
+    "Blast-radius / cell-based"
+  ],
+  "challenges": [
+    "Chesterton: CAP-ORG ReassignOrgUnit advertised employees.org_unit rewrite when teams had no table; after L5-ORG + tip cdb8b47a1 the runtime is UUID + hr.transfer \u2014 keeping rewrite prose would lie to codegen/clients (process.openapi-enum-peripheral-drift).",
+    "Opportunity cost: regenerating openapi.yaml via house generator would touch files beyond allowlist \u2014 manual three-file sync chosen; CAP-ORG design-contract.md rewrite prose left elevated rather than expanding scope."
+  ],
+  "followUps": [
+    "ownerLease REST/hr.rs free-text org_unit/position dual-namespace remains \u2014 do not expand this tip to People lifecycle / OpenAPI tip-serial for REST.",
+    "ELEVATE: CAP-ORG design-contract.md + gap-analysis.md still claim employees.org_unit rewrite (outside this lane allowlist).",
+    "minor unproven JobPosition/org_unit coherence on reassign \u2014 skipped this round.",
+    "Critic re-review on new tip; admit owns train PR (not this lane)."
+  ],
+  "flowDelta": "OpenAPI/CAP-ORG ReassignOrgUnit peripherals match UUID + hr.transfer tip; REST ownerLease still open; leaf ready for critic re-pass"
+}

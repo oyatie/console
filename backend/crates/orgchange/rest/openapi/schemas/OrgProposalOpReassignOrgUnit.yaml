@@ -1,6 +1,9 @@
 type: object
 additionalProperties: false
-description: Bounded `employees.org_unit` rewrite; the source and target org units must differ.
+description: >-
+  Reassign employees from one OrgUnit to another via canonical `hr.transfer`
+  (one transfer per matched employee). `fromOrgUnit` and `toOrgUnit` are OrgUnit
+  UUIDs (not free-text team labels) and must differ.
 required:
 - op
 - fromOrgUnit
@@ -11,12 +14,8 @@ properties:
     type: string
     enum: [REASSIGN_ORG_UNIT]
   fromOrgUnit:
-    type: string
-    minLength: 1
-    maxLength: 120
+    $ref: '#/components/schemas/Uuid'
   toOrgUnit:
-    type: string
-    minLength: 1
-    maxLength: 120
+    $ref: '#/components/schemas/Uuid'
   scope:
     $ref: '#/components/schemas/OrgProposalReassignScope'

@@ -518,10 +518,14 @@ components:
           format: uuid
         fromOrgUnit:
           type: string
-          maxLength: 120
+          format: uuid
+          description: >-
+            Source OrgUnit UUID (not a free-text team label). Apply emits
+            canonical `hr.transfer` per matched employee.
         toOrgUnit:
           type: string
-          maxLength: 120
+          format: uuid
+          description: Destination OrgUnit UUID (must differ from fromOrgUnit).
         scope:
           type: object
           required: [company]

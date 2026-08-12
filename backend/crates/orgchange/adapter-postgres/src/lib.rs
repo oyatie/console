@@ -16,11 +16,10 @@
 /// handlers used to hold. The contract names THIS crate as that object's owner,
 /// so the port lives here rather than in the canonical adapter.
 ///
-/// It is not the only `employees` write in this crate: `apply_op`'s
-/// `ReassignOrgUnit` arm still holds one, and the contract's own doc comment
-/// names it. That statement is inside the owner already, so it is not a second
-/// writer; routing org-change reassignment through a canonical transfer command
-/// is the retarget lane's work, not this module's.
+/// `ReassignOrgUnit` is PORT-ROUTED through
+/// [`employment::reassign_org_unit_via_transfers_in_tx`] — one `hr.transfer`
+/// per matched employee inside the apply transaction. Free-text team labels
+/// fail closed; OrgUnit UUID strings are required.
 pub mod employment;
 
 /// OrgUnit owner-crate binding seam, compiled in-place via `#[path]` so this
@@ -1024,17 +1023,22 @@ async fn apply_op(
             to_org_unit,
             scope,
         } => {
-            let moved = sqlx::query(
-                "UPDATE employees SET org_unit = $1, updated_at = $2 \
-                 WHERE company = $3 AND org_unit = $4",
+            let moved = employment::reassign_org_unit_via_transfers_in_tx(
+                tx,
+                org,
+                actor,
+                command_id,
+                from_org_unit,
+                to_org_unit,
+                &scope.company,
+                now,
             )
-            .bind(to_org_unit)
-            .bind(now)
-            .bind(&scope.company)
-            .bind(from_org_unit)
-            .execute(tx.as_mut())
-            .await?
-            .rows_affected();
+            .await
+            .map_err(|err| {
+                PgOrgChangeError::from(KernelError::conflict(format!(
+                    "REASSIGN_ORG_UNIT via hr.transfer failed: {err}"
+                )))
+            })?;
             let event = audit(
                 org,
                 actor,

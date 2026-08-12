@@ -45,6 +45,7 @@ use console_ontology_canonical_domain::{
 };
 use console_orgchange_adapter_postgres::employment::{
     EmploymentAttributes, EmploymentCommand, EmploymentError, EmploymentQuery, PgEmploymentPort,
+    reassign_org_unit_via_transfers_in_tx,
 };
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
@@ -53,6 +54,12 @@ use uuid::Uuid;
 
 const ORG: Uuid = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0001);
 const FOREIGN_ORG: Uuid = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0002);
+const ORG_UNIT_SALES: Uuid = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0010);
+const ORG_UNIT_TECH: Uuid = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0011);
+const ORG_UNIT_ADMIN: Uuid = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0012);
+const JOB_STAFF: Uuid = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0020);
+const JOB_LEAD: Uuid = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0021);
+const JOB_EXEC: Uuid = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0022);
 
 /// The port must satisfy the NAMED trait, not merely `CanonicalPort`. The
 /// blanket impl in `canonical-domain` makes `EmploymentPort` an alias for
@@ -115,12 +122,41 @@ async fn seed_employee(owner_pool: &PgPool, org: Uuid, source_key: &str) -> Uuid
     .unwrap()
 }
 
-/// The tenant, its actor, and the port built on a `console_rt` pool.
+/// The tenant, its actor, seeded OrgUnit/JobPosition rows, and the port built
+/// on a `console_rt` pool.
 async fn fixture(owner_pool: &PgPool) -> (OrgId, UserId, PgEmploymentPort) {
     let actor = seed_org_and_super_admin(owner_pool, ORG, "employment").await;
+    seed_org_structure(owner_pool, ORG).await;
     let runtime_pool = runtime_role_pool(owner_pool).await;
     let port = PgEmploymentPort::new(runtime_pool, tokio::runtime::Handle::current());
     (OrgId::from_uuid(ORG), actor, port)
+}
+
+async fn seed_org_structure(owner_pool: &PgPool, org: Uuid) {
+    for unit in [ORG_UNIT_SALES, ORG_UNIT_TECH, ORG_UNIT_ADMIN] {
+        sqlx::query("INSERT INTO org_units (org_id, id) VALUES ($1, $2) ON CONFLICT DO NOTHING")
+            .bind(org)
+            .bind(unit)
+            .execute(owner_pool)
+            .await
+            .unwrap();
+    }
+    for (job, unit) in [
+        (JOB_STAFF, ORG_UNIT_SALES),
+        (JOB_LEAD, ORG_UNIT_SALES),
+        (JOB_EXEC, ORG_UNIT_SALES),
+    ] {
+        sqlx::query(
+            "INSERT INTO job_positions (org_id, id, org_unit_id) VALUES ($1, $2, $3) \
+             ON CONFLICT DO NOTHING",
+        )
+        .bind(org)
+        .bind(job)
+        .bind(unit)
+        .execute(owner_pool)
+        .await
+        .unwrap();
+    }
 }
 
 /// Drive the SYNCHRONOUS `execute` off the runtime's worker thread.
@@ -134,11 +170,11 @@ async fn execute(
         .unwrap()
 }
 
-fn attributes(org_unit: &str, position: &str, status: &str) -> EmploymentAttributes {
+fn attributes(org_unit: Uuid, position: Uuid, status: &str) -> EmploymentAttributes {
     EmploymentAttributes {
         company: "ACME".to_owned(),
-        org_unit: Some(org_unit.to_owned()),
-        position: Some(position.to_owned()),
+        org_unit_id: Some(org_unit),
+        job_position_id: Some(position),
         employment_status: status.to_owned(),
     }
 }
@@ -257,7 +293,7 @@ async fn appointed(
             EmploymentQuery::Appoint {
                 employee_id: employee,
                 valid_from: at(0),
-                attributes: attributes("영업본부", "사원", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
             },
         ),
     )
@@ -342,8 +378,8 @@ fn preflight_is_pure_and_blocks_what_the_database_would_only_refuse_at_23514() {
         valid_from: at(0),
         attributes: EmploymentAttributes {
             company: "   ".to_owned(),
-            org_unit: None,
-            position: None,
+            org_unit_id: None,
+            job_position_id: None,
             employment_status: "PROBATION".to_owned(),
         },
     };
@@ -360,7 +396,7 @@ fn preflight_is_pure_and_blocks_what_the_database_would_only_refuse_at_23514() {
     let nil_head = <PgEmploymentPort as CanonicalPort>::preflight(&EmploymentQuery::Promote {
         employment_id: Uuid::nil(),
         valid_from: at(0),
-        attributes: attributes("영업본부", "사원", "ACTIVE"),
+        attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
     });
     assert!(!nil_head.is_ok());
     assert_eq!(
@@ -378,7 +414,7 @@ async fn an_appointment_opens_a_head_binds_the_legacy_row_and_appends_revision_o
     let query = EmploymentQuery::Appoint {
         employee_id: employee,
         valid_from: at(0),
-        attributes: attributes("영업본부", "사원", "ACTIVE"),
+        attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
     };
     assert!(<PgEmploymentPort as CanonicalPort>::preflight(&query).is_ok());
 
@@ -419,8 +455,8 @@ async fn an_appointment_opens_a_head_binds_the_legacy_row_and_appends_revision_o
         serde_json::json!({
             "company": "ACME",
             "employment_status": "ACTIVE",
-            "org_unit": "영업본부",
-            "position": "사원",
+            "job_position_id": JOB_STAFF.to_string(),
+            "org_unit_id": ORG_UNIT_SALES.to_string(),
         })
     );
     assert_eq!(
@@ -454,7 +490,7 @@ async fn a_promotion_carries_the_new_state_onto_the_legacy_employees_head(owner_
             EmploymentQuery::Promote {
                 employment_id,
                 valid_from: at(86_400),
-                attributes: attributes("영업본부", "팀장", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_SALES, JOB_LEAD, "ACTIVE"),
             },
         ),
     )
@@ -467,8 +503,8 @@ async fn a_promotion_carries_the_new_state_onto_the_legacy_employees_head(owner_
         legacy_head(&owner_pool, employee).await,
         (
             "ACME".to_owned(),
-            Some("영업본부".to_owned()),
-            Some("팀장".to_owned()),
+            Some(ORG_UNIT_SALES.to_string()),
+            Some(JOB_LEAD.to_string()),
             "ACTIVE".to_owned()
         ),
         "the promotion must reach `employees`, the legacy compatibility head"
@@ -502,7 +538,7 @@ async fn an_exited_promote_closes_the_employment_head_window(owner_pool: PgPool)
             EmploymentQuery::Promote {
                 employment_id,
                 valid_from: exit_at,
-                attributes: attributes("영업본부", "사원", "EXITED"),
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "EXITED"),
             },
         ),
     )
@@ -553,7 +589,7 @@ async fn an_exited_promote_closes_the_employment_head_window(owner_pool: PgPool)
             EmploymentQuery::Promote {
                 employment_id: employment_open,
                 valid_from: at(86_400),
-                attributes: attributes("영업본부", "팀장", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_SALES, JOB_LEAD, "ACTIVE"),
             },
         ),
     )
@@ -585,7 +621,7 @@ async fn a_transfer_appends_a_third_revision_and_the_intervals_stay_half_open(ow
             EmploymentQuery::Promote {
                 employment_id,
                 valid_from: at(86_400),
-                attributes: attributes("영업본부", "팀장", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_SALES, JOB_LEAD, "ACTIVE"),
             },
         ),
     )
@@ -600,7 +636,7 @@ async fn a_transfer_appends_a_third_revision_and_the_intervals_stay_half_open(ow
             EmploymentQuery::Transfer {
                 employment_id,
                 valid_from: at(172_800),
-                attributes: attributes("기술본부", "팀장", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_TECH, JOB_LEAD, "ACTIVE"),
             },
         ),
     )
@@ -615,7 +651,7 @@ async fn a_transfer_appends_a_third_revision_and_the_intervals_stay_half_open(ow
 
     assert_eq!(
         legacy_head(&owner_pool, employee).await.1,
-        Some("기술본부".to_owned())
+        Some(ORG_UNIT_TECH.to_string())
     );
 
     // 0214 stores no per-revision `valid_to`: an interval ends where the next
@@ -658,7 +694,7 @@ async fn a_transfer_appends_a_third_revision_and_the_intervals_stay_half_open(ow
             EmploymentQuery::Transfer {
                 employment_id,
                 valid_from: at(172_800),
-                attributes: attributes("총무본부", "팀장", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_ADMIN, JOB_LEAD, "ACTIVE"),
             },
         ),
     )
@@ -869,7 +905,7 @@ async fn an_ambiguous_employment_binding_refuses_promote(owner_pool: PgPool) {
             EmploymentQuery::Promote {
                 employment_id,
                 valid_from: at(86_400),
-                attributes: attributes("영업본부", "팀장", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_SALES, JOB_LEAD, "ACTIVE"),
             },
         ),
     )
@@ -916,7 +952,7 @@ async fn a_second_binding_for_the_same_employee_is_refused(owner_pool: PgPool) {
             EmploymentQuery::Appoint {
                 employee_id: employee,
                 valid_from: at(1),
-                attributes: attributes("영업본부", "사원", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
             },
         ),
     )
@@ -961,7 +997,7 @@ async fn an_actor_from_another_org_is_refused(owner_pool: PgPool) {
             EmploymentQuery::Appoint {
                 employee_id: employee,
                 valid_from: at(0),
-                attributes: attributes("영업본부", "사원", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
             },
         ),
     )
@@ -988,7 +1024,7 @@ async fn a_repeat_of_the_same_command_replays_the_stored_receipt(owner_pool: PgP
     let query = EmploymentQuery::Appoint {
         employee_id: employee,
         valid_from: at(0),
-        attributes: attributes("영업본부", "사원", "ACTIVE"),
+        attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
     };
 
     let first = execute(
@@ -1044,7 +1080,7 @@ async fn a_repeat_with_a_different_payload_is_refused(owner_pool: PgPool) {
             query: EmploymentQuery::Appoint {
                 employee_id: employee,
                 valid_from: at(0),
-                attributes: attributes("영업본부", "사원", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
             },
         },
     )
@@ -1060,7 +1096,7 @@ async fn a_repeat_with_a_different_payload_is_refused(owner_pool: PgPool) {
             query: EmploymentQuery::Appoint {
                 employee_id: employee,
                 valid_from: at(0),
-                attributes: attributes("영업본부", "임원", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_SALES, JOB_EXEC, "ACTIVE"),
             },
         },
     )
@@ -1090,7 +1126,7 @@ async fn a_blocked_preflight_never_reaches_the_database(owner_pool: PgPool) {
             EmploymentQuery::Promote {
                 employment_id: Uuid::nil(),
                 valid_from: at(0),
-                attributes: attributes("영업본부", "사원", "ACTIVE"),
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
             },
         ),
     )
@@ -1112,7 +1148,7 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
     let query = EmploymentQuery::Appoint {
         employee_id: employee,
         valid_from: at(0),
-        attributes: attributes("영업본부", "사원", "ACTIVE"),
+        attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
     };
     let accepted = execute(
         &port,
@@ -1166,4 +1202,324 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
         matches!(refused, EmploymentError::UnreadableReceipt(id, _) if id == *command_id.as_uuid()),
         "a receipt the roster cannot read must be refused, never replayed; got {refused:?}"
     );
+}
+
+#[test]
+fn preflight_blocks_nil_canonical_ids() {
+    let query = EmploymentQuery::Appoint {
+        employee_id: Uuid::new_v4(),
+        valid_from: at(0),
+        attributes: EmploymentAttributes {
+            company: "ACME".to_owned(),
+            org_unit_id: Some(Uuid::nil()),
+            job_position_id: Some(Uuid::nil()),
+            employment_status: "ACTIVE".to_owned(),
+        },
+    };
+    let preflight = <PgEmploymentPort as CanonicalPort>::preflight(&query);
+    assert!(!preflight.is_ok());
+    assert!(
+        preflight
+            .blockers()
+            .iter()
+            .any(|b| b.contains("org_unit_id must not be nil"))
+    );
+    assert!(
+        preflight
+            .blockers()
+            .iter()
+            .any(|b| b.contains("job_position_id must not be nil"))
+    );
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn free_text_org_unit_attrs_are_not_authority_unknown_uuid_is_refused(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let employee = seed_employee(&owner_pool, ORG, "unknown-unit-1").await;
+    let unknown = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0099);
+    let refused = execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Appoint {
+                employee_id: employee,
+                valid_from: at(0),
+                attributes: EmploymentAttributes {
+                    company: "ACME".to_owned(),
+                    org_unit_id: Some(unknown),
+                    job_position_id: Some(JOB_STAFF),
+                    employment_status: "ACTIVE".to_owned(),
+                },
+            },
+        ),
+    )
+    .await
+    .unwrap_err();
+    assert!(
+        matches!(refused, EmploymentError::UnknownOrgUnit(id) if id == unknown),
+        "got {refused:?}"
+    );
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn reassign_org_unit_emits_hr_transfer_not_a_raw_bulk_rewrite(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (employee, employment_id) = appointed(&owner_pool, org, actor, &port, "reassign-1").await;
+
+    // Appointment binds without rewriting the legacy head. Stamp the UUID
+    // org_unit onto employees so ReassignOrgUnit can match.
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: at(3_600),
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        legacy_head(&owner_pool, employee).await.1,
+        Some(ORG_UNIT_SALES.to_string())
+    );
+
+    // RED control class: free-text team labels fail closed.
+    let mut tx = owner_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let free_text = reassign_org_unit_via_transfers_in_tx(
+        &mut tx,
+        org,
+        actor,
+        Uuid::new_v4(),
+        "영업본부",
+        "기술본부",
+        "ACME",
+        at(86_400),
+    )
+    .await
+    .unwrap_err();
+    assert!(
+        matches!(free_text, EmploymentError::OrgUnitRefNotUuid),
+        "got {free_text:?}"
+    );
+    drop(tx);
+
+    let mut tx = owner_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let moved = reassign_org_unit_via_transfers_in_tx(
+        &mut tx,
+        org,
+        actor,
+        Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_00aa),
+        &ORG_UNIT_SALES.to_string(),
+        &ORG_UNIT_TECH.to_string(),
+        "ACME",
+        at(86_400),
+    )
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+    assert_eq!(moved, 1);
+
+    assert_eq!(
+        legacy_head(&owner_pool, employee).await.1,
+        Some(ORG_UNIT_TECH.to_string())
+    );
+
+    let revision = sqlx::query(
+        "SELECT version, attributes, receipt FROM employment_revisions \
+         WHERE org_id = $1 AND employment_id = $2 ORDER BY version DESC LIMIT 1",
+    )
+    .bind(ORG)
+    .bind(employment_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(revision.get::<i64, _>("version"), 3);
+    assert_eq!(
+        revision.get::<serde_json::Value, _>("attributes")["org_unit_id"],
+        serde_json::json!(ORG_UNIT_TECH.to_string())
+    );
+    assert_eq!(
+        revision.get::<serde_json::Value, _>("receipt")["target"],
+        serde_json::json!("hr.transfer")
+    );
+
+    let _ = port;
+}
+
+/// EXITED employees in the source unit must not be transferred. Preflight
+/// `scope_headcount` counts ACTIVE only; reassign must match that set so an
+/// org-structure move cannot rewrite a closed `employment_heads.valid_to`.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn reassign_org_unit_skips_exited_employees_and_leaves_valid_to(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (active_employee, active_employment) =
+        appointed(&owner_pool, org, actor, &port, "reassign-active").await;
+    let (exited_employee, exited_employment) =
+        appointed(&owner_pool, org, actor, &port, "reassign-exited").await;
+
+    // Stamp UUID org_unit onto both legacy heads (appointment leaves org_unit null).
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id: active_employment,
+                valid_from: at(3_600),
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id: exited_employment,
+                valid_from: at(3_600),
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    let exit_at = at(7_200);
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id: exited_employment,
+                valid_from: exit_at,
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "EXITED"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    let exited_valid_to_before: Option<OffsetDateTime> =
+        sqlx::query_scalar("SELECT valid_to FROM employment_heads WHERE org_id = $1 AND id = $2")
+            .bind(ORG)
+            .bind(exited_employment)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(exited_valid_to_before, Some(exit_at));
+    assert_eq!(
+        legacy_head(&owner_pool, exited_employee).await.3,
+        "EXITED".to_owned()
+    );
+    assert_eq!(
+        legacy_head(&owner_pool, exited_employee).await.1,
+        Some(ORG_UNIT_SALES.to_string())
+    );
+
+    let reassign_at = at(86_400);
+    let mut tx = owner_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let moved = reassign_org_unit_via_transfers_in_tx(
+        &mut tx,
+        org,
+        actor,
+        Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_00ab),
+        &ORG_UNIT_SALES.to_string(),
+        &ORG_UNIT_TECH.to_string(),
+        "ACME",
+        reassign_at,
+    )
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+
+    assert_eq!(
+        moved, 1,
+        "only the ACTIVE peer must move; EXITED must be excluded from the SELECT"
+    );
+    assert_eq!(
+        legacy_head(&owner_pool, active_employee).await.1,
+        Some(ORG_UNIT_TECH.to_string()),
+        "ACTIVE peer must transfer to the destination OrgUnit"
+    );
+    assert_eq!(
+        legacy_head(&owner_pool, exited_employee).await.1,
+        Some(ORG_UNIT_SALES.to_string()),
+        "EXITED employee must not be moved"
+    );
+    assert_eq!(
+        legacy_head(&owner_pool, exited_employee).await.3,
+        "EXITED".to_owned()
+    );
+    let exited_valid_to_after: Option<OffsetDateTime> =
+        sqlx::query_scalar("SELECT valid_to FROM employment_heads WHERE org_id = $1 AND id = $2")
+            .bind(ORG)
+            .bind(exited_employment)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        exited_valid_to_after, exited_valid_to_before,
+        "EXITED employment_heads.valid_to must stay at the original exit instant, not the reassignment timestamp"
+    );
+
+    let _ = port;
+}
+
+/// A syntactically valid but nonexistent source OrgUnit must fail closed as
+/// `UnknownOrgUnit`, not succeed with `moved=0` (silent apply audit).
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn reassign_org_unit_unknown_from_org_unit_is_refused(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let unknown_from = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0098);
+
+    let mut tx = owner_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let refused = reassign_org_unit_via_transfers_in_tx(
+        &mut tx,
+        org,
+        actor,
+        Uuid::new_v4(),
+        &unknown_from.to_string(),
+        &ORG_UNIT_TECH.to_string(),
+        "ACME",
+        at(86_400),
+    )
+    .await
+    .unwrap_err();
+    drop(tx);
+
+    assert!(
+        matches!(refused, EmploymentError::UnknownOrgUnit(id) if id == unknown_from),
+        "unknown source OrgUnit must be UnknownOrgUnit, not Ok(0); got {refused:?}"
+    );
+
+    let _ = port;
 }

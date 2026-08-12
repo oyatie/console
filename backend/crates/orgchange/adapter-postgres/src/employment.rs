@@ -1,8 +1,10 @@
 //! `EmploymentPort` — the Postgres implementation of `ObjectKey::Employment`,
 //! and the home of every `employees` statement that used to live outside the
-//! owning crate. The one `employees` write NOT here is `apply_op`'s
-//! `ReassignOrgUnit` arm in this crate's `src/lib.rs`, which the contract's own
-//! doc comment names and which is already inside the owner.
+//! owning crate. Org-change `ReassignOrgUnit` is PORT-ROUTED: `apply_op` calls
+//! [`reassign_org_unit_via_transfers_in_tx`], which emits one `hr.transfer`
+//! per matched ACTIVE employee inside the apply transaction (no raw bulk
+//! rewrite as authority; EXITED heads are excluded; unknown from/to OrgUnits
+//! fail closed).
 //!
 //! Owned tables, verbatim from the contract
 //! (`backend/crates/ontology/canonical-domain/src/lib.rs`): `employees`,
@@ -195,11 +197,17 @@ pub async fn apply_employment_change(
 /// JSONB because the port applies the same four values to the legacy head, and
 /// `employees.employment_status` carries a CHECK that a free-form payload would
 /// only discover at 23514.
+///
+/// `org_unit_id` / `job_position_id` are canonical OrgUnit / JobPosition UUIDs
+/// (L5-ORG / L5-JOB). Free-text team or title labels are not authority. The
+/// legacy `employees.org_unit` / `employees.position` TEXT columns store the
+/// UUID string form so REST/org-chart readers keep a single column without a
+/// parallel free-text namespace.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct EmploymentAttributes {
     pub company: String,
-    pub org_unit: Option<String>,
-    pub position: Option<String>,
+    pub org_unit_id: Option<Uuid>,
+    pub job_position_id: Option<Uuid>,
     pub employment_status: String,
 }
 
@@ -214,19 +222,21 @@ impl EmploymentAttributes {
         serde_json::json!({
             "company": self.company,
             "employment_status": self.employment_status,
-            "org_unit": self.org_unit,
-            "position": self.position,
+            "job_position_id": self.job_position_id.map(|id| id.to_string()),
+            "org_unit_id": self.org_unit_id.map(|id| id.to_string()),
         })
     }
 
-    fn as_change<'a>(&'a self, effective_date: &'a str) -> EmploymentChange<'a> {
-        EmploymentChange {
-            company: &self.company,
-            org_unit: self.org_unit.as_deref(),
-            position: self.position.as_deref(),
-            employment_status: &self.employment_status,
-            effective_date,
-        }
+    /// Legacy-head TEXT projections of the canonical UUID attrs.
+    #[must_use]
+    pub fn legacy_org_unit_text(&self) -> Option<String> {
+        self.org_unit_id.map(|id| id.to_string())
+    }
+
+    /// Legacy-head TEXT projections of the canonical UUID attrs.
+    #[must_use]
+    pub fn legacy_position_text(&self) -> Option<String> {
+        self.job_position_id.map(|id| id.to_string())
     }
 }
 
@@ -343,15 +353,28 @@ pub enum EmploymentError {
         employment_id: Uuid,
         binding_count: usize,
     },
+    #[error("org_unit_id {0} is not a known OrgUnit in this tenant")]
+    UnknownOrgUnit(Uuid),
+    #[error("job_position_id {0} is not a known JobPosition in this tenant")]
+    UnknownJobPosition(Uuid),
+    #[error(
+        "employee {employee_id} matched ReassignOrgUnit but has no employment_source_bindings row; refuse unbound transfer"
+    )]
+    UnboundEmployeeForTransfer { employee_id: Uuid },
+    #[error("fromOrgUnit/toOrgUnit must be OrgUnit UUIDs, not free-text team labels")]
+    OrgUnitRefNotUuid,
 }
 
 impl CanonicalPortError for EmploymentError {
     fn into_kernel_error(self) -> KernelError {
         let message = self.to_string();
         match self {
-            Self::Blocked(_) | Self::AmbiguousSourceBinding { .. } => {
-                KernelError::validation(message)
-            }
+            Self::Blocked(_)
+            | Self::AmbiguousSourceBinding { .. }
+            | Self::UnknownOrgUnit(_)
+            | Self::UnknownJobPosition(_)
+            | Self::UnboundEmployeeForTransfer { .. }
+            | Self::OrgUnitRefNotUuid => KernelError::validation(message),
             Self::DigestConflict(_) => KernelError::conflict(message),
             Self::Database(_) | Self::UnreadableReceipt(_, _) => KernelError::internal(message),
         }
@@ -374,180 +397,363 @@ impl PgEmploymentPort {
     }
 
     async fn write(&self, command: &EmploymentCommand) -> Result<CommandReceipt, EmploymentError> {
-        let preflight = <Self as CanonicalPort>::preflight(&command.query);
-        if !preflight.is_ok() {
-            return Err(EmploymentError::Blocked(preflight.blockers().to_vec()));
-        }
-
-        let digest = payload_digest(command);
-        let org = *command.org_id.as_uuid();
-        let actor = *command.actor_id.as_uuid();
-        let command_uuid = *command.command_id.as_uuid();
-
         let mut tx = self.pool.begin().await?;
         // Transaction-local, so it is cleared on COMMIT/ROLLBACK and never
         // leaks to the next checkout of a pooled connection. Unset fails
         // closed: RLS shows no rows and accepts no writes.
         sqlx::query("SELECT set_config('app.current_org', $1, true)")
-            .bind(org.to_string())
+            .bind(command.org_id.as_uuid().to_string())
             .execute(&mut *tx)
             .await?;
-
-        if let Some(stored) = sqlx::query(
-            "SELECT actor_id, payload_digest, receipt, created_at \
-             FROM ont_action_command_receipts WHERE org_id = $1 AND command_id = $2",
-        )
-        .bind(org)
-        .bind(command_uuid)
-        .fetch_optional(&mut *tx)
-        .await?
-        {
-            let stored_digest: Vec<u8> = stored.get("payload_digest");
-            if stored_digest != digest {
-                return Err(EmploymentError::DigestConflict(command_uuid));
-            }
-            let result: serde_json::Value = stored.get("receipt");
-            let target = stored_target(command_uuid, &result)?;
-            let stored_actor: Uuid = stored.get("actor_id");
-            let created_at: OffsetDateTime = stored.get("created_at");
-            return Ok(receipt(
-                command,
-                target,
-                UserId::from_uuid(stored_actor),
-                digest,
-                result,
-                created_at,
-            ));
-        }
-
-        let target = command.query.target();
-        let valid_from = command.query.valid_from();
-        let attributes = command.query.attributes();
-
-        let (employment_id, version) = match &command.query {
-            EmploymentQuery::Appoint { .. } => {
-                let employment_id: Uuid = sqlx::query_scalar(
-                    "INSERT INTO employment_heads (org_id, valid_from) VALUES ($1, $2) \
-                     RETURNING id",
-                )
-                .bind(org)
-                .bind(valid_from)
-                .fetch_one(&mut *tx)
-                .await?;
-                (employment_id, 1_i64)
-            }
-            EmploymentQuery::Promote { employment_id, .. }
-            | EmploymentQuery::Transfer { employment_id, .. } => {
-                // ponytail: MAX + 1 under the row's own transaction. A
-                // concurrent revise of the same employment loses to
-                // UNIQUE (org_id, employment_id, version) with 23505 rather
-                // than silently overwriting; add SELECT ... FOR UPDATE on
-                // `employment_heads` if that contention is ever measured.
-                let next: i64 = sqlx::query_scalar(
-                    "SELECT COALESCE(MAX(version), 0) + 1 FROM employment_revisions \
-                     WHERE org_id = $1 AND employment_id = $2",
-                )
-                .bind(org)
-                .bind(employment_id)
-                .fetch_one(&mut *tx)
-                .await?;
-                (*employment_id, next)
-            }
-        };
-
-        let result = serde_json::json!({
-            "employment_id": employment_id.to_string(),
-            "version": version,
-            "target": target.as_str(),
-        });
-
-        let created_at: OffsetDateTime = sqlx::query_scalar(
-            "INSERT INTO employment_revisions \
-             (org_id, employment_id, version, command_id, actor_id, payload_digest, \
-              valid_from, attributes, receipt) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING created_at",
-        )
-        .bind(org)
-        .bind(employment_id)
-        .bind(version)
-        .bind(command_uuid)
-        .bind(actor)
-        .bind(digest.as_slice())
-        .bind(valid_from)
-        .bind(attributes.to_json())
-        .bind(&result)
-        .fetch_one(&mut *tx)
-        .await?;
-
-        match &command.query {
-            EmploymentQuery::Appoint { employee_id, .. } => {
-                sqlx::query(
-                    "INSERT INTO employment_source_bindings \
-                     (org_id, employee_id, employment_id, actor_id, payload_digest) \
-                     VALUES ($1, $2, $3, $4, $5)",
-                )
-                .bind(org)
-                .bind(employee_id)
-                .bind(employment_id)
-                .bind(actor)
-                .bind(digest.as_slice())
-                .execute(&mut *tx)
-                .await?;
-            }
-            // The legacy compatibility head carries the new state, through the
-            // same statement the REST lifecycle handler calls. `valid_from` is
-            // the effective date, and the statement writes `exit_date` from it
-            // exactly when the status is `EXITED`. The canonical head closes in
-            // the same transaction: `valid_to` = this revision's `valid_from`.
-            EmploymentQuery::Promote { .. } | EmploymentQuery::Transfer { .. } => {
-                let employee_id = bound_employee(&mut tx, org, employment_id).await?;
-                let effective_date = valid_from.date().to_string();
-                apply_employment_change(
-                    &mut tx,
-                    org,
-                    employee_id,
-                    attributes.as_change(&effective_date),
-                )
-                .await?;
-                if attributes.employment_status == "EXITED" {
-                    sqlx::query(
-                        "UPDATE employment_heads SET valid_to = $3 \
-                         WHERE org_id = $1 AND id = $2",
-                    )
-                    .bind(org)
-                    .bind(employment_id)
-                    .bind(valid_from)
-                    .execute(&mut *tx)
-                    .await?;
-                }
-            }
-        }
-
-        // The receipt store, and with it the tenant-global command-id namespace
-        // this port shares with every other receipt owner.
-        sqlx::query(
-            "INSERT INTO ont_action_command_receipts \
-             (org_id, command_id, actor_id, payload_digest, receipt, created_at) \
-             VALUES ($1, $2, $3, $4, $5, $6)",
-        )
-        .bind(org)
-        .bind(command_uuid)
-        .bind(actor)
-        .bind(digest.as_slice())
-        .bind(&result)
-        .bind(created_at)
-        .execute(&mut *tx)
-        .await?;
-
+        let receipt = write_in_tx(&mut tx, command).await?;
         tx.commit().await?;
-        Ok(receipt(
+        Ok(receipt)
+    }
+}
+
+/// Apply one Employment command inside a caller-owned, org-armed transaction.
+///
+/// Org-change `ReassignOrgUnit` uses this so each transfer shares the apply
+/// transaction rather than opening a nested connection. Callers must already
+/// have set `app.current_org`.
+pub async fn write_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    command: &EmploymentCommand,
+) -> Result<CommandReceipt, EmploymentError> {
+    let preflight = <PgEmploymentPort as CanonicalPort>::preflight(&command.query);
+    if !preflight.is_ok() {
+        return Err(EmploymentError::Blocked(preflight.blockers().to_vec()));
+    }
+
+    let digest = payload_digest(command);
+    let org = *command.org_id.as_uuid();
+    let actor = *command.actor_id.as_uuid();
+    let command_uuid = *command.command_id.as_uuid();
+
+    if let Some(stored) = sqlx::query(
+        "SELECT actor_id, payload_digest, receipt, created_at \
+         FROM ont_action_command_receipts WHERE org_id = $1 AND command_id = $2",
+    )
+    .bind(org)
+    .bind(command_uuid)
+    .fetch_optional(tx.as_mut())
+    .await?
+    {
+        let stored_digest: Vec<u8> = stored.get("payload_digest");
+        if stored_digest != digest {
+            return Err(EmploymentError::DigestConflict(command_uuid));
+        }
+        let result: serde_json::Value = stored.get("receipt");
+        let target = stored_target(command_uuid, &result)?;
+        let stored_actor: Uuid = stored.get("actor_id");
+        let created_at: OffsetDateTime = stored.get("created_at");
+        return Ok(receipt(
             command,
             target,
-            command.actor_id,
+            UserId::from_uuid(stored_actor),
             digest,
             result,
             created_at,
-        ))
+        ));
+    }
+
+    ensure_attribute_refs(tx, org, command.query.attributes()).await?;
+
+    let target = command.query.target();
+    let valid_from = command.query.valid_from();
+    let attributes = command.query.attributes();
+
+    let (employment_id, version) = match &command.query {
+        EmploymentQuery::Appoint { .. } => {
+            let employment_id: Uuid = sqlx::query_scalar(
+                "INSERT INTO employment_heads (org_id, valid_from) VALUES ($1, $2) \
+                 RETURNING id",
+            )
+            .bind(org)
+            .bind(valid_from)
+            .fetch_one(tx.as_mut())
+            .await?;
+            (employment_id, 1_i64)
+        }
+        EmploymentQuery::Promote { employment_id, .. }
+        | EmploymentQuery::Transfer { employment_id, .. } => {
+            // ponytail: MAX + 1 under the row's own transaction. A
+            // concurrent revise of the same employment loses to
+            // UNIQUE (org_id, employment_id, version) with 23505 rather
+            // than silently overwriting; add SELECT ... FOR UPDATE on
+            // `employment_heads` if that contention is ever measured.
+            let next: i64 = sqlx::query_scalar(
+                "SELECT COALESCE(MAX(version), 0) + 1 FROM employment_revisions \
+                 WHERE org_id = $1 AND employment_id = $2",
+            )
+            .bind(org)
+            .bind(employment_id)
+            .fetch_one(tx.as_mut())
+            .await?;
+            (*employment_id, next)
+        }
+    };
+
+    let result = serde_json::json!({
+        "employment_id": employment_id.to_string(),
+        "version": version,
+        "target": target.as_str(),
+    });
+
+    let created_at: OffsetDateTime = sqlx::query_scalar(
+        "INSERT INTO employment_revisions \
+         (org_id, employment_id, version, command_id, actor_id, payload_digest, \
+          valid_from, attributes, receipt) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING created_at",
+    )
+    .bind(org)
+    .bind(employment_id)
+    .bind(version)
+    .bind(command_uuid)
+    .bind(actor)
+    .bind(digest.as_slice())
+    .bind(valid_from)
+    .bind(attributes.to_json())
+    .bind(&result)
+    .fetch_one(tx.as_mut())
+    .await?;
+
+    match &command.query {
+        EmploymentQuery::Appoint { employee_id, .. } => {
+            sqlx::query(
+                "INSERT INTO employment_source_bindings \
+                 (org_id, employee_id, employment_id, actor_id, payload_digest) \
+                 VALUES ($1, $2, $3, $4, $5)",
+            )
+            .bind(org)
+            .bind(employee_id)
+            .bind(employment_id)
+            .bind(actor)
+            .bind(digest.as_slice())
+            .execute(tx.as_mut())
+            .await?;
+        }
+        // The legacy compatibility head carries the new state, through the
+        // same statement the REST lifecycle handler calls. `valid_from` is
+        // the effective date, and the statement writes `exit_date` from it
+        // exactly when the status is `EXITED`. The canonical head closes in
+        // the same transaction: `valid_to` = this revision's `valid_from`.
+        EmploymentQuery::Promote { .. } | EmploymentQuery::Transfer { .. } => {
+            let employee_id = bound_employee(tx, org, employment_id).await?;
+            let effective_date = valid_from.date().to_string();
+            let org_unit_text = attributes.legacy_org_unit_text();
+            let position_text = attributes.legacy_position_text();
+            apply_employment_change(
+                tx,
+                org,
+                employee_id,
+                EmploymentChange {
+                    company: &attributes.company,
+                    org_unit: org_unit_text.as_deref(),
+                    position: position_text.as_deref(),
+                    employment_status: &attributes.employment_status,
+                    effective_date: &effective_date,
+                },
+            )
+            .await?;
+            if attributes.employment_status == "EXITED" {
+                sqlx::query(
+                    "UPDATE employment_heads SET valid_to = $3 \
+                     WHERE org_id = $1 AND id = $2",
+                )
+                .bind(org)
+                .bind(employment_id)
+                .bind(valid_from)
+                .execute(tx.as_mut())
+                .await?;
+            }
+        }
+    }
+
+    // The receipt store, and with it the tenant-global command-id namespace
+    // this port shares with every other receipt owner.
+    sqlx::query(
+        "INSERT INTO ont_action_command_receipts \
+         (org_id, command_id, actor_id, payload_digest, receipt, created_at) \
+         VALUES ($1, $2, $3, $4, $5, $6)",
+    )
+    .bind(org)
+    .bind(command_uuid)
+    .bind(actor)
+    .bind(digest.as_slice())
+    .bind(&result)
+    .bind(created_at)
+    .execute(tx.as_mut())
+    .await?;
+
+    Ok(receipt(
+        command,
+        target,
+        command.actor_id,
+        digest,
+        result,
+        created_at,
+    ))
+}
+
+/// Org-change `ReassignOrgUnit` → one `hr.transfer` per matched **ACTIVE** employee.
+///
+/// `from_org_unit` / `to_org_unit` must be OrgUnit UUID strings (fail closed on
+/// free-text team labels). Both source and destination OrgUnits must exist —
+/// a syntactically valid but unknown `from` must not audit as `moved=0` success.
+/// Only `employment_status = 'ACTIVE'` rows are selected, matching preflight
+/// `scope_headcount` (ACTIVE-only) so EXITED heads are not rewritten via
+/// Transfer. Employees without an `employment_source_bindings` row are refused
+/// — a bulk rewrite of unbound heads is not a transfer.
+#[allow(clippy::too_many_arguments)] // tx + org/actor/op ids + from/to/company/valid_from mirror the apply-op surface
+pub async fn reassign_org_unit_via_transfers_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    org: OrgId,
+    actor: UserId,
+    op_command_id: Uuid,
+    from_org_unit: &str,
+    to_org_unit: &str,
+    company: &str,
+    valid_from: OffsetDateTime,
+) -> Result<u64, EmploymentError> {
+    let from_id =
+        Uuid::parse_str(from_org_unit.trim()).map_err(|_| EmploymentError::OrgUnitRefNotUuid)?;
+    let to_id =
+        Uuid::parse_str(to_org_unit.trim()).map_err(|_| EmploymentError::OrgUnitRefNotUuid)?;
+    if from_id == to_id {
+        return Err(EmploymentError::Blocked(vec![
+            "REASSIGN_ORG_UNIT source and target must differ".to_owned(),
+        ]));
+    }
+
+    // Fail closed on both ends before SELECT — unknown source must not return Ok(0).
+    ensure_org_unit_exists(tx, *org.as_uuid(), from_id).await?;
+    ensure_org_unit_exists(tx, *org.as_uuid(), to_id).await?;
+
+    let from_text = from_id.to_string();
+    let rows = sqlx::query(
+        "SELECT id, position, employment_status FROM employees \
+         WHERE org_id = $1 AND company = $2 AND org_unit = $3 \
+           AND employment_status = 'ACTIVE'",
+    )
+    .bind(org.as_uuid())
+    .bind(company)
+    .bind(&from_text)
+    .fetch_all(tx.as_mut())
+    .await?;
+
+    let mut moved = 0_u64;
+    for row in rows {
+        let employee_id: Uuid = row.get("id");
+        let employment_status: String = row.get("employment_status");
+        let position_text: Option<String> = row.get("position");
+        let job_position_id = position_text
+            .as_deref()
+            .and_then(|value| Uuid::parse_str(value.trim()).ok());
+
+        let employment_id = employment_id_for_employee(tx, *org.as_uuid(), employee_id).await?;
+        // Per-employee command id: tenant-global uniqueness + deterministic for
+        // the same (apply-op command, employee) pair. v5 is not enabled on the
+        // workspace uuid crate; SHA-256 truncated to 16 bytes is enough here.
+        let mut hasher = Sha256::new();
+        hasher.update(op_command_id.as_bytes());
+        hasher.update(employee_id.as_bytes());
+        let digest: [u8; 32] = hasher.finalize().into();
+        let mut bytes = [0_u8; 16];
+        bytes.copy_from_slice(&digest[..16]);
+        let command_id = Uuid::from_bytes(bytes);
+        let command = EmploymentCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(command_id),
+            actor_id: actor,
+            query: EmploymentQuery::Transfer {
+                employment_id,
+                valid_from,
+                attributes: EmploymentAttributes {
+                    company: company.to_owned(),
+                    org_unit_id: Some(to_id),
+                    job_position_id,
+                    employment_status,
+                },
+            },
+        };
+        write_in_tx(tx, &command).await?;
+        moved += 1;
+    }
+    Ok(moved)
+}
+
+async fn employment_id_for_employee(
+    tx: &mut Transaction<'_, Postgres>,
+    org_id: Uuid,
+    employee_id: Uuid,
+) -> Result<Uuid, EmploymentError> {
+    let rows: Vec<Uuid> = sqlx::query_scalar(
+        "SELECT employment_id FROM employment_source_bindings \
+         WHERE org_id = $1 AND employee_id = $2",
+    )
+    .bind(org_id)
+    .bind(employee_id)
+    .fetch_all(tx.as_mut())
+    .await?;
+    match rows.as_slice() {
+        [] => Err(EmploymentError::UnboundEmployeeForTransfer { employee_id }),
+        [employment_id] => Ok(*employment_id),
+        _ => Err(EmploymentError::AmbiguousSourceBinding {
+            employment_id: rows[0],
+            binding_count: rows.len(),
+        }),
+    }
+}
+
+async fn ensure_attribute_refs(
+    tx: &mut Transaction<'_, Postgres>,
+    org_id: Uuid,
+    attributes: &EmploymentAttributes,
+) -> Result<(), EmploymentError> {
+    if let Some(org_unit_id) = attributes.org_unit_id {
+        ensure_org_unit_exists(tx, org_id, org_unit_id).await?;
+    }
+    if let Some(job_position_id) = attributes.job_position_id {
+        ensure_job_position_exists(tx, org_id, job_position_id).await?;
+    }
+    Ok(())
+}
+
+async fn ensure_org_unit_exists(
+    tx: &mut Transaction<'_, Postgres>,
+    org_id: Uuid,
+    org_unit_id: Uuid,
+) -> Result<(), EmploymentError> {
+    let exists: bool =
+        sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM org_units WHERE org_id = $1 AND id = $2)")
+            .bind(org_id)
+            .bind(org_unit_id)
+            .fetch_one(tx.as_mut())
+            .await?;
+    if exists {
+        Ok(())
+    } else {
+        Err(EmploymentError::UnknownOrgUnit(org_unit_id))
+    }
+}
+
+async fn ensure_job_position_exists(
+    tx: &mut Transaction<'_, Postgres>,
+    org_id: Uuid,
+    job_position_id: Uuid,
+) -> Result<(), EmploymentError> {
+    let exists: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM job_positions WHERE org_id = $1 AND id = $2)",
+    )
+    .bind(org_id)
+    .bind(job_position_id)
+    .fetch_one(tx.as_mut())
+    .await?;
+    if exists {
+        Ok(())
+    } else {
+        Err(EmploymentError::UnknownJobPosition(job_position_id))
     }
 }
 
@@ -598,6 +804,12 @@ impl CanonicalPort for PgEmploymentPort {
             blockers.push(format!(
                 "employment_status must be one of {EMPLOYMENT_STATUSES:?}"
             ));
+        }
+        if attributes.org_unit_id == Some(Uuid::nil()) {
+            blockers.push("org_unit_id must not be nil".to_owned());
+        }
+        if attributes.job_position_id == Some(Uuid::nil()) {
+            blockers.push("job_position_id must not be nil".to_owned());
         }
         match query {
             EmploymentQuery::Appoint { employee_id, .. } if employee_id.is_nil() => {
@@ -701,21 +913,24 @@ fn payload_digest(command: &EmploymentCommand) -> [u8; 32] {
             .to_be_bytes(),
     );
     let attributes = command.query.attributes();
-    for field in [
-        Some(attributes.company.as_str()),
-        attributes.org_unit.as_deref(),
-        attributes.position.as_deref(),
-        Some(attributes.employment_status.as_str()),
-    ] {
-        match field {
-            Some(value) => {
-                hasher.update([1_u8]);
-                hasher.update((value.len() as u64).to_be_bytes());
-                hasher.update(value.as_bytes());
-            }
-            None => hasher.update([0_u8]),
+    // Tag + 16 raw bytes for UUID options; tag-only for None. Length-prefixed
+    // UTF-8 would let a free-text label collide with a UUID string encoding.
+    hasher.update(attributes.company.as_bytes());
+    match attributes.org_unit_id {
+        Some(id) => {
+            hasher.update([1_u8]);
+            hasher.update(id.as_bytes());
         }
+        None => hasher.update([0_u8]),
     }
+    match attributes.job_position_id {
+        Some(id) => {
+            hasher.update([1_u8]);
+            hasher.update(id.as_bytes());
+        }
+        None => hasher.update([0_u8]),
+    }
+    hasher.update(attributes.employment_status.as_bytes());
     hasher.finalize().into()
 }
 
