@@ -172,6 +172,7 @@
     "backend/crates/governance/adapter-postgres/tests/four_eyes_bind_consume.rs": 7,
     "backend/crates/governance/adapter-postgres/tests/governance_rls_as_runtime_role.rs": 12,
     "backend/crates/governance/domain/src/lib.rs": 11,
+    "backend/crates/identity/adapter-postgres/src/lib.rs": 4,
     "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs": 1,
     "backend/crates/identity/adapter-postgres/tests/me_workspace_layouts_rls.rs": 2,
     "backend/crates/identity/adapter-postgres/tests/region_branch_crud_rls_surfaces_as_runtime_role.rs": 6,

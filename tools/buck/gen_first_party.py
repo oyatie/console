@@ -534,6 +534,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
     },
     'console-identity-adapter-postgres': {
+        'unit': 'none',
         'integration': {
             'tests/deactivate_revokes_credentials.rs': 'postgres',
             'tests/me_workspace_layouts_rls.rs': 'postgres',

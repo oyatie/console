@@ -398,6 +398,9 @@ const domainUnitPackages = [
   // step: its integration suite reads the real checkout, so the whole crate
   // stays in one job rather than being split across two build systems.
   "console-gate-writer-ownership",
+  // o498 BranchScope rewrite pins (ensure_branch_rewrite_in_scope). Pure #[test],
+  // no database; lib binary darkened until wired into domain-unit --lib.
+  "console-identity-adapter-postgres",
 ]
 const domainUnitIntegrationInvocations = [
   ["console-attendance-application", ["attendance_policy"]],
@@ -814,7 +817,7 @@ const requiredJobRunContracts = Object.freeze({
   ],
   "domain-unit": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Domain crate unit tests", "6a0c08b87c08827b9d709dc925d69bf0acd0a50c95129abe11544a71ea2551c1", { if: runHeavyCondition }),
+    proofDigest("Domain crate unit tests", "3c40987e306ba9e84199083af183ae1135735b77c5f7a2277dcfe23b27d46caf", { if: runHeavyCondition }),
   ],
   "backend": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),

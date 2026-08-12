@@ -4,6 +4,9 @@
 //! row lands in the SAME transaction as the state change (audit-coverage gate).
 //! User reads are branch-scoped: `BranchScope::All` (SUPER_ADMIN/EXECUTIVE) sees
 //! every user; a branch-scoped caller sees only users sharing an in-scope branch.
+//! User branch *writes* (`replace_user_branches`) also fail closed on the actor's
+//! live BranchScope (union of current + requested memberships) so a non-REST
+//! caller cannot strip or mint out-of-scope memberships (console-o498).
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 use std::collections::BTreeSet;
@@ -126,6 +129,7 @@ impl PgOrgStore {
         .with_org(org);
 
         let roles = command.roles.clone();
+        let actor = command.actor;
         with_audit::<_, UserSummary, PgOrgError>(&self.pool, event, |tx| {
             Box::pin(async move {
                 sqlx::query(
@@ -145,7 +149,8 @@ impl PgOrgStore {
                 .execute(tx.as_mut())
                 .await?;
 
-                replace_user_branches(tx, user_id, &branch_ids, org_uuid).await?;
+                let actor_scope = resolve_actor_branch_scope_tx(tx, actor).await?;
+                replace_user_branches(tx, user_id, &branch_ids, org_uuid, &actor_scope).await?;
                 fetch_user_tx(tx, user_id).await
             })
         })
@@ -295,7 +300,8 @@ impl PgOrgStore {
                         .await?;
                 }
                 if let Some(branch_ids) = branch_ids.as_ref().filter(|_| branches_changed) {
-                    replace_user_branches(tx, user_id, branch_ids, org_uuid).await?;
+                    let actor_scope = resolve_actor_branch_scope_tx(tx, actor).await?;
+                    replace_user_branches(tx, user_id, branch_ids, org_uuid, &actor_scope).await?;
                 }
                 if assignment_changed {
                     // System roles and branch memberships are authorization-relevant
@@ -2035,12 +2041,81 @@ impl PgOrgStore {
 // Branch-membership helper (replace-set semantics inside a transaction)
 // ---------------------------------------------------------------------------
 
+/// Live BranchScope for the acting administrator, matching
+/// `resolve_branch_scope_in_org`: SUPER_ADMIN/EXECUTIVE → `All`; otherwise the
+/// actor's `user_branches` set. Resolved inside the armed write tx so a revoked
+/// membership cannot race past the gate. Missing actor → forbidden (fail closed).
+async fn resolve_actor_branch_scope_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    actor: UserId,
+) -> Result<BranchScope, PgOrgError> {
+    let roles: Option<Vec<String>> = sqlx::query_scalar("SELECT roles FROM users WHERE id = $1")
+        .bind(*actor.as_uuid())
+        .fetch_optional(tx.as_mut())
+        .await?;
+    let Some(roles) = roles else {
+        return Err(PgOrgError::Domain(KernelError::forbidden(
+            "actor is not an active identity principal",
+        )));
+    };
+    if roles
+        .iter()
+        .any(|role| role == "SUPER_ADMIN" || role == "EXECUTIVE")
+    {
+        return Ok(BranchScope::All);
+    }
+    let branch_ids: Vec<uuid::Uuid> = sqlx::query_scalar(
+        "SELECT branch_id FROM user_branches WHERE user_id = $1 ORDER BY branch_id",
+    )
+    .bind(*actor.as_uuid())
+    .fetch_all(tx.as_mut())
+    .await?;
+    Ok(BranchScope::Branches(
+        branch_ids.into_iter().map(BranchId::from_uuid).collect(),
+    ))
+}
+
+/// Fail closed when a `user_branches` replace would touch any branch outside
+/// `actor_scope`. Touched = union(current, requested) so removals and additions
+/// are both gated at the store write (console-o498). This is adapter
+/// defense-in-depth under REST; REST `authorize_user_write` still iterates the
+/// requested/target branch list only — the adapter gate is intentionally
+/// stricter on removals. `BranchScope::All` short-circuits.
+fn ensure_branch_rewrite_in_scope(
+    actor_scope: &BranchScope,
+    current_branch_ids: &[uuid::Uuid],
+    requested_branch_ids: &[uuid::Uuid],
+) -> Result<(), PgOrgError> {
+    if matches!(actor_scope, BranchScope::All) {
+        return Ok(());
+    }
+    let mut touched = BTreeSet::new();
+    for id in current_branch_ids.iter().chain(requested_branch_ids.iter()) {
+        touched.insert(*id);
+    }
+    for id in touched {
+        if !actor_scope.allows(BranchId::from_uuid(id)) {
+            return Err(PgOrgError::Domain(KernelError::forbidden(
+                "not allowed to manage users in that branch",
+            )));
+        }
+    }
+    Ok(())
+}
+
 async fn replace_user_branches(
     tx: &mut Transaction<'_, Postgres>,
     user_id: UserId,
     branch_ids: &[uuid::Uuid],
     org_uuid: uuid::Uuid,
+    actor_scope: &BranchScope,
 ) -> Result<(), PgOrgError> {
+    // Read live memberships BEFORE the DELETE so removals are in the touched
+    // union. Without this, a Branches({A}) actor could drop B by rewriting to
+    // [A] alone (REST-only gate would be the sole backstop — console-o498).
+    let current_branch_ids = fetch_user_branch_uuid_ids_tx(tx, user_id).await?;
+    ensure_branch_rewrite_in_scope(actor_scope, &current_branch_ids, branch_ids)?;
+
     sqlx::query("DELETE FROM user_branches WHERE user_id = $1")
         .bind(*user_id.as_uuid())
         .execute(tx.as_mut())
@@ -2702,4 +2777,54 @@ fn branch_from_row(row: &sqlx::postgres::PgRow) -> Result<BranchSummary, PgOrgEr
         deactivated_at: row.try_get("deactivated_at")?,
         created_at: row.try_get("created_at")?,
     })
+}
+
+#[cfg(test)]
+mod ensure_branch_rewrite_in_scope_tests {
+    use super::*;
+
+    /// console-o498: Branches({A}) must not drop U from B by rewriting to [A].
+    #[test]
+    fn refuses_branch_removal_outside_caller_scope() {
+        let branch_a = BranchId::new();
+        let branch_b = BranchId::new();
+        let scope = BranchScope::single(branch_a);
+        let current = vec![*branch_a.as_uuid(), *branch_b.as_uuid()];
+        let requested = vec![*branch_a.as_uuid()];
+        let err = ensure_branch_rewrite_in_scope(&scope, &current, &requested)
+            .expect_err("removing B outside actor scope must fail closed");
+        assert_eq!(err.kind(), ErrorKind::Forbidden);
+    }
+
+    #[test]
+    fn allows_in_scope_membership_rewrite() {
+        let branch_a = BranchId::new();
+        let scope = BranchScope::single(branch_a);
+        let current = vec![*branch_a.as_uuid()];
+        let requested = vec![*branch_a.as_uuid()];
+        ensure_branch_rewrite_in_scope(&scope, &current, &requested)
+            .expect("in-scope rewrite must pass");
+    }
+
+    #[test]
+    fn still_refuses_branch_addition_outside_caller_scope() {
+        let branch_a = BranchId::new();
+        let branch_b = BranchId::new();
+        let scope = BranchScope::single(branch_a);
+        let current = vec![*branch_a.as_uuid()];
+        let requested = vec![*branch_a.as_uuid(), *branch_b.as_uuid()];
+        let err = ensure_branch_rewrite_in_scope(&scope, &current, &requested)
+            .expect_err("adding B outside actor scope must fail closed");
+        assert_eq!(err.kind(), ErrorKind::Forbidden);
+    }
+
+    #[test]
+    fn all_scope_allows_cross_branch_rewrite() {
+        let branch_a = BranchId::new();
+        let branch_b = BranchId::new();
+        let current = vec![*branch_a.as_uuid(), *branch_b.as_uuid()];
+        let requested = vec![*branch_a.as_uuid()];
+        ensure_branch_rewrite_in_scope(&BranchScope::All, &current, &requested)
+            .expect("BranchScope::All must not gate membership rewrites");
+    }
 }
