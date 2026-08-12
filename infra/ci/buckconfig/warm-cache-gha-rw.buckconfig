@@ -1,0 +1,13 @@
+# Opt-in GHA writer overlay — expects `cloudflared access tcp` (or dockerized
+# equivalent from ~/oyatie-cas/canary/reapi-access-canary.sh) listening on
+# 127.0.0.1:55051 before Buck2 starts. Trusted workflows only.
+
+[buck2]
+  default_allow_cache_upload = true
+
+[buck2_re_client]
+  engine_address = grpcs://127.0.0.1:55051
+  cas_address = grpcs://127.0.0.1:55051
+  action_cache_address = grpcs://127.0.0.1:55051
+  instance_name = main
+  tls = true

@@ -1150,7 +1150,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "a836bc17337370965c0a0aa89b9a1d84a0456091",
+      "blob_sha": "ec8bb4375a36304f81d1c03c83340fe66c976f4d",
       "archive_tag": null
     },
     {
@@ -1202,6 +1202,16 @@
       "retention": "retain",
       "archive_tag": null,
       "blob_sha": "80ac043171d22ed11e6fc125ac326972ef29027d"
+    },
+    {
+      "path": "docs/decisions/notes/DN-0006-buck2-primary-shared-cas.md",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "8fb88aef0b1413513c308480f7e45e8bab222cef",
+      "archive_tag": null
     },
     {
       "path": "docs/design/oyatie-console/AGENTS.md",
@@ -2291,6 +2301,16 @@
       "replacement": null,
       "retention": "retain",
       "blob_sha": "5151f80d9d11869a73eae06cd57a421856e660b0",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/handoffs/2026-08-11-oyatie-shared-cas.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "b5aeea52c475e6b669ca7db25e4dc91e79bcd4d4",
       "archive_tag": null
     },
     {

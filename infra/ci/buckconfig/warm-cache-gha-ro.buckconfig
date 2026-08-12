@@ -1,0 +1,9 @@
+# Opt-in GHA reader overlay — Access TCP forwarder on 127.0.0.1:55052.
+# Canary / second-job warm probe. No upload default.
+
+[buck2_re_client]
+  engine_address = grpcs://127.0.0.1:55052
+  cas_address = grpcs://127.0.0.1:55052
+  action_cache_address = grpcs://127.0.0.1:55052
+  instance_name = main
+  tls = true
