@@ -500,8 +500,11 @@ impl IntoResponse for RestError {
 /// references.
 ///
 /// Nothing here restates 19, 411 or the character class. The published side is
-/// read from the YAML; the enforced side is DISCOVERED by probing the validator.
-/// A retyped bound would be a third spelling of one fact, agreeing with itself.
+/// read from the YAML; the enforced side (scheme, length window) is DISCOVERED
+/// by probing the validator. The agreement corpus is built from the enforced
+/// scheme, not from the published pattern's literal prefix — otherwise a
+/// stricter published prefix moves the corpus with the document it is meant to
+/// audit and prefix drift can agree with itself (console-5yn).
 ///
 /// This is a WIRING claim about the deployed artifact, not a mechanism claim
 /// about a fixture: `backend/openapi/openapi.yaml` is `include_str!`-ed here and
@@ -520,6 +523,66 @@ mod published_evidence_reference_contract {
     const PROBE_CEILING: usize = 2048;
 
     // -- what the document publishes -----------------------------------------
+
+    /// Index of the `}` that closes a YAML flow mapping whose opening `{` was
+    /// already consumed. Braces inside single-quoted scalars do not count, so a
+    /// published `pattern` that uses an ECMA `{n,m}` quantifier does not truncate
+    /// the property mid-string.
+    fn flow_mapping_end(body: &str) -> usize {
+        let mut depth = 1_usize;
+        let mut chars = body.char_indices().peekable();
+        let mut in_single = false;
+        while let Some((i, c)) = chars.next() {
+            if in_single {
+                if c == '\'' {
+                    // YAML single-quoted escape: '' → one quote, still inside.
+                    if chars.peek().is_some_and(|(_, n)| *n == '\'') {
+                        chars.next();
+                    } else {
+                        in_single = false;
+                    }
+                }
+                continue;
+            }
+            match c {
+                '\'' => in_single = true,
+                '{' => depth += 1,
+                '}' => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return i;
+                    }
+                }
+                _ => {}
+            }
+        }
+        panic!("the evidenceReference schema object is unterminated");
+    }
+
+    /// True when `{` or `}` appears outside single-quoted scalars — nested flow
+    /// objects this reader does not interpret as property fields.
+    fn has_unquoted_brace(property: &str) -> bool {
+        let mut chars = property.chars().peekable();
+        let mut in_single = false;
+        while let Some(c) = chars.next() {
+            if in_single {
+                if c == '\'' {
+                    if chars.peek() == Some(&'\'') {
+                        chars.next();
+                    } else {
+                        in_single = false;
+                    }
+                }
+                continue;
+            }
+            match c {
+                '\'' => in_single = true,
+                '{' | '}' => return true,
+                _ => {}
+            }
+        }
+        false
+    }
 
     /// The `evidenceReference` property object published for `verifyLogisticsPod`.
     ///
@@ -549,13 +612,11 @@ mod published_evidence_reference_contract {
             .find(KEY)
             .expect("verifyLogisticsPod publishes no evidenceReference schema object");
         let body = &block[at + KEY.len()..];
-        let end = body
-            .find('}')
-            .expect("the evidenceReference schema object is unterminated");
+        let end = flow_mapping_end(body);
         let property = &body[..end];
         assert!(
-            !property.contains('{'),
-            "the evidenceReference schema nests objects this reader would truncate: {property}"
+            !has_unquoted_brace(property),
+            "the evidenceReference schema nests objects this reader does not interpret: {property}"
         );
         property
     }
@@ -725,6 +786,63 @@ mod published_evidence_reference_contract {
         format!("{scheme}{}", "a".repeat(n - scheme.chars().count()))
     }
 
+    /// One reference the validator accepts, found by probing under `seed_prefix`.
+    ///
+    /// `seed_prefix` is only a search hint (typically the published literal). The
+    /// corpus must not keep using it: [`enforced_scheme`] re-derives the required
+    /// prefix from the accepted seed so a stricter published prefix cannot drag
+    /// the agreement set with it.
+    fn accepted_under(seed_prefix: &str) -> String {
+        let floor = seed_prefix.chars().count() + 1;
+        for n in floor..=PROBE_CEILING {
+            let candidate = reference_of_len(seed_prefix, n);
+            if validate_evidence_reference(&candidate).is_ok() {
+                return candidate;
+            }
+        }
+        panic!(
+            "the validator accepts no reference under search prefix {seed_prefix:?}: \
+             this test examined zero subjects and must not pass"
+        )
+    }
+
+    /// The literal prefix the validator requires, discovered by asking which
+    /// leading characters of an accepted reference cannot vary.
+    ///
+    /// Walking left to right: position `i` is part of the scheme while every
+    /// alternate ASCII byte there is rejected at the seed's length; the first
+    /// position that admits another character is the start of the flexible
+    /// suffix. No bound or scheme spelling is typed here.
+    fn enforced_scheme(accepted: &str) -> String {
+        let chars: Vec<char> = accepted.chars().collect();
+        let n = chars.len();
+        let mut end = 0_usize;
+        for i in 0..chars.len() {
+            let head: String = chars[..i].iter().collect();
+            let can_vary = (0_u8..=0x7f).map(char::from).any(|alt| {
+                if alt == chars[i] {
+                    return false;
+                }
+                let mut candidate = head.clone();
+                candidate.push(alt);
+                while candidate.chars().count() < n {
+                    candidate.push('a');
+                }
+                validate_evidence_reference(&candidate).is_ok()
+            });
+            if can_vary {
+                break;
+            }
+            end = i + 1;
+        }
+        assert!(
+            end > 0,
+            "the validator accepts {accepted:?} but requires no literal prefix; \
+             the corpus would not be anchored"
+        );
+        chars[..end].iter().collect()
+    }
+
     /// The length window `validate_evidence_reference` actually enforces,
     /// discovered by asking it rather than by restating its bounds here.
     fn enforced_window(scheme: &str) -> (usize, usize) {
@@ -733,7 +851,7 @@ mod published_evidence_reference_contract {
             .collect();
         let (Some(&min), Some(&max)) = (accepted.first(), accepted.last()) else {
             panic!(
-                "the validator accepts no reference at all under the published scheme \
+                "the validator accepts no reference at all under the enforced scheme \
                  {scheme:?}: this test examined zero subjects and must not pass"
             )
         };
@@ -752,8 +870,9 @@ mod published_evidence_reference_contract {
     // -- the agreement ---------------------------------------------------------
 
     /// References the published schema and the validator must classify the SAME
-    /// way. Every candidate is derived from the published scheme and the probed
-    /// window, so no bound is typed here and the corpus follows both sides.
+    /// way. Every candidate is derived from the ENFORCED scheme and the probed
+    /// window, so no bound is typed here and a published prefix that merely
+    /// extends the enforced one cannot hide inside a corpus that moved with it.
     fn corpus(scheme: &str, class: Option<&str>, min: usize, max: usize) -> Vec<(String, String)> {
         let mut out: Vec<(String, String)> = [
             (min - 1, "one character under the enforced floor"),
@@ -776,8 +895,8 @@ mod published_evidence_reference_contract {
         // (char immediately before/after each range endpoint or singleton); and a
         // fixed non-ASCII set catches widenings that stay far from those edges
         // (the reviewer's `中` example). Full Unicode enumeration remains out of
-        // scope for this unit test — tracked with console-5yn's independent-corpus
-        // work rather than as a third spelling of the class here.
+        // scope for this unit test — tracked under console-ann rather than as a
+        // third spelling of the class here.
         let mut probes: Vec<char> = (0_u8..=0xff).map(char::from).collect();
         if let Some(class) = class {
             probes.extend(class_boundary_reps(class));
@@ -807,13 +926,35 @@ mod published_evidence_reference_contract {
     }
 
     #[test]
+    fn flow_mapping_end_tolerates_ecma_quantifier_inside_quoted_pattern() {
+        // BODY starts after the opening `{` of the property object.
+        let body = " type: string, pattern: '^evidence://[A-Za-z0-9._/-]{1,400}$', minLength: 19 }";
+        let end = flow_mapping_end(body);
+        assert_eq!(&body[end..], "}");
+        let property = &body[..end];
+        assert!(
+            property.contains("{1,400}"),
+            "quantifier must survive the read: {property}"
+        );
+        assert!(
+            !has_unquoted_brace(property),
+            "quantifier braces are quoted: {property}"
+        );
+    }
+
+    #[test]
     fn published_schema_and_validator_agree_on_concrete_references() {
         let published = Published::read();
-        let (scheme, class) = parse_pattern(published.pattern);
-        let (min, max) = enforced_window(scheme);
+        let (published_literal, class) = parse_pattern(published.pattern);
+        // Bootstrap only: find one accepted reference near the published literal,
+        // then discover the enforced scheme from that seed. The corpus uses the
+        // discovered scheme — never the published literal — so prefix drift fails.
+        let seed = accepted_under(published_literal);
+        let scheme = enforced_scheme(&seed);
+        let (min, max) = enforced_window(&scheme);
 
         let (mut accepted, mut rejected) = (0_usize, 0_usize);
-        for (candidate, why) in corpus(scheme, class, min, max) {
+        for (candidate, why) in corpus(&scheme, class, min, max) {
             let enforced = validate_evidence_reference(&candidate).is_ok();
             if enforced {
                 accepted += 1;
@@ -825,7 +966,8 @@ mod published_evidence_reference_contract {
                 enforced,
                 "backend/openapi/openapi.yaml and validate_evidence_reference disagree on \
                  {why}: published {{pattern: {:?}, minLength: {:?}, maxLength: {:?}}} \
-                 accepts={}, the server accepts={enforced}. Candidate: {candidate:?}",
+                 accepts={}, the server accepts={enforced}. Candidate: {candidate:?}. \
+                 enforced scheme: {scheme:?}",
                 published.pattern,
                 published.min_len,
                 published.max_len,

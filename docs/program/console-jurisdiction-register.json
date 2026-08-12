@@ -1,6 +1,6 @@
 {
   "schema_version": "console-jurisdiction-register-v2",
-  "last_refreshed": "2026-08-12T06:00:00-04:00",
+  "last_refreshed": "2026-08-12T06:40:00-04:00",
   "target_jurisdiction_set": [
     "KR"
   ],
@@ -1026,5 +1026,5 @@
     "historical_implementation_freeze_ref": "refs/tags/archive/pre-pivot-implementation-freeze-2026-07-24",
     "candidate_evidence_status": "HOLD"
   },
-  "authority_train_note": "Refreshed with the buck2-cas Wave C (#765) authority tip — single-T remint on product C c184bf4e1147 (Required-CI layer-boundary cargo→Buck2 + CI-GATES manifest rebind; warm HOLD). No jurisdiction, control, or coverage claim changed in this commit."
+  "authority_train_note": "Refreshed with the console-5yn (#767) authority tip — single-T remint after restack onto Wave C and executed-tests attribute lock for logistics/rest/src/lib.rs (product C 8ba969ae92f8). No jurisdiction, control, or coverage claim changed in this commit."
 }

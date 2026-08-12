@@ -200,7 +200,7 @@
     "backend/crates/leave/rest/src/lib.rs": 10,
     "backend/crates/leave/rest/tests/leave_http_personas.rs": 3,
     "backend/crates/logistics/domain/src/lib.rs": 4,
-    "backend/crates/logistics/rest/src/lib.rs": 1,
+    "backend/crates/logistics/rest/src/lib.rs": 2,
     "backend/crates/messenger/adapter-postgres/tests/parity_tables_rls_as_runtime_role.rs": 2,
     "backend/crates/messenger/adapter-postgres/tests/use_cases.rs": 18,
     "backend/crates/messenger/application/src/lib.rs": 1,
