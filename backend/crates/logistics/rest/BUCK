@@ -10,7 +10,7 @@ export_file(
 
 rust_library(
     name = "console-logistics-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/logistics/rest", glob(["src/**/*.rs"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/logistics/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"]), external = {
         "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
     }),
     crate = "console_logistics_rest",
@@ -19,6 +19,7 @@ rust_library(
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/logistics/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/logistics/adapter-postgres:console-logistics-adapter-postgres",
         "//backend/crates/platform/auth:console-platform-auth",
@@ -34,7 +35,7 @@ rust_library(
 
 rust_test(
     name = "console-logistics-rest-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/logistics/rest", glob(["src/**/*.rs"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/logistics/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"]), external = {
         "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
     }),
     crate = "console_logistics_rest",
@@ -44,6 +45,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/logistics/rest"},
     labels = ["owner.backend.crates.logistics.rest", "domain.logistics", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/logistics/adapter-postgres:console-logistics-adapter-postgres",
         "//backend/crates/platform/auth:console-platform-auth",

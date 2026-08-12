@@ -6,22 +6,26 @@ function read(relativePath) {
   return readFileSync(new URL(`../${relativePath}`, import.meta.url), "utf8");
 }
 
-function between(text, start, end) {
-  const startIndex = text.indexOf(start);
-  const endIndex = text.indexOf(end, startIndex + start.length);
-  assert.notEqual(startIndex, -1, `missing start marker: ${start}`);
-  assert.notEqual(endIndex, -1, `missing end marker: ${end}`);
-  return text.slice(startIndex, endIndex);
+/** Extract one components.schemas entry by exact key; order-independent. */
+function schemaBlock(openapi, name) {
+  const start = `    ${name}:\n`;
+  const startIndex = openapi.indexOf(start);
+  assert.notEqual(startIndex, -1, `missing schema: ${name}`);
+  // Next schema key at the same indent, or end of components.schemas / file.
+  const rest = openapi.slice(startIndex + start.length);
+  const next = rest.search(/\n    [A-Za-z0-9_]+:\n/);
+  const endIndex = next === -1 ? openapi.length : startIndex + start.length + next;
+  return openapi.slice(startIndex, endIndex);
 }
 
 test("employee import replay accounting is required in the OpenAPI wire contract", () => {
   const openapi = read("backend/openapi/openapi.yaml");
-  for (const schema of [
-    between(openapi, "    EmployeeImportCompanySummary:\n", "    EmployeeImportColumn:\n"),
-    between(openapi, "    EmployeeImportReport:\n", "    HrOrgChartEmployee:\n"),
-  ]) {
+  // Fragment compose may alphabetize schema keys; do not depend on neighbor order.
+  for (const name of ["EmployeeImportCompanySummary", "EmployeeImportReport"]) {
+    const schema = schemaBlock(openapi, name);
     assert.match(schema, /required:\n(?:      - [^\n]+\n)*      - skipped\n/);
-    assert.match(schema, /        skipped:\n          type: integer\n          minimum: 0\n/);
+    // Trailing newline may be absent when this is the last property in the block.
+    assert.match(schema, /        skipped:\n          type: integer\n          minimum: 0(?:\n|$)/);
   }
 });
 

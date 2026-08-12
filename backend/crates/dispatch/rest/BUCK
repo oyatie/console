@@ -10,13 +10,14 @@ export_file(
 
 rust_library(
     name = "console-dispatch-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/dispatch/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/dispatch/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_dispatch_rest",
     edition = "2024",
     crate_root = "backend/crates/dispatch/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/dispatch/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/dispatch/adapter-postgres:console-dispatch-adapter-postgres",
         "//backend/crates/dispatch/application:console-dispatch-application",
         "//backend/crates/dispatch/domain:console-dispatch-domain",
@@ -40,7 +41,7 @@ rust_library(
 
 rust_test(
     name = "console-dispatch-rest-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/dispatch/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/dispatch/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_dispatch_rest",
     edition = "2024",
     crate_root = "backend/crates/dispatch/rest/src/lib.rs",
@@ -48,6 +49,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/dispatch/rest"},
     labels = ["owner.backend.crates.dispatch.rest", "domain.dispatch", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/dispatch/adapter-postgres:console-dispatch-adapter-postgres",
         "//backend/crates/dispatch/application:console-dispatch-application",
         "//backend/crates/dispatch/domain:console-dispatch-domain",

@@ -22,6 +22,9 @@
 //! lane merges it into `build_router` (this crate does not touch that merge).
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use std::sync::Arc;
 
 use axum::extract::{Path, Query, State};

@@ -10,7 +10,7 @@ export_file(
 
 rust_library(
     name = "console-attendance-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/attendance/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/attendance/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_attendance_rest",
     edition = "2024",
     crate_root = "backend/crates/attendance/rest/src/lib.rs",
@@ -20,6 +20,7 @@ rust_library(
         "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
         "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/attendance/domain:console-attendance-domain",
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
@@ -35,7 +36,7 @@ rust_library(
 
 rust_test(
     name = "console-attendance-rest-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/attendance/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/attendance/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_attendance_rest",
     edition = "2024",
     crate_root = "backend/crates/attendance/rest/src/lib.rs",
@@ -46,6 +47,7 @@ rust_test(
         "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
         "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/attendance/domain:console-attendance-domain",
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",

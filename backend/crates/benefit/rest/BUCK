@@ -10,7 +10,7 @@ export_file(
 
 rust_library(
     name = "console-benefit-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/benefit/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/benefit/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_benefit_rest",
     edition = "2024",
     crate_root = "backend/crates/benefit/rest/src/lib.rs",
@@ -20,6 +20,7 @@ rust_library(
         "//backend/crates/benefit/adapter-postgres:console-benefit-adapter-postgres",
         "//backend/crates/benefit/application:console-benefit-application",
         "//backend/crates/benefit/domain:console-benefit-domain",
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
@@ -35,7 +36,7 @@ rust_library(
 
 rust_test(
     name = "console-benefit-rest-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/benefit/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/benefit/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_benefit_rest",
     edition = "2024",
     crate_root = "backend/crates/benefit/rest/src/lib.rs",
@@ -46,6 +47,7 @@ rust_test(
         "//backend/crates/benefit/adapter-postgres:console-benefit-adapter-postgres",
         "//backend/crates/benefit/application:console-benefit-application",
         "//backend/crates/benefit/domain:console-benefit-domain",
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",

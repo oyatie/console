@@ -10,13 +10,14 @@ export_file(
 
 rust_library(
     name = "console-governance-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/governance/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/governance/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_governance_rest",
     edition = "2024",
     crate_root = "backend/crates/governance/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/governance/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",
         "//backend/crates/governance/domain:console-governance-domain",

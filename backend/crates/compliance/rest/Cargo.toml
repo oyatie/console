@@ -8,6 +8,7 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+console-contracts = { path = "../../contracts" }
 axum = { workspace = true }
 console-compliance-adapter-postgres = { workspace = true }
 console-compliance-application = { workspace = true }

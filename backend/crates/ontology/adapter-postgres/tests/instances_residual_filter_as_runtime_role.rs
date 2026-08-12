@@ -19,7 +19,9 @@
 //! migration-number collision has been reconciled, so no deduplicated copy is
 //! needed.
 
-use console_ontology_adapter_postgres::instances::{CreateInstance, PgInstanceStore};
+use console_ontology_adapter_postgres::instances::{
+    AggregateGroupBy, CreateInstance, PgInstanceStore,
+};
 use console_ontology_adapter_postgres::{CreateObjectTypeDraft, PgOntologyStore, PropertyDefInput};
 use console_ontology_domain::{BackingKind, ObjectTypeId};
 
@@ -353,4 +355,133 @@ async fn residual_cannot_widen_past_the_rls_floor(owner_pool: PgPool) {
             .is_err(),
         "list must fail closed without an armed org"
     );
+}
+
+// ---------------------------------------------------------------------------
+// Aggregate path (ADR-0030 §7.5 / console-09c): same residual as list, COUNT
+// without materialising rows.
+// ---------------------------------------------------------------------------
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn aggregate_instances_subject_counts_match_list_and_deny_all_as_runtime_role(
+    owner_pool: PgPool,
+) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let actor = seed_org_and_user(&owner_pool, *org.as_uuid(), "agg").await;
+    let type_id = seed_object_type(&owner_pool, org, actor, "case.agg").await;
+    let at = datetime!(2026-07-09 12:00 UTC);
+
+    console_platform_request_context::scope_org(org, async {
+        let store = PgInstanceStore::new(rt.clone());
+        // alice: 2, bob: 1 — same seed shape as the residual list proofs.
+        store
+            .create_instance(
+                actor,
+                instance(type_id, "alice", None),
+                TraceContext::generate(),
+                at,
+            )
+            .await
+            .unwrap();
+        store
+            .create_instance(
+                actor,
+                instance(type_id, "alice", Some(false)),
+                TraceContext::generate(),
+                at,
+            )
+            .await
+            .unwrap();
+        store
+            .create_instance(
+                actor,
+                instance(type_id, "bob", None),
+                TraceContext::generate(),
+                at,
+            )
+            .await
+            .unwrap();
+
+        let alice = subject("alice");
+        let bob = subject("bob");
+        let permit = [owner_permit()];
+
+        // (a) two subjects with different policies → different counts.
+        let alice_agg = store
+            .aggregate_instances(
+                type_id,
+                AggregateGroupBy::Attribute("owner".into()),
+                &alice,
+                &permit,
+            )
+            .await
+            .unwrap();
+        let bob_agg = store
+            .aggregate_instances(
+                type_id,
+                AggregateGroupBy::Attribute("owner".into()),
+                &bob,
+                &permit,
+            )
+            .await
+            .unwrap();
+        let alice_total: i64 = alice_agg.iter().map(|b| b.count).sum();
+        let bob_total: i64 = bob_agg.iter().map(|b| b.count).sum();
+        assert_eq!(alice_total, 2, "alice sees only her rows");
+        assert_eq!(bob_total, 1, "bob sees only his row");
+        assert_ne!(alice_total, bob_total);
+
+        // (b) counts equal list-path row count for the same subject (anti-drift).
+        let alice_list = store
+            .list_instances_filtered(type_id, &alice, &permit)
+            .await
+            .unwrap();
+        assert_eq!(alice_total as usize, alice_list.len());
+        let bob_list = store
+            .list_instances_filtered(type_id, &bob, &permit)
+            .await
+            .unwrap();
+        assert_eq!(bob_total as usize, bob_list.len());
+
+        // lifecycle_state group-by also matches list length (all draft on create).
+        let by_lifecycle = store
+            .aggregate_instances(type_id, AggregateGroupBy::LifecycleState, &alice, &permit)
+            .await
+            .unwrap();
+        let life_total: i64 = by_lifecycle.iter().map(|b| b.count).sum();
+        assert_eq!(life_total as usize, alice_list.len());
+
+        // (c) deny-all (no permit) → zero, not everything.
+        let denied = store
+            .aggregate_instances(
+                type_id,
+                AggregateGroupBy::Attribute("owner".into()),
+                &alice,
+                &[],
+            )
+            .await
+            .unwrap();
+        assert!(
+            denied.is_empty() || denied.iter().all(|b| b.count == 0),
+            "deny-all must not return the unfiltered universe: {denied:?}"
+        );
+        let denied_total: i64 = denied.iter().map(|b| b.count).sum();
+        assert_eq!(denied_total, 0, "deny-all ⇒ zero rows counted");
+
+        // Injection fail-closed: free-form JSON path must not reach SQL text.
+        let poisoned = store
+            .aggregate_instances(
+                type_id,
+                AggregateGroupBy::Attribute("owner'; drop table ont_instances;--".into()),
+                &alice,
+                &permit,
+            )
+            .await;
+        assert!(
+            poisoned.is_err(),
+            "unsafe attribute group key must fail closed"
+        );
+    })
+    .await;
 }

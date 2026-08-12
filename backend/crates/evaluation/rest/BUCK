@@ -10,13 +10,14 @@ export_file(
 
 rust_library(
     name = "console-evaluation-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/evaluation/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/evaluation/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_evaluation_rest",
     edition = "2024",
     crate_root = "backend/crates/evaluation/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/evaluation/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/evaluation/adapter-postgres:console-evaluation-adapter-postgres",
         "//backend/crates/evaluation/application:console-evaluation-application",
         "//backend/crates/evaluation/domain:console-evaluation-domain",

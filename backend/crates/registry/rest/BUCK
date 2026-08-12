@@ -10,13 +10,14 @@ export_file(
 
 rust_library(
     name = "console-registry-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/registry/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/registry/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_registry_rest",
     edition = "2024",
     crate_root = "backend/crates/registry/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/registry/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
@@ -38,7 +39,7 @@ rust_library(
 
 rust_test(
     name = "console-registry-rest-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/registry/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/registry/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_registry_rest",
     edition = "2024",
     crate_root = "backend/crates/registry/rest/src/lib.rs",
@@ -46,6 +47,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/registry/rest"},
     labels = ["owner.backend.crates.registry.rest", "domain.registry", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
@@ -83,6 +85,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/registry/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.registry.rest", "domain.registry", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",

@@ -1,0 +1,48 @@
+{
+  "lane": "wave4-admit-writer-claim",
+  "role": "admit-coordinator",
+  "status": "done",
+  "headSha": "037d446b2cd8257ec4d65ee6bea8a1af95501af2",
+  "baseSha": "eca122ad0122457a77b85ca55fc1e8b2e4869e74",
+  "summary": "Wave4 admit complete: 09c @ 77e82dcd3 + b4z @ 1389be509 + absorb 037d446b2 (09c aggregate in fragments). Critics APPROVE. ADR \u00a77 rows 3+5 tip-bind still on T before/with train PR.",
+  "filesChanged": [],
+  "redBaseline": "n/a - claim only",
+  "verification": "Signed absorb 037d446b2 %G?=G; console-openapi-gen idempotent; aggregateOntologyInstances present; check-admit-sync after push.",
+  "commands": [
+    "git cherry-pick 678482acd (resolve openapi via 09c oracle)",
+    "python3 backend/openapi/split_openapi.py",
+    "SQLX_OFFLINE=true cargo run --locked --manifest-path backend/Cargo.toml -p console-contracts --bin console-openapi-gen",
+    "SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-contracts --test compose",
+    "SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-todos-rest --test openapi_fragment",
+    "git push -u origin HEAD:admission/wave4-20260811",
+    "bash scripts/cursor/check-admit-sync.sh .worktrees/admission-wave4-20260811"
+  ],
+  "contractBreaches": "none",
+  "enforcementPlacement": "n/a - adds no enforcement",
+  "peripheralsUpdated": "n/a - nothing described this behaviour",
+  "claim": {
+    "admitWorktree": ".worktrees/admission-wave4-20260811",
+    "branch": "admission/wave4-20260811",
+    "admitOrder": [
+      "console-09c",
+      "console-b4z"
+    ],
+    "liveCritics": {},
+    "instructionToSiblings": "PARK re-dispatch of 09c/b4z implementers; do not dual-write lane-console-b4z; this admit WT owns serial cherry-pick after critic APPROVE"
+  },
+  "flowDelta": "admission/wave4 ahead 3 of main; ready for train PR + ADR tip-bind (rows 3+5)",
+  "admitted": {
+    "console-09c": {
+      "leaf": "41b9eeda5a18b2ff856e5f8ef8d472d8091bc5a1",
+      "admitSha": "77e82dcd3a1b60638e06ee283aacd9e6db8e2954",
+      "critic": "APPROVE"
+    },
+    "console-b4z": {
+      "leaf": "a1f0425ec8726e057af03f5b0e93253e0d8be96b",
+      "admitSha": "1389be509",
+      "absorbSha": "037d446b2cd8257ec4d65ee6bea8a1af95501af2",
+      "critic": "APPROVE"
+    }
+  },
+  "pending": []
+}

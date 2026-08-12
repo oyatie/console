@@ -6,6 +6,9 @@
 //! The hire handshake route is intentionally NOT here: it lives in the app
 //! crate so the HR-owned `create_employee_core` and the recruiting linkage
 //! share one transaction.
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use axum::{
     Json, Router,
     extract::{Path, Query, State},

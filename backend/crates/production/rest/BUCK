@@ -10,13 +10,14 @@ export_file(
 
 rust_library(
     name = "console-production-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/production/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/production/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_production_rest",
     edition = "2024",
     crate_root = "backend/crates/production/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/production/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
@@ -37,7 +38,7 @@ rust_library(
 
 rust_test(
     name = "console-production-rest-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/production/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/production/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_production_rest",
     edition = "2024",
     crate_root = "backend/crates/production/rest/src/lib.rs",
@@ -45,6 +46,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/production/rest"},
     labels = ["owner.backend.crates.production.rest", "domain.production", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
@@ -79,6 +81,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/production/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.production.rest", "domain.production", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",

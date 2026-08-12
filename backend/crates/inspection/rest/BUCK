@@ -10,13 +10,14 @@ export_file(
 
 rust_library(
     name = "console-inspection-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/inspection/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/inspection/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_inspection_rest",
     edition = "2024",
     crate_root = "backend/crates/inspection/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/inspection/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/inspection/adapter-postgres:console-inspection-adapter-postgres",
         "//backend/crates/inspection/application:console-inspection-application",
         "//backend/crates/inspection/domain:console-inspection-domain",

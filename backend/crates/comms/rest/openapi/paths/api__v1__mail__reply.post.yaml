@@ -1,0 +1,31 @@
+tags:
+  - mail
+operationId: replyMail
+summary: Reply to a message (sets In-Reply-To / References)
+description: Sends a reply through the tenant's SMTP server, stamping the In-Reply-To and References threading headers,
+  and persists it as direction=OUT. Audited (email.reply). Requires the MailUse feature.
+security:
+- bearerAuth: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/SendMailRequest'
+responses:
+  '201':
+    description: The reply was sent and persisted.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/SendMailResult'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'
+  '422':
+    $ref: '#/components/responses/ValidationError'
+  '429':
+    $ref: '#/components/responses/TooManyRequests'
+  '503':
+    $ref: '#/components/responses/MailUnavailable'

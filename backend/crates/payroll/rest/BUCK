@@ -10,13 +10,14 @@ export_file(
 
 rust_library(
     name = "console-payroll-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_payroll_rest",
     edition = "2024",
     crate_root = "backend/crates/payroll/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/payroll/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/inbox/adapter-postgres:console-inbox-adapter-postgres",
         "//backend/crates/inbox/application:console-inbox-application",
         "//backend/crates/inbox/domain:console-inbox-domain",
@@ -39,7 +40,7 @@ rust_library(
 
 rust_test(
     name = "console-payroll-rest-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_payroll_rest",
     edition = "2024",
     crate_root = "backend/crates/payroll/rest/src/lib.rs",
@@ -47,6 +48,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/payroll/rest"},
     labels = ["owner.backend.crates.payroll.rest", "domain.payroll", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/inbox/adapter-postgres:console-inbox-adapter-postgres",
         "//backend/crates/inbox/application:console-inbox-application",
         "//backend/crates/inbox/domain:console-inbox-domain",
@@ -84,6 +86,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/payroll/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.payroll.rest", "domain.payroll", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/inbox/adapter-postgres:console-inbox-adapter-postgres",
         "//backend/crates/inbox/application:console-inbox-application",
         "//backend/crates/inbox/domain:console-inbox-domain",
@@ -122,6 +125,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/payroll/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.payroll.rest", "domain.payroll", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/inbox/adapter-postgres:console-inbox-adapter-postgres",
         "//backend/crates/inbox/application:console-inbox-application",
         "//backend/crates/inbox/domain:console-inbox-domain",
@@ -160,6 +164,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/payroll/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.payroll.rest", "domain.payroll", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/inbox/adapter-postgres:console-inbox-adapter-postgres",
         "//backend/crates/inbox/application:console-inbox-application",
         "//backend/crates/inbox/domain:console-inbox-domain",

@@ -26,6 +26,9 @@
 //! (L-WIRE), this crate does not.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
@@ -40,8 +43,9 @@ use console_governance_domain::{
 };
 use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
 use console_ontology_adapter_postgres::instances::{
-    CreateInstance, InstanceHead, InstanceState, PgInstanceStore, RevisionSummary, StageRevision,
-    TraversalGraph, TraversalNode, create_instance_in_tx, stage_revision_in_tx,
+    AggregateBucket, AggregateGroupBy, CreateInstance, InstanceHead, InstanceState,
+    PgInstanceStore, RevisionSummary, StageRevision, TraversalGraph, TraversalNode,
+    create_instance_in_tx, stage_revision_in_tx,
 };
 use console_ontology_adapter_postgres::{
     ActingRule, ActionTypeSummary, CreateObjectTypeDraft, ObjectTypeSummary,
@@ -437,6 +441,7 @@ pub const OBJECT_TYPE_ACTING_PATH: &str = "/api/v1/ontology/object-types/{key}/a
 pub const OBJECT_TYPE_LIFECYCLE_PATH: &str = "/api/v1/ontology/object-types/{key}/lifecycle";
 pub const OBJECT_TYPE_POLICIES_PATH: &str = "/api/v1/ontology/object-types/{key}/policies";
 pub const INSTANCES_PATH: &str = "/api/v1/ontology/instances";
+pub const INSTANCES_AGGREGATE_PATH: &str = "/api/v1/ontology/instances/aggregate";
 pub const INSTANCE_ID_PATH: &str = "/api/v1/ontology/instances/{id}";
 pub const INSTANCE_HISTORY_PATH: &str = "/api/v1/ontology/instances/{id}/history";
 pub const INSTANCE_TRAVERSE_PATH: &str = "/api/v1/ontology/instances/{id}/traverse";
@@ -453,6 +458,7 @@ pub const ONTOLOGY_ROUTE_PATHS: &[&str] = &[
     OBJECT_TYPE_LIFECYCLE_PATH,
     OBJECT_TYPE_POLICIES_PATH,
     INSTANCES_PATH,
+    INSTANCES_AGGREGATE_PATH,
     INSTANCE_ID_PATH,
     INSTANCE_HISTORY_PATH,
     INSTANCE_TRAVERSE_PATH,
@@ -482,6 +488,9 @@ pub fn router(state: OntologyRestState) -> Router {
         )
         .route(OBJECT_TYPE_POLICIES_PATH, post(attach_object_policy))
         .route(INSTANCES_PATH, get(list_instances))
+        // Static `/aggregate` must be registered before `/{id}` so "aggregate"
+        // is never captured as an instance id.
+        .route(INSTANCES_AGGREGATE_PATH, get(aggregate_instances))
         .route(INSTANCE_ID_PATH, get(get_instance))
         .route(INSTANCE_HISTORY_PATH, get(get_instance_history))
         .route(INSTANCE_TRAVERSE_PATH, get(traverse_instance))
@@ -804,6 +813,79 @@ async fn list_instances(
     Ok(Json(list))
 }
 
+#[derive(Debug, Deserialize)]
+struct InstanceAggregateQuery {
+    /// Object-type VERSION id whose current-state instances to aggregate.
+    r#type: Uuid,
+    /// Allowlisted group key: `lifecycle_state`, `object_type_id`, or `attribute`.
+    group_by: String,
+    /// Required when `group_by=attribute`; must be a declared property key.
+    #[serde(default)]
+    attribute_key: Option<String>,
+}
+
+async fn aggregate_instances(
+    State(state): State<OntologyRestState>,
+    headers: HeaderMap,
+    Query(query): Query<InstanceAggregateQuery>,
+) -> Result<Json<Vec<AggregateBucket>>, RestError> {
+    let principal = authorize_ontology(&state, &headers).await?;
+    let object_type_id = ObjectTypeId::from_uuid(query.r#type);
+    let group_by = resolve_aggregate_group_by(&state, object_type_id, &query).await?;
+    let policies = object_view_policies(&state, query.r#type)
+        .await
+        .map_err(RestError::from_ontology)?;
+    let subject = ontology_subject(&principal);
+    let buckets = state
+        .instances
+        .aggregate_instances(object_type_id, group_by, &subject, &policies)
+        .await
+        .map_err(RestError::from_ontology)?;
+    Ok(Json(buckets))
+}
+
+async fn resolve_aggregate_group_by(
+    state: &OntologyRestState,
+    object_type_id: ObjectTypeId,
+    query: &InstanceAggregateQuery,
+) -> Result<AggregateGroupBy, RestError> {
+    match query.group_by.as_str() {
+        "lifecycle_state" => Ok(AggregateGroupBy::LifecycleState),
+        "object_type_id" => Ok(AggregateGroupBy::ObjectTypeId),
+        "attribute" => {
+            let key = query
+                .attribute_key
+                .as_deref()
+                .map(str::trim)
+                .filter(|k| !k.is_empty())
+                .ok_or_else(|| {
+                    RestError::from_kernel(KernelError::validation(
+                        "attribute_key is required when group_by=attribute",
+                    ))
+                })?;
+            let (stable_key, schema_version) = state
+                .registry
+                .object_type_version(object_type_id)
+                .await
+                .map_err(RestError::from_ontology)?;
+            let declared = state
+                .registry
+                .get_object_type(&stable_key, Some(schema_version))
+                .await
+                .map_err(RestError::from_ontology)?;
+            if !declared.properties.iter().any(|p| p.key == key) {
+                return Err(RestError::from_kernel(KernelError::validation(format!(
+                    "attribute_key {key:?} is not a declared property of this object type"
+                ))));
+            }
+            Ok(AggregateGroupBy::Attribute(key.to_owned()))
+        }
+        other => Err(RestError::from_kernel(KernelError::validation(format!(
+            "unsupported group_by {other:?}; expected lifecycle_state, object_type_id, or attribute"
+        )))),
+    }
+}
+
 /// The object type's own declared properties, which are admissible in policies
 /// scoped to it. The residual lowering already reads arbitrary instance
 /// attributes; supplying the declared set lets the authoring validator agree,
@@ -956,6 +1038,18 @@ mod gate {
         ) -> Result<Vec<InstanceState>, PgOntologyError> {
             self.0
                 .list_instances_filtered(object_type_id, subject, policies)
+                .await
+        }
+
+        pub(super) async fn aggregate_instances(
+            &self,
+            object_type_id: ObjectTypeId,
+            group_by: AggregateGroupBy,
+            subject: &SubjectAttrs,
+            policies: &[ObjectPolicy],
+        ) -> Result<Vec<AggregateBucket>, PgOntologyError> {
+            self.0
+                .aggregate_instances(object_type_id, group_by, subject, policies)
                 .await
         }
 

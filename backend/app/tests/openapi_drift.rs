@@ -363,17 +363,39 @@ fn openapi_yaml_covers_configured_route_inventory() {
     }
 }
 
+fn openapi_schema_body<'a>(yaml: &'a str, schema_name: &str) -> &'a str {
+    let needle = format!("    {schema_name}:\n");
+    let start = yaml
+        .find(&needle)
+        .unwrap_or_else(|| panic!("OpenAPI YAML must define {schema_name}"));
+    let after = start + needle.len();
+    let mut end = yaml.len();
+    let bytes = yaml.as_bytes();
+    let mut i = after;
+    while i < yaml.len() {
+        if bytes[i] != b'\n' {
+            i += 1;
+            continue;
+        }
+        let line_start = i + 1;
+        let line = &yaml[line_start..];
+        // Exactly four leading spaces ⇒ next components.schemas key (compose indent).
+        if line.starts_with("    ") && !line.starts_with("     ") {
+            end = line_start;
+            break;
+        }
+        if !line.is_empty() && !line.starts_with(' ') {
+            end = line_start;
+            break;
+        }
+        i = line_start;
+    }
+    &yaml[start..end]
+}
+
 #[test]
 fn openapi_documents_closed_inventory_movement_source_variants() {
-    let start = OPENAPI_YAML
-        .find("    InventoryMovementSourceWorkOrder:\n")
-        .expect("OpenAPI YAML must define the work-order movement source");
-    let end = OPENAPI_YAML[start..]
-        .find("    InventoryReceiptResult:\n")
-        .map(|offset| start + offset)
-        .expect("Inventory movement source variants must precede receipt results");
-    let schema = &OPENAPI_YAML[start..end];
-
+    // Compose emits schemas in sorted key order; assert by named anchors, not sibling windows.
     for variant in [
         "InventoryMovementSourceWorkOrder",
         "InventoryMovementSourceP1Dispatch",
@@ -381,26 +403,26 @@ fn openapi_documents_closed_inventory_movement_source_variants() {
         "InventoryMovementSourceExternalRef",
     ] {
         assert!(
-            schema.contains(variant),
+            OPENAPI_YAML.contains(&format!("    {variant}:\n")),
             "OpenAPI movement source is missing {variant}"
+        );
+        assert!(
+            openapi_schema_body(OPENAPI_YAML, variant).contains("additionalProperties: false"),
+            "every inventory movement source variant must be closed to unknown fields ({variant})"
         );
     }
     assert!(
-        schema.contains("source: { $ref: '#/components/schemas/InventoryMovementSource' }"),
+        OPENAPI_YAML.contains("source: { $ref: '#/components/schemas/InventoryMovementSource' }"),
         "InventoryMovement.source must not degrade to an untyped object"
     );
     assert!(
-        schema.contains("InventoryMovementSource:\n      oneOf:")
-            && schema.contains("discriminator:\n        propertyName: kind"),
+        OPENAPI_YAML.contains("InventoryMovementSource:\n      oneOf:")
+            && OPENAPI_YAML.contains("discriminator:\n        propertyName: kind"),
         "Inventory movement sources must remain a kind-discriminated union"
-    );
-    assert!(
-        schema.matches("additionalProperties: false").count() >= 4,
-        "every inventory movement source variant must be closed to unknown fields"
     );
     for wire_kind in ["work_order", "p1_dispatch", "cycle_count", "external_ref"] {
         assert!(
-            schema.contains(wire_kind),
+            OPENAPI_YAML.contains(wire_kind),
             "OpenAPI movement source must document the {wire_kind} runtime discriminator"
         );
     }
@@ -408,14 +430,7 @@ fn openapi_documents_closed_inventory_movement_source_variants() {
 
 #[test]
 fn openapi_documents_closed_month_as_year_month_not_calendar_date() {
-    let start = OPENAPI_YAML
-        .find("    AttendanceMonthClose:\n")
-        .expect("OpenAPI YAML must define AttendanceMonthClose");
-    let end = OPENAPI_YAML[start..]
-        .find("    AttendanceCloseBoard:\n")
-        .map(|offset| start + offset)
-        .expect("AttendanceMonthClose must precede AttendanceCloseBoard");
-    let schema = &OPENAPI_YAML[start..end];
+    let schema = openapi_schema_body(OPENAPI_YAML, "AttendanceMonthClose");
     assert!(
         schema.contains("month: { type: string, pattern: '^\\\\d{4}-\\\\d{2}$' }"),
         "closed-month response must match the server's YYYY-MM wire value, not an OpenAPI calendar date"
@@ -489,14 +504,8 @@ fn openapi_documents_evidence_register_snapshot_and_evidentiary_contract() {
         "EV list endpoint must document validation failures for inconsistent pagination inputs"
     );
 
-    let page_start = OPENAPI_YAML
-        .find("    EvidenceObjectPage:\n")
-        .expect("OpenAPI YAML must define EvidenceObjectPage");
-    let page_end = OPENAPI_YAML[page_start..]
-        .find("    EvidenceCopyView:\n")
-        .map(|offset| page_start + offset)
-        .expect("EvidenceCopyView must follow EvidenceObjectPage");
-    let page = &OPENAPI_YAML[page_start..page_end];
+    // Compose emits schemas in sorted key order; assert each schema by name, not sibling windows.
+    let page = openapi_schema_body(OPENAPI_YAML, "EvidenceObjectPage");
     assert!(
         page.contains("required: [items, limit, offset, total, as_of, next_cursor]"),
         "EV list response must always return the registered snapshot and nullable continuation token"
@@ -511,14 +520,7 @@ fn openapi_documents_evidence_register_snapshot_and_evidentiary_contract() {
         "EV next_cursor must use the OpenAPI 3.1 nullable-string form consumed by every generated client"
     );
 
-    let copy_start = OPENAPI_YAML
-        .find("    EvidenceCopyView:\n")
-        .expect("OpenAPI YAML must define EvidenceCopyView");
-    let copy_end = OPENAPI_YAML[copy_start..]
-        .find("    TimestampAuthorityProofView:\n")
-        .map(|offset| copy_start + offset)
-        .expect("TimestampAuthorityProofView must follow EvidenceCopyView");
-    let copy = &OPENAPI_YAML[copy_start..copy_end];
+    let copy = openapi_schema_body(OPENAPI_YAML, "EvidenceCopyView");
     assert!(
         copy.contains(
             "evidentiary_status: { $ref: '#/components/schemas/EvidenceCopyEvidentiaryStatus' }"
@@ -530,14 +532,7 @@ fn openapi_documents_evidence_register_snapshot_and_evidentiary_contract() {
         "EV copy view must require the server-derived evidentiary classification"
     );
 
-    let status_start = OPENAPI_YAML
-        .find("    EvidenceCopyEvidentiaryStatus:\n")
-        .expect("OpenAPI YAML must define EvidenceCopyEvidentiaryStatus");
-    let status_end = OPENAPI_YAML[status_start..]
-        .find("    EvidenceCopyView:\n")
-        .map(|offset| status_start + offset)
-        .expect("EvidenceCopyView must follow EvidenceCopyEvidentiaryStatus");
-    let status = &OPENAPI_YAML[status_start..status_end];
+    let status = openapi_schema_body(OPENAPI_YAML, "EvidenceCopyEvidentiaryStatus");
     assert!(
         status
             .contains("enum: [VERIFIED_ORIGINAL, ORIGINAL_UNVERIFIED, NON_EVIDENTIARY_DERIVATIVE]")
@@ -646,8 +641,11 @@ fn openapi_operation_keys(yaml: &str) -> BTreeSet<(String, String)> {
             continue;
         }
 
+        // Blank lines inside folded/literal descriptions are not path terminators.
         if !line.starts_with(' ') {
-            current_path = None;
+            if !trimmed.is_empty() {
+                current_path = None;
+            }
             continue;
         }
 

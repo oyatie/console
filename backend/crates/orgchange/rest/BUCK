@@ -10,13 +10,14 @@ export_file(
 
 rust_library(
     name = "console-orgchange-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/orgchange/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/orgchange/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_orgchange_rest",
     edition = "2024",
     crate_root = "backend/crates/orgchange/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/orgchange/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/orgchange/adapter-postgres:console-orgchange-adapter-postgres",
         "//backend/crates/orgchange/domain:console-orgchange-domain",

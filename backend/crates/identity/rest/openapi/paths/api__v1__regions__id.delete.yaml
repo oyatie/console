@@ -1,0 +1,35 @@
+tags:
+  - regions
+operationId: deactivateRegion
+summary: Soft-delete (deactivate) a region
+description: Soft-deletes a region. Refused with 409 while the region still has active branches, so live tenant data
+  is never orphaned. Returns the deactivated region.
+security:
+- bearerAuth: []
+parameters:
+- name: id
+  in: path
+  required: true
+  schema:
+    $ref: '#/components/schemas/Uuid'
+responses:
+  '200':
+    description: Deactivated region.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/RegionSummary'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'
+  '404':
+    $ref: '#/components/responses/NotFound'
+  '409':
+    $ref: '#/components/responses/Conflict'
+  '503':
+    description: JWT verification is not configured.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorBody'

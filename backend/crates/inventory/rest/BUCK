@@ -10,13 +10,14 @@ export_file(
 
 rust_library(
     name = "console-inventory-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/inventory/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/inventory/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_inventory_rest",
     edition = "2024",
     crate_root = "backend/crates/inventory/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/inventory/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/inventory/adapter-postgres:console-inventory-adapter-postgres",
         "//backend/crates/inventory/application:console-inventory-application",
         "//backend/crates/inventory/domain:console-inventory-domain",
@@ -35,7 +36,7 @@ rust_library(
 
 rust_test(
     name = "console-inventory-rest-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/inventory/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/inventory/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_inventory_rest",
     edition = "2024",
     crate_root = "backend/crates/inventory/rest/src/lib.rs",
@@ -43,6 +44,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/inventory/rest"},
     labels = ["owner.backend.crates.inventory.rest", "domain.inventory", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/inventory/adapter-postgres:console-inventory-adapter-postgres",
         "//backend/crates/inventory/application:console-inventory-application",
         "//backend/crates/inventory/domain:console-inventory-domain",

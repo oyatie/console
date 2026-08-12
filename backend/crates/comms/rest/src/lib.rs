@@ -19,6 +19,9 @@
 //! credential-using endpoints fail closed with `503 email_not_configured`.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod openapi;
+pub use openapi::OPENAPI_FRAGMENT;
+
 use std::str::FromStr;
 use std::sync::Arc;
 

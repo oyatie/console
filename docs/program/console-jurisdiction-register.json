@@ -1,6 +1,6 @@
 {
   "schema_version": "console-jurisdiction-register-v2",
-  "last_refreshed": "2026-08-11T18:50:00-04:00",
+  "last_refreshed": "2026-08-11T19:58:00-04:00",
   "target_jurisdiction_set": [
     "KR"
   ],
@@ -1026,5 +1026,5 @@
     "historical_implementation_freeze_ref": "refs/tags/archive/pre-pivot-implementation-freeze-2026-07-24",
     "candidate_evidence_status": "HOLD"
   },
-  "authority_train_note": "Refreshed with residual admit tip after restack onto main (#756 wave-3 7sx/xxp + #757/#758/#747) + cvh rustfmt/clippy + lens/doc-custody restore (2026-08-11): critic-APPROVED console-kwm / console-cvh / console-gc9z / console-0lj. No jurisdiction, control, or coverage claim changed — tip only records authority-train custody for C+T land."
+  "authority_train_note": "Refreshed with the wave-4 09c/b4z admit authority tip \u2014 single-T remint after doc-manifest sync on main e07fffde0 (#754). No jurisdiction, control, or coverage claim changed in this commit."
 }

@@ -3344,6 +3344,14 @@ const INSTANCE_ROUTE_CLASSIFICATION: &[(&str, InstanceVisibility)] = &[
         },
     ),
     (
+        "/api/v1/ontology/instances/aggregate",
+        InstanceVisibility::Gated {
+            method: "GET",
+            uri: "/api/v1/ontology/instances/aggregate?type={type}&group_by=lifecycle_state",
+            body: "",
+        },
+    ),
+    (
         "/api/v1/ontology/instances/{id}",
         InstanceVisibility::Gated {
             method: "GET",

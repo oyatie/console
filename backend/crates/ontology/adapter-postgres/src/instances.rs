@@ -142,6 +142,28 @@ pub struct TraversalGraph {
     pub edges: Vec<TraversalEdge>,
 }
 
+/// Allowlisted group key for [`PgInstanceStore::aggregate_instances`].
+///
+/// Free-form SQL expressions are rejected: only these shapes may be spliced
+/// into the SELECT list, and attribute keys must pass [`is_safe_ident`] (bound,
+/// never interpolated) — the same injection discipline as residual lowering.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AggregateGroupBy {
+    LifecycleState,
+    ObjectTypeId,
+    /// `r.attributes ->> $key` for a declared property key (caller validates
+    /// declaration; this adapter only enforces identifier safety).
+    Attribute(String),
+}
+
+/// One bucket from [`PgInstanceStore::aggregate_instances`].
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AggregateBucket {
+    /// Text form of the group value. Absent JSON attributes yield `None`.
+    pub key: Option<String>,
+    pub count: i64,
+}
+
 // ===========================================================================
 // Store
 // ===========================================================================
@@ -547,6 +569,116 @@ impl PgInstanceStore {
     ) -> Result<Vec<InstanceState>, PgOntologyError> {
         self.visible_instances(object_type_id, None, subject, policies)
             .await
+    }
+
+    /// Subject-scoped aggregate over current-state instances of one object type.
+    ///
+    /// Built like [`Self::visible_instances`]: the same
+    /// [`console_platform_authz::cedar_pbac::residual::lower`] call
+    /// (`LoweringTarget::Instance`, correct bind offset) supplies the residual.
+    /// Returns `GROUP BY` counts without materialising instance rows. A
+    /// materialized view cannot carry a per-(subject, policy-set) residual, so
+    /// this path is the capability ADR-0030 §7 row 5 actually needs.
+    pub async fn aggregate_instances(
+        &self,
+        object_type_id: ObjectTypeId,
+        group_by: AggregateGroupBy,
+        subject: &SubjectAttrs,
+        policies: &[ObjectPolicy],
+    ) -> Result<Vec<AggregateBucket>, PgOntologyError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let (group_sql, first_bind, prefix_binds) = match &group_by {
+            AggregateGroupBy::LifecycleState => {
+                let column = "i.lifecycle_state";
+                if !is_safe_column_ref(column) {
+                    return Err(KernelError::validation(
+                        "aggregate group key failed the column allowlist",
+                    )
+                    .into());
+                }
+                (column.to_owned(), 2usize, Vec::<SqlValue>::new())
+            }
+            AggregateGroupBy::ObjectTypeId => {
+                let column = "i.object_type_id";
+                if !is_safe_column_ref(column) {
+                    return Err(KernelError::validation(
+                        "aggregate group key failed the column allowlist",
+                    )
+                    .into());
+                }
+                // Cast so the bucket key is text, matching lifecycle / attribute.
+                (format!("{column}::text"), 2usize, Vec::new())
+            }
+            AggregateGroupBy::Attribute(key) => {
+                if !is_safe_ident(key) {
+                    return Err(KernelError::validation(
+                        "aggregate attribute group key is not a safe identifier",
+                    )
+                    .into());
+                }
+                let attributes_column = "r.attributes";
+                if !is_safe_column_ref(attributes_column) {
+                    return Err(KernelError::validation(
+                        "aggregate attributes column failed the column allowlist",
+                    )
+                    .into());
+                }
+                // Key bound at $2 (never interpolated); residual starts at $3.
+                (
+                    format!("({attributes_column} ->> $2)"),
+                    3usize,
+                    vec![SqlValue::Text(key.clone())],
+                )
+            }
+        };
+
+        let residual = lower(
+            LoweringTarget::Instance {
+                attributes_column: "r.attributes",
+            },
+            subject,
+            policies,
+            first_bind,
+        );
+        // Audited SQL-safe: `group_sql` is either a gate-checked column ref or
+        // `(r.attributes ->> $2)` with the key bound; `residual.where_sql` is the
+        // same residual::lower fragment the list path interpolates.
+        let sql = sqlx::AssertSqlSafe(format!(
+            r#"
+            SELECT {group_sql} AS group_key, COUNT(*)::bigint AS bucket_count
+            FROM ont_instances i
+            JOIN ont_instance_revisions r ON r.instance_id = i.id AND r.valid_to IS NULL
+            WHERE i.object_type_id = $1
+              AND ({residual})
+            GROUP BY 1
+            ORDER BY 1 NULLS LAST
+            "#,
+            group_sql = group_sql,
+            residual = residual.where_sql,
+        ));
+        with_org_conn::<_, Vec<AggregateBucket>, PgOntologyError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                let mut query = sqlx::query(sql).bind(*object_type_id.as_uuid());
+                for value in prefix_binds.iter().chain(residual.binds.iter()) {
+                    query = match value {
+                        SqlValue::Text(text) => query.bind(text),
+                        SqlValue::Int(int) => query.bind(int),
+                        SqlValue::Bool(boolean) => query.bind(boolean),
+                        SqlValue::TextArray(array) => query.bind(array),
+                    };
+                }
+                let rows = query.fetch_all(tx.as_mut()).await?;
+                rows.iter()
+                    .map(|row| {
+                        Ok(AggregateBucket {
+                            key: row.try_get("group_key")?,
+                            count: row.try_get("bucket_count")?,
+                        })
+                    })
+                    .collect()
+            })
+        })
+        .await
     }
 
     /// §2 search-around: bounded outgoing BFS over live (`valid_to IS NULL`) links
@@ -1509,6 +1641,21 @@ fn is_safe_ident(value: &str) -> bool {
     (first.is_ascii_lowercase() || first == '_')
         && chars.all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
         && value.len() <= 63
+}
+
+/// Gate-check a `column` or `table.column` reference before splicing it into
+/// SQL — same shape as `console_platform_authz::is_safe_column` (crate-private;
+/// duplicated here so the aggregate path does not widen that crate's surface).
+fn is_safe_column_ref(raw: &str) -> bool {
+    let mut segments = raw.split('.');
+    let first = segments.next();
+    let second = segments.next();
+    let too_many = segments.next().is_some();
+    match (first, second, too_many) {
+        (Some(column), None, false) => is_safe_ident(column),
+        (Some(table), Some(column), false) => is_safe_ident(table) && is_safe_ident(column),
+        _ => false,
+    }
 }
 
 /// List current rows of a `projected` type's backing table as synthetic

@@ -10,13 +10,14 @@ export_file(
 
 rust_library(
     name = "console-financial-rest",
-    mapped_srcs = repo_mapped_srcs("backend/crates/financial/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/financial/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_financial_rest",
     edition = "2024",
     crate_root = "backend/crates/financial/rest/src/lib.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/financial/rest"},
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/financial/adapter-postgres:console-financial-adapter-postgres",
         "//backend/crates/financial/application:console-financial-application",
         "//backend/crates/financial/domain:console-financial-domain",
@@ -38,7 +39,7 @@ rust_library(
 
 rust_test(
     name = "console-financial-rest-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/financial/rest", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/financial/rest", glob(["src/**/*.rs", "openapi/**/*.yaml", "openapi/**/*.json"])),
     crate = "console_financial_rest",
     edition = "2024",
     crate_root = "backend/crates/financial/rest/src/lib.rs",
@@ -46,6 +47,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/financial/rest"},
     labels = ["owner.backend.crates.financial.rest", "domain.financial", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/financial/adapter-postgres:console-financial-adapter-postgres",
         "//backend/crates/financial/application:console-financial-application",
         "//backend/crates/financial/domain:console-financial-domain",
@@ -80,6 +82,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/financial/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.financial.rest", "domain.financial", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/contracts:console-contracts",
         "//backend/crates/financial/adapter-postgres:console-financial-adapter-postgres",
         "//backend/crates/financial/application:console-financial-application",
         "//backend/crates/financial/domain:console-financial-domain",

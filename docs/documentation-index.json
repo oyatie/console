@@ -1040,7 +1040,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "296965e8b387f4afba9d487014d8f0ba9439c9cb",
+      "blob_sha": "4a4a38bbc59a5ac276d28b7078a7086c1a94fffa",
       "archive_tag": null
     },
     {
@@ -3741,6 +3741,16 @@
       "replacement": null,
       "retention": "retain",
       "blob_sha": "1fbd58bd5d682de25b3c0b838c892989b18ae63e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-11-wave4-09c-b4z-admit.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6f0a4408ff4bb2bdac7d23f5ee6b9e9f95ab0372",
       "archive_tag": null
     },
     {

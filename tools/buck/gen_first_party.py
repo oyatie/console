@@ -1252,6 +1252,64 @@ def tree_has(root, *markers):
     return False
 
 
+def openapi_fragment_globs(package_dir, src_dir):
+    """Return mapped_srcs globs for per-crate OpenAPI fragment trees.
+
+    Rest faces (and any other crate) that keep fragments under ``openapi/`` and
+    pull them in with ``include_str!("../openapi/...")`` must map those files
+    hermetically. Detect via an ``openapi/`` directory or the include_str marker
+    in ``src/``. YAML is always required when detected; JSON is added only when
+    at least one ``.json`` exists under ``openapi/`` (examined-zero stays
+    fail-closed: detection without a tree still emits the YAML glob so missing
+    fragments fail at buck/rustc rather than silently omitting the map).
+
+    Buck2 ``glob()`` excludes leading-dot path components by default and has no
+    ``include_dotfiles`` knob (unlike Buck1). Pair these patterns with
+    ``openapi_dotfile_srcs`` via ``lib_srcs_expr`` so hidden fragment basenames
+    (e.g. ``.well-known__*.yaml``) still appear in mapped_srcs.
+    """
+    openapi_dir = os.path.join(package_dir, "openapi")
+    needs = os.path.isdir(openapi_dir) or tree_has(
+        src_dir, 'include_str!("../openapi/'
+    )
+    if not needs:
+        return []
+    pats = ["openapi/**/*.yaml"]
+    if os.path.isdir(openapi_dir):
+        for _dp, _dns, files in os.walk(openapi_dir):
+            if any(name.endswith(".json") for name in files):
+                pats.append("openapi/**/*.json")
+                break
+    return pats
+
+
+def openapi_dotfile_srcs(package_dir):
+    """Explicit openapi/ paths Buck2 glob() omits (any leading-dot path component).
+
+    Walk ``openapi/`` and return every package-relative YAML/JSON/YML file whose
+    relative path has a component starting with ``.``. Emit callers union these
+    into mapped_srcs as ``glob(...) + [...]`` so identity ``.well-known__*``
+    fragments (and any future hidden names) are total without a hand-list.
+    """
+    openapi_dir = os.path.join(package_dir, "openapi")
+    if not os.path.isdir(openapi_dir):
+        return []
+    found = []
+    for dp, _dns, files in os.walk(openapi_dir):
+        for name in files:
+            if not (
+                name.endswith(".yaml")
+                or name.endswith(".yml")
+                or name.endswith(".json")
+            ):
+                continue
+            rel = os.path.relpath(os.path.join(dp, name), package_dir).replace(
+                os.sep, "/"
+            )
+            if any(part.startswith(".") for part in rel.split("/")):
+                found.append(rel)
+    return sorted(found)
+
 
 def map_deps(dep_table, first_party):
     """Map a [dependencies]/[dev-dependencies] table to (deps_list, named_dict)."""
@@ -1282,6 +1340,18 @@ def globstr(patterns, exclude=None):
 
 def listsrcs(paths):
     return "[" + ", ".join('"{}"'.format(p) for p in paths) + "]"
+
+
+def lib_srcs_expr(patterns, exclude=None, explicit=None):
+    """Emit glob(...) optionally unioned with an explicit listsrcs for dotfiles.
+
+    Buck2 has no include_dotfiles on glob(); hidden openapi fragments must be
+    listed explicitly. ``explicit`` empty/None keeps a plain glob (no noise).
+    """
+    expr = globstr(patterns, exclude=exclude)
+    if explicit:
+        expr += " + " + listsrcs(list(explicit))
+    return expr
 
 
 def base_env(package, uses_sqlx=False):
@@ -1439,9 +1509,19 @@ def emit(d, name, deps, named, dev_deps, dev_named):
     env = base_env(package, uses_sqlx=uses_sqlx)
     resources = RESOURCE_CONFIG.get(name, {})
     lib_pats = ["src/**/*.rs"] + list(resources.get("srcs", []))
+    # Face crates compile OpenAPI fragments via include_str!("../openapi/..."); Buck
+    # hermeticity requires those YAML/JSON files in mapped_srcs (src/**/*.rs alone is
+    # insufficient — rustc cannot read unmapped siblings). Buck2 glob() also drops
+    # leading-dot basenames, so union openapi_dotfile_srcs into the srcs expr.
+    openapi_pats = openapi_fragment_globs(d, src)
+    lib_pats.extend(openapi_pats)
+    openapi_explicit = openapi_dotfile_srcs(d) if openapi_pats else []
     lib_external = dict(resources.get("external", {}))
     if tree_has(src, "#[sqlx::test"):
         lib_external.update(MIGRATION_TREE)
+
+    def _lib_srcs(exclude=None):
+        return lib_srcs_expr(lib_pats, exclude=exclude, explicit=openapi_explicit)
 
     out = [
         header,
@@ -1456,13 +1536,13 @@ def emit(d, name, deps, named, dev_deps, dev_named):
         "",
     ]
     if has_main and has_lib:
-        out += _block("rust_library", name + "-lib", globstr(lib_pats, exclude=["src/main.rs"]),
+        out += _block("rust_library", name + "-lib", _lib_srcs(exclude=["src/main.rs"]),
                       ident, deps, named, env, package=package,
                       crate_root=package + "/src/lib.rs", external=lib_external)
         for feature in FEATURE_LIBRARY_VARIANTS.get(name, {}):
             out.append("")
             out += _block("rust_library", name + "-lib-" + feature,
-                          globstr(lib_pats, exclude=["src/main.rs"]), ident,
+                          _lib_srcs(exclude=["src/main.rs"]), ident,
                           variant_deps(name, feature, deps), named, env,
                           package=package, crate_root=package + "/src/lib.rs",
                           external=lib_external, features=[feature])
@@ -1480,17 +1560,17 @@ def emit(d, name, deps, named, dev_deps, dev_named):
                           crate_root=package + "/src/main.rs", features=[feature])
         lib_target, unit_root, unit_excl = ":" + name + "-lib", "src/lib.rs", ["src/main.rs"]
     elif has_main:
-        out += _block("rust_binary", name, globstr(lib_pats), ident, deps, named, env,
+        out += _block("rust_binary", name, _lib_srcs(), ident, deps, named, env,
                       package=package, crate_root=package + "/src/main.rs",
                       external=lib_external)
         lib_target, unit_root, unit_excl = ":" + name, "src/main.rs", None
     else:
-        out += _block("rust_library", name, globstr(lib_pats), ident, deps, named, env,
+        out += _block("rust_library", name, _lib_srcs(), ident, deps, named, env,
                       package=package, crate_root=package + "/src/lib.rs",
                       external=lib_external)
         for feature in FEATURE_LIBRARY_VARIANTS.get(name, {}):
             out.append("")
-            out += _block("rust_library", name + "-" + feature, globstr(lib_pats), ident,
+            out += _block("rust_library", name + "-" + feature, _lib_srcs(), ident,
                           variant_deps(name, feature, deps), named, env,
                           package=package, crate_root=package + "/src/lib.rs",
                           external=lib_external, features=[feature])
@@ -1505,7 +1585,7 @@ def emit(d, name, deps, named, dev_deps, dev_named):
         labels = test_labels(package, "test.unit", uses_postgres)
         out.append("")
         out += _block("rust_test", name + "-unit",
-                      globstr(lib_pats, exclude=unit_excl), ident,
+                      _lib_srcs(exclude=unit_excl), ident,
                       test_deps, test_named, env, package=package,
                       crate_root=package + "/" + unit_root,
                       external=lib_external, labels=labels)
@@ -1519,7 +1599,7 @@ def emit(d, name, deps, named, dev_deps, dev_named):
         out += _block(
             "rust_test",
             "{}-{}".format(name, variant["name"]),
-            globstr(lib_pats, exclude=unit_excl),
+            _lib_srcs(exclude=unit_excl),
             ident,
             test_deps,
             test_named,
