@@ -1,0 +1,65 @@
+{
+  "status": "done",
+  "laneId": "console-g14a",
+  "bead": "console-g14a (P2): prototype-chain census \u2014 mechanical fail-closed scan for untrusted-keyed lookups under scripts/",
+  "headSha": "f7b49495dad62bc2ea7781cb4dff92683b091fd2",
+  "branch": "lane/console-g14a",
+  "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-console-g14a",
+  "summary": "Restacked lane/console-g14a onto origin/main 84655ce7881c764bbe81081b193cdd2d85d523c1 after admit parked the leaf for census red (14 stale + unknown). Kept the total primitive (check-prototype-chain-lookups + examined-zero missingSubjects fail-closed + plan-fanout eligibility Object.hasOwn). One inventory commit shrinks scripts/prototype-chain-lookup-baseline.json from 18\u21925 residuals: drops 14 sites cleared by console-i91 (#742) and rebinds the line-shifted verify-console-pr-authority-bootstrap residual (53\u219254). No spelling-list call-site sweep; no #622 admit from this lane.",
+  "filesChanged": [
+    "scripts/check-prototype-chain-lookups.mjs",
+    "scripts/check-prototype-chain-lookups.test.mjs",
+    "scripts/prototype-chain-lookup-baseline.json",
+    "scripts/console/plan-fanout.mjs",
+    "package.json",
+    ".cursor/receipts/g14a.json"
+  ],
+  "redBaseline": "After rebase onto main (pre-register shrink): node scripts/check-prototype-chain-lookups.mjs \u2192 exit 1 scanned=53 findings=5 unknown=1 stale=14 (matches admit park note). Fixture RED retained: optional-computed + undefined-compare \u2192 unknown findings; missing-subject PROOF_A wouldCliFail=true.",
+  "verification": "GREEN post-shrink: (a) node --test scripts/check-prototype-chain-lookups.test.mjs \u2192 10/10; (b) node scripts/check-prototype-chain-lookups.mjs \u2192 pass scanned 53 residuals 5 findings 5; (c) node --test scripts/console/plan-fanout.test.mjs \u2192 29/29; (d) signing smoke commit-tree -S \u2192 %G?=G.",
+  "commands": [
+    "bash /Users/jasonlee/Developer/console/scripts/cursor/provision-lane-worktree.sh --kind lane console-g14a",
+    "git fetch origin main && git rebase origin/main",
+    "node scripts/check-prototype-chain-lookups.mjs (pre-shrink) \u2192 exit 1 unknown=1 stale=14",
+    "node --test scripts/check-prototype-chain-lookups.test.mjs \u2192 10/10",
+    "node scripts/check-prototype-chain-lookups.mjs \u2192 pass scanned 53 residuals 5",
+    "node --test scripts/console/plan-fanout.test.mjs \u2192 29/29",
+    "echo 'g14a signing smoke' | git commit-tree HEAD^{tree} -S -p HEAD -m 'g14a signing smoke' \u2192 %G?=G",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs .cursor/receipts/g14a.json"
+  ],
+  "contractBreaches": "none",
+  "enforcementPlacement": "WHERE: scripts/check-prototype-chain-lookups.mjs runs in CI via package.json check:request-body-contract (repo-gates already executes that npm script). SUBJECT EXISTS: git-ls-files subjects under scripts/check-*.mjs + scripts/console/** at gate runtime; each listed path must exist on disk or missingSubjects fails closed. FINEST DISTINCTION: scanned = files successfully read (not declared list length); findingId is file|line|kind|key|snippet; residual register is id-match not a key spelling list. EXAMINED-ZERO FAILS: missingSubjects.length > 0 OR scanned < SCANNED_FLOOR (45) exits 1; unknown findings and stale residuals also exit 1.",
+  "peripheralsUpdated": "scripts/prototype-chain-lookup-baseline.json: shrunk to 5 post-i91 residuals; notes document restack shrink + line shift. package.json already wires check:prototype-chain-lookups into check:request-body-contract (unchanged this commit). plan-fanout eligibility Object.hasOwn retained from prior lane commits. Did not edit docs/CI-GATES.md (CI entry name unchanged).",
+  "lensesApplied": {
+    "cartesianDoubt": "Separated restack inventory (stale register vs main after i91) from call-site sweep; admit park note was evidence not opinion.",
+    "essentialism": "One register shrink commit \u2014 no third spelling-list patch round on the 5 remaining residuals.",
+    "chesterton": "Kept residual register + SCANNED_FLOOR + missingSubjects; i91 cleared sites must leave the register (stale-fail) rather than force empty-register or re-open i91.",
+    "redTeam": "Pre-shrink RED (14 stale + 1 unknown) re-proven on rebased tip; hostile fixture RED controls retained.",
+    "blastRadius": "Owned scripts/ census surface + plan-fanout eligibility already in lane range; no allowlist growth.",
+    "zeroTrust": "Do not trust pre-i91 residual list as examination of current main."
+  },
+  "claims": {
+    "E-observed": [
+      "Pre-shrink census exit 1 unknown=1 stale=14 on rebased tip",
+      "Post-shrink census pass scanned 53 residuals 5; tests 10/10; plan-fanout 29/29",
+      "Signing smoke commit-tree -S \u2192 G"
+    ],
+    "I-inferred": [
+      "Five remaining residuals are intentional post-i91 holdouts (env/SAFE allowlists + resourceBudgets + ledger area), not new fail-opens introduced by this lane"
+    ],
+    "U-uncertain": [
+      "Whether process.env[key] / SAFE_ENVIRONMENT_KEYS residuals should later be carved into a separate trusted-env class"
+    ]
+  },
+  "challenges": [
+    "Chesterton on keeping a non-empty residual register after i91: empty register would force a spelling-list sweep the bead forbids; shrink-to-observed is the fail-closed total primitive.",
+    "Contrarian on re-fixing the 5 call sites here: that recreates the i91 treadmill; census + named residuals is the mechanism this bead owns.",
+    "Admit park (14 stale + unknown) was the load-bearing challenge to the prior APPROVE tip \u2014 restack+shrink closes it without re-opening examined-zero."
+  ],
+  "followUps": [
+    "Babysit/orchestrator owns CI after push; implementer exits.",
+    "Optional later: shrink the 5 residuals via own()/Object.hasOwn on a dedicated sweep bead (not this lane).",
+    "Prior: console-m9fa sibling scripts/* existsSync-skip sweep remains separate (closed on its own path).",
+    "bd close console-g14a on merge; hub .beads is shared."
+  ],
+  "flowDelta": "leaf ready to admit: census green on main restack tip with 5 residuals; plan-fanout eligibility Object.hasOwn retained; no train admit from this lane"
+}

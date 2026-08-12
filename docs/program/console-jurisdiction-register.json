@@ -1,6 +1,6 @@
 {
   "schema_version": "console-jurisdiction-register-v2",
-  "last_refreshed": "2026-08-11T21:20:00-04:00",
+  "last_refreshed": "2026-08-11T22:00:00-04:00",
   "target_jurisdiction_set": [
     "KR"
   ],
@@ -1026,5 +1026,5 @@
     "historical_implementation_freeze_ref": "refs/tags/archive/pre-pivot-implementation-freeze-2026-07-24",
     "candidate_evidence_status": "HOLD"
   },
-  "authority_train_note": "Refreshed with the console-o498 (#759) authority tip \u2014 single-T remint after clippy items_after_test_module heal (move ensure_branch_rewrite_in_scope tests to end of identity adapter-postgres lib) on product C d0ff287f8332. No jurisdiction, control, or coverage claim changed in this commit."
+  "authority_train_note": "Refreshed with the console-g14a (#762) authority tip \u2014 single-T remint after restack onto main 5770c04c4 (#759). Product C 24e3f3515dec. No jurisdiction, control, or coverage claim changed in this commit."
 }

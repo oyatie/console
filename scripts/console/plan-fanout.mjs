@@ -380,7 +380,12 @@ export function buildFanoutPlan(registry, options) {
       if (!roots.privateRoots.length) reasons.push('missing_private_ownership_roots');
       const resources = validResources(lane.resources);
       if (!resources) reasons.push('invalid_lane_resource_requirements');
-      if (options.runtimeLaneEligibility?.[lane.laneId]) reasons.push(options.runtimeLaneEligibility[lane.laneId]);
+      // Own-property only — eligibility maps are plain objects; optional-index false-resolves
+      // Object.prototype names (constructor/toString/…) as truthy Functions (console-g14a).
+      if (options.runtimeLaneEligibility && typeof options.runtimeLaneEligibility === 'object'
+        && Object.hasOwn(options.runtimeLaneEligibility, lane.laneId)) {
+        reasons.push(options.runtimeLaneEligibility[lane.laneId]);
+      }
       if (lane.roots.some((root) => normalizePattern(root).startsWith('backend/')) && stateText(capability, 'backend') !== 'not_applicable' && !lane.buckTargets.length) reasons.push('missing_backend_buck_targets');
       if (reasons.length) { held.push({ capability_id: capability.id, lane_id: lane.laneId, reasons }); continue; }
       admitted.push({ capability_id: capability.id, lane_id: lane.laneId, lane_kind: lane.kind, owner: lane.owner, worktree: lane.worktree, branch: lane.branch, resources, buck_isolation_dir: buckIsolationDir(options.anchorSha, lane.laneId), signature_story_id: capability.signature_story.id, evidence_path: capability.evidence_path, private_roots: roots.privateRoots, protected_roots: protectedRoots, shared_roots: sharedByCapability.get(capability.id), excluded_shared_roots: roots.excludedSharedRoots, buck2_targets: [...new Set(lane.buckTargets)].sort(compareText), leaf_commands: [...new Set(lane.leafCommands)].sort(compareText), quality_utility: round(laneScore(capability, options.qualityBias)), dependencies: [...new Set(arrays(capability.dependencies))].sort(compareText) });
@@ -433,7 +438,10 @@ export function buildFanoutPlan(registry, options) {
     if (typeof consolidation?.branch !== 'string' || !consolidation.branch.trim()) prerequisites.push('invalid_consolidation_branch');
     if (!consolidationResources) prerequisites.push('invalid_consolidation_resource_requirements');
     else if (RESOURCE_KEYS.some((key) => consolidationResources[key] > budgets[key])) prerequisites.push('consolidation_resources_exceed_epoch_capacity');
-    if (options.runtimeConsolidationEligibility?.[capability.id]) prerequisites.push(options.runtimeConsolidationEligibility[capability.id]);
+    if (options.runtimeConsolidationEligibility && typeof options.runtimeConsolidationEligibility === 'object'
+      && Object.hasOwn(options.runtimeConsolidationEligibility, capability.id)) {
+      prerequisites.push(options.runtimeConsolidationEligibility[capability.id]);
+    }
     return { capability_id: id, shared_roots: sharedByCapability.get(id) ?? [], ready_after_leaf_review: prerequisites.length === 0 && awaiting.length === 0 && !(unassignedByCapability.get(id) ?? []).length, review_prerequisites: prerequisites, awaiting_lane_ids: awaiting, awaiting_unassigned_roots: unassignedByCapability.get(id) ?? [] };
   }).filter((entry) => entry.shared_roots.length).sort((a,b) => compareText(a.capability_id,b.capability_id));
   const reviewQueue = [...selected.map((lane) => ({ capability_id: lane.capability_id, lane_id: lane.lane_id, reason: 'leaf_result_requires_exact_independent_review_receipt' })), ...reviewReady].sort((a,b) => compareText(a.capability_id,b.capability_id) || compareText(a.reason,b.reason));
