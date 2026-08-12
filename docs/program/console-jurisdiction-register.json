@@ -1,6 +1,6 @@
 {
   "schema_version": "console-jurisdiction-register-v2",
-  "last_refreshed": "2026-08-12T06:40:00-04:00",
+  "last_refreshed": "2026-08-12T07:15:00-04:00",
   "target_jurisdiction_set": [
     "KR"
   ],
@@ -1026,5 +1026,5 @@
     "historical_implementation_freeze_ref": "refs/tags/archive/pre-pivot-implementation-freeze-2026-07-24",
     "candidate_evidence_status": "HOLD"
   },
-  "authority_train_note": "Refreshed with the console-5yn (#767) authority tip — single-T remint after restack onto Wave C and executed-tests attribute lock for logistics/rest/src/lib.rs (product C 8ba969ae92f8). No jurisdiction, control, or coverage claim changed in this commit."
+  "authority_train_note": "Refreshed with the ledger close for console-5yn / console-qjb open-bead prose (#768) \u2014 single-T remint on docs candidate C ed0bbba5d2a290cd0de68abef83f2c9ae0a9f84a. Records CLOSED via #767 / 4417bb377 (5yn) and already-on-tip #703 (qjb). No jurisdiction, control, or coverage claim changed in this commit."
 }
