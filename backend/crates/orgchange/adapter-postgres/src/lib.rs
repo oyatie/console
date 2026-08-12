@@ -11,7 +11,9 @@
 //! through them could commit a partial apply. The executor therefore performs
 //! the op SQL itself inside the single apply transaction, re-implementing the
 //! SAME referential guards identity/registry enforce (active branches / active
-//! users / non-terminal equipment); the DB constraints remain the second net.
+//! users / non-terminal equipment / **active target region** for
+//! `CreateBranch` and `RenameBranch{region_id: Some(_)}` — console-k6wm inverse
+//! of `DeactivateRegion`); the DB constraints remain the second net.
 /// `ObjectKey::Employment`'s port, plus the `employees` statements the REST
 /// handlers used to hold. The contract names THIS crate as that object's owner,
 /// so the port lives here rather than in the canonical adapter.
@@ -778,6 +780,27 @@ async fn assert_change_window_open(
     Ok(())
 }
 
+/// Inverse of `DeactivateRegion`'s active-branch guard (console-k6wm / identity
+/// lx6 sibling). Called by both `CreateBranch` and `RenameBranch` region_id arms
+/// so the region-active invariant cannot drift between the two write paths.
+/// Missing region → conflict (matches other apply_op not-found style);
+/// deactivated → conflict (409). A CHECK/partial index cannot express this
+/// cross-row rule.
+async fn require_active_region_tx(tx: Tx<'_, '_>, region_id: Uuid) -> Result<(), PgOrgChangeError> {
+    let row: Option<(Uuid, Option<OffsetDateTime>)> =
+        sqlx::query_as("SELECT id, deactivated_at FROM regions WHERE id = $1 FOR UPDATE")
+            .bind(region_id)
+            .fetch_optional(tx.as_mut())
+            .await?;
+    let Some((_, deactivated_at)) = row else {
+        return Err(KernelError::conflict("region was not found").into());
+    };
+    if deactivated_at.is_some() {
+        return Err(KernelError::conflict("비활성화된 지역에는 지점을 배정할 수 없습니다.").into());
+    }
+    Ok(())
+}
+
 async fn apply_ops(
     tx: Tx<'_, '_>,
     org: OrgId,
@@ -885,6 +908,10 @@ async fn apply_op(
             ("region", *region_id)
         }
         OrgProposalOp::CreateBranch { region_id, name } => {
+            // Inverse of DeactivateRegion's active-branch guard (console-k6wm /
+            // identity lx6 sibling): refuse assigning a live branch under a
+            // soft-deleted region that list_regions hides.
+            require_active_region_tx(tx, *region_id).await?;
             let id = Uuid::new_v4();
             sqlx::query(
                 "INSERT INTO branches (id, region_id, name, created_at, org_id) \
@@ -923,6 +950,7 @@ async fn apply_op(
                 return Err(KernelError::conflict("branch was not found").into());
             }
             if let Some(region_id) = region_id {
+                require_active_region_tx(tx, *region_id).await?;
                 sqlx::query("UPDATE branches SET region_id = $2 WHERE id = $1")
                     .bind(branch_id)
                     .bind(region_id)

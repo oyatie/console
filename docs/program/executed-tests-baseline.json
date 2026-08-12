@@ -248,6 +248,7 @@
     "backend/crates/ontology/rest/tests/projected_dispatch_as_runtime_role.rs": 5,
     "backend/crates/ontology/rest/tests/publish_auto_create_action_as_runtime_role.rs": 2,
     "backend/crates/orgchange/adapter-postgres/src/lib.rs": 2,
+    "backend/crates/orgchange/adapter-postgres/tests/apply_refuses_deactivated_region.rs": 1,
     "backend/crates/orgchange/adapter-postgres/tests/employment_port_as_runtime_role.rs": 21,
     "backend/crates/orgchange/adapter-postgres/tests/org_reference_surface.rs": 4,
     "backend/crates/orgchange/adapter-postgres/tests/preflight_persists_nothing.rs": 5,

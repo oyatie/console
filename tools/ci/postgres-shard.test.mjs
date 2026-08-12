@@ -89,7 +89,9 @@ test("real postgres-cargo-map workflow set partitions cleanly with balanced doma
   // +6 would "correct" this to 88 and turn the tripwire red for the wrong reason.
   // 84 -> 85: orgchange org_reference_surface (console-7sx FORCE-RLS/console_rt pin) joined the
   // domain workflow set via postgres-cargo-map.
-  assert.equal(da + db, 85, `expected 85 domain entries, got ${da + db}`);
+  // 85 -> 86: orgchange apply_refuses_deactivated_region joined the workflow set (k6wm map
+  // peripheral on tip). Domain family; bumps the domain halves inventory by one.
+  assert.equal(da + db, 86, `expected 86 domain entries, got ${da + db}`);
 });
 
 test("shardIdForPackage with domain map resolves domain packages", () => {

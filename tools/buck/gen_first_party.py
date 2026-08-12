@@ -723,6 +723,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         # unit: port_error_kind pins under src/employment.rs (avb CanonicalPortError).
         'unit': 'none',
         'integration': {
+            'tests/apply_refuses_deactivated_region.rs': 'postgres',
             'tests/employment_port_as_runtime_role.rs': 'postgres',
             'tests/org_reference_surface.rs': 'postgres',
             'tests/preflight_persists_nothing.rs': 'postgres',
