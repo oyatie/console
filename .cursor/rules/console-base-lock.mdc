@@ -61,10 +61,11 @@ Update owned module docs / registries / baselines / beads / docs that described 
 
 ## Done means receipt validates
 
-Before claiming done / asking to merge, write the receipt **inside the lane worktree** (not the hub): `<lane-worktree>/.cursor/receipts/<lane-id>.json`, then validate. The validator currently lives only in the hub (untracked until `chore-cursor-ratchet` lands), so invoke it by absolute hub path against the lane receipt:
+Before claiming done / asking to merge, write the receipt **inside the lane worktree** (not the hub): `<lane-worktree>/.cursor/receipts/<lane-id>.json`, then validate with the tracked W1.0 validator (PR #770). The Cursor-native helper remains the incumbent build-schema checker until the consolidation lane collapses the two:
 
 ```bash
-node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs <lane-worktree>/.cursor/receipts/<lane-id>.json
+node scripts/console/validate-lane-receipt.mjs <lane-worktree>/.cursor/receipts/<lane-id>.json
+# incumbent: node scripts/cursor/validate-lane-receipt.mjs <lane-receipt>
 ```
 
 Exit nonzero = not done. Do not open a second fix round to invent fields — fill them before the first push. Hub-only receipts are failure class `process.receipt-location-drift`.

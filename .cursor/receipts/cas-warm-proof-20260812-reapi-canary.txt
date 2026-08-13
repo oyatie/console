@@ -1,9 +1,0 @@
-=== oyatie CAS REAPI canary (Access TCP) ===
-write=cw.oyatie.dev read=cr.oyatie.dev instance=main
-dns cw=172.67.152.202 cr=104.21.2.125
---- GetCapabilities (read) ---
---- GetCapabilities (write) ---
---- FindMissingBlobs digest=11609479854e185e83590e40160474a64a5d26263301bcdaa4350db9f5b4e399 ---
-verdict: GREEN_REAPI — Access TCP + Capabilities + FindMissingBlobs OK
-artifacts: /tmp/oya-cas-caps-{read,write}.json /tmp/oya-cas-fmb-{read,write}.json
-NOTE: does not license fleet warm_reads_licensed; cite this run in a reviewed flip PR

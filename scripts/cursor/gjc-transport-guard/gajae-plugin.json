@@ -1,11 +1,13 @@
 {
   "kind": "gajae-code-plugin",
   "name": "hub-aware-gjc-transport-guard",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "tools": ["policy.mjs"],
   "hooks": [
     { "name": "transport-guard-bash", "event": "tool_call", "target": "bash", "phase": "before", "path": "hooks/transport-guard.ts" },
     { "name": "transport-guard-edit", "event": "tool_call", "target": "edit", "phase": "before", "path": "hooks/transport-guard.ts" },
-    { "name": "transport-guard-write", "event": "tool_call", "target": "write", "phase": "before", "path": "hooks/transport-guard.ts" }
+    { "name": "transport-guard-write", "event": "tool_call", "target": "write", "phase": "before", "path": "hooks/transport-guard.ts" },
+    { "name": "transport-guard-ast-edit", "event": "tool_call", "target": "ast_edit", "phase": "before", "path": "hooks/transport-guard.ts" },
+    { "name": "transport-guard-apply-patch", "event": "tool_call", "target": "apply_patch", "phase": "before", "path": "hooks/transport-guard.ts" }
   ]
 }

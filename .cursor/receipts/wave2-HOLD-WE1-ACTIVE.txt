@@ -1,4 +1,0 @@
-HOLD_WE1 CLEARED_FOR_SEPARATE_TRACK (2026-08-11 post-#742)
-Three-leaf train #742 MERGED at be7b3e14 (i91/dgo.1/ae5). we1 NOT in that admit.
-we1 = PR #745 tip a07e90dd7 on main be7b3e14 — MERGEABLE; ACTIVE-headcount fix present; critic APPROVE.
-Babysit CI → merge → close console-we1.

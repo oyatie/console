@@ -125,7 +125,7 @@
     },
     {
       "path": ".cursor/failure-classes-2026-08-10.md",
-      "blob_sha": "51ec61c1641e7a0dd4f17d5036c43b80d8ae3d63",
+      "blob_sha": "c6ccaa92bc22cad0421c864e7cc355e13528498e",
       "class": "evidence",
       "owner": "repository maintainers",
       "status": "active",
@@ -3040,7 +3040,7 @@
       "status": "frozen",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "be0d4c15e963119d7173de01ba07621e5548848f",
+      "blob_sha": "b664ab73f2dffc4b3f70184556c0b12bdb4e94a5",
       "archive_tag": null
     },
     {

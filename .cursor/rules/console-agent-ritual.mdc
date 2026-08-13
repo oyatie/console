@@ -29,7 +29,7 @@ Two instruction tiers exist. **Tier 1 (north-star):** the programme SSOT plan �
 
 ## D. Close (before you exit)
 
-1. **Receipt** — implementer: schema-valid `<lane-worktree>/.cursor/receipts/<id>.json` (lane, not hub — hub-only = `process.receipt-location-drift`); critic: verdict + `provenByExecution` per finding in the same lane worktree; scout/auditor/recon: findings map with E/I/U tags; planner: updated SSOT section, not a new plan file. Validate via hub absolute path until the ratchet lands: `node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs <lane-receipt>`.
+1. **Receipt** — implementer: schema-valid `<lane-worktree>/.cursor/receipts/<id>.json` (lane, not hub — hub-only = `process.receipt-location-drift`); critic: verdict + `provenByExecution` per finding in the same lane worktree; scout/auditor/recon: findings map with E/I/U tags; planner: updated SSOT section, not a new plan file. Validate with the tracked W1.0 validator: `node scripts/console/validate-lane-receipt.mjs <lane-receipt>` (incumbent helper: `scripts/cursor/validate-lane-receipt.mjs`).
 2. **Flow delta** — one line: what changed for whoever consumes your output (e.g. "leaf ready to admit", "BLOCK: regression pin missing", "lanes X/Y disjoint, Z collides").
 3. **Exit** — return and stop. No CI-watch loops after your receipt; watching belongs to babysit. If you learned a process defect, elevate one line for the SSOT/failure-classes — do not silently patch process.
 

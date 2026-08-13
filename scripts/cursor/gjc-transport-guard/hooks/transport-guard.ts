@@ -1,11 +1,16 @@
 /**
- * Constrained GJC plugin hook: intercepts bash/edit/write tool_call events
- * and applies the shared hub-aware transport policy.
+ * Constrained GJC plugin hook: intercepts bash/edit/write/ast_edit/apply_patch
+ * tool_call events and applies the shared hub-aware transport policy.
  *
  * The factory may only register the declared event. Host mutation APIs are denied.
+ *
+ * cwd comes from hook context (session cwd). bash may also set input.cwd; the
+ * policy resolves that override. Empty cwd cannot satisfy a hub product-write claim.
  */
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+
+const GUARDED = new Set(["bash", "edit", "write", "ast_edit", "apply_patch"]);
 
 type PolicyMod = {
 	evaluateToolCall: (call: {
@@ -28,8 +33,8 @@ export default async function registerTransportGuard(api: {
 	api.on("tool_call", (event: unknown, ctx: unknown) => {
 		const ev = event && typeof event === "object" ? (event as Record<string, unknown>) : {};
 		const context = ctx && typeof ctx === "object" ? (ctx as Record<string, unknown>) : {};
-		const toolName = String(ev.toolName ?? "");
-		if (toolName !== "bash" && toolName !== "edit" && toolName !== "write") return {};
+		const toolName = String(ev.toolName ?? ev.tool_name ?? ev.name ?? "");
+		if (!GUARDED.has(toolName)) return {};
 		const input = ev.input && typeof ev.input === "object" ? (ev.input as Record<string, unknown>) : {};
 		const cwd = typeof context.cwd === "string" ? context.cwd : "";
 		const verdict = policy.evaluateToolCall({ toolName, input, cwd });
