@@ -1,0 +1,38 @@
+2026-08-11T16:43:34.8578800Z Current runner version: '2.336.0'
+2026-08-11T16:43:34.8605820Z ##[group]Runner Image Provisioner
+2026-08-11T16:43:34.8606687Z Hosted Compute Agent
+2026-08-11T16:43:34.8607374Z Version: 20260707.563
+2026-08-11T16:43:34.8608010Z Commit: 02667638d2b423fbc733a8e32a88b44996a3ba6e
+2026-08-11T16:43:34.8608716Z Build Date: 2026-07-07T19:33:50Z
+2026-08-11T16:43:34.8609497Z Worker ID: {8077625b-4263-4b4f-911e-cb4e70f4716d}
+2026-08-11T16:43:34.8610260Z Azure Region: eastus
+2026-08-11T16:43:34.8610877Z ##[endgroup]
+2026-08-11T16:43:34.8613060Z ##[group]Operating System
+2026-08-11T16:43:34.8613730Z Ubuntu
+2026-08-11T16:43:34.8614411Z 24.04.4
+2026-08-11T16:43:34.8614997Z LTS
+2026-08-11T16:43:34.8615504Z ##[endgroup]
+2026-08-11T16:43:34.8616138Z ##[group]Runner Image
+2026-08-11T16:43:34.8616742Z Image: ubuntu-24.04
+2026-08-11T16:43:34.8617348Z Version: 20260720.247.2
+2026-08-11T16:43:34.8618684Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260720.247/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-11T16:43:34.8620282Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260720.247
+2026-08-11T16:43:34.8621246Z ##[endgroup]
+2026-08-11T16:43:34.8622507Z ##[group]GITHUB_TOKEN Permissions
+2026-08-11T16:43:34.8624775Z Contents: read
+2026-08-11T16:43:34.8625442Z Metadata: read
+2026-08-11T16:43:34.8626030Z ##[endgroup]
+2026-08-11T16:43:34.8628188Z Secret source: Actions
+2026-08-11T16:43:34.8629588Z Prepare workflow directory
+2026-08-11T16:43:34.8954110Z Prepare all required actions
+2026-08-11T16:43:34.9055927Z Complete job name: Dispatch, attendance and ontology — disposable PostgreSQL reachability
+2026-08-11T16:43:34.9844304Z ##[group]Run test "cancelled" = success &&
+2026-08-11T16:43:34.9845284Z [36;1mtest "cancelled" = success &&[0m
+2026-08-11T16:43:34.9845986Z [36;1mtest "cancelled" = success &&[0m
+2026-08-11T16:43:34.9846678Z [36;1mtest "cancelled" = success &&[0m
+2026-08-11T16:43:34.9847442Z [36;1mtest "cancelled" = success &&[0m
+2026-08-11T16:43:34.9848245Z [36;1mtest "cancelled" = success[0m
+2026-08-11T16:43:35.0306233Z shell: /usr/bin/bash -e {0}
+2026-08-11T16:43:35.0307942Z ##[endgroup]
+2026-08-11T16:43:35.0672744Z ##[error]Process completed with exit code 1.
+2026-08-11T16:43:35.0844884Z Cleaning up orphan processes

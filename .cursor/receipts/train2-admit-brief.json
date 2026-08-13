@@ -1,0 +1,522 @@
+{
+  "role": "admit-coordinator-prep",
+  "artifact": "train2-admit-brief",
+  "writtenAt": "2026-08-10T15:01:00-04:00",
+  "bqgParkVerify": {
+    "verifiedAt": "2026-08-10T18:30:00-04:00",
+    "architectClaim": "58ee54a1 \u2014 bqg tip byte-identical duplicate of APPROVED soe leaf",
+    "verdict": "REAL_DELTA_NOT_DUPLICATE",
+    "evidence": {
+      "bqgTip": "61175ffa26387b8922a12ec8cf80786cad0eb8fe",
+      "bqgTree": "bf311de50508b88c631c409f638241501ba25f3d",
+      "soeTip": "09ac785f0d613654393cedee2d25a1bda72240c8",
+      "soeTree": "73a580ae27f010176d1b273917606074d6efde30",
+      "bqgParentSoeCherryPick": "254adc8bb24273a90ab680d8d29f7616bef44f6f",
+      "bqgParentTreeEqualsSoe": true,
+      "imageReleaseYmlSoeVsBqgtip": "byte-identical",
+      "realDeltaPaths": [
+        "scripts/check-production-hardening.mjs",
+        "scripts/check-production-hardening.test.mjs"
+      ],
+      "realDeltaStat": "+103 lines (static needle: post-migrate/pre-boot canonical-enforce)"
+    },
+    "admitPolicy": "DROP bqg from separate-leaf admit list (never was in orderedAdmitList; keep DROPPED). soe remains order 1. Fold bqg needle as soe-paired hub commit at admit \u2014 do NOT open a 10th leaf slot. Do NOT close console-bqg as duplicate-of-soe.",
+    "critic1211af04": "COMPLETED APPROVE \u2014 receipt /Users/jasonlee/Developer/console-lane-bqg/.cursor/receipts/console-bqg-critic.json @ tip 61175ffa2. Separate-leaf admit PARKED pending soe-only leaf + joint hub pin; do not fight the critic verdict on the needle product.",
+    "beadAction": "console-bqg annotated+notes: PARK separate-leaf; remain open as soe-admit-window hub follow-up"
+  },
+  "premiseCheck": {
+    "originMain": "7b568df9db961fa8aa3f36917eaa13c6af2c3023",
+    "pr622": {
+      "number": 622,
+      "state": "OPEN",
+      "mergedAt": null,
+      "url": "https://github.com/jason931225/console/pull/622",
+      "title": "fix(p4): wave-1 canonical hardening \u2014 tai.1 SQL lexer, uoh ambiguous-binding refuse, q06 subject bind",
+      "poll": "one-shot at brief write \u2014 NOT merged; do NOT open train-2 PR"
+    },
+    "baseLockNote": "All inventoried leaves are currently based on origin/main 7b568df9d (#618). After #622 merges, every leaf MUST restack onto the new main tip before serial admission."
+  },
+  "readiness": "BRIEF_READY_BLOCKED_ON_622 \u2014 inventory complete (12 APPROVED leaves incl. 937 + pdo + ctk); train PR forbidden until origin/main contains #622",
+  "criticAuthority": "Hard APPROVE only from lane-worktree critic receipts (not hub copies). Hub .cursor/receipts/ann-critic.json is STALE BLOCK @ 9f5804a8d \u2014 ignore; canonical is console-lane-ann/.cursor/receipts/ann-critic.json APPROVE @ 7e8bb2808.",
+  "orderedAdmitList": [
+    {
+      "order": 1,
+      "lane": "soe",
+      "bead": "console-soe",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-soe/.cursor/receipts/soe-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console/.cursor/receipts/soe.json",
+      "tipSha": "09ac785f0d613654393cedee2d25a1bda72240c8",
+      "productTipSha": "09ac785f0d613654393cedee2d25a1bda72240c8",
+      "worktree": "/Users/jasonlee/Developer/console-lane-soe",
+      "branch": "lane/console-soe",
+      "ownedRoots": [
+        ".github/workflows/image-release.yml"
+      ],
+      "productPaths": [
+        ".github/workflows/image-release.yml"
+      ],
+      "notes": "Proven major (ownerLease\u2192bqg): no static pin for the new step. Pair admit with bqg HUB commit (needle product tip 61175ffa2) + jth COVERED header flip \u2014 bqg is NOT a separate ordered leaf (architect duplicate claim REFUTED; real hardening delta). Babysit first live image-release job.services edge."
+    },
+    {
+      "order": 2,
+      "lane": "mbl",
+      "bead": "console-mbl",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-mbl/.cursor/receipts/mbl-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-mbl/.cursor/receipts/mbl.json",
+      "tipSha": "e7e3aba1185e5138064e2cc936629d0122a95477",
+      "productTipSha": "458b88c1f0f8dd9d7f7c3d89b8d7ab85ee2f8fe5",
+      "worktree": "/Users/jasonlee/Developer/console-lane-mbl",
+      "branch": "lane/console-mbl",
+      "ownedRoots": [
+        "backend/crates/platform/audit-chain/**"
+      ],
+      "productPaths": [
+        "backend/crates/platform/audit-chain/src/external.rs",
+        "backend/crates/platform/audit-chain/src/lib.rs",
+        "backend/crates/platform/audit-chain/tests/audit_chain_rls.rs"
+      ],
+      "notes": "Tip includes receipt chore atop product 458b88c1f. Do NOT close gh#271 as production-tamper-evident \u2014 ae5 owns wiring."
+    },
+    {
+      "order": 3,
+      "lane": "9ze",
+      "bead": "console-9ze",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-9ze/.cursor/receipts/9ze-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-9ze/.cursor/receipts/9ze.json",
+      "tipSha": "18f6e2f280358b1e3c1b51f5d994d066e9086ec9",
+      "productTipSha": "18f6e2f280358b1e3c1b51f5d994d066e9086ec9",
+      "worktree": "/Users/jasonlee/Developer/console-lane-9ze",
+      "branch": "lane/console-9ze",
+      "ownedRoots": [
+        "scripts/console/route-inventory.mjs",
+        "scripts/console/route-inventory.test.mjs"
+      ],
+      "productPaths": [
+        "scripts/console/route-inventory.mjs",
+        "scripts/console/route-inventory.test.mjs"
+      ],
+      "notes": "Residual layer-boundary sighting tracked as cvh (not a train-2 leaf)."
+    },
+    {
+      "order": 4,
+      "lane": "ls3",
+      "bead": "console-ls3",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-ls3/.cursor/receipts/ls3-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-ls3/.cursor/receipts/ls3.json",
+      "tipSha": "b430588633911f31c1e738e5ab268b36c6f436e3",
+      "productTipSha": "b7f2fb2287f921b2d618fa886edc2dfb743f397f",
+      "worktree": "/Users/jasonlee/Developer/console-lane-ls3",
+      "branch": "lane/console-ls3",
+      "ownedRoots": [
+        "backend/crates/workorder/application/**",
+        "backend/crates/workorder/adapter-postgres/**",
+        "backend/crates/dispatch/adapter-postgres/**"
+      ],
+      "productPaths": [
+        "backend/crates/workorder/application/src/lib.rs",
+        "backend/crates/workorder/adapter-postgres/src/lib.rs",
+        "backend/crates/workorder/adapter-postgres/tests/use_cases.rs",
+        "backend/crates/dispatch/adapter-postgres/src/lib.rs"
+      ],
+      "notes": "Critic reviewed product tip b7f2fb228; worktree HEAD is receipt-finalize chore. Optional later: OrgId::knl serde default sweep (platform/jobs) \u2014 class bead, not ls3 patch."
+    },
+    {
+      "order": 5,
+      "lane": "l6c",
+      "bead": "console-l6c",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-l6c/.cursor/receipts/l6c-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-l6c/.cursor/receipts/l6c.json",
+      "tipSha": "e8347a0c0fe6c0bcd9411448bea83600ef5a735d",
+      "productTipSha": "3b71464ff35ed1a541d05e7bd5f4916648af3e38",
+      "worktree": "/Users/jasonlee/Developer/console-lane-l6c",
+      "branch": "lane/console-l6c",
+      "ownedRoots": [
+        "backend/app/src/collaboration.rs"
+      ],
+      "productPaths": [
+        "backend/app/src/collaboration.rs"
+      ],
+      "notes": "OpenAPI collaboration prose refresh is ownerLease (outside root). Optional later: grant.branch_scope geometry (authz.grant-branch-scope-ignored) \u2014 do not treadmill."
+    },
+    {
+      "order": 6,
+      "lane": "cm3",
+      "bead": "console-cm3",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-cm3/.cursor/receipts/cm3-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-cm3/.cursor/receipts/cm3.json",
+      "tipSha": "6609ba107963e4306427f47f5cc966c7b1cf14b4",
+      "productTipSha": "6609ba107963e4306427f47f5cc966c7b1cf14b4",
+      "worktree": "/Users/jasonlee/Developer/console-lane-cm3",
+      "branch": "lane/console-cm3",
+      "ownedRoots": [
+        "backend/crates/leave/**",
+        "backend/crates/platform/db/migrations/0216_leave_requests_kr_labor_guardrails.sql",
+        "backend/openapi/openapi.yaml",
+        "backend/crates/attendance/adapter-postgres/tests/** (fixtures only)",
+        "backend/crates/platform/db/tests/attendance_console_migration_contract.rs"
+      ],
+      "productPaths": [
+        "backend/crates/leave/domain/src/lib.rs",
+        "backend/crates/leave/application/src/lib.rs",
+        "backend/crates/leave/adapter-postgres/src/lib.rs",
+        "backend/crates/leave/adapter-postgres/tests/leave_rls_surfaces_as_runtime_role.rs",
+        "backend/crates/leave/rest/src/lib.rs",
+        "backend/crates/leave/rest/tests/leave_http_personas.rs",
+        "backend/crates/attendance/adapter-postgres/tests/cancel_substitution.rs",
+        "backend/crates/attendance/adapter-postgres/tests/concurrency.rs",
+        "backend/crates/platform/db/tests/attendance_console_migration_contract.rs",
+        "backend/crates/platform/db/migrations/0216_leave_requests_kr_labor_guardrails.sql",
+        "backend/openapi/openapi.yaml"
+      ],
+      "notes": "Charter retention+FSM adjudicated COHERENT_WITH_CHARTER \u2014 acknowledge on admit. Renumber 0216 if main gained migrations via #622. Flag v1 status value-domain growth to Kotlin client owner."
+    },
+    {
+      "order": 7,
+      "lane": "zd7",
+      "bead": "console-zd7",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-zd7/.cursor/receipts/zd7-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-zd7/.cursor/receipts/zd7.json",
+      "tipSha": "0950313f51a3d94272c71729396da023054bf809",
+      "productTipSha": "b898287e74e1168cd7fb0a659209a9d5126b3d75",
+      "worktree": "/Users/jasonlee/Developer/console-lane-zd7",
+      "branch": "lane/console-zd7",
+      "ownedRoots": [
+        ".claude/workflows/stale-take-audit.js",
+        ".claude/workflows/lane-fanout.test.mjs"
+      ],
+      "productPaths": [
+        ".claude/workflows/stale-take-audit.js",
+        ".claude/workflows/lane-fanout.test.mjs"
+      ],
+      "notes": "Critic APPROVE bound to product tip b898287e7; HEAD 0950313f5 is post-APPROVE receipt tip-bind chore (critic-requested). Soft: prefer admitting through tip-bind HEAD. Owns lane-fanout.test.mjs \u2014 natural home for zyw oracle retarget if folded at admit; also soft-collides with pdo (order 11) on same file \u2014 admit zd7 before pdo."
+    },
+    {
+      "order": 8,
+      "lane": "ann",
+      "bead": "console-ann",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-ann/.cursor/receipts/ann-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-ann/.cursor/receipts/ann.json",
+      "tipSha": "7e8bb2808be6d55dea30359cafa855aa55de884b",
+      "productTipSha": "7e8bb2808be6d55dea30359cafa855aa55de884b",
+      "worktree": "/Users/jasonlee/Developer/console-lane-ann",
+      "branch": "lane/console-ann",
+      "ownedRoots": [
+        "scripts/check-openapi-refs.mjs",
+        "scripts/check-openapi-refs.test.mjs",
+        "package.json (check:request-body-contract script body only)"
+      ],
+      "productPaths": [
+        "scripts/check-openapi-refs.mjs",
+        "scripts/check-openapi-refs.test.mjs",
+        "package.json"
+      ],
+      "notes": "Fix-round tip after prior BLOCK (prototype-chain). Class sweep remainder = i91. Soft-collides with wnv on package.json (disjoint hunks)."
+    },
+    {
+      "order": 9,
+      "lane": "wnv",
+      "bead": "console-wnv",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-wnv/.cursor/receipts/wnv-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-wnv/.cursor/receipts/wnv.json",
+      "tipSha": "2f4765d13422da508f4fbb061c82b15e54aeda46",
+      "productTipSha": "73dcc7d99e57ab7994464e73e5c985d38f5e55e7",
+      "worktree": "/Users/jasonlee/Developer/console-lane-wnv",
+      "branch": "lane/console-wnv",
+      "ownedRoots": [
+        "scripts/check-platform-contract-drift.mjs",
+        "scripts/check-platform-contract-drift.test.mjs",
+        "package.json (check:platform-contract-drift script body only)"
+      ],
+      "productPaths": [
+        "scripts/check-platform-contract-drift.mjs",
+        "scripts/check-platform-contract-drift.test.mjs",
+        "package.json"
+      ],
+      "notes": "Admit AFTER ann (shared package.json). Elevate zyw already open for lane-fanout.test.mjs source-contains retarget (zd7 owns that file)."
+    },
+    {
+      "order": 10,
+      "lane": "937",
+      "bead": "console-937",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-937/.cursor/receipts/937-fix-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-937/.cursor/receipts/console-937-fix.json",
+      "tipSha": "403cd8f8788b645e2d96d06c754751b1b2605ca9",
+      "productTipSha": "403cd8f8788b645e2d96d06c754751b1b2605ca9",
+      "worktree": "/Users/jasonlee/Developer/console-lane-937",
+      "branch": "lane/console-937",
+      "ownedRoots": [
+        "backend/ci/gates/rls-arming/**",
+        "backend/ci/gates/audit-coverage/**",
+        "backend/app/src/{console_telemetry,lib,workflow_drain,workflow_schedules}.rs",
+        "backend/crates/kernel/core/src/audit.rs",
+        "docs/CI-GATES.md",
+        "docs/decisions/ADR-0002*.md",
+        "docs/decisions/ADR-0029*.md",
+        "docs/decisions/ADR-0040*.md",
+        "docs/decisions/README.md",
+        "docs/documentation-{index,manifest.seed}.json"
+      ],
+      "productPaths": [
+        "backend/app/src/console_telemetry.rs",
+        "backend/app/src/lib.rs",
+        "backend/app/src/workflow_drain.rs",
+        "backend/app/src/workflow_schedules.rs",
+        "backend/ci/gates/audit-coverage/Cargo.toml",
+        "backend/ci/gates/audit-coverage/src/lib.rs",
+        "backend/ci/gates/audit-coverage/tests/gate_detects_violation.rs",
+        "backend/ci/gates/rls-arming/src/lib.rs",
+        "backend/crates/kernel/core/src/audit.rs",
+        "docs/CI-GATES.md",
+        "docs/decisions/ADR-0002-auditfirst-transactional-discipline-audit-event-in.md",
+        "docs/decisions/ADR-0029-audit-coverage-exclusions-are-two.md",
+        "docs/decisions/ADR-0040-audit-coverage-console-telemetry-carve-out.md",
+        "docs/decisions/README.md",
+        "docs/documentation-index.json",
+        "docs/documentation-manifest.seed.json"
+      ],
+      "notes": "Fix-round + 937-fix-critic APPROVE @ tip 403cd8f8788b (prior product tip 5c5d8bdc1 superseded; console-937-critic.json APPROVE on blocked tip marked ignoredStaleApprove). Do NOT fold into #622. Soft-collides with l6c on backend/app/src/ (disjoint files: collaboration.rs vs telemetry/lib/workflow_*). Forces doc-manifest regen onto C (not T). Ignore 937-critic.json BLOCK and stale console-937-critic.json \u2014 canonical is 937-fix-critic.json APPROVE."
+    },
+    {
+      "order": 11,
+      "lane": "pdo",
+      "bead": "console-pdo",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-pdo/.cursor/receipts/pdo-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-pdo/.cursor/receipts/pdo.json",
+      "tipSha": "ec3d60b87e4858fc142fe541c08830609f1dca33",
+      "productTipSha": "ec3d60b87e4858fc142fe541c08830609f1dca33",
+      "worktree": "/Users/jasonlee/Developer/console-lane-pdo",
+      "branch": "lane/console-pdo",
+      "ownedRoots": [
+        ".claude/workflows/backlog-audit.js",
+        ".claude/workflows/lane-fanout.test.mjs"
+      ],
+      "productPaths": [
+        ".claude/workflows/backlog-audit.js",
+        ".claude/workflows/lane-fanout.test.mjs"
+      ],
+      "notes": "Batch A critic APPROVE @ tip ec3d60b87 \u2014 independent crate-disk-census for backlog-audit (closes Collect co-emission false green). Do NOT fold into #622. Soft-collides with zd7 on lane-fanout.test.mjs \u2014 admit AFTER zd7 (order 7). Critic minors (harness stub coupling; residual dual-agent omit) non-blocking."
+    },
+    {
+      "order": 12,
+      "lane": "ctk",
+      "bead": "console-ctk",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-ctk/.cursor/receipts/ctk-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-ctk/.cursor/receipts/ctk.json",
+      "tipSha": "ba2be5d9f9a2a66e4b16a9494cc6819bca7a8126",
+      "productTipSha": "ba2be5d9f9a2a66e4b16a9494cc6819bca7a8126",
+      "worktree": "/Users/jasonlee/Developer/console-lane-ctk",
+      "branch": "lane/console-ctk",
+      "ownedRoots": [
+        "backend/crates/identity/rest/**",
+        "backend/crates/platform/authz/**"
+      ],
+      "productPaths": [
+        "backend/crates/identity/rest/src/lib.rs",
+        "backend/crates/platform/authz/src/lib.rs"
+      ],
+      "notes": "Critic APPROVE @ tip ba2be5d9f \u2014 post-#622 / train-2-adjacent. Single-source custom_role_runtime_feature_allowed (authz pub SSOT; REST imports). Do NOT fold into #622. Identity siblings lx6/0lj stay PARKED (not admitted from this tip). Product paths pairwise disjoint from all prior ordered leaves (no soft path collision). Optional ownerLease: PG-gated ai_assist fold pin (critic minor, non-blocking)."
+    }
+  ],
+  "disjointnessMatrix": {
+    "method": "Pairwise product-path intersection on merge-base(origin/main=7b568df9d)..tip, excluding per-lane .cursor/receipts/*",
+    "hardCollisions": [],
+    "softCollisions": [
+      {
+        "lanes": [
+          "ann",
+          "wnv"
+        ],
+        "path": "package.json",
+        "detail": "Both edit scripts{} but different keys (check:request-body-contract vs check:platform-contract-drift). Hunks are disjoint \u2014 3-way merge should auto-resolve. MUST serialize: admit ann then wnv (or combine package.json in one admission commit).",
+        "mustSplitTrains": false,
+        "requiredAdmitOrder": [
+          "ann",
+          "wnv"
+        ]
+      },
+      {
+        "lanes": [
+          "wnv",
+          "zd7"
+        ],
+        "path": ".claude/workflows/lane-fanout.test.mjs",
+        "detail": "wnv product diff does not touch the file; follow-up zyw needs a string retarget inside zd7's owned root. Fold zyw into zd7 admit or land zyw after zd7 \u2014 do not let wnv rewrite zd7's root mid-train.",
+        "mustSplitTrains": false
+      },
+      {
+        "lanes": [
+          "l6c",
+          "937"
+        ],
+        "path": "backend/app/src/",
+        "detail": "Both touch backend/app/src/ but different files (l6c: collaboration.rs; 937: console_telemetry.rs, lib.rs, workflow_drain.rs, workflow_schedules.rs). Hunks should 3-way auto-resolve; serialize if lib.rs module wiring conflicts at admit.",
+        "mustSplitTrains": false
+      },
+      {
+        "lanes": [
+          "zd7",
+          "pdo"
+        ],
+        "path": ".claude/workflows/lane-fanout.test.mjs",
+        "detail": "Both edit lane-fanout.test.mjs (zd7: stale-take-audit pins; pdo: backlog-audit crate-disk-census pins). Different hunks expected but same file \u2014 MUST serialize: admit zd7 (order 7) then pdo (order 11). Do not parallel-admit harness leaves that share this file.",
+        "mustSplitTrains": false,
+        "requiredAdmitOrder": [
+          "zd7",
+          "pdo"
+        ]
+      }
+    ],
+    "fullyDisjointPairsNote": "soe / mbl / 9ze / ls3 / cm3 product roots pairwise disjoint from each other and from ann/wnv/zd7/pdo mechanism files (pdo uniquely owns backlog-audit.js among ordered leaves). 937 is pairwise product-file disjoint from cm3/mbl/soe/ann/wnv/9ze/ls3/zd7/pdo; soft-only with l6c under backend/app/src/. openapi.yaml only on cm3. 937 uniquely regenerates docs/documentation-{index,manifest.seed}.json among ordered leaves. zd7\u2194pdo soft on lane-fanout.test.mjs. ctk (order 12) product paths (platform/authz/src/lib.rs + identity/rest/src/lib.rs) are pairwise disjoint from all 11 prior ordered leaves \u2014 no hard or soft path collision recorded. Identity siblings lx6/0lj remain PARKED (potential future collision on identity/authz roots when unparked \u2014 not in orderedAdmitList).",
+    "mustSplitTrains": "NONE required for path disjointness. Optional split only if capacity/risk prefers a scripts-gates subtrain (ann+wnv+9ze) vs backend subtrain (mbl+cm3+ls3+l6c+937+ctk) vs harness (soe+zd7+pdo) \u2014 not mandated by collisions. Serialize zd7\u2192pdo within harness. bqg is hub-follow-up under soe, not a leaf in any subtrain. lx6/0lj stay parked."
+  },
+  "parkedSeparateLeaves": [
+    {
+      "lane": "bqg",
+      "bead": "console-bqg",
+      "reason": "REAL_DELTA_NOT_DUPLICATE \u2014 tip adds check-production-hardening needle atop soe-equivalent parent; PARK as separate leaf; fold into soe admit window as hub commit only",
+      "tipSha": "61175ffa26387b8922a12ec8cf80786cad0eb8fe",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-bqg/.cursor/receipts/console-bqg-critic.json",
+      "criticVerdict": "APPROVE (1211af04) \u2014 product pin OK; separate-leaf slot DENIED"
+    },
+    {
+      "lane": "lx6",
+      "bead": "console-lx6",
+      "reason": "Identity sibling of ctk \u2014 PARKED; do not admit with/from ctk tip ba2be5d9f; separate lease",
+      "tipSha": null,
+      "criticReceipt": null,
+      "criticVerdict": "PARKED \u2014 identity sibling; keep separate from ctk admit"
+    },
+    {
+      "lane": "0lj",
+      "bead": "console-0lj",
+      "reason": "Identity sibling of ctk \u2014 PARKED; do not admit with/from ctk tip ba2be5d9f; separate lease",
+      "tipSha": null,
+      "criticReceipt": null,
+      "criticVerdict": "PARKED \u2014 identity sibling; keep separate from ctk admit"
+    }
+  ],
+  "followUpBeads": {
+    "alreadyOpenConfirmOnAdmit": [
+      {
+        "id": "console-bqg",
+        "priority": "P1",
+        "why": "soe critic proven major ownerLease \u2014 static needle landed on lane tip 61175ffa2 (APPROVED by 1211af04). NOT a duplicate of soe; NOT a 10th ordered leaf. Fold product commit (drop smoke 9bef8eeef) in same admit window as soe; COVERED header flip remains jth.",
+        "when": "same admit window as soe (hub commit on admission branch) \u2014 separate-leaf PARKED"
+      },
+      {
+        "id": "console-ae5",
+        "priority": "P1",
+        "why": "mbl shipped crate mechanism only; production still uses InMemoryEd25519Signer until app wiring + custody transport",
+        "when": "after mbl lands; do not overclaim gh#271 closed-as-tamper-evident"
+      },
+      {
+        "id": "console-we1",
+        "priority": "P2",
+        "why": "cm3 deferred full \u00a760\u2464 consult workflow",
+        "when": "after cm3 admit"
+      },
+      {
+        "id": "console-kwm",
+        "priority": "P2",
+        "why": "cm3 deferred unproven major \u2014 pin leave guard trigger by name in privilege census",
+        "when": "after cm3 admit; do-not-treadmill on cm3 leaf"
+      },
+      {
+        "id": "console-i91",
+        "priority": "P2",
+        "why": "ann class sweep \u2014 prototype-chain false-resolve across scripts/check-*.mjs",
+        "when": "after ann admit"
+      },
+      {
+        "id": "console-cvh",
+        "priority": "P2",
+        "why": "9ze residual \u2014 sight HTML/Leptos smuggled inside existing non-ui crate (layer-boundary)",
+        "when": "after 9ze admit"
+      },
+      {
+        "id": "console-zyw",
+        "priority": "P3",
+        "why": "wnv removed generic-name deny-list string; lane-fanout.test.mjs source-contains oracle stale",
+        "when": "with/after zd7 (file owner) or as harness micro-lane"
+      },
+      {
+        "id": "console-h3e",
+        "priority": "P1",
+        "why": "Wave-1 / #622 subject-bind mechanism replacement (EmploymentQuery trait-default) \u2014 NOT a train-2 leaf, but stays open post-#622; do not lose in train-2 noise",
+        "when": "post-#622; independent of train-2 product roots"
+      }
+    ],
+    "closeOnAdmit": [
+      "console-soe",
+      "console-mbl (crate deliverable only \u2014 annotate ae5 for production)",
+      "console-9ze",
+      "console-ls3",
+      "console-l6c",
+      "console-cm3",
+      "console-zd7",
+      "console-ann",
+      "console-wnv",
+      "console-937",
+      "console-pdo",
+      "console-ctk"
+    ],
+    "doNotOpenDuplicate": "bqg/ae5/we1/kwm/i91/cvh/zyw/h3e/lx6/0lj already exist \u2014 confirm + schedule, do not recreate."
+  },
+  "authorityTrainDraft": {
+    "C": {
+      "role": "candidate tip \u2014 product leaves + tip ledger + docs/documentation-{index,manifest.seed}.json when a leaf forces doc-manifest regen (937 does; cm3 openapi is product not docs authority)",
+      "contents": "Serial cherry-picks/restacks of the 12 product tips (soe remains #1; 937 is #10; pdo is #11; ctk is #12; bqg is NOT a 13th leaf \u2014 fold its hardening-needle commit as soe-paired hub commit only; lx6/0lj stay PARKED) onto post-#622 main",
+      "never": "Do not put manifest/index edits on T"
+    },
+    "T": {
+      "role": "jurisdiction / tip-ledger authority doc only (allowlisted)",
+      "contents": "Single ledger tip recording train-2 admission + critic receipt SHAs + remaining HOLDs (ae5 production wiring, h3e, we1, etc.)",
+      "never": "docs/documentation-index.json, docs/documentation-manifest.seed.json, or any product path"
+    },
+    "signing": "All commits SSH-signed; preflight-forge.sh before push/PR"
+  },
+  "conventionalPrTitleDraft": "feat: train-2 admit \u2014 openapi $ref totality, image-release census, leave \u00a760, external seal signer, collab audience, audit-org threading, crate-disk census, authz AiAssist SSOT",
+  "conventionalPrTitleAlternates": [
+    "feat(gates): train-2 \u2014 ann/soe/wnv/9ze/937 + leave cm3 + audit mbl/ls3 + collab l6c + harness zd7/pdo + authz ctk",
+    "fix: train-2 leaf admission (ann soe mbl cm3 wnv 9ze ls3 zd7 l6c 937 pdo ctk)"
+  ],
+  "prBodySkeleton": {
+    "summaryBullets": [
+      "Admit twelve critic-APPROVED leaves after #622 lands (restack each onto merged main).",
+      "Gates: parser-based OpenAPI $ref totality (ann), platform-contract-drift module-scope (wnv), ADR-0030 \u00a78 Rust route sighting (9ze), image-release canonical-enforce wiring (soe) + bqg static pin, audit/RLS app-surface expansion (937), independent crate-disk census (pdo), authz custom_role SSOT for AiAssist (ctk).",
+      "Product: leave \uadfc\ub85c\uae30\uc900\ubc95 \u00a760 reshape (cm3), ExternalSealSigner crate (mbl\u2192ae5), collaboration audience (l6c), acting-tenant audit org (ls3), stale-take confirm attestation (zd7)."
+    ],
+    "testPlan": [
+      "Restack admission branch from post-#622 origin/main; serial admit in brief order; verify no package.json conflict after ann\u2192wnv; verify backend/app/src/ merge after l6c\u2192937; verify lane-fanout.test.mjs merge after zd7\u2192pdo; verify authz/identity-rest admit for ctk (no ordered-leaf path collision).",
+      "Land bqg needle + canonical-enforce COVERED flip in the same admit window as soe.",
+      "Keep lx6/0lj parked \u2014 do not fold identity siblings into ctk admit.",
+      "Scoped cargo/node suites cited in each lane receipt; no dark zero-select postgres targets.",
+      "Babysit first image-release run for soe job.services.postgres.id U-edge.",
+      "bd close the twelve leaf beads; leave ae5/we1/kwm/i91/cvh/zyw/h3e/bqg/lx6/0lj open as scheduled."
+    ]
+  },
+  "stopConditions": [
+    "origin/main does not yet contain #622 \u2192 write brief only (this artifact); do not open train PR",
+    "Any leaf critic flips to BLOCK or tip moves without re-APPROVE \u2192 drop/re-critique that leaf before admit",
+    "zd7 HEAD drifts further past receipt tip-bind without critic note \u2192 re-bind inventory",
+    "Migration 0216 collisions after #622 \u2192 renumber on admit (cm3 followUp)",
+    "937 tip moves past 403cd8f8788b without re-APPROVE \u2192 drop/re-critique before admit",
+    "pdo tip moves past ec3d60b87 without re-APPROVE \u2192 drop/re-critique before admit",
+    "Do not re-admit bqg as a separate ordered leaf unless a later park agent finds a NEW delta beyond check-production-hardening needle (park verdict REAL_DELTA_NOT_DUPLICATE \u2014 fold with soe only)",
+    "ctk tip moves past ba2be5d9f without re-APPROVE \u2192 drop/re-critique before admit",
+    "Do not admit lx6 or 0lj from the ctk tip / train-2 ordered list \u2014 identity siblings remain PARKED"
+  ],
+  "flowDelta": "Orchestrator: brief ready with 12 APPROVED leaves (ctk @ ba2be5d9f order 12; pdo @ order 11; 937 tip refreshed to 403cd8f8788b order 10 with 937-fix-critic APPROVE bind). No soft path collision for ctk vs prior ordered leaves. lx6/0lj parkedSeparateLeaves + bqgParkVerify PRESERVED. Hold train-2 PR until #622 squash-merges. Do NOT fold ctk/pdo/937 into #622."
+}

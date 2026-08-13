@@ -1,0 +1,19 @@
+{
+  "role": "admit-coordinator",
+  "phase": "continuous-backlog",
+  "bead": "console-gc9z",
+  "verdict": "HOLD",
+  "blocker": "ops.gh-api-rate-limit + dual-path #748 vs #754",
+  "pr748": {
+    "url": "https://github.com/jason931225/console/pull/748",
+    "tip": "430da5e406d90a0bfe8aa8540c3e2e02a9d42b8e",
+    "note": "solo leaf; CI cancel cascade; critic APPROVE valid"
+  },
+  "pr754": {
+    "url": "https://github.com/jason931225/console/pull/754",
+    "head": "admission/leaves-20260811",
+    "note": "atomic admit includes gc9z + kwm + cvh + 0lj"
+  },
+  "recommendation": "Prefer land #754 once API budget recovers (closes multiple residuals); close #748 as superseded without merge. Do not dual-merge.",
+  "babysit": "7da76cc4 elevated; no new merge agent while remaining=0"
+}

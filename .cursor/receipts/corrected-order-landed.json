@@ -1,0 +1,18 @@
+{
+  "schema": "admit-land-v1",
+  "correctedOrder": ["756", "755", "754", "759"],
+  "skipped": {"757": "already merged 111e65a1835a"},
+  "superseded": {"750": "756", "752": "756", "749": "754"},
+  "merges": {
+    "756": "9e29b627d401",
+    "755": "84655ce7881c",
+    "754": "e07fffde0a0b",
+    "759": "5770c04c469a",
+    "762": "ae699daed42d",
+    "761": "681540df427c",
+    "763": "950b3b100f9c"
+  },
+  "mainTip": "950b3b100f9c619ab920b30110aa14e2e17567df",
+  "beadsClosed": ["console-o498", "console-g14a", "console-y0n", "console-k6wm"],
+  "note": "759 final heal: clippy items_after_test_module. Backfill after corrected order: 762→761→763 with restack+T remints; 761/763 share orgchange adapter (serialized)."
+}

@@ -1,0 +1,22 @@
+{
+  "id": "land-763-k6wm-20260812",
+  "role": "admit-coordinator",
+  "pr": 763,
+  "bead": "console-k6wm",
+  "mergeSha": "950b3b100f9c619ab920b30110aa14e2e17567df",
+  "mergedAt": "2026-08-12T03:28:09Z",
+  "publishedTip": "a9fcbc879db8dce37dcbe754463b8db275e08992",
+  "fixCommit": "ba9718327ffdb3da088b9fcc1ba1dbda028a699d",
+  "implementer": "830e8713-d69f-4d57-8ef4-415d1e0e30c0",
+  "priorCritic": "aeecc867-d909-40fa-8442-ef69791fba4d",
+  "priorVerdict": "BLOCK (BUCK rust_test wrapper drop)",
+  "mainAtRecord": "d9808dd16d0f6a1e6117ad11a811313beff733e0",
+  "verifyOnMain": "adapter-postgres/BUCK has rust_test( immediately before preflight_persists_nothing name=",
+  "beadStatus": "CLOSED (pre-existing)",
+  "classBeadOpen": "console-cae0",
+  "processElevate": [
+    "process.receipt-location-drift — sibling /Users/jasonlee/Developer/console-lane-k6wm",
+    "dual-writer race — force-with-lease rejected; another writer restacked/merged"
+  ],
+  "flowDelta": "k6wm on main; cae0 sweep remains; no re-critique (already merged)"
+}

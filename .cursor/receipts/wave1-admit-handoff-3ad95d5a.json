@@ -1,0 +1,39 @@
+{
+  "from": "lane-implementer (admit rescue)",
+  "to": "3ad95d5a-eda2-4641-ab9d-2c6fb44e2099",
+  "pr": 622,
+  "stopped": true,
+  "noInFlightPush": true,
+  "originTip": {
+    "T": "bb5eb8d31c170234d32d831ae8cd494140762859",
+    "C": "d15fccf78ad2f81108b276b0c5c1ebf38f379079",
+    "product": "bade43367e862df4eeaabb0b4f83132aef1f40a7",
+    "shape": "C=ledger+seed/index; T=jurisdiction-register-only (#618 grammar)"
+  },
+  "supersededOwnerTip": {
+    "T": "4aec220ae31cfa9c2a29c8031cf4d159ecbd680b",
+    "C": "bade43367e862df4eeaabb0b4f83132aef1f40a7",
+    "note": "Was ledger-on-T (architect-forbidden). This session force-with-lease replaced it with bb5eb8d31 before STOP."
+  },
+  "blockerForBabysit": {
+    "severity": "blocker",
+    "claim": "Ledger REASONING-LENS-EVIDENCE on C=d15fccf78 was corrupted by shell backtick expansion during write; local npm run admit FAILED check:reasoning-lens-contract (exact marker/json-fence/newline). Push already landed — expect Repo gates / lens red unless republished.",
+    "fix": "Republish C′ from product bade43367 + valid ledger (recover template from 39217827d9112c6cfa1512d4e35a3e6b70c2fe18, rekey candidate to bade43367) + --write seed/index; T′=jurisdiction one-line only; fixed GIT_*_DATE; force-with-lease; check-admit-sync=0."
+  },
+  "localGatesAtPush": {
+    "docManifest": 0,
+    "authTrain": 0,
+    "C..T": ["docs/program/console-jurisdiction-register.json"],
+    "admit": "FAIL reasoning-lens-contract"
+  },
+  "productOnC": {
+    "sqlparser": "with_unescape(true)+opaque SingleQuotedString on bade43367",
+    "employmentSubjectId": "Promote/Transfer Some(employment_id); missing target_id refuse on bade43367",
+    "fmt": "included on bade43367"
+  },
+  "threads": "six Codex threads on #622 were reply+resolved earlier this session",
+  "scopeFreeze": ["ann", "soe", "bqg"],
+  "beadsOnMerge": "close tai.1/uoh/6pl; hold q06 for console-h3e",
+  "pr621": "secondary; unsigned bot candidate bead 9ry — do not block #622",
+  "worktree": "/Users/jasonlee/Developer/console-wave1-admit"
+}

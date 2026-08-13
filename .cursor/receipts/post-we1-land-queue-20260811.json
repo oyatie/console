@@ -1,0 +1,101 @@
+{
+  "lane": "post-we1-land-queue-20260811",
+  "role": "admit-coordinator",
+  "status": "blocked",
+  "at": "2026-08-11T17:28:30Z",
+  "forge": "preflight-forge: ok earlier this session",
+  "lensesApplied": [
+    "Cartesian doubt",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Telemetry-first"
+  ],
+  "challenges": [
+    "Chesterton: tip 1d050d800 was restacked to 61a089c71 before squash; §60 pin block remained byte-equal to critic product fe10d8a4d (PIN_BLOCKS_EQUAL).",
+    "Cartesian: Dispatch red on #747 with Security green + preflight green is consistent with disposable-PG flake, but logs could not be fetched after REST rate-limit."
+  ],
+  "mergeShas": {},
+  "queue": {
+    "749_console-kwm": {
+      "pr": 749,
+      "bead": "console-kwm",
+      "ghIssue": 685,
+      "state": "OPEN",
+      "tipSha": "61a089c71026e12b62745286cbaf1e7e844b4f28",
+      "mergeSha": null,
+      "critic": {
+        "verdict": "APPROVE",
+        "receipt": ".worktrees/lane-console-kwm/.cursor/receipts/kwm-critic.json",
+        "tipShaRekeyedFrom": "fe10d8a4d64e2670640251efc80cfeb0c726019e",
+        "tipShaRekeyedTo": "61a089c71026e12b62745286cbaf1e7e844b4f28",
+        "pinBlocksEqual": true,
+        "validated": true
+      },
+      "progress": "auth SUCCESS; CI/Security re-queued (rerun 201 on runs 31507792092 / 31507792121); still mergeable_state=blocked awaiting Required/*",
+      "blocker": "CAPTURE: waiting on Required/CI + Required/Security after re-run; previously starved (in_progress=0) then recovered to in_progress≥2"
+    },
+    "747_console-dgo.2": {
+      "pr": 747,
+      "bead": "console-dgo.2",
+      "ghIssue": 636,
+      "state": "OPEN",
+      "tipSha": "dec812ce98f63aec737d4241c3ad76d4f557e875",
+      "mergeSha": null,
+      "critic": {
+        "verdict": "APPROVE",
+        "receipt": ".worktrees/lane-console-dgo.2/.cursor/receipts/dgo.2-critic.json",
+        "tipShaLag": true
+      },
+      "security": "SUCCESS",
+      "ci": "Required/CI FAILURE — Dispatch disposable-PG reachability (runs 31508048657 / 31512576621)",
+      "blocker": "CAPTURE: Dispatch reachability red (likely flake); rerun-failed-jobs blocked by GitHub REST rate-limit 403 at 17:28Z"
+    },
+    "755_wave4_train": {
+      "pr": 755,
+      "beads": ["console-09c", "console-b4z"],
+      "state": "OPEN",
+      "tipShaAtHeal": "92a32a9e47f1c1df2d475bbb3167635b433cc4b1",
+      "tipShaLatestObserved": "06fbc3e527e2702c281d34c2cedffe6f4535c351",
+      "mergeSha": null,
+      "heal": {
+        "preflightDefect": "domain-unit digest lagged console-openapi-gen gate",
+        "localPreflightTests": "53/53",
+        "oldAuthFailure": "M tree/diff must equal T exactly",
+        "mainMergedViaRest": {
+          "resultSha": "92a32a9e47f1c1df2d475bbb3167635b433cc4b1",
+          "http": 201
+        },
+        "note": "tip continued moving under concurrent admit writer after REST merge"
+      },
+      "blocker": "CAPTURE: tip still moving / checks cancelled+queued; do not dual-write while concurrent wave4 admit owns WT"
+    },
+    "754_optional": {
+      "status": "SKIPPED — behind 749/747/755"
+    }
+  },
+  "processCaptures": [
+    {
+      "class": "ops.hook-stdin-deadlock",
+      "evidence": "forge-destructive-guard / push-admission INPUT=$(cat) deadlocks under concurrent shells; tools/hooks/* zombies (~55 killed). TEMP allow-bypass left on hub .cursor/hooks/{forge-destructive-guard,push-admission}.sh (uncommitted).",
+      "restore": "restore from git history after land; replace cat with bounded select+partial read"
+    },
+    {
+      "class": "ops.actions-runner-starvation",
+      "evidence": "in_progress=0 with queued≈18 for extended period; mid-run cancellations on 749 CI 31507792092"
+    },
+    {
+      "class": "ops.gh-rest-rate-limit",
+      "evidence": "403 API rate limit exceeded user 56489493 at 2026-08-11T17:28:28Z while fetching Dispatch logs / rerun-failed-jobs"
+    }
+  ],
+  "parked": ["console-7sx", "console-xxp", "console-gc9z"],
+  "flowDelta": "NO merge SHAs. #749 critic APPROVE rekeyed + CI/Security re-queued; #747 Security green but Dispatch CI red; #755 main-merged via REST then tip kept moving. Blocked on Actions drain + REST rate-limit cooldown. Resume: wait rate-limit, rerun 747 failed Dispatch, wait Required green on 749, squash 749→747→755, bd close.",
+  "commandsRun": [
+    "preflight-forge.sh → ok",
+    "PIN_BLOCKS_EQUAL → true",
+    "node --test check-ci-preflight.test.mjs → 53/53",
+    "POST /merges admission/wave4 ← main → 201 92a32a9e47",
+    "POST actions/runs/31507792092/rerun → 201; 31507792121/rerun → 201",
+    "POST rerun-failed-jobs 31512576621 → 403 rate-limit"
+  ]
+}

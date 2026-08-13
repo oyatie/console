@@ -1,0 +1,15 @@
+{
+  "laneId": "wave1-admit-resume2",
+  "status": "pushing-618-grammar",
+  "architect": "58ee54a1",
+  "worktree": "/Users/jasonlee/Developer/console-wave1-admit",
+  "product": "28ede289489118e0669b12696af3368fbe570229",
+  "C": "39217827d9112c6cfa1512d4e35a3e6b70c2fe18",
+  "T": "ae11500b24c496e446e56db5be8829adb0300d7a",
+  "remoteWas": "362005f067e84a2f7589b3e424d761156df57f1f",
+  "shape": "C=ledger+manifest; T=jurisdiction-register-only",
+  "localAdmit": "OK",
+  "fmt": 0,
+  "docManifest": 0,
+  "authTrain": 0
+}

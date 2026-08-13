@@ -1,6 +1,8 @@
 # Rust
 .tmp/
 backend/target/
+# Cursor probe Cargo build trees (must never enter history).
+/.cursor/probes/*/target/
 **/*.rs.bk
 
 # Node

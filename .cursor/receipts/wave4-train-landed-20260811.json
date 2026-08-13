@@ -1,0 +1,97 @@
+{
+  "status": "blocked",
+  "summary": "Land babysit for PR #755 tip bfa089f50: Required/Security SUCCESS on CI attempt pair after killing #747 runner-stealer; Required/CI red on three proven classes (rustfmt openapi.rs, employee-import OpenAPI wire marker, Buck governance include_str openapi YAML). Tip moved off bfa089f50 mid-watch (coordinator import-replay heal → 821e418e8). Core API rate limit hit remaining=0 until ~18:50Z. No squash-merge, no bd close, lock not cleared.",
+  "filesChanged": [],
+  "redBaseline": "E: On tip bfa089f50038230e384a2a3c2b6fae7a726077b0 — Security run 31519518687 attempt 7 conclusion=success (6/6 jobs). CI run 31519518402 attempt 6 in_progress→failures with x=0 cancels after stealer killed: (1) Backend fmt — cargo fmt --check Diff across */rest/src/openapi.rs (EXTERNAL_SCHEMAS/PATHS layout); (2) API contract — npm run test:employee-import-contract AssertionError missing end marker EmployeeImportColumn:; (3) Company conformance — buck build console-governance-rest failed os error 2 reading openapi schemas/paths via include_str under buck-out. CI preflight + Generated faces + Repo gates + K8s SUCCESS on same attempt (digest lock OK on this tip).",
+  "verification": "E: preflight-forge ok (remaining≈4376 at start); check-admit-sync ok @ bfa089f50. After stop competing cancel/rerun loops + kill #747 cancelledComp stealer (PIDs 56237/73656), Security a7 green; CI a6 progressed with ok≥4 and zero cancels until rate-limit. Tip then moved: PR head observed 14730758fbdc then origin/admission/wave4-20260811=821e418e8 (7e530a725 employee-import order-independent + authority T). Lock file owner=relaunch-755-admit-coordinator tip=14730758… instruction rebuild under C. No merge attempted after tip move / rate limit.",
+  "contractBreaches": "none by land babysit. Observed: process.runner-steal — #747 babysit cancelled non-dgo in_progress runs (cancelledComp≤5/min) starving #755 CI/Security. process.admit-tip-unpublished risk — tip force-push/heal while land watch on fixed SHA. ops.gh-rate-limit — core remaining=0 reset 2026-08-11T18:50:32Z mid-land.",
+  "enforcementPlacement": "n/a - adds no enforcement",
+  "peripheralsUpdated": "n/a - nothing described this behaviour",
+  "headSha": "bfa089f50038230e384a2a3c2b6fae7a726077b0",
+  "commands": [
+    "bash scripts/cursor/preflight-forge.sh",
+    "bash scripts/cursor/check-admit-sync.sh .worktrees/admission-wave4-20260811",
+    "gh run rerun 31519518402 / 31519518687 (after stealer kill)",
+    "gh run view 31519518687 — Security a7 success",
+    "gh api .../actions/jobs/93877538717/logs — rustfmt Diff openapi.rs",
+    "gh api .../actions/jobs/93877538878/logs — employee-import-contract missing EmployeeImportColumn end marker",
+    "gh api .../actions/jobs/93877538710/logs — buck governance openapi include_str os error 2",
+    "gh api rate_limit — remaining=0 reset 1786474232"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Red Team"
+  ],
+  "challenges": [
+    "Challenge: tip-heal cargo fmt on openapi.rs alone to clear Backend job. Rejected for land — Required/CI also red on employee-import wire contract and Buck governance packaging; fmt-only heal moves tip without making Required green. Coordinator already took import-replay heal (7e530a725) outside this babysit.",
+    "Challenge: keep cancel/rerunning through concurrency starvation. Rejected — root cause was external #747 cancelledComp stealer; kill + one dual rerun was the correct mechanism."
+  ],
+  "claims": [
+    {"tag": "E", "claim": "admit-sync matched origin at bfa089f50 at babysit start"},
+    {"tag": "E", "claim": "Required/Security green on tip bfa089f50 (run 31519518687 a7)"},
+    {"tag": "E", "claim": "CI a6 on bfa089f50 had rustfmt + employee-import contract + Buck governance openapi failures with zero cancel cascade after stealer kill"},
+    {"tag": "E", "claim": "CI preflight succeeded on bfa089f50 (executed-tests digest lock held)"},
+    {"tag": "E", "claim": "tip left bfa089f50 to 821e418e8 while land watch ran; lock reclaimed by relaunch-755-admit-coordinator"},
+    {"tag": "E", "claim": "GitHub core API remaining=0 until ~18:50Z blocked further land poll/merge"},
+    {"tag": "I", "claim": "Land cannot complete on assigned tip; implementer must clear fmt + Buck packaging (and verify import-replay heal) on current tip then re-dispatch land"},
+    {"tag": "U", "claim": "Whether 821e418e8 already clears employee-import on CI — not re-verified under rate limit"}
+  ],
+  "blockers": [
+    {
+      "id": "ci.rustfmt-openapi-rs",
+      "severity": "blocker",
+      "provenByExecution": true,
+      "ownerLease": false,
+      "fixHint": "Tip-heal class allowed: cargo fmt --all on generated */rest/src/openapi.rs (or make generator emit rustfmt-clean output) + authority re-tip."
+    },
+    {
+      "id": "ci.employee-import-openapi-wire-marker",
+      "severity": "blocker",
+      "provenByExecution": true,
+      "ownerLease": false,
+      "fixHint": "Not land tip-heal: OpenAPI compose/order broke EmployeeImportColumn: end-marker scan. Coordinator started 7e530a725 — verify on new tip CI."
+    },
+    {
+      "id": "ci.buck-governance-openapi-include-str",
+      "severity": "blocker",
+      "provenByExecution": true,
+      "ownerLease": false,
+      "fixHint": "Not land tip-heal: Buck materialization missing governance rest openapi YAML for include_str. Fix BUCK/srcs or generator packaging — implementer."
+    },
+    {
+      "id": "process.runner-steal-747",
+      "severity": "major",
+      "provenByExecution": true,
+      "ownerLease": false,
+      "fixHint": "Ban cancelledComp / cancel-other-lanes patterns in babysit scripts; serial land #747 only after #755."
+    },
+    {
+      "id": "ops.gh-rate-limit",
+      "severity": "major",
+      "provenByExecution": true,
+      "ownerLease": false,
+      "fixHint": "Sparse poll; one babysit per PR; wait reset 18:50Z before re-land."
+    }
+  ],
+  "followUps": [
+    "Coordinator/implementer: finish tip heal on fmt + Buck governance openapi; confirm employee-import on 821e418e8 (or successor); publish tip; re-dispatch land babysit",
+    "After green squash-merge #755: bd close console-09c + console-b4z; clear SINGLE-WRITER-LOCK",
+    "Serial optional #749 then #747 only after #755 lands — do not let #747 cancel competitors"
+  ],
+  "pr": {
+    "number": 755,
+    "url": "https://github.com/jason931225/console/pull/755",
+    "branch": "admission/wave4-20260811",
+    "tip": "bfa089f50038230e384a2a3c2b6fae7a726077b0",
+    "tipAtExit": "821e418e8ae056d4c7aba73997972c7702b79196",
+    "merged": false,
+    "mergeSha": null
+  },
+  "skipped": {
+    "749": "not attempted — #755 not merged",
+    "747": "not attempted — #755 not merged; its babysit was actively cancelling #755 runners"
+  }
+}

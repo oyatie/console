@@ -1,0 +1,175 @@
+{
+  "verdict": "BLOCK",
+  "tipSha": "9c7ea19f6f6fd71a8ab0f5184c6d91a5017758f8",
+  "reviewedRef": "PR #622 admission/wave1-20260810 -> main; C=HEAD^ 6382b0db5804168e311eb4671092be7c1d35bf7f, T=HEAD 9c7ea19f6",
+  "role": "critic (train-QA); read-only; did NOT touch /Users/jasonlee/Developer/console-wave1-admit",
+  "premiseCheck": "Live HEAD == 9c7ea19f6 (gh pr view 622). Worktree local HEAD is an UNPUSHED sibling 061312cb (fmt+doc-manifest WIP, parent 6382b0db5) plus uncommitted edits + untracked wave1-20260810-critic.json; reviewed the PUSHED tip 9c7ea19f6 only, ignoring implementer WIP per BASE_LOCK.",
+  "rootCauses": {
+    "622-backend-fmt": "Check 'Backend — fmt / clippy / test / gates' FAILED at its FIRST step `cargo fmt --all -- --check` (job 93523502761). Two diffs: backend/ci/gates/writer-ownership/src/lib.rs:1122 (the `strip_one_string_literal_layer` multi-line `if` must collapse to one line) and backend/crates/ontology/canonical-adapter-postgres/src/job_position.rs:130 (`Self::Revise { job_position_id, .. }` arm reflow). PRODUCT DEFECT (unformatted new code), not flake. FALSE-GREEN RISK: fmt is the first step and it exited 1, so clippy + test + the writer-ownership GATE tests NEVER RAN this tip — the gate's own greens are unverified.",
+    "622-repo-gates": "Check 'Repo gates — ADR / foundation / domain maturity' FAILED on TWO steps (job 93523502703): `npm run check:doc-manifest` -> 'docs/documentation-manifest.seed.json: docs/program/ledger/2026-08-10-wave1-canonical-hardening.md must have exactly one record (found 0)'; and `npm run check:doc-links` -> 'docs/documentation-index.json: ...must have exactly one document record (found 0)'. PROCESS ARTIFACT: new ledger doc added on T under docs/** without regenerating the documentation manifest/index in the same commit range (BASE_LOCK: docs/** need doc-manifest regeneration in-range). The migration-contract 'FAILED' lines at log ~1893 are required-snippet NAMES (enum values PROCESSING/READY/FAILED), not failures; the only two exit-1 steps are doc-manifest and doc-links.",
+    "621-release-please": "All THREE 621 failures share ONE main-borne process root, not a flake and not an in-diff product defect. 'CI preflight — foundation and lockfile integrity' (job 93479927635) runs `check:console-truth-ledger` -> verify-console-authority-train.mjs which THROWS 'console authority train: candidate C signature is not valid: git verify-commit rejected the exact trusted SSH signature' on the release-please bot candidate b4840d95 (a .release-please-manifest.json + CHANGELOG.md commit not signed by the trusted SSH authority key). 'Dispatch/attendance/ontology — disposable PostgreSQL reachability' (job 93480532260) then fails only because its guard `test \"skipped\" = success && ...` sees the upstream matrix SKIPPED behind the failed preflight (exit 1), and 'Required / CI' is the aggregator of that same failed preflight. So 621 is structurally un-mergeable via the authority-train gate until the release-please candidate is SSH-signed by the trusted key (or the gate exempts release-please candidates) — a separate elevate, NOT a 622 dependency."
+  },
+  "findings": [
+    {
+      "id": "CI-A",
+      "thread": "n/a (CI)",
+      "severity": "blocker",
+      "claim": "622 Backend check fails at `cargo fmt --all -- --check`; and because fmt is the first step, clippy/test/writer-ownership-gate tests never executed at 9c7ea19f6 (unverified greens).",
+      "failureScenario": "Merging leaves main red on Backend; and admitting on the belief the gate is green is a FALSE GREEN — the gate's tests were never run this tip, so an oracle regression (see W-OWN-FAILOPEN / W-OWN-FALSEPOS) could land unseen.",
+      "location": "backend/ci/gates/writer-ownership/src/lib.rs:1122; backend/crates/ontology/canonical-adapter-postgres/src/job_position.rs:130",
+      "provenByExecution": true,
+      "evidence": "gh api repos/jason931225/console/actions/jobs/93523502761/logs | last ##[group] is `Run cargo fmt --all -- --check`; 'Diff in .../writer-ownership/src/lib.rs:1122' and '.../job_position.rs:130'; '##[error]Process completed with exit code 1.' — no clippy/test group follows.",
+      "ownerLease": false
+    },
+    {
+      "id": "CI-B",
+      "thread": "n/a (CI)",
+      "severity": "blocker",
+      "claim": "622 Repo-gates fails: the new ledger doc on T has no record in docs/documentation-manifest.seed.json or docs/documentation-index.json (doc-manifest not regenerated in the commit range).",
+      "failureScenario": "Merging leaves main red on Repo gates; the authority ledger doc is unindexed, so doc-link/citation authority is incomplete for the very record that claims Wave-1 authority.",
+      "location": "docs/documentation-manifest.seed.json; docs/documentation-index.json; docs/program/ledger/2026-08-10-wave1-canonical-hardening.md",
+      "provenByExecution": true,
+      "evidence": "gh api repos/jason931225/console/actions/jobs/93523502703/logs | 'must have exactly one record (found 0)' at check:doc-manifest (exit 1) and check:doc-links (exit 1).",
+      "ownerLease": false
+    },
+    {
+      "id": "W-OWN-FAILOPEN",
+      "thread": "P1 decode Rust escapes before lexing macro SQL (writer-ownership/src/lib.rs:1116)",
+      "severity": "blocker",
+      "claim": "The new sqlparser path FAILS OPEN on an escaped-newline line comment: `\"UPDATE -- hint\\nemployees SET x = 1\"` sanitizes to `update ;` and charges NOTHING, hiding a real second-writer UPDATE to employees. This is a REGRESSION vs main's byte path, which fails CLOSED (marks the target unresolved) on the same input.",
+      "failureScenario": "A non-owner crate ships `sqlx::query!(\"UPDATE -- x\\nemployees SET ...\")`; Rust turns `\\n` into a newline at runtime so PostgreSQL executes `UPDATE employees`, but the writer-ownership gate — whose entire promise is one production writer per canonical table — does not see it. Second-writer smuggling in the exact defect class tai.1 claims to close.",
+      "location": "backend/ci/gates/writer-ownership/src/lib.rs:1166 without_sql_comments_sqlparser (.with_unescape(false)); test gap at tests/gate_detects_violation.rs:231 uses a REAL newline, not the escaped form.",
+      "provenByExecution": true,
+      "evidence": "Standalone harness /tmp/gateprobe (sqlparser 0.62.0, functions copied verbatim from 9c7ea19f6): `cd /tmp/gateprobe && cargo run` -> 'P1 ... NEW(sqlparser route): collapsed=\"update ;\" tables=[] FLAGGED=false' vs 'MAIN(byte fallback): unresolved=true FLAGGED=true'. Routing via walk() at src/lib.rs:1067 `without_sql_comments(&literal.to_string())`.",
+      "ownerLease": false
+    },
+    {
+      "id": "W-OWN-FALSEPOS",
+      "thread": "P2 exclude quoted SQL data from DML target scanning (writer-ownership/src/lib.rs:1191)",
+      "severity": "major",
+      "claim": "write_targets re-scans the sqlparser-serialized token stream including single-quoted STRING CONTENTS, so `INSERT INTO notes(note) VALUES ('-- UPDATE employees SET x = 1')` FALSELY charges a write to `employees`. Regression vs main's byte path, which charged only `notes`.",
+      "failureScenario": "Legitimate production code that stores SQL-like text as data is blocked as an illegal second writer of employees; the gate becomes a false-positive nuisance that the next blocked author disables — the failure mode UNREADABLE_TARGET's own doc warns against.",
+      "location": "backend/ci/gates/writer-ownership/src/lib.rs:1558 write_targets over collapsed serialized tokens; sqlparser SingleQuotedString content not held opaque.",
+      "provenByExecution": true,
+      "evidence": "Same harness: 'P2 ... NEW(sqlparser route): tables=[\"employees\",\"notes\"] charges_employees=true' vs 'MAIN(byte fallback): tables=[\"notes\"] charges_employees=false'.",
+      "ownerLease": false
+    },
+    {
+      "id": "AUTHZ-EMPLOYMENT",
+      "thread": "P1 bind EmploymentQuery to employment_id (canonical-domain/src/lib.rs:545)",
+      "severity": "major",
+      "claim": "EmploymentQuery::Promote/Transfer carry employment_id but subject_id() is unimplemented (trait default None). PgEmploymentPort is registered via register_port -> canonical_port_handler (app/src/lib.rs:2599), execute() writes the PAYLOAD's employment_id, and the only guard rest/src/lib.rs:367 `if let (Some(bound),Some(subject))` is SKIPPED because subject is always None. A four-eyes approval bound to employment I can be consumed to mutate employment J.",
+      "failureScenario": "Approver signs off hr.promote/hr.transfer for employment I (bound_target=I via four_eyes_binding); requester sets params.employment_id=J; subject bind is a no-op, port mutates J. Approval-binding bypass in the HR/payroll domain. (Requires four_eyes enabled for hr.promote/transfer; verify config.)",
+      "location": "backend/crates/orgchange/adapter-postgres/src/employment.rs:234 (Promote/Transfer employment_id) + :295 impl CanonicalQuery (no subject_id) + :594 execute uses command.query; canonical-domain trait default subject_id None at src/lib.rs:544.",
+      "provenByExecution": true,
+      "evidence": "git -C console-wave1-admit show 9c7ea19f6:.../employment.rs (Promote/Transfer{employment_id}; no subject_id impl; execute->self.write(command)); git grep -n register_port 9c7ea19f6 -> app/src/lib.rs:2599 PgEmploymentPort; git show 9c7ea19f6:.../rest/src/lib.rs:367 skip-on-None. Same class as prior train critic minor #2, but confirmed live-wired, not merely deferred.",
+      "ownerLease": false
+    },
+    {
+      "id": "AUTHZ-TARGETID",
+      "thread": "P1 require target_id for subject-bearing projected writes (rest/src/lib.rs:367)",
+      "severity": "major",
+      "claim": "Even for the 5 ports that DO implement subject_id, the bind check is skipped whenever target_id is None; since ActionCommand.instance_id is Optional and four_eyes_binding falls back to object_type_id, a caller can omit instance_id, consume a TYPE-bound approval, and revise any subject by payload.",
+      "failureScenario": "Type-bound four-eyes approval + instance_id omitted -> target_id None -> subject compare skipped -> payload names arbitrary subject. Broadens the same subject-bind hole beyond employment.",
+      "location": "backend/crates/ontology/rest/src/lib.rs:367 (skip when target_id None); backend/crates/ontology/application/src/prepared.rs:205 four_eyes_binding instance_id.unwrap_or(object_type_id).",
+      "provenByExecution": false,
+      "evidence": "Code-read at tip confirms the None-skip and the object_type_id fallback; full exploit depends on a type-bound approval being issuable for a subject-bearing revise, which I did not execute. Fold into the subject-bind mechanism fix: reject when query.subject_id().is_some() && target_id.is_none().",
+      "ownerLease": false
+    },
+    {
+      "id": "AUTHORITY-LEDGER-CANDIDATE",
+      "thread": "P2 bind authority record to rebased candidate (ledger doc)",
+      "severity": "major",
+      "claim": "The ledger T is internally inconsistent and names a superseded candidate: header says 'authority tip (T) for candidate 6382b0db5' while the body says 'Candidate (authority train): b960bbece'. The actual squash candidate C = HEAD^ = 6382b0db5; b960bbece is now HEAD^^^ (the receipts/faces leaf), not C.",
+      "failureScenario": "A SHA-bound authority record points at the wrong candidate; an auditor reconstructing what merged trusts b960bbece as C when C is 6382b0db5. authenticate-console-authority passed (it checks signatures/allowlist, not ledger prose), so the incorrect record ships silently.",
+      "location": "docs/program/ledger/2026-08-10-wave1-canonical-hardening.md (header vs 'Candidate (authority train)' line).",
+      "provenByExecution": true,
+      "evidence": "git -C console-wave1-admit show 9c7ea19f6:docs/program/ledger/2026-08-10-wave1-canonical-hardening.md (two different candidate SHAs); git show --stat 6382b0db5 (executed-tests-baseline only) and 9c7ea19f6 (ledger only) confirm C/T shape.",
+      "ownerLease": false
+    },
+    {
+      "id": "RECEIPT-REKEY",
+      "thread": "receipt keying (task item 5)",
+      "severity": "minor",
+      "claim": ".cursor/receipts/wave1-20260810-critic.json is keyed to superseded tipSha 2faae5bab / candidateSha b960bbece and is currently UNTRACKED in the worktree; HEAD is 9c7ea19f6, C=6382b0db5.",
+      "failureScenario": "Admitting on a critic APPROVE keyed to a superseded tip is a stale-evidence merge; the receipt's greens were observed on a different tree than what merges.",
+      "location": ".cursor/receipts/wave1-20260810-critic.json:3-5 (tipSha/candidateSha/baseSha).",
+      "provenByExecution": true,
+      "evidence": "Read of the file (tipSha 2faae5bab, candidateSha b960bbece) vs gh pr view 622 headRefOid 9c7ea19f6; git status --porcelain shows it '??' untracked.",
+      "ownerLease": true
+    },
+    {
+      "id": "RECEIPTS-LANE-EVIDENCE",
+      "thread": "P1 record mandatory lane safety evidence in q06.json",
+      "severity": "minor",
+      "claim": "The four committed lane receipts (q06/tai.1/uoh/6pl.json) lack explicit AGENTS.md L8 fields (pre-mortem, blast radius, detection, rollback, stop conditions, review identities, remaining HOLDs) as discrete keys; the lens/blast-radius evidence lives in the ledger REASONING-LENS-EVIDENCE block and receipts carry redBaseline/enforcementPlacement/followUps instead.",
+      "failureScenario": "An operator reading only the per-lane receipt for these authz/HR/payroll/CI changes cannot find rollback/detection/blast-radius without cross-referencing the ledger.",
+      "location": ".cursor/receipts/q06.json (and tai.1/uoh/6pl.json).",
+      "provenByExecution": false,
+      "evidence": "Object.keys of each receipt at 9c7ea19f6: status/summary/filesChanged/redBaseline/verification/contractBreaches/enforcementPlacement/peripheralsUpdated/commands/headSha/followUps/owned — no premortem/blastRadius/rollback/stopConditions/reviewIdentities keys. Not failing any current gate (Repo-gates failed on doc-manifest, not receipts).",
+      "ownerLease": true
+    },
+    {
+      "id": "FIX-PLACEMENT-CONSTRAINT",
+      "thread": "authority-shape guard on the fix pass",
+      "severity": "minor",
+      "claim": "The CI fixes and thread fixes must NOT be dumped onto the ledger-only T. fmt + lexer + subject-bind belong on the PRODUCT leaves (tai.1 gate; q06 rest/domain/employment); doc-manifest/index regen belongs on C/prep; only the candidate-SHA correction belongs on T. A single flat commit that adds product+manifest to a ledger tip would break the T=ledger-only invariant authenticate-console-authority depends on.",
+      "failureScenario": "'One commit' taken literally collapses C/T; T stops being ledger-only; the authority verifier's C..T=ledger delta no longer holds and the authority record becomes unauditable.",
+      "location": "commit topology of admission/wave1-20260810 (C=6382b0db5, T=9c7ea19f6).",
+      "provenByExecution": true,
+      "evidence": "git show --stat 9c7ea19f6 (ledger only, 62 ins) and 6382b0db5 (executed-tests-baseline only); one-fix-PASS != one flat commit here.",
+      "ownerLease": true
+    }
+  ],
+  "oneCommitInventory": [
+    "1. FMT (blocker, CI-A): `cargo fmt` writer-ownership/src/lib.rs:1122 and canonical-adapter-postgres/src/job_position.rs:130; land on the tai.1 and q06 PRODUCT leaves respectively (not T).",
+    "2. LEXER MECHANISM (blocker+major, W-OWN-FAILOPEN + W-OWN-FALSEPOS — ONE fix, not two patches): make the sqlparser path the single source of truth for BOTH comment-stripping AND target extraction — derive write targets from the token stream (DML keyword tokens -> next identifier token), hold SingleQuotedString token CONTENTS opaque (fixes P2), and either decode Rust escapes before tokenizing or treat a trailing single-line-comment that consumed an escaped `\\n`-to-EOF as UNRESOLVED/fail-closed to match the byte path (fixes P1). This is the THIRD-SPELLING mechanism replacement, land on the tai.1 leaf.",
+    "3. LEXER PINS (required — class had no pin): add gate tests that FAIL before step 2 — (a) `sqlx::query!(\"UPDATE -- x\\nemployees SET ...\")` (escaped newline) must charge/flag employees; (b) `INSERT INTO notes(note) VALUES ('-- UPDATE employees SET x = 1')` must NOT charge employees.",
+    "4. SUBJECT-BIND MECHANISM (major, AUTHZ-EMPLOYMENT + AUTHZ-TARGETID — ONE fix): implement EmploymentQuery::subject_id() -> Some(employment_id) for Promote/Transfer (Appoint stays None as a create); and in canonical_port_handler REFUSE when query.subject_id().is_some() && target_id.is_none() (subject-bearing write with no gated instance). Land on the q06 leaf (rest + canonical-domain/orgchange employment).",
+    "5. SUBJECT-BIND PIN (required): test that a four-eyes approval bound to employment I refuses a payload with employment_id=J (Validation refuse, no write), for hr.promote/hr.transfer.",
+    "6. DOC-MANIFEST (blocker, CI-B): `node scripts/console/generate-documentation-manifest.mjs --write` + update docs/documentation-index.json for the ledger doc; land on C/prep so T stays ledger-only.",
+    "7. LEDGER CANDIDATE (major, AUTHORITY-LEDGER-CANDIDATE): correct the ledger body so the named candidate == C (6382b0db5) consistently with the header; land on T.",
+    "8. RECEIPT RE-KEY (minor, RECEIPT-REKEY, task item 5): re-key .cursor/receipts/wave1-20260810-critic.json to tipSha 9c7ea19f6 / candidateSha 6382b0db5 AFTER re-verifying C..T = baseline-ratchet(C=executed-tests-baseline.json) + ledger(T only); track it or move it out of the tree per repo policy.",
+    "9. RECEIPTS LANE-EVIDENCE (minor/defer, RECEIPTS-LANE-EVIDENCE): if repo policy keeps receipts in-tree, add the AGENTS.md L8 fields (premortem/blastRadius/detection/rollback/stopConditions/reviewIdentities/HOLDs) or a ledger cross-reference to q06/tai.1/uoh/6pl.json; otherwise reply+resolve the thread as a documented ledger-located deferral. Does NOT by itself reopen.",
+    "10. RE-SIGN + RE-RUN: SSH-sign every rewritten commit; push --force-with-lease (integration owner); re-run Backend (confirm clippy+test+gate tests actually EXECUTE and pass this tip, since fmt masked them) and Repo-gates; wait for Postgres suites/faces-drift/dev-up (currently pending — unverified)."
+  ],
+  "reopenBar": {
+    "reopenTrain_blockerOrProvenMajor": ["CI-A", "CI-B", "W-OWN-FAILOPEN", "W-OWN-FALSEPOS", "AUTHZ-EMPLOYMENT", "AUTHORITY-LEDGER-CANDIDATE"],
+    "onePassRideAlong_notSoleReopener": ["AUTHZ-TARGETID (major, unproven — same mechanism, cheap)", "RECEIPT-REKEY", "FIX-PLACEMENT-CONSTRAINT"],
+    "politeDeclineOrDefer": ["RECEIPTS-LANE-EVIDENCE (minor, not a live gate failure; anti-treadmill — do not reopen solely on this bot thread)"]
+  },
+  "authorityLegality": {
+    "T_ledgerOnly": "PASS — git show --stat 9c7ea19f6 = docs/program/ledger/2026-08-10-wave1-canonical-hardening.md only (62 ins); no manifest/index on T.",
+    "C_contents": "6382b0db5 = docs/program/executed-tests-baseline.json only (baseline ratchet); product+bindings on leaves below C (c732427 tai.1, 19b79d1 uoh, 4774747 q06, b960bbece receipts+Buck faces).",
+    "signatures": "All six wave commits show `%G?`=G (SSH-signed); authenticate-console-authority PASS on 622 confirms C/T signatures valid. (Local gpg missing only affects older GPG-signed history, not these SSH commits.)",
+    "manifestIndexOnT": "None on T (that ABSENCE is exactly why Repo-gates fails; the regen must go on C/prep, not T).",
+    "caveat": "The coordinator's unpushed sibling 061312cb would, if it became T, put product(fmt)+manifest on a ledger tip — do NOT; see FIX-PLACEMENT-CONSTRAINT."
+  },
+  "lensEvidence": {
+    "Cartesian doubt": "Separated CI facts (fmt+doc-manifest exit-1, observed in job logs) from inference (fmt masked downstream) from execution (harness proving W-OWN holes). Did not trust the dispatch's 'C carries product+bindings' — verified C=6382b0db5 is baseline-ratchet-only and product is on lower leaves.",
+    "Red Team": "Built a hostile harness proving two opposite gate failures (fail-open on escaped-newline, false-positive on quoted data) and a concrete HR approval-binding bypass (approval for I spends on J). Modeled release-please as an unsigned-candidate adversary to the authority gate (621).",
+    "Zero-trust / defense-in-depth": "The subject-bind (rest:367) is the sole seam between a four-eyes approval and the written subject; proved it is a no-op for employment and bypassable when target_id is None — a single-layer control that currently fails open. Demanded a fail-closed refuse when subject present && target absent.",
+    "Blast-radius / cell-based": "Confined findings to the pushed tip; verified T is ledger-only so C..T cannot smuggle product; flagged that the fix must preserve the C/T cell boundary (FIX-PLACEMENT-CONSTRAINT) rather than flatten it.",
+    "Operability / Day-2": "FALSE GREEN: fmt-first failure means gate/clippy/test never ran and Postgres suites are still pending — greens are unverified this tip; required re-run after fmt. Ledger names the wrong candidate, harming auditor reconstruction."
+  },
+  "challenges": [
+    "Chesterton's Fence on receipts-on-C: I challenged whether .cursor/receipts/*.json belong in the merged tree at all (a repo gate already forced them off T once). Verdict: they are NOT failing any current gate (Repo-gates fails on doc-manifest, authenticate passed), and they live on a product leaf (b960bbece), not T — so keeping them is legal today; RECEIPTS-LANE-EVIDENCE is therefore a minor/defer, not a blocker, and should not start a bot-thread treadmill.",
+    "I challenged whether AUTHZ-EMPLOYMENT is actually exploitable or merely theoretical: the port writes the payload employment_id and the only guard is skipped, so it is a real code-path bypass — BUT it only spends a REAL approval wrongly if four_eyes is enabled for hr.promote/hr.transfer; the coordinator should confirm the action config before rating it blocker vs major. I rated major+proven (mechanism proven; exploit gated on config).",
+    "I challenged the literal 'ONE commit' instruction against the authority model: a single flat commit that fixes fmt+manifest+authz+lexer on top of the ledger tip would break T=ledger-only. Resolved as ONE fix PASS (anti-treadmill) distributed across the correct C/T/leaf topology, not one git object — captured as FIX-PLACEMENT-CONSTRAINT.",
+    "I challenged whether W-OWN-FAILOPEN is a NEW regression or pre-existing: executed the byte fallback (main-equivalent) on the same input and observed it fails CLOSED (unresolved=true) where the new sqlparser path fails OPEN — so tai.1 measurably WEAKENED the gate for this shape; ORACLE INTEGRITY violation, hence blocker."
+  ],
+  "flowDelta": "BLOCK. Coordinator: execute the 10-item one-PASS inventory across the correct C/T/leaf topology (do NOT flatten onto ledger-only T), re-sign, force-with-lease, and re-run Backend so the gate tests actually execute this tip.",
+  "commandsRun": [
+    "gh pr view 622 --repo jason931225/console --json headRefOid,state,...",
+    "gh pr checks 622 --repo jason931225/console",
+    "gh api repos/jason931225/console/actions/jobs/93523502761/logs (Backend fmt)",
+    "gh api repos/jason931225/console/actions/jobs/93523502703/logs (Repo gates doc-manifest/doc-links)",
+    "gh api repos/jason931225/console/actions/jobs/93479927635/logs (621 authority-train signature)",
+    "gh api repos/jason931225/console/actions/jobs/93480532260/logs (621 pg-reachability skipped-guard)",
+    "gh api graphql reviewThreads(first:50) for PR 622 (6 unresolved Codex threads)",
+    "git -C /Users/jasonlee/Developer/console-wave1-admit show 9c7ea19f6:<paths> (rest/lib.rs, canonical-domain/lib.rs, employment.rs, writer-ownership/lib.rs, ledger, receipts)",
+    "git -C /Users/jasonlee/Developer/console-wave1-admit grep -n register_port 9c7ea19f6",
+    "git -C /Users/jasonlee/Developer/console-wave1-admit show --stat 9c7ea19f6 && show --stat 6382b0db5 (C/T shape)",
+    "cd /tmp/gateprobe && cargo run  (sqlparser 0.62.0 hostile harness: P1 fail-open, P2 false-positive, main-vs-new byte comparison)"
+  ]
+}

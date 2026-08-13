@@ -1,0 +1,21 @@
+{
+  "role": "admit-coordinator",
+  "at": "2026-08-11T12:28:00Z",
+  "closed": {
+    "740": "MERGED 1af779cac",
+    "741": "MERGED 57fddda19",
+    "742": "MERGED be7b3e14b (wave2 dgo.1/ae5/i91; we1 excluded)"
+  },
+  "originMain": "be7b3e14b",
+  "we1": {
+    "status": "CRITIC_APPROVE_ADMIT_DEFERRED",
+    "agent": "70b8db0b",
+    "productTip": "67d7b54a7",
+    "reviewedPackaging": "dd9d38f42",
+    "laneHead": "5b7c2d207",
+    "receipts": "we1.json + we1-critic.json schema OK",
+    "next": "future admit brief only — do not reopen wave2-full; HOLD vs closed #742 train"
+  },
+  "babysit": "idle — no open land watch on 740/741/742",
+  "flowDelta": "hot-set: we1 APPROVE parked for next admit; wave2 train closed"
+}

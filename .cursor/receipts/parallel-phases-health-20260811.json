@@ -1,0 +1,58 @@
+{
+  "role": "admit-coordinator",
+  "at": "2026-08-11T12:32:00Z",
+  "originMain": "eca122ad0122457a77b85ca55fc1e8b2e4869e74",
+  "health": {
+    "we1_b0c92a66": "DEAD_NO_ASSISTANT",
+    "wave3_c8e155c5": "DEAD_NO_ASSISTANT",
+    "wave4_618e7003": "DEAD_NO_ASSISTANT",
+    "backlog_b16e00d7": "ALIVE",
+    "we1_sibling_9b09d757": "PARENT_STALE_NESTED_ALIVE",
+    "nested_gc9z_2b48017d": "ALIVE",
+    "nested_we1_critic_6b1570c9": "ALIVE",
+    "nested_dgo2_8eb77d64": "STALLED_USER_ONLY",
+    "leaf_6ib_a148f847": "ALIVE"
+  },
+  "relaunch": [
+    "we1",
+    "wave3",
+    "wave4"
+  ],
+  "noRelaunch": [
+    "backlog_b16e00d7",
+    "sibling_9b09d757"
+  ],
+  "ownershipFences": {
+    "we1": "9b09 critic 6b1570c9 owns tip review; relaunch is CI babysit+merge only",
+    "gc9z": "2b48017d owns \u2014 backlog must not dual-write",
+    "6ib": "a148f847 owns",
+    "dgo.2": "wave3 relaunch resumes stalled 8eb77d64"
+  },
+  "flowDelta": "we1 landed eca122ad0; wave4+restack queue dispatched",
+  "relaunches": {
+    "we1": "b3596563-2168-4248-8305-f497e9fd593b",
+    "wave3": "f3d979e5-3e11-48a2-b25b-b04a58df8661",
+    "wave4": "8c52ca05-800b-4d94-9ed0-90cf4c6b25db"
+  },
+  "deadOriginals": [
+    "b0c92a66",
+    "c8e155c5",
+    "618e7003"
+  ],
+  "postWave3FollowUp": {
+    "dgo2Dispatch": "cc220764-6644-4089-be94-16cccf6676ca",
+    "we1_relaunch_b3596563": "still_user_only_at_check",
+    "wave4_relaunch_8c52ca05": "still_user_only_at_check",
+    "elevate": "we1+wave4 may need second relaunch if still dead"
+  },
+  "we1": {
+    "status": "MERGED",
+    "pr": 745,
+    "agent": "b3596563",
+    "sha": "eca122ad0122457a77b85ca55fc1e8b2e4869e74"
+  },
+  "followUpsAfterWe1": {
+    "wave4_relaunch2": "001bd8e7-0f2c-4827-bbf7-dc804e336405",
+    "restack_land": "62b1a4de-eb21-4987-a26a-998f082b7a66"
+  }
+}

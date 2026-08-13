@@ -1,0 +1,35 @@
+{
+  "role": "admit-coordinator",
+  "laneId": "h3e-avb-micro-train",
+  "verdict": "MERGED",
+  "pr": 739,
+  "prUrl": "https://github.com/jason931225/console/pull/739",
+  "mergeSha": "526229dd8e3549139083736340f7a474eeeaa402",
+  "authorityTip": "95874754f0600cff8b0e728a82c4430fc9705ed0",
+  "productTip": "f10937d6ca91599afbf7e3516f554dd1589e99b4",
+  "branch": "admission/h3e-avb-20260810",
+  "worktree": "/Users/jasonlee/Developer/console/.worktrees/admission-h3e-avb-20260810",
+  "baseMain": "e391abb91c960e4c774fd59c42c64f5e8f87904b",
+  "order": [
+    "h3e",
+    "avb"
+  ],
+  "notReAdmitted": [
+    "ugg",
+    "6n4",
+    "nuc",
+    "pnb1"
+  ],
+  "closedBeads": [
+    "console-h3e",
+    "console-avb",
+    "console-q06"
+  ],
+  "admitWindowFixes": [
+    "gen_first_party unit resources + BUCK for canonical-adapter + orgchange",
+    "domain-unit wire + proofDigest rehash + executed-tests attr ratchet",
+    "EchoQuery::subject_id on nuc audit itest"
+  ],
+  "authorityTipGrammar": "C=ledger+seed/index; T=jurisdiction-register-only (#618)",
+  "flowDelta": "h3e\u2192avb micro-train landed on main after split #736; q06 closed with h3e"
+}

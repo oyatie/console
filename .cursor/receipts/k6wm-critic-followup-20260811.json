@@ -1,0 +1,12 @@
+{
+  "id": "k6wm-critic-followup-20260811",
+  "role": "admit-coordinator",
+  "critic": "aeecc867-d909-40fa-8442-ef69791fba4d",
+  "verdict": "BLOCK",
+  "reviewedTip": "d9a9d5b0ba645bd687ca214ed8167277024fcf6f",
+  "prTipAtDispatch": "26a134a9db9215ea8230a7011c94ee11bc927d1a",
+  "blocker": "adapter-postgres/BUCK missing rust_test( before preflight_persists_nothing",
+  "implementer": "830e8713-d69f-4d57-8ef4-415d1e0e30c0",
+  "classBead": "console-cae0",
+  "flowDelta": "k6wm fixer owns BUCK syntax restore; re-critique after new tip"
+}

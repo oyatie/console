@@ -1,0 +1,32 @@
+{
+  "total_count": 1,
+  "jobs": [
+    {
+      "id": 93864648623,
+      "run_id": 31508069619,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-m68",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31508069619",
+      "run_attempt": 3,
+      "node_id": "CR_kwDOS636Ss8AAAAV2sTfrw",
+      "head_sha": "fc1355b6f925b43ea9603406246da92f4f3a00df",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93864648623",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31508069619/job/93864648623",
+      "status": "queued",
+      "conclusion": null,
+      "created_at": "2026-08-11T17:20:17Z",
+      "started_at": "2026-08-11T17:20:17Z",
+      "completed_at": null,
+      "name": "CI preflight — foundation and lockfile integrity",
+      "steps": [],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93864648623",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": null,
+      "runner_name": null,
+      "runner_group_id": null,
+      "runner_group_name": null
+    }
+  ]
+}

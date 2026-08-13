@@ -1,0 +1,38 @@
+{
+  "status": "partial",
+  "summary": "Cursor-native swarm ratchet installed: BASE_LOCK + standing lenses rules, lane-implementer/lane-critic agents, hooks (git-lock, no-mm-role, cargo-scope, push-admission, stop-receipt), and validate-lane-receipt.mjs. Ports oyatie/console lane-fanout anti-loop process; drops mm-role transport.",
+  "filesChanged": [
+    ".cursor/hooks.json",
+    ".cursor/hooks/session-start.sh",
+    ".cursor/hooks/git-lock-enforcer.sh",
+    ".cursor/hooks/no-mm-role.sh",
+    ".cursor/hooks/cargo-scope-enforcer.sh",
+    ".cursor/hooks/push-admission.sh",
+    ".cursor/hooks/stop-receipt-gate.sh",
+    ".cursor/rules/console-base-lock.mdc",
+    ".cursor/rules/console-standing-lenses.mdc",
+    ".cursor/agents/lane-implementer.md",
+    ".cursor/agents/lane-critic.md",
+    ".cursor/PROCESS-SYNTHESIS.md",
+    ".cursor/receipts/cursor-swarm-ratchet.json",
+    ".cursor/receipts/cursor-swarm-ratchet-critic.json",
+    "scripts/cursor/validate-lane-receipt.mjs",
+    "scripts/cursor/probe-ratchet.py",
+    "scripts/cursor/preflight-forge.sh",
+    ".cursor/failure-classes-2026-08-10.md"
+  ],
+  "redBaseline": "Before this change: multi-round PR fix loops via mm-role CLI critics; no Cursor schema fields; stop/convergence could wave proven majors. Reproduced class: PR #619/#620 mm-role Sol/Opus conflict + empty commandsRun false green documented in lane-fanout history.",
+  "verification": "scripts/cursor/probe-ratchet.py: reset=deny, restack origin/main=allow, merge=deny, status=allow, --workflow-only=deny, empty commands validator exit 1, build receipt exit 0 — all OK.",
+  "contractBreaches": "none for Cursor ratchet scope. Worktree also contains unrelated #618 product dirt (writer-ownership + migrations 0213-0215) and .grok/.beads untracked — NOT owned by this lane; do not commit into P4 PR.",
+  "enforcementPlacement": "WHERE: Cursor beforeShellExecution/stop hooks run in the agent tool path before shell executes / on session stop; subjects (git/cargo/mm-role commands, owned dirt) exist at that point. Finest distinction: command-string matchers + path filters on git status porcelain — not commit contents. Examined-zero: if hooks.json missing or scripts unreadable, fail-open unless failClosed (intentionally not failClosed after lockout incident). Residual: hooks cannot see Task subagent prompts; rules/agents carry BASE_LOCK there.",
+  "peripheralsUpdated": "Added .cursor/PROCESS-SYNTHESIS.md; AGENTS.md not edited on dirty #618 branch (leased — followUp chore PR). stop-receipt-gate narrowed to .cursor/** and scripts/cursor/** so foreign lane dirt does not false-nag. gen_first_party/doc-manifest N/A (no docs/** authority pins in this lane).",
+  "followUps": "1) Land .cursor/** + scripts/cursor/** on chore/cursor-swarm-ratchet from clean origin/main (not into #618). 2) gh auth login required before finishing #619 merge (ops.gh-auth-stale). 3) #618 restack after #619. 4) Optionally wire shared tools/hooks per cursor_agentic_parity plan.",
+  "processFixesThisPass": [
+    "failure-classes-2026-08-10.md catalogued measured loop causes",
+    "standing lenses: tie-break + bot-thread treadmill rule",
+    "BASE_LOCK: inventory/preflight-forge/restack/parent-owns-completion",
+    "preflight-forge.sh + push-admission runs it on gh pr merge",
+    "implementer/critic agents updated for inventory-once semantics"
+  ],
+  "owned": [".cursor/", "scripts/cursor/"]
+}

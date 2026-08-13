@@ -1,0 +1,9 @@
+{
+  "id": "g14a-followup-20260811",
+  "role": "admit-coordinator",
+  "implementer": "e28c2ed0-a3d1-4d59-9ad7-9a86f04da5ad",
+  "pr": 762,
+  "tip": "3748af8e808eab62782825eba3244a136170812f",
+  "critic": "05470fd3-929c-4910-b997-182a9e52da17",
+  "flowDelta": "g14a leaf PR #762 open; critic owns next gate"
+}

@@ -1,0 +1,2194 @@
+{
+  "total_count": 15,
+  "jobs": [
+    {
+      "id": 93833219723,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2OVOiw",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833219723",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833219723",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:33:12Z",
+      "started_at": "2026-08-11T15:33:14Z",
+      "completed_at": "2026-08-11T15:35:09Z",
+      "name": "CI preflight — foundation and lockfile integrity",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:33:15Z",
+          "completed_at": "2026-08-11T15:33:17Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-08-11T15:33:17Z",
+          "completed_at": "2026-08-11T15:33:24Z"
+        },
+        {
+          "name": "Derive exact console C/T/M train",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:33:24Z",
+          "completed_at": "2026-08-11T15:33:24Z"
+        },
+        {
+          "name": "Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:33:24Z",
+          "completed_at": "2026-08-11T15:33:30Z"
+        },
+        {
+          "name": "Install workspace dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:33:30Z",
+          "completed_at": "2026-08-11T15:33:31Z"
+        },
+        {
+          "name": "Classify path class",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:33:31Z",
+          "completed_at": "2026-08-11T15:33:31Z"
+        },
+        {
+          "name": "Install pinned DotSlash runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:33:31Z",
+          "completed_at": "2026-08-11T15:33:31Z"
+        },
+        {
+          "name": "Install Rust toolchain for Cargo.lock consistency",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-08-11T15:33:31Z",
+          "completed_at": "2026-08-11T15:33:40Z"
+        },
+        {
+          "name": "Cheap Buck2 generated-face admission",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-08-11T15:33:40Z",
+          "completed_at": "2026-08-11T15:33:44Z"
+        },
+        {
+          "name": "Foundation gate contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-08-11T15:33:44Z",
+          "completed_at": "2026-08-11T15:33:44Z"
+        },
+        {
+          "name": "Reasoning lens contract regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-08-11T15:33:44Z",
+          "completed_at": "2026-08-11T15:33:46Z"
+        },
+        {
+          "name": "Reasoning lens changed-record admission",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-08-11T15:33:46Z",
+          "completed_at": "2026-08-11T15:33:46Z"
+        },
+        {
+          "name": "Console truth-ledger exact-M admission",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-08-11T15:33:46Z",
+          "completed_at": "2026-08-11T15:33:47Z"
+        },
+        {
+          "name": "Console fanout planner exact-M admission",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-08-11T15:33:47Z",
+          "completed_at": "2026-08-11T15:33:48Z"
+        },
+        {
+          "name": "CI preflight contract tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-08-11T15:33:48Z",
+          "completed_at": "2026-08-11T15:34:16Z"
+        },
+        {
+          "name": "Console route inventory regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-08-11T15:34:16Z",
+          "completed_at": "2026-08-11T15:34:16Z"
+        },
+        {
+          "name": "Console authority-train regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-08-11T15:34:16Z",
+          "completed_at": "2026-08-11T15:34:18Z"
+        },
+        {
+          "name": "Console PR authority bootstrap regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-08-11T15:34:18Z",
+          "completed_at": "2026-08-11T15:34:19Z"
+        },
+        {
+          "name": "Executed-tests baseline set regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-08-11T15:34:19Z",
+          "completed_at": "2026-08-11T15:34:19Z"
+        },
+        {
+          "name": "Local CI mirror contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-08-11T15:34:19Z",
+          "completed_at": "2026-08-11T15:34:20Z"
+        },
+        {
+          "name": "Console truth-ledger validator exact-M regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-08-11T15:34:20Z",
+          "completed_at": "2026-08-11T15:34:23Z"
+        },
+        {
+          "name": "Console fanout planner exact-M regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-08-11T15:34:23Z",
+          "completed_at": "2026-08-11T15:34:23Z"
+        },
+        {
+          "name": "Buck PostgreSQL environment wrapper regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-08-11T15:34:23Z",
+          "completed_at": "2026-08-11T15:34:23Z"
+        },
+        {
+          "name": "Buck disposable PostgreSQL harness regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-08-11T15:34:23Z",
+          "completed_at": "2026-08-11T15:34:56Z"
+        },
+        {
+          "name": "CI preflight contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-08-11T15:34:56Z",
+          "completed_at": "2026-08-11T15:34:59Z"
+        },
+        {
+          "name": "Canonical npm lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-08-11T15:34:59Z",
+          "completed_at": "2026-08-11T15:34:59Z"
+        },
+        {
+          "name": "Cargo.lock consistency",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-08-11T15:34:59Z",
+          "completed_at": "2026-08-11T15:35:04Z"
+        },
+        {
+          "name": "Executed-tests ratchet — a test binary must have a path from a workflow step",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-08-11T15:35:04Z",
+          "completed_at": "2026-08-11T15:35:04Z"
+        },
+        {
+          "name": "JavaScript test reachability ratchet",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-08-11T15:35:04Z",
+          "completed_at": "2026-08-11T15:35:04Z"
+        },
+        {
+          "name": "JavaScript test reachability unit tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-08-11T15:35:04Z",
+          "completed_at": "2026-08-11T15:35:05Z"
+        },
+        {
+          "name": "Lane fan-out harness preflight",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-08-11T15:35:05Z",
+          "completed_at": "2026-08-11T15:35:05Z"
+        },
+        {
+          "name": "Workflow test-runner credential literals",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 32,
+          "started_at": "2026-08-11T15:35:05Z",
+          "completed_at": "2026-08-11T15:35:05Z"
+        },
+        {
+          "name": "Post Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 63,
+          "started_at": "2026-08-11T15:35:05Z",
+          "completed_at": "2026-08-11T15:35:05Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 64,
+          "started_at": "2026-08-11T15:35:05Z",
+          "completed_at": "2026-08-11T15:35:05Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 65,
+          "started_at": "2026-08-11T15:35:05Z",
+          "completed_at": "2026-08-11T15:35:05Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833219723",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196281,
+      "runner_name": "GitHub Actions 1000196281",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838692,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7AZA",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838692",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838692",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:35:43Z",
+      "completed_at": "2026-08-11T15:52:34Z",
+      "name": "Test PostgreSQL — app",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:35:44Z",
+          "completed_at": "2026-08-11T15:35:46Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 2,
+          "started_at": "2026-08-11T15:35:46Z",
+          "completed_at": "2026-08-11T15:35:46Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:35:46Z",
+          "completed_at": "2026-08-11T15:35:49Z"
+        },
+        {
+          "name": "Free runner disk for PostgreSQL cargo tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:35:49Z",
+          "completed_at": "2026-08-11T15:37:06Z"
+        },
+        {
+          "name": "Install Rust toolchain (pinned via rust-toolchain.toml)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:37:06Z",
+          "completed_at": "2026-08-11T15:37:14Z"
+        },
+        {
+          "name": "Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:37:14Z",
+          "completed_at": "2026-08-11T15:37:16Z"
+        },
+        {
+          "name": "Run disposable PostgreSQL integration targets",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:37:16Z",
+          "completed_at": "2026-08-11T15:52:30Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-08-11T15:52:30Z",
+          "completed_at": "2026-08-11T15:52:30Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-08-11T15:52:30Z",
+          "completed_at": "2026-08-11T15:52:30Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-08-11T15:52:30Z",
+          "completed_at": "2026-08-11T15:52:30Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838692",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196368,
+      "runner_name": "GitHub Actions 1000196368",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838740,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7AlA",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838740",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838740",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:36:28Z",
+      "completed_at": "2026-08-11T15:53:07Z",
+      "name": "Test PostgreSQL — platform",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:36:29Z",
+          "completed_at": "2026-08-11T15:36:30Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 2,
+          "started_at": "2026-08-11T15:36:30Z",
+          "completed_at": "2026-08-11T15:36:30Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:36:30Z",
+          "completed_at": "2026-08-11T15:36:33Z"
+        },
+        {
+          "name": "Free runner disk for PostgreSQL cargo tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:36:33Z",
+          "completed_at": "2026-08-11T15:38:09Z"
+        },
+        {
+          "name": "Install Rust toolchain (pinned via rust-toolchain.toml)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:38:09Z",
+          "completed_at": "2026-08-11T15:38:19Z"
+        },
+        {
+          "name": "Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:38:19Z",
+          "completed_at": "2026-08-11T15:38:23Z"
+        },
+        {
+          "name": "Run disposable PostgreSQL integration targets",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:38:23Z",
+          "completed_at": "2026-08-11T15:53:04Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-08-11T15:53:04Z",
+          "completed_at": "2026-08-11T15:53:05Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-08-11T15:53:05Z",
+          "completed_at": "2026-08-11T15:53:05Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-08-11T15:53:05Z",
+          "completed_at": "2026-08-11T15:53:05Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838740",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196383,
+      "runner_name": "GitHub Actions 1000196383",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838754,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7Aog",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838754",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838754",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:39:21Z",
+      "completed_at": "2026-08-11T15:51:30Z",
+      "name": "Test PostgreSQL — ontology",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:39:22Z",
+          "completed_at": "2026-08-11T15:39:24Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 2,
+          "started_at": "2026-08-11T15:39:24Z",
+          "completed_at": "2026-08-11T15:39:24Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:39:24Z",
+          "completed_at": "2026-08-11T15:39:26Z"
+        },
+        {
+          "name": "Free runner disk for PostgreSQL cargo tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:39:26Z",
+          "completed_at": "2026-08-11T15:40:10Z"
+        },
+        {
+          "name": "Install Rust toolchain (pinned via rust-toolchain.toml)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:40:10Z",
+          "completed_at": "2026-08-11T15:40:18Z"
+        },
+        {
+          "name": "Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:40:18Z",
+          "completed_at": "2026-08-11T15:40:20Z"
+        },
+        {
+          "name": "Run disposable PostgreSQL integration targets",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:40:20Z",
+          "completed_at": "2026-08-11T15:51:26Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-08-11T15:51:26Z",
+          "completed_at": "2026-08-11T15:51:27Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-08-11T15:51:27Z",
+          "completed_at": "2026-08-11T15:51:27Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-08-11T15:51:27Z",
+          "completed_at": "2026-08-11T15:51:27Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838754",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196427,
+      "runner_name": "GitHub Actions 1000196427",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838763,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7Aqw",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838763",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838763",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:35:49Z",
+      "completed_at": "2026-08-11T15:36:19Z",
+      "name": "Repo gates — ADR / foundation / domain maturity",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:35:50Z",
+          "completed_at": "2026-08-11T15:35:51Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-08-11T15:35:51Z",
+          "completed_at": "2026-08-11T15:35:53Z"
+        },
+        {
+          "name": "Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:35:53Z",
+          "completed_at": "2026-08-11T15:35:58Z"
+        },
+        {
+          "name": "Install workspace dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:35:58Z",
+          "completed_at": "2026-08-11T15:35:59Z"
+        },
+        {
+          "name": "ADR governance tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:35:59Z",
+          "completed_at": "2026-08-11T15:35:59Z"
+        },
+        {
+          "name": "ADR governance gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:35:59Z",
+          "completed_at": "2026-08-11T15:36:02Z"
+        },
+        {
+          "name": "Documentation link tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:36:02Z",
+          "completed_at": "2026-08-11T15:36:06Z"
+        },
+        {
+          "name": "Documentation manifest gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-08-11T15:36:06Z",
+          "completed_at": "2026-08-11T15:36:07Z"
+        },
+        {
+          "name": "Documentation local-link gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-08-11T15:36:07Z",
+          "completed_at": "2026-08-11T15:36:08Z"
+        },
+        {
+          "name": "Doc citations — every code citation must resolve",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-08-11T15:36:08Z",
+          "completed_at": "2026-08-11T15:36:09Z"
+        },
+        {
+          "name": "Foundation gate contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-08-11T15:36:09Z",
+          "completed_at": "2026-08-11T15:36:09Z"
+        },
+        {
+          "name": "Canonical npm lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-08-11T15:36:09Z",
+          "completed_at": "2026-08-11T15:36:09Z"
+        },
+        {
+          "name": "Shared text gate unit tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-08-11T15:36:09Z",
+          "completed_at": "2026-08-11T15:36:10Z"
+        },
+        {
+          "name": "Gate-input provenance instrument",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-08-11T15:36:10Z",
+          "completed_at": "2026-08-11T15:36:11Z"
+        },
+        {
+          "name": "Gate-input provenance unit tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-08-11T15:36:11Z",
+          "completed_at": "2026-08-11T15:36:12Z"
+        },
+        {
+          "name": "G004 identity group org people policy foundation gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-08-11T15:36:12Z",
+          "completed_at": "2026-08-11T15:36:12Z"
+        },
+        {
+          "name": "G005 workflow approval Work Hub lifecycle gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-08-11T15:36:12Z",
+          "completed_at": "2026-08-11T15:36:12Z"
+        },
+        {
+          "name": "Workflow runtime spine gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-08-11T15:36:12Z",
+          "completed_at": "2026-08-11T15:36:12Z"
+        },
+        {
+          "name": "Workflow runtime M2 strangler dark-landing gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-08-11T15:36:12Z",
+          "completed_at": "2026-08-11T15:36:13Z"
+        },
+        {
+          "name": "Workflow runtime M2 Cedar-guard observe-and-record gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-08-11T15:36:13Z",
+          "completed_at": "2026-08-11T15:36:13Z"
+        },
+        {
+          "name": "Workflow runtime M2 flag-ON runtime gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-08-11T15:36:13Z",
+          "completed_at": "2026-08-11T15:36:13Z"
+        },
+        {
+          "name": "Workflow runtime M2 outbox-drainer transactional-idempotency gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-08-11T15:36:13Z",
+          "completed_at": "2026-08-11T15:36:13Z"
+        },
+        {
+          "name": "G006 asset equipment dispatch lifecycle gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-08-11T15:36:13Z",
+          "completed_at": "2026-08-11T15:36:13Z"
+        },
+        {
+          "name": "G007 collaboration mail calendar poll mobile lifecycle gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-08-11T15:36:13Z",
+          "completed_at": "2026-08-11T15:36:14Z"
+        },
+        {
+          "name": "G008 import HR payroll readiness gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-08-11T15:36:14Z",
+          "completed_at": "2026-08-11T15:36:14Z"
+        },
+        {
+          "name": "People HR lifecycle maturity gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-08-11T15:36:14Z",
+          "completed_at": "2026-08-11T15:36:14Z"
+        },
+        {
+          "name": "Payroll release-gate contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-08-11T15:36:14Z",
+          "completed_at": "2026-08-11T15:36:14Z"
+        },
+        {
+          "name": "Undeclared imports — every bare specifier must be declared",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-08-11T15:36:14Z",
+          "completed_at": "2026-08-11T15:36:15Z"
+        },
+        {
+          "name": "Request-body contract — spec fields must exist on the handler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-08-11T15:36:15Z",
+          "completed_at": "2026-08-11T15:36:17Z"
+        },
+        {
+          "name": "Post Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 57,
+          "started_at": "2026-08-11T15:36:17Z",
+          "completed_at": "2026-08-11T15:36:17Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 58,
+          "started_at": "2026-08-11T15:36:17Z",
+          "completed_at": "2026-08-11T15:36:17Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 59,
+          "started_at": "2026-08-11T15:36:17Z",
+          "completed_at": "2026-08-11T15:36:17Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838763",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196374,
+      "runner_name": "GitHub Actions 1000196374",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838780,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7AvA",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838780",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838780",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:36:19Z",
+      "completed_at": "2026-08-11T15:41:50Z",
+      "name": "Company conformance — generic-engine regression",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:36:26Z",
+          "completed_at": "2026-08-11T15:36:27Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 2,
+          "started_at": "2026-08-11T15:36:27Z",
+          "completed_at": "2026-08-11T15:36:27Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:36:27Z",
+          "completed_at": "2026-08-11T15:36:31Z"
+        },
+        {
+          "name": "Install pinned DotSlash runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:36:31Z",
+          "completed_at": "2026-08-11T15:36:31Z"
+        },
+        {
+          "name": "Free runner disk for PostgreSQL Buck2 tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:36:31Z",
+          "completed_at": "2026-08-11T15:37:05Z"
+        },
+        {
+          "name": "Install Rust toolchain (pinned via rust-toolchain.toml)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:37:05Z",
+          "completed_at": "2026-08-11T15:37:13Z"
+        },
+        {
+          "name": "Company conformance against disposable PostgreSQL",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:37:13Z",
+          "completed_at": "2026-08-11T15:41:47Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-08-11T15:41:47Z",
+          "completed_at": "2026-08-11T15:41:47Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-08-11T15:41:47Z",
+          "completed_at": "2026-08-11T15:41:48Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838780",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196381,
+      "runner_name": "GitHub Actions 1000196381",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838784,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7AwA",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838784",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838784",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:35:52Z",
+      "completed_at": "2026-08-11T15:48:11Z",
+      "name": "dev-up.mjs smoke — compose deps + migrate + /readyz",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:35:53Z",
+          "completed_at": "2026-08-11T15:35:54Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 2,
+          "started_at": "2026-08-11T15:35:54Z",
+          "completed_at": "2026-08-11T15:35:54Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:35:54Z",
+          "completed_at": "2026-08-11T15:35:56Z"
+        },
+        {
+          "name": "dev-up compose contract unit test",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:35:56Z",
+          "completed_at": "2026-08-11T15:35:57Z"
+        },
+        {
+          "name": "Install pinned DotSlash runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:35:57Z",
+          "completed_at": "2026-08-11T15:35:57Z"
+        },
+        {
+          "name": "Free runner disk for Rust backend",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:35:57Z",
+          "completed_at": "2026-08-11T15:37:19Z"
+        },
+        {
+          "name": "Install Rust toolchain (pinned via rust-toolchain.toml)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:37:19Z",
+          "completed_at": "2026-08-11T15:37:27Z"
+        },
+        {
+          "name": "Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-08-11T15:37:27Z",
+          "completed_at": "2026-08-11T15:37:30Z"
+        },
+        {
+          "name": "PostgreSQL topology integration regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-08-11T15:37:30Z",
+          "completed_at": "2026-08-11T15:38:55Z"
+        },
+        {
+          "name": "dev-up bootstrap (compose deps + migrate + backend readyz)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-08-11T15:38:55Z",
+          "completed_at": "2026-08-11T15:47:59Z"
+        },
+        {
+          "name": "Confirm /readyz reachable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-08-11T15:47:59Z",
+          "completed_at": "2026-08-11T15:47:59Z"
+        },
+        {
+          "name": "dev-up down",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-08-11T15:47:59Z",
+          "completed_at": "2026-08-11T15:48:10Z"
+        },
+        {
+          "name": "Post Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-08-11T15:48:10Z",
+          "completed_at": "2026-08-11T15:48:10Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-08-11T15:48:10Z",
+          "completed_at": "2026-08-11T15:48:10Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-08-11T15:48:10Z",
+          "completed_at": "2026-08-11T15:48:10Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838784",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196375,
+      "runner_name": "GitHub Actions 1000196375",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838803,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7A0w",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838803",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838803",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:36:44Z",
+      "completed_at": "2026-08-11T15:36:53Z",
+      "name": "API contract — text-only contract checks",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:36:45Z",
+          "completed_at": "2026-08-11T15:36:46Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 2,
+          "started_at": "2026-08-11T15:36:46Z",
+          "completed_at": "2026-08-11T15:36:46Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:36:46Z",
+          "completed_at": "2026-08-11T15:36:48Z"
+        },
+        {
+          "name": "Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:36:48Z",
+          "completed_at": "2026-08-11T15:36:49Z"
+        },
+        {
+          "name": "Install Node tooling",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:36:49Z",
+          "completed_at": "2026-08-11T15:36:50Z"
+        },
+        {
+          "name": "Platform contract drift gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:36:50Z",
+          "completed_at": "2026-08-11T15:36:51Z"
+        },
+        {
+          "name": "Employee import replay contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:36:51Z",
+          "completed_at": "2026-08-11T15:36:51Z"
+        },
+        {
+          "name": "Ontology write precondition contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-08-11T15:36:51Z",
+          "completed_at": "2026-08-11T15:36:51Z"
+        },
+        {
+          "name": "Post Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-08-11T15:36:51Z",
+          "completed_at": "2026-08-11T15:36:52Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-08-11T15:36:52Z",
+          "completed_at": "2026-08-11T15:36:52Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-08-11T15:36:52Z",
+          "completed_at": "2026-08-11T15:36:52Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838803",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196388,
+      "runner_name": "GitHub Actions 1000196388",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838814,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7A3g",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838814",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838814",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:35:14Z",
+      "completed_at": "2026-08-11T15:42:44Z",
+      "name": "Generated faces — full required drift authority",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:35:15Z",
+          "completed_at": "2026-08-11T15:35:18Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 2,
+          "started_at": "2026-08-11T15:35:18Z",
+          "completed_at": "2026-08-11T15:35:18Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:35:18Z",
+          "completed_at": "2026-08-11T15:35:23Z"
+        },
+        {
+          "name": "Install pinned DotSlash runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:35:23Z",
+          "completed_at": "2026-08-11T15:35:24Z"
+        },
+        {
+          "name": "Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:35:24Z",
+          "completed_at": "2026-08-11T15:35:31Z"
+        },
+        {
+          "name": "Set up Java",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:35:31Z",
+          "completed_at": "2026-08-11T15:35:31Z"
+        },
+        {
+          "name": "Install Rust toolchain (pinned via rust-toolchain.toml)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:35:31Z",
+          "completed_at": "2026-08-11T15:35:41Z"
+        },
+        {
+          "name": "Install lock-pinned Reindeer Rust toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-08-11T15:35:41Z",
+          "completed_at": "2026-08-11T15:35:49Z"
+        },
+        {
+          "name": "Install workspace dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-08-11T15:35:49Z",
+          "completed_at": "2026-08-11T15:35:50Z"
+        },
+        {
+          "name": "Full generated-face closure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-08-11T15:35:50Z",
+          "completed_at": "2026-08-11T15:42:37Z"
+        },
+        {
+          "name": "Post Set up Java",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-08-11T15:42:37Z",
+          "completed_at": "2026-08-11T15:42:38Z"
+        },
+        {
+          "name": "Post Set up Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-08-11T15:42:38Z",
+          "completed_at": "2026-08-11T15:42:38Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-08-11T15:42:38Z",
+          "completed_at": "2026-08-11T15:42:39Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-08-11T15:42:39Z",
+          "completed_at": "2026-08-11T15:42:42Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838814",
+      "labels": [
+        "macos-latest"
+      ],
+      "runner_id": 1000196357,
+      "runner_name": "GitHub Actions 1000196357",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838853,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7BBQ",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838853",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838853",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:44:55Z",
+      "completed_at": "2026-08-11T15:54:23Z",
+      "name": "Domain crates — unit tests",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:44:56Z",
+          "completed_at": "2026-08-11T15:44:57Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 2,
+          "started_at": "2026-08-11T15:44:57Z",
+          "completed_at": "2026-08-11T15:44:57Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:44:57Z",
+          "completed_at": "2026-08-11T15:44:59Z"
+        },
+        {
+          "name": "Install Rust toolchain (pinned via rust-toolchain.toml)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:44:59Z",
+          "completed_at": "2026-08-11T15:45:08Z"
+        },
+        {
+          "name": "Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:45:08Z",
+          "completed_at": "2026-08-11T15:45:10Z"
+        },
+        {
+          "name": "Domain crate unit tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:45:10Z",
+          "completed_at": "2026-08-11T15:54:21Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-08-11T15:54:21Z",
+          "completed_at": "2026-08-11T15:54:22Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-08-11T15:54:22Z",
+          "completed_at": "2026-08-11T15:54:22Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-08-11T15:54:22Z",
+          "completed_at": "2026-08-11T15:54:22Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838853",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196474,
+      "runner_name": "GitHub Actions 1000196474",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838871,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7BFw",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838871",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838871",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:37:44Z",
+      "completed_at": "2026-08-11T15:38:20Z",
+      "name": "Kubernetes manifests — render / hardening / NetworkPolicy preflight",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:37:45Z",
+          "completed_at": "2026-08-11T15:37:45Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 2,
+          "started_at": "2026-08-11T15:37:45Z",
+          "completed_at": "2026-08-11T15:37:45Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:37:45Z",
+          "completed_at": "2026-08-11T15:37:53Z"
+        },
+        {
+          "name": "Install kubectl (for kustomize renderer)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:37:53Z",
+          "completed_at": "2026-08-11T15:37:54Z"
+        },
+        {
+          "name": "Install kustomize (NetworkPolicy static render proof)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:37:54Z",
+          "completed_at": "2026-08-11T15:37:54Z"
+        },
+        {
+          "name": "Governed command-database DARK wiring regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:37:54Z",
+          "completed_at": "2026-08-11T15:37:55Z"
+        },
+        {
+          "name": "Render manifests and NetworkPolicy enforcement preflight",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:37:55Z",
+          "completed_at": "2026-08-11T15:37:55Z"
+        },
+        {
+          "name": "Production hardening contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-08-11T15:37:55Z",
+          "completed_at": "2026-08-11T15:37:56Z"
+        },
+        {
+          "name": "Production hardening regression tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-08-11T15:37:56Z",
+          "completed_at": "2026-08-11T15:38:17Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-08-11T15:38:17Z",
+          "completed_at": "2026-08-11T15:38:17Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-08-11T15:38:17Z",
+          "completed_at": "2026-08-11T15:38:17Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838871",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196400,
+      "runner_name": "GitHub Actions 1000196400",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838912,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7BQA",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838912",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838912",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:38:32Z",
+      "completed_at": "2026-08-11T16:04:04Z",
+      "name": "Test PostgreSQL — domain adapters B",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:38:33Z",
+          "completed_at": "2026-08-11T15:38:35Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 2,
+          "started_at": "2026-08-11T15:38:35Z",
+          "completed_at": "2026-08-11T15:38:35Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:38:35Z",
+          "completed_at": "2026-08-11T15:38:38Z"
+        },
+        {
+          "name": "Free runner disk for PostgreSQL cargo tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:38:38Z",
+          "completed_at": "2026-08-11T15:39:37Z"
+        },
+        {
+          "name": "Install Rust toolchain (pinned via rust-toolchain.toml)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:39:37Z",
+          "completed_at": "2026-08-11T15:39:46Z"
+        },
+        {
+          "name": "Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:39:46Z",
+          "completed_at": "2026-08-11T15:39:49Z"
+        },
+        {
+          "name": "Run disposable PostgreSQL integration targets",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:39:49Z",
+          "completed_at": "2026-08-11T16:04:01Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-08-11T16:04:01Z",
+          "completed_at": "2026-08-11T16:04:01Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-08-11T16:04:01Z",
+          "completed_at": "2026-08-11T16:04:02Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-08-11T16:04:02Z",
+          "completed_at": "2026-08-11T16:04:02Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838912",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196418,
+      "runner_name": "GitHub Actions 1000196418",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833838938,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7BWg",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833838938",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833838938",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:36:59Z",
+      "completed_at": "2026-08-11T15:56:21Z",
+      "name": "Test PostgreSQL — domain adapters A",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:37:00Z",
+          "completed_at": "2026-08-11T15:37:02Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 2,
+          "started_at": "2026-08-11T15:37:02Z",
+          "completed_at": "2026-08-11T15:37:02Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-08-11T15:37:02Z",
+          "completed_at": "2026-08-11T15:37:06Z"
+        },
+        {
+          "name": "Free runner disk for PostgreSQL cargo tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:37:06Z",
+          "completed_at": "2026-08-11T15:37:36Z"
+        },
+        {
+          "name": "Install Rust toolchain (pinned via rust-toolchain.toml)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:37:36Z",
+          "completed_at": "2026-08-11T15:37:45Z"
+        },
+        {
+          "name": "Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:37:45Z",
+          "completed_at": "2026-08-11T15:37:47Z"
+        },
+        {
+          "name": "Run disposable PostgreSQL integration targets",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:37:47Z",
+          "completed_at": "2026-08-11T15:56:17Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-08-11T15:56:17Z",
+          "completed_at": "2026-08-11T15:56:18Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-08-11T15:56:18Z",
+          "completed_at": "2026-08-11T15:56:18Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-08-11T15:56:18Z",
+          "completed_at": "2026-08-11T15:56:18Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833838938",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196390,
+      "runner_name": "GitHub Actions 1000196390",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93833839001,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2O7BmQ",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93833839001",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93833839001",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-08-11T15:35:10Z",
+      "started_at": "2026-08-11T15:45:16Z",
+      "completed_at": "2026-08-11T16:05:21Z",
+      "name": "Backend — fmt / clippy / test / gates",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-08-11T15:45:17Z",
+          "completed_at": "2026-08-11T15:45:18Z"
+        },
+        {
+          "name": "Initialize containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-08-11T15:45:18Z",
+          "completed_at": "2026-08-11T15:45:42Z"
+        },
+        {
+          "name": "Path-class skip proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3,
+          "started_at": "2026-08-11T15:45:42Z",
+          "completed_at": "2026-08-11T15:45:42Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-08-11T15:45:42Z",
+          "completed_at": "2026-08-11T15:45:44Z"
+        },
+        {
+          "name": "Install pinned DotSlash runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-08-11T15:45:44Z",
+          "completed_at": "2026-08-11T15:45:45Z"
+        },
+        {
+          "name": "Free runner disk for Rust backend",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-08-11T15:45:45Z",
+          "completed_at": "2026-08-11T15:47:06Z"
+        },
+        {
+          "name": "Install Rust toolchain (pinned via rust-toolchain.toml)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-08-11T15:47:06Z",
+          "completed_at": "2026-08-11T15:47:16Z"
+        },
+        {
+          "name": "Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-08-11T15:47:16Z",
+          "completed_at": "2026-08-11T15:47:26Z"
+        },
+        {
+          "name": "rustfmt check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-08-11T15:47:26Z",
+          "completed_at": "2026-08-11T15:47:30Z"
+        },
+        {
+          "name": "clippy -D warnings",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-08-11T15:47:30Z",
+          "completed_at": "2026-08-11T15:50:55Z"
+        },
+        {
+          "name": "Layer-boundary gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-08-11T15:50:55Z",
+          "completed_at": "2026-08-11T15:50:55Z"
+        },
+        {
+          "name": "Audit-coverage gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-08-11T15:50:55Z",
+          "completed_at": "2026-08-11T15:50:56Z"
+        },
+        {
+          "name": "Migration-safety gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-08-11T15:50:56Z",
+          "completed_at": "2026-08-11T15:50:57Z"
+        },
+        {
+          "name": "Tenant-isolation gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-08-11T15:50:57Z",
+          "completed_at": "2026-08-11T15:50:58Z"
+        },
+        {
+          "name": "PII-no-logs gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-08-11T15:50:58Z",
+          "completed_at": "2026-08-11T15:50:58Z"
+        },
+        {
+          "name": "RLS-arming gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-08-11T15:50:58Z",
+          "completed_at": "2026-08-11T15:50:59Z"
+        },
+        {
+          "name": "Dev-auth-absence gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-08-11T15:50:59Z",
+          "completed_at": "2026-08-11T15:51:00Z"
+        },
+        {
+          "name": "IaC tier-discipline gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-08-11T15:51:00Z",
+          "completed_at": "2026-08-11T15:51:00Z"
+        },
+        {
+          "name": "Fabricated-branch gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-08-11T15:51:00Z",
+          "completed_at": "2026-08-11T15:51:03Z"
+        },
+        {
+          "name": "Personal-data-classification gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-08-11T15:51:03Z",
+          "completed_at": "2026-08-11T15:51:04Z"
+        },
+        {
+          "name": "Writer-ownership gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-08-11T15:51:04Z",
+          "completed_at": "2026-08-11T15:51:09Z"
+        },
+        {
+          "name": "Buck2 CI-gate mutation suites — every gate proven to still reject",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-08-11T15:51:09Z",
+          "completed_at": "2026-08-11T15:51:24Z"
+        },
+        {
+          "name": "PR 473 migration operational contract tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-08-11T15:51:24Z",
+          "completed_at": "2026-08-11T15:51:24Z"
+        },
+        {
+          "name": "Reconcile portable PostgreSQL role topology",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-08-11T15:51:24Z",
+          "completed_at": "2026-08-11T15:51:34Z"
+        },
+        {
+          "name": "PR 473 migration operational gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-08-11T15:51:34Z",
+          "completed_at": "2026-08-11T15:58:41Z"
+        },
+        {
+          "name": "Boot smoke — migrate + serve + /readyz",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-08-11T15:58:41Z",
+          "completed_at": "2026-08-11T16:00:00Z"
+        },
+        {
+          "name": "Buck2 dev-auth feature PostgreSQL suites",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-08-11T16:00:00Z",
+          "completed_at": "2026-08-11T16:00:39Z"
+        },
+        {
+          "name": "Buck2 platform-authz unit suite",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-08-11T16:00:39Z",
+          "completed_at": "2026-08-11T16:00:41Z"
+        },
+        {
+          "name": "Buck2 console-app unit suite",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-08-11T16:00:41Z",
+          "completed_at": "2026-08-11T16:03:17Z"
+        },
+        {
+          "name": "Buck2 console-app OpenAPI drift suite",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-08-11T16:03:17Z",
+          "completed_at": "2026-08-11T16:03:59Z"
+        },
+        {
+          "name": "Buck2 console-app inline PostgreSQL suites",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-08-11T16:03:59Z",
+          "completed_at": "2026-08-11T16:05:19Z"
+        },
+        {
+          "name": "Post Cache Rust dependencies + build artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 60,
+          "started_at": "2026-08-11T16:05:19Z",
+          "completed_at": "2026-08-11T16:05:19Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 61,
+          "started_at": "2026-08-11T16:05:19Z",
+          "completed_at": "2026-08-11T16:05:19Z"
+        },
+        {
+          "name": "Stop containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 62,
+          "started_at": "2026-08-11T16:05:19Z",
+          "completed_at": "2026-08-11T16:05:20Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 63,
+          "started_at": "2026-08-11T16:05:20Z",
+          "completed_at": "2026-08-11T16:05:20Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93833839001",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000196481,
+      "runner_name": "GitHub Actions 1000196481",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 93842575194,
+      "run_id": 31507648491,
+      "workflow_name": "CI",
+      "head_branch": "lane/console-q58y",
+      "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOS636Ss8AAAAV2XQPWg",
+      "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93842575194",
+      "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93842575194",
+      "status": "queued",
+      "conclusion": null,
+      "created_at": "2026-08-11T16:04:04Z",
+      "started_at": "2026-08-11T16:04:04Z",
+      "completed_at": null,
+      "name": "Dispatch, attendance and ontology — disposable PostgreSQL reachability",
+      "steps": [
+
+      ],
+      "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93842575194",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 0,
+      "runner_name": "",
+      "runner_group_id": 0,
+      "runner_group_name": ""
+    }
+  ]
+}

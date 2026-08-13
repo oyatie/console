@@ -1,0 +1,14 @@
+{
+  "verdict": "APPROVE",
+  "findings": [
+    {
+      "severity": "minor",
+      "claim": "Workspace-inherited dependency aliases tracked as console-ugg bead; cargo metadata is the total primitive",
+      "failureScenario": "Fourth text-scan patch for alias positions",
+      "location": "backend/ci/gates/writer-ownership/src/lib.rs",
+      "provenByExecution": false,
+      "ownerLease": true
+    }
+  ],
+  "notes": "Standing lenses: writer-ownership gate + postgres census wired; REVOKE ALL console_rt in 0213-0215; authority train verified locally (C=a782291f6 T=37c0beb5a); Required/CI + Required/Security + authenticate-console-authority SUCCESS at tip 37c0beb5a; Codex P1/P2 threads resolved with salvage evidence."
+}

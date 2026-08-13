@@ -1,0 +1,17 @@
+{
+  "id": "land-756-20260811",
+  "role": "admit-coordinator",
+  "plan": "unblock_w3_w4_backlog_88276fa6",
+  "todo": "land-756",
+  "status": "done",
+  "pr": 756,
+  "headBeforeMerge": "231b11f5fcce456624dad8d8bbbcdd4009130dc3",
+  "mergeSha": "9e29b627d401db093da9b000a9a2c20002f34037",
+  "mergedAt": "2026-08-11T22:26:40Z",
+  "baseMainBefore": "111e65a1835ad6078a04f29abaff82c505e2418d",
+  "newMain": "9e29b627d401db093da9b000a9a2c20002f34037",
+  "method": "squash auto-merge after Required CI; 13 Codex threads reply/resolve; no tip thrash; sole writer admission-wave3-20260811",
+  "supersededClosed": [752, 750],
+  "beads": ["console-7sx", "console-xxp"],
+  "next": "unpark y0n; sole-writer land #755"
+}

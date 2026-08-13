@@ -1,0 +1,12 @@
+{
+  "role": "admit-coordinator",
+  "at": "2026-08-11T17:15:00Z",
+  "fromLand": "fd7b0657-93aa-49a7-be0d-ceacc853a5db",
+  "finding": "illegal merge tip 92a32a9e4 superseded; published tip now linear 1824d39b8",
+  "p1StillOpen": true,
+  "ciLockOnTip": false,
+  "priorForeverFix": "wiped by tip-move under lock (wave4-openapi-anchor-capture)",
+  "exclusive": "15ce892e-86a6-4168-bb1a-994752e43a2a",
+  "parked": ["heal WT a40d46945", "bfc62fea CAPTURE", "relaunch-755-admit"],
+  "flowDelta": "sole fixer re-dispatched on linear tip for P1+CI-lock then land"
+}

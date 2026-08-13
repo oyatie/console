@@ -1,0 +1,14 @@
+[
+  {
+    "path": ".github",
+    "blob_href": "https://github.com/jason931225/console/blob/fc1355b6f925b43ea9603406246da92f4f3a00df/.github",
+    "start_line": 14,
+    "start_column": null,
+    "end_line": 14,
+    "end_column": null,
+    "annotation_level": "failure",
+    "title": "",
+    "message": "Process completed with exit code 1.",
+    "raw_details": ""
+  }
+]

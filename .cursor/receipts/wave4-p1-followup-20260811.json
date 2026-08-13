@@ -1,0 +1,20 @@
+{
+  "role": "admit-coordinator",
+  "at": "2026-08-11T15:33:00Z",
+  "fromAgent": "8c52ca05-800b-4d94-9ed0-90cf4c6b25db",
+  "pr": 755,
+  "tipAtReport": "aa6c782a8",
+  "provenBlocker": {
+    "class": "openapi.yaml-anchor-before-alias",
+    "evidence": "Codex P1 on #755: *evaluationTransitionResponses at L4729/4737 before & at L4745",
+    "fix": "generator/post-pass emit anchors before aliases + regression pin"
+  },
+  "deadLandQueues": [
+    "12a5a7f5",
+    "9849b8f7",
+    "fd7b0657",
+    "ce80e67c"
+  ],
+  "fixerLand": "3d327904-87fa-4192-afe4-95c33418fd29",
+  "flowDelta": "P1 inventory handed to fixer+land; no leaf product re-dispatch"
+}

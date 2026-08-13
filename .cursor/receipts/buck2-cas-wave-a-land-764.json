@@ -1,0 +1,53 @@
+{
+  "laneId": "buck2-cas-everywhere-20260811-land",
+  "role": "babysit",
+  "status": "done",
+  "summary": "Squash-merged Wave A PR #764 to main at d9808dd16. Authority tip + doc-manifest heal green; Wave C not started \u2014 needs sole-writer lease.",
+  "baseSha": "950b3b100f9c619ab920b30110aa14e2e17567df",
+  "headSha": "ae2e94caeb15c446bfdb9dc783d737938ead721e",
+  "ownedRoots": [
+    "infra/ci/buckconfig/",
+    "scripts/cas/",
+    "docs/handoffs/2026-08-11-oyatie-shared-cas.md",
+    "docs/decisions/notes/DN-0006-buck2-primary-shared-cas.md",
+    "docs/decisions/README.md",
+    "docs/documentation-manifest.seed.json",
+    "docs/documentation-index.json",
+    "docs/program/console-jurisdiction-register.json"
+  ],
+  "filesChanged": [
+    "PR #764 squash onto main (Wave A only; no ci.yml flips)"
+  ],
+  "redBaseline": "Tip without authority T failed authenticate-console-authority; tip without doc-manifest failed Repo gates.",
+  "verification": "auth PASS 31572626430; Security PASS 31572627623; CI PASS 31572627592; squash-merge d9808dd16; bind-merged-console-authority-squash PASS 31574740863.",
+  "contractBreaches": "none \u2014 no ci.yml cargo\u2192buck2 flips; no secret bootstrap; no Wave C lease.",
+  "enforcementPlacement": "n/a - adds no enforcement",
+  "peripheralsUpdated": "Registered DN-0006 + oyatie handoff in documentation-manifest/index; reminted jurisdiction authority tip for #764.",
+  "commands": [
+    "gh pr merge 764 --squash --delete-branch=false",
+    "git fetch origin main && git rev-parse origin/main",
+    "gh run view 31574740863 --json jobs,conclusion"
+  ],
+  "followUps": [
+    "Wave C sole-writer lease on .github/workflows/ci.yml (first PR: one bounded cargo\u2192buck2 gate family; warm HOLD until GREEN_REAPI+license)",
+    "scripts/cas materialize refuse-overwrite/--force (deferred Codex P1)",
+    "OYA_CAS_FORWARDERS_ONLY lab mode (P2)",
+    "DN-0006 postgres map count re-derive at Wave E"
+  ],
+  "lenses": [
+    "Pragmatism",
+    "Chesterton's Fence",
+    "Blast-radius / cell-based"
+  ],
+  "challenges": [
+    "Receipt tip-bind as PR HEAD breaks C..T; authority tip must be sole HEAD. Doc-manifest must be staged before check sees index-tree OIDs."
+  ],
+  "remainingHolds": [
+    "ADR-0039 acceptance / PRODUCT Buck2 mandate",
+    "Wave C\u2013E ci.yml flips under sole-writer lease",
+    "Warm-cache on Required CI before cited canary + license"
+  ],
+  "mergeSha": "d9808dd16d0f6a1e6117ad11a811313beff733e0",
+  "pr": 764,
+  "waveCFirstPrScope": "Sole-writer on .github/workflows/ci.yml: flip one bounded Required-CI cargo gate family to buck2; fail-closed warm HOLD; no postgres-map/domain-unit mass flips (D\u2013E)."
+}

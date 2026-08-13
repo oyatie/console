@@ -1,0 +1,10 @@
+{
+  "id": "land-762-g14a-20260812",
+  "role": "admit-coordinator",
+  "pr": 762,
+  "bead": "console-g14a",
+  "mergeSha": "ae699daed42d0b7dd1a3c833e237eff1bd6dd90f",
+  "mergedAt": "2026-08-12T02:16:46Z",
+  "beadStatus": "CLOSED",
+  "flowDelta": "g14a on main; leaf complete"
+}

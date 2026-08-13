@@ -1,0 +1,412 @@
+{
+  "role": "admit-coordinator-prep",
+  "artifact": "batch-b-admit-brief",
+  "writtenAt": "2026-08-10T22:40:00-04:00",
+  "status": "COMPLETED",
+  "doNotOpenPr": true,
+  "premiseCheck": {
+    "postTrain2Base": "9acd784f534bb25b0468139be8f9acb13bd8fbd8",
+    "hubHeadAtBriefWrite": "530eed647b9a736bd0ab26bd61e79b83aeaf17d7",
+    "verified": [
+      "E: all four leaf tips merge-base == 9acd784f5 vs origin/main",
+      "E: critic receipts in lane worktrees all verdict APPROVE at declared tips",
+      "E: product path sets pairwise file-disjoint among ugg/h3e/6n4/nuc",
+      "E: avb implementer d2dc5850 launched (stack on h3e) \u2014 no tip/receipt yet; worktree console-lane-avb absent at brief write",
+      "E: console-pnb1 tip cc99b8d461286965c5f6edd22f76b501300e2dd5 \u2014 serial after nuc (tools/ci map+BUCK)",
+      "E: avb tip 9c9c7f8f373cfcba59ecfd7e647d6e5505f2eb2a critic APPROVE (agent a55d704e); stacks via h3e cherry-pick 962e36c31 on lane tip",
+      "E: split Batch B PR #736 OPEN (ugg/6n4/nuc/pnb1); do not dual-admit those leaves"
+    ],
+    "baseLockNote": "Atomic train must restack/cherry-pick onto live origin/main at admit time if main moves past 9acd784f5; do not use gh pr update-branch."
+  },
+  "criticAuthority": "Hard APPROVE only from lane-worktree critic receipts (paths below). Hub copies are not authority for these leaves.",
+  "holdPolicy": {
+    "prefer": "HOLD cleared: open h3e\u2192avb micro-train only after split #736 merges.",
+    "avb": {
+      "bead": "console-avb",
+      "implementerAgent": "d2dc5850",
+      "stackOn": "82eebb31c845bd745da30d935f840c76eb669478",
+      "statusAtBrief": "APPROVE_READY",
+      "collision": "backend/crates/ontology/canonical-domain/src/lib.rs \u2014 CanonicalPort::Error kind mapping vs h3e subject_id default delete",
+      "tipSha": "9c9c7f8f373cfcba59ecfd7e647d6e5505f2eb2a",
+      "criticAgent": "a55d704e",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-avb/.cursor/receipts/avb-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-avb/.cursor/receipts/avb.json",
+      "worktree": "/Users/jasonlee/Developer/console-lane-avb",
+      "branch": "lane/console-avb"
+    },
+    "splitOptionIfAvbBlocked": {
+      "when": "avb blocked beyond reasonable (no tip / critic BLOCK unfixed after one inventory fix / quota death without parent re-dispatch)",
+      "trainA": [
+        "ugg",
+        "6n4",
+        "nuc"
+      ],
+      "trainBLater": [
+        "h3e",
+        "avb"
+      ],
+      "rationale": "ugg/6n4/nuc are file-disjoint from each other and from the h3e+avb hard pair; landing them first unblocks independent beads without forcing h3e alone ahead of avb."
+    }
+  },
+  "q06": {
+    "bead": "console-q06",
+    "action": "CLOSE_WHEN_H3E_ADMITS",
+    "note": "h3e tip deletes CanonicalQuery::subject_id default (mechanism replacement for q06 silent-skip). Do not close on critic APPROVE alone \u2014 close when h3e is on the landed admit tip. Annotated on bead."
+  },
+  "jth": {
+    "bead": "console-jth",
+    "action": "FOLDED_INTO_UGG",
+    "closeWith": "console-ugg",
+    "note": "No separate ordered leaf. /*-in-quotes\u2192sqlparser + ugg cargo-metadata + soe COVERED header on tip 64a714526."
+  },
+  "nucOwnerLease": {
+    "finding": "major+proven ownerLease \u2014 new itest not in postgres-cargo-map / rest/BUCK",
+    "followUpBead": "console-pnb1",
+    "title": "Register ontology-rest canonical_dispatch_audit_as_runtime_role in postgres-cargo-map + BUCK",
+    "blocksProductAdmit": false,
+    "dispatch": "Same admit window or immediately after nuc product tip; tools/ci + rest/BUCK only"
+  },
+  "softCollisions": {
+    "exactFileAmongReadyLeaves": [],
+    "inventory": [
+      {
+        "pair": [
+          "h3e",
+          "nuc"
+        ],
+        "kind": "soft_same_crate_dir",
+        "paths": {
+          "h3e": "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+          "nuc": "backend/crates/ontology/rest/src/lib.rs (+ tests/canonical_dispatch_audit_as_runtime_role.rs)"
+        },
+        "risk": "Same crate; different files \u2014 usually clean cherry-pick; order h3e before nuc to keep rest tip linear.",
+        "mitigation": "Preferred order places h3e before nuc."
+      },
+      {
+        "pair": [
+          "h3e",
+          "avb"
+        ],
+        "kind": "hard_exact_file",
+        "paths": [
+          "backend/crates/ontology/canonical-domain/src/lib.rs"
+        ],
+        "risk": "Must stack; do not parallel-admit.",
+        "mitigation": "HOLD_AVB; avb stacks on h3e tip."
+      },
+      {
+        "pair": [
+          "h3e",
+          "6n4"
+        ],
+        "kind": "soft_peripheral_ownerLease",
+        "paths": [
+          "backend/crates/orgchange/adapter-postgres/src/employment.rs"
+        ],
+        "risk": "h3e critic minor: EmploymentQuery rustdoc still says trait default None; file is 6n4 product root.",
+        "mitigation": "Optional one-line rustdoc refresh in 6n4 admit window; do not open fix round on h3e."
+      },
+      {
+        "pair": [
+          "ugg",
+          "*"
+        ],
+        "kind": "none",
+        "paths": [
+          "backend/ci/gates/writer-ownership/**",
+          "backend/Cargo.lock (+serde_json edge)"
+        ],
+        "risk": "Cargo.lock edge only on ugg among Batch B ready leaves.",
+        "mitigation": "Place ugg first; re-resolve lock only if later leaf needs it (none expected)."
+      },
+      {
+        "pair": [
+          "nuc",
+          "console-pnb1"
+        ],
+        "kind": "serial_ci_lease",
+        "paths": [
+          "tools/ci/postgres-cargo-map.json",
+          "backend/crates/ontology/rest/BUCK"
+        ],
+        "risk": "Product tip green locally; CI dark until pnb1.",
+        "mitigation": "Admit pnb1 tip cc99b8d46 serial after nuc; not a product-train blocker per critic."
+      }
+    ]
+  },
+  "proposedOrder": {
+    "preferredHoldAvb": [
+      {
+        "order": 1,
+        "lane": "ugg",
+        "bead": "console-ugg",
+        "folds": [
+          "console-jth"
+        ],
+        "tipSha": "64a714526525955717fabb3eff863ccaa4041500",
+        "why": "Fully path-disjoint writer-ownership total primitive + jth residual-11 sibling + soe COVERED header."
+      },
+      {
+        "order": 2,
+        "lane": "h3e",
+        "bead": "console-h3e",
+        "tipSha": "82eebb31c845bd745da30d935f840c76eb669478",
+        "why": "CanonicalQuery::subject_id totality; unlocks avb stack; q06 close-pending-admit."
+      },
+      {
+        "order": 3,
+        "lane": "avb",
+        "bead": "console-avb",
+        "tipSha": "9c9c7f8f373cfcba59ecfd7e647d6e5505f2eb2a",
+        "status": "APPROVE_READY",
+        "stackOnTip": "82eebb31c845bd745da30d935f840c76eb669478",
+        "why": "Hard collision with h3e on canonical-domain; admit only after critic APPROVE.",
+        "criticVerdict": "APPROVE"
+      },
+      {
+        "order": 4,
+        "lane": "6n4",
+        "bead": "console-6n4",
+        "tipSha": "45c98d8e7e1ee11ab8423936749bc93001ed5add",
+        "why": "employment_heads.valid_to close; file-disjoint; optional EmploymentQuery rustdoc lease fold."
+      },
+      {
+        "order": 5,
+        "lane": "nuc",
+        "bead": "console-nuc",
+        "tipSha": "0f3ae15a0e5421381c67ada651602fcb93eba726",
+        "why": "Canonical projected audit emit; soft-after h3e within ontology/rest."
+      },
+      {
+        "order": 6,
+        "lane": "pnb1",
+        "bead": "console-pnb1",
+        "tipSha": "cc99b8d461286965c5f6edd22f76b501300e2dd5",
+        "status": "SERIAL_AFTER_NUC",
+        "why": "Wire nuc itest into map+BUCK; serial after nuc; not product blocker."
+      }
+    ],
+    "splitIfAvbBlocked": [
+      {
+        "order": 1,
+        "lane": "ugg",
+        "tipSha": "64a714526525955717fabb3eff863ccaa4041500"
+      },
+      {
+        "order": 2,
+        "lane": "6n4",
+        "tipSha": "45c98d8e7e1ee11ab8423936749bc93001ed5add"
+      },
+      {
+        "order": 3,
+        "lane": "nuc",
+        "tipSha": "0f3ae15a0e5421381c67ada651602fcb93eba726"
+      },
+      {
+        "order": 4,
+        "lane": "pnb1",
+        "tipSha": "cc99b8d461286965c5f6edd22f76b501300e2dd5",
+        "note": "CI lease serial after nuc"
+      },
+      {
+        "order": 5,
+        "lane": "h3e",
+        "tipSha": "82eebb31c845bd745da30d935f840c76eb669478",
+        "when": "with or immediately before avb"
+      },
+      {
+        "order": 6,
+        "lane": "avb",
+        "when": "critic APPROVE \u2014 ready for micro-train after split",
+        "tipSha": "9c9c7f8f373cfcba59ecfd7e647d6e5505f2eb2a"
+      }
+    ]
+  },
+  "orderedAdmitList": [
+    {
+      "order": 1,
+      "lane": "ugg",
+      "bead": "console-ugg",
+      "folds": [
+        "console-jth"
+      ],
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-ugg/.cursor/receipts/ugg-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-ugg/.cursor/receipts/ugg.json",
+      "tipSha": "64a714526525955717fabb3eff863ccaa4041500",
+      "baseSha": "9acd784f534bb25b0468139be8f9acb13bd8fbd8",
+      "worktree": "/Users/jasonlee/Developer/console-lane-ugg",
+      "branch": "lane/console-ugg",
+      "productPaths": [
+        "backend/Cargo.lock",
+        "backend/ci/gates/writer-ownership/Cargo.toml",
+        "backend/ci/gates/writer-ownership/canonical-enforce.sh",
+        "backend/ci/gates/writer-ownership/src/lib.rs",
+        "backend/ci/gates/writer-ownership/tests/gate_detects_violation.rs"
+      ],
+      "notes": "jth folded. Minor: rebind ugg.json headSha to 64a714526 before admit. ownerLease hub probe path + docs/ledger outside roots."
+    },
+    {
+      "order": 2,
+      "lane": "h3e",
+      "bead": "console-h3e",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-h3e/.cursor/receipts/h3e-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-h3e/.cursor/receipts/h3e.json",
+      "tipSha": "82eebb31c845bd745da30d935f840c76eb669478",
+      "baseSha": "9acd784f534bb25b0468139be8f9acb13bd8fbd8",
+      "worktree": "/Users/jasonlee/Developer/console-lane-h3e",
+      "branch": "lane/console-h3e",
+      "productPaths": [
+        "backend/crates/ontology/canonical-domain/src/canonical_contract.rs",
+        "backend/crates/ontology/canonical-domain/src/lib.rs",
+        "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs"
+      ],
+      "notes": "q06 close-pending-admit. Hold for avb. Stale EmploymentQuery rustdoc \u2192 6n4 ownerLease."
+    },
+    {
+      "order": 3,
+      "lane": "avb",
+      "bead": "console-avb",
+      "criticVerdict": "APPROVE",
+      "tipSha": "9c9c7f8f373cfcba59ecfd7e647d6e5505f2eb2a",
+      "status": "APPROVE_READY",
+      "stackOnTip": "82eebb31c845bd745da30d935f840c76eb669478",
+      "notes": "Critic APPROVE a55d704e at 9c9c7f8. Stack via h3e cherry-pick 962e36c31. Ready for h3e+avb micro-train after split Batch B. Do not re-admit ugg/6n4/nuc/pnb1.",
+      "criticAgent": "a55d704e",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-avb/.cursor/receipts/avb-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-avb/.cursor/receipts/avb.json",
+      "baseSha": "9acd784f534bb25b0468139be8f9acb13bd8fbd8",
+      "worktree": "/Users/jasonlee/Developer/console-lane-avb",
+      "branch": "lane/console-avb",
+      "productPaths": [
+        "backend/crates/ontology/canonical-domain/**",
+        "backend/crates/ontology/canonical-adapter-postgres/**",
+        "backend/crates/orgchange/adapter-postgres/src/employment.rs",
+        "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+        "backend/crates/ontology/rest/src/lib.rs",
+        "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs"
+      ]
+    },
+    {
+      "order": 4,
+      "lane": "6n4",
+      "bead": "console-6n4",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-6n4/.cursor/receipts/6n4-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-6n4/.cursor/receipts/6n4.json",
+      "tipSha": "45c98d8e7e1ee11ab8423936749bc93001ed5add",
+      "baseSha": "9acd784f534bb25b0468139be8f9acb13bd8fbd8",
+      "worktree": "/Users/jasonlee/Developer/console-lane-6n4",
+      "branch": "lane/console-6n4",
+      "productPaths": [
+        "backend/crates/orgchange/adapter-postgres/src/employment.rs",
+        "backend/crates/orgchange/adapter-postgres/tests/employment_port_as_runtime_role.rs"
+      ],
+      "notes": "Unproven minor Transfer EXITED pin asymmetry \u2014 ownerLease, no treadmill. Optional rustdoc fold from h3e."
+    },
+    {
+      "order": 5,
+      "lane": "nuc",
+      "bead": "console-nuc",
+      "criticVerdict": "APPROVE",
+      "criticReceipt": "/Users/jasonlee/Developer/console-lane-nuc/.cursor/receipts/nuc-critic.json",
+      "implementerReceipt": "/Users/jasonlee/Developer/console-lane-nuc/.cursor/receipts/nuc.json",
+      "tipSha": "0f3ae15a0e5421381c67ada651602fcb93eba726",
+      "baseSha": "9acd784f534bb25b0468139be8f9acb13bd8fbd8",
+      "worktree": "/Users/jasonlee/Developer/console-lane-nuc",
+      "branch": "lane/console-nuc",
+      "productPaths": [
+        "backend/crates/ontology/rest/src/lib.rs",
+        "backend/crates/ontology/rest/tests/canonical_dispatch_audit_as_runtime_role.rs"
+      ],
+      "notes": "CI map/BUCK \u2192 console-pnb1 tip cc99b8d46 (serial after nuc). Soft after h3e in ontology/rest. Optional idempotent-replay pin unproven minor."
+    },
+    {
+      "order": 6,
+      "lane": "pnb1",
+      "bead": "console-pnb1",
+      "tipSha": "cc99b8d461286965c5f6edd22f76b501300e2dd5",
+      "status": "SERIAL_AFTER_NUC",
+      "productPaths": [
+        "tools/ci/postgres-cargo-map.json",
+        "backend/crates/ontology/rest/BUCK"
+      ],
+      "notes": "nuc ownerLease CI registration; admit serial after nuc; not a product-train blocker."
+    }
+  ],
+  "beadsOnMerge": {
+    "closeWithTrain": [
+      "console-ugg",
+      "console-jth",
+      "console-h3e",
+      "console-6n4",
+      "console-nuc",
+      "console-pnb1"
+    ],
+    "closeWhenH3eAdmits": [
+      "console-q06"
+    ],
+    "closeWhenAvbAdmits": [
+      "console-avb"
+    ],
+    "keepOpenFollowUps": []
+  },
+  "nextCoordinatorAction": "Babysit 0a7z; land #738 layout; restack-complete #737 for #621; wave2 ae5/dgo.1/i91 APPROVE tips \u2014 we1 critic in flight.",
+  "flowDelta": "Batch B COMPLETED on main 526229dd8 (#736+#739); GH issues surgically closed; leftover 0a7z dispatched.",
+  "microTrain": {
+    "lanes": [
+      "h3e",
+      "avb"
+    ],
+    "order": "h3e \u2192 avb (avb stacks on h3e)",
+    "h3eTip": "82eebb31c845bd745da30d935f840c76eb669478",
+    "avbTip": "9c9c7f8f373cfcba59ecfd7e647d6e5505f2eb2a",
+    "prerequisite": "PR #736 Batch B split (ugg/6n4/nuc/pnb1) must merge first; do not dual-admit those leaves",
+    "beadsOnMerge": [
+      "console-h3e",
+      "console-avb",
+      "console-q06"
+    ],
+    "statusNote": "MERGED on main after split #736; ugg/6n4/nuc/pnb1 not re-admitted",
+    "pr": 739,
+    "prUrl": "https://github.com/jason931225/console/pull/739",
+    "mergeSha": "526229dd8e3549139083736340f7a474eeeaa402",
+    "authorityTip": "95874754f0600cff8b0e728a82c4430fc9705ed0",
+    "productTip": "f10937d6ca91599afbf7e3516f554dd1589e99b4",
+    "closedBeads": [
+      "console-h3e",
+      "console-avb",
+      "console-q06"
+    ]
+  },
+  "completedAt": "2026-08-10T22:50:00-04:00",
+  "mainTip": "526229dd8e3549139083736340f7a474eeeaa402",
+  "mergeShas": {
+    "splitBatchB_pr736": "e391abb91c960e4c774fd59c42c64f5e8f87904b",
+    "h3eAvbMicroTrain_pr739": "526229dd8e3549139083736340f7a474eeeaa402",
+    "authorityTip_h3eAvb": "95874754f0600cff8b0e728a82c4430fc9705ed0",
+    "productTip_h3eAvb": "f10937d6ca91599afbf7e3516f554dd1589e99b4"
+  },
+  "closedBeads": [
+    "console-ugg",
+    "console-jth",
+    "console-6n4",
+    "console-nuc",
+    "console-pnb1",
+    "console-h3e",
+    "console-avb",
+    "console-q06"
+  ],
+  "ghIssuesClosedSurgical": [
+    632,
+    633,
+    634,
+    639,
+    640,
+    641,
+    642
+  ],
+  "leftoverBead": "console-0a7z"
+}

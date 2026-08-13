@@ -1,0 +1,15 @@
+{
+  "role": "admit-coordinator",
+  "at": "2026-08-11T15:30:00Z",
+  "fromAgent": "62b1a4de-eb21-4987-a26a-998f082b7a66",
+  "forge": "recovered (preflight-forge ok remaining≈4150)",
+  "findings": {
+    "749": "closed-without-merge; Required CI+Security green on 1d050d800 — reopen+merge",
+    "747": "Required/CI fail disposable-PG reachability; Security green",
+    "755": "Required/CI + preflight fail on tip aa6c782a8",
+    "gc9z_7sx_xxp": "PARKED per restack agent"
+  },
+  "deadLandBabysits": ["9849b8f7", "fd7b0657", "ce80e67c"],
+  "landQueueRelaunch": "12a5a7f5-5a37-4aa9-936c-5f1c89b09ec9",
+  "flowDelta": "forge up; serial land queue dispatched for 749→747→755"
+}

@@ -1,0 +1,14 @@
+{
+  "role": "admit-coordinator",
+  "laneId": "756-sole-writer-fence",
+  "at": "2026-08-11T21:16:00Z",
+  "pr": 756,
+  "branch": "admission/wave3-20260811",
+  "phase": "land-after-remint",
+  "lockedTip": "a87a7cb60cc22ac66bd5c2111ea1e3c4947bd11d",
+  "productC": "b6be0b0ba1c2132ca5352d1817b4ef6545cc5cf0",
+  "base": "10378dda17ee",
+  "remintImplementer": "3029f0cf-bae7-461d-9dd1-30547367eb58",
+  "lockedWorktree": ".worktrees/admission-wave3-756-remint2",
+  "instruction": "Freeze a87a7cb60. Hands-off CI → squash-merge. Close #752/#750 / unpark y0n per program. No force-push."
+}

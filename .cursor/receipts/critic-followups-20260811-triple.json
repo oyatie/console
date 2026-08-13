@@ -1,0 +1,32 @@
+{
+  "id": "critic-followups-20260811-triple",
+  "role": "admit-coordinator",
+  "lenses": ["Pragmatism", "Opportunity Cost", "Systems Thinking"],
+  "actions": [
+    {
+      "lane": "console-o498",
+      "pr": 759,
+      "critic": "ab4da35e-f12e-4140-9b55-01fec59c5dc4",
+      "verdict": "APPROVE",
+      "followUp": "already MERGED as 5770c04c469a; bead CLOSED; land receipt written"
+    },
+    {
+      "lane": "console-g14a",
+      "pr": 762,
+      "critic": "05470fd3-929c-4910-b997-182a9e52da17",
+      "verdict": "APPROVE",
+      "tip": "24e3f3515dec504bea08035b93f8ecf53c197251",
+      "followUp": "restack already on post-759 main; CI blocked on authenticate-console-authority (babysit lease); not admit into #622"
+    },
+    {
+      "lane": "console-y0n",
+      "pr": 761,
+      "critic": "52ba8501-9cec-4ede-8821-8c6902994d30",
+      "verdict": "BLOCK",
+      "note": "OpenAPI peripheral closed on ad84e2d2c; remaining major+proven EXITED + ensure(from)",
+      "implementer": "13876e40-7ef9-4fb6-b302-5d35bbd61291",
+      "followUp": "one inventory fix commit dispatched; ownerLease hr.rs + scout prose deferred"
+    }
+  ],
+  "flowDelta": "y0n implementer owns next product tip; g14a babysit when C/T green; o498 closed"
+}

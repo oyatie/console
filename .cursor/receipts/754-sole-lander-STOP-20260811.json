@@ -1,0 +1,61 @@
+{
+  "role": "admit-coordinator",
+  "laneId": "754-sole-lander",
+  "at": "2026-08-11T18:55:30Z",
+  "verdict": "STOP",
+  "failureClass": "process.sole-writer-tip-thrash",
+  "pr": 754,
+  "lockedTip": "6025a176b50f5430c1e9185539a0a51ec57dae1c",
+  "observedTipAtStop": "4e0169bd26e3ccfaa5a47466d6554f4ccfae8bcd",
+  "fence": ".cursor/receipts/754-sole-writer-fence-20260811.json",
+  "actionsTaken": [
+    "Confirmed tip + worktree at locked SHA 6025a176",
+    "Observed CI 31517325829 + Security 31517325893 already queued — skipped rerun (rule 2)",
+    "Hands-off polled ~35 min; hit GitHub API 403 rate-limit for most of window",
+    "Did not cancel, did not force-push, did not workflow-dispatch"
+  ],
+  "outcomesOnLockedTip": {
+    "ciRun": "31517325829",
+    "ciConclusion": "cancelled",
+    "ciUpdatedAt": "2026-08-11T18:51:45Z",
+    "securityRun": "31517325893",
+    "securityConclusion": "success",
+    "authRun": "31520345242",
+    "authConclusion": "success"
+  },
+  "outsiderEvidence": {
+    "pushEvent": {
+      "at": "2026-08-11T18:54:18Z",
+      "actor": "jason931225",
+      "ref": "refs/heads/admission/leaves-20260811",
+      "before": "6025a176b50f",
+      "head": "4e0169bd26e3"
+    },
+    "lockedTipStillAncestorOfRemote": false,
+    "competingShells": [
+      {
+        "pid": 67966,
+        "cwd_intent": ".worktrees/admission-leaves-754-heal",
+        "summary": "rebase --abort; reset --hard 6025a176; rebase origin/main; skip tip/revert commits; status/log"
+      },
+      {
+        "pid": 68907,
+        "summary": "git -C admission-leaves-754-heal rebase --skip (active at stop)"
+      }
+    ],
+    "recentTranscriptsLikelyRelated": [
+      "46ab9d43-2ec7-4870-ad13-f798bf7175a3",
+      "a78ac0a4-d3df-4807-8d62-5cb17d1ec7b6",
+      "3e65f16a-61b0-461d-adc7-3005478a8e90"
+    ],
+    "note": "Sibling babysit shells for #747/#755/#756 also live (observe/merge only); tip rewrite + heal WT rebase are the fence breakers for #754."
+  },
+  "didNotDo": [
+    "gh run cancel",
+    "second rerun",
+    "tip force-push / re-pin",
+    "merge on rewritten tip",
+    "pkill of competing shells (elevated to parent)"
+  ],
+  "blocker": "Fence tip 6025a176 was rewritten to 4e0169bd at 18:54:18Z while CI on locked tip was cancelled (31517325829). Competing PID 67966 is mid-rebase in the sole-writer worktree. Per rule 3: STOP — no cancel/rerun loop."
+}

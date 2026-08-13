@@ -1,0 +1,101 @@
+{
+  "role": "admit-coordinator",
+  "phase": "continuous-backlog",
+  "agent": "b16e00d7",
+  "coordWith": "a917854c",
+  "baseSha": "be7b3e14b2f126e8c24a2bf99758d0de00aaa23d",
+  "at": "2026-08-11T08:33:00-04:00",
+  "skipped": [
+    "console-uhlv"
+  ],
+  "parkAdmitOnly": [
+    "console-kwm",
+    "console-cvh",
+    "console-ah7",
+    "console-g14a",
+    "console-jdbz",
+    "console-o498"
+  ],
+  "parkIdentity": [
+    "console-lx6",
+    "console-0lj"
+  ],
+  "launches": [
+    {
+      "bead": "console-gc9z",
+      "worktree": ".worktrees/lane-console-gc9z",
+      "owned": [
+        "backend/crates/payroll/adapter-postgres/src/lifecycle.rs"
+      ],
+      "note": "reclaim orphan WIP"
+    },
+    {
+      "bead": "console-q58y",
+      "worktree": ".worktrees/lane-console-q58y",
+      "owned": [
+        "scripts/check-ci-preflight.mjs",
+        "scripts/check-ci-preflight.test.mjs"
+      ]
+    },
+    {
+      "bead": "console-m68",
+      "worktree": ".worktrees/lane-console-m68",
+      "owned": [
+        "scripts/check-executed-tests.mjs",
+        "scripts/check-executed-tests.test.mjs"
+      ]
+    }
+  ],
+  "disjointFrom": {
+    "we1": "leave/**",
+    "wave3": "ports/P5",
+    "wave4": "b4z/ils/09c"
+  },
+  "implementers": {
+    "console-gc9z": "1bf94558-2dc9-4a46-a851-9d4aaf818fdf",
+    "console-q58y": "2c3f92e9-201c-4111-b881-bc227aac6a1b",
+    "console-m68": "c802b8cc-3539-457a-81ee-a726b0cf3985",
+    "console-q58y-redispatch": "31137049-fb35-4f62-9761-f358affa0ce9"
+  },
+  "flowDelta": "q58y unblocked via 7rc restack tip 4c6da394a; re-dispatch live; gc9z=#748 APPROVE; m68 done local; GH auth stale",
+  "q58yFollowUp": {
+    "prior": "blocked on main missing path-class",
+    "restackTip": "4c6da394abdaa5f0f8e71ce120c08e8df1c0d1e2",
+    "baseMain": "eca122ad0",
+    "admissionWt": ".worktrees/admission-7rc-restack-q58y",
+    "ghAuth": "stale \u2014 preflight-forge failed",
+    "gc9z": "PR #748 critic APPROVE \u2014 do not relaunch; babysit",
+    "m68": "done tip 415be4591 \u2014 push blocked on auth"
+  },
+  "followUps": {
+    "gc9z": {
+      "impl": "1bf94558 blocked sole-writer \u2014 OK",
+      "canonicalTip": "4a494dc64771bb2d41d20066d9f86b1d908038f1",
+      "pr": "https://github.com/jason931225/console/pull/748",
+      "babysit": "7da76cc4-3c88-4796-a04d-65495c205194"
+    },
+    "m68": {
+      "impl": "c802b8cc done 415be4591",
+      "pr": "https://github.com/jason931225/console/pull/751",
+      "critic": "0571be22-a714-41a4-b89d-8259b143f19a",
+      "criticBlock": "0571be22 dark suite",
+      "fixer": "c959f8ca tip was receipt-packaged",
+      "authorityHealTip": "fc1355b6f",
+      "reCritic": "7dcb226d-a35e-4b48-8463-24130e2735a6",
+      "reBabysit": "5b85f970-f3ef-4d47-b318-ff40ea61e82a"
+    },
+    "q58y": {
+      "impl": "31137049 tip d5c35d37e",
+      "pr": "https://github.com/jason931225/console/pull/753",
+      "critic": "4485fd9e APPROVE d5c35d37e",
+      "authorityHealTip": "bf1d77d45e16ec569f2879eb2c37b829daef0d0a",
+      "productC": "7f8a0276bd35905ffccf685d3e7231457e7d9675",
+      "babysit": "e64625a5-733f-4fee-a1f3-3c5e64bb0927",
+      "babysitBlock": "e64625a5 verify.mjs unclassified path-class steps",
+      "verifyFixer": "0724e875-741f-44ee-be82-3214447ced81",
+      "tip": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+      "reCritic": "fb92d25e-1a46-4a74-aa21-12febc0b7e17",
+      "reBabysit": "cbd6b3f2-50ba-409c-9618-4227620ec6cc"
+    }
+  }
+}

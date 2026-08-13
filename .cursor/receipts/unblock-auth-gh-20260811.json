@@ -1,0 +1,14 @@
+{
+  "id": "unblock-auth-gh-20260811",
+  "role": "admit-coordinator",
+  "plan": "unblock_w3_w4_backlog_88276fa6",
+  "todo": "auth-gh",
+  "status": "done",
+  "at": "2026-08-11T21:09:30Z",
+  "verification": "E: source ~/.env; export GH_TOKEN (classic PAT); gh api user → jason931225 HTTP 200; preflight-forge next. Sandbox-only Forbidden is not token death — use full permissions for forge.",
+  "commandsRun": [
+    "set -a; . ~/.env; set +a; export GH_TOKEN; unset GITHUB_TOKEN; gh api user",
+    "bash scripts/cursor/preflight-forge.sh"
+  ],
+  "notes": "Do not print tokens. Prefer GH_TOKEN from ~/.env over stale hosts.yml oauth when env is set."
+}

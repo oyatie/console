@@ -1,0 +1,7 @@
+[package]
+name = "wo-probe"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+console-gate-writer-ownership = { path = "/Users/jasonlee/Developer/console-lane-ugg/backend/ci/gates/writer-ownership" }

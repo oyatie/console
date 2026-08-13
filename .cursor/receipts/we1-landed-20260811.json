@@ -1,0 +1,18 @@
+{
+  "role": "admit-coordinator",
+  "at": "2026-08-11T14:07:20Z",
+  "agent": "b3596563-2168-4248-8305-f497e9fd593b",
+  "pr": 745,
+  "mergeSha": "eca122ad0122457a77b85ca55fc1e8b2e4869e74",
+  "bead": "console-we1",
+  "beadStatus": "CLOSED",
+  "ghIssue": 686,
+  "originMain": "eca122ad0",
+  "leftOpen": ["console-uhlv"],
+  "alreadyClosedPeer": "console-9sxn",
+  "flowDelta": "we1 on main; leave root free for kwm; Wave3 leaves must restack off eca122ad0",
+  "followUpsDispatched": {
+    "wave4": "001bd8e7-0f2c-4827-bbf7-dc804e336405",
+    "restackLand": "62b1a4de-eb21-4987-a26a-998f082b7a66"
+  }
+}

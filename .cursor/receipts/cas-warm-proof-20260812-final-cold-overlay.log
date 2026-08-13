@@ -1,0 +1,11 @@
+[2026-08-12T05:49:57.956-04:00] Could not connect to buck2 daemon (buck2 daemon is not running), killing daemon..
+[2026-08-12T05:49:58.104-04:00] Connected to new buck2 daemon.
+[2026-08-12T05:49:58.105-04:00] Build ID: ad1324be-6c4c-4b07-9704-4322cdc796be
+[2026-08-12T05:50:05.207-04:00] Waiting on root//third-party/rust:syn-2 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 2 other actions
+[2026-08-12T05:50:12.306-04:00] Waiting on root//third-party/rust:syn-2 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute]
+[2026-08-12T05:50:19.307-04:00] Waiting on root//third-party/rust:_serde_derive-1 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc proc-macro) [local_execute]
+[2026-08-12T05:50:23.854-04:00] Cache hits: 0%
+[2026-08-12T05:50:23.858-04:00] Commands: 97 (cached: 0, remote: 0, local: 97)
+[2026-08-12T05:50:23.858-04:00] Network: Up: 0B  Down: 16MiB
+BUILD SUCCEEDED
+exit=0

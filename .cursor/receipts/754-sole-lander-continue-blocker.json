@@ -1,0 +1,16 @@
+{
+  "role": "admit-coordinator",
+  "laneId": "754-sole-lander-continue",
+  "verdict": "BLOCKER",
+  "pr": 754,
+  "tipFrozenAttempt": "ff4e99e5557be768f1345bc6e7f5d23189bd11c8",
+  "tipObserved": "9c4325581da571c0ba6ec3d13a0f48a9b1bfcfc3",
+  "mergeSha": null,
+  "blocker": "Tip rewritten outside freeze set {ff4e99e55, ef2fabc90} to 9c4325581 (jurisdiction after restack onto #753) while sole lander hands-off. Did not force-push. Auto-merge still armed; Required reset. Fresh CI 31525900795 was mid-flight on ff4e99.",
+  "ciAtStop": {
+    "CI": 31525900795,
+    "Security": 31525900664,
+    "note": "Security leaves green; CI had 6 success + Backend fmt in_progress before tip rewrite"
+  },
+  "parkedHealWT": ".worktrees/admission-leaves-754-heal"
+}

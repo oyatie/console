@@ -1,0 +1,21 @@
+{
+  "laneId": "buck2-wave-c-gates-20260812",
+  "role": "implementer",
+  "leaseKind": "sole-writer",
+  "leasedRoots": [
+    ".github/workflows/ci.yml",
+    "scripts/check-ci-preflight.mjs",
+    "scripts/check-ci-preflight.test.mjs",
+    "scripts/check-foundation-gates.mjs",
+    "docs/CI-GATES.md"
+  ],
+  "baseSha": "d9808dd16d0f6a1e6117ad11a811313beff733e0",
+  "claimedAt": "2026-08-12T07:40:00Z",
+  "conflictScan": {
+    "openPrsTouchingCiYml": [],
+    "openPrCountAtClaim": 1,
+    "note": "gh pr list --state open: zero PRs with files including .github/workflows/ci.yml or scripts/check-ci-preflight.mjs"
+  },
+  "scope": "Wave C bounded first PR: flip Required-CI Layer-boundary gate family cargo→Buck2; keep warm-cache fail-closed HOLD; no postgres-map/domain-unit mass flips",
+  "warmCacheHold": "Do NOT flip Required CI to warm-by-default until cited GREEN_REAPI + license"
+}

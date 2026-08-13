@@ -1,0 +1,43 @@
+2026-08-11T16:52:20.5174795Z Current runner version: '2.336.0'
+2026-08-11T16:52:20.5201540Z ##[group]Runner Image Provisioner
+2026-08-11T16:52:20.5202602Z Hosted Compute Agent
+2026-08-11T16:52:20.5203260Z Version: 20260707.563
+2026-08-11T16:52:20.5203917Z Commit: 02667638d2b423fbc733a8e32a88b44996a3ba6e
+2026-08-11T16:52:20.5204653Z Build Date: 2026-07-07T19:33:50Z
+2026-08-11T16:52:20.5205479Z Worker ID: {2d671c40-cf25-4c49-9f34-d1d3a985cd01}
+2026-08-11T16:52:20.5206221Z Azure Region: northcentralus
+2026-08-11T16:52:20.5206868Z ##[endgroup]
+2026-08-11T16:52:20.5208275Z ##[group]Operating System
+2026-08-11T16:52:20.5208903Z Ubuntu
+2026-08-11T16:52:20.5209535Z 24.04.4
+2026-08-11T16:52:20.5210057Z LTS
+2026-08-11T16:52:20.5210562Z ##[endgroup]
+2026-08-11T16:52:20.5211186Z ##[group]Runner Image
+2026-08-11T16:52:20.5211792Z Image: ubuntu-24.04
+2026-08-11T16:52:20.5212720Z Version: 20260720.247.2
+2026-08-11T16:52:20.5213983Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260720.247/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-11T16:52:20.5215541Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260720.247
+2026-08-11T16:52:20.5216516Z ##[endgroup]
+2026-08-11T16:52:20.5217744Z ##[group]GITHUB_TOKEN Permissions
+2026-08-11T16:52:20.5220046Z Contents: read
+2026-08-11T16:52:20.5220638Z Metadata: read
+2026-08-11T16:52:20.5221300Z ##[endgroup]
+2026-08-11T16:52:20.5223554Z Secret source: Actions
+2026-08-11T16:52:20.5225111Z Prepare workflow directory
+2026-08-11T16:52:20.5566042Z Prepare all required actions
+2026-08-11T16:52:20.5670226Z Complete job name: Required / CI
+2026-08-11T16:52:20.6469696Z ##[group]Run test "success" = success &&
+2026-08-11T16:52:20.6470513Z [36;1mtest "success" = success &&[0m
+2026-08-11T16:52:20.6471337Z [36;1m  test "cancelled" = success &&[0m
+2026-08-11T16:52:20.6472052Z [36;1m  test "failure" = success &&[0m
+2026-08-11T16:52:20.6473180Z [36;1m  test "cancelled" = success &&[0m
+2026-08-11T16:52:20.6474071Z [36;1m  test "success" = success &&[0m
+2026-08-11T16:52:20.6474790Z [36;1m  test "cancelled" = success &&[0m
+2026-08-11T16:52:20.6475585Z [36;1m  test "cancelled" = success &&[0m
+2026-08-11T16:52:20.6476281Z [36;1m  test "cancelled" = success &&[0m
+2026-08-11T16:52:20.6476998Z [36;1m  test "cancelled" = success &&[0m
+2026-08-11T16:52:20.6477750Z [36;1m  test "cancelled" = success[0m
+2026-08-11T16:52:20.7177022Z shell: /usr/bin/bash -e {0}
+2026-08-11T16:52:20.7178381Z ##[endgroup]
+2026-08-11T16:52:20.7455758Z ##[error]Process completed with exit code 1.
+2026-08-11T16:52:20.7620475Z Cleaning up orphan processes

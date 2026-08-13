@@ -1,0 +1,47 @@
+{
+  "role": "babysit",
+  "lane": "console-gc9z",
+  "pr": 748,
+  "status": "BLOCKED",
+  "blocker": "REQUIRED_CI_CANCEL_QUEUE_ON_TIP_430da5e",
+  "headSha": "430da5e406d90a0bfe8aa8540c3e2e02a9d42b8e",
+  "mergeSha": null,
+  "critic": {
+    "verdict": "APPROVE",
+    "tipSha": "40dfcd4f5abfe370481e7a7070e425b08b9f9d96",
+    "productSha": "3f24cd0b7e12382c00781ef31093963f87b0f5a4",
+    "reCritiqueRequired": false,
+    "rationale": "lifecycle.rs 0-byte diff vs critic productSha; tip lag is packaging/executed-tests/jurisdiction + restack only"
+  },
+  "evidence": {
+    "priorTip_4a494dc": {
+      "Required_CI": "pass",
+      "Required_Security": "pass",
+      "authenticate": "pass",
+      "mergeState": "BLOCKED",
+      "reason": "strict:true behind main by 1 (release 0.3.5 #744)"
+    },
+    "babysitRestack": {
+      "pushed": "ae69a26b95a909d3fb04887bfdf48178179ad738",
+      "lifecycleUnchanged": true,
+      "note": "force-with-lease from remote tip only; did not push local WT extras"
+    },
+    "currentTip_430da5e": {
+      "vsMain": "ahead 4, behind 0",
+      "Required_Security": "pass (aggregate; underlying Security run also saw cancel)",
+      "Required_CI": "fail (4s) — cancel/queue cascade on run 31507777918, not executed-tests/product red",
+      "authenticate": "pass",
+      "mergeState": "MERGEABLE/BLOCKED"
+    },
+    "dualPath": {
+      "pr754": "OPEN — atomic admit also claims gc9z; #748 was closed-as-superseded then reopened"
+    },
+    "ops": "hub git/gh contention + GitHub API rate limit exceeded while polling"
+  },
+  "elevate": [
+    "CAPTURE: Required / CI on 430da5e stuck in cancel/queue (run 31507777918); prior 4a494dc was fully green — not a product fix",
+    "CAPTURE: dual-path #748 vs #754 — pick one land path before squash-merge",
+    "Do not implement lifecycle.rs; do not open unproven P2 rounds"
+  ],
+  "flowDelta": "leaf NOT landed; babysit stopped on Required/CI cancel-queue + dual-path HOLD"
+}

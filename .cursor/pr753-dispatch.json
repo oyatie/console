@@ -1,0 +1,60 @@
+{
+  "id": 93842575194,
+  "run_id": 31507648491,
+  "workflow_name": "CI",
+  "head_branch": "lane/console-q58y",
+  "run_url": "https://api.github.com/repos/jason931225/console/actions/runs/31507648491",
+  "run_attempt": 1,
+  "node_id": "CR_kwDOS636Ss8AAAAV2XQPWg",
+  "head_sha": "ac6aa5227e58abcca40d1f3e9fe8fb53a0a4d034",
+  "url": "https://api.github.com/repos/jason931225/console/actions/jobs/93842575194",
+  "html_url": "https://github.com/jason931225/console/actions/runs/31507648491/job/93842575194",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2026-08-11T16:04:04Z",
+  "started_at": "2026-08-11T16:45:53Z",
+  "completed_at": "2026-08-11T16:45:55Z",
+  "name": "Dispatch, attendance and ontology — disposable PostgreSQL reachability",
+  "steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1,
+      "started_at": "2026-08-11T16:45:54Z",
+      "completed_at": "2026-08-11T16:45:54Z"
+    },
+    {
+      "name": "Path-class skip proof",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2,
+      "started_at": "2026-08-11T16:45:54Z",
+      "completed_at": "2026-08-11T16:45:54Z"
+    },
+    {
+      "name": "Require all PostgreSQL reachability facets",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 3,
+      "started_at": "2026-08-11T16:45:54Z",
+      "completed_at": "2026-08-11T16:45:54Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4,
+      "started_at": "2026-08-11T16:45:54Z",
+      "completed_at": "2026-08-11T16:45:54Z"
+    }
+  ],
+  "check_run_url": "https://api.github.com/repos/jason931225/console/check-runs/93842575194",
+  "labels": [
+    "ubuntu-latest"
+  ],
+  "runner_id": 1000196881,
+  "runner_name": "GitHub Actions 1000196881",
+  "runner_group_id": 0,
+  "runner_group_name": "GitHub Actions"
+}

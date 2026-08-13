@@ -1,0 +1,17 @@
+{
+  "role": "admit-coordinator",
+  "at": "2026-08-11T20:27:00Z",
+  "from": "359f20be-32aa-4d56-a270-652650ac60e8",
+  "verdict": "BLOCK_needs_tip_heal",
+  "tipAtCapture": "22d717a62828fdc84c63aa89f7b8ffb3204e59f8",
+  "mainAhead": "5fbd0b2df (#747 dgo.2 already on main → PR CONFLICTING)",
+  "inventory": [
+    "restack onto origin/main",
+    "clippy::expect-used console_openapi_gen.rs:64",
+    "Buck include_str openapi via gen_first_party.py mechanism (not one-BUCK spelling)"
+  ],
+  "defer": "unproven bot P1/P2 product opinions on #755 threads",
+  "dispatch": "wave4-tip-heal-clippy-buck exclusive on admit WT",
+  "note": "#747 residual may already be closed on main; re-check after #755 land",
+  "flowDelta": "exclusive tip-heal inventory; land babysit after push"
+}

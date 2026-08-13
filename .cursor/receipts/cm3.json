@@ -1,0 +1,51 @@
+{
+  "lane": "console-cm3",
+  "role": "implementer",
+  "status": "done",
+  "headSha": "6609ba107963e4306427f47f5cc966c7b1cf14b4",
+  "priorTip": "6f72d55569e5eb47a356e2f107e20e12244c7f85",
+  "worktree": "/Users/jasonlee/Developer/console-lane-cm3",
+  "branch": "lane/console-cm3",
+  "baseSha": "7b568df9d (origin/main at dispatch)",
+  "fixRound": "One critic-directed fix commit on top of 6f72d5556, addressing the single proven major in .cursor/receipts/cm3-critic.json. No other findings reopened; the unproven trigger-pin major was explicitly marked do-not-treadmill by the critic and is deferred (see followUps).",
+  "summary": "근로기준법 §60 guardrails enforced fail-closed on leave_requests (bead console-cm3, charter §4-31). Domain: NewLeaveRequest carries no reason; LeaveDecision is Approve|TimeChange; new terminal LeaveStatus::TimeChangeConsult; returned/rejected demoted to read-only historical row states. Migration 0216: reason nullable + reason CHECK dropped (retention ruling: 보관=숨김 §3.9 — historical rows kept readable, nothing deleted; critic adjudicated COHERENT_WITH_CHARTER); BEFORE INSERT/UPDATE trigger rejects any new 사유 and any transition into returned/rejected; leave_api.create_request re-created without p_reason (old 17-arg signature dropped); leave_api.decide_request accepts approve|time_change only with mandatory comment on time_change; console_rt bridge UPDATE arm approve-only; guard function deny-by-default. REST: v2 create rejects reason via deny_unknown_fields (422); refusal decisions 422 on v1 and v2; v1 wire shape stays key-frozen. Fix round: v1/v2 list status filter enums now include time_change_consult and the 'all four' copy names the real status set — closing the critic-proven peripheral drift against the FSM reshape.",
+  "filesChanged": [
+    "backend/crates/leave/domain/src/lib.rs",
+    "backend/crates/leave/application/src/lib.rs",
+    "backend/crates/leave/adapter-postgres/src/lib.rs",
+    "backend/crates/leave/adapter-postgres/tests/leave_rls_surfaces_as_runtime_role.rs",
+    "backend/crates/leave/rest/src/lib.rs",
+    "backend/crates/leave/rest/tests/leave_http_personas.rs",
+    "backend/crates/attendance/adapter-postgres/tests/cancel_substitution.rs",
+    "backend/crates/attendance/adapter-postgres/tests/concurrency.rs",
+    "backend/crates/platform/db/tests/attendance_console_migration_contract.rs",
+    "backend/crates/platform/db/migrations/0216_leave_requests_kr_labor_guardrails.sql",
+    "backend/openapi/openapi.yaml"
+  ],
+  "redBaseline": "Original round: domain probes kr_charter_annual_leave_never_demands_a_reason / kr_charter_refusal_is_not_a_decision RED on pristine tree (reason mandatory; reject/return parseable); personas v1 reject formerly 200+'rejected', now 422. Fix round RED (critic finding reproduced before fixing): rg 'all four|enum: \\[pending, approved, returned' backend/openapi/openapi.yaml matched lines 6752/6755 (v1) and 6894/6897 (v2) — list filter enums lacked time_change_consult while response schemas (26516/26649) already carried it. GREEN: same probe now exits 1 (no matches) and all four leave status enums in the file are the five-value set.",
+  "verification": "Fix commit touches only backend/openapi/openapi.yaml (git show --stat 6609ba107: 1 file, +8/-4), so the Rust oracles from the prior tip are unaffected and remain the critic's re-executed evidence on 6f72d5556: clippy clean (5 crates, all targets); domain 22/22; rest --lib 10/10; PG suites green — leave RLS 13/13, expand-contract 9/9, personas 3/3, attendance 12/12 + 3/3, platform-db contract 10/10. OpenAPI consistency proven on THIS tip: grep probe for stale enums/'all four' exits nonzero (no matches); ruby YAML.safe_load parses the full document (10 leave paths) and both list filter enums print [pending, approved, time_change_consult, returned, rejected], matching the response-schema status domain and LeaveStatus::parse (the live filter accepts time_change_consult, so spec now matches behaviour).",
+  "commands": [
+    "rg -n \"all four|enum: \\[pending, approved, returned\" backend/openapi/openapi.yaml  # RED: 4 matches at 6752/6755/6894/6897; GREEN after fix: exit 1",
+    "rg -n \"enum: \\[pending\" backend/openapi/openapi.yaml  # GREEN: 4 lines, all five-value",
+    "ruby -ryaml -e 'YAML.safe_load(File.read(\"backend/openapi/openapi.yaml\"), aliases: true)'  # YAML_OK, both filter enums five-value",
+    "git -C /Users/jasonlee/Developer/console-lane-cm3 commit -S (fix round; %G? = G)",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs /Users/jasonlee/Developer/console-lane-cm3/.cursor/receipts/cm3.json",
+    "prior-tip suites (critic re-executed on 6f72d5556): cargo clippy --manifest-path backend/Cargo.toml -p console-leave-domain -p console-leave-application -p console-leave-adapter-postgres -p console-leave-rest -p console-attendance-adapter-postgres --all-targets; cargo test -p console-leave-domain -p console-leave-application --all-targets; cargo test -p console-leave-rest --lib; bash tools/ci/cargo_needs_postgres.sh --only leave-adapter-postgres-leave-rls-surfaces-as-runtime-role-pg --num-threads=1; bash tools/ci/cargo_needs_postgres.sh --only leave-rest-leave-http-personas-pg --num-threads=1"
+  ],
+  "contractBreaches": "Deliberate, charter-mandated published-contract changes: (1) v2 LeaveCreateRequest loses reason (unknown field now 422); (2) v1/v2 decide enum [approve, return, reject] → [approve, time_change]; refusal 422 on the frozen v1 route too — v1 KEY SHAPE stays byte-frozen but the status VALUE domain gains time_change_consult (now consistently in response schemas AND list filter params); (3) v2 view reason optional (omitted when absent); (4) SQL: old 17-arg create_request signature dropped — stale binary fails loudly. 0165→0166 expand/contract unaffected (suite-proven). v1/v2 list status filter enum growth is additive for clients (new optional filter value) but strict client-side enum parsers on responses still need the rollout flag already in followUps.",
+  "enforcementPlacement": "n/a - adds no enforcement (fix round: OpenAPI documentation surface only; the enforcement answer for the guardrail itself is unchanged from the prior receipt — WHERE: BEFORE INSERT/UPDATE trigger on public.leave_requests beneath all writers + validation in leave_api.create_request/decide_request whose subjects exist from 0122/0166/0189 ordered before 0216; finest distinction per-row per-column NEW/OLD; examined-zero fails because the trigger is unconditional on every write and LeaveDecision::parse rejects unknown values by default.)",
+  "peripheralsUpdated": "Fix round closes the last known drift: v1 listLeaveRequests and v2 listLeaveRequestsV2 status filter enums now include time_change_consult; 'all four' copy replaced with the real status set naming the read-only historical returned/rejected rows. Same-commit inventory sweep of the entire openapi leave surface (paths 6736-7210 + all Leave* schemas): no other stale status enumerations, count prose, decision enums, or reason references remain; /api/v1/leave/refusal-notices is the distinct §61 노무수령거부 statutory push (charter-lawful, untouched). Prior round already covered: create/decide schemas + path copy, response status enums, domain module doc, attendance/platform-db reason fixtures, RLS census, personas refusal pin. Receipt now lives in the LANE worktree (fixes critic minor process.receipt-location-drift); hub copy updated to match.",
+  "lensesApplied": ["PERIPHERAL DRIFT", "Cartesian doubt", "Essentialism / YAGNI"],
+  "challenges": [
+    "Cartesian: verified the critic's line numbers against HEAD before editing (new tip = new evidence) and confirmed LeaveStatus::parse actually accepts time_change_consult so the widened filter enum documents real behaviour, not aspiration.",
+    "Essentialism: scope held to the two filter params the proof named plus a full-surface inventory grep; the tempting adjacent fix (adding a named trigger-existence probe for the unproven census major) was explicitly deferred per the critic's do-not-treadmill instruction rather than smuggled into this commit."
+  ],
+  "followUps": [
+    "RATIFIED BY CRITIC (decisionAdjudication: COHERENT_WITH_CHARTER): retention = nullable+refuse-new-writes with historical rows readable; FSM reshape to 시기변경 협의. Parent acknowledges on admission.",
+    "DEFERRED (critic major, provenByExecution=false, do-not-treadmill): privilege census does not fetch_one the kr_labor_guardrails_guard/trigger by name — file an ownerLease bead for a named existence + hostile console_rt INSERT-with-reason probe rather than another fix round here.",
+    "DEFERRED (critic minor, ownerLease): full §60⑤ consult mechanism (요건 자동 판정, worker-chosen alternate dates, repeat-exercise audit rollup) is out of this bead's target — needs its own bead so cm3 is not misread as complete §60⑤ coverage.",
+    "Parent admits: renumber 0216 at merge if main moved; close bead console-cm3 after admission; flag v1 status value-domain growth (time_change_consult) to the deployed Kotlin client owner before rollout.",
+    "Process gap (elevate, unchanged): BASE_LOCK hook regex allowed 'git -C <repo> worktree add' verbatim but blocked an equivalent spelling; owning lane should fix.",
+    "Tooling observation (unchanged): sandboxed shell reads of the lane worktree returned stale pre-edit content; lane verification ran outside sandbox."
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "role": "admit-coordinator",
+  "laneId": "residual-admit-kwm-cvh-gc9z-0lj",
+  "phase": "atomic-admit",
+  "at": "2026-08-11T14:30:00Z",
+  "authority": "C/T (#618)",
+  "baseMain": "eca122ad0122457a77b85ca55fc1e8b2e4869e74",
+  "tipSha": "15dfca27d204a5dc406163e94bd069aaf1baf6be",
+  "candidateSha": "76e4a8727af7112dec511ada8bf4b6a152c166ac",
+  "included": [
+    {"bead":"console-kwm","productTipSha":"4dcfffb67","critic":"APPROVE","commit":"360ad49e0"},
+    {"bead":"console-cvh","productTipSha":"edd4e6344","critic":"APPROVE","commit":"4d231aca6"},
+    {"bead":"console-gc9z","productTipSha":"3f24cd0b7","critic":"APPROVE tip 40dfcd4f5","commit":"b36a3e470"},
+    {"bead":"console-0lj","productTipSha":"9120273fe","critic":"APPROVE","commit":"b5efe93a1"}
+  ],
+  "supersedesPrs": [748, 749],
+  "flowDelta": "atomic residual PR ready; close 748/749 as superseded"
+}

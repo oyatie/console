@@ -1,0 +1,42 @@
+{
+  "id": "unblock-post758-reorient-20260811",
+  "role": "admit-coordinator",
+  "plan": "unblock_w3_w4_backlog_88276fa6",
+  "at": "2026-08-11T21:16:00Z",
+  "mainTip": "10378dda17ee669cae4af5946b161bea060344a1",
+  "mainNote": "#758 release 0.3.6 MERGED — supersedes stale plan main 5fbd0b2",
+  "auth": {
+    "status": "ok",
+    "user": "jason931225",
+    "preflightForge": "ok remaining≈1590",
+    "method": "env GH_TOKEN already present (no ~/.env source)"
+  },
+  "prs": {
+    "757": {
+      "head": "b64264c047f8b62c2eb4d86a1f1c6f9f0e88de0e",
+      "base": "10378dda17ee669cae4af5946b161bea060344a1",
+      "behindMain": 0,
+      "ahead": 2,
+      "mergeable": "MERGEABLE",
+      "mergeStateStatus": "BLOCKED",
+      "soleWriter": ".worktrees/admission-pkill-757-restack2"
+    },
+    "756": {
+      "head": "a87a7cb60cc22ac66bd5c2111ea1e3c4947bd11d",
+      "behindMain": 0,
+      "ahead": 9
+    },
+    "755": {
+      "head": "4d52f02266d232e769f3dd1d42c4f5981075e2c3",
+      "behindMain": 0,
+      "ahead": 23
+    },
+    "754": {
+      "head": "73571b6767a0b75e17974d78c3a4e90c599ce526",
+      "behindMain": 0,
+      "ahead": 11
+    }
+  },
+  "order": ["757", "756", "y0n-unpark", "755", "754", "backlog-refill"],
+  "decision": "All four already restacked onto #758 tip; no tip thrash. Serialize CI babysit starting at #757."
+}

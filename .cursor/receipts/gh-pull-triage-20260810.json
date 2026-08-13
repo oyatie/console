@@ -1,0 +1,90 @@
+{
+  "role": "scout",
+  "artifact": "gh-pull-triage-20260810",
+  "verifiedAt": "2026-08-10T18:52:00Z",
+  "syncRef": "1be957c7",
+  "scope": "Triage only the 23 beads created by bd github pull from orphan open GH issues. Did not re-run full sync. Did not touch #622 admit worktree or open PRs. Did not mass-close programme leaves (train-2, Batch B, 9ry/#630).",
+  "lenses": ["Cartesian doubt", "Essentialism / YAGNI", "Chesterton's Fence", "Opportunity Cost"],
+  "linkOnlyAlreadyInProgramme": [
+    { "bead": "console-uoh", "gh": 638, "note": "in_progress wave-1 leaf" },
+    { "bead": "console-q06", "gh": 640, "note": "in_progress wave-1 leaf" },
+    { "bead": "console-8nq", "gh": 655, "note": "deferred ADR-0030 §8" },
+    { "bead": "console-thj", "gh": 658, "note": "deferred SSR /setup behind §8" }
+  ],
+  "counts": {
+    "a_dup_close": 1,
+    "b_batch_a": 0,
+    "c_park_post_622": 1,
+    "d_defer": 14,
+    "e_keep_tracker": 7,
+    "total": 23
+  },
+  "actionsApplied": {
+    "closedBeads": ["console-1786387431535-1-d35bd303"],
+    "closedGhIssues": [354],
+    "deferredBeads": 14,
+    "annotatedOpen": 8,
+    "massCloseProgrammeLeaves": false
+  },
+  "classifications": [
+    {
+      "class": "a",
+      "bead": "console-1786387431535-1-d35bd303",
+      "gh": 354,
+      "title": "[audit-chain/PR-3] OCI Vault signer + out-of-band anchor + truncation test + head-N/cached verify",
+      "action": "closed bead + GH as dup/superseded by mbl/#271; residuals → ae5/#631",
+      "rationale": "Programme mbl/#271 is OpenBao-aligned PR-3; #354 OCI Vault naming obsolete. Production custody wiring already tracked on ae5/#631."
+    },
+    {
+      "class": "b",
+      "items": [],
+      "rationale": "None of the 23 are path-disjoint Batch A implementation candidates; Batch A reserve remains programme beads (8x4, 9ze, wnv, …)."
+    },
+    {
+      "class": "c",
+      "bead": "console-1786387440481-1-3a5afa4e",
+      "gh": 281,
+      "title": "[legacy-parity/T1-1] Identity & credential administration — Account/Person object re-expression",
+      "action": "note + label triage:park-post-622; left open",
+      "rationale": "Substrate overlaps wave-2 Person ports (dgo.2/#636); park until after #622 admit. Carbon-copy UI remains frontend HOLD."
+    },
+    {
+      "class": "d",
+      "items": [
+        { "bead": "console-1786387429122-1-affc8905", "gh": 375, "title": "[HA] Bare-metal Talos provisioning — deployment-context OpenTofu (on-prem) + CAPI + metal3", "reason": "ADR-0022 HA; founder-gated; outside beads-to-zero hot path" },
+        { "bead": "console-1786387426800-1-17a6d876", "gh": 376, "title": "[HA] 3-node Talos HA control plane (etcd quorum)", "reason": "ADR-0022 HA; founder-gated" },
+        { "bead": "console-1786387424217-1-392ed79c", "gh": 377, "title": "[HA] Cilium CNI (enforced NetworkPolicy + eBPF LB)", "reason": "ADR-0022 HA; founder-gated" },
+        { "bead": "console-1786387421849-1-27d9193a", "gh": 378, "title": "[HA] VIP ingress — MetalLB/kube-vip + multi-node Traefik", "reason": "ADR-0022 HA; founder-gated" },
+        { "bead": "console-1786387419261-1-27b7f302", "gh": 379, "title": "[HA] Replicated storage (Longhorn/Rook-Ceph) + CNPG instances:3", "reason": "ADR-0022 HA; founder-gated" },
+        { "bead": "console-1786387416909-1-61b62774", "gh": 380, "title": "[HA] Multi-cluster ArgoCD ApplicationSet federation", "reason": "ADR-0022 HA; founder-gated" },
+        { "bead": "console-1786387414642-1-b634a01a", "gh": 381, "title": "[portability][ops] OpenBao + ESO activation cutover (founder-gated)", "reason": "ADR-0022 portable secrets cutover; founder-gated ops" },
+        { "bead": "console-1786387433859-1-4b33ba94", "gh": 295, "title": "[legacy-parity/T2-15] HR import + lifecycle depth — xlsx dry-run, identity merge, 4-item sign-off", "reason": "carbon-copy + frontend HOLD" },
+        { "bead": "console-1786387435986-1-4dac307f", "gh": 285, "title": "[legacy-parity/T1-5] Vendor multi-tenant operator console — separate persona decision", "reason": "carbon-copy + frontend HOLD" },
+        { "bead": "console-1786387438025-1-552f5cfb", "gh": 284, "title": "[legacy-parity/T1-4] 4대보험 & offboarding settlement — exit-case lifecycle chain", "reason": "carbon-copy + Korea compliance HOLD" },
+        { "bead": "console-1786387449069-1-ad656665", "gh": 169, "title": "Future TODO: wire local 공동인증서 proof envelope into 4insure login adapter", "reason": "future institution adapter; not Batch A/B" },
+        { "bead": "console-1786387457627-1-813bfb00", "gh": 11, "title": "Additional Function #5", "reason": "pre-programme placeholder; deferred not closed" },
+        { "bead": "console-1786387453941-1-3f7d9bcf", "gh": 17, "title": "Security/Update Process", "reason": "pre-programme placeholder; deferred not closed" },
+        { "bead": "console-1786387451402-1-c60d1f55", "gh": 19, "title": "Issue Thread #2", "reason": "pre-programme logistics UI ask; deferred not closed" }
+      ],
+      "action": "bd defer + triage:defer-* labels"
+    },
+    {
+      "class": "e",
+      "items": [
+        { "bead": "console-1786387412167-1-78ad7a10", "gh": 595, "title": "question: tenant isolation — second layer vs RLS-only + DEK scope (U-AUD Q1)", "note": "questions-only; Korea HOLD; sibling Q4 already console-8j8/#598" },
+        { "bead": "console-1786387409564-1-03691e20", "gh": 596, "title": "question: audit-chain external signer + access-log purpose/inspection discipline (U-AUD Q2)", "note": "questions-only; implementation path is mbl/ae5" },
+        { "bead": "console-1786387406775-1-7e43c021", "gh": 597, "title": "question: location purge schedule + sink ACK model (U-AUD Q3)", "note": "questions-only; Korea HOLD" },
+        { "bead": "console-1786387403997-1-53f677b8", "gh": 599, "title": "question: classification catalog → purge/disclosure automation boundary (U-AUD Q5)", "note": "questions-only" },
+        { "bead": "console-1786387401467-1-a8c3ba59", "gh": 600, "title": "question: residual prose-gated CI + processor-registry ownership (U-AUD Q6)", "note": "questions-only; ROADMAP §2 theme" },
+        { "bead": "console-1786387445573-1-d6cd6923", "gh": 277, "title": "[Tracking] Backend hardening & follow-up backlog — parallelization map", "note": "#271 owned as mbl; do not mass-close children" },
+        { "bead": "console-1786387443186-1-2383ac9d", "gh": 278, "title": "EPIC: De-OCI Portability + HA — program tracker (ADR-0022)", "note": "parent of deferred HA leaves" }
+      ],
+      "action": "append notes + triage labels; left open"
+    }
+  ],
+  "challenges": [
+    "Chesterton: sync left #354 open beside #271 by design — closing as dup is justified because mbl explicitly rewrote OCI Vault→OpenBao and ae5 owns residual production wiring; keeping both open would double-dispatch audit-chain PR-3.",
+    "Batch A empty among imports is correct: importing orphans ≠ inventing dispatchable product work."
+  ],
+  "flowDelta": "23 imports classified (a1/b0/c1/d14/e7); #354 closed both sides; 14 deferred; programme leaves untouched; ready for orchestrator to ignore deferred HA/legacy noise."
+}

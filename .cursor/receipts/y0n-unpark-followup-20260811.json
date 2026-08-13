@@ -1,0 +1,14 @@
+{
+  "id": "y0n-unpark-followup-20260811",
+  "role": "admit-coordinator",
+  "at": "2026-08-12T00:51:00Z",
+  "implementer": "a36b4653-ae3b-43cb-90bc-ace0364fb16c",
+  "pr": 761,
+  "url": "https://github.com/jason931225/console/pull/761",
+  "productTip": "cdb8b47a1288d293ebeff558c27f9a1098553c02",
+  "branchTip": "aab568645e3ab65c6b115b4566973fc6369e3a6a",
+  "baseMain": "84655ce7881c764bbe81081b193cdd2d85d523c1",
+  "implementerReceipt": ".worktrees/lane-console-y0n/.cursor/receipts/y0n.json",
+  "followUp": "critic dispatched on tip aab568645; no CI babysit from coordinator",
+  "flowDelta": "y0n leaf has PR #761; critic owns next gate before admit"
+}

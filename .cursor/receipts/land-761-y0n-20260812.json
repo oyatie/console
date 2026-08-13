@@ -1,0 +1,17 @@
+{
+  "id": "land-761-y0n-20260812",
+  "role": "admit-coordinator",
+  "pr": 761,
+  "bead": "console-y0n",
+  "mergeSha": "681540df427c5d64ecc178fbcc1c8bbd11416634",
+  "mergedAt": "2026-08-12T02:54:22Z",
+  "productTip": "7f422752a8d03d90750cf1fa4870ff1a4001a60f",
+  "implementer": "13876e40-7ef9-4fb6-b302-5d35bbd61291",
+  "beadStatus": "CLOSED",
+  "inventoryClosed": [
+    "ACTIVE-only reassign SELECT",
+    "ensure_org_unit_exists(from_id) UnknownOrgUnit"
+  ],
+  "deferredBeads": ["console-e8vn", "console-tfg2"],
+  "flowDelta": "y0n leaf complete on main; no re-critique / no post-merge push"
+}

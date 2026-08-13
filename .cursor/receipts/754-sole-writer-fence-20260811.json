@@ -1,0 +1,14 @@
+{
+  "role": "admit-coordinator",
+  "laneId": "754-sole-writer-fence",
+  "at": "2026-08-11T21:18:30Z",
+  "pr": 754,
+  "branch": "admission/leaves-20260811",
+  "phase": "land-after-restack-onto-main",
+  "lockedTip": "73571b6767a0b75e17974d78c3a4e90c599ce526",
+  "decision": "KEEP 73571b67 — do not restore dec711. Tip is CLEAN on origin/main (10378dda1/#758), signed C/T, admit-leaves ledger has lens_contract v1.",
+  "priorFreeze": "dec711f3e0242204a61c1e044d9eb2d10a70830b",
+  "lockedWorktree": ".worktrees/admission-leaves-754-restack",
+  "soleOwner": "23db72bf-39c8-4bd1-9167-885d28dde4e2",
+  "instruction": "Freeze 73571b67. No force-push. Hands-off CI → squash-merge. Close kwm/cvh/gc9z/0lj."
+}

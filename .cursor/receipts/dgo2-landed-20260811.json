@@ -1,0 +1,124 @@
+{
+  "role": "babysit",
+  "lane": "console-dgo.2",
+  "laneId": "dgo.2",
+  "pr": 747,
+  "prUrl": "https://github.com/jason931225/console/pull/747",
+  "branch": "lane/console-dgo.2",
+  "status": "blocked",
+  "merged": false,
+  "mergeSha": null,
+  "headSha": "dec812ce98f63aec737d4241c3ad76d4f557e875",
+  "headShaShort": "dec812ce9",
+  "productCandidateSha": "eba06295b7a2dd2f446b5b2b8d583073151f4169",
+  "productPatchId": "7b7a738d33afbd5797d3c704750225f2978cf32b",
+  "criticProductSha": "273aa5383cade4375107edd5c227bf738d4aa90c",
+  "criticReceipt": ".worktrees/lane-console-dgo.2/.cursor/receipts/dgo.2-critic.json",
+  "criticVerdict": "APPROVE",
+  "criticTipSha": "b2718c9cbc0fad34d35644e0c2ad7711b98d8367",
+  "criticReReview": false,
+  "criticReReviewRationale": "Product patch-id identical across restacks (273aa5383 → 560261fcb → eba06295b); post-product commits are tip-bind/baseline/jurisdiction/critic-receipt only. No product change after critic — no re-dispatch.",
+  "mergeable": "MERGEABLE",
+  "mergeStateStatus": "BLOCKED",
+  "autoMerge": true,
+  "beadsClosed": [],
+  "ghIssue636": "not closed — merge not landed",
+  "blocker": {
+    "class": "ci.runner-starvation-queued",
+    "requiredCheck": "Required / CI",
+    "failingJob": "CI run stuck queued; prior adapters-B 45m timeout on superseded tip",
+    "runUrl": "https://github.com/jason931225/console/actions/runs/31508048657",
+    "priorFailRunUrl": "https://github.com/jason931225/console/actions/runs/31502340473",
+    "priorFailJob": "Test PostgreSQL — domain adapters B",
+    "priorFailAnnotation": "The job has exceeded the maximum execution time of 45m0s",
+    "observed": "Tip dec812ce9 restacked after main moved; CI run 31508048657 status=queued with conclusion=null from 15:37Z through 16:22Z+ (updated_at frozen 15:45:44Z). Required/Security also queued on tip. Preflight on this run reported success earlier via HTML/jobs snapshot then queue stalled. Prior tip e97ba9007 had Required/CI FAILURE cascading from adapters-B cancel@45m (ontology PG had passed).",
+    "authority": "authenticate-console-authority SUCCESS on prior tip e97ba9007; not an authority-T failure",
+    "notAuthorityHeal": true,
+    "notProductRed": true,
+    "evidence": [
+      "E: preflight-forge.sh ok (remaining≈3923)",
+      "E: critic APPROVE at dgo.2-critic.json; product patch-id 7b7a738d… stable across restacks",
+      "E: adapters-B annotation on run 31502340473 job 93817573985 = max execution time 45m0s",
+      "E: Required/CI failed on e97ba9007 only as cascade of cancelled PG facet (cancelled≠success)",
+      "E: tip advanced to dec812ce98…; auto_merge SQUASH still enabled",
+      "E: run 31508048657 status=queued, updated_at stale; Required/Security queued",
+      "I: not authority/fmt — tip-heal owned by dgo.2-ci-fix/restack does not apply",
+      "I: inventing product fixes forbidden; CAPTURE+ELEVATE",
+      "U: whether GitHub hosted-runner pool starvation clears without cancel/re-run"
+    ],
+    "elevate": "STOP merge. Do not dual-write product on .worktrees/lane-console-dgo.2. Wait for runner capacity / re-queue CI on tip dec812ce9 (or cancel+rerun 31508048657 once pool recovers). If adapters-B times out again at 45m with no assertion failure, treat as ops.runner-timeout (not product). After Required/CI + Required/Security green + critic APPROVE still valid (product patch-id unchanged), squash-merge #747, close console-dgo.2 (+ GH #636 if linked), write landed receipt."
+  },
+  "checks": {
+    "authenticate-console-authority": "SUCCESS (prior tip e97ba9007)",
+    "Required / CI": "not green — run 31508048657 queued/starved",
+    "Required / Security": "queued on tip dec812ce9",
+    "Test PostgreSQL — ontology": "SUCCESS on prior tip e97ba9007"
+  },
+  "actionsTaken": [
+    "preflight-forge.sh ok",
+    "verified product patch-id unchanged vs critic; skipped lane-critic re-review",
+    "did not dual-write product on lane worktree",
+    "polled CI on e97ba9007 then restack tip dec812ce9",
+    "captured adapters-B 45m timeout on superseded tip; no tip-heal (not authority/fmt)",
+    "observed runner starvation on 31508048657; did not merge; beads left OPEN"
+  ],
+  "deadRestackQueueNotes": {
+    "sourceAgent": "62b1a4de",
+    "skipped": ["console-uhlv"],
+    "kwm": {
+      "bead": "console-kwm OPEN P2",
+      "pr": 749,
+      "url": "https://github.com/jason931225/console/pull/749",
+      "note": "MERGEABLE/BLOCKED; CI in flight at scout; worktree HEAD tip-bind ahead of remote tip 1d050d800 — unpark/land after #747"
+    },
+    "gc9z": {
+      "bead": "console-gc9z",
+      "pr": 748,
+      "url": "https://github.com/jason931225/console/pull/748",
+      "note": "auto-merge SQUASH enabled; tip a9e0d803f; CI queued at scout"
+    },
+    "xxp": {
+      "pr": 750,
+      "url": "https://github.com/jason931225/console/pull/750",
+      "tip": "445e98699",
+      "note": "BEHIND main; authenticate-console-authority FAILURE — needs restack+authority T"
+    },
+    "7sx": {
+      "worktree": ".worktrees/lane-console-7sx",
+      "tip": "25acb956a",
+      "note": "ahead 2 behind 1 vs origin/main; dirty porcelain (lib.rs, itest, openapi, fragment) + untracked 7sx-critic.json — no PR listed for lane/console-7sx"
+    },
+    "capacity": "not continued — #747 not landed; queue notes only"
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Opportunity Cost"
+  ],
+  "challenges": [
+    "Challenge: restack tip churn (c20048163→e97ba9007→dec812ce9) while babysitting cancelled in-flight green path — Chesterton: C..T authority + main movement required restack; babysit must not dual-write product.",
+    "Challenge: adapters-B 45m timeout looks like product red but ontology PG already green — Cartesian: infra timeout ≠ binding defect."
+  ],
+  "flowDelta": "BLOCK: Required/CI not green — CI run 31508048657 starved in queued on tip dec812ce9 after prior adapters-B 45m timeout; no merge; elevate ops re-queue.",
+  "recordedAt": "2026-08-11T16:23:00Z",
+  "summary": "Babysit #747: critic APPROVE stands (product patch-id unchanged; no re-review). Required/Security was green on e97ba9007; Required/CI failed there only via adapters-B 45m job timeout cascade. Tip restacked to dec812ce9 with auto-merge on, but CI run 31508048657 stuck queued (starvation). No squash-merge; beads not closed; no product dual-write.",
+  "filesChanged": [
+    ".cursor/receipts/dgo2-landed-20260811.json"
+  ],
+  "redBaseline": "Required/CI red or absent: prior tip e97ba9007 adapters-B cancelled at 45m max execution; current tip dec812ce9 CI run 31508048657 status=queued with stale updated_at.",
+  "verification": "bash scripts/cursor/preflight-forge.sh; gh/curl PR 747 + checks; patch-id equality 7b7a738d…; job annotation on 93817573985; curl run 31508048657 status=queued.",
+  "contractBreaches": "none by babysit; merge blocked by required checks not green",
+  "enforcementPlacement": "n/a - adds no enforcement",
+  "peripheralsUpdated": "n/a - nothing described this behaviour",
+  "commands": [
+    "bash scripts/cursor/preflight-forge.sh",
+    "gh pr view 747 --json headRefOid,mergeable,mergeStateStatus,autoMergeRequest,statusCheckRollup",
+    "gh pr checks 747",
+    "git patch-id --stable on product commits across restacks",
+    "gh api .../actions/jobs/93817573985/annotations → 45m timeout",
+    "curl actions/runs/31508048657 → status=queued"
+  ],
+  "headSha_note": "status=blocked so headSha records observed tip at elevate time"
+}

@@ -1,0 +1,16 @@
+{
+  "role": "admit-coordinator",
+  "at": "2026-08-11T15:40:00Z",
+  "fromAgent": "3d327904-87fa-4192-afe4-95c33418fd29",
+  "action": "serialized dual-writer collision",
+  "pr": 755,
+  "canonicalTip": "a40d46945437a89c503bffd34664154da86ce137",
+  "admitWtReset": "hard reset admission-wave4-20260811 to origin (discarded divergent 1824d39b8)",
+  "parked": [
+    "admission-wave4-heal-20260811",
+    "admission-wave4-preflight-rebind-20260811"
+  ],
+  "p1StillOpen": true,
+  "exclusiveWriter": "a9dc1a92-b98f-4b4c-ab6b-7393df4d222b",
+  "flowDelta": "one writer locked on admit tip for openapi forever-fix + land"
+}

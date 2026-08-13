@@ -1,0 +1,11 @@
+{
+  "schema": "lane-land-v1",
+  "pr": 759,
+  "bead": "console-o498",
+  "mergeCommit": "5770c04c469a842d813ddef6bd2f807e898dd3fc",
+  "tipBeforeMerge": "e4253fc528c5391b9e6e89581f9b513ed938fed5",
+  "productC": "d0ff287f8332c1ac616c53d98453978d31f77c60",
+  "mergedAt": "2026-08-12T01:39:27Z",
+  "correctedOrder": ["756", "755", "754", "759"],
+  "note": "Final heal: move ensure_branch_rewrite_in_scope tests to end of lib (clippy items_after_test_module). Prior order ADJUST: skip 757 (already on main); supersede 750/752 with 756, 749 with 754."
+}

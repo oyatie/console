@@ -1,0 +1,80 @@
+{
+  "role": "critic",
+  "lane": "console-k6wm",
+  "pr": 763,
+  "verdict": "BLOCK",
+  "baseSha": "84655ce7881c764bbe81081b193cdd2d85d523c1",
+  "tipSha": "d9a9d5b0ba645bd687ca214ed8167277024fcf6f",
+  "worktree": "/Users/jasonlee/Developer/console-lane-k6wm",
+  "receiptPath": "/Users/jasonlee/Developer/console/.cursor/receipts/k6wm-critic.json",
+  "premiseCheck": "Verified against PR #763 / tip d9a9d5b0ba645bd687ca214ed8167277024fcf6f (gh pr view headRefOid match; tip %G?=G; base 84655ce7881c764bbe81081b193cdd2d85d523c1 is ancestor). Diff 84655ce78...d9a9d5b0b is exactly six paths: adapter-postgres {src/lib.rs, tests/apply_refuses_deactivated_region.rs, BUCK}, tools/ci/postgres-cargo-map.json, tools/ci/postgres-shard.test.mjs, tools/buck/gen_first_party.py. No hub .worktrees/lane-console-k6wm; critic receipt written to hub .cursor/receipts/ (process.receipt-location-drift). Sibling implementer receipt readable at /Users/jasonlee/Developer/console-lane-k6wm/.cursor/receipts/k6wm.json and claims the same tip.",
+  "findings": [
+    {
+      "severity": "blocker",
+      "claim": "Restack conflict resolution left backend/crates/orgchange/adapter-postgres/BUCK syntactically invalid: after the new apply_refuses rust_test closes, the next target preflight_persists_nothing is a bare `name = ...` block with its wrapping `rust_test(` deleted. Buck preflight cannot parse the package, so CI foundation fails closed and every hermetic rust_test under that BUCK (including the pre-existing preflight_persists_nothing target) is unenumerable.",
+      "failureScenario": "Tip ships product + map wiring while Required / CI stays red: tools/buck/preflight.sh → kind('rust_test','//backend/...') fails with Parse error at BUCK:163 (`unexpected new indentation block`). Downstream postgres jobs skip; admit cannot treat the pin as CI-live. Class: restack conflict resolution that keeps both bodies but drops the Starlark call wrapper (process.restack-buck-wrapper-drop).",
+      "location": "backend/crates/orgchange/adapter-postgres/BUCK:132-163 (new rust_test ok; missing `rust_test(` before preflight_persists_nothing name=); CI https://github.com/jason931225/console/actions/runs/31551973914/job/93976390786 tip d9a9d5b0b",
+      "provenByExecution": true,
+      "ownerLease": false,
+      "fixObservationDemand": "One fix commit on lane/console-k6wm: restore `rust_test(` before preflight_persists_nothing (and verify every rust_test in that BUCK has matching open/close). Visibility: before = this CI URL / parse error on d9a9d5b0b; after = buck preflight / kind('rust_test','//backend/crates/orgchange/adapter-postgres/...') succeeds on NEW tip + cargo/pg pin still 1/1. No-regression: preflight_persists_nothing target reappears in buck targets. Genuine addition: syntax restore only — do not broaden map/shard again."
+    },
+    {
+      "severity": "minor",
+      "claim": "Implementer (and this critic) receipts live outside hub `.worktrees/` — sibling checkout /Users/jasonlee/Developer/console-lane-k6wm plus hub-only critic path — failure class process.receipt-location-drift / forbidden sibling path. Does not void tip review via git/gh.",
+      "failureScenario": "Admission or later auditors looking under hub .worktrees/lane-console-k6wm find no lane; External-File Protection prompts and receipt/tip coupling drift. Hub re-home is orchestrator process work, not a product defect on this tip.",
+      "location": "worktree /Users/jasonlee/Developer/console-lane-k6wm; critic receipt /Users/jasonlee/Developer/console/.cursor/receipts/k6wm-critic.json; expected /Users/jasonlee/Developer/console/.worktrees/lane-console-k6wm/.cursor/receipts/",
+      "provenByExecution": true,
+      "ownerLease": true
+    },
+    {
+      "severity": "minor",
+      "claim": "Console authority bootstrap authenticate-console-authority also FAIL on this tip (C..T authority-document mode constraint), but the leaf diff does not touch authority docs; causation is not tip product content. Babysit/orchestrator owns whether that check is expected-skip vs repo-wide train health.",
+      "failureScenario": "If operators treat authenticate-console-authority red as leaf-caused, they may chase false product fixes. Not merge-blocking for the orgchange apply guard itself once BUCK parses.",
+      "location": "https://github.com/jason931225/console/actions/runs/31551974147/job/93976391110 (tip d9a9d5b0b); verify-console-pr-authority-bootstrap.mjs C..T mode-100644 rule",
+      "provenByExecution": true,
+      "ownerLease": true
+    }
+  ],
+  "lensEvidence": {
+    "oracleIntegrity": "No test deleted/ignored/conformed in the product sense: new apply_refuses_deactivated_region.rs is a genuine Conflict pin via effectuate (CreateBranch + RenameBranch dead-region refuse; active-region non-regression; no ghost row; APPROVED retained). However restack dropped the `rust_test(` wrapper for preflight_persists_nothing — an existing hermetic target is no longer a valid Buck rule (parse fail), which is oracle-adjacent damage to an unrelated itest's CI materialization. Control mutation of require_active_region_tx would still trip the new itest's Ok(APPLIED) panic when cargo can run it; critic did not re-run PG (local cargo path claimed green by implementer; CI never reached PG because preflight died).",
+    "peripheralDrift": "Module docs/comments, gen_first_party TEST_RESOURCE_REQUIREMENTS, postgres-cargo-map entry (mapped 216 / workflow 201), shard tripwire 85→86, and new BUCK rust_test body are present and mutually consistent for the NEW itest. Drift defect is structural: BUCK file incomplete after conflict keep-both. No OpenAPI/docs/** owed. identity/adapter-postgres untouched (correct lx6 lease).",
+    "enforcementPlacement": "Product guard placement remains correct on tip lib.rs: require_active_region_tx inside apply_op before CreateBranch INSERT and RenameBranch region_id UPDATE; SELECT … FOR UPDATE; missing/deactivated → conflict; shared helper. Enforcement of the pin in CI is broken: Buck cannot enumerate the package, so the hermetic subject of the new rust_test (and siblings) does not exist to preflight — examined package fails parse rather than examining zero subjects silently.",
+    "falseGreen": "Not a silent green: Required / CI FAILURE proven on tip (preflight parse). Local cargo_needs_postgres.sh 1/1 can still pass while Buck face is broken — that split is the false-green class for hermetic/CI coupling. No --workflow-only in receipt commands. Map entry present (prior ownerLease major from earlier critic tip appears closed on this tip).",
+    "redTeam": "Approve-then-deactivate-before-effectuate still needs apply-time FOR UPDATE (present). Restack adversary: conflict resolution that preserves both test bodies but drops Starlark call syntax — observed and blocking.",
+    "zeroTrust": "Guard independent of preflight/identity; conflict via apply_ops. CI face independently rejects the broken BUCK (good fail-closed) rather than shipping a parse-broken package as green.",
+    "blastRadius": "Owned roots only; collateral damage is loss of parse for ALL rust_test targets in the same BUCK (including preflight_persists_nothing). Fix is one-line-class restore of rust_test(.",
+    "operability": "CI log names exact file:line; Korean conflict copy aligned with lx6 claim retained in product path."
+  },
+  "challenges": [
+    "Challenged implementer claim that restack 'BUCK … resolved' is complete: tip BUCK still missing rust_test( before preflight_persists_nothing; CI preflight proves parse failure on d9a9d5b0b.",
+    "Chesterton: keep-both conflict resolution for org_reference_surface + apply_refuses was right on inventory intent, but dropping the following target's call wrapper is indefensible — restore syntax, do not rewrite inventory.",
+    "Challenged treating authenticate-console-authority red as a leaf product BLOCK: diff does not touch authority documents; ownerLease to orchestrator/babysit.",
+    "Essentialism: product require_active_region_tx + itest look sufficient once BUCK parses; no third spelling of the region guard needed."
+  ],
+  "claimGraph": [
+    "E: tip d9a9d5b0b == PR #763 headRefOid; signature G; base 84655ce78 ancestor",
+    "E: git show tip BUCK: after apply_refuses closing `)`, next line is indented `name = \"…preflight_persists_nothing\"` without rust_test(",
+    "E: CI run 31551973914 job 93976390786 — Parse error BUCK:163; buck-preflight rust target enumeration failed; Required / CI FAILURE",
+    "E: six-file diff only; map contains apply_refuses entry; shard expects 86; gen_first_party lists the itest under postgres",
+    "E: sibling WT HEAD also d9a9d5b0b with same broken BUCK slice; no hub .worktrees/lane-console-k6wm",
+    "I: product guard + itest would be APPROVE-eligible after BUCK syntax restore alone",
+    "U: whether tools/buck sh_test wrapper name in map must exist as a committed sh_test (employment_port also absent from tools/buck/BUCK string search — cargo path may be the live CI edge; not proven as tip-unique defect)"
+  ],
+  "commandsRun": [
+    "gh pr view 763 --json headRefOid,baseRefOid,files,statusCheckRollup  # head d9a9d5b0b base 84655ce78; CI preflight FAILURE",
+    "git fetch origin lane/console-k6wm; git diff --stat 84655ce78...d9a9d5b0b  # 6 files +402/-5",
+    "git show d9a9d5b0b:backend/crates/orgchange/adapter-postgres/BUCK | sed -n '132,170p'  # missing rust_test( before preflight_persists_nothing",
+    "git show 84655ce78:backend/crates/orgchange/adapter-postgres/BUCK | sed -n '120,140p'  # base has rust_test( before preflight_persists_nothing",
+    "gh run view 31551973914 --log-failed  # Parse error BUCK:163; rust target enumeration failed",
+    "git log -1 --format='%H %G?' d9a9d5b0b  # … G",
+    "git merge-base --is-ancestor 84655ce78 d9a9d5b0b  # BASE_ANCESTOR_OK",
+    "test -d /Users/jasonlee/Developer/console/.worktrees/lane-console-k6wm  # NO_HUB_WT",
+    "git -C /Users/jasonlee/Developer/console-lane-k6wm rev-parse HEAD  # d9a9d5b0b"
+  ],
+  "followUps": [
+    "Implementer (same lease): one commit restoring rust_test( for preflight_persists_nothing; re-push; do not open another inventory round.",
+    "Class elevation: process.restack-buck-wrapper-drop — restack keep-both that preserves bodies but drops Starlark call wrappers. Parent should confirm/open a sweep bead if absent.",
+    "Orchestrator ownerLease: hub re-home receipts/worktree under .worktrees/lane-console-k6wm; babysit authority-bootstrap red separately from this leaf product fix."
+  ],
+  "flowDelta": "BLOCK tip d9a9d5b0b: restack left adapter-postgres/BUCK unparseable (missing rust_test( before preflight_persists_nothing); CI preflight proven red. Product guard+itest+map look otherwise ready — fix syntax only, then re-critique."
+}

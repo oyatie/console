@@ -1,0 +1,12 @@
+{
+  "id": "759-fix-followup-20260811",
+  "role": "admit-coordinator",
+  "fixer": "c1ac89f3-12cd-4900-9f27-7f029c261924",
+  "pr": 759,
+  "tip": "dabfe31d675f90283d7954b8bf7cb02d2921890c",
+  "autoMerge": true,
+  "unresolvedThreads": 0,
+  "ci": "pending on tip dabfe31d6",
+  "critic": "ab4da35e-f12e-4140-9b55-01fec59c5dc4",
+  "flowDelta": "o498 CI lock fix pushed; critic running; auto-merge already armed"
+}

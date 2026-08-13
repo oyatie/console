@@ -1,0 +1,15 @@
+{
+  "id": "759-ci-blocker-20260811",
+  "pr": 759,
+  "tip": "0b1a53acdb4efc3ffb5fdd8ab51e80ab2cf099f6",
+  "status": "BLOCKED",
+  "blocker": "CI preflight contract tests fail: domain-unit proof run step 2 / locked Cargo test commands when run_heavy (scripts/check-ci-preflight.test.mjs:911)",
+  "run": 31550939799,
+  "decision": "Do not merge red; dispatch leaf fixer on lane/o498. Bead console-o498 reopened.",
+  "y0n": {
+    "worktree": ".worktrees/lane-console-y0n",
+    "localTip": "2e6c9d47a",
+    "receipt": ".worktrees/lane-console-y0n/.cursor/receipts/y0n.json",
+    "needs": "restack onto main 84655ce788 (behind 2); open leaf PR"
+  }
+}

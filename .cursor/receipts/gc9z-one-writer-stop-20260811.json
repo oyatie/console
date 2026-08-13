@@ -1,0 +1,32 @@
+{
+  "role": "admit-coordinator",
+  "phase": "dedupe-gc9z",
+  "at": "2026-08-11T12:40:00Z",
+  "originMain": "be7b3e14b2f126e8c24a2bf99758d0de00aaa23d",
+  "bead": "console-gc9z",
+  "soleOwner": {
+    "agent": "1bf94558-2dc9-4a46-a851-9d4aaf818fdf",
+    "worktree": "/Users/jasonlee/Developer/console/.worktrees/lane-console-gc9z",
+    "branch": "lane/console-gc9z",
+    "ownedRoots": [
+      "backend/crates/payroll/adapter-postgres/src/lifecycle.rs"
+    ],
+    "rationale": "User/backlog prefer .worktrees/ tip; one writer only"
+  },
+  "stoppedDuplicate": {
+    "agent": "2b48017d-c997-4fba-9f22-390f0eb6b105",
+    "status": "STOP",
+    "reason": "Nested/sibling dual-write on same bead; health fence previously named this agent — superseded by .worktrees preference"
+  },
+  "evidence": {
+    "E_worktreeExists": ".worktrees/lane-console-gc9z @ be7b3e14b with dirty lifecycle.rs WIP",
+    "E_noSiblingCheckout": "git worktree list shows only hub .worktrees/lane-console-gc9z for gc9z",
+    "E_backlogLaunch": ".cursor/receipts/continuous-backlog-launches-20260811.json implementers.console-gc9z=1bf94558",
+    "I_soleWriter": "Only 1bf94558 may commit under owned root until leaf exits",
+    "U_nestedStillAlive": "Cannot force-kill nested agent from this session; STOP is durable fence + parent must not re-dispatch 2b48017d"
+  },
+  "challenges": [
+    "Chesterton: parallel-phases-health named 2b48017d as owner to protect nested WIP — overturned because backlog already provisioned the canonical .worktrees path and dual-write is the higher failure class."
+  ],
+  "flowDelta": "gc9z sole owner = .worktrees/lane-console-gc9z (1bf94558); nested 2b48017d STOP — do not dual-write"
+}

@@ -1,0 +1,9 @@
+{
+  "role": "admit-coordinator",
+  "at": "2026-08-11T14:43:30Z",
+  "reason": "001bd8e7 confirmed train ready; land babysits fd7b0657+ce80e67c never started",
+  "pr": 755,
+  "tip": "a4ef9afe6",
+  "noLeafRedispatch": true,
+  "landRelaunch": "9849b8f7-5063-4850-8857-61bb037e90f4"
+}
