@@ -1,0 +1,21 @@
+{
+  "kind": "critic",
+  "verdict": "APPROVE",
+  "lane": "w2-pilot-t2-g004-20260813",
+  "reviewer": "23-W2PilotCommitCritic (Sol, independent exact-product review)",
+  "baseSha": "d29be0d73d5d4f6360f8693fc9e0b9e36aef8485",
+  "headSha": "8f20b2024df15fa45253baafb101b9ad36c1d55f",
+  "summary": "Admission product tree equals independently reviewed f6ca71441 tree 8342bd83d2bd2c5af4677680884e29513752d3e3; no blocking finding.",
+  "findings": [
+    {
+      "severity": "minor",
+      "claim": "The hostile-mutation test dynamically imports the executable G004 gate module and executes its top-level body.",
+      "failureScenario": "A future unrelated gate failure could terminate before predicate assertions or add process-global trace noise. Current behavior stays fail-closed and this is unproven.",
+      "location": "scripts/check-gate-input-provenance.test.mjs hostile import; scripts/check-g004-identity-foundation.mjs top-level body",
+      "provenByExecution": false,
+      "ownerLease": true
+    }
+  ],
+  "verificationNote": "Critic review bound to reviewed product f6ca71441; admission product 8f20b2024 has identical tree. Parent evidence 498, 9/9, census 19/18/793/18, diff check, signed commits.",
+  "flowDelta": "Exact admission product tree independently approved; ready for protected C/T train."
+}

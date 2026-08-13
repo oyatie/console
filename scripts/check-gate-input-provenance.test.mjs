@@ -197,6 +197,45 @@ test("live instrument passes on the current tree", () => {
     g004,
     /requireIncludes\("docs\/specs\/backlog-clearance-ledger\.md", goalId/,
   );
+  assert.doesNotMatch(g004, /docs\/specs\/foundation-gates\.md/);
+
+  const exceptions = JSON.parse(
+    readFileSync(join(root, "docs/program/gate-input-exceptions.json"), "utf8"),
+  );
+  assert.equal(exceptions.baseline_count, exceptions.exceptions.length);
+  assert.ok(
+    !exceptions.exceptions.some(
+      (entry) =>
+        entry.gate === "check:g004-identity-foundation" &&
+        entry.input_path === "docs/specs/foundation-gates.md",
+    ),
+  );
+});
+
+test("G004 machine-readable passkey and policy controls fail under hostile matrix mutations", async () => {
+  const { hasPasskeyContract, hasPolicyContract } = await import(
+    "./check-g004-identity-foundation.mjs"
+  );
+  const matrix = JSON.parse(
+    readFileSync(
+      join(root, "docs/benchmarks/g004-identity-foundation-matrix.json"),
+      "utf8",
+    ),
+  );
+  assert.equal(hasPasskeyContract(matrix.routePaths), true);
+  assert.equal(hasPolicyContract(matrix.routePaths), true);
+
+  const withoutPasskey = structuredClone(matrix.routePaths);
+  for (const row of withoutPasskey) {
+    row.requiredStory = row.requiredStory.replaceAll(/passkey/gi, "factor");
+  }
+  assert.equal(hasPasskeyContract(withoutPasskey), false);
+
+  const withoutPolicy = structuredClone(matrix.routePaths);
+  for (const row of withoutPolicy) {
+    row.requiredStory = row.requiredStory.replaceAll(/policy/gi, "rules");
+  }
+  assert.equal(hasPolicyContract(withoutPolicy), false);
 });
 
 test("T1-CONV replacement is CI-reachable via check:g004-identity-foundation", () => {

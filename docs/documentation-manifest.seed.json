@@ -3700,6 +3700,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-13-w2-pilot-t2-g004-admit.md",
+    "blob_sha": "f60ad06affb7f078f6f147d3e6b3a3255e154da4",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/legacy-intent-register.md",
     "class": "evidence",
     "owner": "repository maintainers",

@@ -8,9 +8,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 beginGate({
   gate: "check:g004-identity-foundation",
   script: "scripts/check-g004-identity-foundation.mjs",
-  documentInputs: [
-    "docs/specs/foundation-gates.md",
-  ],
+  documentInputs: [],
 });
 
 const matrixPath = "docs/benchmarks/g004-identity-foundation-matrix.json";
@@ -73,6 +71,24 @@ function requireArrayOfStrings(value, path, label) {
   assert(Array.isArray(value) && value.length > 0 && value.every((entry) => typeof entry === "string" && entry.length > 0), label, `${path}: ${label} must be a non-empty string array`);
 }
 
+export function hasPasskeyContract(routePaths) {
+  return routePaths.some(
+    (row) =>
+      typeof row.requiredStory === "string" &&
+      row.requiredStory.toLowerCase().includes("passkey"),
+  );
+}
+
+export function hasPolicyContract(routePaths) {
+  return routePaths.some(
+    (row) =>
+      row.path === "/settings/policy" &&
+      row.routeGroup === "policy" &&
+      typeof row.requiredStory === "string" &&
+      row.requiredStory.toLowerCase().includes("policy"),
+  );
+}
+
 const matrix = parseJson(matrixPath);
 const routeAudit = parseJson(auditPath);
 const packageJson = parseJson("package.json") ?? {};
@@ -100,6 +116,16 @@ if (matrix) {
     assert(typeof row.requiredStory === "string" && row.requiredStory.length >= 24, `G004 route ${row.path}: required story`, `${matrixPath}: route ${row.path} requiredStory is too weak`);
     matrixRoutes.set(row.path, row);
   }
+  assert(
+    hasPasskeyContract([...matrixRoutes.values()]),
+    "G004 matrix records a passkey contract",
+    `${matrixPath}: no route requiredStory records the passkey contract`,
+  );
+  assert(
+    hasPolicyContract([...matrixRoutes.values()]),
+    "G004 matrix records a policy contract",
+    `${matrixPath}: no policy route has a substantive requiredStory`,
+  );
   for (const group of requiredRouteGroups) {
     assert([...matrixRoutes.values()].some((row) => row.routeGroup === group), `G004 route group ${group}: covered`, `${matrixPath}: no route covers group ${group}`);
   }
@@ -142,8 +168,6 @@ if (matrix) {
   for (const test of matrix.requiredBackendTests ?? []) requireFile(test, `G004 backend test ${test}`);
 
   // T1-CONV: backlog ledger goal-id prose assertion removed; matrix.goalId is the executable source (see docs/program/ledger/2026-08-05-gate-input-provenance.md).
-  requireIncludes("docs/specs/foundation-gates.md", "passkey", "foundation gate mentions passkey contract");
-  requireIncludes("docs/specs/foundation-gates.md", "policy", "foundation gate mentions policy contract");
   requireNotIncludes("scripts/check-people-hr-maturity.mjs", "G027-people-hr-lifecycle-org-scope-ui-mat", "people HR gate has no stale G027 owner id");
 }
 
