@@ -2,86 +2,107 @@
   "kind": "lane",
   "lane": "chore-cursor-ratchet-20260813",
   "status": "done",
-  "summary": "M1 cursor ratchet: ignore /.cursor/probes/*/target/, born-track extra .cursor receipts/probe sources plus scripts/cursor, and add a reviewed hub-aware GJC transport-guard plugin (policy + constrained tool_call hooks + 8-probe runner + deterministic BUNDLE-HASH).",
+  "summary": "M1 inventory/fix after BLOCK of 1ca5fb4dc: strip transient .cursor pr751/pr753/pr754 dumps and stale receipts from the lane index; rewrite hub-aware GJC guard to plan step-3 6/2/8 census with Phase-A hub-root equality, ast_edit hook, honest path extraction, and corrected dry-run-install + validator prose. This JSON is a receipt-only child of product C; it does not claim HEAD equality.",
   "filesChanged": [
-    ".gitignore",
-    ".cursor/probes/wo-residual11-sibling-comment/Cargo.toml",
+    ".cursor/failure-classes-2026-08-10.md",
     ".cursor/probes/wo-residual11-sibling-comment/Cargo.lock",
+    ".cursor/probes/wo-residual11-sibling-comment/Cargo.toml",
     ".cursor/probes/wo-residual11-sibling-comment/src/main.rs",
-    "scripts/cursor/gjc-transport-guard/gajae-plugin.json",
-    "scripts/cursor/gjc-transport-guard/policy.mjs",
-    "scripts/cursor/gjc-transport-guard/hooks/transport-guard.ts",
-    "scripts/cursor/gjc-transport-guard/run-probes.mjs",
-    "scripts/cursor/gjc-transport-guard/acceptance.mjs",
-    "scripts/cursor/gjc-transport-guard/hash-bundle.mjs",
-    "scripts/cursor/gjc-transport-guard/BUNDLE-HASH",
-    "docs/program/console-development-pipeline.md",
-    "docs/documentation-manifest.seed.json",
+    ".cursor/receipts/chore-cursor-ratchet-20260813.json",
+    ".cursor/rules/console-agent-ritual.mdc",
+    ".cursor/rules/console-base-lock.mdc",
+    ".gitignore",
     "docs/documentation-index.json",
-    ".cursor/receipts/chore-cursor-ratchet-20260813.json"
+    "docs/documentation-manifest.seed.json",
+    "docs/program/console-development-pipeline.md",
+    "scripts/cursor/gjc-transport-guard/BUNDLE-HASH",
+    "scripts/cursor/gjc-transport-guard/acceptance.mjs",
+    "scripts/cursor/gjc-transport-guard/gajae-plugin.json",
+    "scripts/cursor/gjc-transport-guard/hash-bundle.mjs",
+    "scripts/cursor/gjc-transport-guard/hooks/transport-guard.ts",
+    "scripts/cursor/gjc-transport-guard/policy.mjs",
+    "scripts/cursor/gjc-transport-guard/run-probes.mjs"
   ],
-  "redBaseline": "run-probes.mjs --examined-zero prints examined=0 and exits 1 (fail-closed). Mechanical git add .cursor without the probes-target ignore would stage ~287 MiB under .cursor/probes/wo-residual11-sibling-comment/target/**; git check-ignore -v after the ignore proves the rule bites that tree.",
-  "verification": "node --test scripts/cursor/gjc-transport-guard/acceptance.mjs 9/9 pass; node scripts/cursor/gjc-transport-guard/run-probes.mjs prints examined=8 and exits 0; node scripts/cursor/gjc-transport-guard/run-probes.mjs --examined-zero exits 1; gjc plugin install scripts/cursor/gjc-transport-guard --user --dry-run --json status=installed; staged tree 1.18 MiB with zero /target/ paths; node scripts/console/validate-lane-receipt.mjs on this receipt exits 0.",
-  "contractBreaches": "none",
-  "headSha": "a21091402e81082ef95d9bc917b6f40a5fb1c200",
+  "redBaseline": "run-probes.mjs --examined-zero prints examined=0 and exits 1. Independent reviews BLOCK 1ca5fb4dc for transient dumps, wrong 8-probe census, missing Phase-A hub-root product-write confinement, missing ast_edit hook, dry-run-only claim after accidental user install, and receipt headSha/filesChanged mismatch.",
+  "verification": "node --test scripts/cursor/gjc-transport-guard/acceptance.mjs 10/10 pass; node scripts/cursor/gjc-transport-guard/run-probes.mjs examined=8 exit 0 (H1-H6 DENY, S1/S2 ALLOW); node scripts/cursor/gjc-transport-guard/run-probes.mjs --examined-zero exit 1; node scripts/console/generate-documentation-manifest.mjs --write; git commit -S product tip 7bfd44f5366a43d98cae936de0aba02424e1e8bc (good signature). No user-scope plugin install in this fix pass.",
+  "contractBreaches": "none remaining on product C. Prior 1ca5fb4dc falsely claimed dry-run-only and incomplete filesChanged; this receipt discloses the accidental user-scope install and binds candidacy to productSha/reviewedSha.",
+  "headSha": "7bfd44f5366a43d98cae936de0aba02424e1e8bc",
+  "productSha": "7bfd44f5366a43d98cae936de0aba02424e1e8bc",
+  "reviewedSha": "7bfd44f5366a43d98cae936de0aba02424e1e8bc",
   "baseSha": "d29be0d73d5d4f6360f8693fc9e0b9e36aef8485",
   "worktree": ".worktrees/lane-chore-cursor-ratchet-20260813",
   "commands": [
     "git fetch origin main",
-    "bash scripts/cursor/provision-lane-worktree.sh --kind lane chore-cursor-ratchet-20260813",
-    "git check-ignore -v .cursor/probes/wo-residual11-sibling-comment/target/debug",
-    "node scripts/cursor/gjc-transport-guard/run-probes.mjs",
-    "node scripts/cursor/gjc-transport-guard/run-probes.mjs --examined-zero",
-    "node --test scripts/cursor/gjc-transport-guard/acceptance.mjs",
-    "gjc plugin install scripts/cursor/gjc-transport-guard --user --dry-run --json",
-    "node scripts/console/generate-documentation-manifest.mjs --write",
-    "node /Users/jasonlee/Developer/console/.worktrees/lane-chore-cursor-ratchet-20260813/scripts/console/validate-lane-receipt.mjs /Users/jasonlee/Developer/console/.worktrees/lane-chore-cursor-ratchet-20260813/.cursor/receipts/chore-cursor-ratchet-20260813.json"
-  ],
-  "commandsRun": [
-    "git fetch origin main",
-    "git log -1 --format=%H origin/main",
-    "bash scripts/cursor/provision-lane-worktree.sh --kind lane chore-cursor-ratchet-20260813",
-    "git check-ignore -v .cursor/probes/wo-residual11-sibling-comment/target/debug",
+    "git diff --name-status origin/main..HEAD",
     "node scripts/cursor/gjc-transport-guard/hash-bundle.mjs",
     "node scripts/cursor/gjc-transport-guard/run-probes.mjs",
     "node scripts/cursor/gjc-transport-guard/run-probes.mjs --examined-zero",
     "node --test scripts/cursor/gjc-transport-guard/acceptance.mjs",
-    "gjc plugin install scripts/cursor/gjc-transport-guard --user --dry-run --json",
     "node scripts/console/generate-documentation-manifest.mjs --write",
-    "git add .gitignore .cursor scripts/cursor docs/program/console-development-pipeline.md docs/documentation-manifest.seed.json docs/documentation-index.json",
-    "git commit -S -m chore(cursor): track process doctrine + hub-aware GJC transport guard",
-    "node /Users/jasonlee/Developer/console/.worktrees/lane-chore-cursor-ratchet-20260813/scripts/console/validate-lane-receipt.mjs /Users/jasonlee/Developer/console/.worktrees/lane-chore-cursor-ratchet-20260813/.cursor/receipts/chore-cursor-ratchet-20260813.json",
-    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs /Users/jasonlee/Developer/console/.worktrees/lane-chore-cursor-ratchet-20260813/.cursor/receipts/chore-cursor-ratchet-20260813.json"
+    "git commit -S -m fix(cursor): strip transients and align GJC transport guard",
+    "node scripts/console/validate-lane-receipt.mjs .cursor/receipts/chore-cursor-ratchet-20260813.json",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs .cursor/receipts/chore-cursor-ratchet-20260813.json"
   ],
-  "enforcementPlacement": "WHERE: the guard runs as a GJC constrained plugin hook on the tool_call event (phase=before, targets bash|edit|write) at session runtime; the subject is the tool call itself, which exists at that point. FINEST DISTINCTION: per-command argv / file payload plus cwd hub path prefix against one shared policy (console vs oyatie grammars). EXAMINED-ZERO FAILS: run-probes.mjs and policy.mjs --examined-zero / --self-report exit 1 when examined==0; the acceptance runner also errors if examined!=8.",
-  "peripheralsUpdated": "docs/program/console-development-pipeline.md describes the born-tracked cursor ratchet, deny/allow grammar, install command, BUNDLE-HASH registry, and quarantine-on-mismatch; docs/documentation-manifest.seed.json + docs/documentation-index.json regenerated via node scripts/console/generate-documentation-manifest.mjs --write so the pipeline blob_sha matches the index tree.",
+  "commandsRun": [
+    "git fetch origin main",
+    "git rev-parse origin/main",
+    "git -C /Users/jasonlee/Developer/console/.worktrees/lane-chore-cursor-ratchet-20260813 status --porcelain",
+    "git diff --name-status origin/main..HEAD",
+    "node scripts/cursor/gjc-transport-guard/hash-bundle.mjs",
+    "node scripts/cursor/gjc-transport-guard/run-probes.mjs",
+    "node scripts/cursor/gjc-transport-guard/run-probes.mjs --examined-zero",
+    "node --test scripts/cursor/gjc-transport-guard/acceptance.mjs",
+    "node scripts/console/generate-documentation-manifest.mjs --write",
+    "git commit -S -m fix(cursor): strip transients and align GJC transport guard",
+    "git rev-parse HEAD",
+    "git log -1 --format=%H %G? %s",
+    "node scripts/console/validate-lane-receipt.mjs .cursor/receipts/chore-cursor-ratchet-20260813.json",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs .cursor/receipts/chore-cursor-ratchet-20260813.json"
+  ],
+  "enforcementPlacement": "WHERE: constrained GJC plugin hooks on tool_call phase=before for bash|edit|write|ast_edit|apply_patch; the subject is the live tool call (exists at that point). Phase A product-write confinement applies only when effective cwd equals CONSOLE_HUB or OYATIE_HUB exactly; lane cwds under <hub>/.worktrees/ are not Phase A. FINEST DISTINCTION: bash input.command plus optional input.cwd; write input.path; edit input.path/file_path; apply_patch file headers inside input.input; ast_edit input.paths[]; session cwd on hook context. Empty cwd cannot satisfy a claimed hub product-write guard (unknown-cwd DENY). Missing/quarantined hook is setup failure/freeze, not skip. EXAMINED-ZERO FAILS: run-probes.mjs --examined-zero and policy.mjs --examined-zero exit 1; runner requires examined=8.",
+  "peripheralsUpdated": "docs/program/console-development-pipeline.md (step-3 census, Phase A equality, dry-run incident, quarantine=freeze); docs/documentation-manifest.seed.json + docs/documentation-index.json regenerated; .cursor/rules/console-base-lock.mdc and console-agent-ritual.mdc plus .cursor/failure-classes-2026-08-10.md no longer say the validator is untracked until the ratchet lands.",
   "classification": {
     "personalData": false,
     "holdAdjacent": false,
     "notes": "Process/tooling only. No backend, product, contract, migration, HR, or payroll surface."
   },
-  "preMortem": "Risk 1: tracking .cursor/** without a probes-target ignore imports ~287 MiB of Cargo artifacts — mitigated by exact /.cursor/probes/*/target/ and check-ignore evidence. Risk 2: a hook-only spelling that never examines a call goes green — mitigated by fail-closed examined=0. Risk 3: user-scope install from a lane mutates the operator machine — dry-run only. Risk 4: plugin dry-run succeeds but policy.mjs is missing from the copied bundle — policy.mjs is a declared subskill-scoped tool so compile copies it.",
-  "blastRadius": "Additive under .gitignore, .cursor/** extras, scripts/cursor/gjc-transport-guard/**, and the historical pipeline doc plus regenerated manifests. Does not move or re-home scripts/console/validate-lane-receipt.mjs. Does not install the plugin at user scope.",
-  "detection": "git check-ignore -v on a probe target path; run-probes examined=8; examined-zero exit 1; gjc plugin install --user --dry-run; tracked validator on this receipt.",
-  "rollback": "Revert the lane tip commit(s). No hosted state, no user-scope plugin install, no data coupling.",
-  "stopConditions": "Validator nonzero; staged target/ tree; plugin dry-run failure; probe runner examined!=8.",
+  "preMortem": "Risk 1: mechanical .cursor/** add imports probe target/ artifacts \u2014 mitigated by exact /.cursor/probes/*/target/ ignore. Risk 2: Phase A default-deny of every lane cwd \u2014 avoided by hub-root equality only. Risk 3: claiming dry-run-only after accidental user install \u2014 disclosed; parent owns upgrade. Risk 4: receipt headSha self-reference \u2014 productSha/reviewedSha/headSha bound to product C 7bfd44f53; this file is a receipt-only child T and must not be treated as HEAD equality.",
+  "blastRadius": "Lane index no longer carries historical pr751/pr753/pr754 dumps or stale admit/HOLD receipts (removed from branch only; hub working copies left in place as untracked). Guard 1.0.1 changes deny/allow grammar and adds ast_edit. Accidental user-scope 1.0.0 install remains installed until parent upgrades; live parent probe 6/2/8 was against 1.0.0. Missing/quarantined hook freezes Console writers.",
+  "detection": "git diff --name-status origin/main..HEAD must equal filesChanged; run-probes examined=8; examined-zero exit 1; tracked validator on this receipt.",
+  "rollback": "Revert product C 7bfd44f53 and its receipt child. Do not uninstall the accidental 1.0.0 plugin from this lane; parent owns that.",
+  "stopConditions": "Validator nonzero; filesChanged != origin/main..tip inventory; examined!=8; user-scope plugin install from this lane.",
   "reviewIdentities": [
-    "implementer: 5-ChoreCursorRatchetLane (Grok 4.6 / GJC executor)"
+    "implementer: 5-ChoreCursorRatchetLane (Grok 4.6 / GJC executor)",
+    "blocked tip: 1ca5fb4dc108dc41b56facad1f263dd9261a0155"
   ],
   "remainingHolds": [],
   "result": "green",
   "followUps": [
-    "Integration owner: open/merge the console PR, restack if origin/main moves, and perform any real (non-dry-run) plugin install at the chosen scope.",
-    "Do not install this bundle at user scope from a lane; dry-run only was executed."
+    "Parent/integration owner owns upgrade of the accidentally installed user-scope hub-aware-gjc-transport-guard@1.0.0 (manifestHash 891f052d99e21c52524251344aa8241ba01b328234ec54a90604fbe2b4a0bdcb) to this 1.0.1 bundle; do not re-run plugin install from a lane.",
+    "Parent live installed-hook probe passed 6/2/8 against the accidental 1.0.0 install; re-probe after upgrade to 1.0.1 (new census: hard reset, worktree remove, foreign transport CLI, workflow-only, unsafe push/forge, Oyatie hub product-write; allow safe read + Oyatie fetch/add).",
+    "Integration owner: open/merge the console PR and restack if origin/main moves. This lane does not open a PR.",
+    "Upstream: plugin install --dry-run performed a real user-scope install (CLI defect)."
   ],
   "challenges": [
-    "Chesterton: mechanical git add .cursor/** would add ~291MB of Cargo build artifacts under .cursor/probes/wo-residual11-sibling-comment/target/** (observed 287 MiB on disk). That is indefensible as doctrine tracking. Resolved in the same PR by the exact ignore /.cursor/probes/*/target/, proven by git check-ignore -v .cursor/probes/wo-residual11-sibling-comment/target/debug and a staged tree of 1.18 MiB with zero /target/ paths.",
-    "A hook that only inspects bash command strings would miss -fast slugs and foreign-transport text written via edit/write; the guard therefore examines bash, edit, and write payloads."
+    "Chesterton: the blocked tip tracked ~100 historical .cursor receipts and pr751/pr753/pr754 babysit dumps as doctrine. That is not current process authority and inflates the PR. Resolved by removing those blobs from the lane index only; hub working copies were not deleted.",
+    "The first guard census (sibling worktree / process-kill / lock-delete / update-branch / foreign CLI / provision helper) did not match plan step 3 required 6 DENY + 2 ALLOW. Replaced rather than layered a third spelling.",
+    "plugin install --user --dry-run installed for real. Claiming dry-run-only after that is a false green; receipt and pipeline now state the incident and parent ownership of upgrade."
   ],
-  "bundleHash": "814fa9829987b62ea5e05ca8c462a80d546b002cd405fce949951282e2489b9b",
+  "bundleHash": "e208316effa19f8339678860a22dd2408748eac0509ccae4d0930f2eea064980",
   "enforcement": {
     "plugin": "hub-aware-gjc-transport-guard",
-    "installDryRun": "gjc plugin install scripts/cursor/gjc-transport-guard --user --dry-run --json",
-    "manifestHashFromDryRun": "891f052d99e21c52524251344aa8241ba01b328234ec54a90604fbe2b4a0bdcb"
+    "version": "1.0.1",
+    "accidentalUserInstall": {
+      "command": "gjc plugin install scripts/cursor/gjc-transport-guard --user --dry-run --json",
+      "versionInstalled": "1.0.0",
+      "manifestHash": "891f052d99e21c52524251344aa8241ba01b328234ec54a90604fbe2b4a0bdcb",
+      "installedAt": "2026-08-13T02:57:38.639Z",
+      "parentLiveProbe": "6 denied / 2 allowed / examined=8"
+    }
+  },
+  "binding": {
+    "convention": "C/T: productSha/reviewedSha/headSha bind to product candidate C; this receipt file is committed as signed direct-child T and must not be read as HEAD==headSha",
+    "productC": "7bfd44f5366a43d98cae936de0aba02424e1e8bc",
+    "receiptChildNote": "After the receipt-only commit, git rev-parse HEAD != headSha. That inequality is required, not a defect."
   }
 }
