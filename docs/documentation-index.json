@@ -610,7 +610,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "5855f53b0c4bc2e4952ff4a596106b22fa95098b",
+      "blob_sha": "0281ea31a3a3b4d63ab753acc5716aa48b242d1e",
       "archive_tag": null
     },
     {
@@ -3771,6 +3771,16 @@
       "replacement": null,
       "retention": "retain",
       "blob_sha": "6f0a4408ff4bb2bdac7d23f5ee6b9e9f95ab0372",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/program/ledger/2026-08-12-w1-lane-receipt-validator-admit.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "179f950731a1e0eda497526d554aa6a1beb9f494",
       "archive_tag": null
     },
     {

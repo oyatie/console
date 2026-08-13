@@ -268,6 +268,7 @@ names only, not incidental workflow prose or runner setup text.
 - `test:adrs`
 - `test:employee-import-contract`
 - `test:executed-tests-baseline`
+- `test:lane-receipt`
 - `test:ontology-write-precondition`
 - `test:production-hardening`
 - `test:text-gate`

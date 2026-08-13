@@ -799,6 +799,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("CI preflight contract tests", "node --test scripts/check-ci-preflight.test.mjs"),
     proofRun("Console route inventory regression", "node --test scripts/console/route-inventory.test.mjs"),
     proofRun("Console authority-train regression", "node --test scripts/console/verify-console-authority-train.test.mjs"),
+    proofRun("Console lane-receipt validator regression", "npm run test:lane-receipt"),
     proofRun("Console PR authority bootstrap regression", "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs"),
     proofRun("Executed-tests baseline set regression", "npm run test:executed-tests-baseline"),
     proofRun("Local CI mirror contract", "node --test scripts/verify.test.mjs"),

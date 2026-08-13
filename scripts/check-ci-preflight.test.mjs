@@ -438,7 +438,7 @@ describe("CI preflight contract", () => {
 
   it("rejects every run-step condition, soft-failure, and retained-text early-exit bypass", () => {
     const requiredRunStepCounts = {
-      preflight: 28,
+      preflight: 29,
       "domain-unit": 2,
       backend: 25,
       "dev-up-smoke": 7,
@@ -485,9 +485,10 @@ describe("CI preflight contract", () => {
     }
 
     // 107 -> 121: path-class skip proofs on skip-proof jobs (+classify in preflight).
-    assert.equal(runStepCount, 121, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 121*3 = 363.
-    assert.equal(mutationCount, 363, "exhaustive bypass matrix must not shrink");
+    // 121 -> 122: lane-receipt validator regression step in preflight.
+    assert.equal(runStepCount, 122, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 122*3 = 366.
+    assert.equal(mutationCount, 366, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {

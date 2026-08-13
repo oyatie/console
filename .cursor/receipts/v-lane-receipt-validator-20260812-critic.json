@@ -1,0 +1,81 @@
+{
+  "kind": "critic",
+  "verdict": "APPROVE",
+  "reviewer": "architect R2-VLaneValidator (Claude Opus, cross-family; executor was Grok)",
+  "reviewedRange": "b2acd80c4d7f340199b9147f6df9318d74af5f8d..ac6f2a4dee3aaab0101d0e0f2af7a378dde9f7fb",
+  "rounds": "R1 BLOCK at 55331bc27 (1 blocker proven: third tracked spelling of the receipt field list dropping CI-pinned BUILD_SCHEMA fields; 3 major; 5 minor). One consolidated fix round (9595fc64a + ac6f2a4de). R2 delta re-critique: APPROVE. R3 delta pass (1-R3-VLaneDelta, Opus): APPROVE bound to final product tip 21fbc60bc covering ac6f2a4de..21fbc60bc; see -critic-r3.json.",
+  "findings": [
+    {
+      "severity": "major",
+      "claim": "scanDir skip predicate conflates 'kind absent' with 'kind unrecognised': a receipt opting in with a malformed discriminator (e.g. kind:'build' or kind:'Lane') is silently skipped and validated by nothing; examined-zero cannot catch it while this lane's receipt keeps examined >= 1. Total form: skip only when the kind property is ABSENT; present-but-unrecognised must be a defect.",
+      "failureScenario": "A future lane copies the only kind-bearing receipt as template with kind:'build', omits redBaseline and stopConditions; test:lane-receipt and check:lane-receipt both exit 0; the invalid receipt is never seen by any validator. Originally routed to the consolidation lane as unproven. POST-VERDICT: proven by a Codex review probe and reproduced by the leader (exit 0 pre-fix); CLOSED in 21fbc60bc (skip keys on Object.hasOwn(receipt,\"kind\"); planted-red test added, FLOOR 22). provenByExecution stays false here because it records the R2 verdict-time state; the proof and fix are bound in -critic-r3.json.",
+      "location": "scripts/console/validate-lane-receipt.mjs scanDir skip predicate",
+      "provenByExecution": false,
+      "ownerLease": false
+    },
+    {
+      "severity": "minor",
+      "claim": "Same-class residue of R1 finding 8 inside the rebind commit: summary said '8-test suite' and verification said '8/8 pass' while the suite at the bound headSha has 21 tests observed 21/21; reviewIdentities cited a critic-receipt path that did not exist in the tree at review time.",
+      "failureScenario": "An independent verifier re-running the verification field observes 21/21 against a claimed 8/8 and flags contradictsClaim; the cited critic path resolves to nothing for auditors. FIXED pre-push in the same closure commit that adds this file: numbers corrected, this receipt created at the cited path.",
+      "location": ".cursor/receipts/v-lane-receipt-validator-20260812.json summary/verification/reviewIdentities",
+      "provenByExecution": true,
+      "ownerLease": false
+    },
+    {
+      "severity": "minor",
+      "claim": "Suite floor FLOOR=18 has 3 units of slack against 21 test bodies; a ratchet below the current count is not a ratchet — deleting the two R1-blocker controls plus one more still passes.",
+      "failureScenario": "Deletion of the parity and dual-validation tests plus any one more leaves executed=18, after() passes, CI green with the field-list parity pin gone. FIXED pre-push: FLOOR raised to 21 (pin-to-current-count discipline, same as the 29/122/366 preflight pins).",
+      "location": "scripts/console/validate-lane-receipt.test.mjs FLOOR",
+      "provenByExecution": false,
+      "ownerLease": false
+    },
+    {
+      "severity": "minor",
+      "claim": "remainingHolds and followUps are bare {type:array} so [\"\"] and [\"   \"] validate — the same blank-string false green this delta closed on commandsRun, on exactly the fields that carry deferral records.",
+      "failureScenario": "A hold or leased-edit record rendered as a blank bullet validates and the outstanding item is silently lost. FIXED pre-push: items constrained to nonEmptyString with [] still legal (no minItems).",
+      "location": "scripts/console/lane-receipt.schema.json remainingHolds/followUps",
+      "provenByExecution": false,
+      "ownerLease": false
+    },
+    {
+      "severity": "minor",
+      "claim": "Two mandatory, uncompared command lists in every done lane receipt: commandsRun is schema-required while the ported incumbent-parity rule mandates commands for status=done; nothing derives one from the other. Same class as the resolved third-spelling blocker, at field granularity.",
+      "failureScenario": "commands:['true'] + honest commandsRun both validate; a verifier keyed on commands re-runs 'true' and certifies coverage of nothing. Routed to the consolidation lane followUp: converge the command vocabulary when the incumbent retires.",
+      "location": "scripts/console/lane-receipt.schema.json commandsRun vs validator status=done commands rule",
+      "provenByExecution": false,
+      "ownerLease": false
+    },
+    {
+      "severity": "minor",
+      "claim": "check:lane-receipt has zero callers repo-wide (only its own definition); the CI-enforced scan lives inside the test suite instead. Also --schema is silently discarded in --dir mode.",
+      "failureScenario": "Not a false green (the suite's real-directory scan is CI-wired and proves examined >= 1); the defect is a second unexecuted spelling of a running check, and an option accepted but not read. Routed to the consolidation lane followUp.",
+      "location": "package.json check:lane-receipt; validate-lane-receipt.mjs parseArgs/--dir branch",
+      "provenByExecution": false,
+      "ownerLease": false
+    },
+    {
+      "severity": "minor",
+      "claim": "Peripheral drift, correctly leased: agent cards, hooks, and PROCESS-SYNTHESIS.md still teach the incumbent 8-field contract and validator path; none mention kind or the ritual fields the CI-wired scan now enforces on kind-bearing receipts.",
+      "failureScenario": "A lane author following the agent card writes a kind-bearing receipt missing stopConditions and goes red in test:lane-receipt on a field no doc mentions. Leased (.cursor/** and .claude/**); already recorded in lane receipt followUps for the consolidation lane.",
+      "location": ".cursor/agents/lane-implementer.md; .cursor/agents/lane-critic.md; .cursor/hooks/stop-receipt-gate.sh; .cursor/hooks/session-start.sh; .cursor/PROCESS-SYNTHESIS.md",
+      "provenByExecution": false,
+      "ownerLease": true
+    },
+    {
+      "severity": "minor",
+      "claim": "oneOf failure path surfaces only branchFailures[0], so every peripheralsUpdated defect reports as the string branch's error text; fail-closed but misleading diagnostics.",
+      "failureScenario": "peripheralsUpdated: [] reports 'must be string' instead of 'minItems 1'; an author converts a correct array into a string rather than fixing the actual defect. Routed to the consolidation lane followUp.",
+      "location": "scripts/console/validate-lane-receipt.mjs oneOf branch reporting",
+      "provenByExecution": false,
+      "ownerLease": false
+    },
+    {
+      "severity": "minor",
+      "claim": "Pre-existing on origin/main at base: docs/CI-GATES.md broken citation (~line 902, migration 0600 .xctestrun) and unverifiable line refs; CI-GATES.md outside wired check:doc-citations scope despite being a declared foundation-gates documentInput. Untouched by this lane.",
+      "failureScenario": "Citation rot accumulates in the document the docs-drift gate reads. Leased; routed to W1.1 T1 custody lane via lane receipt followUps[0].",
+      "location": "docs/CI-GATES.md ~902; package.json check:doc-citations scope",
+      "provenByExecution": false,
+      "ownerLease": true
+    }
+  ]
+}

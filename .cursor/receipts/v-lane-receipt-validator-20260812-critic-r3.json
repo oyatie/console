@@ -1,0 +1,57 @@
+{
+  "kind": "critic",
+  "verdict": "APPROVE",
+  "reviewer": "architect 1-R3-VLaneDelta (Claude Opus, cross-family, read-only; verdict recorded by leader from agent output)",
+  "reviewedRange": "ac6f2a4dee3aaab0101d0e0f2af7a378dde9f7fb..21fbc60bc3ca5b1e4f21f0d9566bf2c5c0f520a6",
+  "rounds": "R3 delta re-critique bound to final product tip 21fbc60bc (post-R2-APPROVE bytes a88fc1ed4 + 7eacfed91 + 21fbc60bc). Binding condition restated mechanically: P..C paths must be a subset of .cursor/receipts/*.json + the two generated manifests; generate-documentation-manifest --check asserted at T only (fails at C by construction); C..T raw diff exactly one ':000000 100644 ... A' ledger entry; any other byte voids the binding. Per-thread concurrence on all four Codex dispositions (1 FIXED, 2 bound by this pass, 3 FILED, 4 CLOSED).",
+  "findings": [
+    {
+      "severity": "minor",
+      "provenByExecution": true,
+      "ownerLease": false,
+      "claim": "R3-1: both tracked receipts shipped 8 stale claims at 21fbc60bc (headSha 4 commits behind tip; 21-test vs 22 bodies; floor claim 18 vs FLOOR 22 in the BASE_LOCK-mandatory enforcementPlacement; filesChanged 11 of 13 paths; redBaseline missing the new planted red; commandsRun missing verify.test.mjs; followUps filing as open the scanDir item the same PR closed; R2 receipt reviewedRange silent on the delta).",
+      "failureScenario": "An independent verifier re-runs verification at the merged tip and observes 22/22 against claimed 21/21; the pilot lane for checkable receipts establishes that receipt claims need not match the tree. RESOLVED in the candidate commit carrying this file (all 8 corrections landed; must-land-in-C condition of the R3 verdict).",
+      "location": ".cursor/receipts/v-lane-receipt-validator-20260812.json; .cursor/receipts/v-lane-receipt-validator-20260812-critic.json"
+    },
+    {
+      "severity": "major",
+      "provenByExecution": false,
+      "ownerLease": false,
+      "claim": "R3-2: a88fc1ed4 constrained remainingHolds/followUps items to nonEmptyString with zero planted-red control; the fields appear in the suite only as [] literals, and FLOOR 18->21 removed slack rather than adding an oracle.",
+      "failureScenario": "Relaxing items back to bare {type:'array'} leaves the suite green at 22/22 and silently restores the blank-deferral false green R2 identified. FILED per convergence doctrine (unproven major, not a merge bar; fixing here bumps FLOOR and re-opens the thread-2 binding recursion): consolidation lane.",
+      "location": "scripts/console/lane-receipt.schema.json remainingHolds/followUps items (no covering test)"
+    },
+    {
+      "severity": "minor",
+      "provenByExecution": true,
+      "ownerLease": false,
+      "claim": "R3-3: the R2 APPROVE at ac6f2a4de was bound to a CI-red tip: 88dcbc845 added the ci.yml step while scripts/verify.mjs PLAN gained the classifying line only in 7eacfed91, so the Required 'Local CI mirror contract' threw across 88dcbc845..a88fc1ed4. Two gates over one file with disjoint subjects (check-ci-preflight pins step names/positions; verify.test.mjs pins PLAN coverage).",
+      "failureScenario": "Already materialised and FIXED at 21fbc60bc by 7eacfed91. Residue landed in this candidate: commandsRun/verification now include node --test scripts/verify.test.mjs; SSOT line elevated via lane receipt followUps.",
+      "location": "scripts/verify.mjs PLAN; scripts/verify.test.mjs; lane receipt commandsRun"
+    },
+    {
+      "severity": "minor",
+      "provenByExecution": false,
+      "ownerLease": false,
+      "claim": "R3-4: the exact deepEqual pins also red on strictly-additive BUILD_SCHEMA/REVIEW_SCHEMA required-field growth across the leased .claude/** boundary, not only on the substitution/removal drift they target.",
+      "failureScenario": "The consolidation lane adds a required field under .claude/** and test:lane-receipt reds under scripts/console/** with no announced co-edit. Accepted design (exact pins are the repo idiom, cf. 29/122/366); co-edit requirement recorded in lane receipt followUps; both pins die with the parity mechanism.",
+      "location": "scripts/console/validate-lane-receipt.test.mjs parity pins vs .claude/workflows/lane-fanout.js"
+    },
+    {
+      "severity": "minor",
+      "provenByExecution": false,
+      "ownerLease": false,
+      "claim": "R3-5: same-line residue of the closed class: in --dir mode a .json file whose top level is an array/null/scalar is silently skipped while the positional path fails it; the .json extension filter hides .jsonc/.JSON/extensionless receipts.",
+      "failureScenario": "A receipt-shaped artifact that is not a JSON object or uses another extension is validated by nothing while the scan reports examined>=1 and exits 0. FILED, folded with Codex thread-3: one mechanism (git ls-files-driven tracked-blob enumeration with a total predicate) closes both; no round 3 on the same line.",
+      "location": "scripts/console/validate-lane-receipt.mjs scanDir entry filter and skip predicate"
+    },
+    {
+      "severity": "minor",
+      "provenByExecution": false,
+      "ownerLease": true,
+      "claim": "R3-6: kind token vocabulary diverges across the two tracked validators (tracked schema: lane|critic; incumbent cursor validator: build|critic via --schema, ignoring any kind property) and no doc under .cursor/**, .claude/**, or docs/** names kind at all; 21fbc60bc makes the divergence CI-load-bearing.",
+      "failureScenario": "An author copies the incumbent token as kind:'build'; the stop-receipt-gate hook blesses the file and console preflight reds it with no doc naming the correct token. Benign at this tip (2 of 45 tracked receipts carry kind, both valid). Leased to the consolidation lane; legacy migration of the 30 kind-less receipts is strictly atomic per receipt.",
+      "location": "scripts/console/lane-receipt.schema.json vs scripts/cursor/validate-lane-receipt.mjs; .cursor/agents/*; .cursor/hooks/*"
+    }
+  ]
+}

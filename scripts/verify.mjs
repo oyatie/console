@@ -102,6 +102,7 @@ const PLAN = new Map([
   ["CI preflight contract tests", { tier: "fast" }],
   ["Console route inventory regression", { tier: "fast" }],
   ["Console authority-train regression", { tier: "fast" }],
+  ["Console lane-receipt validator regression", { tier: "fast" }],
   // Wired into `ci.yml` by #556, which is the first thing this mirror had to
   // learn after it started running: the step existed on main and was declared
   // nowhere, so the job-completeness check would have failed closed on it.
