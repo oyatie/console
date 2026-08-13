@@ -1,0 +1,87 @@
+{
+  "kind": "lane",
+  "lane": "chore-cursor-ratchet-20260813",
+  "status": "done",
+  "summary": "M1 cursor ratchet: ignore /.cursor/probes/*/target/, born-track extra .cursor receipts/probe sources plus scripts/cursor, and add a reviewed hub-aware GJC transport-guard plugin (policy + constrained tool_call hooks + 8-probe runner + deterministic BUNDLE-HASH).",
+  "filesChanged": [
+    ".gitignore",
+    ".cursor/probes/wo-residual11-sibling-comment/Cargo.toml",
+    ".cursor/probes/wo-residual11-sibling-comment/Cargo.lock",
+    ".cursor/probes/wo-residual11-sibling-comment/src/main.rs",
+    "scripts/cursor/gjc-transport-guard/gajae-plugin.json",
+    "scripts/cursor/gjc-transport-guard/policy.mjs",
+    "scripts/cursor/gjc-transport-guard/hooks/transport-guard.ts",
+    "scripts/cursor/gjc-transport-guard/run-probes.mjs",
+    "scripts/cursor/gjc-transport-guard/acceptance.mjs",
+    "scripts/cursor/gjc-transport-guard/hash-bundle.mjs",
+    "scripts/cursor/gjc-transport-guard/BUNDLE-HASH",
+    "docs/program/console-development-pipeline.md",
+    "docs/documentation-manifest.seed.json",
+    "docs/documentation-index.json",
+    ".cursor/receipts/chore-cursor-ratchet-20260813.json"
+  ],
+  "redBaseline": "run-probes.mjs --examined-zero prints examined=0 and exits 1 (fail-closed). Mechanical git add .cursor without the probes-target ignore would stage ~287 MiB under .cursor/probes/wo-residual11-sibling-comment/target/**; git check-ignore -v after the ignore proves the rule bites that tree.",
+  "verification": "node --test scripts/cursor/gjc-transport-guard/acceptance.mjs 9/9 pass; node scripts/cursor/gjc-transport-guard/run-probes.mjs prints examined=8 and exits 0; node scripts/cursor/gjc-transport-guard/run-probes.mjs --examined-zero exits 1; gjc plugin install scripts/cursor/gjc-transport-guard --user --dry-run --json status=installed; staged tree 1.18 MiB with zero /target/ paths; node scripts/console/validate-lane-receipt.mjs on this receipt exits 0.",
+  "contractBreaches": "none",
+  "headSha": "a21091402e81082ef95d9bc917b6f40a5fb1c200",
+  "baseSha": "d29be0d73d5d4f6360f8693fc9e0b9e36aef8485",
+  "worktree": ".worktrees/lane-chore-cursor-ratchet-20260813",
+  "commands": [
+    "git fetch origin main",
+    "bash scripts/cursor/provision-lane-worktree.sh --kind lane chore-cursor-ratchet-20260813",
+    "git check-ignore -v .cursor/probes/wo-residual11-sibling-comment/target/debug",
+    "node scripts/cursor/gjc-transport-guard/run-probes.mjs",
+    "node scripts/cursor/gjc-transport-guard/run-probes.mjs --examined-zero",
+    "node --test scripts/cursor/gjc-transport-guard/acceptance.mjs",
+    "gjc plugin install scripts/cursor/gjc-transport-guard --user --dry-run --json",
+    "node scripts/console/generate-documentation-manifest.mjs --write",
+    "node /Users/jasonlee/Developer/console/.worktrees/lane-chore-cursor-ratchet-20260813/scripts/console/validate-lane-receipt.mjs /Users/jasonlee/Developer/console/.worktrees/lane-chore-cursor-ratchet-20260813/.cursor/receipts/chore-cursor-ratchet-20260813.json"
+  ],
+  "commandsRun": [
+    "git fetch origin main",
+    "git log -1 --format=%H origin/main",
+    "bash scripts/cursor/provision-lane-worktree.sh --kind lane chore-cursor-ratchet-20260813",
+    "git check-ignore -v .cursor/probes/wo-residual11-sibling-comment/target/debug",
+    "node scripts/cursor/gjc-transport-guard/hash-bundle.mjs",
+    "node scripts/cursor/gjc-transport-guard/run-probes.mjs",
+    "node scripts/cursor/gjc-transport-guard/run-probes.mjs --examined-zero",
+    "node --test scripts/cursor/gjc-transport-guard/acceptance.mjs",
+    "gjc plugin install scripts/cursor/gjc-transport-guard --user --dry-run --json",
+    "node scripts/console/generate-documentation-manifest.mjs --write",
+    "git add .gitignore .cursor scripts/cursor docs/program/console-development-pipeline.md docs/documentation-manifest.seed.json docs/documentation-index.json",
+    "git commit -S -m chore(cursor): track process doctrine + hub-aware GJC transport guard",
+    "node /Users/jasonlee/Developer/console/.worktrees/lane-chore-cursor-ratchet-20260813/scripts/console/validate-lane-receipt.mjs /Users/jasonlee/Developer/console/.worktrees/lane-chore-cursor-ratchet-20260813/.cursor/receipts/chore-cursor-ratchet-20260813.json",
+    "node /Users/jasonlee/Developer/console/scripts/cursor/validate-lane-receipt.mjs /Users/jasonlee/Developer/console/.worktrees/lane-chore-cursor-ratchet-20260813/.cursor/receipts/chore-cursor-ratchet-20260813.json"
+  ],
+  "enforcementPlacement": "WHERE: the guard runs as a GJC constrained plugin hook on the tool_call event (phase=before, targets bash|edit|write) at session runtime; the subject is the tool call itself, which exists at that point. FINEST DISTINCTION: per-command argv / file payload plus cwd hub path prefix against one shared policy (console vs oyatie grammars). EXAMINED-ZERO FAILS: run-probes.mjs and policy.mjs --examined-zero / --self-report exit 1 when examined==0; the acceptance runner also errors if examined!=8.",
+  "peripheralsUpdated": "docs/program/console-development-pipeline.md describes the born-tracked cursor ratchet, deny/allow grammar, install command, BUNDLE-HASH registry, and quarantine-on-mismatch; docs/documentation-manifest.seed.json + docs/documentation-index.json regenerated via node scripts/console/generate-documentation-manifest.mjs --write so the pipeline blob_sha matches the index tree.",
+  "classification": {
+    "personalData": false,
+    "holdAdjacent": false,
+    "notes": "Process/tooling only. No backend, product, contract, migration, HR, or payroll surface."
+  },
+  "preMortem": "Risk 1: tracking .cursor/** without a probes-target ignore imports ~287 MiB of Cargo artifacts — mitigated by exact /.cursor/probes/*/target/ and check-ignore evidence. Risk 2: a hook-only spelling that never examines a call goes green — mitigated by fail-closed examined=0. Risk 3: user-scope install from a lane mutates the operator machine — dry-run only. Risk 4: plugin dry-run succeeds but policy.mjs is missing from the copied bundle — policy.mjs is a declared subskill-scoped tool so compile copies it.",
+  "blastRadius": "Additive under .gitignore, .cursor/** extras, scripts/cursor/gjc-transport-guard/**, and the historical pipeline doc plus regenerated manifests. Does not move or re-home scripts/console/validate-lane-receipt.mjs. Does not install the plugin at user scope.",
+  "detection": "git check-ignore -v on a probe target path; run-probes examined=8; examined-zero exit 1; gjc plugin install --user --dry-run; tracked validator on this receipt.",
+  "rollback": "Revert the lane tip commit(s). No hosted state, no user-scope plugin install, no data coupling.",
+  "stopConditions": "Validator nonzero; staged target/ tree; plugin dry-run failure; probe runner examined!=8.",
+  "reviewIdentities": [
+    "implementer: 5-ChoreCursorRatchetLane (Grok 4.6 / GJC executor)"
+  ],
+  "remainingHolds": [],
+  "result": "green",
+  "followUps": [
+    "Integration owner: open/merge the console PR, restack if origin/main moves, and perform any real (non-dry-run) plugin install at the chosen scope.",
+    "Do not install this bundle at user scope from a lane; dry-run only was executed."
+  ],
+  "challenges": [
+    "Chesterton: mechanical git add .cursor/** would add ~291MB of Cargo build artifacts under .cursor/probes/wo-residual11-sibling-comment/target/** (observed 287 MiB on disk). That is indefensible as doctrine tracking. Resolved in the same PR by the exact ignore /.cursor/probes/*/target/, proven by git check-ignore -v .cursor/probes/wo-residual11-sibling-comment/target/debug and a staged tree of 1.18 MiB with zero /target/ paths.",
+    "A hook that only inspects bash command strings would miss -fast slugs and foreign-transport text written via edit/write; the guard therefore examines bash, edit, and write payloads."
+  ],
+  "bundleHash": "814fa9829987b62ea5e05ca8c462a80d546b002cd405fce949951282e2489b9b",
+  "enforcement": {
+    "plugin": "hub-aware-gjc-transport-guard",
+    "installDryRun": "gjc plugin install scripts/cursor/gjc-transport-guard --user --dry-run --json",
+    "manifestHashFromDryRun": "891f052d99e21c52524251344aa8241ba01b328234ec54a90604fbe2b4a0bdcb"
+  }
+}
