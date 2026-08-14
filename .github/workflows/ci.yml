@@ -787,17 +787,17 @@ jobs:
         working-directory: backend
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
       - name: Path-class skip proof
         if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
-      - name: Checkout
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-        with:
-          persist-credentials: false
 
       - name: Install pinned DotSlash runtime
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}

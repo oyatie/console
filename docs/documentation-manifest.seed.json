@@ -3710,6 +3710,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-14-parallel-development-framework.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "4ce3269644d5977574bfbfaf115bf1a4fdb23c95",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/legacy-intent-register.md",
     "class": "evidence",
     "owner": "repository maintainers",
@@ -4217,6 +4227,16 @@
     "replacement": null,
     "retention": "retain",
     "blob_sha": "2092f4f15feed7dbb7e8122dc115a6390fdf08f9",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/specs/parallel-development-framework.md",
+    "class": "quarry",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "ed85db3e902e53c7276ec3c65afff928c83562fa",
     "archive_tag": null
   },
   {
