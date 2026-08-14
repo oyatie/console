@@ -545,7 +545,7 @@
     {
       "id": "L4-STALE-RECONC",
       "phase": "P4",
-      "objective": "Reconcile stale p4/canonical-ports-writer-ownership stream (2 unique commits + 233-file dirty tree) against origin/main by two-dot delta; land only genuine residue (EMPL-RETARGET, CI-DERIVE, iljeong design) as leaves",
+      "objective": "Reconcile stale p4/canonical-ports-writer-ownership stream (2 unique commits; 75-file committed two-dot delta vs origin/main; 6 tracked uncommitted files + untracked custody candidates) by two-dot delta; land only genuine residue (EMPL-RETARGET, CI-DERIVE, iljeong design) as leaves",
       "depends_on": [],
       "tip_serial": false,
       "hold_touch": "none",
