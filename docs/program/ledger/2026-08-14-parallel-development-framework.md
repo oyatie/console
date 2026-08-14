@@ -13,10 +13,33 @@
 - Added a quarry-marked framework spec codifying the remaining-program wave plan (A: P4 stale-stream reconciliation; B: P5 canonical containment; C: CI residuals; D: 일정 projection; E: P6 §7 tracker; P∞), Bun-derived cargo-budget and git-discipline rules, the PRODUCT-boundary scope filter, failure modes, and acceptance criteria.
 - Registered the spec in `docs/documentation-manifest.seed.json`; regenerated `docs/documentation-index.json`. Evidence: `node scripts/console/generate-documentation-manifest.mjs --check` → "documentation manifest OK (442 markdown files)"; `git diff --check` clean.
 - Wave A1 measurement (recorded on bead `console-mrqv`): origin/main `dea1f91bf6c336319fc718f9d9f3eb2c2047f63c` is 35 commits ahead of the stale stream's merge-base `ede052d3d`; two-dot delta of the branch = 75 files (+18868/−245); the stale ledger doc is already on main under the same path. The checkout's true uncommitted residue is 6 tracked files (`backend/Cargo.lock`, the writer-ownership gate `lib.rs`, migrations 0213–0215) plus untracked custody candidates; per-file residue review is the Wave A owner's task under clean worktree resolution. **Decision direction: preserve-then-reconcile** — the stale checkout's exact bytes stay untouched as historical evidence; reconciliation proceeds in a separate bounded worktree; no destructive step is prescribed. Re-implement `console-1qw.4`/`console-1qw.5` fresh on origin/main.
-- Verification recorded (doc-authority + CI-contract candidate, DELIVERY.md:25-27): `check:doc-links` OK (442 md) + doc-link tests pass; ADR gate 39 ADRs / 6 design notes + ADR tests pass; `check:doc-citations` MISSING 0; foundation gate pass (its tests run inside `check:ci-preflight`); `check:ci-preflight` gate + its 9 test files pass; `test:verify` pass; reasoning-lens tests pass; `check:doc-manifest` OK (442 md); `check:reasoning-lens-contract` OK (60 blocks); truth-ledger `STRUCTURALLY_VALID_HOLD_PRESERVED` on a synthetic merge; `npm run verify` green except the 6 Buck2 suites that are not runnable locally (no Buck2 toolchain on this workstation — they run in CI on the PR); `git diff --check` clean. Executed counts: see the per-run outputs recorded in the lane admission record.
+- Verification recorded (doc-authority + CI-contract candidate, DELIVERY.md:25-27): exact invocations, discovered/executed counts, revision, toolchain, and validation gaps are in **Verification** below. There is no separate lane admission record for this candidate.
 - Fixed a CI defect surfaced by this PR: the backend job ran its `Path-class skip proof` step before `Checkout` while inheriting the job's `working-directory: backend` default, so every docs-only PR failed at job launch (bash could not start because `backend/` did not exist yet). The fix makes `Checkout` unconditional and moves it before the proof step, with the matching backend contract amendment in `scripts/check-ci-preflight.mjs` (`actionStep(0, "Checkout", ...)`).
 - Process extension: 8 nodes + 5 edges added to the local `.grok/harness/work-graph.v1.json` (41 nodes / 46 edges, validated), plus Beads epics/children: `console-mrqv`, `console-wrq3` (+4 lanes), `console-7thr`, `console-2qf5`, `console-j3x7`, `console-sv28`.
 - Incident (tracked as `console-8sgr`): the bd post-checkout hook wrote a stray `core.worktree` into the shared `.git/config` and clobbered 7 uncommitted files in the `lane-full-console-g002-s0b` worktree; shared config corrected; g002's committed work (`24ac6715c`, local-only) is intact.
+
+## Verification
+
+Executed at HEAD `29e5c056f98fd3174a3559b0c3dfcf930ae647fa`. Toolchain: node v22.14.0 (package engines ask `>=22.22.0`), npm 10.9.7, rustc/cargo 1.83.0 (repository pin is 1.97.1). No `dotslash` / Buck2 on this workstation.
+
+| Command | Result |
+|---|---|
+| `node --test scripts/check-doc-links.test.mjs` | 36 discovered, 36 executed, 36 pass, 0 fail |
+| `npm run check:doc-links` | PASS — `doc links OK (442 markdown files)` |
+| `npm run test:adrs` | 29 discovered, 29 executed, 29 pass, 0 fail |
+| `npm run check:adrs` | PASS — `39 ADRs, 6 design notes` |
+| `npm run check:doc-citations` | `docs/ideas/ecosystem-plan-DRAFT.md`: 679 citations, MISSING 19 (not fatal), UNVERIFIABLE 0; `docs/program/false-green-gate-holes.md`: 38 citations, MISSING 0, UNVERIFIABLE 0 |
+| `npm run test:foundation-gates` | 6 discovered, 6 executed, 6 pass, 0 fail |
+| `npm run check:foundation-gates` | PASS — 135 checks |
+| `node --test scripts/check-ci-preflight.test.mjs` | 57 discovered, 57 executed, 56 pass, 1 fail: `rejects a dependency missing from Cargo.lock while the clean lock passes` — `cargo generate-lockfile` status 101 because cargo 1.83.0 cannot stabilize edition 2024 |
+| `npm run check:ci-preflight` | PASS — gate `CI preflight contract passed`; 9-file batch 40/40; `check-foundation-gates.test.mjs` 6/6; `check-non-oci-mail-imessage-relay.test.mjs` 7/7; `run-verification-queue.test.mjs` 17/17 |
+| `npm run test:verify` | 13 discovered, 13 executed, 13 pass, 0 fail |
+| `npm run check:doc-manifest` | PASS — `documentation manifest OK (442 markdown files)` |
+| `npm run check:reasoning-lens-contract` | PASS — 60 evidence blocks |
+| `npm run test:reasoning-lens-contract` | 40 discovered, 40 executed, 40 pass, 0 fail |
+| `npm run check:console-truth-ledger` | `STRUCTURALLY_VALID_HOLD_PRESERVED`, `capability_count` 27, `candidate_sha` `372cd1451a8db4a67eb89d3c7ac27a6975ab7588` |
+| `npm run verify` | not green in this worktree — first step `Cheap Buck2 generated-face admission` failed (`dotslash` missing); `Cargo.lock consistency` and `check:executed-tests` failed (`backend/Cargo.toml` needs edition 2024 / rustc 1.97.1); CI preflight contract tests 56/57 as above. Not treated as green aggregate evidence. Hosted Required CI on this PR remains the remaining aggregate surface. |
+| `git diff --check` | clean |
 
 ## Remaining HOLDs / follow-ups
 
