@@ -2687,7 +2687,7 @@ fn console_app_no_longer_writes_the_employment_tables() -> Result<(), Box<dyn st
     assert!(
         app_writes.is_empty(),
         "console-app must hold no production DML against a canonical table; the three \
-         `employees` statements moved to console-orgchange-adapter-postgres's \
+         `employees` statements moved to console-ontology-canonical-adapter-postgres's \
          `src/employment.rs`: {app_writes:#?}"
     );
 
@@ -2700,6 +2700,50 @@ fn console_app_no_longer_writes_the_employment_tables() -> Result<(), Box<dyn st
         ratcheted.is_empty(),
         "an Employment table is still ratcheted as a dual write, but the port owns it now: \
          {ratcheted:?}"
+    );
+    Ok(())
+}
+
+/// console-1qw.4 (L4-EMPL-RETARGET): the Employment owner is the canonical
+/// adapter, not the interim orgchange adapter.
+///
+/// `console_app_no_longer_writes_the_employment_tables` proved `console-app`
+/// stopped writing; this one pins the RETARGET itself. It names the owner
+/// string and scans the tree, so it fails whether the roster is retyped
+/// (`owner_crate` regresses) or the orgchange adapter regains production DML
+/// against an Employment table (which, with the canonical adapter named as
+/// owner, the gate now flags as a second writer).
+#[test]
+fn employment_is_owned_by_the_canonical_adapter() -> Result<(), Box<dyn std::error::Error>> {
+    assert_eq!(
+        ObjectKey::Employment.owner_crate(),
+        "console-ontology-canonical-adapter-postgres",
+        "the Employment owner must be the canonical adapter; the interim \
+         console-orgchange-adapter-postgres owner is retargeted by console-1qw.4"
+    );
+
+    let backend = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let report = scan(&backend)?;
+    assert!(
+        report.scanned_files > 100,
+        "the walk must reach the crate tree, scanned only {}",
+        report.scanned_files
+    );
+
+    let employment_tables = ObjectKey::Employment.owned_tables();
+    let orgchange_writes: Vec<_> = report
+        .violations
+        .iter()
+        .filter(|violation| {
+            violation.offending_crate == "console-orgchange-adapter-postgres"
+                && employment_tables.contains(&violation.table.as_str())
+        })
+        .collect();
+    assert!(
+        orgchange_writes.is_empty(),
+        "console-orgchange-adapter-postgres must hold no production DML against an \
+         Employment table; the write path moved to the canonical adapter's \
+         src/employment.rs: {orgchange_writes:#?}"
     );
     Ok(())
 }

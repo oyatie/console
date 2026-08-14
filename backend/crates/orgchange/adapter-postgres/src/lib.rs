@@ -14,14 +14,19 @@
 //! users / non-terminal equipment / **active target region** for
 //! `CreateBranch` and `RenameBranch{region_id: Some(_)}` — console-k6wm inverse
 //! of `DeactivateRegion`); the DB constraints remain the second net.
-/// `ObjectKey::Employment`'s port, plus the `employees` statements the REST
-/// handlers used to hold. The contract names THIS crate as that object's owner,
-/// so the port lives here rather than in the canonical adapter.
+/// `ObjectKey::Employment`'s port, compiled in-place via `#[path]` from the
+/// canonical adapter's owner-crate source file, so this adapter never takes a
+/// Cargo dependency on `console-ontology-canonical-adapter-postgres`
+/// (adapter→adapter is illegal). Writer-ownership still attributes the SQL to
+/// the owner path on disk. The contract names the CANONICAL adapter as this
+/// object's owner (retargeted by console-1qw.4); this `#[path]` seam is only
+/// how `ReassignOrgUnit` reaches the port without a Cargo edge.
 ///
 /// `ReassignOrgUnit` is PORT-ROUTED through
 /// [`employment::reassign_org_unit_via_transfers_in_tx`] — one `hr.transfer`
 /// per matched employee inside the apply transaction. Free-text team labels
 /// fail closed; OrgUnit UUID strings are required.
+#[path = "../../../ontology/canonical-adapter-postgres/src/employment.rs"]
 pub mod employment;
 
 /// OrgUnit owner-crate binding seam, compiled in-place via `#[path]` so this

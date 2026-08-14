@@ -395,8 +395,10 @@ pub struct KnownSecondWriter {
 ///
 /// * `employees` / `console-app` — deleted by console-kmb.
 ///   `backend/app/src/hr.rs` held three statements and now holds none;
-///   `console-orgchange-adapter-postgres`, the contract's
-///   `ObjectKey::Employment` owner, holds them in `src/employment.rs`.
+///   `console-ontology-canonical-adapter-postgres`, the contract's
+///   `ObjectKey::Employment` owner, holds them in `src/employment.rs`
+///   (retargeted from the interim `console-orgchange-adapter-postgres` owner by
+///   console-1qw.4).
 /// * `payroll_draft_runs` / `console-workflow-runtime-adapter-postgres` —
 ///   deleted by console-0hq. The JOB outbox drain held one `INSERT` and now
 ///   holds none; `console-payroll-adapter-postgres`, the contract's

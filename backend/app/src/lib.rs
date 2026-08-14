@@ -75,6 +75,7 @@ use console_notifications_rest::NotificationRestState;
 use console_ontology_adapter_postgres::PgOntologyStore;
 use console_ontology_adapter_postgres::instances::PgInstanceStore;
 use console_ontology_canonical_adapter_postgres::company::PgCompanyPort;
+use console_ontology_canonical_adapter_postgres::employment::PgEmploymentPort;
 use console_ontology_canonical_adapter_postgres::job_position::PgJobPositionPort;
 use console_ontology_canonical_adapter_postgres::org_unit::PgOrgUnitPort;
 use console_ontology_canonical_adapter_postgres::person::PgPersonPort;
@@ -82,7 +83,6 @@ use console_ontology_rest::{
     ActionError, OntologyRestState, ProjectedDispatch, ProjectedDispatchRegistry, ProjectedHandler,
 };
 use console_orgchange_adapter_postgres::PgOrgChangeStore;
-use console_orgchange_adapter_postgres::employment::PgEmploymentPort;
 use console_orgchange_rest::OrgChangeRestState;
 use console_payroll_adapter_postgres::PgPayrollStore;
 use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
@@ -2624,7 +2624,7 @@ fn projected_dispatch_registry(pool: PgPool) -> ProjectedDispatchRegistry {
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod projected_dispatch_coverage {
     use console_ontology_canonical_domain::DispatchTarget;
-
+    #[cfg(not(feature = "test-postgres"))]
     #[tokio::test]
     async fn the_wired_registry_resolves_every_canonical_dispatch_target() {
         // Lazy: no connection is opened, and none is needed — resolution is a

@@ -1,7 +1,7 @@
-//! The owning Postgres write adapter for four canonical objects.
+//! The owning Postgres write adapter for five canonical objects.
 //!
 //! `backend/crates/ontology/canonical-domain/src/lib.rs` names this crate,
-//! verbatim, as `owner` for exactly four of its six `ObjectKey`s:
+//! verbatim, as `owner` for exactly five of its six `ObjectKey`s:
 //!
 //! | `ObjectKey`   | key             | owned tables |
 //! |---------------|-----------------|--------------|
@@ -9,12 +9,15 @@
 //! | `OrgUnit`     | `org_unit`      | `org_units`, `org_unit_revisions`, `org_unit_source_bindings` |
 //! | `JobPosition` | `job_position`  | `job_positions`, `job_position_revisions` |
 //! | `Person`      | `person`        | `persons`, `person_revisions`, `employee_person_bindings` |
+//! | `Employment`  | `employment`    | `employees`, `employment_heads`, `employment_revisions`, `employment_source_bindings` |
 //!
-//! The other two objects are owned elsewhere and no part of them belongs here:
-//! `Employment` by `console-orgchange-adapter-postgres` (documented INTERIM in
-//! the contract, retargeted by the `EmploymentPort` lane) and `PayRun` by
-//! `console-payroll-adapter-postgres`, which already exists and is wrapped
-//! rather than replaced. `ObjectKey` is locked at six by
+//! The sixth object is owned elsewhere and no part of it belongs here:
+//! `PayRun` by `console-payroll-adapter-postgres`, which already exists and is
+//! wrapped rather than replaced. `Employment` was retargeted here by the
+//! `EmploymentPort` lane (console-1qw.4) from the interim
+//! `console-orgchange-adapter-postgres` owner; org-change reassignment still
+//! reaches `reassign_org_unit_via_transfers_in_tx` through the `#[path]` seam
+//! in that adapter. `ObjectKey` is locked at six by
 //! `six_projected_stable_object_keys_verbatim`.
 //!
 //! `console-gate-writer-ownership` reads that registry and rejects production
@@ -38,6 +41,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 pub mod company;
+pub mod employment;
 pub mod job_position;
 pub mod org_unit;
 /// L5-ORG region/branch → OrgUnit binding seam (shared via `#[path]` with org-change).

@@ -16,7 +16,7 @@ use console_leave_adapter_postgres::{CreateEmployeeCommand, PgLeaveError, PgLeav
 use console_leave_domain::LeaveBalanceAmount;
 // `ObjectKey::Employment`'s owner. Every `employees` statement this module used
 // to hold lives there now; console-app is no longer a second writer of it.
-use console_orgchange_adapter_postgres::employment;
+use console_ontology_canonical_adapter_postgres::employment;
 use console_payroll_domain::{
     ProfessionalReviewerKind, ProfessionalValidation, SeverancePayInput, build_severance_pay_draft,
     moel_retirement_pay_source, nhis_qualification_loss_form_source,
@@ -1075,9 +1075,9 @@ pub(crate) async fn create_employee_core(
         )));
     }
 
-    // The statement itself lives in `console-orgchange-adapter-postgres`, which
-    // the canonical contract names as `ObjectKey::Employment`'s owner — the one
-    // crate permitted to hold DML against `employees`. It takes THIS
+    // The statement itself lives in `console-ontology-canonical-adapter-postgres`,
+    // which the canonical contract names as `ObjectKey::Employment`'s owner — the
+    // one crate permitted to hold DML against `employees`. It takes THIS
     // transaction, so the employee row, its employment profile, its lifecycle
     // event and the idempotency reservation still commit or roll back together.
     //

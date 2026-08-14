@@ -38,36 +38,6 @@ rust_library(
 )
 
 rust_test(
-    name = "console-orgchange-adapter-postgres-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/orgchange/adapter-postgres", glob(["src/**/*.rs"]), external = {
-        "//backend/crates/ontology/canonical-adapter-postgres:crate-source-tree": "backend/crates/ontology/canonical-adapter-postgres/src",
-    }),
-    crate = "console_orgchange_adapter_postgres",
-    edition = "2024",
-    crate_root = "backend/crates/orgchange/adapter-postgres/src/lib.rs",
-    visibility = ["PUBLIC"],
-    env = {"CARGO_MANIFEST_DIR": "backend/crates/orgchange/adapter-postgres"},
-    labels = ["owner.backend.crates.orgchange.adapter-postgres", "domain.orgchange", "test.unit", "resource.none"],
-    deps = [
-        "//backend/crates/governance/domain:console-governance-domain",
-        "//backend/crates/kernel/core:console-kernel-core",
-        "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
-        "//backend/crates/orgchange/domain:console-orgchange-domain",
-        "//backend/crates/platform/db:console-platform-db",
-        "//backend/crates/platform/group:console-platform-group",
-        "//backend/crates/platform/request-context:console-platform-request-context",
-        "//third-party/rust:serde",
-        "//third-party/rust:serde_json",
-        "//third-party/rust:sha2",
-        "//third-party/rust:sqlx",
-        "//third-party/rust:thiserror",
-        "//third-party/rust:time",
-        "//third-party/rust:tokio",
-        "//third-party/rust:uuid",
-    ],
-)
-
-rust_test(
     name = "console-orgchange-adapter-postgres-itest-apply_refuses_deactivated_region",
     mapped_srcs = repo_mapped_srcs("backend/crates/orgchange/adapter-postgres", ["tests/apply_refuses_deactivated_region.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",

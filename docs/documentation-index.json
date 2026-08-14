@@ -3794,6 +3794,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-14-l4-empl-retarget.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "8c6e02216d67655965cb746ee8afe0ea80e49a00",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/legacy-intent-register.md",
       "class": "evidence",
       "owner": "repository maintainers",

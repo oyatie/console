@@ -343,21 +343,21 @@ mod tests {
             .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
             .collect()
     }
-
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn external_config_absent_when_unset() {
         let map = vars(&[]);
         let cfg = external_config_from_vars(|k| map.get(k).cloned()).unwrap();
         assert!(cfg.is_none());
     }
-
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn external_config_rejects_partial() {
         let map = vars(&[("CONSOLE_AUDIT_CHAIN_SEAL_KEY_REF", "external:selfhost:a")]);
         let err = external_config_from_vars(|k| map.get(k).cloned()).unwrap_err();
         assert!(err.to_string().contains("must be set together"), "{err}");
     }
-
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn external_config_requires_active_key_in_anchors() {
         let pk = hex::encode([7u8; 32]);
@@ -372,7 +372,7 @@ mod tests {
         let err = external_config_from_vars(|k| map.get(k).cloned()).unwrap_err();
         assert!(err.to_string().contains("not present in"), "{err}");
     }
-
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn build_attestation_signer_uses_external_when_configured() {
         let inner = InMemoryEd25519Signer::generate().unwrap();
@@ -402,19 +402,19 @@ mod tests {
             "forged signature under pinned key_ref must not verify"
         );
     }
-
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn seal_worker_fails_closed_without_custody_or_allow_dev() {
         let out = build_seal_worker_signer(None, false).unwrap();
         assert!(out.is_none());
     }
-
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn seal_worker_allows_explicit_dev_signer() {
         let out = build_seal_worker_signer(None, true).unwrap().unwrap();
         assert!(out.key_ref().starts_with("test:ed25519:"));
     }
-
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn http_custody_transport_signs_via_loopback_stub() {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
@@ -449,7 +449,7 @@ mod tests {
         assert_eq!(sig, custody.sign(message).unwrap());
         server.join().unwrap();
     }
-
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn http_custody_transport_maps_connect_failure_to_unavailable() {
         let url = Url::parse("http://127.0.0.1:1/sign").unwrap();

@@ -358,8 +358,9 @@ fn the_contract_identity_is_copied_verbatim_and_the_port_is_the_named_one() {
     );
     assert_eq!(
         ObjectKey::Employment.owner_crate(),
-        "console-orgchange-adapter-postgres",
-        "this crate is the owner, which is why the port lives here"
+        "console-ontology-canonical-adapter-postgres",
+        "the canonical adapter is the owner (retargeted by console-1qw.4); this \
+         #[path] seam only lets ReassignOrgUnit reach the port"
     );
     for (target, wire) in [
         (DispatchTarget::HrAppoint, "hr.appoint"),

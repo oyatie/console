@@ -129,15 +129,17 @@ object_keys! {
     /// `employees` remains the legacy compatibility head; heads/revisions carry
     /// non-overlapping `[valid_from, valid_to)` history.
     ///
-    /// Current production writer of `employees`:
-    /// `console-orgchange-adapter-postgres` (`src/lib.rs`, `UPDATE employees SET
-    /// org_unit = $1`). It becomes PORT-ROUTED, not an exception — org-change
-    /// reassignment emits canonical Employment transfer commands. Until the
-    /// `EmploymentPort` lane lands, orgchange is named here as the sole owner so
-    /// the gate still rejects any *additional* writer; that lane retargets this
-    /// entry to the canonical adapter.
+    /// Current production writer of `employees` and the canonical employment
+    /// tables: `console-ontology-canonical-adapter-postgres`
+    /// (`src/employment.rs`). The `EmploymentPort` lane has landed, fulfilling
+    /// the promise this entry documented: org-change reassignment is
+    /// PORT-ROUTED, emitting canonical Employment transfer commands rather than
+    /// holding its own `employees` DML. The interim owner
+    /// `console-orgchange-adapter-postgres` — named here only until that lane
+    /// landed, so the gate still rejected any *additional* writer — is
+    /// retargeted to the canonical adapter.
     Employment => "employment",
-        owner = "console-orgchange-adapter-postgres",
+        owner = "console-ontology-canonical-adapter-postgres",
         tables = [
             "employees",
             "employment_heads",

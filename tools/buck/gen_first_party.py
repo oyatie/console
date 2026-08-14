@@ -690,7 +690,8 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
     },
     'console-ontology-canonical-adapter-postgres': {
-        # unit: port_error_kind pins under src/company.rs (avb CanonicalPortError).
+        # unit: port_error_kind pins under src/company.rs and src/employment.rs
+        # (avb CanonicalPortError; employment moved here by console-1qw.4).
         'unit': 'none',
         'integration': {
             'tests/company_port_as_runtime_role.rs': 'postgres',
@@ -720,8 +721,9 @@ TEST_RESOURCE_REQUIREMENTS = {
         },
     },
     'console-orgchange-adapter-postgres': {
-        # unit: port_error_kind pins under src/employment.rs (avb CanonicalPortError).
-        'unit': 'none',
+        # unit: none — the employment unit pins moved to the canonical adapter
+        # with the DML relocation (console-1qw.4); the #[path] seam compiles
+        # them into this crate but they are discovered at the physical source.
         'integration': {
             'tests/apply_refuses_deactivated_region.rs': 'postgres',
             'tests/employment_port_as_runtime_role.rs': 'postgres',
