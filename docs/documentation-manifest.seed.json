@@ -3710,6 +3710,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-14-l4-ci-derive-tables.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "bf1c3195db8d0a9f7e2826119da7dd951f11d922",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/legacy-intent-register.md",
     "class": "evidence",
     "owner": "repository maintainers",

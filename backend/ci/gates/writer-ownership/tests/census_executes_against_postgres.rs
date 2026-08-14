@@ -14,9 +14,9 @@
 //! 1. NO canonical table exists and the run CLAIMS to enforce
 //!    (`CONSOLE_TOPOLOGY_REQUIRE_CANONICAL_TABLES=1`) — the run must FAIL.
 //! 2. Migrations applied, then enforcement — must PASS, and the SET of tables
-//!    it examined must be exactly [`REQUIRED_TABLES`]. Not "more than zero":
-//!    renaming one canonical table away used to shrink the scope from eight to
-//!    seven and still pass.
+//!    it examined must be exactly [`EXPECTED_REQUIRED_TABLES`]. Not "more than
+//!    zero": renaming one canonical table away used to shrink the scope from
+//!    eight to seven and still pass.
 //! 3. [`PROBES`] — one disposable probe database each, one per shape a writer
 //!    can take: a table grant, a COLUMN grant (invisible to
 //!    `has_table_privilege`), a TRUNCATE-only grant (which has no column form),
@@ -73,8 +73,14 @@ const IMAGE: &str =
     "postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56";
 
 /// The canonical tables a fully migrated database has TODAY, and therefore the
-/// exact set the census must examine. Kept identical to the `required_tables`
-/// array in `ops/postgres-reconcile-topology.sh`.
+/// exact set the census must examine. This list is a VERBATIM PIN, not a second
+/// source: the census scope is DERIVED from the `required_tables` array in
+/// `ops/postgres-reconcile-topology.sh` by [`required_tables_from_topology`],
+/// and [`derived_required_tables_match_the_verbatim_roster`] fails the run when
+/// the derived set and this pin diverge. A lane that lands a new canonical
+/// table edits the shell array and this pin — two edits in two files, instead
+/// of a fixed-arity const plus two shared arrays that four port lanes had to
+/// hand-append in lockstep.
 ///
 /// As of migration 0215 this is the WHOLE roster — every name in
 /// `ObjectKey::owned_tables` now resolves to a real relation, so the set can no
@@ -89,7 +95,7 @@ const IMAGE: &str =
 /// `ObjectKey::JobPosition` that did not already exist — `organizations` is the
 /// seventh and predates all three migrations). Sorted, because [`examined_set`]
 /// sorts what it reads back.
-const REQUIRED_TABLES: [&str; 20] = [
+const EXPECTED_REQUIRED_TABLES: [&str; 20] = [
     "company_revisions",
     "employee_person_bindings",
     "employees",
@@ -113,6 +119,63 @@ const REQUIRED_TABLES: [&str; 20] = [
 ];
 
 type Fallible = Result<(), Box<dyn std::error::Error>>;
+/// Derives the census scope from the `required_tables` array in the topology
+/// script — the single production source — instead of a hand-maintained const.
+/// Isolates the `DO $canonical$` block first (whole-line opener, same as
+/// `canonical_block` in `gate_detects_violation.rs`), then the
+/// `required_tables CONSTANT TEXT[] := ARRAY[...]` declaration inside that
+/// block, then the `'name'` entries between its BEGIN/END markers. A decoy
+/// marker or `ARRAY[` statement earlier in the shell script cannot win. Sorts
+/// the names (the census compares against a sorted `examined_set`) and fails
+/// loudly when the block, the statement, the markers, or the entries are
+/// missing rather than examining a silently shrunk scope.
+fn required_tables_from_topology(script: &Path) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let text =
+        std::fs::read_to_string(script).map_err(|e| format!("read {}: {e}", script.display()))?;
+    // Whole-line opener: `DO $canonical$` also appears in a comment earlier
+    // ("Read back by the DO $canonical$ block below"). A bare substring split
+    // would pull those preceding lines into "the block".
+    let (_, rest) = text
+        .split_once("\nDO $canonical$\n")
+        .ok_or_else(|| format!("missing `DO $canonical$` block in {}", script.display()))?;
+    let (block, _) = rest.split_once("$canonical$;").ok_or_else(|| {
+        format!(
+            "unterminated `DO $canonical$` block in {}",
+            script.display()
+        )
+    })?;
+    let statement = "required_tables CONSTANT TEXT[] := ARRAY[";
+    let statement_at = block
+        .find(statement)
+        .ok_or_else(|| format!("missing `{statement}` in {}", script.display()))?;
+    let begin = "-- canonical-writer-ownership: BEGIN required tables";
+    let end = "-- canonical-writer-ownership: END required tables";
+    let declared = &block[statement_at..];
+    let start = declared
+        .find(begin)
+        .ok_or_else(|| format!("missing `{begin}` marker in {}", script.display()))?;
+    let tail = &declared[start..];
+    let stop = tail
+        .find(end)
+        .ok_or_else(|| format!("missing `{end}` marker in {}", script.display()))?;
+    let mut names = Vec::new();
+    for line in tail[..stop].lines() {
+        let line = line.trim();
+        if let Some(name) = line
+            .strip_prefix('\'')
+            .and_then(|rest| rest.split('\'').next())
+            && !name.is_empty()
+        {
+            names.push(name.to_string());
+        }
+    }
+    if names.is_empty() {
+        return Err(format!("no required tables extracted from {}", script.display()).into());
+    }
+    names.sort();
+    names.dedup();
+    Ok(names)
+}
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../..")
@@ -793,6 +856,79 @@ fn examined_set(log: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
 }
 
 #[test]
+fn derived_required_tables_match_the_verbatim_roster() -> Fallible {
+    let derived = required_tables_from_topology(&topology_script())?;
+    assert_eq!(
+        derived,
+        EXPECTED_REQUIRED_TABLES.map(str::to_string).to_vec(),
+        "the shell `required_tables` array and the verbatim pin must stay the same \
+         set; a new canonical table edits BOTH (shell first, then this pin), and \
+         this test is the ratchet that refuses a drift"
+    );
+    Ok(())
+}
+
+/// A decoy `required_tables CONSTANT TEXT[] := ARRAY[` plus BEGIN/END markers
+/// earlier in the shell script must not win. The production declaration lives
+/// inside `DO $canonical$`; parsing the whole file (or the first ARRAY[
+/// statement) lets a comment with the pinned 20 names keep the cheap ratchet
+/// green while the real SQL array drifts.
+#[test]
+fn required_tables_parser_ignores_decoy_outside_canonical_block() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-required-tables-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations',
+      'employees',
+      'persons',
+      'person_revisions',
+      'employee_person_bindings',
+      'employment_heads',
+      'employment_revisions',
+      'employment_source_bindings',
+      'company_revisions',
+      'org_units',
+      'org_unit_revisions',
+      'org_unit_source_bindings',
+      'job_positions',
+      'job_position_revisions',
+      'payroll_draft_runs',
+      'payroll_draft_lines',
+      'payroll_line_calculations',
+      'payroll_run_exceptions',
+      'payroll_disbursements',
+      'payroll_payslip_deliveries'
+      -- canonical-writer-ownership: END required tables
+    ];
+# Read back by the DO $canonical$ block below
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must read the declaration inside DO $canonical$, not a decoy ARRAY[ earlier in the script"
+    );
+    Ok(())
+}
+
+#[test]
 fn census_binds_to_an_executed_database() -> Fallible {
     require_docker();
     let harness = boot()?;
@@ -819,7 +955,7 @@ fn census_binds_to_an_executed_database() -> Fallible {
     );
     assert_eq!(
         examined_set(&clean_log)?,
-        REQUIRED_TABLES,
+        required_tables_from_topology(&topology_script())?,
         "the census must examine exactly the canonical tables a migrated database \
          has. A count assertion passes while the scope silently shrinks — a rename \
          took it from eight to seven and the run still reported success:\n{clean_log}"
