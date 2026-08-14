@@ -93,7 +93,11 @@ test("real postgres-cargo-map workflow set partitions cleanly with balanced doma
   // peripheral on tip). Domain family; bumps the domain halves inventory by one.
   // 88 -> 89: registry-adapter-postgres branch_under_deactivated_region joined the workflow set
   // (console-lx6 default-HQ region guard). Domain family; bumps the domain halves by one.
-  assert.equal(da + db, 89, `expected 89 domain entries, got ${da + db}`);
+  // 89 -> 88: the employment port suite moved from console-orgchange-adapter-postgres (domain
+  // family) to console-ontology-canonical-adapter-postgres (ontology family) when the #[path]
+  // seam retired (console-pees). The same suite now counts under `ontology`, so the domain
+  // halves lose one entry; ontology gains one (24 -> 25). Balance is unchanged.
+  assert.equal(da + db, 88, `expected 88 domain entries, got ${da + db}`);
 });
 
 test("shardIdForPackage with domain map resolves domain packages", () => {

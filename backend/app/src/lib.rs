@@ -75,14 +75,18 @@ use console_notifications_rest::NotificationRestState;
 use console_ontology_adapter_postgres::PgOntologyStore;
 use console_ontology_adapter_postgres::instances::PgInstanceStore;
 use console_ontology_canonical_adapter_postgres::company::PgCompanyPort;
-use console_ontology_canonical_adapter_postgres::employment::PgEmploymentPort;
+use console_ontology_canonical_adapter_postgres::employment::{
+    PgEmploymentPort, reassign_org_unit_via_transfers_in_tx,
+};
 use console_ontology_canonical_adapter_postgres::job_position::PgJobPositionPort;
 use console_ontology_canonical_adapter_postgres::org_unit::PgOrgUnitPort;
 use console_ontology_canonical_adapter_postgres::person::PgPersonPort;
 use console_ontology_rest::{
     ActionError, OntologyRestState, ProjectedDispatch, ProjectedDispatchRegistry, ProjectedHandler,
 };
-use console_orgchange_adapter_postgres::PgOrgChangeStore;
+use console_orgchange_adapter_postgres::{
+    EmploymentTransferPort, PgOrgChangeStore, TransferPortFuture,
+};
 use console_orgchange_rest::OrgChangeRestState;
 use console_payroll_adapter_postgres::PgPayrollStore;
 use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
@@ -2579,6 +2583,51 @@ fn update_equipment_projected_handler(store: PgRegistryStore) -> ProjectedHandle
     })
 }
 
+/// The `console-app` half of the org-change → Employment port seam: it binds the
+/// canonical adapter's `reassign_org_unit_via_transfers_in_tx` (the owner's
+/// `hr.transfer` write) to the [`EmploymentTransferPort`] trait the orgchange
+/// adapter declares. The orgchange adapter cannot take a Cargo edge on the
+/// canonical adapter (adapter→adapter is illegal), so this crate — the
+/// composition root, which the layer gate allows to see everything — is where
+/// the two meet.
+struct PgEmploymentTransferPort;
+
+impl EmploymentTransferPort for PgEmploymentTransferPort {
+    fn reassign_org_unit<'tx, 's>(
+        &self,
+        tx: &'tx mut sqlx::Transaction<'_, sqlx::Postgres>,
+        org: OrgId,
+        actor: UserId,
+        op_command_id: uuid::Uuid,
+        from_org_unit: &'s str,
+        to_org_unit: &'s str,
+        company: &'s str,
+        valid_from: time::OffsetDateTime,
+    ) -> TransferPortFuture<'tx> {
+        let from = from_org_unit.to_owned();
+        let to = to_org_unit.to_owned();
+        let company = company.to_owned();
+        Box::pin(async move {
+            reassign_org_unit_via_transfers_in_tx(
+                tx,
+                org,
+                actor,
+                op_command_id,
+                &from,
+                &to,
+                &company,
+                valid_from,
+            )
+            .await
+            // The orgchange adapter re-flattens every reassign failure to a 409
+            // conflict carrying this message, so the kind is deliberately not
+            // preserved here (and `CanonicalPortError` is only a dev-dependency
+            // of this crate, so it is not reachable from lib code).
+            .map_err(|error| KernelError::internal(error.to_string()))
+        })
+    }
+}
+
 /// The full projected-dispatch registry supplied to the ontology REST tier.
 /// Unresolved targets fail closed (`NotWiredYet`) — see
 /// `console_ontology_rest::ProjectedDispatchRegistry::dispatch`.
@@ -3337,7 +3386,8 @@ pub fn build_router(state: AppState) -> Router {
                 // Org-change lifecycle engine (조직 개편 결재): draft → preflight
                 // → ordered SoD approval → effective-dated apply (§15/§16).
                 .merge(console_orgchange_rest::router(OrgChangeRestState::new(
-                    PgOrgChangeStore::new(pool.clone()),
+                    PgOrgChangeStore::new(pool.clone())
+                        .with_employment_transfer(std::sync::Arc::new(PgEmploymentTransferPort)),
                     state.jwt_verifier.clone(),
                 )))
                 .merge(console_platform_authz_rest::router(

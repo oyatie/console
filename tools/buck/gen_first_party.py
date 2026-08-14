@@ -697,6 +697,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
         'integration': {
             'tests/company_port_as_runtime_role.rs': 'postgres',
+            'tests/employment_port_as_runtime_role.rs': 'postgres',
             'tests/job_position_port_as_runtime_role.rs': 'postgres',
             'tests/org_unit_port_as_runtime_role.rs': 'postgres',
             'tests/person_port_as_runtime_role.rs': 'postgres',
@@ -724,11 +725,10 @@ TEST_RESOURCE_REQUIREMENTS = {
     },
     'console-orgchange-adapter-postgres': {
         # unit: none — the employment unit pins moved to the canonical adapter
-        # with the DML relocation (console-1qw.4); the #[path] seam compiles
-        # them into this crate but they are discovered at the physical source.
+        # with the DML relocation (console-1qw.4); ReassignOrgUnit reaches the
+        # owner through the injected Employment-transfer port (console-pees).
         'integration': {
             'tests/apply_refuses_deactivated_region.rs': 'postgres',
-            'tests/employment_port_as_runtime_role.rs': 'postgres',
             'tests/org_reference_surface.rs': 'postgres',
             'tests/preflight_persists_nothing.rs': 'postgres',
         },

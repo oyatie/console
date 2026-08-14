@@ -2748,6 +2748,35 @@ fn employment_is_owned_by_the_canonical_adapter() -> Result<(), Box<dyn std::err
     Ok(())
 }
 
+/// console-pees (P5 port-routing): the orgchange adapter must no longer
+/// `#[path]`-compile the canonical adapter's `employment.rs`. That seam was the
+/// interim way to reach `reassign_org_unit_via_transfers_in_tx` after the DML
+/// relocated; the follow-up routes `ReassignOrgUnit` through an injected
+/// Employment-transfer port, so the orgchange crate compiles no owning DML at
+/// all. RED before the seam retires: the source still names the employment file
+/// in its `#[path]` directive.
+#[test]
+fn orgchange_no_longer_compiles_the_employment_seam() -> Result<(), Box<dyn std::error::Error>> {
+    let backend = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let lib = backend.join("crates/orgchange/adapter-postgres/src/lib.rs");
+    let source = fs::read_to_string(&lib)?;
+    assert!(
+        !source.contains("canonical-adapter-postgres/src/employment.rs"),
+        "console-orgchange-adapter-postgres must not #[path]-compile the canonical \
+         employment module; ReassignOrgUnit routes through the injected \
+         Employment-transfer port (console-pees)"
+    );
+
+    // The DML still has exactly one home: the canonical adapter's employment.rs.
+    let owner = backend.join("crates/ontology/canonical-adapter-postgres/src/employment.rs");
+    assert!(
+        owner.is_file(),
+        "the Employment DML must live in the canonical adapter, not be compiled \
+         into the orgchange adapter"
+    );
+    Ok(())
+}
+
 /// console-0hq's half of the ratchet deletion, and the HEADLINE result of P4.
 ///
 /// `measured_tip_has_exactly_the_ratcheted_dual_writers` is only a COUNT, and

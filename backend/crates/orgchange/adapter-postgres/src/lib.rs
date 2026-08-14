@@ -14,21 +14,6 @@
 //! users / non-terminal equipment / **active target region** for
 //! `CreateBranch` and `RenameBranch{region_id: Some(_)}` — console-k6wm inverse
 //! of `DeactivateRegion`); the DB constraints remain the second net.
-/// `ObjectKey::Employment`'s port, compiled in-place via `#[path]` from the
-/// canonical adapter's owner-crate source file, so this adapter never takes a
-/// Cargo dependency on `console-ontology-canonical-adapter-postgres`
-/// (adapter→adapter is illegal). Writer-ownership still attributes the SQL to
-/// the owner path on disk. The contract names the CANONICAL adapter as this
-/// object's owner (retargeted by console-1qw.4); this `#[path]` seam is only
-/// how `ReassignOrgUnit` reaches the port without a Cargo edge.
-///
-/// `ReassignOrgUnit` is PORT-ROUTED through
-/// [`employment::reassign_org_unit_via_transfers_in_tx`] — one `hr.transfer`
-/// per matched employee inside the apply transaction. Free-text team labels
-/// fail closed; OrgUnit UUID strings are required.
-#[path = "../../../ontology/canonical-adapter-postgres/src/employment.rs"]
-pub mod employment;
-
 /// OrgUnit owner-crate binding seam, compiled in-place via `#[path]` so this
 /// adapter never takes a Cargo dependency on
 /// `console-ontology-canonical-adapter-postgres` (adapter→adapter is illegal).
@@ -55,6 +40,7 @@ use console_platform_request_context::current_org;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Row, Transaction, postgres::PgRow};
+use std::sync::Arc;
 use time::{Date, OffsetDateTime, macros::offset};
 use uuid::Uuid;
 
@@ -113,6 +99,41 @@ impl PgOrgChangeError {
 
 type Tx<'a, 'b> = &'a mut Transaction<'b, Postgres>;
 
+/// The future an [`EmploymentTransferPort::reassign_org_unit`] call returns. It
+/// borrows the caller's apply transaction for its whole duration — the same
+/// lifetime the `with_audits` closure family already pins in
+/// `console-platform-db`.
+pub type TransferPortFuture<'a> =
+    std::pin::Pin<Box<dyn std::future::Future<Output = Result<u64, KernelError>> + Send + 'a>>;
+
+/// The Employment-port write seam for `ReassignOrgUnit`, declared by the
+/// CONSUMER because the layer-boundary gate forbids one adapter depending on
+/// another: this adapter may reach `console-ontology-canonical-domain` but never
+/// `console-ontology-canonical-adapter-postgres`, which the contract names as
+/// `ObjectKey::Employment`'s sole writer. The composition root (`console-app`)
+/// injects the owner's `reassign_org_unit_via_transfers_in_tx` through this
+/// seam, so the owning crate keeps the DML and this crate keeps the org-change
+/// apply transaction, the domain validation, and the org_unit reads. The
+/// orgchange crate therefore compiles no Employment DML at all.
+pub trait EmploymentTransferPort: Send + Sync {
+    /// Emit one `hr.transfer` per matched ACTIVE employee inside the caller's
+    /// org-armed apply transaction, returning the number moved. Fail-closed on
+    /// free-text team labels and on unknown from/to OrgUnits, exactly as the
+    /// owning port's own execute path does.
+    #[allow(clippy::too_many_arguments)] // tx + org/actor/op ids + from/to/company/valid_from mirror the apply-op surface
+    fn reassign_org_unit<'tx, 's>(
+        &self,
+        tx: &'tx mut Transaction<'_, Postgres>,
+        org: OrgId,
+        actor: UserId,
+        op_command_id: Uuid,
+        from_org_unit: &'s str,
+        to_org_unit: &'s str,
+        company: &'s str,
+        valid_from: OffsetDateTime,
+    ) -> TransferPortFuture<'tx>;
+}
+
 #[derive(Debug, Clone)]
 pub struct CreateOrgChange {
     pub kind: OrgChangeKind,
@@ -141,9 +162,13 @@ pub struct ListFilter {
     pub offset: Option<i64>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct PgOrgChangeStore {
     pool: PgPool,
+    /// The owning Employment port's transfer write, injected by the composition
+    /// root. `None` (fail-closed) until wired: `ReassignOrgUnit` refuses rather
+    /// than silently skipping the move.
+    employment_transfer: Option<Arc<dyn EmploymentTransferPort>>,
 }
 
 const SELECT_REQUEST: &str = "SELECT id, code, kind, status, target_kind, target_ref, \
@@ -806,6 +831,7 @@ async fn require_active_region_tx(tx: Tx<'_, '_>, region_id: Uuid) -> Result<(),
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)] // tx + org/actor/op ids + proposal + freeze date + the injected transfer port
 async fn apply_ops(
     tx: Tx<'_, '_>,
     org: OrgId,
@@ -814,15 +840,29 @@ async fn apply_ops(
     ops: &[OrgProposalOp],
     effective_date: Date,
     now: OffsetDateTime,
+    employment_transfer: Option<&dyn EmploymentTransferPort>,
 ) -> Result<Vec<AuditEvent>, PgOrgChangeError> {
     // Both live-apply entry points (effectuate for NEW/REORG, archive for the
     // deferred DISSOLVE ops) route through here, so the freeze gate sits here
     // rather than in each caller.
     assert_change_window_open(tx, effective_date).await?;
+    // Fail closed on the wiring defect BEFORE the per-op conflict mapping: a
+    // missing port is a composition error (→ 500), not a proposal conflict
+    // (→ 409). The per-op `ok_or_else` in `apply_op` stays as a second net, but
+    // through this entry point it is unreachable for the None case.
+    if employment_transfer.is_none()
+        && ops
+            .iter()
+            .any(|op| matches!(op, OrgProposalOp::ReassignOrgUnit { .. }))
+    {
+        return Err(PgOrgChangeError::from(KernelError::internal(
+            "employment transfer port is not wired; ReassignOrgUnit cannot apply",
+        )));
+    }
     let mut audits = Vec::with_capacity(ops.len());
     for (index, op) in ops.iter().enumerate() {
         let command_id = Uuid::new_v4();
-        let event = apply_op(tx, org, actor, command_id, op, now)
+        let event = apply_op(tx, org, actor, command_id, op, now, employment_transfer)
             .await
             .map_err(|e| {
                 let message = match &e {
@@ -845,6 +885,7 @@ async fn apply_op(
     command_id: Uuid,
     op: &OrgProposalOp,
     now: OffsetDateTime,
+    employment_transfer: Option<&dyn EmploymentTransferPort>,
 ) -> Result<AuditEvent, PgOrgChangeError> {
     let (target_kind, target_id) = match op {
         OrgProposalOp::CreateRegion { name } => {
@@ -1056,22 +1097,29 @@ async fn apply_op(
             to_org_unit,
             scope,
         } => {
-            let moved = employment::reassign_org_unit_via_transfers_in_tx(
-                tx,
-                org,
-                actor,
-                command_id,
-                from_org_unit,
-                to_org_unit,
-                &scope.company,
-                now,
-            )
-            .await
-            .map_err(|err| {
-                PgOrgChangeError::from(KernelError::conflict(format!(
-                    "REASSIGN_ORG_UNIT via hr.transfer failed: {err}"
-                )))
+            let port = employment_transfer.ok_or_else(|| {
+                PgOrgChangeError::from(KernelError::internal(
+                    "employment transfer port is not wired; ReassignOrgUnit cannot apply",
+                ))
             })?;
+            let moved = port
+                .reassign_org_unit(
+                    tx,
+                    org,
+                    actor,
+                    command_id,
+                    from_org_unit,
+                    to_org_unit,
+                    &scope.company,
+                    now,
+                )
+                .await
+                .map_err(|err| {
+                    PgOrgChangeError::from(KernelError::conflict(format!(
+                        "REASSIGN_ORG_UNIT via hr.transfer failed: {}",
+                        err.message
+                    )))
+                })?;
             let event = audit(
                 org,
                 actor,
@@ -1133,7 +1181,27 @@ async fn emit_region_or_branch_binding(
 impl PgOrgChangeStore {
     #[must_use]
     pub fn new(pool: PgPool) -> Self {
-        Self { pool }
+        Self {
+            pool,
+            employment_transfer: None,
+        }
+    }
+
+    /// Wire the owning Employment port's transfer write. Without it
+    /// `ReassignOrgUnit` fails closed at apply time rather than silently
+    /// skipping the employee move.
+    #[must_use]
+    pub fn with_employment_transfer(mut self, port: Arc<dyn EmploymentTransferPort>) -> Self {
+        self.employment_transfer = Some(port);
+        self
+    }
+
+    /// The wired transfer port, as an owned `Arc` clone so the `with_audits`
+    /// closure can hold it for the whole apply without borrowing `self`. `None`
+    /// is legal for proposals with no `ReassignOrgUnit` op; the reassign arm
+    /// itself fails closed when no port is wired.
+    fn employment_transfer(&self) -> Option<Arc<dyn EmploymentTransferPort>> {
+        self.employment_transfer.clone()
     }
 
     #[must_use]
@@ -1700,7 +1768,8 @@ impl PgOrgChangeStore {
     ) -> Result<OrgChangeDetail, PgOrgChangeError> {
         let org = current_org().map_err(KernelError::from)?;
         let now = OffsetDateTime::now_utc();
-        let outcome = with_audits(&self.pool, org, |tx| {
+        let employment_transfer = self.employment_transfer();
+        let outcome = with_audits(&self.pool, org, move |tx| {
             Box::pin(async move {
                 let request = lock_request(tx, id).await?;
                 if request.status != OrgChangeStatus::Approved {
@@ -1723,6 +1792,7 @@ impl PgOrgChangeStore {
                             &request.proposal,
                             request.effective_date,
                             now,
+                            employment_transfer.as_deref(),
                         )
                         .await?;
                         OrgChangeStatus::Applied
@@ -1871,7 +1941,8 @@ impl PgOrgChangeStore {
     ) -> Result<OrgChangeDetail, PgOrgChangeError> {
         let org = current_org().map_err(KernelError::from)?;
         let now = OffsetDateTime::now_utc();
-        let outcome = with_audits(&self.pool, org, |tx| {
+        let employment_transfer = self.employment_transfer();
+        let outcome = with_audits(&self.pool, org, move |tx| {
             Box::pin(async move {
                 let request = lock_request(tx, id).await?;
                 if request.status != OrgChangeStatus::Settling {
@@ -1906,6 +1977,7 @@ impl PgOrgChangeStore {
                     &request.proposal,
                     request.effective_date,
                     now,
+                    employment_transfer.as_deref(),
                 )
                 .await?;
                 sqlx::query(

@@ -39,13 +39,13 @@
 //! the statement the port itself issues.
 
 use console_kernel_core::{OrgId, UserId};
+use console_ontology_canonical_adapter_postgres::employment::{
+    EmploymentAttributes, EmploymentCommand, EmploymentError, EmploymentQuery, PgEmploymentPort,
+    reassign_org_unit_via_transfers_in_tx,
+};
 use console_ontology_canonical_domain::{
     CanonicalPort, CommandId, CommandReceipt, DispatchTarget, EmploymentPort, ObjectKey,
     ReceiptOwner,
-};
-use console_orgchange_adapter_postgres::employment::{
-    EmploymentAttributes, EmploymentCommand, EmploymentError, EmploymentQuery, PgEmploymentPort,
-    reassign_org_unit_via_transfers_in_tx,
 };
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
@@ -359,8 +359,8 @@ fn the_contract_identity_is_copied_verbatim_and_the_port_is_the_named_one() {
     assert_eq!(
         ObjectKey::Employment.owner_crate(),
         "console-ontology-canonical-adapter-postgres",
-        "the canonical adapter is the owner (retargeted by console-1qw.4); this \
-         #[path] seam only lets ReassignOrgUnit reach the port"
+        "the canonical adapter is the owner (retargeted by console-1qw.4); \
+         ReassignOrgUnit reaches it through the injected Employment-transfer port"
     );
     for (target, wire) in [
         (DispatchTarget::HrAppoint, "hr.appoint"),

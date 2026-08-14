@@ -4926,6 +4926,29 @@
       "in_workflow_postgres_job": true
     },
     {
+      "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-employment-port-as-runtime-role-pg",
+      "name": "ontology-canonical-adapter-postgres-employment-port-as-runtime-role-pg",
+      "buck_inner": "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-employment_port_as_runtime_role",
+      "package": "console-ontology-canonical-adapter-postgres",
+      "crate_dir": "backend/crates/ontology/canonical-adapter-postgres",
+      "kind": "test",
+      "test": "employment_port_as_runtime_role",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-ontology-canonical-adapter-postgres",
+        "--test",
+        "employment_port_as_runtime_role",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
+    },
+    {
       "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-job-position-port-as-runtime-role-pg",
       "name": "ontology-canonical-adapter-postgres-job-position-port-as-runtime-role-pg",
       "buck_inner": "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-job_position_port_as_runtime_role",
@@ -4989,29 +5012,6 @@
         "console-ontology-canonical-adapter-postgres",
         "--test",
         "person_port_as_runtime_role",
-        "--",
-        "--test-threads=1"
-      ],
-      "in_workflow_postgres_job": true
-    },
-    {
-      "buck_wrapper": "//tools/buck:orgchange-adapter-postgres-employment-port-as-runtime-role-pg",
-      "name": "orgchange-adapter-postgres-employment-port-as-runtime-role-pg",
-      "buck_inner": "//backend/crates/orgchange/adapter-postgres:console-orgchange-adapter-postgres-itest-employment_port_as_runtime_role",
-      "package": "console-orgchange-adapter-postgres",
-      "crate_dir": "backend/crates/orgchange/adapter-postgres",
-      "kind": "test",
-      "test": "employment_port_as_runtime_role",
-      "cargo_argv": [
-        "cargo",
-        "test",
-        "--locked",
-        "--manifest-path",
-        "backend/Cargo.toml",
-        "-p",
-        "console-orgchange-adapter-postgres",
-        "--test",
-        "employment_port_as_runtime_role",
         "--",
         "--test-threads=1"
       ],
