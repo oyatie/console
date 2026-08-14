@@ -21,7 +21,8 @@ use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, Trace
 use console_platform_auth::JwtVerifier;
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_db::{
-    DbError, PeriodLockDomain, lifecycle as lifecycle_db, with_audit, with_org_conn,
+    DbError, PeriodLockDomain, lifecycle as lifecycle_db, lock_period_lock_key, with_audit,
+    with_org_conn,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -237,6 +238,10 @@ async fn create_period_lock(
 
     let response = with_audit::<_, _, LifecycleError>(&state.pool, audit_event, move |tx| {
         Box::pin(async move {
+            // Serialize the lock CREATE with the drain's gated staging write:
+            // both take this per-org advisory lock, so a lock cannot commit
+            // between the staging INSERT's snapshot and its commit.
+            lock_period_lock_key(tx, domain, *org.as_uuid()).await?;
             // Refuse a duplicate active lock covering the same window: one
             // active lock per (domain, window) keeps unlock semantics obvious.
             let overlapping: i64 = sqlx::query_scalar(

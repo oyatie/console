@@ -573,12 +573,15 @@ impl StagePayrollDraft {
 /// `console-payroll-adapter-postgres`, which the canonical contract names as
 /// `ObjectKey::PayRun`'s sole permitted writer.
 ///
-/// [`Self::stage`] MUST be idempotent on [`StagePayrollDraft::source_label`] and
-/// MUST return `Ok(false)` — not an error — when the draft already exists, so an
-/// at-least-once drain never doubles a run.
+/// [`Self::stage`] MUST be idempotent on [`StagePayrollDraft::source_label`]: a
+/// replay of the same run with the SAME provenance returns `Ok(false)` so an
+/// at-least-once drain never doubles a run, while a natural-key collision whose
+/// provenance (`connector`/`job`) DIFFERS from the stored row is REFUSED with an
+/// error (fail-closed) rather than silently absorbed.
 pub trait PayrollDraftStaging: Send + Sync {
     /// Stages one draft. `true` when this call created it, `false` when the
-    /// natural key already held one.
+    /// natural key already held an identical-provenance row; an error when the
+    /// natural key held a DIFFERENT provenance (refused, never absorbed).
     fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PortFuture<'a, bool>;
 }
 

@@ -57,9 +57,11 @@
 //!
 //! * crash after staging, before the ack — the event stays `PENDING`, the next
 //!   tick re-claims it, [`stage_draft_run_in_tx`]'s
-//!   `ON CONFLICT (org_id, period_start, period_end, source_label) DO NOTHING`
-//!   makes the restage a no-op returning `false`, and the ack then lands. No
-//!   double draft, no lost draft;
+//!   `ON CONFLICT (org_id, period_start, period_end, source_label)` restage
+//!   returns `false` when the provenance matches, and the ack then lands. No
+//!   double draft, no lost draft. A restage whose connector/job differs is
+//!   refused fail-closed ([`StageDraftError::ProvenanceMismatch`]) rather than
+//!   silently absorbed;
 //! * crash before staging — nothing was written and the event is still
 //!   `PENDING`.
 //!
@@ -71,6 +73,14 @@
 //! is the identical trade `drain_notification_outbox` documents three functions
 //! further down the same file ("emit + mark are each idempotent, so a re-claim
 //! is safe").
+//!
+//! Because staging now opens its own transaction, [`PayrollDraftStaging::stage`]
+//! re-runs the freeze-window gate inside that transaction — folded INTO the
+//! staging INSERT's `WHERE NOT EXISTS` so the check and the write share one
+//! snapshot. The drain's phase-1 read and the staging write are two
+//! transactions, so a payroll period lock acquired between them is refused by
+//! the write atomically, not by a separate SELECT that a concurrent lock INSERT
+//! can slip past under READ COMMITTED.
 //!
 //! # Where the receipt is stored
 //!
@@ -110,8 +120,181 @@ use uuid::Uuid;
 // The one statement that moved
 // ---------------------------------------------------------------------------
 
-/// Stages one `payroll_draft_runs` row inside the CALLER's transaction,
-/// idempotently on the natural key. `true` when this call created the row.
+/// Error raised while staging one `payroll_draft_runs` row. Three arms: the
+/// driver failed; the natural key already held a row whose PROVENANCE
+/// (`connector`/`job` in `source_summary`) differs from the requested write; or
+/// the payroll period is frozen (the drain's gated staging write refused).
+#[derive(Debug, thiserror::Error)]
+pub enum StageDraftError {
+    #[error(transparent)]
+    Db(#[from] sqlx::Error),
+
+    /// A fresh command/event reusing the same run and period with a DIFFERENT
+    /// connector/job. Fail-closed: the requested provenance is never silently
+    /// dropped onto an existing row.
+    #[error("a payroll draft for this run and period already exists with different provenance")]
+    ProvenanceMismatch,
+
+    /// The staging INSERT's atomic freeze-window gate saw an active
+    /// `period_locks` row and refused the write (drain path only).
+    #[error("payroll period is locked; draft not staged")]
+    PeriodLocked,
+}
+
+/// The `source_summary` JSONB a staging write requests. Spelled once, because
+/// the fail-closed conflict arm must compare what was REQUESTED against what is
+/// STORED, and both must be built from the same field set.
+fn draft_source_summary(draft: &StagePayrollDraft) -> serde_json::Value {
+    serde_json::json!({
+        "outbox_event_id": draft.outbox_event_id,
+        "run_id": draft.run_id,
+        "connector": draft.connector,
+        "job": draft.job,
+    })
+}
+
+/// Whether a stored `source_summary`'s provenance matches the requested one.
+///
+/// Only `connector` and `job` are compared: `run_id` and the period are in the
+/// natural key, so on conflict they are equal by construction, and
+/// `outbox_event_id` is the caller's correlation id (the command id / outbox
+/// event), not provenance — a re-claim or a fresh command with the SAME
+/// connector/job is an idempotent replay, not a mismatch.
+///
+/// The comparison is on field presence, JSON type, AND value: the unconstrained
+/// JSONB column may hold a missing key (its `{}` default) or a non-string, and a
+/// stored `connector`/`job` of either shape is REFUSED as a mismatch, never
+/// normalized to absence via `as_str()`.
+fn provenance_matches(stored: &serde_json::Value, requested: &serde_json::Value) -> bool {
+    stored.get("connector") == requested.get("connector")
+        && stored.get("job") == requested.get("job")
+}
+
+/// The staging INSERT WITHOUT the freeze-window gate — the canonical
+/// `payroll.create_run` path. The gated variant below differs from it by exactly
+/// one `WHERE NOT EXISTS`, so the two statements cannot drift apart.
+const INSERT_DRAFT_RUN_SQL: &str = "INSERT INTO payroll_draft_runs \
+         (org_id, period_start, period_end, source_label, status, source_summary) \
+     VALUES ($1, $2, $3, $4, 'BLOCKED_LEGAL_GATE', $5) \
+     ON CONFLICT (org_id, period_start, period_end, source_label) \
+     DO UPDATE SET source_label = EXCLUDED.source_label \
+     RETURNING id, source_summary, (xmax = 0) AS created";
+
+/// The staging INSERT with the freeze-window gate folded INTO the statement —
+/// the drain path. The `WHERE NOT EXISTS` re-reads `period_locks` under the SAME
+/// snapshot as the write, so a lock committed after the drain's phase-1 read but
+/// before this statement is refused atomically instead of slipped past (the
+/// READ COMMITTED gap between a separate SELECT and the INSERT). `$2`/`$3` are
+/// `NULL` for a periodless draft, which makes the guard vacuous and lets the
+/// `NOT NULL` constraint refuse it exactly as before.
+const INSERT_DRAFT_RUN_GATED_SQL: &str = "INSERT INTO payroll_draft_runs \
+         (org_id, period_start, period_end, source_label, status, source_summary) \
+     SELECT $1, $2, $3, $4, 'BLOCKED_LEGAL_GATE', $5 \
+     WHERE NOT EXISTS ( \
+         SELECT 1 FROM period_locks \
+         WHERE domain = 'payroll' AND unlocked_at IS NULL \
+           AND period_start <= $3 AND period_end >= $2 \
+     ) \
+     ON CONFLICT (org_id, period_start, period_end, source_label) \
+     DO UPDATE SET source_label = EXCLUDED.source_label \
+     RETURNING id, source_summary, (xmax = 0) AS created";
+
+/// The shared staging write, optionally carrying the freeze-window gate.
+///
+/// The gated (drain) path first takes the per-org advisory lock
+/// ([`console_platform_db::lock_period_lock_key`]), which serializes staging
+/// with lock creation, then re-reads any EXISTING natural-key row so an
+/// already-staged draft with identical provenance is acknowledged (`Ok(false)`)
+/// even when the period has since been locked — the freeze gate applies only to
+/// a genuinely NEW write ([`INSERT_DRAFT_RUN_GATED_SQL`]); when that gate
+/// refuses, no row comes back and the caller sees [`StageDraftError::PeriodLocked`].
+/// The provenance check runs on every conflict either way.
+async fn stage_draft_run_inner(
+    tx: &mut Transaction<'_, Postgres>,
+    org_id: Uuid,
+    draft: &StagePayrollDraft,
+    gated: bool,
+) -> Result<(Uuid, bool), StageDraftError> {
+    let requested = draft_source_summary(draft);
+    if gated {
+        // Serialize with period-lock creation: both this gated write and the
+        // close-month lock creator take the same per-org advisory lock, so a
+        // lock cannot commit between this statement's snapshot and its commit
+        // (the remaining READ COMMITTED gap the NOT EXISTS alone cannot close).
+        console_platform_db::lock_period_lock_key(
+            tx,
+            console_platform_db::PeriodLockDomain::Payroll,
+            org_id,
+        )
+        .await?;
+        // Idempotency BEFORE the freeze gate: an already-staged draft with
+        // identical provenance must be acknowledged so the drain can ack its
+        // outbox event, even though no new write is needed and the period is
+        // now locked.
+        let existing: Option<(Uuid, serde_json::Value)> = sqlx::query_as(
+            "SELECT id, source_summary FROM payroll_draft_runs \
+             WHERE org_id = $1 AND period_start IS NOT DISTINCT FROM $2 \
+               AND period_end IS NOT DISTINCT FROM $3 AND source_label = $4 \
+             LIMIT 1",
+        )
+        .bind(org_id)
+        .bind(draft.period_start)
+        .bind(draft.period_end)
+        .bind(draft.source_label())
+        .fetch_optional(tx.as_mut())
+        .await?;
+        if let Some((id, stored)) = existing {
+            if !provenance_matches(&stored, &requested) {
+                return Err(StageDraftError::ProvenanceMismatch);
+            }
+            return Ok((id, false));
+        }
+        // No existing draft: the freeze-window gate applies to this NEW write.
+        let row: Option<(Uuid, serde_json::Value, bool)> =
+            sqlx::query_as(INSERT_DRAFT_RUN_GATED_SQL)
+                .bind(org_id)
+                .bind(draft.period_start)
+                .bind(draft.period_end)
+                .bind(draft.source_label())
+                .bind(&requested)
+                .fetch_optional(tx.as_mut())
+                .await?;
+        let Some((id, stored, created)) = row else {
+            return Err(StageDraftError::PeriodLocked);
+        };
+        if !created && !provenance_matches(&stored, &requested) {
+            return Err(StageDraftError::ProvenanceMismatch);
+        }
+        Ok((id, created))
+    } else {
+        let row: (Uuid, serde_json::Value, bool) = sqlx::query_as(INSERT_DRAFT_RUN_SQL)
+            .bind(org_id)
+            .bind(draft.period_start)
+            .bind(draft.period_end)
+            .bind(draft.source_label())
+            .bind(&requested)
+            .fetch_one(tx.as_mut())
+            .await?;
+        let (id, stored, created) = row;
+        if !created && !provenance_matches(&stored, &requested) {
+            return Err(StageDraftError::ProvenanceMismatch);
+        }
+        Ok((id, created))
+    }
+}
+
+/// Stages one `payroll_draft_runs` row for the DRAIN path, idempotently on the
+/// natural key AND gated on the payroll freeze window — both in ONE statement.
+/// `true` when this call created the row.
+///
+/// The freeze-window gate is the same predicate as
+/// [`console_platform_db::assert_period_open_range`], but folded into the INSERT
+/// itself so the check and the write share one snapshot. The statement is also
+/// serialized against period-lock creation by the per-org advisory lock
+/// ([`console_platform_db::lock_period_lock_key`]), so a lock committed either
+/// between the drain's phase-1 read and this write, or between this statement's
+/// snapshot and its commit, is refused as [`StageDraftError::PeriodLocked`] —
+/// never slipped past.
 ///
 /// The status is `BLOCKED_LEGAL_GATE` and `calculation_enabled` is left at its
 /// column default (`FALSE`), so nothing calculates without the legal gate —
@@ -126,18 +309,24 @@ use uuid::Uuid;
 ///
 /// # Errors
 /// Returns the driver error verbatim so the caller can distinguish a missing
-/// period (`23502`) from a tenant it may not write (`42501`).
+/// period (`23502`) from a tenant it may not write (`42501`). A conflict on the
+/// natural key with a DIFFERENT connector/job is
+/// [`StageDraftError::ProvenanceMismatch`]; a locked period is
+/// [`StageDraftError::PeriodLocked`].
 pub async fn stage_draft_run_in_tx(
     tx: &mut Transaction<'_, Postgres>,
     org_id: Uuid,
     draft: &StagePayrollDraft,
-) -> Result<bool, sqlx::Error> {
-    stage_draft_run_returning_id_in_tx(tx, org_id, draft)
+) -> Result<bool, StageDraftError> {
+    stage_draft_run_inner(tx, org_id, draft, true)
         .await
         .map(|(_, created)| created)
 }
 
-/// The same staging INSERT, returning the row's own identifier.
+/// The same staging INSERT for the CANONICAL `payroll.create_run` path,
+/// returning the row's own identifier. NOT gated on the freeze window: the
+/// canonical port reaches this directly, and the period gate belongs to the
+/// drain seam, not this caller.
 ///
 /// # Why this exists, and why `DO NOTHING` could not be kept
 ///
@@ -159,32 +348,24 @@ pub async fn stage_draft_run_in_tx(
 /// `source_label` to the value it already holds, purely so `RETURNING` yields
 /// the row. `xmax = 0` distinguishes a fresh insert from a conflict, which is
 /// what the previous `is_some()` meant.
+///
+/// # Fail-closed on a changed provenance
+///
+/// The conflict arm returns the stored `source_summary`, and a conflict whose
+/// provenance (`connector`/`job`) differs from the request is refused as
+/// [`StageDraftError::ProvenanceMismatch`]. Before this check, a fresh
+/// `command_id` reusing the same run id and period with a different
+/// connector/job got `created:false` plus success while the requested
+/// provenance was never stored — and the port handed back the row's identifier,
+/// so a caller could act on a row whose provenance disagreed with the request.
+/// Refusing is consistent with [`PayRunError::DigestConflict`]'s treatment of a
+/// changed payload under one command id.
 pub async fn stage_draft_run_returning_id_in_tx(
     tx: &mut Transaction<'_, Postgres>,
     org_id: Uuid,
     draft: &StagePayrollDraft,
-) -> Result<(Uuid, bool), sqlx::Error> {
-    let row: (Uuid, bool) = sqlx::query_as(
-        "INSERT INTO payroll_draft_runs \
-             (org_id, period_start, period_end, source_label, status, source_summary) \
-         VALUES ($1, $2, $3, $4, 'BLOCKED_LEGAL_GATE', $5) \
-         ON CONFLICT (org_id, period_start, period_end, source_label) \
-         DO UPDATE SET source_label = EXCLUDED.source_label \
-         RETURNING id, (xmax = 0) AS created",
-    )
-    .bind(org_id)
-    .bind(draft.period_start)
-    .bind(draft.period_end)
-    .bind(draft.source_label())
-    .bind(serde_json::json!({
-        "outbox_event_id": draft.outbox_event_id,
-        "run_id": draft.run_id,
-        "connector": draft.connector,
-        "job": draft.job,
-    }))
-    .fetch_one(tx.as_mut())
-    .await?;
-    Ok(row)
+) -> Result<(Uuid, bool), StageDraftError> {
+    stage_draft_run_inner(tx, org_id, draft, false).await
 }
 
 // ---------------------------------------------------------------------------
@@ -279,6 +460,10 @@ pub enum PayRunError {
     Lifecycle(#[from] crate::lifecycle::LifecycleError),
     #[error("command {0} was already applied with a different payload")]
     DigestConflict(Uuid),
+    #[error("a payroll draft for this run and period already exists with different provenance")]
+    ProvenanceConflict,
+    #[error("payroll period is locked; draft not staged")]
+    PeriodLocked,
     #[error("stored receipt for command {0} names no dispatch target: {1}")]
     UnreadableReceipt(Uuid, String),
 }
@@ -287,7 +472,9 @@ impl CanonicalPortError for PayRunError {
     fn into_kernel_error(self) -> KernelError {
         match self {
             Self::Blocked(_) => KernelError::validation(self.to_string()),
-            Self::DigestConflict(_) => KernelError::conflict(self.to_string()),
+            Self::DigestConflict(_) | Self::ProvenanceConflict | Self::PeriodLocked => {
+                KernelError::conflict(self.to_string())
+            }
             Self::Lifecycle(err) => lifecycle_into_kernel_error(err),
             Self::Database(_) | Self::UnreadableReceipt(_, _) => {
                 KernelError::internal(self.to_string())
@@ -313,6 +500,20 @@ fn lifecycle_into_kernel_error(err: crate::lifecycle::LifecycleError) -> KernelE
         | E::AlreadyResolved
         | E::LegalGate(_) => KernelError::conflict(message),
         E::Db(_) => KernelError::internal(message),
+    }
+}
+
+/// Map the staging writer's failure arms onto the port's error surface: a
+/// driver failure is [`PayRunError::Database`], a changed provenance is
+/// [`PayRunError::ProvenanceConflict`], a locked period is
+/// [`PayRunError::PeriodLocked`] (unreachable from the ungated canonical path).
+impl From<StageDraftError> for PayRunError {
+    fn from(err: StageDraftError) -> Self {
+        match err {
+            StageDraftError::Db(db) => Self::Database(db),
+            StageDraftError::ProvenanceMismatch => Self::ProvenanceConflict,
+            StageDraftError::PeriodLocked => Self::PeriodLocked,
+        }
     }
 }
 
@@ -545,6 +746,11 @@ impl PayrollDraftStaging for PgPayRunPort {
                 org,
                 move |tx| {
                     Box::pin(async move {
+                        // `stage_draft_run_in_tx` folds the freeze-window gate
+                        // INTO the INSERT (WHERE NOT EXISTS), so the check and
+                        // the write share one snapshot — a period lock committed
+                        // after the drain's phase-1 read but before this write is
+                        // refused atomically, never slipped past.
                         stage_draft_run_in_tx(tx, *org.as_uuid(), &draft)
                             .await
                             .map_err(crate::PgPayrollError::from)

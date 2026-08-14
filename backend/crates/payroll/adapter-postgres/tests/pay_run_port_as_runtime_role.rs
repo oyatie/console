@@ -34,7 +34,7 @@ use console_ontology_canonical_domain::{
     CanonicalPort, CommandId, CommandReceipt, DispatchTarget, ObjectKey, PayRunPort, ReceiptOwner,
 };
 use console_payroll_adapter_postgres::pay_run::{
-    PayRunCommand, PayRunError, PayRunQuery, PgPayRunPort,
+    PayRunCommand, PayRunError, PayRunQuery, PgPayRunPort, StageDraftError, stage_draft_run_in_tx,
 };
 use console_platform_test_support::runtime_role_pool;
 use console_workflow_domain::{PayrollDraftStaging, StagePayrollDraft};
@@ -391,6 +391,52 @@ async fn a_repeat_of_the_same_command_replays_the_receipt_and_stages_no_second_r
     assert!(matches!(error, PayRunError::DigestConflict(_)), "{error:?}");
 }
 
+/// A FRESH command id reusing the same run + period with a DIFFERENT
+/// connector/job is a payload mismatch, not a silent absorb. The natural-key
+/// conflict arm must refuse it and leave the stored provenance untouched.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_changed_provenance_on_the_same_run_and_period_is_refused(owner_pool: PgPool) {
+    let (org, actor, _, port) = fixture(&owner_pool).await;
+    let run_id = Uuid::new_v4();
+
+    execute(&port, command(org, actor, create(run_id)))
+        .await
+        .expect("the first create must stage the run");
+    assert_eq!(count(&owner_pool, COUNT_RUNS, ORG).await, 1);
+
+    // Same run_id + period, but a different connector/job: the requested
+    // provenance can never be stored on the existing row, so the port must
+    // refuse instead of returning `created:false` plus success (which would let
+    // a caller act on a `draft_run_id` whose provenance differs from the ask).
+    let changed = command(
+        org,
+        actor,
+        PayRunQuery::CreateRun {
+            run_id,
+            period_start: date!(2026 - 06 - 01),
+            period_end: date!(2026 - 06 - 30),
+            connector: Some("other-connector".to_owned()),
+            job: Some("other-job".to_owned()),
+        },
+    );
+    let error = execute(&port, changed).await.unwrap_err();
+    assert!(
+        matches!(error, PayRunError::ProvenanceConflict),
+        "a changed provenance on an existing run must be refused: {error:?}"
+    );
+
+    // The refused request must not rewrite the row's provenance nor mint a run.
+    let summary: serde_json::Value =
+        sqlx::query_scalar("SELECT source_summary FROM payroll_draft_runs WHERE org_id = $1")
+            .bind(ORG)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(summary["connector"].as_str().unwrap(), "m2");
+    assert_eq!(summary["job"].as_str().unwrap(), "payroll_draft");
+    assert_eq!(count(&owner_pool, COUNT_RUNS, ORG).await, 1);
+}
+
 /// The three targets are ONE lifecycle, traversed with nothing but what the port
 /// itself returns.
 ///
@@ -641,6 +687,227 @@ async fn the_workflow_staging_seam_is_idempotent_on_the_natural_key(owner_pool: 
             || error.to_string().contains("23502"),
         "a periodless draft must be refused by NOT NULL, got: {error}"
     );
+    assert_eq!(count(&owner_pool, COUNT_RUNS, ORG).await, 1);
+}
+
+/// The staging write itself must re-run the freeze-window gate, so a payroll
+/// period lock that closed AFTER the drain's phase-1 read (but before the
+/// staging transaction) still refuses the draft instead of staging it.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn the_workflow_staging_seam_refuses_a_locked_period(owner_pool: PgPool) {
+    let (org, _, _, port) = fixture(&owner_pool).await;
+
+    // An active payroll freeze window overlapping the draft's June period.
+    sqlx::query(
+        "INSERT INTO period_locks (org_id, domain, period_start, period_end, reason) \
+         VALUES ($1, 'payroll', DATE '2026-06-01', DATE '2026-06-30', '6월 급여 마감')",
+    )
+    .bind(ORG)
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+
+    let draft = StagePayrollDraft {
+        org,
+        outbox_event_id: Uuid::new_v4(),
+        run_id: Uuid::new_v4(),
+        period_start: Some(date!(2026 - 06 - 01)),
+        period_end: Some(date!(2026 - 06 - 30)),
+        connector: Some("m2".to_owned()),
+        job: Some("payroll_draft".to_owned()),
+    };
+
+    let error = port
+        .stage(draft)
+        .await
+        .expect_err("a locked period must refuse the staging write");
+    assert!(
+        error.to_string().contains("locked"),
+        "the refusal must name the locked period, got: {error}"
+    );
+    assert_eq!(count(&owner_pool, COUNT_RUNS, ORG).await, 0);
+}
+
+/// The staging INSERT itself must re-check the freeze-window gate ATOMICALLY: a
+/// lock that commits after the drain's phase-1 read (which saw an open period)
+/// but before the write must still be refused — not slipped past by the
+/// READ COMMITTED gap between a separate SELECT and the INSERT.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_lock_committed_after_the_gate_read_but_before_the_write_is_refused(owner_pool: PgPool) {
+    let (org, _, _, _) = fixture(&owner_pool).await;
+    let runtime_pool = runtime_role_pool(&owner_pool).await;
+
+    // Re-open the staging transaction, armed for the tenant exactly as
+    // `with_org_conn` arms it. The drain's phase-1 read already ran in an
+    // earlier transaction and saw an open period; here the write re-checks.
+    let mut tx = runtime_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+
+    // Phase-1's gate read would pass: no active payroll lock for June 2026.
+    let open: bool = sqlx::query_scalar(
+        "SELECT NOT EXISTS ( \
+             SELECT 1 FROM period_locks \
+             WHERE domain = 'payroll' AND unlocked_at IS NULL \
+               AND period_start <= DATE '2026-06-30' AND period_end >= DATE '2026-06-01' \
+         )",
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .unwrap();
+    assert!(open, "the period is open at the time of the phase-1 read");
+
+    // A concurrent period lock commits AFTER that read but BEFORE the write.
+    sqlx::query(
+        "INSERT INTO period_locks (org_id, domain, period_start, period_end, reason) \
+         VALUES ($1, 'payroll', DATE '2026-06-01', DATE '2026-06-30', 'mid-drain lock')",
+    )
+    .bind(ORG)
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+
+    // The staging write must re-check the gate in the SAME statement and refuse.
+    let draft = StagePayrollDraft {
+        org,
+        outbox_event_id: Uuid::new_v4(),
+        run_id: Uuid::new_v4(),
+        period_start: Some(date!(2026 - 06 - 01)),
+        period_end: Some(date!(2026 - 06 - 30)),
+        connector: Some("m2".to_owned()),
+        job: Some("payroll_draft".to_owned()),
+    };
+    let result = stage_draft_run_in_tx(&mut tx, *org.as_uuid(), &draft).await;
+    assert!(
+        matches!(result, Err(StageDraftError::PeriodLocked)),
+        "a lock committed between the read and the write must be refused: {result:?}"
+    );
+
+    tx.rollback().await.unwrap();
+    assert_eq!(
+        count(&owner_pool, COUNT_RUNS, ORG).await,
+        0,
+        "the refused write must stage nothing"
+    );
+}
+
+/// A stored `source_summary` whose `connector`/`job` is missing or non-string is
+/// noncanonical (the unconstrained JSONB column admits it) and must be REFUSED
+/// as a provenance mismatch, never normalized to absence and absorbed.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_noncanonical_stored_provenance_is_refused_not_absorbed(owner_pool: PgPool) {
+    let (org, _, _, _) = fixture(&owner_pool).await;
+    let runtime_pool = runtime_role_pool(&owner_pool).await;
+
+    let draft = StagePayrollDraft {
+        org,
+        outbox_event_id: Uuid::new_v4(),
+        run_id: Uuid::new_v4(),
+        period_start: Some(date!(2026 - 06 - 01)),
+        period_end: Some(date!(2026 - 06 - 30)),
+        connector: Some("m2".to_owned()),
+        job: Some("payroll_draft".to_owned()),
+    };
+
+    // Stage once, then corrupt the stored connector to a non-string JSON number.
+    let mut tx = runtime_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let created = stage_draft_run_in_tx(&mut tx, *org.as_uuid(), &draft)
+        .await
+        .unwrap();
+    assert!(created, "the first stage must create the row");
+    tx.commit().await.unwrap();
+
+    sqlx::query(
+        "UPDATE payroll_draft_runs \
+         SET source_summary = jsonb_set(source_summary, '{connector}', '42'::jsonb) \
+         WHERE org_id = $1 AND source_label = $2",
+    )
+    .bind(ORG)
+    .bind(draft.source_label())
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+
+    // A retry with the SAME request must refuse the noncanonical stored value.
+    let mut tx = runtime_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let result = stage_draft_run_in_tx(&mut tx, *org.as_uuid(), &draft).await;
+    assert!(
+        matches!(result, Err(StageDraftError::ProvenanceMismatch)),
+        "a non-string stored connector must be refused: {result:?}"
+    );
+    tx.rollback().await.unwrap();
+}
+
+/// An already-staged draft must be acknowledged (idempotent `Ok(false)`) even
+/// after the period is locked — the freeze gate applies only to a NEW write, so
+/// a crash between phase 2 (stage) and phase 3 (ack) followed by a lock must not
+/// strand the event PENDING forever.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn an_existing_draft_is_acknowledged_after_the_period_is_locked(owner_pool: PgPool) {
+    let (org, _, _, _) = fixture(&owner_pool).await;
+    let runtime_pool = runtime_role_pool(&owner_pool).await;
+
+    let draft = StagePayrollDraft {
+        org,
+        outbox_event_id: Uuid::new_v4(),
+        run_id: Uuid::new_v4(),
+        period_start: Some(date!(2026 - 06 - 01)),
+        period_end: Some(date!(2026 - 06 - 30)),
+        connector: Some("m2".to_owned()),
+        job: Some("payroll_draft".to_owned()),
+    };
+
+    // Phase 2: stage the draft (created).
+    let mut tx = runtime_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let created = stage_draft_run_in_tx(&mut tx, *org.as_uuid(), &draft)
+        .await
+        .unwrap();
+    assert!(created, "the first stage must create the row");
+    tx.commit().await.unwrap();
+
+    // The period is locked AFTER the draft was staged (crash-before-ack).
+    sqlx::query(
+        "INSERT INTO period_locks (org_id, domain, period_start, period_end, reason) \
+         VALUES ($1, 'payroll', DATE '2026-06-01', DATE '2026-06-30', '6월 급여 마감')",
+    )
+    .bind(ORG)
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+
+    // The retry must be an idempotent ack, not a PeriodLocked refusal.
+    let mut tx = runtime_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let created = stage_draft_run_in_tx(&mut tx, *org.as_uuid(), &draft)
+        .await
+        .unwrap();
+    assert!(
+        !created,
+        "the existing draft must be acknowledged, not re-created or refused"
+    );
+    tx.commit().await.unwrap();
     assert_eq!(count(&owner_pool, COUNT_RUNS, ORG).await, 1);
 }
 

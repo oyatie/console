@@ -726,8 +726,9 @@ impl PgWorkflowRuntimeStore {
     /// STEP 5 — drain up to `limit` PENDING/FAILED JOB payroll outbox events for
     /// `org` (design §F). For each claimed event this idempotently stages the
     /// `payroll_draft_runs` row THROUGH THE OWNER — keyed on the deterministic
-    /// per-run natural key `workflow_runtime_m2:run:{run_id}` with
-    /// `ON CONFLICT DO NOTHING`, landing `BLOCKED_LEGAL_GATE` with
+    /// per-run natural key `workflow_runtime_m2:run:{run_id}` (a same-provenance
+    /// conflict replays `Ok(false)`; a changed-provenance conflict is refused as
+    /// `StageDraftError::ProvenanceMismatch`), landing `BLOCKED_LEGAL_GATE` with
     /// `calculation_enabled = FALSE` (the column default) so nothing calculates
     /// without the legal gate — then marks the event `DELIVERED` (0078 requires
     /// `delivered_at`) and lands one `workflow_runtime.outbox_drain` audit row.
@@ -754,7 +755,11 @@ impl PgWorkflowRuntimeStore {
     ///    performed while this connection still held a transaction open would
     ///    make the drain a two-connection operation and is how a bounded pool
     ///    deadlocks;
-    /// 2. stage each draft through the owner. Idempotent on the natural key;
+    /// 2. stage each draft through the owner. Idempotent on the natural key, and
+    ///    the owner re-runs the freeze-window gate ATOMICALLY inside its own
+    ///    staging INSERT (`WHERE NOT EXISTS` over `period_locks`) — a period
+    ///    lock acquired after step 1's read but before this write is refused in
+    ///    the same statement (fail-closed, event stays PENDING);
     /// 3. ack + audit the events that staged, re-claiming with
     ///    `FOR UPDATE SKIP LOCKED` and acking only rows still `PENDING`/`FAILED`,
     ///    so a concurrent drainer that raced through phase 1 on the same event

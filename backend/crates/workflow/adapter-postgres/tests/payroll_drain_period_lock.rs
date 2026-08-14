@@ -9,13 +9,14 @@
 //!   (b) after unlock the SAME event drains normally: draft created, event
 //!       acked DELIVERED.
 
-use console_kernel_core::OrgId;
+use console_kernel_core::{KernelError, OrgId};
 // The REAL `ObjectKey::PayRun` owner, as a dev-dependency. Dev-dependencies are
 // exempt from the layer-boundary edge check (it scopes to normal deps), which is
 // what lets this test drive the actual seam instead of a stub that would only
 // prove the drain calls something.
 use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
 use console_platform_request_context::scope_org;
+use console_workflow_domain::{PayrollDraftStaging, PortFuture, StagePayrollDraft};
 use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -194,4 +195,72 @@ async fn payroll_period_lock_blocks_draft_creation_and_unlock_restores(owner_poo
     .await
     .unwrap();
     assert_eq!(drafts, 1, "exactly one June draft after unlock");
+}
+
+/// A staging seam that acquires the payroll period lock AFTER the drain's
+/// phase-1 gate read but BEFORE the real staging write — the exact interleaving
+/// the two-transaction split allows — then delegates to the real owner. This
+/// proves the WRITE re-runs the gate rather than relying on the earlier read.
+struct LockAfterGate {
+    lock_pool: PgPool,
+    org: Uuid,
+    inner: PgPayRunPort,
+}
+
+impl PayrollDraftStaging for LockAfterGate {
+    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PortFuture<'a, bool> {
+        Box::pin(async move {
+            sqlx::query(
+                "INSERT INTO period_locks (org_id, domain, period_start, period_end, reason) \
+                 VALUES ($1, 'payroll', DATE '2026-06-01', DATE '2026-06-30', 'mid-drain lock')",
+            )
+            .bind(self.org)
+            .execute(&self.lock_pool)
+            .await
+            .map_err(|e| KernelError::internal(e.to_string()))?;
+            self.inner.stage(draft).await
+        })
+    }
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_lock_acquired_after_the_read_gate_still_blocks_the_staging_write(owner_pool: PgPool) {
+    let org = OrgId::knl();
+    let org_uuid = *org.as_uuid();
+    let (_run_id, event_id) = seed_payroll_event(&owner_pool, org_uuid).await;
+
+    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let store = PgWorkflowRuntimeStore::new(rt_pool.clone());
+    let staging = LockAfterGate {
+        lock_pool: owner_pool.clone(),
+        org: org_uuid,
+        inner: PgPayRunPort::new(rt_pool, tokio::runtime::Handle::current()),
+    };
+
+    let created = scope_org(org, store.drain_payroll_job_outbox(org, 10, &staging))
+        .await
+        .expect("the drain itself must not fail; the blocked draft must stay pending");
+    assert_eq!(
+        created, 0,
+        "no draft may land when the gate closes before staging"
+    );
+
+    let status: String =
+        sqlx::query_scalar("SELECT status FROM workflow_outbox_events WHERE id = $1")
+            .bind(event_id)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(status, "PENDING", "the blocked event must stay retryable");
+
+    let drafts: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM payroll_draft_runs WHERE org_id = $1")
+            .bind(org_uuid)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        drafts, 0,
+        "the lock that closed between the phases must block the draft"
+    );
 }

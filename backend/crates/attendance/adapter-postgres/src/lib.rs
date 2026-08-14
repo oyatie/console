@@ -457,6 +457,17 @@ impl PgAttendanceStore {
             let (lock_id, created_period_lock) = if close.branch_scope.is_some() {
                 (None, false)
             } else {
+                // Serialize the payroll period-lock CREATE with the drain's
+                // gated staging write: both take this per-org advisory lock, so
+                // a lock cannot commit between the staging INSERT's snapshot and
+                // its commit (the READ COMMITTED gap the NOT EXISTS alone cannot
+                // close).
+                console_platform_db::lock_period_lock_key(
+                    tx,
+                    console_platform_db::PeriodLockDomain::Payroll,
+                    caller.org_id,
+                )
+                .await?;
                 let existing: Option<Uuid> = sqlx::query_scalar(
                     "SELECT id FROM period_locks WHERE domain='payroll' AND unlocked_at IS NULL AND period_start <= $1 AND period_end >= $2 ORDER BY locked_at DESC LIMIT 1",
                 ).bind(month).bind(last).fetch_optional(tx.as_mut()).await?;

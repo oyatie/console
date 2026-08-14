@@ -14,7 +14,9 @@
 //!    invisible across tenants.
 
 use console_kernel_core::{ErrorKind, OrgId};
-use console_platform_db::{PeriodLockDomain, assert_period_open, lifecycle, with_org_conn};
+use console_platform_db::{
+    PeriodLockDomain, assert_period_open, lifecycle, lock_period_lock_key, with_org_conn,
+};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::macros::date;
@@ -71,6 +73,49 @@ async fn seed_active_lock(owner_pool: &PgPool, org: Uuid, domain: &str) -> Uuid 
     .fetch_one(owner_pool)
     .await
     .unwrap()
+}
+
+// ===========================================================================
+// 5. Lock creation serializes against gated writes through the shared key.
+// ===========================================================================
+#[sqlx::test(migrations = "./migrations")]
+async fn period_lock_key_serializes_lock_creation_against_gated_writes(owner_pool: PgPool) {
+    // The drain's gated staging write takes this per-org advisory lock BEFORE
+    // its freeze-window-checking INSERT. Holding it on one session must exclude
+    // a concurrent lock creator (close_month), so a lock cannot commit between
+    // the staging INSERT's snapshot and its commit.
+    let mut holder = owner_pool.begin().await.unwrap();
+    lock_period_lock_key(&mut holder, PeriodLockDomain::Payroll, ORG_B)
+        .await
+        .unwrap();
+
+    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let acquired_elsewhere: bool =
+        sqlx::query_scalar("SELECT pg_try_advisory_xact_lock(hashtextextended($1, 0))")
+            .bind(format!("console.period-lock|payroll|{ORG_B}"))
+            .fetch_one(&rt_pool)
+            .await
+            .unwrap();
+    assert!(
+        !acquired_elsewhere,
+        "a concurrent creator must be excluded while the staging side holds the key"
+    );
+
+    holder.rollback().await.unwrap();
+
+    // Once the holder releases (commit/rollback), the key is free again.
+    let mut free = owner_pool.begin().await.unwrap();
+    let reacquired: bool =
+        sqlx::query_scalar("SELECT pg_try_advisory_xact_lock(hashtextextended($1, 0))")
+            .bind(format!("console.period-lock|payroll|{ORG_B}"))
+            .fetch_one(free.as_mut())
+            .await
+            .unwrap();
+    assert!(
+        reacquired,
+        "the key must be free once the holder releases it"
+    );
+    free.rollback().await.unwrap();
 }
 
 // ===========================================================================

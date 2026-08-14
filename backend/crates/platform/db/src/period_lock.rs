@@ -14,6 +14,7 @@
 use console_kernel_core::KernelError;
 use sqlx::{Postgres, Row, Transaction};
 use time::Date;
+use uuid::Uuid;
 
 use crate::error::DbError;
 
@@ -92,6 +93,35 @@ pub async fn assert_period_open_range(
             "{domain} period {period_start}..{period_end} is locked; write dated {start}..{end} refused"
         )));
     }
+    Ok(())
+}
+
+/// Serialize a period-lock CREATE with every gated write that re-checks the
+/// freeze window, by taking one per-tenant, per-domain advisory lock on BOTH
+/// sides of the race.
+///
+/// A gated write folds its freeze-window check into the write statement, which
+/// closes the gap where a lock commits between a phase-1 read and the write's
+/// snapshot. It does NOT close the smaller gap where a lock commits after the
+/// write statement's snapshot but before the write commits: under READ
+/// COMMITTED the two inserts touch unrelated rows and both can commit. Both the
+/// lock creator and the gated writer must therefore take this same key first, so
+/// the two are ordered strictly before-or-after each other and the writer either
+/// sees the committed lock (refused) or commits before the lock exists (a draft
+/// that predates the freeze). Transaction-scoped: released on commit/rollback.
+///
+/// Returns the raw driver error so both callers (`StageDraftError::Db`,
+/// `AttendanceStoreError::Sql`) can convert it with their existing `From` impls.
+pub async fn lock_period_lock_key(
+    tx: &mut Transaction<'_, Postgres>,
+    domain: PeriodLockDomain,
+    org_id: Uuid,
+) -> Result<(), sqlx::Error> {
+    let material = format!("console.period-lock|{}|{}", domain.as_str(), org_id);
+    sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))")
+        .bind(material)
+        .execute(tx.as_mut())
+        .await?;
     Ok(())
 }
 
