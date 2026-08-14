@@ -28,7 +28,7 @@
     "docs/program/ledger/**",
     "docs/program/executed-tests-baseline.json",
     ".github/workflows/ci.yml",
-    "Cargo.lock",
+    "backend/Cargo.lock",
     "backend/**/openapi*.yaml"
   ],
   "phases": [
