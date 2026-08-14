@@ -1498,6 +1498,7 @@ impl PgRegistryStore {
                 .bind(org_uuid)
                 .fetch_one(tx.as_mut())
                 .await?;
+                ensure_region_active_tx(tx, region_id).await?;
 
                 let branch_id: uuid::Uuid = sqlx::query_scalar(
                     r#"
@@ -2931,6 +2932,34 @@ async fn upsert_equipment(
     }
 }
 
+/// Refuse to create/re-parent a branch under a DEACTIVATED region (console-lx6).
+///
+/// Mirrors the identity adapter's `ensure_region_active_tx` so the master-list
+/// importer and the org-wide customer/site creates cannot route a branch under
+/// a region that was deactivated while a picker was stale. The region row is
+/// locked `FOR UPDATE` so a concurrent `deactivate_region` cannot slip between
+/// this check and the branch upsert.
+async fn ensure_region_active_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    region_id: uuid::Uuid,
+) -> Result<(), PgRegistryError> {
+    let row: Option<(uuid::Uuid, Option<OffsetDateTime>)> =
+        sqlx::query_as("SELECT id, deactivated_at FROM regions WHERE id = $1 FOR UPDATE")
+            .bind(region_id)
+            .fetch_optional(tx.as_mut())
+            .await?;
+    let Some((_, deactivated_at)) = row else {
+        return Err(KernelError::not_found("region not found").into());
+    };
+    if deactivated_at.is_some() {
+        return Err(KernelError::conflict(
+            "비활성화된 지역에는 지점을 추가하거나 이동할 수 없습니다.",
+        )
+        .into());
+    }
+    Ok(())
+}
+
 /// Resolve the default HQ branch for `org_uuid` on an ALREADY-ARMED transaction
 /// (one where `app.current_org` is set, e.g. inside a `with_audits` closure).
 ///
@@ -2954,6 +2983,7 @@ async fn ensure_hq_branch_in_tx(
     .bind(org_uuid)
     .fetch_one(tx.as_mut())
     .await?;
+    ensure_region_active_tx(tx, region_id).await?;
 
     let branch_id: uuid::Uuid = sqlx::query_scalar(
         r#"

@@ -29,6 +29,8 @@ responses:
     $ref: '#/components/responses/Forbidden'
   '404':
     $ref: '#/components/responses/NotFound'
+  '409':
+    $ref: '#/components/responses/Conflict'
   '422':
     $ref: '#/components/responses/ValidationError'
   '503':

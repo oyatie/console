@@ -2,10 +2,10 @@
   "schema_version": 1,
   "description": "Buck sh_test postgres wrappers \u2192 cargo test argv for tools/ci/cargo_needs_postgres.sh",
   "counts": {
-    "mapped": 216,
+    "mapped": 222,
     "unmapped": 3,
-    "workflow_targets": 201,
-    "workflow_mapped": 201,
+    "workflow_targets": 207,
+    "workflow_mapped": 207,
     "workflow_missing": 0
   },
   "entries": [
@@ -3207,6 +3207,29 @@
       "in_workflow_postgres_job": true
     },
     {
+      "buck_wrapper": "//tools/buck:platform-auth-webauthn-registration-deactivated-user-pg",
+      "name": "platform-auth-webauthn-registration-deactivated-user-pg",
+      "buck_inner": "//backend/crates/platform/auth:console-platform-auth-itest-webauthn_registration_deactivated_user",
+      "package": "console-platform-auth",
+      "crate_dir": "backend/crates/platform/auth",
+      "kind": "test",
+      "test": "webauthn_registration_deactivated_user",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-auth",
+        "--test",
+        "webauthn_registration_deactivated_user",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
+    },
+    {
       "buck_wrapper": "//tools/buck:platform-authz-policy-pg",
       "name": "platform-authz-policy-pg",
       "buck_inner": "//backend/crates/platform/authz:console-platform-authz-itest-policy",
@@ -4054,6 +4077,29 @@
         "--test-threads=1"
       ],
       "in_workflow_postgres_job": false
+    },
+    {
+      "buck_wrapper": "//tools/buck:registry-adapter-postgres-branch-under-deactivated-region-pg",
+      "name": "registry-adapter-postgres-branch-under-deactivated-region-pg",
+      "buck_inner": "//backend/crates/registry/adapter-postgres:console-registry-adapter-postgres-itest-branch_under_deactivated_region",
+      "package": "console-registry-adapter-postgres",
+      "crate_dir": "backend/crates/registry/adapter-postgres",
+      "kind": "test",
+      "test": "branch_under_deactivated_region",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-registry-adapter-postgres",
+        "--test",
+        "branch_under_deactivated_region",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:registry-adapter-postgres-create-rls-surfaces-as-runtime-role-pg",
@@ -5012,6 +5058,52 @@
         "console-payroll-adapter-postgres",
         "--test",
         "pay_run_port_as_runtime_role",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
+    },
+    {
+      "buck_wrapper": "//tools/buck:identity-adapter-postgres-user_lifecycle_noop_replay-pg",
+      "name": "identity-adapter-postgres-user_lifecycle_noop_replay-pg",
+      "buck_inner": "//backend/crates/identity/adapter-postgres:console-identity-adapter-postgres-itest-user_lifecycle_noop_replay",
+      "package": "console-identity-adapter-postgres",
+      "crate_dir": "backend/crates/identity/adapter-postgres",
+      "kind": "test",
+      "test": "user_lifecycle_noop_replay",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-identity-adapter-postgres",
+        "--test",
+        "user_lifecycle_noop_replay",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
+    },
+    {
+      "buck_wrapper": "//tools/buck:identity-adapter-postgres-branch_under_deactivated_region-pg",
+      "name": "identity-adapter-postgres-branch_under_deactivated_region-pg",
+      "buck_inner": "//backend/crates/identity/adapter-postgres:console-identity-adapter-postgres-itest-branch_under_deactivated_region",
+      "package": "console-identity-adapter-postgres",
+      "crate_dir": "backend/crates/identity/adapter-postgres",
+      "kind": "test",
+      "test": "branch_under_deactivated_region",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-identity-adapter-postgres",
+        "--test",
+        "branch_under_deactivated_region",
         "--",
         "--test-threads=1"
       ],

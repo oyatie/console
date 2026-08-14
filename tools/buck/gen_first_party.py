@@ -536,6 +536,8 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-identity-adapter-postgres': {
         'unit': 'none',
         'integration': {
+            'tests/branch_under_deactivated_region.rs': 'postgres',
+            'tests/user_lifecycle_noop_replay.rs': 'postgres',
             'tests/deactivate_revokes_credentials.rs': 'postgres',
             'tests/me_workspace_layouts_rls.rs': 'postgres',
             'tests/region_branch_crud_rls_surfaces_as_runtime_role.rs': 'postgres',
@@ -767,6 +769,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/refresh_tokens.rs': 'postgres',
             'tests/webauthn_ceremony.rs': 'postgres',
             'tests/webauthn_ceremony_replay.rs': 'postgres',
+            'tests/webauthn_registration_deactivated_user.rs': 'postgres',
             'tests/well_known.rs': 'none',
         },
     },
@@ -891,6 +894,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     },
     'console-registry-adapter-postgres': {
         'integration': {
+            'tests/branch_under_deactivated_region.rs': 'postgres',
             'tests/create_rls_surfaces_as_runtime_role.rs': 'postgres',
             'tests/equipment_list_rls_as_runtime_role.rs': 'postgres',
             'tests/equipment_lookup_normalization_rls_as_runtime_role.rs': 'postgres',

@@ -2970,12 +2970,9 @@ async fn update_user(
         // and branches is a governance no-op and must not demand a preview; any
         // real role/branch change still requires it. (The escalation guard above
         // always runs.)
-        let roles_changed = roles.as_ref().is_some_and(|r| {
-            let mut current = target.roles.clone();
-            current.sort();
-            current.dedup();
-            role_db_strings(r) != current
-        });
+        let roles_changed = roles
+            .as_ref()
+            .is_some_and(|r| system_roles_changed(r, &target.roles));
         let branches_changed = body.branch_ids.as_ref().is_some_and(|requested| {
             let normalize = |branches: &[BranchId]| {
                 let mut out = branches.to_vec();
@@ -4648,6 +4645,51 @@ fn parse_roles(raw: &[String]) -> Result<BTreeSet<Role>, RestError> {
 
 fn role_db_strings(roles: &BTreeSet<Role>) -> Vec<String> {
     roles.iter().map(|role| role.as_str().to_owned()).collect()
+}
+
+/// Whether the requested role SET differs from the stored `users.roles` array
+/// (console-9sb).
+///
+/// `users.roles` is stored in [`Role`]'s derived (DECLARATION) order, while a
+/// client echoes the array in any order it was given. Comparing the two as
+/// SEQUENCES therefore misreports an unchanged role set in a different order as
+/// a change (and a lexicographic `sort()` of the stored strings disagrees with
+/// `Role`'s declaration order even further). Both sides are normalised to a set
+/// so only a real membership change counts, matching the adapter's
+/// `normalize_system_roles` semantics.
+fn system_roles_changed(requested: &BTreeSet<Role>, current: &[String]) -> bool {
+    let requested: BTreeSet<String> = role_db_strings(requested).into_iter().collect();
+    let current: BTreeSet<String> = current.iter().cloned().collect();
+    requested != current
+}
+
+#[cfg(test)]
+mod system_roles_changed_tests {
+    use super::*;
+
+    /// console-9sb: `users.roles` is stored in `Role`'s DECLARATION order
+    /// (`SUPER_ADMIN`, `ADMIN`, ...), but a lexicographic sort yields
+    /// (`ADMIN`, `SUPER_ADMIN`). Comparing the two as sequences misreports an
+    /// unchanged set as changed. The comparison must be order-insensitive.
+    #[test]
+    fn unchanged_role_set_in_a_different_order_is_not_a_change() {
+        let requested: BTreeSet<Role> = [Role::SuperAdmin, Role::Admin].into_iter().collect();
+        // The stored array echoed back in lexicographic order — the reverse of
+        // `Role`'s declaration order.
+        let current = vec!["ADMIN".to_owned(), "SUPER_ADMIN".to_owned()];
+        assert!(
+            !system_roles_changed(&requested, &current),
+            "the same role set in a different order must not be a change"
+        );
+    }
+
+    /// An actual membership change is still a change.
+    #[test]
+    fn role_set_membership_difference_is_a_change() {
+        let requested: BTreeSet<Role> = [Role::SuperAdmin, Role::Admin].into_iter().collect();
+        let current = vec!["ADMIN".to_owned()];
+        assert!(system_roles_changed(&requested, &current));
+    }
 }
 
 // ---------------------------------------------------------------------------

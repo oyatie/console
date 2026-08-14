@@ -3710,6 +3710,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-14-b-id-identity-containment.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "3b5787bf818cbd907d3ed9009caa9def17512b8e",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/ledger/2026-08-14-l4-empl-retarget.md",
     "class": "evidence",
     "owner": "repository maintainers",

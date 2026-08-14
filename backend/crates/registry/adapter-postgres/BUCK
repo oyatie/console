@@ -32,6 +32,36 @@ rust_library(
 )
 
 rust_test(
+    name = "console-registry-adapter-postgres-itest-branch_under_deactivated_region",
+    mapped_srcs = repo_mapped_srcs("backend/crates/registry/adapter-postgres", ["tests/branch_under_deactivated_region.rs"], external = {
+        "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+        "//docs/reference:master-list": "docs/reference/master-list_251120.xlsx",
+    }),
+    crate = "branch_under_deactivated_region",
+    edition = "2024",
+    crate_root = "backend/crates/registry/adapter-postgres/tests/branch_under_deactivated_region.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/registry/adapter-postgres", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
+    labels = ["owner.backend.crates.registry.adapter-postgres", "domain.registry", "test.integration", "resource.postgres", "needs-postgres"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//backend/crates/registry/application:console-registry-application",
+        "//backend/crates/registry/domain:console-registry-domain",
+        "//third-party/rust:calamine",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:thiserror",
+        "//third-party/rust:time",
+        "//third-party/rust:tokio",
+        "//third-party/rust:umya-spreadsheet",
+        "//third-party/rust:uuid",
+        ":console-registry-adapter-postgres",
+    ],
+)
+
+rust_test(
     name = "console-registry-adapter-postgres-itest-create_rls_surfaces_as_runtime_role",
     mapped_srcs = repo_mapped_srcs("backend/crates/registry/adapter-postgres", ["tests/create_rls_surfaces_as_runtime_role.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",

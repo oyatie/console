@@ -1,4 +1,4 @@
-use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext, UserId};
 use console_platform_db::insert_audit_event;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Row};
@@ -730,6 +730,29 @@ impl PasskeyService {
         let user_id = claim.user_id.ok_or_else(|| {
             AuthError::InvalidStoredData("registration ceremony missing user_id".to_owned())
         })?;
+
+        // Serialize issuance against the deactivation sweep: lock the user row and
+        // recheck `is_active` so a passkey can never be minted on an account a
+        // concurrent (or prior) `deactivate_user` has already swept. Without this
+        // lock, `finish_registration` can INSERT + commit after
+        // `sweep_user_credentials_tx` ran, leaving a usable credential on an
+        // inactive account (console-cg6 review).
+        let active: Option<bool> =
+            sqlx::query_scalar("SELECT is_active FROM users WHERE id = $1 FOR UPDATE")
+                .bind(user_id)
+                .fetch_optional(tx.as_mut())
+                .await?;
+        match active {
+            None => {
+                return Err(AuthError::Kernel(KernelError::not_found("user not found")));
+            }
+            Some(false) => {
+                return Err(AuthError::Kernel(KernelError::conflict(
+                    "비활성화된 사용자는 패스키를 등록할 수 없습니다.",
+                )));
+            }
+            Some(true) => {}
+        }
 
         // Verify the assertion AFTER the atomic claim using the RETURNING state.
         // On verification failure we return Err, so the transaction rolls back and

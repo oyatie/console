@@ -29,9 +29,10 @@ use console_identity_domain::{
     Team, normalize_optional_phone, validate_display_name, validate_org_name,
 };
 use console_kernel_core::{
-    BranchId, BranchScope, ErrorKind, KernelError, RegionId, TraceContext, UserId,
+    AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, RegionId, TraceContext,
+    UserId,
 };
-use console_platform_db::{DbError, insert_audit_event, with_audit, with_org_conn};
+use console_platform_db::{DbError, insert_audit_event, with_audit, with_audits, with_org_conn};
 use console_platform_request_context::current_org;
 use sqlx::{PgPool, Postgres, QueryBuilder, Row, Transaction};
 
@@ -489,20 +490,14 @@ impl PgOrgStore {
         let actor = command.actor;
         let trace = command.trace.clone();
         let occurred_at = command.occurred_at;
-        let event = user_audit_event(
-            "user.deactivate",
-            Some(actor),
-            user_id,
-            trace.clone(),
-            occurred_at,
-        )?
-        .with_org(org)
-        .with_snapshots(
-            Some(serde_json::json!({ "is_active": true })),
-            Some(serde_json::json!({ "is_active": false })),
-        );
 
-        with_audit::<_, UserSummary, PgOrgError>(&self.pool, event, |tx| {
+        // One tenant-armed transaction decides between a real transition and a
+        // no-op replay, and COMMITS the credential sweep in both cases. On a
+        // no-op replay (already inactive) we still run the idempotent sweep so a
+        // passkey/token that raced the original deactivation cannot survive
+        // (console-cg6 review), then surface a Conflict to the caller without
+        // minting a second transition row.
+        let outcome = with_audits::<_, DeactivateOutcome, PgOrgError>(&self.pool, org, move |tx| {
             Box::pin(async move {
                 let affected = sqlx::query(
                     "UPDATE users SET is_active = false WHERE id = $1 AND is_active = true",
@@ -521,18 +516,21 @@ impl PgOrgStore {
                     if exists.is_none() {
                         return Err(PgOrgError::Domain(KernelError::not_found("user not found")));
                     }
+                    let sweep =
+                        sweep_user_credentials_tx(tx, actor, user_id, &trace, occurred_at, org)
+                            .await?;
+                    return Ok((
+                        DeactivateOutcome::AlreadyInactive,
+                        vec![sweep.credential_event, sweep.session_event],
+                    ));
                 }
 
-                // Revoke passkeys: the org GUC is armed, so this RLS-gated DELETE
-                // only ever touches THIS tenant's credentials.
-                let revoked_credentials =
-                    sqlx::query("DELETE FROM auth_webauthn_credentials WHERE user_id = $1")
-                        .bind(*user_id.as_uuid())
-                        .execute(tx.as_mut())
-                        .await?
-                        .rows_affected();
-                let credential_event = user_audit_event(
-                    "auth.passkey.revoke_all",
+                // Real transition: sweep credentials + sessions, then record the
+                // transition and the archive snapshot in the same transaction.
+                let sweep =
+                    sweep_user_credentials_tx(tx, actor, user_id, &trace, occurred_at, org).await?;
+                let transition_event = user_audit_event(
+                    "user.deactivate",
                     Some(actor),
                     user_id,
                     trace.clone(),
@@ -540,56 +538,9 @@ impl PgOrgStore {
                 )?
                 .with_org(org)
                 .with_snapshots(
-                    None,
-                    Some(serde_json::json!({
-                        "reason": "user_deactivated",
-                        "revoked_credential_count": revoked_credentials,
-                    })),
+                    Some(serde_json::json!({ "is_active": true })),
+                    Some(serde_json::json!({ "is_active": false })),
                 );
-                insert_audit_event(tx, &credential_event).await?;
-
-                // Revoke every refresh-token family + token for the user, so any
-                // live session dies on its next rotation and refresh fails closed.
-                let revoked_families = sqlx::query(
-                    r#"
-                    UPDATE auth_refresh_token_families
-                    SET revoked_at = $2, revoked_reason = 'user_deactivated'
-                    WHERE user_id = $1 AND revoked_at IS NULL
-                    "#,
-                )
-                .bind(*user_id.as_uuid())
-                .bind(occurred_at)
-                .execute(tx.as_mut())
-                .await?
-                .rows_affected();
-                sqlx::query(
-                    r#"
-                    UPDATE auth_refresh_tokens
-                    SET revoked_at = COALESCE(revoked_at, $2)
-                    WHERE user_id = $1
-                    "#,
-                )
-                .bind(*user_id.as_uuid())
-                .bind(occurred_at)
-                .execute(tx.as_mut())
-                .await?;
-                let session_event = user_audit_event(
-                    "auth.refresh.revoke_all",
-                    Some(actor),
-                    user_id,
-                    trace.clone(),
-                    occurred_at,
-                )?
-                .with_org(org)
-                .with_snapshots(
-                    None,
-                    Some(serde_json::json!({
-                        "reason": "user_deactivated",
-                        "revoked_family_count": revoked_families,
-                    })),
-                );
-                insert_audit_event(tx, &session_event).await?;
-
                 let policy_event = policy_account_audit_event(
                     "policy.account.archive",
                     Some(actor),
@@ -606,11 +557,10 @@ impl PgOrgStore {
                     Some(serde_json::json!({
                         "is_active": false,
                         "account_status": "ARCHIVED",
-                        "revoked_credential_count": revoked_credentials,
-                        "revoked_family_count": revoked_families,
+                        "revoked_credential_count": sweep.revoked_credentials,
+                        "revoked_family_count": sweep.revoked_families,
                     })),
                 );
-                insert_audit_event(tx, &policy_event).await?;
 
                 // Offboarding revokes every credential + session; bump the
                 // subject session_generation so any access token minted before
@@ -623,10 +573,26 @@ impl PgOrgStore {
                 )
                 .await?;
 
-                fetch_user_tx(tx, user_id).await
+                let summary = fetch_user_tx(tx, user_id).await?;
+                Ok((
+                    DeactivateOutcome::Deactivated(Box::new(summary)),
+                    vec![
+                        sweep.credential_event,
+                        sweep.session_event,
+                        policy_event,
+                        transition_event,
+                    ],
+                ))
             })
         })
-        .await
+        .await?;
+
+        match outcome {
+            DeactivateOutcome::Deactivated(summary) => Ok(*summary),
+            DeactivateOutcome::AlreadyInactive => Err(PgOrgError::Domain(KernelError::conflict(
+                "이미 보관된 사용자입니다.",
+            ))),
+        }
     }
 
     /// Reactivate an archived user. This reverses only the lifecycle flag; it
@@ -673,6 +639,13 @@ impl PgOrgStore {
                     if exists.is_none() {
                         return Err(PgOrgError::Domain(KernelError::not_found("user not found")));
                     }
+                    // Already active: replaying activation is a no-op and must not
+                    // bump the subject version or mint a second transition audit row
+                    // (console-cg6). Return Conflict like the region/branch idempotence
+                    // paths so `with_audit` rolls back before writing `user.activate`.
+                    return Err(PgOrgError::Domain(KernelError::conflict(
+                        "이미 활성화된 사용자입니다.",
+                    )));
                 }
 
                 bump_subject_version_tx(tx, org_uuid, *user_id.as_uuid(), occurred_at).await?;
@@ -1845,6 +1818,7 @@ impl PgOrgStore {
 
         with_audit::<_, BranchSummary, PgOrgError>(&self.pool, event, |tx| {
             Box::pin(async move {
+                ensure_region_active_tx(tx, region_id).await?;
                 sqlx::query(
                     "INSERT INTO branches (id, region_id, name, created_at, org_id) VALUES ($1, $2, $3, $4, $5)",
                 )
@@ -1906,6 +1880,7 @@ impl PgOrgStore {
                     )));
                 }
                 if let Some(region_id) = region_id {
+                    ensure_region_active_tx(tx, region_id).await?;
                     sqlx::query("UPDATE branches SET region_id = $2 WHERE id = $1")
                         .bind(*branch_id.as_uuid())
                         .bind(*region_id.as_uuid())
@@ -2491,6 +2466,132 @@ fn normalize_system_roles(roles: Vec<String>) -> Vec<String> {
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
+}
+
+/// Refuse to create or re-parent a branch under a DEACTIVATED region
+/// (console-lx6). The region row is locked `FOR UPDATE` so a concurrent
+/// `deactivate_region` cannot slip between this check and the branch
+/// INSERT/UPDATE; a stale picker `region_id` deactivated in the meantime fails
+/// closed here instead of stranding the branch outside the org tree.
+async fn ensure_region_active_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    region_id: RegionId,
+) -> Result<(), PgOrgError> {
+    let row: Option<(uuid::Uuid, Option<time::OffsetDateTime>)> =
+        sqlx::query_as("SELECT id, deactivated_at FROM regions WHERE id = $1 FOR UPDATE")
+            .bind(*region_id.as_uuid())
+            .fetch_optional(tx.as_mut())
+            .await?;
+    let Some((_, deactivated_at)) = row else {
+        return Err(PgOrgError::Domain(KernelError::not_found(
+            "region not found",
+        )));
+    };
+    if deactivated_at.is_some() {
+        return Err(PgOrgError::Domain(KernelError::conflict(
+            "비활성화된 지역에는 지점을 추가하거나 이동할 수 없습니다.",
+        )));
+    }
+    Ok(())
+}
+
+/// The outcome of a user deactivation attempt: a real transition, or a no-op
+/// replay of an already-inactive user. The no-op arm still commits a credential
+/// sweep before the caller is told the transition was redundant.
+enum DeactivateOutcome {
+    Deactivated(Box<UserSummary>),
+    AlreadyInactive,
+}
+
+/// One credential/session revocation sweep: the two audit events that record
+/// the revocations (inserted by the caller's `with_audits`), plus the counts
+/// the `policy.account.archive` snapshot needs.
+struct CredentialSweep {
+    credential_event: AuditEvent,
+    session_event: AuditEvent,
+    revoked_credentials: u64,
+    revoked_families: u64,
+}
+
+/// Revoke every WebAuthn credential and refresh-token family/token for a user
+/// inside an already-armed transaction. Idempotent: running it again on an
+/// already-swept user is a no-op, so the no-op replay path can call it to catch
+/// a credential that raced the original deactivation (console-cg6 review).
+async fn sweep_user_credentials_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    actor: UserId,
+    user_id: UserId,
+    trace: &TraceContext,
+    occurred_at: time::OffsetDateTime,
+    org: OrgId,
+) -> Result<CredentialSweep, PgOrgError> {
+    let revoked_credentials =
+        sqlx::query("DELETE FROM auth_webauthn_credentials WHERE user_id = $1")
+            .bind(*user_id.as_uuid())
+            .execute(tx.as_mut())
+            .await?
+            .rows_affected();
+    let credential_event = user_audit_event(
+        "auth.passkey.revoke_all",
+        Some(actor),
+        user_id,
+        trace.clone(),
+        occurred_at,
+    )?
+    .with_org(org)
+    .with_snapshots(
+        None,
+        Some(serde_json::json!({
+            "reason": "user_deactivated",
+            "revoked_credential_count": revoked_credentials,
+        })),
+    );
+
+    let revoked_families = sqlx::query(
+        r#"
+        UPDATE auth_refresh_token_families
+        SET revoked_at = $2, revoked_reason = 'user_deactivated'
+        WHERE user_id = $1 AND revoked_at IS NULL
+        "#,
+    )
+    .bind(*user_id.as_uuid())
+    .bind(occurred_at)
+    .execute(tx.as_mut())
+    .await?
+    .rows_affected();
+    sqlx::query(
+        r#"
+        UPDATE auth_refresh_tokens
+        SET revoked_at = COALESCE(revoked_at, $2)
+        WHERE user_id = $1
+        "#,
+    )
+    .bind(*user_id.as_uuid())
+    .bind(occurred_at)
+    .execute(tx.as_mut())
+    .await?;
+    let session_event = user_audit_event(
+        "auth.refresh.revoke_all",
+        Some(actor),
+        user_id,
+        trace.clone(),
+        occurred_at,
+    )?
+    .with_org(org)
+    .with_snapshots(
+        None,
+        Some(serde_json::json!({
+            "reason": "user_deactivated",
+            "revoked_family_count": revoked_families,
+        })),
+    );
+
+    Ok(CredentialSweep {
+        credential_event,
+        session_event,
+        revoked_credentials,
+        revoked_families,
+    })
 }
 
 fn stale_policy_assignment_preview_error() -> PgOrgError {

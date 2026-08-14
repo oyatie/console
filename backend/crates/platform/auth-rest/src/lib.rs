@@ -19,7 +19,7 @@ use console_kernel_core::{
     UserId,
 };
 use console_platform_auth::{
-    AccessClaims, AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier,
+    AccessClaims, AccessTokenInput, AuthError, JwtIssuer, JwtSettings, JwtVerifier,
     MobilePasskeyStepUpBinding, PasskeyAuthenticationCredential, PasskeyRegistrationCredential,
     PasskeyRegistrationStart, PasskeyService, RefreshTokenStore, RefreshTokenUseError,
     WebauthnSettings,
@@ -924,7 +924,10 @@ async fn finish_registration(
         .passkeys
         .finish_registration_in_tx(&mut tx, org_id, body.ceremony_id, body.credential, now)
         .await
-        .map_err(|err| RestError::internal(err.to_string()))?;
+        .map_err(|err| match err {
+            AuthError::Kernel(kernel) => RestError::from_kernel(kernel),
+            other => RestError::internal(other.to_string()),
+        })?;
     services
         .bootstrap_credentials
         .consume_open_credentials_tx(&mut tx, org_id, user_id, now)

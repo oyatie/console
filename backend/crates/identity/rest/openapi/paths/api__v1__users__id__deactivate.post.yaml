@@ -25,6 +25,8 @@ responses:
     $ref: '#/components/responses/Forbidden'
   '404':
     $ref: '#/components/responses/NotFound'
+  '409':
+    $ref: '#/components/responses/Conflict'
   '503':
     description: JWT verification is not configured.
     content:
