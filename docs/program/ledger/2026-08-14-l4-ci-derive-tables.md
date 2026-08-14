@@ -15,9 +15,11 @@
 
 ## Verification
 
-- `cargo fmt -p console-gate-writer-ownership -- --check`: clean.
-- `cargo clippy -p console-gate-writer-ownership --all-targets -- -D warnings`: clean (collapsible-if findings fixed with let-chains).
-- `cargo test -p console-gate-writer-ownership --test census_executes_against_postgres derived_required_tables_match_the_verbatim_roster`: 1 passed / 0 failed (3 Docker-required tests filtered by name — they run in CI, where the census is wired).
+Every Cargo command below is runnable from the repository root as `cd backend && …`. Environment: `CARGO_TARGET_DIR=target` `SQLX_OFFLINE=true`.
+
+- `cd backend && CARGO_TARGET_DIR=target SQLX_OFFLINE=true cargo fmt -p console-gate-writer-ownership -- --check`: clean.
+- `cd backend && CARGO_TARGET_DIR=target SQLX_OFFLINE=true cargo clippy -p console-gate-writer-ownership --all-targets -- -D warnings`: clean (collapsible-if findings fixed with let-chains).
+- `cd backend && CARGO_TARGET_DIR=target SQLX_OFFLINE=true cargo test -p console-gate-writer-ownership --test census_executes_against_postgres derived_required_tables_match_the_verbatim_roster`: 1 passed / 0 failed (4 filtered out; Docker-required census tests run in CI).
 - `node scripts/console/generate-documentation-manifest.mjs --check`: OK (441 markdown files).
 
 ## Operational receipt (lane-specific)
