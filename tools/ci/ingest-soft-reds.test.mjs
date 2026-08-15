@@ -49,3 +49,30 @@ test("mergeItems dedupes by source_key", () => {
   assert.equal(updated.length, 1);
   assert.equal(items[0].title, "new");
 });
+
+test("mergeItems expires derived PR observations absent from the new scan", () => {
+  const { items } = mergeItems(
+    [
+      { source_key: "soft_red:pr:1:behind", derived: true, status: "ready", title: "stale pr" },
+      { source_key: "block:pr:2:dirty", derived: true, status: "ready", title: "stale block" },
+      { source_key: "manual:keep", status: "ready", title: "manual entry" },
+    ],
+    [{ source_key: "manual:keep", status: "ready", title: "manual entry" }],
+  );
+  const keys = items.map((i) => i.source_key);
+  assert.deepEqual(keys, ["manual:keep"]);
+  assert.equal(items.length, 1);
+});
+
+test("mergeItems preserves custom PR observations absent from the new scan", () => {
+  const { items } = mergeItems(
+    [
+      { source_key: "soft_red:pr:591:auth_bootstrap_fail", status: "ready", title: "custom" },
+      { source_key: "soft_red:pr:3:behind", derived: true, status: "ready", title: "derived stale" },
+    ],
+    [],
+  );
+  const keys = items.map((i) => i.source_key);
+  assert.deepEqual(keys, ["soft_red:pr:591:auth_bootstrap_fail"]);
+  assert.equal(items.length, 1);
+});

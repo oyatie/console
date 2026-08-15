@@ -70,6 +70,7 @@ export function softRedsFromPr(pr) {
       holds_checked: "ingest only — no HOLD clearance",
       last_review_verdict: null,
       fix_rounds: 0,
+      derived: true,
     });
   };
 
@@ -85,11 +86,11 @@ export function softRedsFromPr(pr) {
     const name = c.name || c.context || "check";
     const conclusion = (c.conclusion || "").toUpperCase();
     const status = (c.status || "").toUpperCase();
-    if (conclusion === "FAILURE" || conclusion === "CANCELLED" || conclusion === "TIMED_OUT") {
-      const slug = String(name)
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")
-        .slice(0, 40);
+    const slug = String(name)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .slice(0, 40);
+    if (conclusion === "FAILURE" || conclusion === "CANCELLED" || conclusion === "TIMED_OUT" || conclusion === "STARTUP_FAILURE" || conclusion === "ACTION_REQUIRED") {
       const hard =
         /required/i.test(name) ||
         /preflight/i.test(name) ||
@@ -102,6 +103,29 @@ export function softRedsFromPr(pr) {
         "ready",
         `${name} conclusion=${conclusion || status}`,
       );
+    } else if (
+      status === "PENDING" ||
+      status === "IN_PROGRESS" ||
+      status === "QUEUED" ||
+      status === "WAITING" ||
+      status === "REQUESTED" ||
+      status === "REQUEUED"
+    ) {
+      // A rerunning check has no terminal conclusion; keep it on the board so
+      // absence-based expiration does not drop a previously failing observation.
+      // Preserve the hard/soft kind so the source_key matches the prior failure.
+      const hard =
+        /required/i.test(name) ||
+        /preflight/i.test(name) ||
+        /authority/i.test(name) ||
+        /security/i.test(name);
+      push(
+        `check_${slug}`,
+        hard ? "hard_block" : "soft_red",
+        hard ? "P0" : "P2",
+        "fixing",
+        `${name} status=${status} (rerunning)`,
+      );
     }
   }
 
@@ -110,14 +134,28 @@ export function softRedsFromPr(pr) {
 
 export function mergeItems(existing, incoming) {
   const byKey = new Map();
+  const incomingKeys = new Set((incoming || []).map((it) => it?.source_key).filter(Boolean));
   for (const it of existing || []) {
-    if (it && it.source_key) byKey.set(it.source_key, { ...it });
+    if (it && it.source_key) {
+      // Expire DERIVED PR observations absent from the new open-PR scan, so a
+      // PR that became clean/merged no longer lingers as a soft red/block.
+      // Custom board observations (recorded by work-manager/pr-babysit with an
+      // arbitrary suffix) are preserved. Pre-marker entries written by the
+      // previous ingester lack `derived`, so match the derived suffix set too.
+      const derivedSuffix = /^(soft_red|block):pr:\d+:(behind|dirty|blocked_checks|check_[a-z0-9_]+)$/i.test(it.source_key);
+      if ((it.derived === true || derivedSuffix) && !incomingKeys.has(it.source_key)) continue;
+      byKey.set(it.source_key, { ...it });
+    }
   }
   const added = [];
   const updated = [];
   for (const it of incoming) {
     const prev = byKey.get(it.source_key);
     if (!prev) {
+      // A "fixing" item is a rerunning check with no terminal conclusion; only
+      // keep it when the check was already on the board (a prior failure being
+      // re-run). A first-run pending check is not an actionable soft red.
+      if (it.status === "fixing") continue;
       byKey.set(it.source_key, { ...it, updated_at: new Date().toISOString() });
       added.push(it.source_key);
     } else {
@@ -143,7 +181,7 @@ function main() {
       "--state",
       "open",
       "--limit",
-      "40",
+      "1000",
       "--json",
       "number,title,mergeable,mergeStateStatus,headRefOid,statusCheckRollup,url",
     ]);
@@ -169,7 +207,9 @@ function main() {
 
   if (checkOnly) {
     const keys = new Set((board.items || []).map((i) => i.source_key));
-    const missing = observed.filter((o) => !keys.has(o.source_key));
+    // First-run pending checks are "fixing" observations with no board item yet;
+    // they are not silent soft-reds, so exclude them from the silence check.
+    const missing = observed.filter((o) => !keys.has(o.source_key) && o.status !== "fixing");
     if (missing.length) {
       console.error(
         JSON.stringify(

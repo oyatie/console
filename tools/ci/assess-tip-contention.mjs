@@ -23,29 +23,114 @@ export const TIP_SERIAL_PATH_PREFIXES = [
   "docs/documentation-manifest.seed.json",
   "docs/documentation-index.json",
   "docs/program/executed-tests-baseline.json",
+  "docs/program/js-test-reachability-baseline.json",
+  "docs/program/gate-input-exceptions.json",
   "docs/program/console-program-ledger.md",
+  "docs/program/console-capability-registry.json",
+  "docs/program/console-enterprise-roadmap.md",
   "docs/program/ledger/",
   "docs/program/console-jurisdiction-register.json",
+  "docs/CI-GATES.md",
+  "docs/GO-LIVE-CHECKLIST.md",
+  "docs/benchmarks/enterprise-parity-matrix.md",
+  "docs/specs/",
+  "docs/program/console-fanout-epoch-contract.md",
+  "docs/program/console-buck2-scale-playbook.md",
   "docs/current/",
-  ".github/workflows/ci.yml",
-  "scripts/check-ci-preflight.mjs",
-  "scripts/verify.mjs",
+  ".github/workflows/",
+  ".github/actions/",
+  ".github/trust/console.allowed_signers",
+  "scripts/",
   ".grok/",
+  ".claude/workflows/",
+  "backend/Cargo.toml",
   "backend/Cargo.lock",
+  "backend/.sqlx/",
+  "package.json",
   "package-lock.json",
   "tools/buck/",
+  ".buckconfig",
+  "**/BUCK",
+
+  "**/*.bzl",
+  "third-party/rust/reindeer.toml",
+  "third-party/rust/reindeer/",
+  "tools/ci/",
+  "backend/ci/gates/",
   "registry/",
+  "backend/**/migrations/",
+  "backend/**/openapi/",
+
+  "security/",
+  "backend/rust-toolchain.toml",
+  "backend/deny.toml",
+  "renovate.json5",
+  "release-please-config.json",
+  "ops/",
+  "deploy/",
+  ".config/nextest.toml",
+  ".release-please-manifest.json",
 ];
 
 const args = new Set(process.argv.slice(2));
 const checkOnly = args.has("--check");
 
+/**
+ * Compile a serial-path entry into a prefix-anchored RegExp. Entries may carry
+ * glob metacharacters: `**` matches zero or more full path segments (so
+ * `backend/**\/migrations/` reaches `backend/crates/platform/db/migrations/...`),
+ * `*` matches within one segment, and `?` matches a single non-separator char.
+ * Entries without metacharacters keep the literal prefix semantics below.
+ */
+export function globToRegExp(glob) {
+  let re = "";
+  for (let i = 0; i < glob.length; i++) {
+    const ch = glob[i];
+    if (ch === "*") {
+      if (glob[i + 1] === "*") {
+        if (glob[i + 2] === "/") {
+          re += "(?:[^/]+/)*";
+          i += 2; // consumed "**/"
+        } else {
+          re += ".*";
+          i += 1; // consumed "**"
+        }
+      } else {
+        re += "[^/]*";
+      }
+    } else if (ch === "?") {
+      re += "[^/]";
+    } else if ("+()^$.{}[]|\\".includes(ch)) {
+      re += "\\" + ch;
+    } else {
+      re += ch;
+    }
+  }
+  // File globs (ending in a non-separator) are exact-match anchored; directory
+  // globs (ending in "/") keep prefix semantics so a child path still matches.
+  return new RegExp(`^${re}${glob.endsWith("/") ? "" : "$"}`);
+}
+
+// Pre-compile glob entries once; keep literal entries for exact/prefix matching.
+const GLOB_PREFIX_MATCHERS = TIP_SERIAL_PATH_PREFIXES.map((prefix) =>
+  prefix.includes("*") || prefix.includes("?")
+    ? { glob: true, matcher: globToRegExp(prefix) }
+    : { glob: false, prefix },
+);
+
 export function pathIsTipSerial(path) {
   if (!path || typeof path !== "string") return false;
   const p = path.replace(/^\.\//, "");
-  return TIP_SERIAL_PATH_PREFIXES.some(
-    (prefix) => p === prefix || p.startsWith(prefix) || prefix.startsWith(p + "/"),
-  );
+  return GLOB_PREFIX_MATCHERS.some((entry) => {
+    if (entry.glob) return entry.matcher.test(p);
+    if (p === entry.prefix) return true;
+    // Directory entries (trailing "/") keep prefix semantics; file entries are
+    // exact-match only so near-matches like `package.json.bak` do not classify.
+    if (entry.prefix.endsWith("/")) {
+      return p.startsWith(entry.prefix) || entry.prefix.startsWith(p + "/");
+    }
+    return false;
+  });
 }
 
 export function classifyPrFiles(files) {

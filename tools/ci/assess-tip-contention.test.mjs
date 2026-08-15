@@ -14,14 +14,78 @@ test("pathIsTipSerial matches manifest/baseline/ledger/ci roots", () => {
   assert.equal(pathIsTipSerial("docs/documentation-index.json"), true);
   assert.equal(pathIsTipSerial("docs/program/ledger/2026-08-06.md"), true);
   assert.equal(pathIsTipSerial(".github/workflows/ci.yml"), true);
+  assert.equal(pathIsTipSerial(".github/workflows/security.yml"), true);
+  assert.equal(pathIsTipSerial(".github/workflows/console-authority-bootstrap.yml"), true);
+  assert.equal(pathIsTipSerial(".github/trust/console.allowed_signers"), true);
+  assert.equal(pathIsTipSerial(".github/actions/free-runner-disk/action.yml"), true);
   assert.equal(pathIsTipSerial("backend/Cargo.lock"), true);
+  assert.equal(pathIsTipSerial("backend/Cargo.toml"), true);
+  assert.equal(pathIsTipSerial("backend/.sqlx/query-0000.json"), true);
   assert.equal(pathIsTipSerial("backend/crates/leave/domain/src/lib.rs"), false);
-  // Helper path must not substitute for authority baseline JSON.
-  assert.equal(pathIsTipSerial("scripts/lib/executed-tests-baseline"), false);
-  assert.equal(pathIsTipSerial("scripts/lib/executed-tests-baseline/foo.js"), false);
+  // scripts/ is a serial root (gate implementations, incl. shell/Python/nested .mjs);
+  // the lib/ helper lives under that serial root, so it is also serial.
+  assert.equal(pathIsTipSerial("scripts/lib/executed-tests-baseline"), true);
+  assert.equal(pathIsTipSerial("scripts/lib/executed-tests-baseline/foo.js"), true);
   assert.ok(TIP_SERIAL_PATH_PREFIXES.includes("docs/documentation-manifest.seed.json"));
   assert.ok(TIP_SERIAL_PATH_PREFIXES.includes("docs/program/executed-tests-baseline.json"));
   assert.ok(TIP_SERIAL_PATH_PREFIXES.length >= 8);
+});
+
+test("pathIsTipSerial glob-matches migrations and openapi directories", () => {
+  // `**` must match across path segments, not literally.
+  assert.equal(
+    pathIsTipSerial("backend/crates/platform/db/migrations/0216_x.sql"),
+    true,
+    "migration SQL under backend/**/migrations/ is tip-serial",
+  );
+  assert.equal(
+    pathIsTipSerial("backend/crates/hr/rest/openapi/schemas/foo.yaml"),
+    true,
+    "OpenAPI fragment under backend/**/openapi/ is tip-serial",
+  );
+  // A migration in a nested crate path is also covered (zero or more segments).
+  assert.equal(
+    pathIsTipSerial("backend/crates/platform/db/migrations/nested/deep/0217_y.sql"),
+    true,
+  );
+  // `*` matches within one segment; it must not cross a slash.
+  assert.equal(pathIsTipSerial("backend/crates/platform/db/migration-not/0216.sql"), false);
+  assert.equal(
+    pathIsTipSerial("backend/crates/hr/rest/openapi-named-file.yaml"),
+    false,
+    "an OpenAPI-named file outside an openapi/ directory is not tip-serial",
+  );
+});
+
+test("pathIsTipSerial covers capability registry, generated BUCK faces, and Reindeer lockfiles", () => {
+  // Authority registry (the third authority document, previously omitted).
+  assert.equal(pathIsTipSerial("docs/program/console-capability-registry.json"), true);
+  // Enterprise roadmap (shared collision root declared in the capability registry).
+  assert.equal(pathIsTipSerial("docs/program/console-enterprise-roadmap.md"), true);
+  // Registered generated BUCK faces (per tools/buck/generated_face_registry.json).
+  assert.equal(pathIsTipSerial("backend/crates/payroll/domain/BUCK"), true);
+  assert.equal(pathIsTipSerial("backend/app/BUCK"), true);
+  assert.equal(pathIsTipSerial("backend/ci/BUCK"), true);
+  assert.equal(pathIsTipSerial("third-party/rust/BUCK"), true);
+  // A hand-written non-generated file must NOT match the generated-face patterns.
+  assert.equal(pathIsTipSerial("backend/crates/payroll/domain/src/lib.rs"), false);
+  // Reindeer bootstrap source roots (whole dir + config).
+  assert.equal(pathIsTipSerial("third-party/rust/reindeer/Cargo.lock"), true);
+  assert.equal(pathIsTipSerial("third-party/rust/reindeer/bootstrap.sh"), true);
+  assert.equal(pathIsTipSerial("third-party/rust/reindeer.toml"), true);
+  // Always-full CI inputs (per scripts/check-ci-preflight.mjs).
+  assert.equal(pathIsTipSerial("release-please-config.json"), true);
+  assert.equal(pathIsTipSerial("renovate.json5"), true);
+  assert.equal(pathIsTipSerial("backend/deny.toml"), true);
+  assert.equal(pathIsTipSerial("backend/rust-toolchain.toml"), true);
+  assert.equal(pathIsTipSerial("security/something"), true);
+  assert.ok(TIP_SERIAL_PATH_PREFIXES.includes("docs/program/console-capability-registry.json"));
+  assert.ok(TIP_SERIAL_PATH_PREFIXES.includes("docs/program/console-enterprise-roadmap.md"));
+  assert.ok(TIP_SERIAL_PATH_PREFIXES.includes("**/BUCK"));
+  assert.ok(TIP_SERIAL_PATH_PREFIXES.includes("third-party/rust/reindeer.toml"));
+  assert.ok(TIP_SERIAL_PATH_PREFIXES.includes("third-party/rust/reindeer/"));
+  assert.ok(TIP_SERIAL_PATH_PREFIXES.includes("release-please-config.json"));
+  assert.ok(TIP_SERIAL_PATH_PREFIXES.includes("security/"));
 });
 
 test("classifyPrFiles marks tip writers", () => {

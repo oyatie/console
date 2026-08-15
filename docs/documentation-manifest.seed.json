@@ -21,7 +21,7 @@
   },
   {
     "path": ".cursor/agents/lane-critic.md",
-    "blob_sha": "1227a8e4a9cef42b185882bdecc8e6b479a9256e",
+    "blob_sha": "9dc9357231384841c19d7d60a3ee74c3c7ee6137",
     "class": "current",
     "owner": "repository maintainers",
     "status": "active",
@@ -3780,6 +3780,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-14-parallel-development-framework.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "6058943bf5ae079345179dee2bea04a8d80e42eb",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/ledger/2026-08-14-peas-employment-port-routing.md",
     "class": "evidence",
     "owner": "repository maintainers",
@@ -4317,6 +4327,16 @@
     "replacement": null,
     "retention": "retain",
     "blob_sha": "2092f4f15feed7dbb7e8122dc115a6390fdf08f9",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/specs/parallel-development-framework.md",
+    "class": "quarry",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "67163286fd5649cc24cc463645f87becced94ae5",
     "archive_tag": null
   },
   {

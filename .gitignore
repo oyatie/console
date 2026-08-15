@@ -67,3 +67,6 @@ deploy/talos/**/talosconfig
 *.db
 .beads-credential-key
 .beads/proxieddb/
+
+# Grok runtime board (materialized by tools/ci/ingest-soft-reds.mjs; not custodied)
+.grok/harness/lane-board.live.json

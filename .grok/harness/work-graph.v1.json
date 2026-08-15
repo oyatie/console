@@ -1,0 +1,1153 @@
+{
+  "version": "1.0.0",
+  "description": "Console completion work-order graph for multi-agent dispatch. Authority remains docs/current/* only. Success per lane (completion) = the reviewed candidate merges through the protected path with post-merge readback (DELIVERY.md); a PR or stacked commit is implementer handoff, not completion. Tip-serial is a global mutex, not a product phase. Lane packets are populated from lane_packet_fields at dispatch time (operational fields pre_mortem/blast_radius/detection/rollback/stop_conditions/review_identities/head_sha are filled by the dispatcher, not pre-baked in each node).",
+  "consumer": "console-complete + multi-agent-dispatch",
+  "live_status_source": "board+beads",
+  "select_helper": "node tools/ci/ingest-soft-reds.mjs (re-materialize .grok/harness/lane-board.live.json from the shared gh pr list before selection — the per-worktree live board is a derived view, not durable state; board-only/manual status lives in beads, not the live board; on absence or tool failure STOP selection fail-closed) + bd ready + .grok/harness/lane-board.live.json (the console-graph-ready.mjs selector ships in Wave C with its fail-closed allowlist/blocked-lane/beads-status/dependency/verification/parallel-ceiling fixes; until then do not treat it as the selector)",
+  "transport": "subagents (harness) + bd CLI; .grok/bin/mm-role is workstation-local and NOT custodied in the tree (recorded L∞-PROC gap: custody or rebind before specialist dispatch claims)",
+  "lane_packet_fields": [
+    "lane_id",
+    "objective",
+    "phase",
+    "depends_on",
+    "allowlist",
+    "forbidden",
+    "must_read",
+    "hold_touch",
+    "tip_serial",
+    "verification",
+    "admit",
+    "success",
+    "not_doing",
+    "hindsight_recall",
+    "hindsight_retain",
+    "pre_mortem",
+    "blast_radius",
+    "detection",
+    "rollback",
+    "stop_conditions",
+    "review_identities",
+    "head_sha",
+    "remaining_holds",
+    "owner",
+    "base_sha",
+    "target",
+    "mechanical_guide"
+  ],
+  "tip_serial_paths": [
+    "docs/documentation-manifest.seed.json",
+    "docs/documentation-index.json",
+    "docs/program/ledger/**",
+    "docs/program/executed-tests-baseline.json",
+    "docs/program/js-test-reachability-baseline.json",
+    "docs/program/gate-input-exceptions.json",
+    "docs/program/console-program-ledger.md",
+    "docs/program/console-capability-registry.json",
+    "docs/program/console-enterprise-roadmap.md",
+    "docs/program/console-jurisdiction-register.json",
+    "docs/CI-GATES.md",
+    "docs/GO-LIVE-CHECKLIST.md",
+    "docs/benchmarks/enterprise-parity-matrix.md",
+    "docs/specs/",
+    "docs/program/console-fanout-epoch-contract.md",
+    "docs/program/console-buck2-scale-playbook.md",
+    "docs/current/",
+    ".github/workflows/",
+    ".github/actions/",
+    ".github/trust/console.allowed_signers",
+    "scripts/",
+    ".grok/",
+    ".claude/workflows/",
+    "backend/Cargo.toml",
+    "backend/Cargo.lock",
+    "backend/.sqlx/",
+    "package.json",
+    "package-lock.json",
+    "tools/buck/",
+    "**/*.bzl",
+    "third-party/rust/reindeer/",
+    "third-party/rust/reindeer.toml",
+    "**/BUCK",
+    ".buckconfig",
+    "tools/ci/",
+    "backend/ci/gates/",
+    "registry/",
+    "backend/**/migrations/",
+    "backend/**/openapi/",
+    "**/BUCK",
+    "**/BUCK",
+    "**/BUCK",
+    "**/BUCK",
+    "security/",
+    "backend/rust-toolchain.toml",
+    "backend/deny.toml",
+    "renovate.json5",
+    "release-please-config.json",
+    "ops/",
+    "deploy/",
+    ".config/nextest.toml",
+    ".release-please-manifest.json"
+  ],
+  "phases": [
+    {
+      "id": "P0",
+      "title": "Unblock queue",
+      "lanes": [
+        "L0-611",
+        "L0-SSF"
+      ]
+    },
+    {
+      "id": "P1",
+      "title": "Substrate R1 residual + R3",
+      "lanes": [
+        "L1-DOC-INDEX",
+        "L1-PG-PART",
+        "L1-JS-REACH",
+        "L1-CARGO-MEM",
+        "L1-MIG-PARSE",
+        "L1-BUCK-RES",
+        "L1-PROC"
+      ]
+    },
+    {
+      "id": "P2",
+      "title": "Architecture foundations R4",
+      "lanes": [
+        "L2-POL",
+        "L2-APR",
+        "L2-CAP",
+        "L2-API"
+      ]
+    },
+    {
+      "id": "P3",
+      "title": "Ontology engine P1/G005",
+      "lanes": [
+        "L3-ONT-CELL",
+        "L3-SSF-CLOSE"
+      ]
+    },
+    {
+      "id": "P4",
+      "title": "Owning ports H2 prep",
+      "lanes": [
+        "L4-PORT-DES",
+        "L4-PORT-CO",
+        "L4-PORT-OU",
+        "L4-PORT-JP",
+        "L4-PORT-PE",
+        "L4-PORT-EM",
+        "L4-PORT-PR",
+        "L4-STALE-RECONC",
+        "L4-CLOSE"
+      ]
+    },
+    {
+      "id": "P5",
+      "title": "Org → HR → Payroll",
+      "lanes": [
+        "L5-CLOSE",
+        "L5-ORG",
+        "L5-JOB",
+        "L5-HR",
+        "L5-PAY",
+        "L5-CONT-PAY",
+        "L5-CONT-EMP",
+        "L5-CONT-ID",
+        "L5-CONT-HR",
+        "L5-KP0"
+      ]
+    },
+    {
+      "id": "P6",
+      "title": "Leptos H1-gated",
+      "lanes": [
+        "L6-ADR",
+        "L6-SSR",
+        "L6-UI-ORG",
+        "L6-UI-HR",
+        "L6-UI-PAY",
+        "L6-SEC7-TRACKER"
+      ]
+    },
+    {
+      "id": "P∞",
+      "title": "Always-on non-product",
+      "lanes": [
+        "L∞-PROC",
+        "L∞-HOLD-PREP",
+        "L∞-CI-RESID"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "L0-611",
+      "phase": "P0",
+      "objective": "Green + merge docs false-authority fence PR #611",
+      "depends_on": [],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 0,
+      "status": "done"
+    },
+    {
+      "id": "L0-SSF",
+      "phase": "P0",
+      "objective": "Close beads epic console-ssf (children 100% complete)",
+      "depends_on": [],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "ready",
+      "must_use": [
+        "hindsight: prior ONT wave lessons if any"
+      ]
+    },
+    {
+      "id": "L1-DOC-INDEX",
+      "phase": "P1",
+      "objective": "Manifest seed hygiene only if required after #611 (tip-serial lease)",
+      "depends_on": [
+        "L0-611"
+      ],
+      "tip_serial": true,
+      "hold_touch": "none",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L1-PG-PART",
+      "phase": "P1",
+      "objective": "Partition 183-test PG reachability across isolated DBs + aggregate proof",
+      "depends_on": [
+        "L0-611"
+      ],
+      "tip_serial": true,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "ready"
+    },
+    {
+      "id": "L1-JS-REACH",
+      "phase": "P1",
+      "objective": "JS dark-suite reachability ratchet (no orphan .test.mjs)",
+      "depends_on": [
+        "L0-611"
+      ],
+      "tip_serial": true,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "ready"
+    },
+    {
+      "id": "L1-CARGO-MEM",
+      "phase": "P1",
+      "objective": "Cargo test membership + feature-bearing reachability inventory",
+      "depends_on": [
+        "L0-611"
+      ],
+      "tip_serial": true,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "ready"
+    },
+    {
+      "id": "L1-MIG-PARSE",
+      "phase": "P1",
+      "objective": "Fix migration-parser gaps before admitting new migrations",
+      "depends_on": [
+        "L0-611"
+      ],
+      "tip_serial": true,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "ready"
+    },
+    {
+      "id": "L1-BUCK-RES",
+      "phase": "P1",
+      "objective": "Residual Buck map/proof only — no Buck deletion without zero required Buck-only coverage",
+      "depends_on": [
+        "L0-611"
+      ],
+      "tip_serial": true,
+      "hold_touch": "none",
+      "priority": 2,
+      "status": "ready"
+    },
+    {
+      "id": "L1-PROC",
+      "phase": "P1",
+      "objective": "Process harness: board honesty, mm-role-only specialists, no Grok Sol/Claude models; Hindsight recall before inventing process state; retain after class≥2",
+      "depends_on": [],
+      "tip_serial": true,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "ready",
+      "allowlist_hint": [
+        ".grok/**",
+        "tools/ci/**"
+      ],
+      "must_use": [
+        "hindsight recall (if MCP up)",
+        "bd ready",
+        "work-graph.v1.json"
+      ]
+    },
+    {
+      "id": "L2-POL",
+      "phase": "P2",
+      "objective": "Policy/Cedar fail-closed increments (console-a80)",
+      "depends_on": [
+        "L1-DOC-INDEX",
+        "L1-PG-PART",
+        "L1-JS-REACH",
+        "L1-CARGO-MEM",
+        "L1-MIG-PARSE",
+        "L1-BUCK-RES",
+        "L1-PROC"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "blocked",
+      "beads_epic": "console-a80"
+    },
+    {
+      "id": "L2-APR",
+      "phase": "P2",
+      "objective": "True preflight non-mutation + distinct-human approval (console-66n)",
+      "depends_on": [
+        "L1-DOC-INDEX",
+        "L1-PG-PART",
+        "L1-JS-REACH",
+        "L1-CARGO-MEM",
+        "L1-MIG-PARSE",
+        "L1-BUCK-RES",
+        "L1-PROC"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "blocked",
+      "beads_epic": "console-66n"
+    },
+    {
+      "id": "L2-CAP",
+      "phase": "P2",
+      "objective": "Branchless capability + temporal-grant contracts",
+      "depends_on": [
+        "L2-POL"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L2-API",
+      "phase": "P2",
+      "objective": "Contracts-crate / OpenAPI composition (trial one face; serial OpenAPI lease)",
+      "depends_on": [
+        "L1-DOC-INDEX",
+        "L1-PG-PART",
+        "L1-JS-REACH",
+        "L1-CARGO-MEM",
+        "L1-MIG-PARSE",
+        "L1-BUCK-RES",
+        "L1-PROC"
+      ],
+      "tip_serial": "openapi_face",
+      "hold_touch": "none",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L3-ONT-CELL",
+      "phase": "P3",
+      "objective": "Ontology engine path-disjoint cell increments (backend only)",
+      "depends_on": [
+        "L2-POL",
+        "L2-APR"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 2,
+      "status": "blocked",
+      "beads_epic": "console-ssf"
+    },
+    {
+      "id": "L3-SSF-CLOSE",
+      "phase": "P3",
+      "objective": "Epic hygiene after ONT cells; keep console-ssf closed or reopened only for new admission",
+      "depends_on": [
+        "L0-SSF",
+        "L3-ONT-CELL"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 3,
+      "status": "ready"
+    },
+    {
+      "id": "L4-PORT-DES",
+      "phase": "P4",
+      "objective": "Serial design: owning ports + forbidden dual writers for projected types",
+      "depends_on": [
+        "L3-ONT-CELL",
+        "L2-POL",
+        "L2-APR",
+        "L2-CAP",
+        "L2-API"
+      ],
+      "tip_serial": false,
+      "hold_touch": "prepare-only:H2",
+      "priority": 1,
+      "status": "blocked"
+    },
+    {
+      "id": "L4-PORT-CO",
+      "phase": "P4",
+      "objective": "Prove single-writer port: Company",
+      "depends_on": [
+        "L4-PORT-DES"
+      ],
+      "tip_serial": false,
+      "hold_touch": "prepare-only:H2",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L4-PORT-OU",
+      "phase": "P4",
+      "objective": "Prove single-writer port: OrgUnit",
+      "depends_on": [
+        "L4-PORT-DES"
+      ],
+      "tip_serial": false,
+      "hold_touch": "prepare-only:H2",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L4-PORT-JP",
+      "phase": "P4",
+      "objective": "Prove single-writer port: JobPosition",
+      "depends_on": [
+        "L4-PORT-DES"
+      ],
+      "tip_serial": false,
+      "hold_touch": "prepare-only:H2",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L4-PORT-PE",
+      "phase": "P4",
+      "objective": "Prove single-writer port: Person",
+      "depends_on": [
+        "L4-PORT-DES"
+      ],
+      "tip_serial": false,
+      "hold_touch": "prepare-only:H2",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L4-PORT-EM",
+      "phase": "P4",
+      "objective": "Prove single-writer port: Employment",
+      "depends_on": [
+        "L4-PORT-DES"
+      ],
+      "tip_serial": false,
+      "hold_touch": "prepare-only:H2",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L4-PORT-PR",
+      "phase": "P4",
+      "objective": "Prove single-writer port: PayRun",
+      "depends_on": [
+        "L4-PORT-DES"
+      ],
+      "tip_serial": false,
+      "hold_touch": "prepare-only:H2",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L5-ORG",
+      "phase": "P5",
+      "objective": "Company/OrgUnit reference after ports proven",
+      "depends_on": [
+        "L4-PORT-CO",
+        "L4-PORT-OU"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L5-JOB",
+      "phase": "P5",
+      "objective": "JobPosition as first-class object",
+      "depends_on": [
+        "L4-PORT-JP"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L5-HR",
+      "phase": "P5",
+      "objective": "Canonical HR assignment writer (appointment/promotion/transfer)",
+      "depends_on": [
+        "L5-ORG",
+        "L5-JOB",
+        "L2-APR",
+        "L4-PORT-EM",
+        "L4-PORT-PE"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "blocked"
+    },
+    {
+      "id": "L5-PAY",
+      "phase": "P5",
+      "objective": "PayRun projection from existing payroll truth (no second writer)",
+      "depends_on": [
+        "L5-HR",
+        "L4-PORT-PR"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "blocked"
+    },
+    {
+      "id": "L6-ADR",
+      "phase": "P6",
+      "objective": "ADR-0030 substrate gate evidence (backend unlocks only until H1)",
+      "depends_on": [
+        "L5-PAY",
+        "L2-API"
+      ],
+      "tip_serial": false,
+      "hold_touch": "prepare-only:H1",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L6-SSR",
+      "phase": "P6",
+      "objective": "Contracts-only Leptos SSR shell after H1 clear (gated on hold_touch H1 + L6-SEC7-TRACKER; do not dispatch until the console-8nq HOLD clears)",
+      "depends_on": [
+        "L6-ADR",
+        "L6-SEC7-TRACKER"
+      ],
+      "tip_serial": false,
+      "hold_touch": "H1",
+      "priority": 2,
+      "status": "blocked"
+    },
+    {
+      "id": "L6-UI-ORG",
+      "phase": "P6",
+      "objective": "Org surfaces deny-by-omission",
+      "depends_on": [
+        "L6-SSR",
+        "L5-ORG"
+      ],
+      "tip_serial": false,
+      "hold_touch": "H1",
+      "priority": 3,
+      "status": "blocked"
+    },
+    {
+      "id": "L6-UI-HR",
+      "phase": "P6",
+      "objective": "HR surfaces deny-by-omission",
+      "depends_on": [
+        "L6-SSR",
+        "L5-HR"
+      ],
+      "tip_serial": false,
+      "hold_touch": "H1",
+      "priority": 3,
+      "status": "blocked"
+    },
+    {
+      "id": "L6-UI-PAY",
+      "phase": "P6",
+      "objective": "Payroll surfaces deny-by-omission",
+      "depends_on": [
+        "L6-SSR",
+        "L5-PAY"
+      ],
+      "tip_serial": false,
+      "hold_touch": "H1",
+      "priority": 3,
+      "status": "blocked"
+    },
+    {
+      "id": "L∞-PROC",
+      "phase": "P∞",
+      "objective": "Process upgrades from failure-classes; always-on; Hindsight recall before inventing process state; retain after class≥2",
+      "depends_on": [],
+      "tip_serial": true,
+      "hold_touch": "none",
+      "priority": 2,
+      "status": "ready",
+      "must_use": [
+        "hindsight recall (if MCP up)",
+        "bd ready",
+        "work-graph.v1.json"
+      ]
+    },
+    {
+      "id": "L∞-HOLD-PREP",
+      "phase": "P∞",
+      "objective": "Custody inventory for disk wipe HOLD; never OCI A1 mutate; no live prod claims",
+      "depends_on": [],
+      "tip_serial": false,
+      "hold_touch": "prepare-only:H3,H5,H6",
+      "priority": 3,
+      "status": "ready"
+    },
+    {
+      "id": "L4-STALE-RECONC",
+      "phase": "P4",
+      "objective": "Reconcile stale p4/canonical-ports-writer-ownership stream (2 unique commits; true uncommitted residue = 6 tracked files + untracked custody candidates) against origin/main by two-dot delta; preserve the checkout as evidence and land only genuine residue (EMPL-RETARGET, CI-DERIVE, holiday-table design) as leaves",
+      "depends_on": [],
+      "tip_serial": true,
+      "hold_touch": "none",
+      "priority": 0,
+      "status": "ready"
+    },
+    {
+      "id": "L5-CONT-PAY",
+      "phase": "P5",
+      "objective": "Canonical containment: PayRun conflict arm, payroll drain staging, backdated head (console-3yu, console-ai2, console-r25 — console-3yu/console-ai2 landed via #777, console-r25 via #780)",
+      "depends_on": [
+        "L5-CLOSE"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "ready"
+    },
+    {
+      "id": "L5-CONT-EMP",
+      "phase": "P5",
+      "objective": "Employment canonical containment: ONBOARD current_status, org-change freeze windows, tenant removal, pure preflight, replay approval (console-31e, console-rte, console-fi8, console-2kd, console-0hf — console-rte landed via #780)",
+      "depends_on": [
+        "L5-CLOSE"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "ready"
+    },
+    {
+      "id": "L5-CONT-ID",
+      "phase": "P5",
+      "objective": "Identity/leave containment: live leave writer, role-sequence comparison, no-op replay trail, deactivated branch re-parent (console-2v1, console-9sb, console-cg6, console-lx6 — console-9sb/console-cg6/console-lx6 landed via #776)",
+      "depends_on": [
+        "L5-CLOSE"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "ready"
+    },
+    {
+      "id": "L5-CONT-HR",
+      "phase": "P5",
+      "objective": "HR REST free-text org_unit dual-namespace (console-tfg2); openapi enum peripheral drift pin via conductor (console-e8vn)",
+      "depends_on": [
+        "L5-CLOSE"
+      ],
+      "tip_serial": "openapi_face",
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "ready"
+    },
+    {
+      "id": "L5-KP0",
+      "phase": "P5",
+      "objective": "Public-holiday reference table for payroll (console-kp0, payroll-owned scope only); the collaboration/workbench iljeong projection is out of scope (communications are outside the PRODUCT boundary)",
+      "depends_on": [
+        "L4-CLOSE",
+        "L1-MIG-PARSE",
+        "L5-HR"
+      ],
+      "tip_serial": true,
+      "hold_touch": "none",
+      "priority": 2,
+      "status": "ready"
+    },
+    {
+      "id": "L∞-CI-RESID",
+      "phase": "P∞",
+      "objective": "CI/contract residuals: console-8x4 conflict decision, console-ss7, console-gwa, console-cae0, console-u4p5, console-37c, console-ry4f/c236; tip-serial, conductor-led",
+      "depends_on": [],
+      "tip_serial": true,
+      "hold_touch": "none",
+      "priority": 1,
+      "status": "ready"
+    },
+    {
+      "id": "L6-SEC7-TRACKER",
+      "phase": "P6",
+      "objective": "Track the console-8nq P6 delivery HOLD and custody the ADR-0030 section 7 six-green evidence; prepare-only, no shell",
+      "depends_on": [],
+      "tip_serial": false,
+      "hold_touch": "prepare-only:H1",
+      "priority": 1,
+      "status": "ready"
+    },
+    {
+      "id": "L5-CLOSE",
+      "phase": "P5",
+      "objective": "Close epic console-dgo (P5 org→HR→payroll) with merged/readback evidence; gates the canonical-containment lanes",
+      "depends_on": [
+        "L4-CLOSE",
+        "L1-DOC-INDEX",
+        "L1-PG-PART",
+        "L1-JS-REACH",
+        "L1-CARGO-MEM",
+        "L1-MIG-PARSE",
+        "L1-BUCK-RES",
+        "L1-PROC",
+        "L2-POL",
+        "L2-APR",
+        "L2-CAP",
+        "L2-API"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 0,
+      "status": "ready"
+    },
+    {
+      "id": "L4-CLOSE",
+      "phase": "P4",
+      "objective": "Close the P4 epic console-1qw after console-1qw.4 and console-1qw.5 merge, with readback evidence; explicit P4 close gates P5 closure",
+      "depends_on": [
+        "L4-STALE-RECONC"
+      ],
+      "tip_serial": false,
+      "hold_touch": "none",
+      "priority": 0,
+      "status": "ready"
+    }
+  ],
+  "edges": [
+    {
+      "from": "L0-611",
+      "to": "L1-BUCK-RES"
+    },
+    {
+      "from": "L0-611",
+      "to": "L1-CARGO-MEM"
+    },
+    {
+      "from": "L0-611",
+      "to": "L1-DOC-INDEX"
+    },
+    {
+      "from": "L0-611",
+      "to": "L1-JS-REACH"
+    },
+    {
+      "from": "L0-611",
+      "to": "L1-MIG-PARSE"
+    },
+    {
+      "from": "L0-611",
+      "to": "L1-PG-PART"
+    },
+    {
+      "from": "L0-SSF",
+      "to": "L3-SSF-CLOSE"
+    },
+    {
+      "from": "L1-BUCK-RES",
+      "to": "L2-API"
+    },
+    {
+      "from": "L1-BUCK-RES",
+      "to": "L2-APR"
+    },
+    {
+      "from": "L1-BUCK-RES",
+      "to": "L2-POL"
+    },
+    {
+      "from": "L1-BUCK-RES",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L1-CARGO-MEM",
+      "to": "L2-API"
+    },
+    {
+      "from": "L1-CARGO-MEM",
+      "to": "L2-APR"
+    },
+    {
+      "from": "L1-CARGO-MEM",
+      "to": "L2-POL"
+    },
+    {
+      "from": "L1-CARGO-MEM",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L1-DOC-INDEX",
+      "to": "L2-API"
+    },
+    {
+      "from": "L1-DOC-INDEX",
+      "to": "L2-APR"
+    },
+    {
+      "from": "L1-DOC-INDEX",
+      "to": "L2-POL"
+    },
+    {
+      "from": "L1-DOC-INDEX",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L1-JS-REACH",
+      "to": "L2-API"
+    },
+    {
+      "from": "L1-JS-REACH",
+      "to": "L2-APR"
+    },
+    {
+      "from": "L1-JS-REACH",
+      "to": "L2-POL"
+    },
+    {
+      "from": "L1-JS-REACH",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L1-MIG-PARSE",
+      "to": "L2-API"
+    },
+    {
+      "from": "L1-MIG-PARSE",
+      "to": "L2-APR"
+    },
+    {
+      "from": "L1-MIG-PARSE",
+      "to": "L2-POL"
+    },
+    {
+      "from": "L1-MIG-PARSE",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L1-MIG-PARSE",
+      "to": "L5-KP0"
+    },
+    {
+      "from": "L1-PG-PART",
+      "to": "L2-API"
+    },
+    {
+      "from": "L1-PG-PART",
+      "to": "L2-APR"
+    },
+    {
+      "from": "L1-PG-PART",
+      "to": "L2-POL"
+    },
+    {
+      "from": "L1-PG-PART",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L1-PROC",
+      "to": "L2-API"
+    },
+    {
+      "from": "L1-PROC",
+      "to": "L2-APR"
+    },
+    {
+      "from": "L1-PROC",
+      "to": "L2-POL"
+    },
+    {
+      "from": "L1-PROC",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L2-API",
+      "to": "L4-PORT-DES"
+    },
+    {
+      "from": "L2-API",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L2-API",
+      "to": "L6-ADR"
+    },
+    {
+      "from": "L2-APR",
+      "to": "L3-ONT-CELL"
+    },
+    {
+      "from": "L2-APR",
+      "to": "L4-PORT-DES"
+    },
+    {
+      "from": "L2-APR",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L2-APR",
+      "to": "L5-HR"
+    },
+    {
+      "from": "L2-CAP",
+      "to": "L4-PORT-DES"
+    },
+    {
+      "from": "L2-CAP",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L2-POL",
+      "to": "L2-CAP"
+    },
+    {
+      "from": "L2-POL",
+      "to": "L3-ONT-CELL"
+    },
+    {
+      "from": "L2-POL",
+      "to": "L4-PORT-DES"
+    },
+    {
+      "from": "L2-POL",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L3-ONT-CELL",
+      "to": "L3-SSF-CLOSE"
+    },
+    {
+      "from": "L3-ONT-CELL",
+      "to": "L4-PORT-DES"
+    },
+    {
+      "from": "L4-CLOSE",
+      "to": "L5-CLOSE"
+    },
+    {
+      "from": "L4-CLOSE",
+      "to": "L5-KP0"
+    },
+    {
+      "from": "L4-PORT-CO",
+      "to": "L5-ORG"
+    },
+    {
+      "from": "L4-PORT-DES",
+      "to": "L4-PORT-CO"
+    },
+    {
+      "from": "L4-PORT-DES",
+      "to": "L4-PORT-EM"
+    },
+    {
+      "from": "L4-PORT-DES",
+      "to": "L4-PORT-JP"
+    },
+    {
+      "from": "L4-PORT-DES",
+      "to": "L4-PORT-OU"
+    },
+    {
+      "from": "L4-PORT-DES",
+      "to": "L4-PORT-PE"
+    },
+    {
+      "from": "L4-PORT-DES",
+      "to": "L4-PORT-PR"
+    },
+    {
+      "from": "L4-PORT-EM",
+      "to": "L5-HR"
+    },
+    {
+      "from": "L4-PORT-JP",
+      "to": "L5-JOB"
+    },
+    {
+      "from": "L4-PORT-OU",
+      "to": "L5-ORG"
+    },
+    {
+      "from": "L4-PORT-PE",
+      "to": "L5-HR"
+    },
+    {
+      "from": "L4-PORT-PR",
+      "to": "L5-PAY"
+    },
+    {
+      "from": "L4-STALE-RECONC",
+      "to": "L4-CLOSE"
+    },
+    {
+      "from": "L5-CLOSE",
+      "to": "L5-CONT-EMP"
+    },
+    {
+      "from": "L5-CLOSE",
+      "to": "L5-CONT-HR"
+    },
+    {
+      "from": "L5-CLOSE",
+      "to": "L5-CONT-ID"
+    },
+    {
+      "from": "L5-CLOSE",
+      "to": "L5-CONT-PAY"
+    },
+    {
+      "from": "L5-HR",
+      "to": "L5-KP0"
+    },
+    {
+      "from": "L5-HR",
+      "to": "L5-PAY"
+    },
+    {
+      "from": "L5-HR",
+      "to": "L6-UI-HR"
+    },
+    {
+      "from": "L5-JOB",
+      "to": "L5-HR"
+    },
+    {
+      "from": "L5-ORG",
+      "to": "L5-HR"
+    },
+    {
+      "from": "L5-ORG",
+      "to": "L6-UI-ORG"
+    },
+    {
+      "from": "L5-PAY",
+      "to": "L6-ADR"
+    },
+    {
+      "from": "L5-PAY",
+      "to": "L6-UI-PAY"
+    },
+    {
+      "from": "L6-ADR",
+      "to": "L6-SSR"
+    },
+    {
+      "from": "L6-SEC7-TRACKER",
+      "to": "L6-SSR"
+    },
+    {
+      "from": "L6-SSR",
+      "to": "L6-UI-HR"
+    },
+    {
+      "from": "L6-SSR",
+      "to": "L6-UI-ORG"
+    },
+    {
+      "from": "L6-SSR",
+      "to": "L6-UI-PAY"
+    }
+  ],
+  "not_doing": [
+    "ERP/comms/compliance/ingest/AI product expansion",
+    "Bulk docs graveyard (ROADMAP HOLD)",
+    "Multi-tip product PRs",
+    "Grok agent(model: sol|claude)",
+    "UI before H1",
+    "Dual writers for projected types"
+  ],
+  "projections": {
+    "idea_md": "docs/ideas/console-parallel-lanes-work-graph.md (historical quarry, superseded by this executable graph — its 'PR or stacked commit' success line and workstation-local mm-role specialist line are NOT authoritative)",
+    "beads_graph": "bd CLI (live); the .grok/harness/work-graph.beads.json export is workstation-local and not custodied in the tree (L∞-PROC gap: custody or rebind)",
+    "lane_board": ".grok/harness/lane-board.live.json"
+  },
+  "memory": {
+    "hindsight_mcp": {
+      "config": "~/.grok/config.toml [mcp_servers.hindsight] url=http://localhost:8888/mcp/",
+      "rule": "Before inventing soft-red/process/fleet state, attempt Hindsight recall (MCP when connected). On fail-open if down, fall back to bd list + lane-board + project memory.",
+      "retain_when": [
+        "phase lane lands or PR merges",
+        "failure class repeats >=2",
+        "tip-serial contention or multi-tip thrash",
+        "admit gate would have caught hosted red"
+      ],
+      "retain_fields": [
+        "class_id",
+        "lane_id",
+        "head_sha",
+        "control_path",
+        "evidence_urls",
+        "not_doing"
+      ]
+    },
+    "session_search": [
+      "hindsight recall",
+      "bd list",
+      "lane-board.live.json",
+      "project memory"
+    ],
+    "hermes": ".grok/harness/hermes-learning.v1.json",
+    "framework_v1": {
+      "spec": "docs/specs/parallel-development-framework.md (quarry)",
+      "base_sha": "7fc04e3e4167817f6ebc497cb5b329185c2eed5c",
+      "cargo_rules": [
+        "one conductor-run aggregate error census per wave before fan-out; lanes run targeted single-crate checks only; never cargo inside parallel fix loops",
+        "one lane = one worktree = one CARGO_TARGET_DIR, jobserver-capped",
+        "tip-serial via conductor: the canonical top-level tip_serial_paths inventory (single source — docs custody + manifest seed/index, program ledgers/registers incl. console-capability-registry.json + console-enterprise-roadmap.md, docs/current/, .github/workflows/ + actions + trust, scripts/check-ci-preflight.mjs + verify.mjs, backend/Cargo.toml + Cargo.lock + .sqlx/, package.json + package-lock.json, tools/buck/, registry/, migrations, openapi, generated BUCK faces, Reindeer lockfiles, .grok/)",
+        "hosted CI is evidence, never authority: review, protected merge, and post-merge readback remain the gate"
+      ],
+      "git_rules": [
+        "lanes only branch/add-commit-specific-files/push; no stash/reset/checkout-hopping; force-with-lease reserved for the integration owner restack (console-drive.rhai)",
+        "path-disjoint allowlists (<=3 roots), single-parent leaves, base-SHA pinning",
+        "two-dot delta measurement before any rebase decision",
+        "one integration owner; no multi-tip product PRs"
+      ],
+      "waves": {
+        "A": "P4 closure: L4-STALE-RECONC (two-dot delta vs origin/main)",
+        "B": "P5 containment: L5-CONT-PAY/EMP/ID/HR",
+        "C": "CI residuals: L∞-CI-RESID (serial)",
+        "D": "holiday reference table (payroll-owned only): L5-KP0",
+        "E": "P6 prep: L6-SEC7-TRACKER (prepare-only)",
+        "P∞": "program-tick, babysit PRs, failure-class promotion, worktree reclaim"
+      },
+      "parallel_ceiling": 4
+    }
+  }
+}

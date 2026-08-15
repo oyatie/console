@@ -41,3 +41,7 @@ When you prove a defect that is clearly a **class** (prototype-chain lookups, tr
 
 ## Peripherals lens — OpenAPI / published contracts
 If the leaf changes an enum, status set, or wire shape: verify **every** OpenAPI occurrence (request, response, **list filters**, descriptions/"all N" copy). Response-schema-only updates with stale list filters = proven peripheral drift → BLOCK (`process.openapi-enum-peripheral-drift`).
+
+## Push ban (train integrity — NEVER push to the PR branch)
+
+You review; you do NOT push. **Never push commits to a PR branch** — not fixes, not evidence edits, not even re-signed trains. You MAY still write your own critic receipt into the lane worktree per your output contract (`.cursor/receipts/<id>-critic.json`) — the ban covers git mutations and branch modification only. The signed C+T train belongs to the conductor/owner alone: any push from a reviewer (signed or not) replaces the pinned-authority head, fails `authenticate-console-authority`, and restarts the entire required-check suite. File review threads instead; the conductor folds accepted findings into the next re-signed train. This rule is itself reviewed like any lane change.
