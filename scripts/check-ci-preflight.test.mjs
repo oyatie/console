@@ -23,10 +23,14 @@ const freeRunnerDiskAction = readFileSync(
 const cargoLockGate = "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null";
 const ciPreflightTests = "node --test scripts/check-ci-preflight.test.mjs";
 const reasoningLensRegressionStep = `      - name: Reasoning lens contract regression
+        id: reasoning-lens-regression
+        if: \${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node --test scripts/check-reasoning-lens-contract.test.mjs
 
 `;
 const reasoningLensAdmissionStep = `      - name: Reasoning lens changed-record admission
+        id: reasoning-lens-admission
+        if: \${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         shell: bash
         env:
           REASONING_PR_BASE_SHA: \${{ github.event.pull_request.base.sha }}
@@ -74,7 +78,8 @@ const reachabilityPreflightCommands = [
   "tools/buck/test_needs_postgres.test.sh",
 ];
 const preflightRustToolchainSetup = `      - name: Install Rust toolchain for Cargo.lock consistency
-        if: \${{ steps.path_class.outputs.run_heavy == 'true' }}
+        id: rust-toolchain
+        if: \${{ !cancelled() && steps.checkout.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
@@ -84,6 +89,16 @@ const runHeavyIf = "${{ needs.preflight.outputs.run_heavy == 'true' }}";
 const preflightRunHeavyIf = "${{ steps.path_class.outputs.run_heavy == 'true' }}";
 const runHeavyUnlessCancelledIf =
   "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}";
+const preflightCheckoutHeavyIf =
+  "${{ !cancelled() && steps.checkout.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}";
+const preflightBuckHeavyIf =
+  "${{ !cancelled() && steps.dotslash.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}";
+const preflightRustHeavyIf =
+  "${{ !cancelled() && steps.rust-toolchain.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}";
+const backendIndependentIf =
+  "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}";
+const npmCiIf = "${{ !cancelled() && steps.npm-ci.outcome == 'success' }}";
+const npmCiPrIf = "${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}";
 
 function expectFailure(
   source,
@@ -438,9 +453,9 @@ describe("CI preflight contract", () => {
 
   it("rejects every run-step condition, soft-failure, and retained-text early-exit bypass", () => {
     const requiredRunStepCounts = {
-      preflight: 29,
+      preflight: 30,
       "domain-unit": 2,
-      backend: 25,
+      backend: 26,
       "dev-up-smoke": 7,
       "kubernetes-manifests": 7,
       "repo-gates": 26,
@@ -486,9 +501,10 @@ describe("CI preflight contract", () => {
 
     // 107 -> 121: path-class skip proofs on skip-proof jobs (+classify in preflight).
     // 121 -> 122: lane-receipt validator regression step in preflight.
-    assert.equal(runStepCount, 122, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 122*3 = 366.
-    assert.equal(mutationCount, 366, "exhaustive bypass matrix must not shrink");
+    // 122 -> 124: fail-slow sweep collect-failures steps in preflight and backend.
+    assert.equal(runStepCount, 124, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 124*3 = 372.
+    assert.equal(mutationCount, 372, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -710,28 +726,22 @@ describe("CI preflight contract", () => {
     }
   });
 
-  it("locks the reasoning-lens regression to one unconditional raw-Node step", () => {
+  it("locks the reasoning-lens regression to one raw-Node step gated on npm ci", () => {
     assert.ok(workflow.includes(reasoningLensRegressionStep), "reasoning-lens regression fixture drifted");
-    expectFailure(
-      workflow.replace(reasoningLensRegressionStep, ""),
-      "exact reasoning-lens regression once and unconditionally",
-    );
+    const message = "exact reasoning-lens regression once and only after npm ci succeeds";
+    expectFailure(workflow.replace(reasoningLensRegressionStep, ""), message);
     expectFailure(
       workflow.replace(reasoningLensRegressionStep, reasoningLensRegressionStep.repeat(2)),
-      "exact reasoning-lens regression once and unconditionally",
+      message,
     );
-    for (const bypass of ["        if: false\n", "        continue-on-error: true\n"]) {
-      expectFailure(
-        workflow.replace(
-          reasoningLensRegressionStep,
-          reasoningLensRegressionStep.replace(
-            "        run: node --test",
-            `${bypass}        run: node --test`,
-          ),
-        ),
-        "exact reasoning-lens regression once and unconditionally",
-      );
-    }
+    expectFailure(
+      workflow.replace(reasoningLensRegressionStep, addFalseCondition(reasoningLensRegressionStep)),
+      message,
+    );
+    expectFailure(
+      workflow.replace(reasoningLensRegressionStep, addContinueOnError(reasoningLensRegressionStep)),
+      message,
+    );
     expectFailure(
       workflow.replace(
         reasoningLensRegressionStep,
@@ -740,7 +750,7 @@ describe("CI preflight contract", () => {
           "npm run test:reasoning-lens-contract",
         ),
       ),
-      "exact reasoning-lens regression once and unconditionally",
+      message,
     );
   });
 
@@ -753,12 +763,14 @@ describe("CI preflight contract", () => {
       workflow.replace(reasoningLensAdmissionStep, reasoningLensAdmissionStep.repeat(2)),
       "exact reasoning-lens event admission contract",
     );
-    for (const bypass of ["        if: false\n", "        continue-on-error: true\n"]) {
-      expectFailure(
-        mutateReasoningLensAdmission((step) => step.replace("        shell: bash\n", `        shell: bash\n${bypass}`)),
-        "exact reasoning-lens event admission contract",
-      );
-    }
+    expectFailure(
+      mutateReasoningLensAdmission(addFalseCondition),
+      "exact reasoning-lens event admission contract",
+    );
+    expectFailure(
+      mutateReasoningLensAdmission(addContinueOnError),
+      "exact reasoning-lens event admission contract",
+    );
     for (const [from, to] of [
       ["github.event.pull_request.base.sha", "github.event.pull_request.head.sha"],
       ["github.event.before", "github.sha"],
@@ -783,7 +795,7 @@ describe("CI preflight contract", () => {
   it("rejects Buck2 jobs that do not bootstrap pinned DotSlash before invocation", () => {
     expectFailure(
       workflow.replace(
-        `      - name: Install pinned DotSlash runtime\n        if: ${preflightRunHeavyIf}\n        run: tools/buck/install_dotslash.sh\n`,
+        `      - name: Install pinned DotSlash runtime\n        id: dotslash\n        if: ${preflightCheckoutHeavyIf}\n        run: tools/buck/install_dotslash.sh\n`,
         "",
       ),
       "preflight must install pinned DotSlash before Buck2",
@@ -807,10 +819,8 @@ describe("CI preflight contract", () => {
       "Buck2 console-app inline PostgreSQL suites",
     ]) {
       expectFailure(
-        workflow.replace(
-          `      - name: ${stepName}\n        if: ${runHeavyIf}\n        working-directory: .\n`,
-          `      - name: ${stepName}\n        if: ${runHeavyIf}\n`,
-        ),
+        mutateNamedStep(workflow, "backend", stepName, (step) =>
+          step.replace("        working-directory: .\n", "")),
         "backend must preserve the locked fail-fast step multiset and failure semantics",
       );
     }
@@ -929,12 +939,13 @@ describe("CI preflight contract", () => {
   });
 
   it("requires backend DotSlash bootstrap before any Buck or DotSlash invocation", () => {
+    const dotSlashStep =
+      `      - name: Install pinned DotSlash runtime\n        id: dotslash\n        if: ${backendIndependentIf}\n        run: ../tools/buck/install_dotslash.sh\n`;
     for (const command of ["tools/buck2 --version", "dotslash run //backend/app:console-app"]) {
       expectFailure(
         workflow.replace(
-          `      - name: Install pinned DotSlash runtime\n        if: ${runHeavyIf}\n        run: ../tools/buck/install_dotslash.sh\n`,
-          `      - name: First Buck invocation\n        if: ${runHeavyIf}\n        run: ${command}\n\n`
-            + `      - name: Install pinned DotSlash runtime\n        if: ${runHeavyIf}\n        run: ../tools/buck/install_dotslash.sh\n`,
+          dotSlashStep,
+          `      - name: First Buck invocation\n        if: ${backendIndependentIf}\n        run: ${command}\n\n${dotSlashStep}`,
         ),
         "backend must install pinned DotSlash before its first Buck invocation",
       );
@@ -1008,8 +1019,8 @@ describe("CI preflight contract", () => {
   it("requires the pinned Rust toolchain before Cargo-dependent preflight tests", () => {
     expectFailure(
       workflow.replace(preflightRustToolchainSetup, "").replace(
-        `      - name: Cargo.lock consistency\n        if: ${preflightRunHeavyIf}\n        run: ${cargoLockGate}\n`,
-        `      - name: Cargo.lock consistency\n        if: ${preflightRunHeavyIf}\n        run: ${cargoLockGate}\n\n${preflightRustToolchainSetup.trimEnd()}\n`,
+        `      - name: Cargo.lock consistency\n        id: cargo-lock\n        if: ${preflightRustHeavyIf}\n        run: ${cargoLockGate}\n`,
+        `      - name: Cargo.lock consistency\n        id: cargo-lock\n        if: ${preflightRustHeavyIf}\n        run: ${cargoLockGate}\n\n${preflightRustToolchainSetup.trimEnd()}\n`,
       ),
       `preflight must install the pinned Rust toolchain before ${cargoLockGate}`,
     );
@@ -1023,6 +1034,9 @@ describe("CI preflight contract", () => {
   });
 
   it("requires explicit exact-M C/T derivation before every normal-PR console admission", () => {
+    const npmCiIf = "${{ !cancelled() && steps.npm-ci.outcome == 'success' }}";
+    const npmCiPrIf = "${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}";
+    const prOnlyIf = "${{ github.event_name == 'pull_request' }}";
     expectFailure(
       workflow.replace('          CONSOLE_AUTHORITY_TIP_SHA="$(git rev-parse "$CONSOLE_SYNTHETIC_MERGE_SHA^2")"\n', ''),
       "derive exact C/T/M",
@@ -1032,7 +1046,7 @@ describe("CI preflight contract", () => {
       "derive exact C/T/M",
     );
     expectFailure(
-      workflow.replace('        if: ${{ github.event_name == \'pull_request\' }}\n        run: npm run check:console-truth-ledger', '        run: npm run check:console-truth-ledger'),
+      workflow.replace(`        if: ${npmCiPrIf}\n        run: npm run check:console-truth-ledger`, `        if: ${npmCiIf}\n        run: npm run check:console-truth-ledger`),
       "exact C/T/M derivation",
     );
     expectFailure(
@@ -1044,15 +1058,15 @@ describe("CI preflight contract", () => {
       "derive exact C/T/M",
     );
     expectFailure(
-      workflow.replace('        run: node --test scripts/console/validate-console-truth-ledger.test.mjs', '        if: ${{ github.event_name == \'pull_request\' }}\n        run: node --test scripts/console/validate-console-truth-ledger.test.mjs'),
+      workflow.replace(`        if: ${npmCiIf}\n        run: node --test scripts/console/validate-console-truth-ledger.test.mjs`, `        if: ${prOnlyIf}\n        run: node --test scripts/console/validate-console-truth-ledger.test.mjs`),
       "validate-console-truth-ledger.test.mjs",
     );
     expectFailure(
-      workflow.replace('        run: node --test scripts/console/plan-fanout.test.mjs', '        if: ${{ github.event_name == \'pull_request\' }}\n        run: node --test scripts/console/plan-fanout.test.mjs'),
+      workflow.replace(`        if: ${npmCiIf}\n        run: node --test scripts/console/plan-fanout.test.mjs`, `        if: ${prOnlyIf}\n        run: node --test scripts/console/plan-fanout.test.mjs`),
       "plan-fanout.test.mjs",
     );
     expectFailure(
-      workflow.replace('      - name: Console authority-train regression\n        run: node --test scripts/console/verify-console-authority-train.test.mjs\n\n', ''),
+      workflow.replace(`      - name: Console authority-train regression\n        id: authority-train\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-authority-train.test.mjs\n\n`, ''),
       "verify-console-authority-train.test.mjs",
     );
     // This suite gates the `pull_request_target` bootstrap verifier — the highest-privilege
@@ -1061,19 +1075,19 @@ describe("CI preflight contract", () => {
     // turned every one of its tests red locally while CI stayed green. Wiring it into ci.yml is
     // not the same as protecting it, hence both halves below.
     assert.ok(
-      workflow.includes('      - name: Console PR authority bootstrap regression\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs\n'),
+      workflow.includes(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs\n`),
       "preflight does not run the console PR authority bootstrap regression",
     );
     expectFailure(
-      workflow.replace('      - name: Console PR authority bootstrap regression\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs\n\n', ''),
+      workflow.replace(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs\n\n`, ''),
       "verify-console-pr-authority-bootstrap.test.mjs",
     );
     expectFailure(
-      workflow.replace('        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs', '        if: ${{ github.event_name == \'pull_request\' }}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs'),
+      workflow.replace(`        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs`, `        if: ${prOnlyIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs`),
       "verify-console-pr-authority-bootstrap.test.mjs",
     );
     expectFailure(
-      workflow.replace('        if: ${{ github.event_name == \'pull_request\' }}\n        run: node scripts/console/plan-fanout.mjs', '        run: node scripts/console/plan-fanout.mjs'),
+      workflow.replace(`        if: ${npmCiPrIf}\n        run: node scripts/console/plan-fanout.mjs`, `        if: ${npmCiIf}\n        run: node scripts/console/plan-fanout.mjs`),
       "plan-fanout.mjs",
     );
     expectFailure(
@@ -1094,22 +1108,22 @@ describe("CI preflight contract", () => {
       "tools/buck/run_test_with_postgres_env.test.sh",
       "tools/buck/test_needs_postgres.test.sh",
     ]) {
-      const gated = `        if: ${preflightRunHeavyIf}\n        run: ${command}\n`;
+      const gated = `        if: ${preflightBuckHeavyIf}\n        run: ${command}\n`;
       assert.ok(workflow.includes(gated), `missing gated reachability command ${command}`);
       expectFailure(workflow.replace(gated, ""), command);
-      expectFailure(workflow.replace(gated, `        if: ${preflightRunHeavyIf}\n        # ${command}\n`), command);
+      expectFailure(workflow.replace(gated, `        if: ${preflightBuckHeavyIf}\n        # ${command}\n`), command);
     }
   });
 
   it("rejects conditional and continue-on-error reachability regressions", () => {
     const alwaysCommand = "node --test scripts/console/route-inventory.test.mjs";
     expectFailure(
-      workflow.replace(`        run: ${alwaysCommand}\n`, `        if: \${{ false }}\n        run: ${alwaysCommand}\n`),
-      "unconditionally",
+      workflow.replace(`        if: ${npmCiIf}\n        run: ${alwaysCommand}\n`, `        if: \${{ false }}\n        run: ${alwaysCommand}\n`),
+      "only when",
     );
     expectFailure(
-      workflow.replace(`        run: ${alwaysCommand}\n`, `        continue-on-error: true\n        run: ${alwaysCommand}\n`),
-      "unconditionally",
+      workflow.replace(`        if: ${npmCiIf}\n        run: ${alwaysCommand}\n`, `        if: ${npmCiIf}\n        continue-on-error: true\n        run: ${alwaysCommand}\n`),
+      "only when",
     );
     for (const command of [
       "tools/buck/run_test_with_postgres_env.test.sh",
@@ -1117,15 +1131,15 @@ describe("CI preflight contract", () => {
     ]) {
       expectFailure(
         workflow.replace(
-          `        if: ${preflightRunHeavyIf}\n        run: ${command}\n`,
+          `        if: ${preflightBuckHeavyIf}\n        run: ${command}\n`,
           `        if: \${{ false }}\n        run: ${command}\n`,
         ),
         "only when",
       );
       expectFailure(
         workflow.replace(
-          `        if: ${preflightRunHeavyIf}\n        run: ${command}\n`,
-          `        if: ${preflightRunHeavyIf}\n        continue-on-error: true\n        run: ${command}\n`,
+          `        if: ${preflightBuckHeavyIf}\n        run: ${command}\n`,
+          `        if: ${preflightBuckHeavyIf}\n        continue-on-error: true\n        run: ${command}\n`,
         ),
         "only when",
       );
@@ -1174,8 +1188,8 @@ describe("CI preflight contract", () => {
   it("rejects a preflight command that appears only in a comment", () => {
     expectFailure(
       workflow.replace(
-        "      - name: Canonical npm lockfile\n        run: npm run check:package-lock",
-        "      - name: Canonical npm lockfile\n        # npm run check:package-lock",
+        `        if: ${npmCiIf}\n        run: npm run check:package-lock`,
+        `        if: ${npmCiIf}\n        # npm run check:package-lock`,
       ),
       "check:package-lock",
     );
@@ -1184,20 +1198,20 @@ describe("CI preflight contract", () => {
   it("rejects a required preflight step guarded by a condition", () => {
     expectFailure(
       workflow.replace(
-        "      - name: Canonical npm lockfile\n        run: npm run check:package-lock",
-        "      - name: Canonical npm lockfile\n        if: ${{ false }}\n        run: npm run check:package-lock",
+        `        if: ${npmCiIf}\n        run: npm run check:package-lock`,
+        `        if: \${{ false }}\n        run: npm run check:package-lock`,
       ),
-      "unconditionally",
+      "only when",
     );
   });
 
   it("rejects a required preflight step allowed to continue on error", () => {
     expectFailure(
       workflow.replace(
-        "      - name: Canonical npm lockfile\n        run: npm run check:package-lock",
-        "      - name: Canonical npm lockfile\n        continue-on-error: true\n        run: npm run check:package-lock",
+        `        if: ${npmCiIf}\n        run: npm run check:package-lock`,
+        `        if: ${npmCiIf}\n        continue-on-error: true\n        run: npm run check:package-lock`,
       ),
-      "unconditionally",
+      "only when",
     );
   });
 
@@ -1581,7 +1595,7 @@ describe("CI preflight contract", () => {
     expectFailure(
       mutateNamedStep(workflow, "domain-unit", "Domain crate unit tests", (step) =>
         step.replace(/^        run: \|$/m, "        run: |\n          exit 0")),
-      "domain-unit must execute the locked Cargo test commands directly when run_heavy",
+      "domain-unit proof run step 2 must preserve",
     );
     for (const condition of ["false", "${{ false }}"]) {
       expectFailure(
@@ -1724,24 +1738,18 @@ describe("CI preflight contract", () => {
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     expectFailure(
-      workflow.replace(
-        `      - name: Audit-coverage gate\n        if: ${runHeavyIf}\n`,
-        `      - name: Audit-coverage gate\n        if: \${{ false }}\n`,
-      ),
+      mutateNamedStep(workflow, "backend", "Audit-coverage gate", addFalseCondition),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     expectFailure(
-      workflow.replace(
-        `      - name: Migration-safety gate\n        if: ${runHeavyIf}\n`,
-        `      - name: Migration-safety gate\n        if: ${runHeavyIf}\n        continue-on-error: true\n`,
-      ),
+      mutateNamedStep(workflow, "backend", "Migration-safety gate", addContinueOnError),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     expectFailure(
-      workflow.replace(
-        `      - name: Audit-coverage gate\n        if: ${runHeavyIf}\n`,
-        `      - name: Layer-boundary gate\n        if: \${{ !cancelled() }}\n        run: ../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary\n\n      - name: Audit-coverage gate\n        if: ${runHeavyIf}\n`,
-      ),
+      replaceJob(workflow, "backend", (block) => block.replace(
+        "      - name: Layer-boundary gate\n",
+        "      - name: Layer-boundary gate\n        run: ../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary\n\n      - name: Layer-boundary gate\n",
+      )),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     expectFailure(
@@ -1760,13 +1768,13 @@ describe("CI preflight contract", () => {
     );
   });
 
-  it("keeps protected backend steps fail-fast and runs PR 473 contract tests before topology", () => {
+  it("keeps protected backend steps fail-slow and runs PR 473 contract tests before topology", () => {
     expectFailure(
       workflow.replace(
-        `      - name: rustfmt check\n        if: ${runHeavyIf}\n`,
-        `      - name: rustfmt check\n        if: \${{ !cancelled() }}\n`,
+        `      - name: rustfmt check\n        id: fmt\n        if: ${backendIndependentIf}\n`,
+        `      - name: rustfmt check\n        id: fmt\n        if: \${{ !cancelled() }}\n`,
       ),
-      "backend must not use !cancelled() on protected fail-fast steps",
+      "backend proof run step 3 must preserve",
     );
     expectFailure(
       workflow.replace(
@@ -1897,7 +1905,8 @@ describe("CI preflight contract", () => {
     const run = "        run: env -u DATABASE_URL tools/buck2 test"
       + " //backend/app:console-app-itest-openapi_drift\n";
     const step = "      - name: Buck2 console-app OpenAPI drift suite\n"
-      + `        if: ${runHeavyIf}\n`
+      + "        id: openapi-drift\n"
+      + `        if: ${backendIndependentIf}\n`
       + "        working-directory: .\n"
       + run;
     assert.ok(workflow.includes(step), "backend does not run the openapi_drift suite");
@@ -1914,13 +1923,13 @@ describe("CI preflight contract", () => {
         + " //backend/app:console-app-unit\n"),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
-    // `if: ${{ !cancelled() }}` here would let a red drift suite pass the job as a soft warning.
+    // Dropping the run_heavy half of the guard would let the drift suite run on docs-only.
     expectFailure(
       workflow.replace(
-        `      - name: Buck2 console-app OpenAPI drift suite\n        if: ${runHeavyIf}\n`,
-        "      - name: Buck2 console-app OpenAPI drift suite\n        if: ${{ !cancelled() }}\n",
+        `      - name: Buck2 console-app OpenAPI drift suite\n        id: openapi-drift\n        if: ${backendIndependentIf}\n`,
+        `      - name: Buck2 console-app OpenAPI drift suite\n        id: openapi-drift\n        if: \${{ !cancelled() }}\n`,
       ),
-      "backend must not use !cancelled() on protected fail-fast steps",
+      "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
   });
 });

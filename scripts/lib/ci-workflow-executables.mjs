@@ -300,6 +300,11 @@ function collectWorkflowCommands(workflow, includeNonGating) {
       // Effective shell: step override, else job default (direct or defaults.run),
       // else workflow defaults.run, else the runner default.
       const shell = yamlValue(step, "shell", 8) ?? jobShell ?? workflowShell ?? null;
+      // A fail-slow keep-going block collects per-invocation failures and re-raises
+      // them with a summary `exit 1`, so a `set +e` inside it does NOT make the cargo
+      // runs non-gating. The `ci-keep-going:` comment is an explicit contract on the
+      // run body (see the domain-unit job); without it, `set +e` stays disqualifying.
+      const keepGoing = /ci-keep-going:/.test(script);
       let terminated = false;
       let errexitDisabled = false;
       for (const surface of shellCommandTokens(script)) {
@@ -326,7 +331,7 @@ function collectWorkflowCommands(workflow, includeNonGating) {
             step,
             tokens,
             malformed: false,
-            controlFlow: controlFlow || errexitDisabled,
+            controlFlow: controlFlow || (errexitDisabled && !keepGoing),
             gating,
             shell,
           });

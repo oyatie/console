@@ -34,13 +34,15 @@ jobs:
 
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Derive exact console C/T/M train
-        if: ${{ github.event_name == 'pull_request' }}
+        id: derive
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && github.event_name == 'pull_request' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -55,16 +57,21 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Set up Node.js
+        id: setup-node
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: "24.16.0"
           cache: npm
 
       - name: Install workspace dependencies
+        id: npm-ci
+        if: ${{ !cancelled() && steps.setup-node.outcome == 'success' }}
         run: npm ci
 
       - name: Classify path class
         id: path_class
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         shell: bash
         env:
           PATH_CLASS_EVENT_NAME: ${{ github.event_name }}
@@ -79,26 +86,35 @@ jobs:
       # DotSlash + Rust follow classification so docs-only can skip them without
       # reading an empty steps.path_class output (GHA evaluates if before later steps).
       - name: Install pinned DotSlash runtime
-        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
+        id: dotslash
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}
         run: tools/buck/install_dotslash.sh
 
       - name: Install Rust toolchain for Cargo.lock consistency
-        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
+        id: rust-toolchain
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
 
       - name: Cheap Buck2 generated-face admission
-        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
+        id: buck-admission
+        if: ${{ !cancelled() && steps.dotslash.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}
         run: tools/buck/preflight.sh
 
       - name: Foundation gate contract
+        id: foundation-gates
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run check:foundation-gates
 
       - name: Reasoning lens contract regression
+        id: reasoning-lens-regression
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node --test scripts/check-reasoning-lens-contract.test.mjs
 
       - name: Reasoning lens changed-record admission
+        id: reasoning-lens-admission
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         shell: bash
         env:
           REASONING_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -140,56 +156,83 @@ jobs:
           esac
 
       - name: Console truth-ledger exact-M admission
-        if: ${{ github.event_name == 'pull_request' }}
+        id: truth-ledger-admission
+        if: ${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}
         run: npm run check:console-truth-ledger
 
       - name: Console fanout planner exact-M admission
-        if: ${{ github.event_name == 'pull_request' }}
+        id: fanout-admission
+        if: ${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}
         run: node scripts/console/plan-fanout.mjs --candidate "$CONSOLE_CANDIDATE_SHA" --authority-tip "$CONSOLE_AUTHORITY_TIP_SHA" --synthetic-merge "$CONSOLE_SYNTHETIC_MERGE_SHA"
 
       - name: CI preflight contract tests
+        id: ci-preflight-tests
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node --test scripts/check-ci-preflight.test.mjs
 
       - name: Console route inventory regression
+        id: route-inventory
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node --test scripts/console/route-inventory.test.mjs
 
       - name: Console authority-train regression
+        id: authority-train
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node --test scripts/console/verify-console-authority-train.test.mjs
 
       - name: Console lane-receipt validator regression
+        id: lane-receipt
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run test:lane-receipt
 
       - name: Console PR authority bootstrap regression
+        id: pr-authority-bootstrap
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs
 
       - name: Executed-tests baseline set regression
+        id: executed-tests-baseline
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run test:executed-tests-baseline
 
       - name: Local CI mirror contract
+        id: ci-mirror
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node --test scripts/verify.test.mjs
 
       - name: Console truth-ledger validator exact-M regression
+        id: truth-ledger-validator
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node --test scripts/console/validate-console-truth-ledger.test.mjs
 
       - name: Console fanout planner exact-M regression
+        id: fanout-planner
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node --test scripts/console/plan-fanout.test.mjs
 
       - name: Buck PostgreSQL environment wrapper regression
-        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
+        id: buck-pg-env
+        if: ${{ !cancelled() && steps.dotslash.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}
         run: tools/buck/run_test_with_postgres_env.test.sh
 
       - name: Buck disposable PostgreSQL harness regression
-        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
+        id: buck-pg-harness
+        if: ${{ !cancelled() && steps.dotslash.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}
         run: tools/buck/test_needs_postgres.test.sh
 
       - name: CI preflight contract
+        id: ci-preflight-contract
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run check:ci-preflight
 
       - name: Canonical npm lockfile
+        id: package-lock
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run check:package-lock
 
       - name: Cargo.lock consistency
-        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
+        id: cargo-lock
+        if: ${{ !cancelled() && steps.rust-toolchain.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}
         run: cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null
 
       # Moved here from repo-gates, which has npm and no Rust: the ratchet now
@@ -197,17 +240,32 @@ jobs:
       # where cargo does. The step above it is `cargo metadata` on the same
       # manifest, and preflight is the only job carrying both toolchains.
       - name: Executed-tests ratchet — a test binary must have a path from a workflow step
-        if: ${{ steps.path_class.outputs.run_heavy == 'true' }}
+        id: executed-tests-ratchet
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}
         run: npm run check:executed-tests
       - name: JavaScript test reachability ratchet
+        id: js-reachability-ratchet
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run check:js-test-reachability
       - name: JavaScript test reachability unit tests
+        id: js-reachability-tests
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run test:js-test-reachability
 
       - name: Lane fan-out harness preflight
+        id: lane-fanout
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node .claude/workflows/lane-fanout.test.mjs
       - name: Workflow test-runner credential literals
+        id: test-credentials
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run check:test-credentials
+
+      - name: Collect failures
+        if: ${{ !cancelled() }}
+        env:
+          CI_STEPS: ${{ toJSON(steps) }}
+        run: node scripts/ci-collect-failures.mjs
 
   domain-unit:
     name: Domain crates — unit tests
@@ -295,6 +353,18 @@ jobs:
         # crate the same measurement exposed, platform/db, is 9 #[sqlx::test] and
         # needs a database, so it is named in executed-tests-baseline.json instead.
         run: |
+          # ci-keep-going: run every invocation below; failures are collected and the
+          # summary at the end exits 1 if any failed, so these cargo runs still gate the
+          # job (scripts/lib/ci-workflow-executables.mjs attributes them accordingly).
+          set +e
+          failed_count=0
+          check_status() {
+            local rc=$?
+            if [[ $rc -ne 0 ]]; then
+              echo "FAILED (exit $rc): $1" >&2
+              failed_count=$((failed_count + 1))
+            fi
+          }
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml --lib \
             -p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres \
             -p console-attendance-application -p console-compliance-domain -p console-governance-domain \
@@ -332,24 +402,32 @@ jobs:
             -p console-logistics-rest -p console-ontology-canonical-domain \
             -p console-ontology-canonical-adapter-postgres -p console-orgchange-adapter-postgres \
             -p console-gate-writer-ownership -p console-identity-adapter-postgres
+          check_status "domain --lib sweep"
           # Doc tests, same step so no new step name has to be declared anywhere.
           # `compile_fail` doctests are the only artifact that can hold a NEGATIVE
           # type-boundary claim ("this must not compile"), and they execute nowhere
           # unless --doc is invoked explicitly.
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             --doc -p console-kernel-core
+          check_status "domain --doc"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-attendance-application --test attendance_policy
+          check_status "attendance_policy"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-compliance-domain --test location_consent_fsm --test location_ping_policy
+          check_status "location_consent_fsm + location_ping_policy"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-platform-authz --test cedar_pbac_readiness_cases --test cedar_pbac_legacy_only_observe_and_record
+          check_status "cedar_pbac"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-attendance-domain --test range_and_history
+          check_status "range_and_history"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-contracts --test compose
+          check_status "compose"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-todos-rest --test openapi_fragment
+          check_status "openapi_fragment"
           # openapi.yaml is generated from per-face console-contracts Fragments.
           # Regeneration must be a no-op on a clean tree; a hand-edit that skips
           # the owning face slice fails this diff. The generator itself refuses
@@ -357,7 +435,9 @@ jobs:
           # registry cannot pass by rewriting nothing.
           SQLX_OFFLINE=true cargo run --locked --manifest-path backend/Cargo.toml \
             -p console-contracts --bin console-openapi-gen
+          check_status "openapi regen"
           git diff --exit-code -- backend/openapi/openapi.yaml
+          check_status "openapi diff"
           # ONE -p PER INVOCATION whenever --test is used. Two packages and two --test names on
           # a single line is ambiguous to any reader that pairs them positionally, and
           # check-executed-tests.mjs pairs them as a CROSS PRODUCT — 2x2 candidates where only
@@ -367,22 +447,30 @@ jobs:
           # the source rather than parsed around.
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-financial-domain --test quote_and_residual
+          check_status "quote_and_residual"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-registry-domain --test equipment
+          check_status "equipment"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-messenger-domain --test mentions --test object_code_refs --test parity --test thread_kind
+          check_status "messenger"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-workorder-domain --test approval_and_assignment --test serde_roundtrips \
             --test settlement_fsm --test workorder_fsm
+          check_status "workorder"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-platform-auth --test jwt_es256 --test jwt_verifier --test well_known
+          check_status "jwt"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-platform-excel --test template_fidelity --test template_fill_engine
+          check_status "excel"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-platform-realtime --test hub --test notify_payload
+          check_status "realtime"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-app --test config --test dev_seed_notification_links --test openslo_files \
             --test well_known --test workbench_api
+          check_status "app"
           # The writer-ownership gate's mutation suite. It lives here and not in
           # the backend job's Buck2 mutation-suite step because 3 of its 41 tests
           # read THIS repository -- the whole backend crate tree, and
@@ -390,6 +478,12 @@ jobs:
           # materialize. A real checkout is the requirement, and this job has one.
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-gate-writer-ownership --test gate_detects_violation
+          check_status "gate_detects_violation"
+          if [[ $failed_count -ne 0 ]]; then
+            echo "domain-unit: $failed_count invocation(s) failed" >&2
+            exit 1
+          fi
+          echo "domain-unit: all invocations passed"
 
   # PostgreSQL reachability facets (S1 + S2 domain split). Package partition via --shard-id.
   # Do NOT put the load-bearing branch-protection display name on these jobs
@@ -788,11 +882,13 @@ jobs:
 
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
       - name: Path-class skip proof
+        id: skip-proof
         if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
         shell: bash
         run: |
@@ -800,15 +896,18 @@ jobs:
           printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
 
       - name: Install pinned DotSlash runtime
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: dotslash
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: ../tools/buck/install_dotslash.sh
 
       - name: Free runner disk for Rust backend
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: free-disk
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         uses: ./.github/actions/free-runner-disk
 
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: rust
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           # rust-toolchain.toml drives the exact version; this step just
@@ -817,7 +916,8 @@ jobs:
           components: rustfmt, clippy
 
       - name: Cache Rust dependencies + build artifacts
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: rust-cache
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         # rust-cache keys on Cargo.lock + rustc + job, caches registry/git deps
         # and prunes stale crates from target/ (so the cache does not grow
         # unbounded on every Cargo.lock change the way a raw target/ cache does).
@@ -836,46 +936,56 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: rustfmt check
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: fmt
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo fmt --all -- --check
 
       - name: clippy -D warnings
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: clippy
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings
       # Wave C (DN-0006): first Required-CI gate family on Buck2. Invoked from
       # backend/ so the binary's cwd remains the Cargo workspace root it scans;
       # Buck2 walks up to the repo .buckconfig. Keep warm-cache overlays opt-in
       # (fail-closed) — do not attach --config-file infra/ci/buckconfig/warm-*.
       - name: Layer-boundary gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: layer-boundary
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: ../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary
 
       - name: Audit-coverage gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: audit-coverage
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-audit-coverage
 
       - name: Migration-safety gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: migration-safety
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-migration-safety
 
       - name: Tenant-isolation gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: tenant-isolation
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-tenant-isolation
 
       - name: PII-no-logs gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: pii-no-logs
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-pii-no-logs
 
       - name: RLS-arming gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: rls-arming
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-rls-arming
 
       - name: Dev-auth-absence gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: dev-auth-absence
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-dev-auth-absence
 
       - name: IaC tier-discipline gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: iac-tier
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-iac-tier
 
       # An authorization branch must come from the RESOURCE. Deriving it from
@@ -892,11 +1002,13 @@ jobs:
       # named in the module doc and in docs/CI-GATES.md; the control that closes
       # them is a `ResourceBranch` newtype, queued separately.
       - name: Fabricated-branch gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: fabricated-branch
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-fabricated-branch
 
       - name: Personal-data-classification gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: personal-data-classification
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-personal-data-classification
 
       # The STATIC half of writer ownership: at most one production crate may
@@ -907,7 +1019,8 @@ jobs:
       # through the disposable-PostgreSQL cargo harness. Two residual shapes are
       # pinned by `known_residual_` tests; bead console-tai.1 carries the total fix.
       - name: Writer-ownership gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: writer-ownership
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: cargo run -p console-gate-writer-ownership
 
       # The ten remaining `cargo run -p console-gate-*` steps above (plus the
@@ -938,7 +1051,8 @@ jobs:
       # Its database half runs in the PostgreSQL reachability facets via
       # tools/ci/postgres-cargo-map.json.
       - name: Buck2 CI-gate mutation suites — every gate proven to still reject
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: gate-mutation-suites
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: |
           env -u DATABASE_URL tools/buck2 test \
@@ -956,12 +1070,14 @@ jobs:
       # migration, using the distinct service administrator only for this
       # cluster-scoped bootstrap.
       - name: PR 473 migration operational contract tests
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: pr473-contract-tests
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: python3 scripts/check-pr473-migration-operational.test.py -v
 
       - name: Reconcile portable PostgreSQL role topology
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: topology
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           APP_PASSWORD="$(openssl rand -hex 32)"
           RT_PASSWORD="$(openssl rand -hex 32)"
@@ -1023,7 +1139,8 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: PR 473 migration operational gate
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: pr473-gate
+        if: ${{ !cancelled() && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         # SQLX_OFFLINE=true so the query! macros compile against the committed
         # .sqlx cache (the documented contract — see crates/platform/db/src/lib.rs)
@@ -1046,7 +1163,8 @@ jobs:
       # image-release.yml's release-probe job uses to boot the shipped image;
       # a throwaway keypair is fine, this only proves the app comes up.
       - name: Boot smoke — migrate + serve + /readyz
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: boot-smoke
+        if: ${{ !cancelled() && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           set -e
           openssl ecparam -name prime256v1 -genkey -noout | openssl pkcs8 -topk8 -nocrypt -out /tmp/smoke-priv.pem
@@ -1116,7 +1234,8 @@ jobs:
           fi
 
       - name: Buck2 dev-auth feature PostgreSQL suites
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: dev-auth-suites
+        if: ${{ !cancelled() && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         # `dev-auth` is NOT in default features (proven above). These exact
         # feature-sensitive auth-rest and provisioning binaries run through
@@ -1143,12 +1262,14 @@ jobs:
       # only evidence that widening `is_stable_key` for dots did not widen the
       # Cedar injection boundary on any other axis.
       - name: Buck2 platform-authz unit suite
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: authz-unit
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit
 
       - name: Buck2 console-app unit suite
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: app-unit
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit
 
@@ -1160,17 +1281,26 @@ jobs:
       # regexes /api/platform/ paths). The byte-compare of the served document
       # against the file was deleted: include_str! made it tautological.
       - name: Buck2 console-app OpenAPI drift suite
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: openapi-drift
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift
 
       - name: Buck2 console-app inline PostgreSQL suites
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        id: app-inline-pg
+        if: ${{ !cancelled() && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: |
           tools/buck/test_needs_postgres.sh --num-threads=1 \
             //tools/buck:app-inline-postgres \
             //tools/buck:app-dev-auth-persona-guard-postgres
+
+      - name: Collect failures
+        if: ${{ !cancelled() }}
+        env:
+          CI_STEPS: ${{ toJSON(steps) }}
+        working-directory: .
+        run: node scripts/ci-collect-failures.mjs
 
   dev-up-smoke:
     name: dev-up.mjs smoke — compose deps + migrate + /readyz

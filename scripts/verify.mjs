@@ -146,6 +146,13 @@ const PLAN = new Map([
     tier: "ci-only",
     why: "skip proofs run only when run_heavy!=true on hosted CI; local mirror always exercises the heavy path / docs_only is CI scheduling",
   }],
+  // Fail-slow sweep collector: reads the GHA `steps` context (toJSON(steps)),
+  // which exists only on a hosted runner; the same job-level red is produced
+  // locally by the run step itself.
+  ["Collect failures", {
+    tier: "ci-only",
+    why: "reads the hosted steps context (toJSON(steps)); no local equivalent",
+  }],
 
   // ---- backend -----------------------------------------------------------
   ["rustfmt check", { tier: "fast" }],

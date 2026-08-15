@@ -81,6 +81,34 @@ const runHeavyUnlessCancelledCondition =
 const runHeavyAlwaysCondition =
   "${{ always() && needs.preflight.outputs.run_heavy == 'true' }}";
 
+// Fail-slow one-sweep CI (D4): independent steps run even after a sibling step
+// fails; dependent steps skip (not red) when their dependency failed. The step
+// ids below are the dependency roots named in ci.yml.
+const preflightCheckoutDependentCondition =
+  "${{ !cancelled() && steps.checkout.outcome == 'success' }}";
+const preflightSetupNodeDependentCondition =
+  "${{ !cancelled() && steps.setup-node.outcome == 'success' }}";
+const preflightNpmCiDependentCondition =
+  "${{ !cancelled() && steps.npm-ci.outcome == 'success' }}";
+const preflightNpmCiPrCondition =
+  "${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}";
+const preflightDeriveCondition =
+  "${{ !cancelled() && steps.checkout.outcome == 'success' && github.event_name == 'pull_request' }}";
+const preflightCheckoutHeavyCondition =
+  "${{ !cancelled() && steps.checkout.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}";
+const preflightBuckHeavyCondition =
+  "${{ !cancelled() && steps.dotslash.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}";
+const preflightRustHeavyCondition =
+  "${{ !cancelled() && steps.rust-toolchain.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}";
+const preflightNpmCiHeavyCondition =
+  "${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}";
+const collectFailuresCondition = "${{ !cancelled() }}";
+/** Backend fail-slow: independent (no prior-step dependency) and topology-dependent guards. */
+const backendIndependentCondition =
+  "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}";
+const backendTopologyDependentCondition =
+  "${{ !cancelled() && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}";
+
 export const PATH_CLASS_RULES_VERSION = "3";
 const docsOnlyRootFiles = new Set([
   "README.md",
@@ -786,66 +814,68 @@ const proofDigest = (name, digest, options) => runDigestContract("proof", name, 
 // familiar name.
 const requiredJobRunContracts = Object.freeze({
   "preflight": [
-    setupDigest("Derive exact console C/T/M train", "b8e69e979347fa526773bb2a740bdb198be414077281026c23be96501ffd4da1", { if: consolePrCondition, shell: "bash" }),
-    setupRun("Install workspace dependencies", "npm ci"),
-    setupDigest("Classify path class", "d963a8aa99e66c44a4ed8e3ef25725d206a11973545758d6c67a055b1f48cbbd", { shell: "bash" }),
-    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: preflightRunHeavyCondition }),
-    proofRun("Cheap Buck2 generated-face admission", "tools/buck/preflight.sh", { if: preflightRunHeavyCondition }),
-    proofRun("Foundation gate contract", "npm run check:foundation-gates"),
-    proofRun("Reasoning lens contract regression", "node --test scripts/check-reasoning-lens-contract.test.mjs"),
-    proofDigest("Reasoning lens changed-record admission", "b4d78de511586e6f3cb7edafcf780fbc0361279dc8f0fe544b6128cfad9d3ab9", { shell: "bash" }),
-    proofRun("Console truth-ledger exact-M admission", "npm run check:console-truth-ledger", { if: consolePrCondition }),
-    proofRun("Console fanout planner exact-M admission", "node scripts/console/plan-fanout.mjs --candidate \"$CONSOLE_CANDIDATE_SHA\" --authority-tip \"$CONSOLE_AUTHORITY_TIP_SHA\" --synthetic-merge \"$CONSOLE_SYNTHETIC_MERGE_SHA\"", { if: consolePrCondition }),
-    proofRun("CI preflight contract tests", "node --test scripts/check-ci-preflight.test.mjs"),
-    proofRun("Console route inventory regression", "node --test scripts/console/route-inventory.test.mjs"),
-    proofRun("Console authority-train regression", "node --test scripts/console/verify-console-authority-train.test.mjs"),
-    proofRun("Console lane-receipt validator regression", "npm run test:lane-receipt"),
-    proofRun("Console PR authority bootstrap regression", "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs"),
-    proofRun("Executed-tests baseline set regression", "npm run test:executed-tests-baseline"),
-    proofRun("Local CI mirror contract", "node --test scripts/verify.test.mjs"),
-    proofRun("Console truth-ledger validator exact-M regression", "node --test scripts/console/validate-console-truth-ledger.test.mjs"),
-    proofRun("Console fanout planner exact-M regression", "node --test scripts/console/plan-fanout.test.mjs"),
-    proofRun("Buck PostgreSQL environment wrapper regression", "tools/buck/run_test_with_postgres_env.test.sh", { if: preflightRunHeavyCondition }),
-    proofRun("Buck disposable PostgreSQL harness regression", "tools/buck/test_needs_postgres.test.sh", { if: preflightRunHeavyCondition }),
-    proofRun("CI preflight contract", "npm run check:ci-preflight"),
-    proofRun("Canonical npm lockfile", "npm run check:package-lock"),
-    proofRun("Cargo.lock consistency", "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null", { if: preflightRunHeavyCondition }),
-    proofRun("Executed-tests ratchet — a test binary must have a path from a workflow step", "npm run check:executed-tests", { if: preflightRunHeavyCondition }),
-    proofRun("JavaScript test reachability ratchet", "npm run check:js-test-reachability"),
-    proofRun("JavaScript test reachability unit tests", "npm run test:js-test-reachability"),
-    proofRun("Lane fan-out harness preflight", "node .claude/workflows/lane-fanout.test.mjs"),
-    proofRun("Workflow test-runner credential literals", "npm run check:test-credentials"),
+    setupDigest("Derive exact console C/T/M train", "b8e69e979347fa526773bb2a740bdb198be414077281026c23be96501ffd4da1", { if: preflightDeriveCondition, shell: "bash" }),
+    setupRun("Install workspace dependencies", "npm ci", { if: preflightSetupNodeDependentCondition }),
+    setupDigest("Classify path class", "d963a8aa99e66c44a4ed8e3ef25725d206a11973545758d6c67a055b1f48cbbd", { if: preflightNpmCiDependentCondition, shell: "bash" }),
+    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: preflightCheckoutHeavyCondition }),
+    proofRun("Cheap Buck2 generated-face admission", "tools/buck/preflight.sh", { if: preflightBuckHeavyCondition }),
+    proofRun("Foundation gate contract", "npm run check:foundation-gates", { if: preflightNpmCiDependentCondition }),
+    proofRun("Reasoning lens contract regression", "node --test scripts/check-reasoning-lens-contract.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofDigest("Reasoning lens changed-record admission", "b4d78de511586e6f3cb7edafcf780fbc0361279dc8f0fe544b6128cfad9d3ab9", { if: preflightNpmCiDependentCondition, shell: "bash" }),
+    proofRun("Console truth-ledger exact-M admission", "npm run check:console-truth-ledger", { if: preflightNpmCiPrCondition }),
+    proofRun("Console fanout planner exact-M admission", "node scripts/console/plan-fanout.mjs --candidate \"$CONSOLE_CANDIDATE_SHA\" --authority-tip \"$CONSOLE_AUTHORITY_TIP_SHA\" --synthetic-merge \"$CONSOLE_SYNTHETIC_MERGE_SHA\"", { if: preflightNpmCiPrCondition }),
+    proofRun("CI preflight contract tests", "node --test scripts/check-ci-preflight.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Console route inventory regression", "node --test scripts/console/route-inventory.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Console authority-train regression", "node --test scripts/console/verify-console-authority-train.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Console lane-receipt validator regression", "npm run test:lane-receipt", { if: preflightNpmCiDependentCondition }),
+    proofRun("Console PR authority bootstrap regression", "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Executed-tests baseline set regression", "npm run test:executed-tests-baseline", { if: preflightNpmCiDependentCondition }),
+    proofRun("Local CI mirror contract", "node --test scripts/verify.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Console truth-ledger validator exact-M regression", "node --test scripts/console/validate-console-truth-ledger.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Console fanout planner exact-M regression", "node --test scripts/console/plan-fanout.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Buck PostgreSQL environment wrapper regression", "tools/buck/run_test_with_postgres_env.test.sh", { if: preflightBuckHeavyCondition }),
+    proofRun("Buck disposable PostgreSQL harness regression", "tools/buck/test_needs_postgres.test.sh", { if: preflightBuckHeavyCondition }),
+    proofRun("CI preflight contract", "npm run check:ci-preflight", { if: preflightNpmCiDependentCondition }),
+    proofRun("Canonical npm lockfile", "npm run check:package-lock", { if: preflightNpmCiDependentCondition }),
+    proofRun("Cargo.lock consistency", "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null", { if: preflightRustHeavyCondition }),
+    proofRun("Executed-tests ratchet — a test binary must have a path from a workflow step", "npm run check:executed-tests", { if: preflightNpmCiHeavyCondition }),
+    proofRun("JavaScript test reachability ratchet", "npm run check:js-test-reachability", { if: preflightNpmCiDependentCondition }),
+    proofRun("JavaScript test reachability unit tests", "npm run test:js-test-reachability", { if: preflightNpmCiDependentCondition }),
+    proofRun("Lane fan-out harness preflight", "node .claude/workflows/lane-fanout.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Workflow test-runner credential literals", "npm run check:test-credentials", { if: preflightNpmCiDependentCondition }),
+    proofRun("Collect failures", "node scripts/ci-collect-failures.mjs", { if: collectFailuresCondition }),
   ],
   "domain-unit": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Domain crate unit tests", "3c40987e306ba9e84199083af183ae1135735b77c5f7a2277dcfe23b27d46caf", { if: runHeavyCondition }),
+    proofDigest("Domain crate unit tests", "754df637470658378c9449a3daf2eaa8ca05446b3a024660591c528d14489215", { if: runHeavyCondition }),
   ],
   "backend": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh", { if: runHeavyCondition }),
-    proofRun("rustfmt check", "cargo fmt --all -- --check", { if: runHeavyCondition }),
-    proofRun("clippy -D warnings", "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings", { if: runHeavyCondition }),
-    proofRun("Layer-boundary gate", "../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary", { if: runHeavyCondition }),
-    proofRun("Audit-coverage gate", "cargo run -p console-gate-audit-coverage", { if: runHeavyCondition }),
-    proofRun("Migration-safety gate", "cargo run -p console-gate-migration-safety", { if: runHeavyCondition }),
-    proofRun("Tenant-isolation gate", "cargo run -p console-gate-tenant-isolation", { if: runHeavyCondition }),
-    proofRun("PII-no-logs gate", "cargo run -p console-gate-pii-no-logs", { if: runHeavyCondition }),
-    proofRun("RLS-arming gate", "cargo run -p console-gate-rls-arming", { if: runHeavyCondition }),
-    proofRun("Dev-auth-absence gate", "cargo run -p console-gate-dev-auth-absence", { if: runHeavyCondition }),
-    proofRun("IaC tier-discipline gate", "cargo run -p console-gate-iac-tier", { if: runHeavyCondition }),
-    proofRun("Fabricated-branch gate", "cargo run -p console-gate-fabricated-branch", { if: runHeavyCondition }),
-    proofRun("Personal-data-classification gate", "cargo run -p console-gate-personal-data-classification", { if: runHeavyCondition }),
-    proofRun("Writer-ownership gate", "cargo run -p console-gate-writer-ownership", { if: runHeavyCondition }),
-    proofDigest("Buck2 CI-gate mutation suites — every gate proven to still reject", "f6614509bd73220754a83d449b8bf422e616309ba48965f730f0d3dcff9d2cf4", { if: runHeavyCondition, workingDirectory: "." }),
-    proofRun("PR 473 migration operational contract tests", "python3 scripts/check-pr473-migration-operational.test.py -v", { if: runHeavyCondition, workingDirectory: "." }),
-    setupDigest("Reconcile portable PostgreSQL role topology", "5da0f2d8c399657dbc0a9d358c81d71399af1ea6c659074a365653db21fcaded", { if: runHeavyCondition }),
-    proofRun("PR 473 migration operational gate", "npm run check:pr473-migration-operational", { if: runHeavyCondition, workingDirectory: "." }),
-    proofDigest("Boot smoke — migrate + serve + /readyz", "d51d75f8cd49be1557c5b5c1f5f641345bc82f842d2384e9608e9872b0714d79", { if: runHeavyCondition }),
-    proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { if: runHeavyCondition, workingDirectory: "." }),
-    proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit", { if: runHeavyCondition, workingDirectory: "." }),
-    proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { if: runHeavyCondition, workingDirectory: "." }),
-    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: runHeavyCondition, workingDirectory: "." }),
-    proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { if: runHeavyCondition, workingDirectory: "." }),
+    setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh", { if: backendIndependentCondition }),
+    proofRun("rustfmt check", "cargo fmt --all -- --check", { if: backendIndependentCondition }),
+    proofRun("clippy -D warnings", "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings", { if: backendIndependentCondition }),
+    proofRun("Layer-boundary gate", "../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary", { if: backendIndependentCondition }),
+    proofRun("Audit-coverage gate", "cargo run -p console-gate-audit-coverage", { if: backendIndependentCondition }),
+    proofRun("Migration-safety gate", "cargo run -p console-gate-migration-safety", { if: backendIndependentCondition }),
+    proofRun("Tenant-isolation gate", "cargo run -p console-gate-tenant-isolation", { if: backendIndependentCondition }),
+    proofRun("PII-no-logs gate", "cargo run -p console-gate-pii-no-logs", { if: backendIndependentCondition }),
+    proofRun("RLS-arming gate", "cargo run -p console-gate-rls-arming", { if: backendIndependentCondition }),
+    proofRun("Dev-auth-absence gate", "cargo run -p console-gate-dev-auth-absence", { if: backendIndependentCondition }),
+    proofRun("IaC tier-discipline gate", "cargo run -p console-gate-iac-tier", { if: backendIndependentCondition }),
+    proofRun("Fabricated-branch gate", "cargo run -p console-gate-fabricated-branch", { if: backendIndependentCondition }),
+    proofRun("Personal-data-classification gate", "cargo run -p console-gate-personal-data-classification", { if: backendIndependentCondition }),
+    proofRun("Writer-ownership gate", "cargo run -p console-gate-writer-ownership", { if: backendIndependentCondition }),
+    proofDigest("Buck2 CI-gate mutation suites — every gate proven to still reject", "f6614509bd73220754a83d449b8bf422e616309ba48965f730f0d3dcff9d2cf4", { if: backendIndependentCondition, workingDirectory: "." }),
+    proofRun("PR 473 migration operational contract tests", "python3 scripts/check-pr473-migration-operational.test.py -v", { if: backendIndependentCondition, workingDirectory: "." }),
+    setupDigest("Reconcile portable PostgreSQL role topology", "5da0f2d8c399657dbc0a9d358c81d71399af1ea6c659074a365653db21fcaded", { if: backendIndependentCondition }),
+    proofRun("PR 473 migration operational gate", "npm run check:pr473-migration-operational", { if: backendTopologyDependentCondition, workingDirectory: "." }),
+    proofDigest("Boot smoke — migrate + serve + /readyz", "d51d75f8cd49be1557c5b5c1f5f641345bc82f842d2384e9608e9872b0714d79", { if: backendTopologyDependentCondition }),
+    proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { if: backendTopologyDependentCondition, workingDirectory: "." }),
+    proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit", { if: backendIndependentCondition, workingDirectory: "." }),
+    proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { if: backendIndependentCondition, workingDirectory: "." }),
+    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: backendIndependentCondition, workingDirectory: "." }),
+    proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { if: backendTopologyDependentCondition, workingDirectory: "." }),
+    proofRun("Collect failures", "node scripts/ci-collect-failures.mjs", { if: collectFailuresCondition, workingDirectory: "." }),
   ],
   "dev-up-smoke": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
@@ -939,14 +969,14 @@ const requiredJobRunContracts = Object.freeze({
 });
 
 function actionStep(index, name, uses, withInputs, options = {}) {
-  // Allow `actionStep(i, name, uses, { if })` when the action has no `with:`.
+  // Allow `actionStep(i, name, uses, { if, id })` when the action has no `with:`.
   if (
     options
     && Object.keys(options).length === 0
     && withInputs
     && typeof withInputs === "object"
     && !Array.isArray(withInputs)
-    && Object.keys(withInputs).every((key) => key === "if")
+    && Object.keys(withInputs).every((key) => key === "if" || key === "id")
   ) {
     options = withInputs;
     withInputs = undefined;
@@ -955,6 +985,7 @@ function actionStep(index, name, uses, withInputs, options = {}) {
     ? { name, uses }
     : { name, uses, with: withInputs };
   if (options.if != null) step.if = options.if;
+  if (options.id != null) step.id = options.id;
   return { index, step };
 }
 
@@ -964,9 +995,9 @@ function actionStep(index, name, uses, withInputs, options = {}) {
 // be installed on a hosted runner and presenting that accident as proof.
 const requiredJobActionContracts = Object.freeze({
   "preflight": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false,"fetch-depth":0}),
-    actionStep(2, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24.16.0","cache":"npm"}),
-    actionStep(6, "Install Rust toolchain for Cargo.lock consistency", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: preflightRunHeavyCondition }),
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false,"fetch-depth":0}, { id: "checkout" }),
+    actionStep(2, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24.16.0","cache":"npm"}, { if: preflightCheckoutDependentCondition, id: "setup-node" }),
+    actionStep(6, "Install Rust toolchain for Cargo.lock consistency", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: preflightCheckoutHeavyCondition, id: "rust-toolchain" }),
   ],
   "domain-unit": [
     actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
@@ -974,10 +1005,10 @@ const requiredJobActionContracts = Object.freeze({
     actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
   ],
   "backend": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}),
-    actionStep(3, "Free runner disk for Rust backend", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
-    actionStep(4, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1","components":"rustfmt, clippy"}, { if: runHeavyCondition }),
-    actionStep(5, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/main' }}"}, { if: runHeavyCondition }),
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { id: "checkout" }),
+    actionStep(3, "Free runner disk for Rust backend", "./.github/actions/free-runner-disk", { if: backendIndependentCondition, id: "free-disk" }),
+    actionStep(4, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1","components":"rustfmt, clippy"}, { if: backendIndependentCondition, id: "rust" }),
+    actionStep(5, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/main' }}"}, { if: backendIndependentCondition, id: "rust-cache" }),
   ],
   "dev-up-smoke": [
     actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
@@ -1137,6 +1168,9 @@ const protectedJobExecutionMetadata = {
       env: Object.fromEntries(
         reasoningLensAdmissionEnvironment.map((entry) => entry.split(": ", 2)),
       ),
+    }, {
+      name: "Collect failures",
+      env: { CI_STEPS: "${{ toJSON(steps) }}" },
     }],
   },
   "domain-unit": {},
@@ -1161,6 +1195,10 @@ const protectedJobExecutionMetadata = {
       CARGO_PROFILE_TEST_DEBUG: "0",
     },
     defaults: { run: { "working-directory": "backend" } },
+    stepEnv: [{
+      name: "Collect failures",
+      env: { CI_STEPS: "${{ toJSON(steps) }}" },
+    }],
   },
   "dev-up-smoke": {
     env: {
@@ -1510,9 +1548,9 @@ function requireReasoningLensContracts(steps, failures) {
     regressionByName.length !== 1
     || regressionByCommand.length !== 1
     || regressionByName[0] !== regressionByCommand[0]
-    || !hasOnlyExpectedCondition(regressionByName[0] ?? "", null)
+    || !hasOnlyExpectedCondition(regressionByName[0] ?? "", preflightNpmCiDependentCondition)
   ) {
-    failures.push("preflight must run the exact reasoning-lens regression once and unconditionally");
+    failures.push("preflight must run the exact reasoning-lens regression once and only after npm ci succeeds");
   }
 
   const admissions = steps.filter((step) => stepName(step) === reasoningLensAdmissionName);
@@ -1529,7 +1567,7 @@ function requireReasoningLensContracts(steps, failures) {
     || JSON.stringify(shells) !== JSON.stringify(["bash"])
     || JSON.stringify(environment) !== JSON.stringify(reasoningLensAdmissionEnvironment)
     || script !== reasoningLensAdmissionScript
-    || !hasOnlyExpectedCondition(admission, null)
+    || !hasOnlyExpectedCondition(admission, preflightNpmCiDependentCondition)
   ) {
     failures.push("preflight must preserve the exact reasoning-lens event admission contract");
   }
@@ -1537,16 +1575,16 @@ function requireReasoningLensContracts(steps, failures) {
 
 function requireConsoleExactMergeProof(workflow, steps, failures) {
   const derive = steps.filter((step) => stepName(step) === "Derive exact console C/T/M train");
-  if (derive.length !== 1 || !hasOnlyExpectedCondition(derive[0], consolePrCondition) || multilineRunCommands(derive[0]).join("\n") !== consoleTrainDerivation.join("\n")) {
+  if (derive.length !== 1 || !hasOnlyExpectedCondition(derive[0], preflightDeriveCondition) || multilineRunCommands(derive[0]).join("\n") !== consoleTrainDerivation.join("\n")) {
     failures.push("preflight must derive exact C/T/M from the pull-request synthetic merge");
   }
   for (const command of [consoleTruthLedgerCommand, consoleFanoutPlannerAdmissionCommand]) {
     const matching = steps.filter((step) => runScalar(step) === command);
-    if (matching.length !== 1 || !hasOnlyExpectedCondition(matching[0], consolePrCondition)) failures.push(`preflight must run ${command} only after exact C/T/M derivation on pull requests`);
+    if (matching.length !== 1 || !hasOnlyExpectedCondition(matching[0], preflightNpmCiPrCondition)) failures.push(`preflight must run ${command} only after exact C/T/M derivation on pull requests`);
   }
   for (const command of [consoleAuthorityTrainTestCommand, consoleBootstrapTestCommand, consoleTruthLedgerTestCommand, consoleFanoutPlannerTestCommand]) {
     const matching = steps.filter((step) => runScalar(step) === command);
-    if (matching.length !== 1 || !isUnconditional(matching[0])) failures.push(`preflight must run ${command} unconditionally on pull requests and main`);
+    if (matching.length !== 1 || !hasOnlyExpectedCondition(matching[0], preflightNpmCiDependentCondition)) failures.push(`preflight must run ${command} unconditionally on pull requests and main`);
   }
   if (workflow.includes("CONSOLE_INTEGRATION_TIP_SHA")) failures.push("preflight must not reference legacy CONSOLE_INTEGRATION_TIP_SHA");
 }
@@ -1891,7 +1929,7 @@ function requirePreflightRustToolchainBefore(steps, failures) {
     failures.push("preflight must install the pinned Rust toolchain before Cargo-dependent CI preflight tests");
     return;
   }
-  if (!hasOnlyExpectedCondition(steps[setupIndex], preflightRunHeavyCondition)) {
+  if (!hasOnlyExpectedCondition(steps[setupIndex], preflightCheckoutHeavyCondition)) {
     failures.push("preflight must install the pinned Rust toolchain only when run_heavy");
     return;
   }
@@ -1905,7 +1943,7 @@ function requirePreflightRustToolchainBefore(steps, failures) {
 function requireDotSlashBefore(steps, command, job, failures) {
   const commandIndex = steps.findIndex((step) => runScalar(step) === command);
   const dotSlashIndex = steps.findIndex((step) => runScalar(step) === dotSlashBootstrap);
-  const expectedIf = job === "preflight" ? preflightRunHeavyCondition : runHeavyCondition;
+  const expectedIf = job === "preflight" ? preflightCheckoutHeavyCondition : runHeavyCondition;
   if (dotSlashIndex < 0) {
     failures.push(`${job} must install pinned DotSlash before Buck2`);
   } else if (!hasOnlyExpectedCondition(steps[dotSlashIndex], expectedIf)) {
@@ -2000,14 +2038,27 @@ export function evaluateCiPreflight(
   requireDotSlashBefore(preflightSteps, "tools/buck/preflight.sh", "preflight", failures);
   requirePreflightRustToolchainBefore(preflightSteps, failures);
   for (const command of requiredAlwaysPreflightCommands) {
-    requireUnconditionalRun(preflightSteps, command, "preflight", failures);
+    requireRunWithCondition(
+      preflightSteps,
+      command,
+      "preflight",
+      preflightNpmCiDependentCondition,
+      failures,
+    );
   }
+  const heavyPreflightCommandConditions = {
+    "tools/buck/preflight.sh": preflightBuckHeavyCondition,
+    [buckPostgresEnvironmentTestCommand]: preflightBuckHeavyCondition,
+    [buckPostgresHarnessTestCommand]: preflightBuckHeavyCondition,
+    "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null": preflightRustHeavyCondition,
+    "npm run check:executed-tests": preflightNpmCiHeavyCondition,
+  };
   for (const command of requiredHeavyPreflightCommands) {
     requireRunWithCondition(
       preflightSteps,
       command,
       "preflight",
-      preflightRunHeavyCondition,
+      heavyPreflightCommandConditions[command],
       failures,
     );
   }
@@ -2015,7 +2066,7 @@ export function evaluateCiPreflight(
     const classify = preflightSteps.filter((step) => stepName(step) === "Classify path class");
     if (
       classify.length !== 1
-      || !hasOnlyExpectedCondition(classify[0], null)
+      || !hasOnlyExpectedCondition(classify[0], preflightNpmCiDependentCondition)
       || multilineRunCommands(classify[0]).join("\n") !== pathClassEmitScript.join("\n")
     ) {
       failures.push("preflight must classify path class before thin/heavy step gating");
@@ -2036,14 +2087,30 @@ export function evaluateCiPreflight(
     const domainSteps = steps.filter((step) => stepName(step) === "Domain crate unit tests");
     const domainStep = domainSteps[0] ?? "";
     const parsedDomainCommands = shellCommandTokens(runScript(domainStep));
+    // Fail-slow keep-going: the run body now carries wrapper commands (`set +e`,
+    // `check_status`, the summary). Extract only the cargo/git invocations — the
+    // exact surface check-executed-tests attributes — and compare them verbatim,
+    // so a rewrapped, renamed, or merged invocation still fails here.
+    const stripAssignments = (tokens) => {
+      let index = 0;
+      while (index < tokens.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(tokens[index])) index += 1;
+      return tokens.slice(index);
+    };
+    const invocationCommands = parsedDomainCommands
+      .filter((command) => !command.malformed)
+      .map((command) => stripAssignments(command.tokens))
+      .filter((tokens) => tokens[0] === "cargo" || tokens[0] === "git");
+    const expectedInvocations = domainUnitExpectedCommands.map(stripAssignments);
     const domainCommandsMatch = domainSteps.length === 1
-      && parsedDomainCommands.length === domainUnitExpectedCommands.length
-      && parsedDomainCommands.every((command, index) => (
-        !command.malformed
-        && JSON.stringify(command.tokens) === JSON.stringify(domainUnitExpectedCommands[index])
+      && invocationCommands.length === expectedInvocations.length
+      && invocationCommands.every((tokens, index) => (
+        JSON.stringify(tokens) === JSON.stringify(expectedInvocations[index])
       ));
     if (!domainCommandsMatch || !hasOnlyExpectedCondition(domainStep, runHeavyCondition)) {
       failures.push("domain-unit must execute the locked Cargo test commands directly when run_heavy");
+    }
+    if (!/ci-keep-going:/.test(domainStep) || !/exit 1/.test(domainStep)) {
+      failures.push("domain-unit keep-going block must re-raise failures with a summary exit 1");
     }
     if (/^    (?:env|defaults):/m.test(domainUnit)
       || /^        env:/m.test(domainUnit)) {
@@ -2058,7 +2125,7 @@ export function evaluateCiPreflight(
       const present = directTokens.some((token, index) => token === "--test" && directTokens[index + 1] === t);
       if (!present) failures.push(`domain-unit must run --test ${t}`);
     }
-    if (parsedDomainCommands[0]?.tokens?.includes("--lib") !== true) {
+    if (invocationCommands[0]?.includes("--lib") !== true) {
       failures.push("domain-unit must pass --lib on its first cargo invocation");
     }
 
@@ -2153,11 +2220,7 @@ export function evaluateCiPreflight(
   const backend = jobBlock(workflow, "backend");
   if (backend) {
     const steps = stepBlocks(backend);
-    const failFastIf = runHeavyCondition;
     const pr473ContractTestCommand = "python3 scripts/check-pr473-migration-operational.test.py -v";
-    if (steps.some((step) => step.includes("if: ${{ !cancelled() }}"))) {
-      failures.push("backend must not use !cancelled() on protected fail-fast steps");
-    }
     const sourceGateContracts = [
       ["Layer-boundary gate", "../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary"],
       ["Audit-coverage gate", "cargo run -p console-gate-audit-coverage"],
@@ -2169,16 +2232,19 @@ export function evaluateCiPreflight(
       ["IaC tier-discipline gate", "cargo run -p console-gate-iac-tier"],
       ["Fabricated-branch gate", "cargo run -p console-gate-fabricated-branch"],
     ];
+    // Fail-slow sweep: fmt/clippy/gates (and the topology reconcile they do not
+    // depend on) run regardless of each other; the DB-dependent steps guard on
+    // the topology reconcile's success so one root failure shows as skipped.
     const gateIndexes = requireOrderedStepContracts(
       steps,
       [
-        ["clippy -D warnings", "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings"],
-        ...sourceGateContracts,
-        ["PR 473 migration operational contract tests", pr473ContractTestCommand],
-        ["Reconcile portable PostgreSQL role topology", undefined],
-        ["PR 473 migration operational gate", "npm run check:pr473-migration-operational"],
-        ["Boot smoke — migrate + serve + /readyz", undefined],
-      ].map(([name, run]) => ({ name, run, if: failFastIf })),
+        { name: "clippy -D warnings", run: "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings", if: backendIndependentCondition },
+        ...sourceGateContracts.map(([name, run]) => ({ name, run, if: backendIndependentCondition })),
+        { name: "PR 473 migration operational contract tests", run: pr473ContractTestCommand, if: backendIndependentCondition },
+        { name: "Reconcile portable PostgreSQL role topology", run: undefined, if: backendIndependentCondition },
+        { name: "PR 473 migration operational gate", run: "npm run check:pr473-migration-operational", if: backendTopologyDependentCondition },
+        { name: "Boot smoke — migrate + serve + /readyz", run: undefined, if: backendTopologyDependentCondition },
+      ],
       "backend",
       failures,
     );
@@ -2198,7 +2264,7 @@ export function evaluateCiPreflight(
             "//tools/buck:provisioning-dev-principal-upsert-race-postgres",
           ].join("\n"),
           workingDirectory: ".",
-          if: failFastIf,
+          if: backendTopologyDependentCondition,
         },
         {
           // Locked so the step cannot be deleted silently: the crate's residual
@@ -2207,13 +2273,13 @@ export function evaluateCiPreflight(
           name: "Buck2 platform-authz unit suite",
           run: "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit",
           workingDirectory: ".",
-          if: failFastIf,
+          if: backendIndependentCondition,
         },
         {
           name: "Buck2 console-app unit suite",
           run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit",
           workingDirectory: ".",
-          if: failFastIf,
+          if: backendIndependentCondition,
         },
         {
           // The suite H-1 is *about*. `openapi_drift` is the only thing that inventories every
@@ -2225,7 +2291,7 @@ export function evaluateCiPreflight(
           name: "Buck2 console-app OpenAPI drift suite",
           run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift",
           workingDirectory: ".",
-          if: failFastIf,
+          if: backendIndependentCondition,
         },
         {
           name: "Buck2 console-app inline PostgreSQL suites",
@@ -2235,7 +2301,7 @@ export function evaluateCiPreflight(
             "//tools/buck:app-dev-auth-persona-guard-postgres",
           ].join("\n"),
           workingDirectory: ".",
-          if: failFastIf,
+          if: backendTopologyDependentCondition,
         },
       ],
       "backend",

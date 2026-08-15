@@ -9,9 +9,10 @@ only_csv=""
 workflow_only=0
 num_threads=1
 shard_id=""
+keep_going=1
 
 usage() {
-  echo "usage: cargo_needs_postgres.sh [--map PATH] [--workflow-only] [--only name[,name...]] [--shard-id app|platform|ontology|domain-a|domain-b] [--num-threads N]" >&2
+  echo "usage: cargo_needs_postgres.sh [--map PATH] [--workflow-only] [--only name[,name...]] [--shard-id app|platform|ontology|domain-a|domain-b] [--num-threads N] [--keep-going|--fail-fast]" >&2
   exit 2
 }
 
@@ -26,6 +27,8 @@ while [[ $# -gt 0 ]]; do
     --shard-id=*) shard_id="${1#*=}"; shift ;;
     --num-threads) num_threads="$2"; shift 2 ;;
     --num-threads=*) num_threads="${1#*=}"; shift ;;
+    --keep-going) keep_going=1; shift ;;
+    --fail-fast) keep_going=0; shift ;;
     -h|--help) usage ;;
     *) usage ;;
   esac
@@ -233,33 +236,17 @@ done <"${tmp_pkgs}"
 echo "cargo-postgres: building packages..."
 ( cd "${repo_root}" && "${build_args[@]}" )
 
-failed=0
-while IFS= read -r row; do
-  name="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["name"])' "${row}")"
-  echo "cargo-postgres: === ${name} ==="
-  # shellcheck disable=SC2046
-  set -- $(python3 -c 'import json,sys; print(" ".join(json.loads(sys.argv[1])["argv"]))' "${row}")
-  # Prefer JSON array exec without word-splitting bugs:
-  if ! python3 - "${repo_root}" "${row}" "${num_threads}" <<'PY'
-import json, os, subprocess, sys
-root, row, threads = sys.argv[1], json.loads(sys.argv[2]), sys.argv[3]
-argv = row["argv"]
-env = os.environ.copy()
-env["SQLX_OFFLINE"] = "true"
-env["RUST_TEST_THREADS"] = threads
-env["CARGO_TERM_COLOR"] = "always"
-print("cargo-postgres:", " ".join(argv), flush=True)
-raise SystemExit(subprocess.call(argv, cwd=root, env=env))
-PY
-  then
-    echo "cargo-postgres: FAILED: ${name}" >&2
-    failed=1
-  fi
-done <"${tmp_list}"
-
-rm -f "${tmp_list}" "${tmp_pkgs}"
-if [[ "${failed}" != 0 ]]; then
-  echo "cargo-postgres: one or more tests failed" >&2
-  exit 1
+# Fail-slow sweep: run every selected binary, collect per-binary pass/fail, print
+# a summary table, and exit non-zero if any failed. The keep-going loop lives in
+# cargo-test-runner.sh so it is unit-testable without Docker (fake map + stubbed
+# cargo). Default is --keep-going; --fail-fast opts back out for local use.
+export CARGO_REPO_ROOT="${repo_root}"
+export RUST_TEST_THREADS="${num_threads}"
+if [[ "${keep_going}" == 1 ]]; then
+  "${repo_root}/tools/ci/cargo-test-runner.sh" --keep-going <"${tmp_list}"
+else
+  "${repo_root}/tools/ci/cargo-test-runner.sh" --fail-fast <"${tmp_list}"
 fi
-echo "cargo-postgres: all ${count} invocations passed"
+status=$?
+rm -f "${tmp_list}" "${tmp_pkgs}"
+exit "${status}"
