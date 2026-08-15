@@ -3345,6 +3345,29 @@
       "in_workflow_postgres_job": true
     },
     {
+      "buck_wrapper": "//tools/buck:platform-db-employee-leave-balances-migration-contract-pg",
+      "name": "platform-db-employee-leave-balances-migration-contract-pg",
+      "buck_inner": "//backend/crates/platform/db:console-platform-db-itest-employee_leave_balances_migration_contract",
+      "package": "console-platform-db",
+      "crate_dir": "backend/crates/platform/db",
+      "kind": "test",
+      "test": "employee_leave_balances_migration_contract",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-db",
+        "--test",
+        "employee_leave_balances_migration_contract",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
+    },
+    {
       "buck_wrapper": "//tools/buck:platform-db-feature-catalog-coverage",
       "name": "platform-db-feature-catalog-coverage",
       "buck_inner": "//backend/crates/platform/db:console-platform-db-itest-feature_catalog_covers_every_feature",

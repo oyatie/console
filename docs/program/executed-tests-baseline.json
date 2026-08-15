@@ -288,6 +288,7 @@
     "backend/crates/platform/db/src/lib.rs": 9,
     "backend/crates/platform/db/tests/attendance_console_migration_contract.rs": 10,
     "backend/crates/platform/db/tests/code_issuance.rs": 3,
+    "backend/crates/platform/db/tests/employee_leave_balances_migration_contract.rs": 3,
     "backend/crates/platform/db/tests/feature_catalog_covers_every_feature.rs": 2,
     "backend/crates/platform/db/tests/group_resolvers.rs": 2,
     "backend/crates/platform/db/tests/lifecycle_maker_checker.rs": 4,

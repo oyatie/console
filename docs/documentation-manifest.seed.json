@@ -3740,6 +3740,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-14-hee2-p1-leave-balance-schema.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "6b060af3c3380ef8f89afbc0edd32c9274c2a1e4",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/ledger/2026-08-14-l4-ci-derive-tables.md",
     "class": "evidence",
     "owner": "repository maintainers",
