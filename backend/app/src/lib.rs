@@ -76,7 +76,7 @@ use console_ontology_adapter_postgres::PgOntologyStore;
 use console_ontology_adapter_postgres::instances::PgInstanceStore;
 use console_ontology_canonical_adapter_postgres::company::PgCompanyPort;
 use console_ontology_canonical_adapter_postgres::employment::{
-    PgEmploymentPort, reassign_org_unit_via_transfers_in_tx,
+    EmploymentError, PgEmploymentPort, reassign_org_unit_via_transfers_in_tx,
 };
 use console_ontology_canonical_adapter_postgres::job_position::PgJobPositionPort;
 use console_ontology_canonical_adapter_postgres::org_unit::PgOrgUnitPort;
@@ -2619,11 +2619,38 @@ impl EmploymentTransferPort for PgEmploymentTransferPort {
                 valid_from,
             )
             .await
-            // The orgchange adapter re-flattens every reassign failure to a 409
-            // conflict carrying this message, so the kind is deliberately not
-            // preserved here (and `CanonicalPortError` is only a dev-dependency
-            // of this crate, so it is not reachable from lib code).
-            .map_err(|error| KernelError::internal(error.to_string()))
+            // Re-derive the canonical KernelError kind without pulling the
+            // `CanonicalPortError` trait into lib code (it is only a
+            // dev-dependency of this crate), then redact Internal diagnostics at
+            // the seam so the org-change REST surface never returns DB internals.
+            // A closed window stays Conflict (409), a domain refusal stays
+            // Validation (422), and a gate/lookup failure stays Internal (500).
+            .map_err(|error| {
+                let kernel = match &error {
+                    EmploymentError::Frozen(kernel) => kernel.clone(),
+                    EmploymentError::Database(_) | EmploymentError::UnreadableReceipt(_, _) => {
+                        KernelError::internal(error.to_string())
+                    }
+                    EmploymentError::DigestConflict(_) => KernelError::conflict(error.to_string()),
+                    EmploymentError::Blocked(_)
+                    | EmploymentError::AmbiguousSourceBinding { .. }
+                    | EmploymentError::UnknownOrgUnit(_)
+                    | EmploymentError::UnknownJobPosition(_)
+                    | EmploymentError::UnboundEmployeeForTransfer { .. }
+                    | EmploymentError::OrgUnitRefNotUuid => {
+                        KernelError::validation(error.to_string())
+                    }
+                };
+                if kernel.kind == ErrorKind::Internal {
+                    tracing::error!(
+                        error = %kernel.message,
+                        "employment transfer failed at the org-change seam"
+                    );
+                    KernelError::internal("employment transfer failed")
+                } else {
+                    kernel
+                }
+            })
         })
     }
 }

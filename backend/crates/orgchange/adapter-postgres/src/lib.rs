@@ -865,13 +865,19 @@ async fn apply_ops(
         let event = apply_op(tx, org, actor, command_id, op, now, employment_transfer)
             .await
             .map_err(|e| {
-                let message = match &e {
-                    PgOrgChangeError::Domain(k) | PgOrgChangeError::Frozen(k) => k.message.clone(),
-                    PgOrgChangeError::Db(_) => "database rejected the operation".to_owned(),
-                };
-                PgOrgChangeError::from(KernelError::conflict(format!(
-                    "proposal op {index} failed: {message}"
-                )))
+                // Preserve the op's kind AND the freeze marker: a closed window
+                // stays Frozen(Conflict) so `record_freeze_refusal` fires, while
+                // a gate/lookup failure stays Internal (500) instead of being
+                // collapsed into a retry-never 409.
+                let wrapped = KernelError::new(
+                    e.kind(),
+                    format!("proposal op {index} failed: {}", e.message()),
+                );
+                if matches!(&e, PgOrgChangeError::Frozen(_)) {
+                    PgOrgChangeError::Frozen(wrapped)
+                } else {
+                    PgOrgChangeError::from(wrapped)
+                }
             })?;
         audits.push(event);
     }
@@ -1115,10 +1121,22 @@ async fn apply_op(
                 )
                 .await
                 .map_err(|err| {
-                    PgOrgChangeError::from(KernelError::conflict(format!(
-                        "REASSIGN_ORG_UNIT via hr.transfer failed: {}",
-                        err.message
-                    )))
+                    // Preserve the employment error's kind AND the freeze marker
+                    // through the trait seam: the seam carries a `KernelError`,
+                    // and `Conflict` reaches here ONLY from a freeze refusal (the
+                    // app-side adapter maps every non-freeze failure to Internal),
+                    // so Conflict re-emits `Frozen` and fires
+                    // `record_freeze_refusal`; Internal stays 500 rather than
+                    // collapsing into a retry-never 409.
+                    let wrapped = KernelError::new(
+                        err.kind,
+                        format!("REASSIGN_ORG_UNIT via hr.transfer failed: {}", err.message),
+                    );
+                    if err.kind == ErrorKind::Conflict {
+                        PgOrgChangeError::Frozen(wrapped)
+                    } else {
+                        PgOrgChangeError::from(wrapped)
+                    }
                 })?;
             let event = audit(
                 org,

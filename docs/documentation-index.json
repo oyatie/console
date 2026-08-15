@@ -3794,6 +3794,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-14-b-emp-b-freeze-and-backdating.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "452fa944b4fd2f64f2bafd1b0a848f8c91159e13",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/ledger/2026-08-14-b-id-identity-containment.md",
       "class": "evidence",
       "owner": "repository maintainers",

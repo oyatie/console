@@ -8417,6 +8417,32 @@ impl From<sqlx::Error> for HrError {
     }
 }
 
+impl From<employment::EmploymentError> for HrError {
+    fn from(error: employment::EmploymentError) -> Self {
+        match error {
+            // §3.9.1 freeze refusal (Conflict) and unparseable date (Validation)
+            // carry client-safe, actionable messages and pass through unchanged.
+            // A gate failure (Internal) carries raw driver diagnostics that must
+            // be logged, not returned, per the kernel error contract.
+            employment::EmploymentError::Frozen(error) => match error.kind {
+                ErrorKind::Internal => {
+                    tracing::error!(error = %error.message, "employment freeze gate failed");
+                    Self::internal("employment change could not be applied")
+                }
+                _ => Self::from_kernel(error),
+            },
+            // Preserve the exact driver-error mapping (and its trace log).
+            employment::EmploymentError::Database(error) => Self::from(error),
+            // Unreachable from `apply_employment_change`, the only statement
+            // routed through this impl (port-level refusals surface through the
+            // ontology dispatcher, not the REST lifecycle handlers). Mapped as
+            // internal so a future variant fails loud rather than as a wrong
+            // HTTP status.
+            other => Self::from_kernel(KernelError::internal(other.to_string())),
+        }
+    }
+}
+
 impl IntoResponse for HrError {
     fn into_response(self) -> Response {
         (
@@ -8443,6 +8469,27 @@ fn error_code(kind: ErrorKind) -> &'static str {
 mod tests {
     use super::*;
     use calamine::Range;
+
+    #[cfg(not(feature = "test-postgres"))]
+    #[test]
+    fn frozen_internal_gate_failure_is_redacted_in_the_rest_response() {
+        // A gate failure (Internal) carries raw driver diagnostics; the REST
+        // mapping must log, not return, them.
+        let err = HrError::from(employment::EmploymentError::Frozen(KernelError::internal(
+            "period lock check failed: sqlx database connection refused (secret host)",
+        )));
+        assert_eq!(err.status, StatusCode::INTERNAL_SERVER_ERROR);
+        assert_eq!(err.code, "internal");
+        assert!(!err.message.contains("sqlx"));
+        assert!(!err.message.contains("secret host"));
+
+        // A closed window (Conflict) stays actionable, not redacted.
+        let refused = HrError::from(employment::EmploymentError::Frozen(KernelError::conflict(
+            "payroll period 2026-08-01..2026-08-31 is locked; write refused",
+        )));
+        assert_eq!(refused.status, StatusCode::CONFLICT);
+        assert!(refused.message.contains("locked"));
+    }
 
     #[cfg(not(feature = "test-postgres"))]
     #[test]

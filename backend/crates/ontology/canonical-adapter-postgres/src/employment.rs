@@ -79,11 +79,12 @@ use console_ontology_canonical_domain::{
     CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget,
     Employment, ObjectKey, Preflight, ReceiptOwner,
 };
+use console_platform_db::{PeriodLockDomain, assert_period_open, lock_period_lock_key};
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Row, Transaction};
 use std::str::FromStr;
-use time::OffsetDateTime;
+use time::{Date, OffsetDateTime, macros::offset};
 use uuid::Uuid;
 
 // ---------------------------------------------------------------------------
@@ -159,14 +160,34 @@ pub async fn insert_employee_record(
 /// Applies one employment change to the legacy `employees` head, inside the
 /// caller's transaction.
 ///
+/// §3.9.1 변경 동결 창: before the UPDATE, the effective date is checked against
+/// the platform period locks (Payroll + Accounting). A change whose effective
+/// date falls inside a closed period is refused and the caller's transaction
+/// rolls back whole. This statement is the LIVE-head rewrite, so the port calls
+/// it only for non-backdated Promote/Transfer; the REST lifecycle handlers call
+/// it directly, which is why the gate lives here rather than only in the port.
+///
 /// # Errors
-/// Returns the driver error verbatim.
+/// `Frozen` when a period lock closes the effective date (or the effective date
+/// is not an ISO date, mapped to a validation refusal); `Database` verbatim
+/// from the driver.
 pub async fn apply_employment_change(
     tx: &mut Transaction<'_, Postgres>,
     org_id: Uuid,
     employee_id: Uuid,
     change: EmploymentChange<'_>,
-) -> Result<(), sqlx::Error> {
+) -> Result<(), EmploymentError> {
+    let effective_date = Date::parse(
+        change.effective_date,
+        &time::format_description::well_known::Iso8601::DATE,
+    )
+    .map_err(|error| {
+        EmploymentError::Frozen(KernelError::validation(format!(
+            "employment change effective_date {:?} is not an ISO date: {error}",
+            change.effective_date
+        )))
+    })?;
+    assert_employment_change_window_open(tx, org_id, effective_date).await?;
     sqlx::query(
         r#"
         UPDATE employees
@@ -188,8 +209,47 @@ pub async fn apply_employment_change(
     .bind(change.employment_status)
     .bind(change.effective_date)
     .execute(tx.as_mut())
-    .await
-    .map(|_| ())
+    .await?;
+    Ok(())
+}
+
+/// The freeze domains §3.9.1 names — 급여 마감 and 회계 결산. One list, mirroring
+/// the org-change adapter's `FREEZE_DOMAINS`, so an employment change and an org
+/// change can never freeze on a different set of windows.
+const EMPLOYMENT_FREEZE_DOMAINS: [PeriodLockDomain; 2] =
+    [PeriodLockDomain::Payroll, PeriodLockDomain::Accounting];
+
+/// The tenant business date (KST, UTC+9) of an instant, mirroring the org-change
+/// adapter's `today_kst` offset. The lock date is derived from this fixed offset,
+/// never from the caller-supplied RFC3339 offset, so the same instant cannot be
+/// submitted as two different calendar days and bypass a closed window.
+fn business_date(instant: OffsetDateTime) -> Date {
+    instant.to_offset(offset!(+9)).date()
+}
+
+/// §3.9.1 변경 동결 창 — refuse an employment mutation whose effective date falls
+/// inside a closed payroll or accounting period. Runs in the caller's already-
+/// armed transaction, so the lookup is RLS-scoped to the caller's tenant and the
+/// refusal rolls the whole write back.
+///
+/// Before the read it takes the same per-tenant, per-domain advisory key the
+/// period-lock CREATE path takes ([`console_platform_db::lock_period_lock_key`]),
+/// so a lock committed concurrently cannot slip between this read and the
+/// write's commit: the two order strictly and the writer either sees the
+/// committed lock (refused) or commits before the lock exists (a draft that
+/// predates the freeze).
+async fn assert_employment_change_window_open(
+    tx: &mut Transaction<'_, Postgres>,
+    org_id: Uuid,
+    effective_date: Date,
+) -> Result<(), EmploymentError> {
+    for domain in EMPLOYMENT_FREEZE_DOMAINS {
+        lock_period_lock_key(tx, domain, org_id).await?;
+        assert_period_open(tx, domain, effective_date)
+            .await
+            .map_err(EmploymentError::Frozen)?;
+    }
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------
@@ -343,6 +403,13 @@ pub enum EmploymentError {
     Blocked(Vec<String>),
     #[error(transparent)]
     Database(#[from] sqlx::Error),
+    /// §3.9.1 변경 동결 창: the period-lock gate refused a live employment
+    /// mutation, or the gate itself could not run (unparseable effective date,
+    /// lock-lookup failure). The carried `KernelError` preserves its kind so
+    /// `into_kernel_error` maps a closed window to Conflict (409) and a gate
+    /// failure to Internal (500).
+    #[error(transparent)]
+    Frozen(KernelError),
     #[error("command {0} was already applied with a different payload")]
     DigestConflict(Uuid),
     #[error("stored receipt for command {0} names no dispatch target: {1}")]
@@ -379,6 +446,7 @@ impl CanonicalPortError for EmploymentError {
             | Self::UnboundEmployeeForTransfer { .. }
             | Self::OrgUnitRefNotUuid => KernelError::validation(message),
             Self::DigestConflict(_) => KernelError::conflict(message),
+            Self::Frozen(error) => error,
             Self::Database(_) | Self::UnreadableReceipt(_, _) => KernelError::internal(message),
         }
     }
@@ -466,7 +534,12 @@ pub async fn write_in_tx(
     let valid_from = command.query.valid_from();
     let attributes = command.query.attributes();
 
-    let (employment_id, version) = match &command.query {
+    // §3.9.1: every dated mutation is checked, not just the legacy-head rewrite.
+    // This covers Appoint and backdated Promote/Transfer too, so a command dated
+    // inside a closed Payroll/Accounting window is refused before any insert.
+    assert_employment_change_window_open(tx, org, business_date(valid_from)).await?;
+
+    let (employment_id, version, backdated) = match &command.query {
         EmploymentQuery::Appoint { .. } => {
             let employment_id: Uuid = sqlx::query_scalar(
                 "INSERT INTO employment_heads (org_id, valid_from) VALUES ($1, $2) \
@@ -476,7 +549,7 @@ pub async fn write_in_tx(
             .bind(valid_from)
             .fetch_one(tx.as_mut())
             .await?;
-            (employment_id, 1_i64)
+            (employment_id, 1_i64, false)
         }
         EmploymentQuery::Promote { employment_id, .. }
         | EmploymentQuery::Transfer { employment_id, .. } => {
@@ -493,7 +566,41 @@ pub async fn write_in_tx(
             .bind(employment_id)
             .fetch_one(tx.as_mut())
             .await?;
-            (*employment_id, next)
+            // A revise before the head's opening bound is outside the
+            // employment's half-open lifetime and must be refused, not appended
+            // as history. `employment_heads.valid_from` is that opening bound.
+            let opened: OffsetDateTime = sqlx::query_scalar(
+                "SELECT valid_from FROM employment_heads \
+                 WHERE org_id = $1 AND id = $2",
+            )
+            .bind(org)
+            .bind(employment_id)
+            .fetch_one(tx.as_mut())
+            .await?;
+            if valid_from < opened {
+                return Err(EmploymentError::Blocked(vec![
+                    "revision valid_from predates the employment head opening".to_owned(),
+                ]));
+            }
+            // A revision backdated before the current head is a legitimate
+            // history insert (0214 is append-only), but the legacy `employees`
+            // head is a projection of the LATEST effective state, so the live
+            // rewrite below must be skipped for it. `valid_from` was read
+            // before this command's revision is appended, so MAX(valid_from)
+            // still names the previous head.
+            let latest: Option<OffsetDateTime> = sqlx::query_scalar(
+                "SELECT MAX(valid_from) FROM employment_revisions \
+                 WHERE org_id = $1 AND employment_id = $2",
+            )
+            .bind(org)
+            .bind(employment_id)
+            .fetch_one(tx.as_mut())
+            .await?;
+            (
+                *employment_id,
+                next,
+                latest.is_some_and(|latest| valid_from < latest),
+            )
         }
     };
 
@@ -542,34 +649,49 @@ pub async fn write_in_tx(
         // UNKNOWN clears `exit_date` so reactivation cannot disagree with
         // status. The canonical head closes in the same transaction when
         // EXITED: `valid_to` = this revision's `valid_from`.
+        //
+        // A backdated revision is appended to history above, but must NOT move
+        // the live legacy head (or the head's close date) backward: both mirror
+        // the LATEST effective state, not the most recently appended one. The
+        // receipt store below still records the accepted history insert, so a
+        // retry of the same command id replays rather than re-appending.
         EmploymentQuery::Promote { .. } | EmploymentQuery::Transfer { .. } => {
+            // The source binding must resolve for every revise — backdated or
+            // not — so a deleted or ambiguous binding cannot append a revision
+            // (or store a receipt) that the legacy head could never show.
             let employee_id = bound_employee(tx, org, employment_id).await?;
-            let effective_date = valid_from.date().to_string();
-            let org_unit_text = attributes.legacy_org_unit_text();
-            let position_text = attributes.legacy_position_text();
-            apply_employment_change(
-                tx,
-                org,
-                employee_id,
-                EmploymentChange {
-                    company: &attributes.company,
-                    org_unit: org_unit_text.as_deref(),
-                    position: position_text.as_deref(),
-                    employment_status: &attributes.employment_status,
-                    effective_date: &effective_date,
-                },
-            )
-            .await?;
-            if attributes.employment_status == "EXITED" {
-                sqlx::query(
-                    "UPDATE employment_heads SET valid_to = $3 \
-                     WHERE org_id = $1 AND id = $2",
+            if !backdated {
+                // The legacy head mirrors the LATEST effective state. Its date
+                // string is the KST business date, the same instant the top-of-
+                // write gate froze on, so the two never disagree about which
+                // calendar day is sealed.
+                let effective_date = business_date(valid_from).to_string();
+                let org_unit_text = attributes.legacy_org_unit_text();
+                let position_text = attributes.legacy_position_text();
+                apply_employment_change(
+                    tx,
+                    org,
+                    employee_id,
+                    EmploymentChange {
+                        company: &attributes.company,
+                        org_unit: org_unit_text.as_deref(),
+                        position: position_text.as_deref(),
+                        employment_status: &attributes.employment_status,
+                        effective_date: &effective_date,
+                    },
                 )
-                .bind(org)
-                .bind(employment_id)
-                .bind(valid_from)
-                .execute(tx.as_mut())
                 .await?;
+                if attributes.employment_status == "EXITED" {
+                    sqlx::query(
+                        "UPDATE employment_heads SET valid_to = $3 \
+                         WHERE org_id = $1 AND id = $2",
+                    )
+                    .bind(org)
+                    .bind(employment_id)
+                    .bind(valid_from)
+                    .execute(tx.as_mut())
+                    .await?;
+                }
             }
         }
     }
@@ -963,6 +1085,26 @@ mod port_error_kind_tests {
             }
             .into_kernel_error()
             .kind,
+            ErrorKind::Validation
+        );
+    }
+
+    #[test]
+    fn frozen_window_is_conflict_not_internal() {
+        assert_eq!(
+            EmploymentError::Frozen(KernelError::conflict("payroll period locked".to_owned()))
+                .into_kernel_error()
+                .kind,
+            ErrorKind::Conflict
+        );
+    }
+
+    #[test]
+    fn frozen_unparseable_date_is_validation_not_internal() {
+        assert_eq!(
+            EmploymentError::Frozen(KernelError::validation("unparseable date".to_owned()))
+                .into_kernel_error()
+                .kind,
             ErrorKind::Validation
         );
     }

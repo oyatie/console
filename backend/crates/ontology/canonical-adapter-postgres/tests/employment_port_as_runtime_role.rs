@@ -38,10 +38,10 @@
 //! `employment::apply_employment_change` the REST lifecycle handler now calls is
 //! the statement the port itself issues.
 
-use console_kernel_core::{OrgId, UserId};
+use console_kernel_core::{ErrorKind, OrgId, UserId};
 use console_ontology_canonical_adapter_postgres::employment::{
-    EmploymentAttributes, EmploymentCommand, EmploymentError, EmploymentQuery, PgEmploymentPort,
-    reassign_org_unit_via_transfers_in_tx,
+    EmploymentAttributes, EmploymentChange, EmploymentCommand, EmploymentError, EmploymentQuery,
+    PgEmploymentPort, apply_employment_change, reassign_org_unit_via_transfers_in_tx,
 };
 use console_ontology_canonical_domain::{
     CanonicalPort, CommandId, CommandReceipt, DispatchTarget, EmploymentPort, ObjectKey,
@@ -49,7 +49,7 @@ use console_ontology_canonical_domain::{
 };
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
-use time::OffsetDateTime;
+use time::{Date, OffsetDateTime, macros::offset};
 use uuid::Uuid;
 
 const ORG: Uuid = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0001);
@@ -1644,4 +1644,462 @@ async fn reassign_org_unit_unknown_from_org_unit_is_refused(owner_pool: PgPool) 
     );
 
     let _ = port;
+}
+
+/// Seeded through the BYPASSRLS owner pool: an active (still-locked) payroll or
+/// accounting window covering exactly `day`, which `assert_period_open` must
+/// refuse for that date.
+async fn seed_period_lock(owner_pool: &PgPool, org: Uuid, domain: &str, day: Date) {
+    sqlx::query(
+        "INSERT INTO period_locks (org_id, domain, period_start, period_end, reason) \
+         VALUES ($1, $2, $3, $4, 'test freeze')",
+    )
+    .bind(org)
+    .bind(domain)
+    .bind(day)
+    .bind(day)
+    .execute(owner_pool)
+    .await
+    .unwrap();
+}
+
+/// §3.9.1 (console-rte): the port's promote path must refuse a write whose
+/// effective date falls inside a locked payroll period. Before the freeze gate
+/// this command was accepted and rewrote `employees` for a sealed period.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_promote_effective_inside_a_locked_payroll_period_is_refused(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (_employee, employment_id) =
+        appointed(&owner_pool, org, actor, &port, "freeze-promote").await;
+
+    let promote_at = at(86_400);
+    seed_period_lock(&owner_pool, ORG, "payroll", promote_at.date()).await;
+
+    let refused = execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: promote_at,
+                attributes: attributes(ORG_UNIT_SALES, JOB_LEAD, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .expect_err("a promote whose effective date falls in a locked payroll period must be refused");
+
+    let EmploymentError::Frozen(error) = &refused else {
+        panic!("expected a freeze refusal, got {refused:?}");
+    };
+    assert_eq!(
+        error.kind,
+        ErrorKind::Conflict,
+        "a closed window must surface as a conflict"
+    );
+    assert!(
+        error.message.contains("locked"),
+        "the refusal must name the lock: {}",
+        error.message
+    );
+
+    assert_eq!(
+        count_rows(&owner_pool, COUNT_REVISIONS).await,
+        1,
+        "a refused promote must append no revision"
+    );
+}
+
+/// The transfer path shares `apply_employment_change`; it must refuse under the
+/// OTHER freeze domain (accounting), proving the gate checks both domains.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_transfer_effective_inside_a_locked_accounting_period_is_refused(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (_employee, employment_id) =
+        appointed(&owner_pool, org, actor, &port, "freeze-transfer").await;
+
+    let transfer_at = at(86_400);
+    seed_period_lock(&owner_pool, ORG, "accounting", transfer_at.date()).await;
+
+    let refused = execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Transfer {
+                employment_id,
+                valid_from: transfer_at,
+                attributes: attributes(ORG_UNIT_TECH, JOB_STAFF, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .expect_err(
+        "a transfer whose effective date falls in a locked accounting period must be refused",
+    );
+
+    assert!(
+        matches!(&refused, EmploymentError::Frozen(error) if error.kind == ErrorKind::Conflict),
+        "got {refused:?}"
+    );
+    assert_eq!(count_rows(&owner_pool, COUNT_REVISIONS).await, 1);
+}
+
+/// console-r25: a backdated correction is a legitimate history insert on the
+/// CANONICAL side (0214 appends MAX(version)+1 and derives intervals by
+/// `valid_from` order), so the backdated revision must land as history while the
+/// LEGACY `employees` head — a projection of the LATEST effective state — must
+/// NOT move backward to the pre-transfer company.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_backdated_promote_is_history_not_a_head_rewrite(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (employee, employment_id) = appointed(&owner_pool, org, actor, &port, "backdate-1").await;
+
+    // Transfer to company B at the LATER effective instant (t2).
+    let transfer_at = at(172_800);
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Transfer {
+                employment_id,
+                valid_from: transfer_at,
+                attributes: EmploymentAttributes {
+                    company: "ACME-B".to_owned(),
+                    org_unit_id: Some(ORG_UNIT_TECH),
+                    job_position_id: Some(JOB_LEAD),
+                    employment_status: "ACTIVE".to_owned(),
+                },
+            },
+        ),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        legacy_head(&owner_pool, employee).await,
+        (
+            "ACME-B".to_owned(),
+            Some(ORG_UNIT_TECH.to_string()),
+            Some(JOB_LEAD.to_string()),
+            "ACTIVE".to_owned()
+        )
+    );
+
+    // Backdated correction to company A at t1 (between appoint t0 and transfer t2).
+    let backdated_at = at(86_400);
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: backdated_at,
+                attributes: EmploymentAttributes {
+                    company: "ACME-A".to_owned(),
+                    org_unit_id: Some(ORG_UNIT_SALES),
+                    job_position_id: Some(JOB_STAFF),
+                    employment_status: "ACTIVE".to_owned(),
+                },
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    // CANONICAL pin: the backdated correction was appended as history.
+    assert_eq!(
+        count_rows(&owner_pool, COUNT_REVISIONS).await,
+        3,
+        "the backdated correction must still append a canonical revision"
+    );
+    let revision_windows: Vec<(i64, OffsetDateTime)> = sqlx::query(
+        "SELECT version, valid_from FROM employment_revisions \
+         WHERE org_id = $1 AND employment_id = $2 ORDER BY valid_from",
+    )
+    .bind(ORG)
+    .bind(employment_id)
+    .fetch_all(&owner_pool)
+    .await
+    .unwrap()
+    .into_iter()
+    .map(|row| {
+        (
+            row.get::<i64, _>("version"),
+            row.get::<OffsetDateTime, _>("valid_from"),
+        )
+    })
+    .collect();
+    assert_eq!(
+        revision_windows,
+        vec![(1, at(0)), (3, at(86_400)), (2, at(172_800))],
+        "intervals derived by valid_from order keep the backdated revision between its neighbours"
+    );
+
+    // LEGACY fix: the head must not move backward to the pre-transfer company.
+    assert_eq!(
+        legacy_head(&owner_pool, employee).await,
+        (
+            "ACME-B".to_owned(),
+            Some(ORG_UNIT_TECH.to_string()),
+            Some(JOB_LEAD.to_string()),
+            "ACTIVE".to_owned()
+        ),
+        "a backdated promote must not reset the legacy head to the pre-transfer state"
+    );
+}
+
+/// The REST lifecycle handlers (`create_employee_lifecycle_event` and
+/// `insert_confirmed_exit_lifecycle_event`) call `apply_employment_change`
+/// directly on their own transaction, not through the port. The freeze gate
+/// must live in the statement so this third caller is refused too.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn the_rest_lifecycle_statement_refuses_a_locked_effective_date(owner_pool: PgPool) {
+    let (_org, _actor, _port) = fixture(&owner_pool).await;
+    let employee = seed_employee(&owner_pool, ORG, "freeze-rest").await;
+
+    let effective = at(86_400).date();
+    seed_period_lock(&owner_pool, ORG, "payroll", effective).await;
+
+    let mut tx = owner_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let org_unit = ORG_UNIT_SALES.to_string();
+    let position = JOB_STAFF.to_string();
+    let effective_date = effective.to_string();
+    let refused = apply_employment_change(
+        &mut tx,
+        ORG,
+        employee,
+        EmploymentChange {
+            company: "ACME",
+            org_unit: Some(&org_unit),
+            position: Some(&position),
+            employment_status: "ACTIVE",
+            effective_date: &effective_date,
+        },
+    )
+    .await
+    .unwrap_err();
+    drop(tx);
+
+    assert!(
+        matches!(&refused, EmploymentError::Frozen(error) if error.kind == ErrorKind::Conflict),
+        "got {refused:?}"
+    );
+    assert_eq!(
+        legacy_head(&owner_pool, employee).await,
+        ("ACME".to_owned(), None, None, "ACTIVE".to_owned()),
+        "a refused write must leave the legacy head untouched"
+    );
+}
+
+/// P1 follow-up: the freeze gate runs for EVERY dated mutation, so a backdated
+/// Promote (which skips only the legacy-head rewrite) must still be refused when
+/// its effective date falls inside a locked period.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_backdated_promote_inside_a_locked_period_is_refused(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (_employee, employment_id) =
+        appointed(&owner_pool, org, actor, &port, "backdate-freeze").await;
+
+    // Transfer to the LATER instant (t2), then try a backdated promote at t1.
+    let transfer_at = at(172_800);
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Transfer {
+                employment_id,
+                valid_from: transfer_at,
+                attributes: EmploymentAttributes {
+                    company: "ACME-B".to_owned(),
+                    org_unit_id: Some(ORG_UNIT_TECH),
+                    job_position_id: Some(JOB_LEAD),
+                    employment_status: "ACTIVE".to_owned(),
+                },
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    let backdated_at = at(86_400);
+    seed_period_lock(&owner_pool, ORG, "payroll", backdated_at.date()).await;
+
+    let refused = execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: backdated_at,
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .expect_err("a backdated promote inside a locked period must be refused");
+
+    assert!(
+        matches!(&refused, EmploymentError::Frozen(error) if error.kind == ErrorKind::Conflict),
+        "got {refused:?}"
+    );
+    assert_eq!(
+        count_rows(&owner_pool, COUNT_REVISIONS).await,
+        2,
+        "no backdated revision may be appended through a closed window"
+    );
+}
+
+/// P1 follow-up: `hr.appoint` stamps a business date too, so it must be refused
+/// when its effective date falls inside a locked period — the gate cannot live
+/// only on the Promote/Transfer legacy-head path.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn an_appoint_inside_a_locked_period_is_refused(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let employee = seed_employee(&owner_pool, ORG, "appoint-freeze").await;
+
+    let appoint_at = at(86_400);
+    seed_period_lock(&owner_pool, ORG, "accounting", appoint_at.date()).await;
+
+    let refused = execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Appoint {
+                employee_id: employee,
+                valid_from: appoint_at,
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .expect_err("an appoint inside a locked period must be refused");
+
+    assert!(
+        matches!(&refused, EmploymentError::Frozen(error) if error.kind == ErrorKind::Conflict),
+        "got {refused:?}"
+    );
+    assert_eq!(count_rows(&owner_pool, COUNT_HEADS).await, 0);
+    assert_eq!(count_rows(&owner_pool, COUNT_REVISIONS).await, 0);
+}
+
+/// P2 follow-up: a revise predating the head's opening bound is outside the
+/// employment's half-open lifetime and must be refused, not appended as history.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_revision_predating_the_head_opening_is_refused(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (_employee, employment_id) = appointed(&owner_pool, org, actor, &port, "predate").await;
+
+    // The head opened at at(0); a revise dated before it is outside the lifetime.
+    let refused = execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: at(-86_400),
+                attributes: attributes(ORG_UNIT_SALES, JOB_LEAD, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .expect_err("a revise predating the head opening must be refused");
+
+    assert!(
+        matches!(&refused, EmploymentError::Blocked(_)),
+        "got {refused:?}"
+    );
+    assert_eq!(
+        count_rows(&owner_pool, COUNT_REVISIONS).await,
+        1,
+        "no predating revision may be appended"
+    );
+}
+
+/// P2 follow-up: an unparseable REST `effective_date` is client input, so it
+/// must surface as a validation refusal (422), not an internal failure (500).
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_rest_lifecycle_unparseable_date_is_validation_not_internal(owner_pool: PgPool) {
+    let (_org, _actor, _port) = fixture(&owner_pool).await;
+    let employee = seed_employee(&owner_pool, ORG, "unparseable").await;
+
+    let mut tx = owner_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let org_unit = ORG_UNIT_SALES.to_string();
+    let position = JOB_STAFF.to_string();
+    let refused = apply_employment_change(
+        &mut tx,
+        ORG,
+        employee,
+        EmploymentChange {
+            company: "ACME",
+            org_unit: Some(&org_unit),
+            position: Some(&position),
+            employment_status: "ACTIVE",
+            effective_date: "not-a-date",
+        },
+    )
+    .await
+    .unwrap_err();
+    drop(tx);
+
+    assert!(
+        matches!(&refused, EmploymentError::Frozen(error) if error.kind == ErrorKind::Validation),
+        "an unparseable date must be a validation refusal, not 500: got {refused:?}"
+    );
+}
+
+/// P1 follow-up: the lock date derives from the fixed KST offset, not the
+/// caller-supplied RFC3339 offset. A UTC instant late in one day — already the
+/// next day in KST — must be refused by a lock on the KST date.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_lock_on_the_kst_business_date_refuses_a_utc_instant(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (_employee, employment_id) = appointed(&owner_pool, org, actor, &port, "kst").await;
+
+    // at(0) is 08:00Z; +12h lands at 20:00Z, whose KST (UTC+9) date is the next
+    // calendar day.
+    let utc_instant = at(43_200);
+    let kst_date = utc_instant.to_offset(offset!(+9)).date();
+    assert_ne!(
+        utc_instant.date(),
+        kst_date,
+        "fixture must cross a KST day boundary"
+    );
+    seed_period_lock(&owner_pool, ORG, "payroll", kst_date).await;
+
+    let refused = execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: utc_instant,
+                attributes: attributes(ORG_UNIT_SALES, JOB_LEAD, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .expect_err("a lock on the KST business date must refuse the UTC instant");
+
+    assert!(
+        matches!(&refused, EmploymentError::Frozen(error) if error.kind == ErrorKind::Conflict),
+        "got {refused:?}"
+    );
 }
