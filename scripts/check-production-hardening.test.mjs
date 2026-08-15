@@ -1099,11 +1099,563 @@ validWorkflowFiles[".github/workflows/image-release.yml"] = readFileSync(
   new URL("../.github/workflows/image-release.yml", import.meta.url),
   "utf8",
 );
+validWorkflowFiles["docs/program/executed-tests-baseline.json"] = readFileSync(
+  new URL("../docs/program/executed-tests-baseline.json", import.meta.url),
+  "utf8",
+);
 
 function evaluateWorkflows(overrides = {}) {
   const files = { ...validWorkflowFiles, ...overrides };
   return evaluateWorkflowHardeningChecks((path) => files[path] ?? "");
 }
+
+describe("production hardening wrapper-argv0 gate", () => {
+  const realSecurity = readFileSync(
+    new URL("../.github/workflows/security.yml", import.meta.url),
+    "utf8",
+  );
+  const realCi = readFileSync(
+    new URL("../.github/workflows/ci.yml", import.meta.url),
+    "utf8",
+  );
+  const cargoAuditInvocation =
+    '"${RUNNER_TEMP}/cargo-security-tools/bin/cargo-audit" audit --ignore RUSTSEC-2023-0071';
+
+  function evaluateRealWorkflows(securityText = realSecurity) {
+    return evaluateWorkflows({
+      ".github/workflows/security.yml": securityText,
+      ".github/workflows/ci.yml": realCi,
+    });
+  }
+
+  it("refuses source/./timeout argv0 wrappers around the cargo-audit binary (c236 residual)", () => {
+    // Each decoy keeps the printf "running cargo audit" narrative and swaps the real
+    // cargo-audit binary invocation for a wrapper argv0, which is the residual
+    // false-green class the mechanism must fail closed on.
+    const decoys = [
+      ["timeout", 'timeout 30 "${RUNNER_TEMP}/cargo-security-tools/bin/cargo-audit" audit --ignore RUSTSEC-2023-0071'],
+      ["source", 'source "${RUNNER_TEMP}/cargo-security-tools/bin/cargo-audit" audit --ignore RUSTSEC-2023-0071'],
+      [".", '. "${RUNNER_TEMP}/cargo-security-tools/bin/cargo-audit" audit --ignore RUSTSEC-2023-0071'],
+    ];
+    for (const [wrapper, replacement] of decoys) {
+      const decoy = realSecurity.replace(cargoAuditInvocation, replacement);
+      assert.notEqual(
+        decoy,
+        realSecurity,
+        `${wrapper} decoy must change the cargo-audit invocation`,
+      );
+      assertHasFailure(
+        evaluateRealWorkflows(decoy),
+        `must run cargo-audit as a real binary, not through the ${wrapper} wrapper`,
+      );
+    }
+  });
+
+  it("keeps intact workflows green and ignores the legit reindeer `source` setup", () => {
+    const result = evaluateRealWorkflows(realSecurity);
+    assert.equal(
+      result.failures.filter((failure) => failure.includes("wrapper-argv0 gate"))
+        .length,
+      0,
+      "intact security.yml must have no wrapper-argv0 findings (and the real ci.yml `source third-party/rust/reindeer/upstream.lock` must not false-fail)",
+    );
+  });
+
+  it("scans literal block-scalar indicators for wrapped executors", () => {
+    // run: |- / run: |+ keep each body line as a separate command, so a timeout
+    // wrapper on its own line must still be refused.
+    for (const indicator of ["|-", "|+"]) {
+      const wrapped = realSecurity.replace(
+        cargoAuditInvocation,
+        `timeout 30 ${cargoAuditInvocation}`,
+      );
+      const decoy = wrapped.replace(
+        "        run: |\n          printf '%s\\n' 'running cargo audit",
+        `        run: ${indicator}\n          printf '%s\\n' 'running cargo audit`,
+      );
+      assert.notEqual(decoy, realSecurity, `${indicator} decoy must change the step`);
+      assertHasFailure(
+        evaluateRealWorkflows(decoy),
+        "must run cargo-audit as a real binary, not through the timeout wrapper",
+      );
+    }
+  });
+
+  it("folds run: > bodies before classifying the wrapper", () => {
+    // A folded scalar joins non-empty lines with a space, so `if timeout 30` on one
+    // line and the cargo-audit binary on the next is ONE conditional command whose
+    // argv0 is `timeout`, not two unrelated commands.
+    const cargoAuditStep =
+      "        run: |\n" +
+      "          printf '%s\\n' 'running cargo audit through the directly installed cargo-audit binary'\n" +
+      '          "${RUNNER_TEMP}/cargo-security-tools/bin/cargo-audit" audit --ignore RUSTSEC-2023-0071\n';
+    const foldedStep =
+      "        run: >\n" +
+      "          if timeout 30\n" +
+      '          "${RUNNER_TEMP}/cargo-security-tools/bin/cargo-audit" audit --ignore RUSTSEC-2023-0071; then true; fi\n';
+    const decoy = realSecurity.replace(cargoAuditStep, foldedStep);
+    assert.notEqual(decoy, realSecurity, "folded decoy must change the step");
+    assertHasFailure(
+      evaluateRealWorkflows(decoy),
+      "must run cargo-audit as a real binary, not through the timeout wrapper",
+    );
+  });
+
+  it("classifies wrappers behind shell control-flow prefixes", () => {
+    for (const replacement of [
+      `if timeout 30 ${cargoAuditInvocation}; then true; fi`,
+      `! timeout 30 ${cargoAuditInvocation}`,
+      `if env timeout 30 ${cargoAuditInvocation}; then true; fi`,
+    ]) {
+      const decoy = realSecurity.replace(cargoAuditInvocation, replacement);
+      assert.notEqual(decoy, realSecurity, "control-flow decoy must change the invocation");
+      assertHasFailure(
+        evaluateRealWorkflows(decoy),
+        "must run cargo-audit as a real binary, not through the timeout wrapper",
+      );
+    }
+  });
+
+  it("parses the `--` option terminator before classifying the sourced target", () => {
+    for (const [argv0, prefix] of [["source", "source -- "], [".", ". -- "]]) {
+      const decoy = realSecurity.replace(cargoAuditInvocation, prefix + cargoAuditInvocation);
+      assert.notEqual(decoy, realSecurity, `${argv0} decoy must change the invocation`);
+      assertHasFailure(
+        evaluateRealWorkflows(decoy),
+        `must run cargo-audit as a real binary, not through the ${argv0} wrapper`,
+      );
+    }
+  });
+
+  it("scans the image-release workflow for wrapped executors", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'run: timeout 30 cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+    );
+    assert.notEqual(decoy, realImageRelease, "cosign decoy must change the step");
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(
+      result,
+      ".github/workflows/image-release.yml must run cosign as a real binary, not through the timeout wrapper",
+    );
+  });
+
+  it("fails closed on a malformed executed-test-source inventory", () => {
+    for (const bad of [
+      { test_attribute_baseline: "x" },
+      { test_attribute_baseline: ["a.rs"] },
+      { test_attribute_baseline: { fake: -7 } },
+      { test_attribute_baseline: { "a.rs": "2" } },
+    ]) {
+      const result = evaluateWorkflows({
+        "docs/program/executed-tests-baseline.json": JSON.stringify(bad),
+      });
+      assertHasFailure(
+        result,
+        "test_attribute_baseline must be an object mapping source paths to non-negative integer counts",
+      );
+    }
+  });
+
+  it("refuses a protected executor in a non-gating step", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'if: false\n        run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+    );
+    assert.notEqual(decoy, realImageRelease, "disabled-step decoy must change the step");
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(
+      result,
+      ".github/workflows/image-release.yml must run cosign in a gating step, not one dropped by if: false or continue-on-error",
+    );
+  });
+
+  it("refuses a shell override on a protected executor", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'shell: bash -c \'exit 0\' {0}\n        run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+    );
+    assert.notEqual(decoy, realImageRelease, "shell-override decoy must change the step");
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(
+      result,
+      ".github/workflows/image-release.yml must run cosign with the default runner shell, not the bash -c",
+    );
+  });
+
+  it("fails closed on an unparseable run command surface", () => {
+    const decoy = realSecurity.replace(
+      cargoAuditInvocation,
+      `${cargoAuditInvocation} 'oops`,
+    );
+    assert.notEqual(decoy, realSecurity, "malformed decoy must change the invocation");
+    assertHasFailure(
+      evaluateRealWorkflows(decoy),
+      "contains an unparseable run command",
+    );
+  });
+
+  it("strips YAML comments before classifying the block-scalar indicator", () => {
+    const wrapped = realSecurity.replace(
+      cargoAuditInvocation,
+      `timeout 30 ${cargoAuditInvocation}`,
+    );
+    const decoy = wrapped.replace(
+      "        run: |\n          printf '%s\\n' 'running cargo audit",
+      "        run: | # comment\n          printf '%s\\n' 'running cargo audit",
+    );
+    assert.notEqual(decoy, realSecurity, "commented-scalar decoy must change the step");
+    assertHasFailure(
+      evaluateRealWorkflows(decoy),
+      "must run cargo-audit as a real binary, not through the timeout wrapper",
+    );
+  });
+
+  it("reads workflow defaults.run.shell when accepting protected executors", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = "defaults:\n  run:\n    shell: bash -c 'exit 0' {0}\n\n" + realImageRelease;
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(
+      result,
+      ".github/workflows/image-release.yml must run cosign with the default runner shell",
+    );
+  });
+
+  it("rejects a protected executor whose exit status is masked", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}" || true',
+    );
+    assert.notEqual(decoy, realImageRelease, "masked-status decoy must change the step");
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(
+      result,
+      ".github/workflows/image-release.yml must not mask the exit status of cosign",
+    );
+  });
+
+  it("parses YAML indentation indicators in block scalars", () => {
+    const wrapped = realSecurity.replace(
+      cargoAuditInvocation,
+      `timeout 30 ${cargoAuditInvocation}`,
+    );
+    const decoy = wrapped.replace(
+      "        run: |\n          printf '%s\\n' 'running cargo audit",
+      "        run: |2\n          printf '%s\\n' 'running cargo audit",
+    );
+    assert.notEqual(decoy, realSecurity, "indented-scalar decoy must change the step");
+    assertHasFailure(
+      evaluateRealWorkflows(decoy),
+      "must run cargo-audit as a real binary, not through the timeout wrapper",
+    );
+  });
+
+  it("fails closed on a wrapper whose target cannot be classified", () => {
+    const decoy = realSecurity.replace(
+      cargoAuditInvocation,
+      'timeout 30 "$audit_bin" audit --ignore RUSTSEC-2023-0071',
+    );
+    assert.notEqual(decoy, realSecurity, "indirect-target decoy must change the invocation");
+    assertHasFailure(
+      evaluateRealWorkflows(decoy),
+      "around an unclassifiable target",
+    );
+  });
+
+  it("scans a workflow whose jobs key carries a YAML comment", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const wrapped = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'run: timeout 30 cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+    );
+    const decoy = wrapped.replace("jobs:", "jobs: # scanner bypass");
+    assert.notEqual(decoy, realImageRelease, "commented-jobs decoy must change the workflow");
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(
+      result,
+      "must run cosign as a real binary, not through the timeout wrapper",
+    );
+  });
+
+  it("inspects protected executors masked inside a nested shell -c command", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      "run: bash -c 'cosign sign --yes \"${IMAGE_NAME}@${DIGEST}\" || true'",
+    );
+    assert.notEqual(decoy, realImageRelease, "nested-shell decoy must change the step");
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(
+      result,
+      "must not mask the exit status of cosign inside a nested shell",
+    );
+  });
+
+  it("gates the node audit-policy evaluator exit status", () => {
+    const decoy = realSecurity.replace(
+      "node scripts/check-node-audit-exceptions.mjs --mode production",
+      "node scripts/check-node-audit-exceptions.mjs --mode production || true",
+    );
+    assert.notEqual(decoy, realSecurity, "node-audit decoy must change the command");
+    assertHasFailure(
+      evaluateRealWorkflows(decoy),
+      "must not mask the exit status of node",
+    );
+  });
+
+  it("classifies a wrapper behind the builtin prefix", () => {
+    const decoy = realSecurity.replace(
+      cargoAuditInvocation,
+      `builtin source ${cargoAuditInvocation}`,
+    );
+    assertHasFailure(
+      evaluateRealWorkflows(decoy),
+      "not through the source wrapper",
+    );
+  });
+
+  it("detects a multiline conditional masking a must-gate executor", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'run: |\n          if cosign sign --yes "${IMAGE_NAME}@${DIGEST}"\n          then true\n          fi',
+    );
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(result, "must not mask the exit status of cosign");
+  });
+
+  it("detects a must-gate executor masked inside a shell function", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'run: |\n          sign() { cosign sign --yes "${IMAGE_NAME}@${DIGEST}" || true; }\n          sign',
+    );
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(result, "must not mask the exit status of cosign");
+  });
+
+  it("does not prune commands after a conditional exit", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'run: |\n          false && exit 0\n          cosign sign --yes "${IMAGE_NAME}@${DIGEST}" || true',
+    );
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(result, "must not mask the exit status of cosign");
+  });
+
+  it("does not classify here-document data as commands", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'run: |\n          cat <<\'EOF\'\n          timeout 30 cargo test\n          EOF\n          cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+    );
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assert.equal(
+      result.failures.filter((failure) => failure.includes("timeout wrapper")).length,
+      0,
+      "here-document data must not be classified as a timeout wrapper",
+    );
+  });
+
+  it("accepts a quoted shell: bash scalar", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'shell: "bash"\n        run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+    );
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assert.equal(
+      result.failures.filter((failure) => failure.includes("runner shell")).length,
+      0,
+      "a quoted shell: bash scalar must be treated as the default shell",
+    );
+  });
+
+  it("unquotes an inline run scalar before classifying it", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      "run: 'cosign sign --yes \"${IMAGE_NAME}@${DIGEST}\" || true'",
+    );
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(result, "must not mask the exit status of cosign");
+  });
+
+  it("recognizes a combined shell invocation flag with -c", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      "run: bash -ec 'cosign sign --yes \"${IMAGE_NAME}@${DIGEST}\" || true'",
+    );
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(result, "must not mask the exit status of cosign inside a nested shell");
+  });
+
+  it("ignores set options on unexecuted conditional branches", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'run: |\n          set +e\n          false && set -e\n          cosign sign --yes "${IMAGE_NAME}@${DIGEST}"\n          true',
+    );
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(result, "must not mask the exit status of cosign");
+  });
+
+  it("classifies env -S split-string transparently", () => {
+    const decoy = realSecurity.replace(
+      cargoAuditInvocation,
+      `env -S "source ${cargoAuditInvocation}"`,
+    );
+    assertHasFailure(
+      evaluateRealWorkflows(decoy),
+      "not through the source wrapper",
+    );
+  });
+
+  it("decodes YAML escape sequences in a double-quoted run scalar", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'run: "cosign sign --yes \\"${IMAGE_NAME}@${DIGEST}\\" \\u007c\\u007c true"',
+    );
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(result, "must not mask the exit status of cosign");
+  });
+
+  it("classifies the command operand after command -p", () => {
+    const realImageRelease = readFileSync(
+      new URL("../.github/workflows/image-release.yml", import.meta.url),
+      "utf8",
+    );
+    const decoy = realImageRelease.replace(
+      'run: cosign sign --yes "${IMAGE_NAME}@${DIGEST}"',
+      'run: if command -p timeout 30 cosign sign --yes "${IMAGE_NAME}@${DIGEST}"; then true; fi',
+    );
+    const result = evaluateWorkflows({
+      ".github/workflows/security.yml": realSecurity,
+      ".github/workflows/ci.yml": realCi,
+      ".github/workflows/image-release.yml": decoy,
+    });
+    assertHasFailure(result, "not through the timeout wrapper");
+  });
+});
 
 const documentedEnvironmentReviewerFilter = `
   [.protection_rules[]? | select(.type == "required_reviewers")] as $rules

@@ -174,6 +174,29 @@ describe("workflow executable command extraction", () => {
     ]);
   });
 
+  it("scans every block-scalar indicator, not only run: |", () => {
+    for (const indicator of ["|-", "|+", ">"]) {
+      const source = `jobs:\n  domain-unit:\n    steps:\n      - name: Test\n        run: ${indicator}\n          timeout 30 cargo-audit audit --ignore RUSTSEC-2023-0071\n`;
+      const [command] = executableWorkflowCommands(source);
+      assert.ok(command, `${indicator} body must be scanned`);
+      assert.equal(directExecutable(command.tokens).tokens[0], "timeout");
+    }
+  });
+
+  it("extracts steps when the steps key carries a YAML comment", () => {
+    const source = `jobs:\n  domain-unit:\n    steps: # scanner bypass\n      - name: Test\n        run: |\n          timeout 30 cargo-audit audit --ignore RUSTSEC-2023-0071\n`;
+    const [command] = executableWorkflowCommands(source);
+    assert.ok(command, "steps with a trailing comment must still be extracted");
+    assert.equal(directExecutable(command.tokens).tokens[0], "timeout");
+  });
+
+  it("preserves commands after a here-document redirection", () => {
+    const source = `jobs:\n  domain-unit:\n    steps:\n      - name: Test\n        run: |\n          cat <<'EOF' && timeout 30 cargo-audit audit --ignore RUSTSEC-2023-0071\n          EOF\n`;
+    const commands = executableWorkflowCommands(source);
+    const timeout = commands.find((command) => directExecutable(command.tokens).tokens[0] === "timeout");
+    assert.ok(timeout, "the command after the here-document redirection must be extracted");
+  });
+
   it("does not mistake echo text for an executable cargo test", () => {
     const [command] = commands(workflow("echo SQLX_OFFLINE=true cargo test -p console-kernel-core --lib"));
     assert.equal(command.direct[0], "echo");

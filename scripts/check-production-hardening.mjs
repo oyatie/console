@@ -4,6 +4,12 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  allWorkflowCommands,
+  directExecutable,
+  shellCommandTokens,
+} from "./lib/ci-workflow-executables.mjs";
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 function read(path) {
@@ -292,6 +298,366 @@ function workflowHasRun(text, predicates) {
   return blocks.some((block) =>
     predicates.every((predicate) => predicate.test(block)),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Fail-closed wrapper-argv0 gate (console-ry4f mechanism replacement).
+//
+// WHY THIS IS A MECHANISM, NOT AN ARGV0 STRIP
+//
+// The earlier ExactActiveRun strip (echo/printf, then bash -c, then eval, then
+// shell compound prefixes) was a denylist of narrative argv0s applied as
+// strip-and-continue: each residual (ta90 -> pwys -> 8rr1 -> c236) was "one more
+// argv0 spelling". A strip keeps matching whatever survives the denylist, so it can
+// never be closed; there is always another wrapper spelling.
+//
+// This gate inverts the question. The committed inventory
+// docs/program/executed-tests-baseline.json names the SOURCES whose tests must
+// execute (test_attribute_baseline); the real commands that execute them are the
+// binary itself (cargo, npm, node, tools/buck2, cargo-audit, ...). A CI/check
+// invocation whose argv0 is `source`, `.`, or `timeout` does not execute its target
+// directly — it delegates to an unscanned file or a timed wrapper — so it cannot
+// stand in for the real binary/test command. Presence of that wrapper argv0 is a
+// finding, not something to look through: FAIL CLOSED.
+// ---------------------------------------------------------------------------
+const WRAPPER_ARGV0S = new Set(["source", ".", "timeout"]);
+
+// Real binaries this repository's CI uses to execute tests/checks/security scans.
+// This is an ALLOWLIST of the executor — the inverse of a narrative denylist. An
+// invocation that names one of these through a wrapper is refused; a name off the
+// list is not a test/check executor the wrapper gate is meant to defend.
+const TEST_CHECK_EXECUTORS = new Set([
+  "cargo",
+  "cargo-audit",
+  "cargo-deny",
+  "npm",
+  "npx",
+  "yarn",
+  "node",
+  "python3",
+  "pytest",
+  "buck2",
+  "trivy",
+  "cosign",
+]);
+
+// Security-gating executors whose exit status IS the enforcement: a masked status
+// (`||`, `&&`, a pipeline, backgrounding, or `set +e`) would make their failure
+// non-blocking. General executors (cargo run &, npm audit inside if/else) legitimately
+// mask status, so the masked-status check is scoped to this set only.
+const MUST_GATE_EXECUTORS = new Set([
+  "cargo-audit",
+  "cargo-deny",
+  "trivy",
+  "cosign",
+]);
+
+function commandBasename(argv0) {
+  if (!argv0) return "";
+  return argv0.includes("/") ? argv0.slice(argv0.lastIndexOf("/") + 1) : argv0;
+}
+
+/** Basename of a test/check executor, ignoring a shell/python/js script extension. */
+function executorBasename(token) {
+  let base = commandBasename(token);
+  for (const ext of [".sh", ".mjs", ".js", ".py"]) {
+    if (base.endsWith(ext)) base = base.slice(0, -ext.length);
+  }
+  return base;
+}
+
+/**
+ * `timeout [OPTION] DURATION COMMAND [ARG]...` wraps COMMAND. Return the COMMAND
+ * tokens so its argv0 can be classified. A best-effort option parse is enough: an
+ * invocation that cannot be classified has no wrapped executor and is not flagged.
+ */
+function timeoutWrappedTokens(tokens) {
+  let index = 1;
+  while (index < tokens.length) {
+    const token = tokens[index];
+    if (token === "--") {
+      index += 1;
+      break;
+    }
+    if (
+      token === "-k" ||
+      token === "--kill-after" ||
+      token === "-s" ||
+      token === "--signal"
+    ) {
+      index += 2;
+      continue;
+    }
+    if (token.startsWith("--kill-after=") || token.startsWith("--signal=")) {
+      index += 1;
+      continue;
+    }
+    if (token.startsWith("-") && token !== "-") {
+      index += 1;
+      continue;
+    }
+    break;
+  }
+  if (index >= tokens.length) return [];
+  index += 1; // DURATION
+  return tokens.slice(index);
+}
+
+// Shell control-flow keywords can prefix a wrapper without changing what it runs:
+// `if timeout 30 ...; then` still runs `timeout`, and `! timeout ...` still runs
+// `timeout`. The wrapper gate classifies the argv0 AFTER these transparent prefixes so
+// a wrapper cannot hide behind a compound-command head or a negation.
+const CONTROL_FLOW_PREFIXES = new Set([
+  "if",
+  "then",
+  "elif",
+  "else",
+  "fi",
+  "while",
+  "until",
+  "do",
+  "done",
+  "for",
+  "in",
+  "select",
+  "case",
+  "esac",
+  "!",
+  "{",
+  "}",
+  "(",
+  ")",
+  "[[",
+  "]]",
+  // `builtin` executes the named shell builtin with its arguments (bash `help builtin`),
+  // so `builtin source ...` still invokes `source` and must classify the same way.
+  "builtin",
+]);
+
+function stripControlFlowPrefix(tokens) {
+  let index = 0;
+  while (index < tokens.length && CONTROL_FLOW_PREFIXES.has(tokens[index])) {
+    index += 1;
+  }
+  return tokens.slice(index);
+}
+
+/**
+ * `source [--] FILENAME` / `. [--] FILENAME` wraps FILENAME. Skip the `--` option
+ * terminator (bash accepts it) before selecting the sourced target so `source -- file`
+ * is classified the same as `source file`.
+ */
+function sourceWrappedTokens(tokens) {
+  let index = 1;
+  if (tokens[index] === "--") index += 1;
+  return tokens.slice(index, index + 1);
+}
+
+/**
+ * Alternate `directExecutable` (assignment / `command` / `env` stripping) with the
+ * control-flow-prefix strip until the argv0 stabilizes, so `if env timeout ...`
+ * reduces to `timeout` instead of stopping at `env` or `if`.
+ */
+function classifyArgv0(tokens) {
+  let current = tokens;
+  for (let round = 0; round < 16; round += 1) {
+    const next = stripControlFlowPrefix(directExecutable(current).tokens);
+    if (next.length === current.length && next.every((token, index) => token === current[index])) {
+      return next;
+    }
+    current = next;
+  }
+  return current;
+}
+
+/** Basename of the direct executor after transparent-prefix stripping. */
+function directExecutorName(tokens) {
+  return executorBasename(directExecutable(tokens).tokens[0]);
+}
+
+// Shells that can execute a `-c <command>` string; a protected executor invoked through
+// one of these must still be classified, not hidden behind the shell name.
+const NESTED_SHELLS = new Set(["bash", "sh", "zsh", "dash", "ksh"]);
+
+/** Strip one pair of matching YAML flow scalar quotes from a value. */
+function unquoteYamlScalar(value) {
+  if (value.length < 2) return value;
+  const first = value[0];
+  const last = value[value.length - 1];
+  if ((first === '"' && last === '"') || (first === "'" && last === "'")) {
+    return value.slice(1, -1);
+  }
+  return value;
+}
+
+/** Inspect a `bash -c "<command>"` payload for masked protected executors. */
+function nestedShellFindings(tokens, segment) {
+  const findings = [];
+  const argv0 = classifyArgv0(tokens);
+  const shell = commandBasename(argv0[0]);
+  if (!NESTED_SHELLS.has(shell)) return findings;
+  // `-c` may be combined with other invocation flags (`bash -ec "..."`), so match any
+  // single-dash option token that contains a lowercase `c`.
+  const cIndex = argv0.findIndex(
+    (token, index) => index > 0 && token.startsWith("-") && !token.startsWith("--") && token !== "-" && token.includes("c"),
+  );
+  if (cIndex < 0 || cIndex + 1 >= argv0.length) return findings;
+  const commandString = argv0[cIndex + 1];
+  for (const surface of shellCommandTokens(commandString)) {
+    if (surface.malformed) {
+      findings.push({ kind: "malformed", segment });
+      continue;
+    }
+    const masked = surface.tokens.some((token) => ["||", "&&", "|", "&", ";"].includes(token));
+    for (const token of surface.tokens) {
+      const name = executorBasename(token);
+      if (MUST_GATE_EXECUTORS.has(name) && masked) {
+        findings.push({ kind: "nested-shell-masked", wrapped: name, segment });
+      }
+    }
+  }
+  return findings;
+}
+
+/**
+ * Scan every workflow run step (gating and non-gating) for wrapper-gate violations:
+ *   - malformed     : an unparseable command surface, refused instead of skipped;
+ *   - wrapper       : `source` / `.` / `timeout` argv0 around a test/check executor;
+ *   - unclassifiable: a wrapper whose target is a variable/substitution, fail closed;
+ *   - non-gating    : a protected executor in a step `if: false` / continue-on-error drops;
+ *   - shell         : a protected executor whose step overrides the runner shell;
+ *   - masked-status : a must-gate executor whose exit status is masked;
+ *   - nested-shell  : a must-gate executor masked inside `bash -c ...`;
+ *   - no-structure  : a workflow whose `jobs:` cannot be extracted.
+ * An empty list means every protected executor runs directly and gates.
+ */
+function workflowWrapperInvocations(workflowText) {
+  const findings = [];
+  const commands = allWorkflowCommands(workflowText);
+  if (/^jobs:/m.test(workflowText) && commands.length === 0) {
+    findings.push({ kind: "no-structure", segment: "no run commands extracted" });
+    return findings;
+  }
+  for (const command of commands) {
+    const segment = command.tokens.join(" ");
+    if (command.malformed) {
+      findings.push({ kind: "malformed", segment });
+      continue;
+    }
+    const argv0 = classifyArgv0(command.tokens);
+    const basename = commandBasename(argv0[0]);
+
+    if (WRAPPER_ARGV0S.has(basename)) {
+      const wrappedTokens =
+        basename === "timeout"
+          ? timeoutWrappedTokens(argv0)
+          : sourceWrappedTokens(argv0);
+      const wrappedRaw = directExecutable(wrappedTokens).tokens[0] ?? "";
+      const wrapped = executorBasename(wrappedRaw);
+      if (TEST_CHECK_EXECUTORS.has(wrapped)) {
+        findings.push({ kind: "wrapper", argv0: basename, wrapped, segment });
+        continue;
+      }
+      if (wrappedRaw.startsWith("$") || wrappedRaw.includes("`")) {
+        findings.push({ kind: "unclassifiable-wrapper", argv0: basename, segment });
+        continue;
+      }
+    }
+
+    const protectedName = directExecutorName(argv0);
+    if (TEST_CHECK_EXECUTORS.has(protectedName)) {
+      if (!command.gating) {
+        findings.push({ kind: "non-gating", wrapped: protectedName, segment });
+      }
+      const effectiveShell = command.shell === null ? null : unquoteYamlScalar(command.shell);
+      if (effectiveShell !== null && effectiveShell !== "bash") {
+        findings.push({ kind: "shell", wrapped: protectedName, shell: effectiveShell, segment });
+      }
+      const mustGate = MUST_GATE_EXECUTORS.has(protectedName)
+        || (protectedName === "node" && /\bcheck-node-audit-exceptions\.mjs\b/.test(segment));
+      // A leading condition keyword (`if`/`while`/`until`/`!`/`elif`/`case`) means the
+      // executor runs as a condition whose failure does not fail the step, even when the
+      // `then`/`fi` live on other lines.
+      const conditionContext = ["if", "while", "until", "elif", "!", "case"].includes(
+        directExecutable(command.tokens).tokens[0],
+      );
+      if (mustGate && (command.controlFlow || conditionContext)) {
+        findings.push({ kind: "masked-status", wrapped: protectedName, segment });
+      }
+    }
+
+    // A must-gate executor hidden inside a function/group body (`sign() { cosign ... ||
+    // true; }`) is masked even though the segment argv0 is the function name. The
+    // tokenizer keeps `sign()` as one token, so match a trailing `()` plus a `{`.
+    if (
+      command.controlFlow
+      && command.tokens.some((token) => token.endsWith("()"))
+      && command.tokens.includes("{")
+    ) {
+      for (const token of command.tokens) {
+        const name = executorBasename(token);
+        if (MUST_GATE_EXECUTORS.has(name)) {
+          findings.push({ kind: "masked-status", wrapped: name, segment });
+          break;
+        }
+      }
+    }
+
+    findings.push(...nestedShellFindings(argv0, segment));
+  }
+  return findings;
+}
+
+function wrapperFindingMessage(workflowPath, finding) {
+  if (finding.kind === "wrapper") {
+    return `wrapper-argv0 gate: ${workflowPath} must run ${finding.wrapped} as a real binary, not through the ${finding.argv0} wrapper (${finding.segment})`;
+  }
+  if (finding.kind === "malformed") {
+    return `wrapper-argv0 gate: ${workflowPath} contains an unparseable run command that must be fixed or removed rather than skipped (${finding.segment})`;
+  }
+  if (finding.kind === "non-gating") {
+    return `wrapper-argv0 gate: ${workflowPath} must run ${finding.wrapped} in a gating step, not one dropped by if: false or continue-on-error (${finding.segment})`;
+  }
+  if (finding.kind === "shell") {
+    return `wrapper-argv0 gate: ${workflowPath} must run ${finding.wrapped} with the default runner shell, not the ${finding.shell} override (${finding.segment})`;
+  }
+  if (finding.kind === "masked-status") {
+    return `wrapper-argv0 gate: ${workflowPath} must not mask the exit status of ${finding.wrapped} with ||, &&, a pipeline, backgrounding, or set +e (${finding.segment})`;
+  }
+  if (finding.kind === "unclassifiable-wrapper") {
+    return `wrapper-argv0 gate: ${workflowPath} must run test/check binaries directly, not through the ${finding.argv0} wrapper around an unclassifiable target (${finding.segment})`;
+  }
+  if (finding.kind === "nested-shell-masked") {
+    return `wrapper-argv0 gate: ${workflowPath} must not mask the exit status of ${finding.wrapped} inside a nested shell -c command (${finding.segment})`;
+  }
+  if (finding.kind === "no-structure") {
+    return `wrapper-argv0 gate: ${workflowPath} must extract a runnable jobs structure rather than scan an empty command set (${finding.segment})`;
+  }
+  return `wrapper-argv0 gate: ${workflowPath} rejects ${finding.segment}`;
+}
+
+/**
+ * The wrapper gate's positive anchor must be the executed-tests baseline's
+ * source->count inventory. Return the source keys when `test_attribute_baseline` is a
+ * plain object mapping nonblank source paths to non-negative integer counts, or null
+ * when the anchor is absent or malformed (so the gate fails closed instead of counting
+ * a string, an array, or an object of garbage as evidence).
+ */
+function validExecutedSourceInventory(testAttributeBaseline) {
+  if (
+    testAttributeBaseline === null
+    || typeof testAttributeBaseline !== "object"
+    || Array.isArray(testAttributeBaseline)
+  ) {
+    return null;
+  }
+  const sources = [];
+  for (const [source, count] of Object.entries(testAttributeBaseline)) {
+    if (typeof source !== "string" || source.trim() === "") return null;
+    if (!Number.isInteger(count) || count < 0) return null;
+    sources.push(source);
+  }
+  return sources;
 }
 
 function extractNamedWorkflowStep(text, name) {
@@ -1600,6 +1966,51 @@ export function evaluateWorkflowHardeningChecks(readText) {
     "security workflow portable gate: canonical Trivy exception projection",
     "security workflow must verify canonical Trivy exception parity before the full-scan YAML policy is used",
   );
+
+  // Fail-closed wrapper-argv0 gate (console-ry4f mechanism replacement).
+  //
+  // The expected executed-test-source set is the source-derived inventory in the
+  // executed-tests baseline. Without it the gate has no positive anchor, so it must
+  // fail closed rather than silently stop defending the CI wiring (the same
+  // "missing baseline must fail" posture as check-executed-tests.mjs).
+  const executedTestsBaselinePath = "docs/program/executed-tests-baseline.json";
+  let expectedExecutedSources = [];
+  try {
+    const executedTestsBaseline = JSON.parse(readText(executedTestsBaselinePath));
+    const inventory = validExecutedSourceInventory(
+      executedTestsBaseline?.test_attribute_baseline,
+    );
+    if (inventory === null) {
+      result.failures.push(
+        `wrapper-argv0 gate: ${executedTestsBaselinePath} test_attribute_baseline must be an object mapping source paths to non-negative integer counts`,
+      );
+    } else {
+      expectedExecutedSources = inventory;
+    }
+  } catch (error) {
+    result.failures.push(
+      `wrapper-argv0 gate: ${executedTestsBaselinePath} must be valid JSON (${error.message})`,
+    );
+  }
+  requirement(
+    result,
+    expectedExecutedSources.length > 0,
+    "wrapper-argv0 gate: expected executed-test-source inventory present",
+    `wrapper-argv0 gate: ${executedTestsBaselinePath} must name the expected executed-test sources (test_attribute_baseline)`,
+  );
+  for (const [workflowPath, workflowText] of [
+    [ciPath, ciWorkflow],
+    [securityPath, securityWorkflow],
+    [imageReleasePath, imageReleaseWorkflow],
+  ]) {
+    const wrappers = workflowWrapperInvocations(workflowText);
+    requirement(
+      result,
+      wrappers.length === 0,
+      `wrapper-argv0 gate: ${workflowPath} runs test/check binaries directly (${expectedExecutedSources.length} expected executed sources)`,
+      wrappers.map((finding) => wrapperFindingMessage(workflowPath, finding)).join("\n"),
+    );
+  }
 
   return result;
 }
