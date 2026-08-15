@@ -14,9 +14,9 @@
 //! 1. NO canonical table exists and the run CLAIMS to enforce
 //!    (`CONSOLE_TOPOLOGY_REQUIRE_CANONICAL_TABLES=1`) — the run must FAIL.
 //! 2. Migrations applied, then enforcement — must PASS, and the SET of tables
-//!    it examined must be exactly [`REQUIRED_TABLES`]. Not "more than zero":
-//!    renaming one canonical table away used to shrink the scope from eight to
-//!    seven and still pass.
+//!    it examined must be exactly [`EXPECTED_REQUIRED_TABLES`]. Not "more than
+//!    zero": renaming one canonical table away used to shrink the scope from
+//!    eight to seven and still pass.
 //! 3. [`PROBES`] — one disposable probe database each, one per shape a writer
 //!    can take: a table grant, a COLUMN grant (invisible to
 //!    `has_table_privilege`), a TRUNCATE-only grant (which has no column form),
@@ -73,8 +73,14 @@ const IMAGE: &str =
     "postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56";
 
 /// The canonical tables a fully migrated database has TODAY, and therefore the
-/// exact set the census must examine. Kept identical to the `required_tables`
-/// array in `ops/postgres-reconcile-topology.sh`.
+/// exact set the census must examine. This list is a VERBATIM PIN, not a second
+/// source: the census scope is DERIVED from the `required_tables` array in
+/// `ops/postgres-reconcile-topology.sh` by [`required_tables_from_topology`],
+/// and [`derived_required_tables_match_the_verbatim_roster`] fails the run when
+/// the derived set and this pin diverge. A lane that lands a new canonical
+/// table edits the shell array and this pin — two edits in two files, instead
+/// of a fixed-arity const plus two shared arrays that four port lanes had to
+/// hand-append in lockstep.
 ///
 /// As of migration 0215 this is the WHOLE roster — every name in
 /// `ObjectKey::owned_tables` now resolves to a real relation, so the set can no
@@ -89,7 +95,7 @@ const IMAGE: &str =
 /// `ObjectKey::JobPosition` that did not already exist — `organizations` is the
 /// seventh and predates all three migrations). Sorted, because [`examined_set`]
 /// sorts what it reads back.
-const REQUIRED_TABLES: [&str; 20] = [
+const EXPECTED_REQUIRED_TABLES: [&str; 20] = [
     "company_revisions",
     "employee_person_bindings",
     "employees",
@@ -113,6 +119,457 @@ const REQUIRED_TABLES: [&str; 20] = [
 ];
 
 type Fallible = Result<(), Box<dyn std::error::Error>>;
+/// Derives the census scope from the `required_tables` array in the topology
+/// script — the single production source — instead of a hand-maintained const.
+/// Isolates the `DO $canonical$` block first (whole-line opener, same as
+/// `canonical_block` in `gate_detects_violation.rs`), with the opener and
+/// `$canonical$;` terminator themselves located in live code, then the
+/// `required_tables CONSTANT TEXT[] := ARRAY[...]` declaration inside that
+/// block, then the `'name'` entries between its BEGIN/END markers. A decoy
+/// marker or `ARRAY[` statement earlier in the shell script cannot win, and
+/// neither can a block or declaration parked inside a `--` or `/* ... */`
+/// comment or a single-/dollar-quoted string literal PostgreSQL ignores: only a
+/// code-context block/declaration whose own `];`-bounded span holds both
+/// markers is read, and only code-context entry literals feed the roster. Sorts
+/// the names (the
+/// census compares
+/// against a sorted `examined_set`) and fails loudly when the block, the
+/// statement, the markers, or the entries are missing rather than examining a
+/// silently shrunk scope.
+fn required_tables_from_topology(script: &Path) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let text =
+        std::fs::read_to_string(script).map_err(|e| format!("read {}: {e}", script.display()))?;
+    // Anchor to the psql heredoc body first: the `DO $canonical$` block is SQL
+    // psql actually executes, so a decoy copy parked in shell data (a non-psql
+    // heredoc or here-string) must not win block selection. Within that body,
+    // mask comments and dollar-quoted literals (except the `$canonical$`
+    // delimiter itself) so a commented or string-embedded old/example copy also
+    // cannot win. The opener is whole-line matched, same as `canonical_block`
+    // in `gate_detects_violation.rs`.
+    let body = psql_heredoc_body(&text).ok_or_else(|| {
+        format!(
+            "missing psql heredoc with a `DO $canonical$` block in {}",
+            script.display()
+        )
+    })?;
+    let comment_code = code_mask_block(body);
+    let opener = "\nDO $canonical$\n";
+    // Bind to the canonical block that actually ENFORCES the roster: prefer the
+    // block whose body reads `unnest(required_tables)`. An earlier valid block
+    // with an unused `required_tables` declaration must not win. Simplified
+    // fixtures without enforcement fall back to the first block.
+    let mut blocks: Vec<(usize, usize)> = Vec::new();
+    let mut search_from = 0;
+    while let Some(start) = find_code(body, &comment_code, search_from, opener) {
+        let content_start = start + opener.len();
+        let Some(end) = find_code(body, &comment_code, content_start, "$canonical$;") else {
+            break;
+        };
+        blocks.push((content_start, end));
+        search_from = end + "$canonical$;".len();
+    }
+    // The enforcement reference must be LIVE SQL, not a comment or string
+    // mention of `unnest(required_tables)`.
+    let chosen = blocks
+        .iter()
+        .enumerate()
+        .rev()
+        .find(|&(_, &(content_start, end))| {
+            find_code(
+                &body[content_start..end],
+                &comment_code[content_start..end],
+                0,
+                "unnest(required_tables)",
+            )
+            .is_some()
+        })
+        .map(|(index, _)| index)
+        .unwrap_or(0);
+    let &(content_start, end) = blocks
+        .get(chosen)
+        .ok_or_else(|| format!("no `DO $canonical$` block in {}", script.display()))?;
+    let block = &body[content_start..end];
+    // Inside the block, ALSO mask single- and dollar-quoted string literals so
+    // a decoy declaration (or `];`) parked in a string cannot win declaration
+    // selection; the roster entries are themselves single-quoted, so the entry
+    // scan below uses a dollar-aware mask (comments + dollar-quotes, but not
+    // single quotes).
+    let code = code_mask_full(block);
+    let entry_code = code_mask_dollar(block);
+    let statement = "required_tables CONSTANT TEXT[] := ARRAY[";
+    let begin = "-- canonical-writer-ownership: BEGIN required tables";
+    let end = "-- canonical-writer-ownership: END required tables";
+    // Walk CODE-context declaration occurrences and keep the FIRST one whose
+    // own ARRAY[...] span contains both markers: the outermost declaration is
+    // the one the enforcement reads, so a later shadowing declaration in a
+    // nested block cannot win.
+    let mut names = Vec::new();
+    let mut found = false;
+    let mut from = 0;
+    while let Some(statement_at) = find_code(block, &code, from, statement) {
+        // `required_tables` must be a FULL identifier, not the suffix of a
+        // longer one such as `backup_required_tables`: a bare substring match
+        // would read the decoy's pinned roster while the enforcement's array
+        // drifts. Reject the match when the preceding byte is still part of an
+        // unquoted SQL identifier (letter, digit, `_`, or `$`).
+        let bytes = block.as_bytes();
+        if statement_at > 0 {
+            let prev = bytes[statement_at - 1];
+            if prev.is_ascii_alphanumeric() || prev == b'_' || prev == b'$' {
+                from = statement_at + statement.len();
+                continue;
+            }
+        }
+        // The declaration owns everything up to its closing `];`: markers (and
+        // entries) past that close belong to a different statement.
+        let Some(close) = find_code(block, &code, statement_at + statement.len(), "];") else {
+            from = statement_at + statement.len();
+            continue;
+        };
+        let span = &block[statement_at..close];
+        if let (Some(s), Some(e)) = (span.find(begin), span.find(end)) {
+            // Read only single-quoted literals whose opening quote is LIVE code:
+            // a literal moved into a `--`/`/* ... */` comment or a dollar-quoted
+            // string is omitted by PostgreSQL and must not feed the roster.
+            let region = &span[s..e];
+            let region_code = &entry_code[statement_at + s..statement_at + e];
+            let region_bytes = region.as_bytes();
+            let mut parsed = Vec::new();
+            let mut at = 0;
+            while at < region_bytes.len() {
+                if !region_code[at] {
+                    at += 1;
+                    continue;
+                }
+                let byte = region_bytes[at];
+                if byte == b'\'' {
+                    if let Some((name, _)) = region[at + 1..].split_once('\'') {
+                        if !name.is_empty() {
+                            parsed.push(name.to_string());
+                        }
+                        at += 1 + name.len() + 1;
+                        continue;
+                    }
+                    at += 1;
+                    continue;
+                }
+                if byte.is_ascii_whitespace() || byte == b',' {
+                    at += 1;
+                    continue;
+                }
+                // Any other live code token (CASE, identifiers, operators, ...)
+                // means the array is an expression PostgreSQL evaluates, which a
+                // static scan cannot reproduce: fail loudly rather than silently
+                // mis-derive the roster.
+                return Err(format!(
+                    "non-literal expression in the required_tables array in {}",
+                    script.display()
+                )
+                .into());
+            }
+            if !parsed.is_empty() {
+                names = parsed;
+                found = true;
+                break;
+            }
+        }
+        from = statement_at + statement.len();
+    }
+    if !found {
+        return Err(format!(
+            "no canonical `required_tables` declaration with both markers in {}",
+            script.display()
+        )
+        .into());
+    }
+    names.sort();
+    names.dedup();
+    Ok(names)
+}
+
+/// Byte-parallel lex mask: `true` where the byte is live SQL/PLpgSQL code.
+/// `--` line comments (through the next newline) and `/* ... */` block comments
+/// are always masked; PostgreSQL block comments NEST (unlike C), so the mask
+/// tracks `/*`/`*/` depth. `mask_single` masks single-quoted literals
+/// (`'...'` with `''` doubling; `E'...'` honors backslash escapes), and
+/// `mask_dollar` masks dollar-quoted (`$tag$...$tag$`) literals — a decoy
+/// declaration, `];`, or roster entry parked in a string must not win.
+/// `keep_dollar_tag` names a dollar-quote tag (e.g. `canonical`) that is left
+/// as code rather than masked, so block selection can still locate the real
+/// `DO $canonical$` delimiter.
+fn lex_mask(
+    block: &str,
+    mask_single: bool,
+    mask_dollar: bool,
+    keep_dollar_tag: Option<&[u8]>,
+) -> Vec<bool> {
+    let bytes = block.as_bytes();
+    let mut mask = vec![true; bytes.len()];
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'-' && i + 1 < bytes.len() && bytes[i + 1] == b'-' {
+            while i < bytes.len() && bytes[i] != b'\n' {
+                mask[i] = false;
+                i += 1;
+            }
+            continue;
+        }
+        if bytes[i] == b'/' && i + 1 < bytes.len() && bytes[i + 1] == b'*' {
+            mask[i] = false;
+            mask[i + 1] = false;
+            i += 2;
+            let mut depth = 1;
+            while i < bytes.len() {
+                if bytes[i] == b'/' && i + 1 < bytes.len() && bytes[i + 1] == b'*' {
+                    mask[i] = false;
+                    mask[i + 1] = false;
+                    i += 2;
+                    depth += 1;
+                } else if bytes[i] == b'*' && i + 1 < bytes.len() && bytes[i + 1] == b'/' {
+                    mask[i] = false;
+                    mask[i + 1] = false;
+                    i += 2;
+                    depth -= 1;
+                    if depth == 0 {
+                        break;
+                    }
+                } else {
+                    mask[i] = false;
+                    i += 1;
+                }
+            }
+            continue;
+        }
+        if bytes[i] == b'"' {
+            // Double-quoted identifier (`"..."` with `""` doubling): a single
+            // token, never live declaration code, so mask it everywhere.
+            mask[i] = false;
+            i += 1;
+            while i < bytes.len() {
+                if bytes[i] == b'"' {
+                    mask[i] = false;
+                    i += 1;
+                    if i < bytes.len() && bytes[i] == b'"' {
+                        mask[i] = false;
+                        i += 1;
+                        continue;
+                    }
+                    break;
+                }
+                mask[i] = false;
+                i += 1;
+            }
+            continue;
+        }
+        if mask_single && bytes[i] == b'\'' {
+            // `E'...'` escape strings interpret backslash escapes, so `\'` is an
+            // escaped quote, not the terminator; a regular string only escapes
+            // via doubled `''`.
+            let escape = i > 0 && (bytes[i - 1] == b'E' || bytes[i - 1] == b'e');
+            mask[i] = false;
+            i += 1;
+            while i < bytes.len() {
+                if escape && bytes[i] == b'\\' && i + 1 < bytes.len() {
+                    mask[i] = false;
+                    mask[i + 1] = false;
+                    i += 2;
+                    continue;
+                }
+                if bytes[i] == b'\'' {
+                    mask[i] = false;
+                    i += 1;
+                    if !escape && i < bytes.len() && bytes[i] == b'\'' {
+                        mask[i] = false;
+                        i += 1;
+                        continue;
+                    }
+                    break;
+                }
+                mask[i] = false;
+                i += 1;
+            }
+            continue;
+        }
+        if mask_dollar && bytes[i] == b'$' {
+            let mut j = i + 1;
+            while j < bytes.len() && bytes[j] != b'$' {
+                if !(bytes[j] == b'_' || bytes[j].is_ascii_alphanumeric()) {
+                    break;
+                }
+                j += 1;
+            }
+            let valid_tag = j < bytes.len()
+                && bytes[j] == b'$'
+                && (j == i + 1 || bytes[i + 1] == b'_' || bytes[i + 1].is_ascii_alphabetic());
+            if valid_tag {
+                let tag = &bytes[i + 1..j];
+                if let Some(keep) = keep_dollar_tag
+                    && tag == keep
+                {
+                    // The kept delimiter (e.g. `$canonical$`) stays code so block
+                    // selection can locate it.
+                    i += 1;
+                    continue;
+                }
+                let tag_len = tag.len();
+                let mut k = j + 1;
+                let mut close_at = None;
+                while k + tag_len + 1 < bytes.len() {
+                    if bytes[k] == b'$'
+                        && bytes[k + 1..k + 1 + tag_len] == *tag
+                        && bytes[k + 1 + tag_len] == b'$'
+                    {
+                        close_at = Some(k);
+                        break;
+                    }
+                    k += 1;
+                }
+                let end = match close_at {
+                    Some(k) => k + tag_len + 2,
+                    None => bytes.len(),
+                };
+                mask[i..end].fill(false);
+                i = end;
+                continue;
+            }
+            i += 1;
+            continue;
+        }
+        i += 1;
+    }
+    mask
+}
+
+/// Block-selection code mask: comments plus dollar-quoted literals, EXCEPT the
+/// `$canonical$` delimiter itself. A decoy `DO $canonical$` block parked inside
+/// a different dollar-quoted string cannot win block selection.
+fn code_mask_block(block: &str) -> Vec<bool> {
+    lex_mask(block, false, true, Some(b"canonical"))
+}
+
+/// Full code mask (see [`lex_mask`]): comments plus single- and dollar-quoted
+/// string literals, so a decoy declaration parked in a string cannot win.
+fn code_mask_full(block: &str) -> Vec<bool> {
+    lex_mask(block, true, true, None)
+}
+
+/// Roster-entry code mask (see [`lex_mask`]): comments plus dollar-quoted
+/// literals, but NOT single-quoted literals (the roster entries are themselves
+/// single-quoted). A `'name'` parked inside a dollar-quoted string is omitted.
+fn code_mask_dollar(block: &str) -> Vec<bool> {
+    lex_mask(block, false, true, None)
+}
+
+/// The body of the psql heredoc (`<<'SQL'` ... `SQL`) that carries the live
+/// `DO $canonical$` block — the only SQL psql actually receives for this gate.
+/// A decoy block parked in shell data (a non-psql heredoc or here-string) must
+/// not win block selection. The scanner tracks EVERY heredoc's body so that a
+/// `cat <<'DOC'` data block containing example text `psql ... <<'SQL'` is not
+/// misread as a real psql heredoc. Searches the last heredoc first, so a later
+/// reconcile wins over an earlier example.
+fn psql_heredoc_body(text: &str) -> Option<&str> {
+    let mut regions = Vec::new();
+    let mut search_from = 0;
+    while let Some(rel) = text[search_from..].find("<<") {
+        let opener = search_from + rel;
+        // `<<<` is a here-string, not a heredoc.
+        if text[opener + 2..].starts_with('<') {
+            search_from = opener + 3;
+            continue;
+        }
+        // Parse the delimiter (quoted `'DELIM'`/`"DELIM"` or a bare word) and
+        // locate the body start (after the opener line's newline).
+        let after = &text[opener + 2..];
+        let (delim, body_start) = match after.as_bytes().first().copied() {
+            Some(quote @ (b'\'' | b'"')) => {
+                let Some(close) = after[1..].find(quote as char) else {
+                    break;
+                };
+                let Some(nl) = after[1 + close + 1..].find('\n') else {
+                    break;
+                };
+                let delim = &after[1..1 + close];
+                let body_start = opener + 2 + 1 + close + 1 + nl + 1;
+                (delim, body_start)
+            }
+            _ => {
+                let delim_end = after.find(char::is_whitespace).unwrap_or(after.len());
+                let Some(nl) = after[delim_end..].find('\n') else {
+                    break;
+                };
+                let delim = &after[..delim_end];
+                let body_start = opener + 2 + delim_end + nl + 1;
+                (delim, body_start)
+            }
+        };
+        // Find the closing delimiter line.
+        let tail = &text[body_start..];
+        let mut line_start = 0;
+        let mut close_offset = None;
+        loop {
+            match tail[line_start..].find('\n') {
+                Some(nl) => {
+                    let line_end = line_start + nl;
+                    if tail[line_start..line_end].trim() == delim {
+                        close_offset = Some(line_start);
+                        break;
+                    }
+                    line_start = line_end + 1;
+                }
+                None => {
+                    if tail[line_start..].trim() == delim {
+                        close_offset = Some(line_start);
+                    }
+                    break;
+                }
+            }
+        }
+        let Some(close_offset) = close_offset else {
+            break;
+        };
+        let body_end = body_start + close_offset;
+        // Only a `psql`-owned `<<'SQL'` heredoc executes SQL; the command word
+        // itself must be `psql` (or follow a `VAR=value` env assignment), so
+        // `echo psql <<'SQL'` and `cat <<'SQL'` are rejected.
+        let line_start = text[..opener].rfind('\n').map_or(0, |n| n + 1);
+        let line = text[line_start..opener].trim();
+        let mut words = line.split_whitespace();
+        let is_psql = match words.next() {
+            Some("psql") => true,
+            Some(word) if word.contains('=') => words.next() == Some("psql"),
+            _ => false,
+        };
+        if is_psql && delim == "SQL" {
+            regions.push((body_start, body_end));
+        }
+        // Skip the whole body (data heredocs may contain decoy `<<'SQL'` text).
+        search_from = body_end;
+    }
+    // A fixture without any psql heredoc treats the whole text as the executing
+    // SQL; the production script always carries the block inside a heredoc.
+    if regions.is_empty() {
+        return Some(text);
+    }
+    regions
+        .into_iter()
+        .rev()
+        .map(|(start, end)| &text[start..end])
+        .find(|body| body.contains("DO $canonical$"))
+}
+
+/// The first offset at or after `from` where `needle` starts entirely inside
+/// live code (per [`code_mask`]); comment-hidden occurrences are skipped.
+fn find_code(block: &str, mask: &[bool], from: usize, needle: &str) -> Option<usize> {
+    let mut search_from = from;
+    while let Some(rel) = block[search_from..].find(needle) {
+        let at = search_from + rel;
+        if mask[at..at + needle.len()].iter().all(|&live| live) {
+            return Some(at);
+        }
+        search_from = at + needle.len();
+    }
+    None
+}
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../..")
@@ -793,6 +1250,866 @@ fn examined_set(log: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
 }
 
 #[test]
+fn derived_required_tables_match_the_verbatim_roster() -> Fallible {
+    let derived = required_tables_from_topology(&topology_script())?;
+    assert_eq!(
+        derived,
+        EXPECTED_REQUIRED_TABLES.map(str::to_string).to_vec(),
+        "the shell `required_tables` array and the verbatim pin must stay the same \
+         set; a new canonical table edits BOTH (shell first, then this pin), and \
+         this test is the ratchet that refuses a drift"
+    );
+    Ok(())
+}
+
+/// A decoy `required_tables CONSTANT TEXT[] := ARRAY[` plus BEGIN/END markers
+/// earlier in the shell script must not win. The production declaration lives
+/// inside `DO $canonical$`; parsing the whole file (or the first ARRAY[
+/// statement) lets a comment with the pinned 20 names keep the cheap ratchet
+/// green while the real SQL array drifts.
+#[test]
+fn required_tables_parser_ignores_decoy_outside_canonical_block() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-required-tables-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations',
+      'employees',
+      'persons',
+      'person_revisions',
+      'employee_person_bindings',
+      'employment_heads',
+      'employment_revisions',
+      'employment_source_bindings',
+      'company_revisions',
+      'org_units',
+      'org_unit_revisions',
+      'org_unit_source_bindings',
+      'job_positions',
+      'job_position_revisions',
+      'payroll_draft_runs',
+      'payroll_draft_lines',
+      'payroll_line_calculations',
+      'payroll_run_exceptions',
+      'payroll_disbursements',
+      'payroll_payslip_deliveries'
+      -- canonical-writer-ownership: END required tables
+    ];
+# Read back by the DO $canonical$ block below
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must read the declaration inside DO $canonical$, not a decoy ARRAY[ earlier in the script"
+    );
+    Ok(())
+}
+
+/// A decoy `required_tables CONSTANT TEXT[] := ARRAY[...]` parked inside a
+/// block comment AFTER the real array, still inside `DO $canonical$`, must not
+/// win. Keeping the LAST textual occurrence would read the commented roster
+/// (which PostgreSQL ignores) while the real `required_tables` array drifts.
+#[test]
+fn required_tables_parser_ignores_decoy_block_comment_after_real_array() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-block-comment-required-tables-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+    /* PostgreSQL ignores this whole region, so it must not win:
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations',
+      'employees',
+      'persons'
+      -- canonical-writer-ownership: END required tables
+    ];
+    */
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must read the real code declaration, not a decoy inside a block comment PostgreSQL ignores"
+    );
+    Ok(())
+}
+
+/// An old/example `DO $canonical$ ... $canonical$;` block parked in a block
+/// comment BEFORE the live block must not win block selection. A raw
+/// `split_once` on the opener/terminator selects the commented copy (whose
+/// roster could feed the pin) while the live `required_tables` declaration
+/// shrinks.
+#[test]
+fn required_tables_parser_ignores_commented_block_before_live_block() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-commented-block-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+/* an old example block PostgreSQL ignores:
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations',
+      'employees',
+      'persons'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+*/
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must select the live DO block, not a commented old/example copy before it"
+    );
+    Ok(())
+}
+
+/// A required-table literal moved into an ordinary multiline `/* ... */`
+/// comment INSIDE the live array must not feed the roster. PostgreSQL omits the
+/// entry, so the parser must too — reading it would let the verbatim pin stay
+/// green while the census requirement is weakened.
+#[test]
+fn required_tables_parser_ignores_commented_entry_inside_array() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-commented-entry-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      /*
+      'employees'
+      */
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must ignore a literal moved into a block comment inside the array"
+    );
+    Ok(())
+}
+
+/// A required-table literal parked after an inner `*/` but before the matching
+/// outer `*/` must stay masked. PostgreSQL block comments NEST, so the outer
+/// comment still swallows that entry; a scanner that stops at the first `*/`
+/// would read it and keep the verbatim pin green while the requirement shrinks.
+#[test]
+fn required_tables_parser_ignores_nested_block_comment_entry() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-nested-comment-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      /* outer
+      /* inner */
+      'employees'
+      */
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must respect nested block-comment depth, not stop at the first */"
+    );
+    Ok(())
+}
+
+/// A decoy `required_tables` declaration parked inside a dollar-quoted literal
+/// after the real array must not win the last-occurrence selection. PostgreSQL
+/// treats the `$$...$$` body as a string (not code), so the parser must mask it
+/// too — otherwise the string's pinned roster feeds the pin while the live
+/// declaration shrinks.
+#[test]
+fn required_tables_parser_ignores_declaration_inside_dollar_quote() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-dollar-quote-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+    example CONSTANT TEXT := $$
+required_tables CONSTANT TEXT[] := ARRAY[
+  -- canonical-writer-ownership: BEGIN required tables
+  'organizations',
+  'employees',
+  'persons'
+  -- canonical-writer-ownership: END required tables
+];
+$$;
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must mask dollar-quoted literals and select only the live declaration"
+    );
+    Ok(())
+}
+
+/// A decoy `DO $canonical$` block parked in a NON-psql shell heredoc (shell data,
+/// not SQL psql executes) must not win block selection. Block selection anchors
+/// to the psql `<<'SQL'` heredoc, so the shell-data copy cannot feed the pin.
+#[test]
+fn required_tables_parser_ignores_decoy_in_non_psql_heredoc() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-non-psql-heredoc-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+cat <<'DOC'
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations',
+      'employees',
+      'persons'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+DOC
+psql "${admin_psql_args[@]}" <<'SQL'
+BEGIN;
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+SQL
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must anchor to the psql heredoc, not a decoy in shell data"
+    );
+    Ok(())
+}
+
+/// A dollar-quoted literal inside the live array that embeds `'name'` text must
+/// not feed the roster: PostgreSQL omits it, so the entry scan must too.
+#[test]
+fn required_tables_parser_ignores_dollar_quoted_entry_in_array() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-dollar-entry-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      , $$'employees', 'persons'$$
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must ignore 'name' text parked inside a dollar-quoted literal in the array"
+    );
+    Ok(())
+}
+
+/// A later nested PL/pgSQL block that declares its own `required_tables` must
+/// not win: the enforcement reads the OUTERMOST declaration, so the first code
+/// declaration (not the last) is the real one.
+#[test]
+fn required_tables_parser_ignores_shadowing_nested_declaration() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-shadowing-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+BEGIN
+    IF false THEN
+        DECLARE
+            required_tables CONSTANT TEXT[] := ARRAY[
+              -- canonical-writer-ownership: BEGIN required tables
+              'employees',
+              'persons'
+              -- canonical-writer-ownership: END required tables
+            ];
+        BEGIN
+            NULL;
+        END;
+    END IF;
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must read the outermost declaration, not a shadowing nested one"
+    );
+    Ok(())
+}
+
+/// A `backup_required_tables CONSTANT TEXT[] := ARRAY[...]` declared BEFORE the
+/// real `required_tables` must not win: `required_tables` must match as a full
+/// identifier, not as the suffix of a longer one. A bare substring match would
+/// read the backup's pinned roster while the enforcement's `required_tables`
+/// array drifts.
+#[test]
+fn required_tables_parser_ignores_backup_suffix_identifier() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-backup-identifier-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+DO $canonical$
+DECLARE
+    backup_required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'employees',
+      'persons'
+      -- canonical-writer-ownership: END required tables
+    ];
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+BEGIN
+    NULL;
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must match `required_tables` as a full identifier, not as a \
+         suffix of `backup_required_tables`"
+    );
+    Ok(())
+}
+
+/// An `E'...'` escape string whose `\'` escape precedes the declaration text
+/// must not leak that text as live code: the whole string is masked, so a decoy
+/// declaration parked there cannot win.
+#[test]
+fn required_tables_parser_ignores_e_string_declaration() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-e-string-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+    example CONSTANT TEXT := E'escaped \' then required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      \'employees\', \'persons\'
+      -- canonical-writer-ownership: END required tables
+    ];';
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must honor E-string backslash escapes and not leak the decoy declaration"
+    );
+    Ok(())
+}
+
+/// A complete example `DO $canonical$` block parked inside a dollar-quoted SQL
+/// value (a `$$...$$` string) before the real block must not win block
+/// selection. Block selection masks dollar-quoted literals except the
+/// `$canonical$` delimiter itself.
+#[test]
+fn required_tables_parser_ignores_block_inside_dollar_quote() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-block-dollar-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+psql "${admin_psql_args[@]}" <<'SQL'
+SELECT $$
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations',
+      'employees',
+      'persons'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+$$;
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+SQL
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must select the live block, not an example inside a dollar-quoted value"
+    );
+    Ok(())
+}
+
+/// A `cat <<'SQL'` heredoc (same delimiter, non-psql command) parked after the
+/// real psql heredoc must not win block selection: only a `psql`-owned heredoc
+/// executes SQL.
+#[test]
+fn required_tables_parser_ignores_non_psql_sql_heredoc() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-cat-sql-heredoc-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+psql "${admin_psql_args[@]}" <<'SQL'
+BEGIN;
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+SQL
+cat <<'SQL'
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations',
+      'employees',
+      'persons'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+SQL
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must select the psql heredoc, not a later cat <<'SQL' decoy"
+    );
+    Ok(())
+}
+
+/// An entry replaced with an evaluated expression (e.g. a CASE) must make the
+/// parser FAIL LOUDLY rather than silently reading every quoted literal: a
+/// static scan cannot reproduce PostgreSQL's expression evaluation.
+#[test]
+fn required_tables_parser_fails_closed_on_expression() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-case-expression-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      CASE WHEN false THEN 'employees' ELSE 'organizations' END
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert!(
+        derived.is_err(),
+        "the parser must fail closed on a non-literal expression instead of mis-deriving the roster"
+    );
+    Ok(())
+}
+
+/// A non-psql command that merely CONTAINS the substring `psql` (e.g.
+/// `echo psql <<'SQL'`) must not be admitted as the psql heredoc.
+#[test]
+fn required_tables_parser_ignores_echo_psql_heredoc() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-echo-psql-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+psql "${admin_psql_args[@]}" <<'SQL'
+BEGIN;
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+SQL
+echo psql <<'SQL'
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations',
+      'employees',
+      'persons'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+SQL
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must select the real psql heredoc, not an echo psql decoy"
+    );
+    Ok(())
+}
+
+/// An earlier valid `DO $canonical$` block with an UNUSED `required_tables`
+/// declaration must not win over the later block that actually reads
+/// `unnest(required_tables)`.
+#[test]
+fn required_tables_parser_binds_to_enforcing_block() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-unused-block-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+psql "${admin_psql_args[@]}" <<'SQL'
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations',
+      'employees',
+      'persons'
+      -- canonical-writer-ownership: END required tables
+    ];
+BEGIN
+    NULL;
+END
+$canonical$;
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+BEGIN
+    PERFORM 1 FROM unnest(required_tables) AS wanted(name);
+END
+$canonical$;
+SQL
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must read the block that enforces unnest(required_tables), not an unused earlier block"
+    );
+    Ok(())
+}
+
+/// A comment (not live SQL) mention of `unnest(required_tables)` must not mark
+/// a later helper block as the enforcing one.
+#[test]
+fn required_tables_parser_ignores_commented_enforcement_mention() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-comment-enforcement-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+psql "${admin_psql_args[@]}" <<'SQL'
+BEGIN;
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+BEGIN
+    PERFORM 1 FROM unnest(required_tables) AS wanted(name);
+END
+$canonical$;
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations',
+      'employees',
+      'persons'
+      -- canonical-writer-ownership: END required tables
+    ];
+BEGIN
+    -- unnest(required_tables) is mentioned only in this comment
+    NULL;
+END
+$canonical$;
+SQL
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must bind to the block with LIVE unnest(required_tables), not a comment mention"
+    );
+    Ok(())
+}
+
+/// A `cat <<'DOC'` data heredoc whose body contains example text `psql ...
+/// <<'SQL'` must not be misread as a real psql heredoc.
+#[test]
+fn required_tables_parser_ignores_data_heredoc_psql_text() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-data-heredoc-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+cat <<'DOC'
+psql "${admin_psql_args[@]}" <<'SQL'
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations',
+      'employees',
+      'persons'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+SQL
+DOC
+psql "${admin_psql_args[@]}" <<'SQL'
+BEGIN;
+DO $canonical$
+DECLARE
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+SQL
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must skip data-heredoc bodies instead of reading psql text inside them"
+    );
+    Ok(())
+}
+
+/// A double-quoted identifier (`"..."`) that embeds the declaration text must
+/// not be read as a live declaration.
+#[test]
+fn required_tables_parser_ignores_double_quoted_identifier() -> Fallible {
+    let path = std::env::temp_dir().join(format!(
+        "writer-ownership-decoy-quoted-identifier-{}.sh",
+        std::process::id()
+    ));
+    std::fs::write(
+        &path,
+        r#"#!/bin/sh
+DO $canonical$
+DECLARE
+    "required_tables CONSTANT TEXT[] := ARRAY[
+  -- canonical-writer-ownership: BEGIN required tables
+  'employees',
+  'persons'
+  -- canonical-writer-ownership: END required tables
+  ];" CONSTANT TEXT;
+    required_tables CONSTANT TEXT[] := ARRAY[
+      -- canonical-writer-ownership: BEGIN required tables
+      'organizations'
+      -- canonical-writer-ownership: END required tables
+    ];
+END
+$canonical$;
+"#,
+    )?;
+    let derived = required_tables_from_topology(&path);
+    let _ = std::fs::remove_file(&path);
+    assert_eq!(
+        derived?,
+        vec!["organizations".to_string()],
+        "the parser must mask double-quoted identifiers, not read the declaration text inside them"
+    );
+    Ok(())
+}
+
+#[test]
 fn census_binds_to_an_executed_database() -> Fallible {
     require_docker();
     let harness = boot()?;
@@ -819,7 +2136,7 @@ fn census_binds_to_an_executed_database() -> Fallible {
     );
     assert_eq!(
         examined_set(&clean_log)?,
-        REQUIRED_TABLES,
+        required_tables_from_topology(&topology_script())?,
         "the census must examine exactly the canonical tables a migrated database \
          has. A count assertion passes while the scope silently shrinks — a rename \
          took it from eight to seven and the run still reported success:\n{clean_log}"

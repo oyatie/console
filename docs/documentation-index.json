@@ -3814,6 +3814,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-14-l4-ci-derive-tables.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "a48007b1ca1cc3fd990fab665b42d7bc07e2177d",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/ledger/2026-08-14-l4-empl-retarget.md",
       "class": "evidence",
       "owner": "repository maintainers",
