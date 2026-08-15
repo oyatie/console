@@ -904,8 +904,9 @@ async fn leave_command_preprovision_and_privilege_matrix_are_fail_closed(owner_p
             "propose_alternate_dates".to_owned(),
             "resolve_charge".to_owned(),
             "set_employee_home_branch".to_owned(),
+            "set_employee_home_branch_create".to_owned(),
         ],
-        "command role receives exactly eight public entrypoints and no helpers"
+        "command role receives exactly nine public entrypoints and no helpers"
     );
     // Named, not counted: the directory-manager predicate is SECURITY DEFINER
     // over users/role assignments and takes an arbitrary org, so it must stay
@@ -1543,6 +1544,58 @@ async fn raw_runtime_home_branch_command_is_guarded_and_intrinsically_audited(ow
     .await
     .unwrap();
     assert_eq!(final_count, 1, "failed command must not append audit");
+
+    // MEDIUM-1: the create-path evidence-check failure (no `employee.create`
+    // audit) maps to FORBIDDEN (403), and the already-assigned race maps to
+    // CONFLICT (409) — both through map_leave_command_sqlx.
+    let no_audit_employee = seed_employee(&owner_pool, org_uuid, 20.0, 0.0, 20.0).await;
+    let no_audit_expected: OffsetDateTime =
+        sqlx::query_scalar("SELECT updated_at FROM employees WHERE id = $1")
+            .bind(no_audit_employee)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    let evidence_denied = console_platform_request_context::scope_org(org, async {
+        store
+            .set_employee_home_branch_create(
+                no_audit_employee,
+                branch,
+                no_audit_expected,
+                super_admin,
+                console_kernel_core::TraceContext::generate(),
+            )
+            .await
+    })
+    .await;
+    assert_eq!(
+        evidence_denied.unwrap_err().kind(),
+        console_kernel_core::ErrorKind::Forbidden,
+        "create-path evidence failure must map to FORBIDDEN"
+    );
+
+    let current_updated: OffsetDateTime =
+        sqlx::query_scalar("SELECT updated_at FROM employees WHERE id = $1")
+            .bind(employee)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    let already_assigned = console_platform_request_context::scope_org(org, async {
+        store
+            .set_employee_home_branch_create(
+                employee,
+                branch,
+                current_updated,
+                super_admin,
+                console_kernel_core::TraceContext::generate(),
+            )
+            .await
+    })
+    .await;
+    assert_eq!(
+        already_assigned.unwrap_err().kind(),
+        console_kernel_core::ErrorKind::Conflict,
+        "already-assigned race must map to CONFLICT"
+    );
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]

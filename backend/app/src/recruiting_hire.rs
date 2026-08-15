@@ -87,117 +87,119 @@ async fn hire(
     let home_branch_id = body.home_branch_id;
     let now = OffsetDateTime::now_utc();
 
-    let (employee_id, response) = with_audits::<_, _, HireError>(&state.pool, org, |tx| {
-        Box::pin(async move {
-            let context = hire_context(tx, applicant_id)
-                .await
-                .map_err(HireError::Recruiting)?;
-            let Some(hr_employment_type) = context.employment_type.hr_employment_type() else {
-                // 재직 명부 비합산: a pool posting must never create an
-                // employee; the workforce-pool registry does not exist yet.
-                return Err(HireError::PoolRegistrationUnavailable);
-            };
-            let base_pay = match body.base_pay {
-                Some(base_pay) => base_pay,
-                None if context.accepted_period == AmountPeriod::Monthly => {
-                    context.accepted_amount.clone()
-                }
-                None => {
-                    return Err(HireError::kernel(KernelError::validation(
-                        "base_pay is required when the accepted offer is a daily rate",
-                    )));
-                }
-            };
-            let request = hr::normalize_create_employee_request(hr::CreateEmployeeRequest {
-                employee_number: body.employee_number,
-                name: context.candidate_name.clone(),
-                company: context.company.clone(),
-                employment_type: hr_employment_type.to_owned(),
-                phone: body.phone,
-                org_unit: body.org_unit,
-                position: body.position,
-                site: body.site,
-                home_branch_id: body.home_branch_id,
-                base_pay,
-                idempotency_key: format!("recruit-hire-{applicant_id}"),
-            })
-            .map_err(HireError::Hr)?;
-            let request_hash = hr::sha256_hex(
-                serde_json::to_string(&request)
-                    .map_err(|_| {
-                        HireError::Hr(hr::HrError::validation(
-                            "employee request could not be serialized",
-                        ))
-                    })?
-                    .as_bytes(),
-            );
-            let candidate_employee_id = Uuid::new_v4();
-            let (detail, replayed) = hr::create_employee_core(
-                tx,
-                org_uuid,
-                actor,
-                &request,
-                &request_hash,
-                candidate_employee_id,
-            )
-            .await
-            .map_err(HireError::Hr)?;
-            let employee_id = detail.employee_id();
-            apply_hire(
-                tx,
-                org,
-                applicant_id,
-                context.posting_id,
-                employee_id,
-                actor,
-                now,
-            )
-            .await
-            .map_err(HireError::Recruiting)?;
-            let applicant = load_applicant(tx, applicant_id)
-                .await
-                .map_err(HireError::Recruiting)?;
-            let posting = load_posting(tx, context.posting_id)
-                .await
-                .map_err(HireError::Recruiting)?;
-            let mut audits = Vec::with_capacity(2);
-            if !replayed {
-                audits.push(
-                    hr::employee_create_audit(org, actor, &request, employee_id)
-                        .map_err(HireError::Hr)?,
+    let (employee_id, response, replayed) =
+        with_audits::<_, _, HireError>(&state.pool, org, |tx| {
+            Box::pin(async move {
+                let context = hire_context(tx, applicant_id)
+                    .await
+                    .map_err(HireError::Recruiting)?;
+                let Some(hr_employment_type) = context.employment_type.hr_employment_type() else {
+                    // 재직 명부 비합산: a pool posting must never create an
+                    // employee; the workforce-pool registry does not exist yet.
+                    return Err(HireError::PoolRegistrationUnavailable);
+                };
+                let base_pay = match body.base_pay {
+                    Some(base_pay) => base_pay,
+                    None if context.accepted_period == AmountPeriod::Monthly => {
+                        context.accepted_amount.clone()
+                    }
+                    None => {
+                        return Err(HireError::kernel(KernelError::validation(
+                            "base_pay is required when the accepted offer is a daily rate",
+                        )));
+                    }
+                };
+                let request = hr::normalize_create_employee_request(hr::CreateEmployeeRequest {
+                    employee_number: body.employee_number,
+                    name: context.candidate_name.clone(),
+                    company: context.company.clone(),
+                    employment_type: hr_employment_type.to_owned(),
+                    phone: body.phone,
+                    org_unit: body.org_unit,
+                    position: body.position,
+                    site: body.site,
+                    home_branch_id: body.home_branch_id,
+                    base_pay,
+                    idempotency_key: format!("recruit-hire-{applicant_id}"),
+                })
+                .map_err(HireError::Hr)?;
+                let request_hash = hr::sha256_hex(
+                    serde_json::to_string(&request)
+                        .map_err(|_| {
+                            HireError::Hr(hr::HrError::validation(
+                                "employee request could not be serialized",
+                            ))
+                        })?
+                        .as_bytes(),
                 );
-            }
-            audits.push(
-                audit(
-                    org,
+                let candidate_employee_id = Uuid::new_v4();
+                let (detail, replayed) = hr::create_employee_core(
+                    tx,
+                    org_uuid,
                     actor,
-                    "recruiting.applicant.hire",
-                    "recruit_applicant",
-                    applicant_id,
-                    now,
-                    Some(json!({
-                        "employee_id": employee_id,
-                        "posting_id": context.posting_id,
-                        "posting_no": context.posting_no,
-                        "applicant_no": context.applicant_no,
-                    })),
+                    &request,
+                    &request_hash,
+                    candidate_employee_id,
                 )
-                .map_err(HireError::Recruiting)?,
-            );
-            Ok((
-                (
+                .await
+                .map_err(HireError::Hr)?;
+                let employee_id = detail.employee_id();
+                apply_hire(
+                    tx,
+                    org,
+                    applicant_id,
+                    context.posting_id,
                     employee_id,
-                    json!({
-                        "employee_id": employee_id,
-                        "applicant": applicant,
-                        "posting": posting,
-                    }),
-                ),
-                audits,
-            ))
+                    actor,
+                    now,
+                )
+                .await
+                .map_err(HireError::Recruiting)?;
+                let applicant = load_applicant(tx, applicant_id)
+                    .await
+                    .map_err(HireError::Recruiting)?;
+                let posting = load_posting(tx, context.posting_id)
+                    .await
+                    .map_err(HireError::Recruiting)?;
+                let mut audits = Vec::with_capacity(2);
+                if !replayed {
+                    audits.push(
+                        hr::employee_create_audit(org, actor, &request, employee_id)
+                            .map_err(HireError::Hr)?,
+                    );
+                }
+                audits.push(
+                    audit(
+                        org,
+                        actor,
+                        "recruiting.applicant.hire",
+                        "recruit_applicant",
+                        applicant_id,
+                        now,
+                        Some(json!({
+                            "employee_id": employee_id,
+                            "posting_id": context.posting_id,
+                            "posting_no": context.posting_no,
+                            "applicant_no": context.applicant_no,
+                        })),
+                    )
+                    .map_err(HireError::Recruiting)?,
+                );
+                Ok((
+                    (
+                        employee_id,
+                        json!({
+                            "employee_id": employee_id,
+                            "applicant": applicant,
+                            "posting": posting,
+                        }),
+                        replayed,
+                    ),
+                    audits,
+                ))
+            })
         })
-    })
-    .await?;
+        .await?;
     // Post-commit: establish the first home-branch routing authority through
     // the isolated leave command capability (its own CAS + audit). The
     // employee + recruiting linkage are already durable; a command-channel
@@ -210,6 +212,7 @@ async fn hire(
         employee_id,
         home_branch_id,
         actor,
+        replayed,
     )
     .await
     .map_err(HireError::Hr)?;

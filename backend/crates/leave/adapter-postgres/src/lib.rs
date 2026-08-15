@@ -342,6 +342,45 @@ impl PgLeaveStore {
         })
     }
 
+    /// Establish the FIRST home-branch routing authority for an employee just
+    /// created by the create flow, through the dedicated create-path command
+    /// (`leave_api.set_employee_home_branch_create`). Unlike the general
+    /// `set_employee_home_branch`, this is create-scoped: the database verifies
+    /// server-side creation evidence (an `employee.create` audit by the actor for
+    /// THIS employee with the requested branch) and authorizes with
+    /// `assert_employee_directory_manager`, so an org-wide directory manager is
+    /// not 403ed after committing the row. The general route function is
+    /// unchanged and keeps `assert_org_admin` for arbitrary first assignments.
+    pub async fn set_employee_home_branch_create(
+        &self,
+        employee_id: uuid::Uuid,
+        home_branch_id: uuid::Uuid,
+        expected_updated_at: time::OffsetDateTime,
+        actor: UserId,
+        trace: console_kernel_core::TraceContext,
+    ) -> Result<EmployeeHomeBranchUpdate, PgLeaveError> {
+        let org = current_org().map_err(KernelError::from)?;
+        let row = sqlx::query(
+            "SELECT * FROM leave_api.set_employee_home_branch_create(\
+             $1,$2,$3,$4,$5,$6,$7)",
+        )
+        .bind(org.as_uuid())
+        .bind(employee_id)
+        .bind(home_branch_id)
+        .bind(expected_updated_at)
+        .bind(actor.as_uuid())
+        .bind(trace.trace_id())
+        .bind(trace.span_id())
+        .fetch_one(self.command_pool()?)
+        .await
+        .map_err(map_leave_command_sqlx)?;
+        Ok(EmployeeHomeBranchUpdate {
+            employee_id: row.try_get("employee_id")?,
+            home_branch_id: row.try_get("home_branch_id")?,
+            updated_at: row.try_get("updated_at")?,
+        })
+    }
+
     /// Apply an imported exact balance snapshot through the database-owned,
     /// payload-bound idempotent command and return its CAS result.
     pub async fn import_employee_leave_balance(
@@ -1496,7 +1535,8 @@ fn map_leave_command_sqlx(error: sqlx::Error) -> PgLeaveError {
         | "leave_create.idempotency_conflict"
         | "employee_create.idempotency_conflict"
         | "employee_create.employee_number_conflict"
-        | "leave_balance_import.idempotency_conflict" => {
+        | "leave_balance_import.idempotency_conflict"
+        | "leave_home_branch.already_assigned" => {
             PgLeaveError::Domain(KernelError::conflict(message.to_owned()))
         }
         "leave_write.actor_forbidden"
@@ -1504,6 +1544,7 @@ fn map_leave_command_sqlx(error: sqlx::Error) -> PgLeaveError {
         | "leave_write.org_admin_required"
         | "leave_balance_import.actor_forbidden"
         | "employee_create.actor_forbidden"
+        | "employee_create.home_branch_create_required"
         | "leave_create.self_employee_required"
         | "leave_resolve.requester_forbidden"
         | "leave_decide.requester_forbidden"

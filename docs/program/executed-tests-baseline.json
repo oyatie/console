@@ -23,7 +23,7 @@
   "why_feature_variants_are_pinned_here": "These are NOT dark and are NOT part of the set above — they execute today. They are pinned into the DEFINED population because both of the other sources for a binary's feature dimension are artifacts that a deletion PR deletes. `rust_test features` was the only source, so a commit removing //tools/buck:auth-rest-dev-auth-inline-postgres from ci.yml together with its sh_test and its rust_test — the ordinary shape of a wrapper-removal PR — dropped this binary from `defined` and from `executed` in the same instant. The dark set did not move, the gate exited 0, and an entire dev-auth PostgreSQL suite stopped running with no diagnostic. Pinned, the binary survives its own deletion, goes dark, and names itself. Two entries because repo-wide there are exactly two crate roots carrying a second, feature-bearing binary; a pinned entry that stops being `defined` is reported UNRESOLVED, so this list cannot rot into decoration.",
   "test_attribute_baseline_note": "This map is a cheap lexical deletion ratchet over reachable source files, not a runtime case count. It counts declared #[test], #[tokio::test], and #[sqlx::test] attributes without evaluating cfg expressions, feature selection, macro expansion, or #[ignore]. A source reached by multiple feature-bearing binaries appears once; exact (source, feature set) binary reachability is enforced separately by the named dark-set ratchet. For example, console-app's bare and test-postgres binaries list 153 and 18 tests respectively in the compiler harness, while this static source metric records 171 attributes once.",
   "test_attribute_baseline": {
-    "backend/app/src/lib.rs": 186,
+    "backend/app/src/lib.rs": 187,
     "backend/app/tests/action_inbox_api.rs": 8,
     "backend/app/tests/audit_api.rs": 5,
     "backend/app/tests/auth_rest.rs": 17,
@@ -51,7 +51,7 @@
     "backend/app/tests/hr_attendance_manager_scope.rs": 1,
     "backend/app/tests/hr_attendance_self_read.rs": 3,
     "backend/app/tests/hr_ingest_checklist_gate.rs": 2,
-    "backend/app/tests/hr_people_create_api.rs": 2,
+    "backend/app/tests/hr_people_create_api.rs": 4,
     "backend/app/tests/logistics_pilot_story.rs": 3,
     "backend/app/tests/m2_real_engine_drive.rs": 2,
     "backend/app/tests/maintenance_chain_api.rs": 4,

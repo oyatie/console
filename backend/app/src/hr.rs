@@ -12,7 +12,7 @@ use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
     UserId,
 };
-use console_leave_adapter_postgres::{CreateEmployeeCommand, PgLeaveError, PgLeaveStore};
+use console_leave_adapter_postgres::{PgLeaveError, PgLeaveStore};
 use console_leave_domain::LeaveBalanceAmount;
 // `ObjectKey::Employment`'s owner. Every `employees` statement this module used
 // to hold lives there now; console-app is no longer a second writer of it.
@@ -23,7 +23,7 @@ use console_payroll_domain::{
 };
 use console_platform_auth::JwtVerifier;
 use console_platform_authz::{
-    Action, Feature, Principal, authorize, authorize_capability, authorize_org_wide,
+    Action, Feature, Principal, Role, authorize, authorize_capability, authorize_org_wide,
 };
 use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use serde::{Deserialize, Serialize};
@@ -886,50 +886,55 @@ async fn create_employee(
     Json(body): Json<CreateEmployeeRequest>,
 ) -> Result<(StatusCode, Json<EmployeeDetailResponse>), HrError> {
     authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryManage)?;
-    let command_store = state.leave_command_store.clone().ok_or_else(|| {
-        HrError::unavailable(
-            "leave command database is not configured; employee creation is unavailable",
-        )
-    })?;
+    // Fail closed BEFORE any write: the home-branch routing authority is
+    // command-only (0166) and must be assignable for the created employee.
+    let command_store = require_home_branch_command_store(&state)?;
     let request = normalize_create_employee_request(body)?;
     let org = principal.org_id;
     let org_uuid = *org.as_uuid();
     let actor = principal.user_id;
-    let request_hash = sha256_hex(
-        serde_json::to_string(&request)
-            .map_err(|_| HrError::validation("employee request could not be serialized"))?
-            .as_bytes(),
-    );
     let employee_id = Uuid::new_v4();
-    let result = console_platform_request_context::scope_org(org, async move {
-        command_store
-            .create_employee(CreateEmployeeCommand {
-                employee_id,
-                employee_number: request.employee_number,
-                name: request.name,
-                company: request.company,
-                employment_type: request.employment_type,
-                phone_e164: request.phone_e164,
-                org_unit: request.org_unit,
-                position: request.position,
-                site: request.site,
-                home_branch_id: request.home_branch_id,
-                base_pay: request.base_pay,
-                idempotency_key: request.idempotency_key,
-                request_hash,
-                actor,
-                trace: TraceContext::generate(),
-            })
-            .await
-    })
-    .await
-    .map_err(HrError::from_leave_store)?;
-    let detail = with_org_conn::<_, _, HrError>(&state.pool, org, move |tx| {
-        Box::pin(async move { load_employee_detail(tx, org_uuid, result.employee_id).await })
+    let home_branch_id = request.home_branch_id;
+
+    // The `employees` row is written through `ObjectKey::Employment`'s owner (the
+    // canonical adapter), NOT through the leave command capability, so
+    // `console_leave_definer` no longer INSERTs into `employees` for People &
+    // Workforce creation. The first home-branch routing authority is established
+    // post-commit by [`assign_home_branch_if_unset`], exactly like the recruiting
+    // hire handshake.
+    let (created, replayed) = with_audits::<_, _, HrError>(&state.pool, org, |tx| {
+        Box::pin(async move {
+            let request_hash = sha256_hex(
+                serde_json::to_string(&request)
+                    .map_err(|_| HrError::validation("employee request could not be serialized"))?
+                    .as_bytes(),
+            );
+            let (detail, replayed) =
+                create_employee_core(tx, org_uuid, actor, &request, &request_hash, employee_id)
+                    .await?;
+            let audits = if replayed {
+                Vec::new()
+            } else {
+                vec![employee_create_audit(org, actor, &request, employee_id)?]
+            };
+            Ok(((detail, replayed), audits))
+        })
     })
     .await?;
+
+    let employee_id = created.employee_id();
+    let detail = assign_home_branch_if_unset(
+        &state.pool,
+        &command_store,
+        org,
+        employee_id,
+        home_branch_id,
+        actor,
+        replayed,
+    )
+    .await?;
     Ok((
-        if result.replayed {
+        if replayed {
             StatusCode::OK
         } else {
             StatusCode::CREATED
@@ -971,7 +976,10 @@ pub(crate) fn require_home_branch_command_store(state: &HrState) -> Result<PgLea
 /// org-wide admin capability for a first assignment, and writes its own
 /// `employee.home_branch_set` audit). Idempotent and race-convergent: an
 /// already-assigned employee (replay) is returned untouched, and losing a
-/// concurrent first-assignment race to the SAME branch is success.
+/// concurrent first-assignment race to the SAME branch is success. A FRESH
+/// creation that finds a DIFFERENT branch already assigned lost the routing
+/// race to another org-wide directory manager and is refused (conflict) rather
+/// than reported as 201 for the wrong branch.
 pub(crate) async fn assign_home_branch_if_unset(
     pool: &PgPool,
     command_store: &PgLeaveStore,
@@ -979,6 +987,7 @@ pub(crate) async fn assign_home_branch_if_unset(
     employee_id: Uuid,
     home_branch_id: Uuid,
     actor: UserId,
+    replayed: bool,
 ) -> Result<EmployeeDetailResponse, HrError> {
     let load = |pool: &PgPool| {
         let pool = pool.clone();
@@ -990,13 +999,21 @@ pub(crate) async fn assign_home_branch_if_unset(
         }
     };
     let detail = load(pool).await?;
-    if detail.employee_home_branch_id().is_some() {
-        // Replayed create: the routing authority is already established and a
-        // replay must never clobber a later reassignment.
-        return Ok(detail);
+    if let Some(existing_branch) = detail.employee_home_branch_id() {
+        // A replayed create already established routing authority and a replay
+        // must never clobber a later reassignment. A FRESH creation that finds a
+        // DIFFERENT branch means another org-wide directory manager won the
+        // first-assignment race — refuse rather than return success for an
+        // employee routed to the wrong branch.
+        if replayed || existing_branch == home_branch_id {
+            return Ok(detail);
+        }
+        return Err(HrError::from_kernel(KernelError::conflict(
+            "employee's home branch was assigned to a different branch concurrently",
+        )));
     }
     match command_store
-        .set_employee_home_branch(
+        .set_employee_home_branch_create(
             employee_id,
             home_branch_id,
             detail.employee_updated_at(),
@@ -1017,7 +1034,23 @@ pub(crate) async fn assign_home_branch_if_unset(
                 ))
             }
         }
-        Err(error) => Err(HrError::from_leave_store(error)),
+        Err(error) => {
+            let mapped = HrError::from_leave_store(error);
+            // Telemetry canary (LOW-4, shared across BOTH employee-creating
+            // surfaces): after HIGH-1 the routing authority is the SAME
+            // `assert_employee_directory_manager` predicate that passed
+            // in-transaction BEFORE any write, so a FORBIDDEN (403) here means
+            // either (a) predicate drift, or (b) a genuine mid-window
+            // revocation/deactivation that committed after `with_audits`
+            // released its `FOR UPDATE` locks. BOTH orphan the just-committed
+            // row, so a non-zero count is an INVESTIGATE signal, never a false
+            // alarm. Concurrent-modification / branch-deactivated /
+            // command-unavailable failures are NOT forbidden and are NOT counted.
+            if mapped.status == StatusCode::FORBIDDEN {
+                metrics::counter!("hr_employee_create_write_then_deny_total").increment(1);
+            }
+            Err(mapped)
+        }
     }
 }
 
@@ -1037,6 +1070,142 @@ pub(crate) async fn create_employee_core(
     request_hash: &str,
     employee_id: Uuid,
 ) -> Result<(EmployeeDetailResponse, bool), HrError> {
+    // Live actor revalidation at the write boundary (defense-in-depth): the
+    // request-context principal is built from token roles and a request-time
+    // grant resolution, so a deactivated, role-revoked, or grant-revoked actor
+    // with an unexpired token would otherwise pass the pre-flight
+    // `authorize_hr_org_wide`. Restore the migration-0183
+    // `leave_api.assert_employee_directory_manager` predicate — SUPER_ADMIN, or
+    // (SUPER_ADMIN/EXECUTIVE AND a live, active, non-branch-narrowed
+    // `employee_directory_manage` allow grant) — reading `users` and
+    // `user_role_assignments`/`policy_roles`/`policy_role_permissions`/
+    // `policy_role_conditions` under the SAME `FOR UPDATE` locks this
+    // transaction holds, so a concurrent deactivation, role revocation, or
+    // grant revocation cannot slip between this check and the insert. This
+    // predicate is byte-for-byte the routing authority of
+    // `leave_api.assert_employee_directory_manager` (see the 0221 migration),
+    // so no actor who passes this recheck can be denied at the later
+    // first-home-branch assignment on authority grounds.
+    let actor_row = sqlx::query(
+        "SELECT is_active, roles, team FROM users WHERE id = $1 AND org_id = $2 FOR UPDATE",
+    )
+    .bind(*actor.as_uuid())
+    .bind(org_uuid)
+    .fetch_optional(tx.as_mut())
+    .await?
+    .ok_or_else(|| {
+        HrError::from_kernel(KernelError::forbidden(
+            "employee create: actor not found in this organization",
+        ))
+    })?;
+    let actor_is_active: bool = actor_row.try_get("is_active")?;
+    if !actor_is_active {
+        return Err(HrError::from_kernel(KernelError::forbidden(
+            "employee create: actor account is deactivated",
+        )));
+    }
+    let actor_roles: Vec<String> = actor_row.try_get("roles")?;
+    let actor_team: Option<String> = actor_row.try_get("team")?;
+    let is_super_admin = actor_roles
+        .iter()
+        .any(|role| role == Role::SuperAdmin.as_str());
+    if !is_super_admin {
+        let has_directory_tier = actor_roles
+            .iter()
+            .any(|role| role == Role::SuperAdmin.as_str() || role == Role::Executive.as_str());
+        if !has_directory_tier {
+            return Err(HrError::from_kernel(KernelError::forbidden(
+                "employee create: actor lacks an org-wide directory-manage role",
+            )));
+        }
+        // Lock the matching grant rows (roles/permissions) FIRST, matching the
+        // policy writer's role→condition lock order (`update_policy_role` locks
+        // `policy_roles` before deleting that role's conditions), so the two
+        // cannot form a lock-order deadlock.
+        let role_ids: Vec<Uuid> = sqlx::query_scalar(
+            "SELECT ura.role_id \
+             FROM user_role_assignments ura \
+             JOIN policy_roles pr ON pr.org_id = ura.org_id AND pr.id = ura.role_id \
+             JOIN policy_role_permissions prp ON prp.org_id = pr.org_id AND prp.role_id = pr.id \
+             WHERE ura.org_id = $1 AND ura.user_id = $2 \
+               AND pr.status = 'ACTIVE' AND NOT pr.is_system \
+               AND prp.feature_key = 'employee_directory_manage' \
+               AND prp.permission_level = 'allow' \
+             FOR UPDATE OF ura, pr, prp",
+        )
+        .bind(org_uuid)
+        .bind(*actor.as_uuid())
+        .fetch_all(tx.as_mut())
+        .await?;
+        // Lock the condition rows for those roles (same order as the policy
+        // writer: roles first, then conditions).
+        if !role_ids.is_empty() {
+            sqlx::query(
+                "SELECT 1 FROM policy_role_conditions prc \
+                 WHERE prc.org_id = $1 AND prc.role_id = ANY($2) \
+                 FOR UPDATE",
+            )
+            .bind(org_uuid)
+            .bind(&role_ids)
+            .execute(tx.as_mut())
+            .await?;
+        }
+        // Live custom-grant revalidation (HIGH-2): a custom grant only widens an
+        // EXECUTIVE/SUPER_ADMIN. The team condition mirrors 0183 exactly,
+        // including the Korean-team → English-condition normalization. Evaluated
+        // AFTER both the role and condition rows are locked.
+        let live_org_wide_grant: Option<i32> = sqlx::query_scalar(
+            r#"
+            SELECT 1
+            FROM user_role_assignments ura
+            JOIN policy_roles pr ON pr.org_id = ura.org_id AND pr.id = ura.role_id
+            JOIN policy_role_permissions prp
+              ON prp.org_id = pr.org_id AND prp.role_id = pr.id
+            WHERE ura.org_id = $1
+              AND ura.user_id = $2
+              AND pr.status = 'ACTIVE'
+              AND NOT pr.is_system
+              AND prp.feature_key = 'employee_directory_manage'
+              AND prp.permission_level = 'allow'
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM policy_role_conditions prc
+                  WHERE prc.org_id = pr.org_id
+                    AND prc.role_id = pr.id
+                    AND (
+                        prc.operator NOT IN ('equals', 'in')
+                        OR prc.attribute = 'branch'
+                        OR prc.attribute <> 'team'
+                        OR $3::text IS NULL
+                        OR NOT EXISTS (
+                            SELECT 1
+                            FROM unnest(prc.condition_values) AS cv
+                            WHERE btrim(cv) = $3::text
+                               OR upper(btrim(cv)) = CASE $3::text
+                                    WHEN '정비' THEN 'MAINTENANCE'
+                                    WHEN '예방' THEN 'PREVENTION'
+                                    WHEN '관리' THEN 'MANAGEMENT'
+                                    WHEN '접수' THEN 'RECEPTION'
+                                    ELSE NULL
+                                  END
+                        )
+                    )
+              )
+            LIMIT 1
+            FOR UPDATE
+            "#,
+        )
+        .bind(org_uuid)
+        .bind(*actor.as_uuid())
+        .bind(actor_team.as_deref())
+        .fetch_optional(tx.as_mut())
+        .await?;
+        if live_org_wide_grant.is_none() {
+            return Err(HrError::from_kernel(KernelError::forbidden(
+                "employee create: actor's org-wide directory-manage grant was revoked",
+            )));
+        }
+    }
     sqlx::query(
         "INSERT INTO employee_create_idempotency (org_id, idempotency_key, request_hash) VALUES ($1, $2, $3) ON CONFLICT (org_id, idempotency_key) DO NOTHING",
     )
@@ -8479,6 +8648,128 @@ fn error_code(kind: ErrorKind) -> &'static str {
 mod tests {
     use super::*;
     use calamine::Range;
+
+    /// Exercises the LIVE custom-grant recheck at the transactional boundary
+    /// directly (bypassing the request-time pre-flight): an EXECUTIVE whose
+    /// org-wide `employee_directory_manage` grant is revoked after the
+    /// principal was minted must be refused 403 by `create_employee_core`
+    /// itself, not merely by `authorize_hr_org_wide`.
+    #[cfg(feature = "test-postgres")]
+    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    async fn create_employee_core_refuses_a_revoked_custom_grant(
+        pool: sqlx::PgPool,
+    ) -> Result<(), String> {
+        use console_kernel_core::UserId;
+        let org_id = Uuid::new_v4();
+        let region_id = Uuid::new_v4();
+        let branch_id = Uuid::new_v4();
+        let actor = UserId::new();
+        sqlx::query("INSERT INTO organizations (id,slug,name) VALUES ($1,$2,'Grant recheck test')")
+            .bind(org_id)
+            .bind(format!("grant-recheck-{}", &org_id.to_string()[..8]))
+            .execute(&pool)
+            .await
+            .map_err(|error| error.to_string())?;
+        sqlx::query("INSERT INTO regions (id,name,org_id) VALUES ($1,$2,$3)")
+            .bind(region_id)
+            .bind("Grant recheck region")
+            .bind(org_id)
+            .execute(&pool)
+            .await
+            .map_err(|error| error.to_string())?;
+        sqlx::query("INSERT INTO branches (id,region_id,name,org_id) VALUES ($1,$2,'본사',$3)")
+            .bind(branch_id)
+            .bind(region_id)
+            .bind(org_id)
+            .execute(&pool)
+            .await
+            .map_err(|error| error.to_string())?;
+        sqlx::query(
+            "INSERT INTO users (id,display_name,roles,is_active,org_id) \
+             VALUES ($1,'Executive',ARRAY['EXECUTIVE']::text[],true,$2)",
+        )
+        .bind(*actor.as_uuid())
+        .bind(org_id)
+        .execute(&pool)
+        .await
+        .map_err(|error| error.to_string())?;
+        let role_id: Uuid = sqlx::query_scalar(
+            "INSERT INTO policy_roles (org_id,role_key,display_name,status) \
+             VALUES ($1,$2,$3,'ACTIVE') RETURNING id",
+        )
+        .bind(org_id)
+        .bind(format!("grant_recheck_{}", Uuid::new_v4().simple()))
+        .bind("Grant recheck role")
+        .fetch_one(&pool)
+        .await
+        .map_err(|error| error.to_string())?;
+        sqlx::query(
+            "INSERT INTO policy_role_permissions (org_id,role_id,feature_key,permission_level) \
+             VALUES ($1,$2,'employee_directory_manage','allow')",
+        )
+        .bind(org_id)
+        .bind(role_id)
+        .execute(&pool)
+        .await
+        .map_err(|error| error.to_string())?;
+        sqlx::query("INSERT INTO user_role_assignments (org_id,user_id,role_id) VALUES ($1,$2,$3)")
+            .bind(org_id)
+            .bind(*actor.as_uuid())
+            .bind(role_id)
+            .execute(&pool)
+            .await
+            .map_err(|error| error.to_string())?;
+
+        // Revoke the grant, then invoke the transactional boundary DIRECTLY with
+        // the formerly-authorized principal.
+        sqlx::query("DELETE FROM user_role_assignments WHERE org_id=$1 AND user_id=$2")
+            .bind(org_id)
+            .bind(*actor.as_uuid())
+            .execute(&pool)
+            .await
+            .map_err(|error| error.to_string())?;
+
+        let request = NormalizedCreateEmployeeRequest {
+            employee_number: "GRANT-REVOKED".to_owned(),
+            name: "Grant revoked".to_owned(),
+            company: "테스트".to_owned(),
+            employment_type: "REGULAR".to_owned(),
+            phone_e164: "010-1234-5678".to_owned(),
+            org_unit: "인사".to_owned(),
+            position: "사원".to_owned(),
+            site: "서울".to_owned(),
+            home_branch_id: branch_id,
+            base_pay: "50000000".to_owned(),
+            idempotency_key: "grant-revoked-key".to_owned(),
+        };
+        let mut tx = pool.begin().await.map_err(|error| error.to_string())?;
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(org_id.to_string())
+            .execute(tx.as_mut())
+            .await
+            .map_err(|error| error.to_string())?;
+        let result = create_employee_core(
+            &mut tx,
+            org_id,
+            actor,
+            &request,
+            "grant-revoked-hash",
+            Uuid::new_v4(),
+        )
+        .await;
+        let err = match result {
+            Ok(_) => return Err("expected a grant-revoked actor to be refused".to_owned()),
+            Err(err) => err,
+        };
+        assert_eq!(err.status, StatusCode::FORBIDDEN);
+        assert!(
+            err.message.contains("grant was revoked"),
+            "unexpected message: {}",
+            err.message
+        );
+        tx.rollback().await.map_err(|error| error.to_string())?;
+        Ok(())
+    }
 
     #[cfg(not(feature = "test-postgres"))]
     #[test]

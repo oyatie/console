@@ -169,6 +169,24 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
         "same-key race must write exactly one row in each employee creation table"
     );
 
+    // 1a: the employee ROW is created through the Employment port and its
+    // `employee.create` audit, while the first home-branch routing authority is
+    // established post-commit through the leave command channel, which writes
+    // its own `employee.home_branch_set` audit.
+    let home_branch_audits: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM audit_events \
+         WHERE org_id = $1 AND action = 'employee.home_branch_set'",
+    )
+    .bind(*org.as_uuid())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        home_branch_audits, 1,
+        "create must establish the first home-branch routing authority through \
+         the command channel (exactly one employee.home_branch_set audit)"
+    );
+
     let changed = post(
         service.clone(),
         EMPLOYEES_PATH,
@@ -256,10 +274,16 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
         people_write_counts(&pool, org).await,
         before_executive_denial
     );
+    assert_no_employee_writes(&pool, org, "PEOPLE-EXEC", "executive-key").await;
 
     let custom_grantee = UserId::new();
     seed_user_with_roles(&pool, org, custom_grantee, &["EXECUTIVE"]).await;
     seed_manage_grant(&pool, org, custom_grantee, None, None).await;
+    // HIGH-1: an EXECUTIVE with an org-wide employee_directory_manage grant is a
+    // legitimate creator (base behavior 201, which this lane must NOT narrow).
+    // The create recheck and the first-home-branch routing now share the SAME
+    // assert_employee_directory_manager predicate, so this succeeds instead of
+    // 403ing an orphan after the row already committed.
     let custom_created = post(
         service.clone(),
         EMPLOYEES_PATH,
@@ -278,6 +302,11 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
         StatusCode::CREATED,
         "{:?}",
         custom_created.json
+    );
+    assert_eq!(
+        custom_created.json["employee"]["home_branch_id"],
+        json!(branch.to_string()),
+        "a custom-grant EXECUTIVE must establish the first home-branch routing authority"
     );
     let matching_team_grantee = UserId::new();
     seed_user_with_roles(&pool, org, matching_team_grantee, &["EXECUTIVE"]).await;
@@ -335,10 +364,11 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
         mismatched_team_denied.json
     );
     assert_eq!(people_write_counts(&pool, org).await, before_team_denial);
-    let before_denials = people_write_counts(&pool, org).await;
+    assert_no_employee_writes(&pool, org, "PEOPLE-TEAM-MISMATCH", "team-mismatch-key").await;
 
     let denied_user = UserId::new();
     seed_user_with_roles(&pool, org, denied_user, &["MEMBER"]).await;
+    let before_member_denial = people_write_counts(&pool, org).await;
     let denied_create = post(
         service.clone(),
         EMPLOYEES_PATH,
@@ -358,6 +388,14 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
         "{:?}",
         denied_create.json
     );
+    assert_eq!(
+        people_write_counts(&pool, org).await,
+        before_member_denial,
+        "a MEMBER must write no employee row, profile, lifecycle event, \
+         idempotency reservation, or employee.create audit"
+    );
+    assert_no_employee_writes(&pool, org, "PEOPLE-DENIED", "denied-key").await;
+    let before_denials = people_write_counts(&pool, org).await;
 
     let branch_grantee = UserId::new();
     seed_user_with_roles(&pool, org, branch_grantee, &["EXECUTIVE"]).await;
@@ -382,6 +420,7 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
         branch_denied.json
     );
     assert_eq!(people_write_counts(&pool, org).await, before_denials);
+    assert_no_employee_writes(&pool, org, "PEOPLE-BRANCH", "branch-key").await;
 
     let admin = UserId::new();
     seed_user_with_roles(&pool, org, admin, &["ADMIN"]).await;
@@ -405,6 +444,7 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
         admin_denied.json
     );
     assert_eq!(people_write_counts(&pool, org).await, before_denials);
+    assert_no_employee_writes(&pool, org, "PEOPLE-ADMIN", "admin-key").await;
 
     let other_org = OrgId::from_uuid(Uuid::new_v4());
     seed_org(&pool, other_org).await;
@@ -422,6 +462,152 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
         "cross-org detail must not be visible: {:?}",
         denied.json
     );
+}
+
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn deactivated_super_admin_cannot_create_employee(pool: PgPool) {
+    let keys = keys();
+    let org = OrgId::knl();
+    let user = UserId::new();
+    seed_user(&pool, org, user).await;
+    let branch = seed_branch(&pool, org, "People deactivated-admin branch").await;
+    let service = build_router(
+        app_state(
+            runtime_role_pool(&pool).await,
+            leave_command_role_pool(&pool).await,
+            keys.public_pem.clone(),
+        )
+        .unwrap(),
+    );
+    // Mint the token FIRST, then deactivate: the token's SUPER_ADMIN roles stay
+    // valid until expiry, so the live write-boundary recheck in
+    // `create_employee_core` is the only thing that must refuse this actor.
+    let token = bearer(&keys, org, user, &["SUPER_ADMIN"]);
+    sqlx::query("UPDATE users SET is_active = false WHERE id = $1 AND org_id = $2")
+        .bind(*user.as_uuid())
+        .bind(*org.as_uuid())
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    let before = people_write_counts(&pool, org).await;
+    let response = post(
+        service.clone(),
+        EMPLOYEES_PATH,
+        &token,
+        create_body(
+            branch,
+            "PEOPLE-DEACT",
+            "deactivated-key",
+            "010-1234-5678",
+            "Deactivated",
+        ),
+    )
+    .await;
+    assert_eq!(
+        response.status,
+        StatusCode::FORBIDDEN,
+        "{:?}",
+        response.json
+    );
+    assert_eq!(
+        people_write_counts(&pool, org).await,
+        before,
+        "a deactivated SUPER_ADMIN must write no employee row, employment profile, \
+         lifecycle event, idempotency reservation, or employee.create audit"
+    );
+    assert_no_employee_writes(&pool, org, "PEOPLE-DEACT", "deactivated-key").await;
+
+    // Same still-valid token, but now the actor is active again while the LIVE
+    // SUPER_ADMIN role has been revoked: the write-boundary recheck must refuse
+    // the token-only role, not just `is_active`.
+    sqlx::query(
+        "UPDATE users SET is_active = true, roles = '{}'::text[] WHERE id = $1 AND org_id = $2",
+    )
+    .bind(*user.as_uuid())
+    .bind(*org.as_uuid())
+    .execute(&pool)
+    .await
+    .unwrap();
+    let before_role_revocation = people_write_counts(&pool, org).await;
+    let revoked = post(
+        service.clone(),
+        EMPLOYEES_PATH,
+        &token,
+        create_body(
+            branch,
+            "PEOPLE-ROLE-REVOKED",
+            "role-revoked-key",
+            "010-1234-5678",
+            "Role revoked",
+        ),
+    )
+    .await;
+    assert_eq!(revoked.status, StatusCode::FORBIDDEN, "{:?}", revoked.json);
+    assert_eq!(
+        people_write_counts(&pool, org).await,
+        before_role_revocation,
+        "a role-revoked SUPER_ADMIN must write no employee row, employment profile, \
+         lifecycle event, idempotency reservation, or employee.create audit"
+    );
+    assert_no_employee_writes(&pool, org, "PEOPLE-ROLE-REVOKED", "role-revoked-key").await;
+}
+
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn revoked_grant_executive_cannot_create_employee(pool: PgPool) {
+    let keys = keys();
+    let org = OrgId::knl();
+    let branch = seed_branch(&pool, org, "People revoked-grant branch").await;
+    let executive = UserId::new();
+    seed_user_with_roles(&pool, org, executive, &["EXECUTIVE"]).await;
+    seed_manage_grant(&pool, org, executive, None, None).await;
+    let service = build_router(
+        app_state(
+            runtime_role_pool(&pool).await,
+            leave_command_role_pool(&pool).await,
+            keys.public_pem.clone(),
+        )
+        .unwrap(),
+    );
+    let token = bearer(&keys, org, executive, &["EXECUTIVE"]);
+
+    // Revoke the org-wide grant AFTER the actor was seeded and the token minted:
+    // the live write-boundary recheck (and the request-time grant resolution)
+    // must refuse the token-only EXECUTIVE, not trust the formerly-present grant.
+    sqlx::query("DELETE FROM user_role_assignments WHERE org_id = $1 AND user_id = $2")
+        .bind(*org.as_uuid())
+        .bind(*executive.as_uuid())
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    let before = people_write_counts(&pool, org).await;
+    let response = post(
+        service.clone(),
+        EMPLOYEES_PATH,
+        &token,
+        create_body(
+            branch,
+            "PEOPLE-GRANT-REVOKED",
+            "grant-revoked-key",
+            "010-1234-5678",
+            "Grant revoked",
+        ),
+    )
+    .await;
+    assert_eq!(
+        response.status,
+        StatusCode::FORBIDDEN,
+        "{:?}",
+        response.json
+    );
+    assert_eq!(
+        people_write_counts(&pool, org).await,
+        before,
+        "a grant-revoked EXECUTIVE must write no employee row, employment profile, \
+         lifecycle event, idempotency reservation, or employee.create audit"
+    );
+    assert_no_employee_writes(&pool, org, "PEOPLE-GRANT-REVOKED", "grant-revoked-key").await;
 }
 
 fn create_body(branch: Uuid, employee_number: &str, key: &str, phone: &str, name: &str) -> Value {
@@ -551,6 +737,29 @@ async fn people_write_counts(pool: &PgPool, org: OrgId) -> (i64, i64, i64, i64, 
     .fetch_one(pool)
     .await
     .unwrap()
+}
+
+/// MEDIUM-3 mutation-test-style guard: a denied create must leave BOTH no
+/// employee row for the attempted `employee_number` AND no idempotency
+/// reservation for the attempted key. Because the live authority recheck in
+/// `create_employee_core` runs BEFORE the idempotency INSERT, this assertion
+/// goes red if anyone reorders the write ahead of the authority check.
+async fn assert_no_employee_writes(pool: &PgPool, org: OrgId, employee_number: &str, key: &str) {
+    let (employees, reservations): (i64, i64) = sqlx::query_as(
+        "SELECT (SELECT count(*) FROM employees WHERE org_id = $1 AND employee_number = $2), \
+         (SELECT count(*) FROM employee_create_idempotency WHERE org_id = $1 AND idempotency_key = $3)",
+    )
+    .bind(*org.as_uuid())
+    .bind(employee_number)
+    .bind(key)
+    .fetch_one(pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        (employees, reservations),
+        (0, 0),
+        "a denied create must leave no employee row or idempotency reservation for the attempted key"
+    );
 }
 
 async fn seed_branch(pool: &PgPool, org: OrgId, name: &str) -> Uuid {

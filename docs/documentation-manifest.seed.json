@@ -3800,6 +3800,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-14-u6ih-part1-employee-row-creation.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "17b866de92a67baec26cc671f50ba95fa21c1a9b",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/legacy-intent-register.md",
     "class": "evidence",
     "owner": "repository maintainers",
