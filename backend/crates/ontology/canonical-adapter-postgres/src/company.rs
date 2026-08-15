@@ -123,6 +123,8 @@ pub struct CompanyCommand {
     pub command_id: CommandId,
     pub actor_id: UserId,
     pub query: CompanyQuery,
+    pub action_key: String,
+    pub object_type_id: Uuid,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -246,14 +248,16 @@ impl PgCompanyPort {
         // this port shares with every other receipt owner.
         sqlx::query(
             "INSERT INTO ont_action_command_receipts \
-             (org_id, command_id, actor_id, payload_digest, receipt, created_at) \
-             VALUES ($1, $2, $3, $4, $5, $6)",
+             (org_id, command_id, actor_id, payload_digest, receipt, action_key, object_type_id, created_at) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
         )
         .bind(org)
         .bind(command_uuid)
         .bind(actor)
         .bind(digest.as_slice())
         .bind(&result)
+        .bind(&command.action_key)
+        .bind(command.object_type_id)
         .bind(created_at)
         .execute(&mut *tx)
         .await?;
@@ -291,12 +295,16 @@ impl CanonicalPort for PgCompanyPort {
         command_id: CommandId,
         actor_id: UserId,
         query: Self::Query,
+        action_key: &str,
+        object_type_id: Uuid,
     ) -> Self::Command {
         CompanyCommand {
             org_id,
             command_id,
             actor_id,
             query,
+            action_key: action_key.to_owned(),
+            object_type_id,
         }
     }
 

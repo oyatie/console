@@ -155,6 +155,8 @@ fn command(org: OrgId, actor: UserId, query: CompanyQuery) -> CompanyCommand {
         command_id: CommandId::from_uuid(Uuid::new_v4()),
         actor_id: actor,
         query,
+        action_key: "revise".to_owned(),
+        object_type_id: Uuid::nil(),
     }
 }
 
@@ -571,6 +573,8 @@ async fn a_repeat_of_the_same_command_replays_the_stored_receipt(owner_pool: PgP
             query: CompanyQuery {
                 attributes: first_attributes,
             },
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -585,6 +589,8 @@ async fn a_repeat_of_the_same_command_replays_the_stored_receipt(owner_pool: PgP
             query: CompanyQuery {
                 attributes: retry_attributes,
             },
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -614,6 +620,8 @@ async fn a_repeat_with_a_different_payload_is_refused(owner_pool: PgPool) {
             command_id,
             actor_id: actor,
             query: revise("주식회사 아크메"),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -626,6 +634,8 @@ async fn a_repeat_with_a_different_payload_is_refused(owner_pool: PgPool) {
             command_id,
             actor_id: actor,
             query: revise("위조"),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -678,6 +688,8 @@ async fn a_command_id_already_held_by_another_receipt_owner_is_refused(owner_poo
             command_id,
             actor_id: actor,
             query: revise("중복 키"),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -730,6 +742,8 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
             command_id,
             actor_id: actor,
             query: query.clone(),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -765,6 +779,8 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
             command_id,
             actor_id: actor,
             query,
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await

@@ -2839,6 +2839,29 @@
       "in_workflow_postgres_job": true
     },
     {
+      "buck_wrapper": "//tools/buck:ontology-canonical-replay-postgres",
+      "name": "ontology-canonical-replay-postgres",
+      "buck_inner": "//backend/crates/ontology/rest:console-ontology-rest-itest-canonical_replay",
+      "package": "console-ontology-rest",
+      "crate_dir": "backend/crates/ontology/rest",
+      "kind": "test",
+      "test": "canonical_replay",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-ontology-rest",
+        "--test",
+        "canonical_replay",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
+    },
+    {
       "buck_wrapper": "//tools/buck:ontology-gaps-postgres",
       "name": "ontology-gaps-postgres",
       "buck_inner": "//backend/crates/ontology/rest:console-ontology-rest-itest-ont_gaps_as_runtime_role",

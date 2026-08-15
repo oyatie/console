@@ -714,6 +714,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'integration': {
             'tests/action_execute_as_runtime_role.rs': 'postgres',
             'tests/canonical_dispatch_audit_as_runtime_role.rs': 'postgres',
+            'tests/canonical_replay.rs': 'postgres',
             'tests/company_conformance.rs': 'postgres',
             'tests/object_policy_attach_as_runtime_role.rs': 'postgres',
             'tests/object_type_cas_as_runtime_role.rs': 'postgres',

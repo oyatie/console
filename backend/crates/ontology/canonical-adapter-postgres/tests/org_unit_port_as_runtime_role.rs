@@ -172,6 +172,8 @@ fn command(org: OrgId, actor: UserId, query: OrgUnitQuery) -> OrgUnitCommand {
         command_id: CommandId::from_uuid(Uuid::new_v4()),
         actor_id: actor,
         query,
+        action_key: "revise".to_owned(),
+        object_type_id: Uuid::nil(),
     }
 }
 
@@ -713,6 +715,8 @@ async fn a_repeat_of_the_same_command_replays_the_stored_receipt(owner_pool: PgP
                 source: Some(source("legacy_branch", "BR-2")),
                 attributes: first_attributes,
             },
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -728,6 +732,8 @@ async fn a_repeat_of_the_same_command_replays_the_stored_receipt(owner_pool: PgP
                 source: Some(source("legacy_branch", "BR-2")),
                 attributes: retry_attributes,
             },
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -771,6 +777,8 @@ async fn a_resplit_source_binding_is_not_the_same_digest(owner_pool: PgPool) {
             command_id,
             actor_id: actor,
             query: create(Some(source("hris", "emp-1")), "영업본부"),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -784,6 +792,8 @@ async fn a_resplit_source_binding_is_not_the_same_digest(owner_pool: PgPool) {
             command_id,
             actor_id: actor,
             query: create(Some(source("hrise", "mp-1")), "영업본부"),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -807,6 +817,8 @@ async fn a_repeat_with_a_different_payload_is_refused(owner_pool: PgPool) {
             command_id,
             actor_id: actor,
             query: create(None, "영업본부"),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -819,6 +831,8 @@ async fn a_repeat_with_a_different_payload_is_refused(owner_pool: PgPool) {
             command_id,
             actor_id: actor,
             query: create(None, "위조"),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -872,6 +886,8 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
             command_id,
             actor_id: actor,
             query: query.clone(),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -907,6 +923,8 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
             command_id,
             actor_id: actor,
             query,
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await

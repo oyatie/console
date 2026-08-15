@@ -3710,6 +3710,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/ledger/2026-08-14-b-emp-a-employment-containment.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "b1805f325eb81dedbf3743a772197f9346cb6393",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/ledger/2026-08-14-b-emp-b-freeze-and-backdating.md",
     "class": "evidence",
     "owner": "repository maintainers",

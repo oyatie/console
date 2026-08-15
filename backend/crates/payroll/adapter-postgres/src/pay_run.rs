@@ -448,6 +448,8 @@ pub struct PayRunCommand {
     pub command_id: CommandId,
     pub actor_id: UserId,
     pub query: PayRunQuery,
+    pub action_key: String,
+    pub object_type_id: Uuid,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -648,14 +650,16 @@ impl PgPayRunPort {
         // DEFAULT, so an INSERT that omits it is a `23502`.
         let created_at: OffsetDateTime = sqlx::query_scalar(
             "INSERT INTO ont_action_command_receipts \
-             (org_id, command_id, actor_id, payload_digest, receipt, created_at) \
-             VALUES ($1, $2, $3, $4, $5, now()) RETURNING created_at",
+             (org_id, command_id, actor_id, payload_digest, receipt, action_key, object_type_id, created_at) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, now()) RETURNING created_at",
         )
         .bind(org)
         .bind(command_uuid)
         .bind(actor)
         .bind(digest.as_slice())
         .bind(&result)
+        .bind(&command.action_key)
+        .bind(command.object_type_id)
         .fetch_one(&mut *tx)
         .await?;
 
@@ -720,12 +724,16 @@ impl CanonicalPort for PgPayRunPort {
         command_id: CommandId,
         actor_id: UserId,
         query: Self::Query,
+        action_key: &str,
+        object_type_id: Uuid,
     ) -> Self::Command {
         PayRunCommand {
             org_id,
             command_id,
             actor_id,
             query,
+            action_key: action_key.to_owned(),
+            object_type_id,
         }
     }
 

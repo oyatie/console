@@ -1,8 +1,9 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! RUNTIME proof that a canonical `projected_usecase` success path emits an
-//! org-scoped `ontology.action.execute` audit row (same action key as the
-//! InstanceRevision writeback). Canonical ports open raw `pool.begin()` and do
-//! not write `audit_events` themselves — the engine must.
+//! org-scoped `ontology.canonical.execute` audit row (distinct from the
+//! InstanceRevision writeback's `ontology.action.execute`). Canonical ports open
+//! raw `pool.begin()` and do not write `audit_events` themselves — the engine
+//! must.
 
 use std::collections::BTreeSet;
 use std::marker::PhantomData;
@@ -187,6 +188,8 @@ where
         command_id: CommandId,
         actor_id: UserId,
         query: Self::Query,
+        _action_key: &str,
+        _object_type_id: uuid::Uuid,
     ) -> Self::Command {
         (org_id, command_id, actor_id, query.dispatch_target())
     }
@@ -253,7 +256,7 @@ async fn seed_canonical_projected_action(
 
 async fn count_execute_audits(owner_pool: &PgPool, org: OrgId) -> i64 {
     sqlx::query_scalar(
-        "SELECT COUNT(*) FROM audit_events WHERE org_id = $1 AND action = 'ontology.action.execute'",
+        "SELECT COUNT(*) FROM audit_events WHERE org_id = $1 AND action = 'ontology.canonical.execute'",
     )
     .bind(*org.as_uuid())
     .fetch_one(owner_pool)
@@ -277,7 +280,7 @@ fn state_with_company_stub(
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
-async fn canonical_projected_success_emits_ontology_action_execute_audit(owner_pool: PgPool) {
+async fn canonical_projected_success_emits_ontology_canonical_execute_audit(owner_pool: PgPool) {
     let rt = runtime_role_pool(&owner_pool).await;
     let cmd = command_role_pool(&owner_pool).await;
     let org = OrgId::knl();
@@ -326,12 +329,12 @@ async fn canonical_projected_success_emits_ontology_action_execute_audit(owner_p
     let audits = count_execute_audits(&owner_pool, org).await;
     assert_eq!(
         audits, 1,
-        "canonical projected success must write one ontology.action.execute audit_events row; got {audits}"
+        "canonical projected success must write one ontology.canonical.execute audit_events row; got {audits}"
     );
 
     let target_id: String = sqlx::query_scalar(
         "SELECT target_id FROM audit_events \
-         WHERE org_id = $1 AND action = 'ontology.action.execute' \
+         WHERE org_id = $1 AND action = 'ontology.canonical.execute' \
          ORDER BY created_at, id LIMIT 1",
     )
     .bind(org_uuid)

@@ -7277,6 +7277,11 @@ fn validate_lifecycle_transition(
     let current_status = normalize_enum_text(current.employment_status.clone());
     match transition.event_type.as_str() {
         "ONBOARD" => {
+            if current_status == "EXITED" {
+                return Err(HrError::from_kernel(KernelError::invalid_transition(
+                    "employee is already EXITED and cannot be onboarded",
+                )));
+            }
             if transition.to_status != "ACTIVE" {
                 return Err(HrError::from_kernel(KernelError::invalid_transition(
                     "ONBOARD must result in ACTIVE status",
@@ -7306,6 +7311,11 @@ fn validate_lifecycle_transition(
             }
         }
         "TRANSFER" => {
+            if current_status == "EXITED" {
+                return Err(HrError::from_kernel(KernelError::invalid_transition(
+                    "employee is already EXITED and cannot be transferred",
+                )));
+            }
             if transition.to_status != "ACTIVE" {
                 return Err(HrError::from_kernel(KernelError::invalid_transition(
                     "TRANSFER must keep the employee ACTIVE",
@@ -12108,5 +12118,59 @@ E-001,홍길동,본사,2026-07-01,abc
             "an unchanged dashboard read must not emit a second audit event (write-storm guard preserved)"
         );
         Ok(())
+    }
+
+    #[cfg(not(feature = "test-postgres"))]
+    #[test]
+    fn lifecycle_transition_refuses_onboard_and_transfer_when_already_exited() {
+        let exited = EmployeeForLifecycle {
+            company: "ACME".to_owned(),
+            org_unit: None,
+            position: None,
+            employment_status: "EXITED".to_owned(),
+        };
+        let base_signoffs = EmployeeLifecycleSignoffs {
+            privacy_notice_ack: true,
+            korean_labor_law_ack: true,
+            ..EmployeeLifecycleSignoffs::default()
+        };
+
+        let onboard = NormalizedEmployeeLifecycleTransition {
+            event_type: "ONBOARD".to_owned(),
+            to_status: "ACTIVE".to_owned(),
+            to_company: None,
+            to_org_unit: None,
+            to_position: None,
+            effective_date: "2026-08-14".to_owned(),
+            comment: "reinstate".to_owned(),
+            signoffs: base_signoffs.clone(),
+        };
+        let onboard_err = validate_lifecycle_transition(&exited, &onboard).unwrap_err();
+        assert_eq!(onboard_err.status, StatusCode::CONFLICT);
+        assert_eq!(onboard_err.code, "invalid_transition");
+        assert!(
+            onboard_err.message.contains("EXITED"),
+            "refusal must name the EXITED state, got: {}",
+            onboard_err.message
+        );
+
+        let transfer = NormalizedEmployeeLifecycleTransition {
+            event_type: "TRANSFER".to_owned(),
+            to_status: "ACTIVE".to_owned(),
+            to_company: Some("ACME-SUBSIDIARY".to_owned()),
+            to_org_unit: None,
+            to_position: None,
+            effective_date: "2026-08-14".to_owned(),
+            comment: "transfer".to_owned(),
+            signoffs: base_signoffs,
+        };
+        let transfer_err = validate_lifecycle_transition(&exited, &transfer).unwrap_err();
+        assert_eq!(transfer_err.status, StatusCode::CONFLICT);
+        assert_eq!(transfer_err.code, "invalid_transition");
+        assert!(
+            transfer_err.message.contains("EXITED"),
+            "refusal must name the EXITED state, got: {}",
+            transfer_err.message
+        );
     }
 }

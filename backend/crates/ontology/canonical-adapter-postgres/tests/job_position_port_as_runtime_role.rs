@@ -204,6 +204,8 @@ fn command(org: OrgId, actor: UserId, query: JobPositionQuery) -> JobPositionCom
         command_id: CommandId::from_uuid(Uuid::new_v4()),
         actor_id: actor,
         query,
+        action_key: "revise".to_owned(),
+        object_type_id: Uuid::nil(),
     }
 }
 
@@ -745,6 +747,8 @@ async fn a_repeat_of_the_same_command_replays_the_stored_receipt(owner_pool: PgP
                 org_unit_id: unit,
                 attributes: first_attributes,
             },
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -760,6 +764,8 @@ async fn a_repeat_of_the_same_command_replays_the_stored_receipt(owner_pool: PgP
                 org_unit_id: unit,
                 attributes: retry_attributes,
             },
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -790,6 +796,8 @@ async fn a_repeat_with_a_different_payload_is_refused(owner_pool: PgPool) {
             command_id,
             actor_id: actor,
             query: create(unit, "팀장"),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -802,6 +810,8 @@ async fn a_repeat_with_a_different_payload_is_refused(owner_pool: PgPool) {
             command_id,
             actor_id: actor,
             query: create(unit, "위조"),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -852,6 +862,8 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
             command_id,
             actor_id: actor,
             query: query.clone(),
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await
@@ -887,6 +899,8 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
             command_id,
             actor_id: actor,
             query,
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
         },
     )
     .await

@@ -144,6 +144,8 @@ impl CanonicalPort for DigestConflictPort {
         command_id: CommandId,
         actor_id: UserId,
         query: Self::Query,
+        _action_key: &str,
+        _object_type_id: uuid::Uuid,
     ) -> Self::Command {
         (org_id, command_id, actor_id, query.dispatch_target())
     }
@@ -189,6 +191,8 @@ where
         command_id: CommandId,
         actor_id: UserId,
         query: Self::Query,
+        _action_key: &str,
+        _object_type_id: uuid::Uuid,
     ) -> Self::Command {
         (org_id, command_id, actor_id, query.dispatch_target())
     }
@@ -239,6 +243,8 @@ fn input(target: &str, params: Value, command_id: Option<Uuid>) -> ProjectedDisp
         target: target.to_owned(),
         target_id: None,
         command_id,
+        action_key: "revise".to_owned(),
+        object_type_id: Uuid::nil(),
         params,
         reason: None,
         occurred_at: OffsetDateTime::UNIX_EPOCH,

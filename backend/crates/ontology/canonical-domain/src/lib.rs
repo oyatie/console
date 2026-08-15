@@ -584,15 +584,22 @@ pub trait CanonicalPort {
     /// or consume an approval.
     fn preflight(query: &Self::Query) -> Preflight;
 
-    /// Bind a decoded query to the tenant, idempotency key and actor a caller
-    /// arrived with. PURE, and deliberately not `&self`: it exists so a generic
-    /// dispatcher can build `Self::Command` without naming the concrete type,
-    /// which is what lets one dispatcher serve every target this port owns.
+    /// Bind a decoded query to the tenant, idempotency key, actor and accepting
+    /// action a caller arrived with. PURE, and deliberately not `&self`: it
+    /// exists so a generic dispatcher can build `Self::Command` without naming
+    /// the concrete type, which is what lets one dispatcher serve every target
+    /// this port owns. `action_key` is the ontology action's stable key (unique
+    /// only per object type); `object_type_id` disambiguates it, so ports bind
+    /// BOTH into their receipt and a replay can reject a retry that reuses the
+    /// same `command_id` through a different action or a different object type.
+    #[allow(clippy::too_many_arguments)]
     fn command(
         org_id: OrgId,
         command_id: CommandId,
         actor_id: UserId,
         query: Self::Query,
+        action_key: &str,
+        object_type_id: uuid::Uuid,
     ) -> Self::Command;
 
     /// Performs the write and returns the stored receipt. A repeat of the same

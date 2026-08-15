@@ -75,7 +75,7 @@ use console_platform_authz::{
     Action, AuthorizationRequest, AuthorizationResource, Feature, Principal, authorize_org_wide,
 };
 use console_platform_authz_rest::{AttachObjectPolicyCommand, PgCedarError, PgCedarPolicyStore};
-use console_platform_db::{DbError, with_audits, with_org_rollback};
+use console_platform_db::{DbError, with_audits, with_org_conn, with_org_rollback};
 use console_platform_request_context::current_org;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -180,6 +180,15 @@ pub struct ProjectedDispatch {
     /// dispatcher refuses a command without one rather than minting a fresh key
     /// on the caller's behalf, which would silently defeat that replay.
     pub command_id: Option<Uuid>,
+    /// The ontology action key (stable key) that accepted the command. Bound
+    /// into the canonical port's receipt so a replay can reconstruct the
+    /// accepted wrapper metadata.
+    pub action_key: String,
+    /// The ontology object type that owns the action. `action_key` is unique
+    /// only per object type, so this is bound into the receipt alongside it so
+    /// a replay can reject a retry that reuses the `command_id` through a
+    /// different object type.
+    pub object_type_id: Uuid,
     /// Validated action params (the edit values) for the domain command.
     pub params: Value,
     /// Optional caller reason, forwarded to the domain audit trail.
@@ -196,6 +205,14 @@ pub type ProjectedHandler = Arc<
         + Send
         + Sync,
 >;
+
+/// The PURE half of a canonical port dispatch: decode a payload, re-check it
+/// names the contract's target, bind its subject, and run `P::preflight` — with
+/// no execute, no connection, no side effect. `preflight_action` routes the
+/// projected dry run here so `would_execute` reflects the port's own refusal,
+/// not just the §16 gates and submit criteria.
+pub type PortPreflight =
+    Arc<dyn Fn(DispatchTarget, Option<Uuid>, Value) -> Result<(), ActionError> + Send + Sync>;
 
 /// Resolves a `dispatch_target` to the domain use-case that owns its write.
 ///
@@ -224,6 +241,7 @@ pub type ProjectedHandler = Arc<
 pub struct ProjectedDispatchRegistry {
     handlers: HashMap<String, ProjectedHandler>,
     ports: HashMap<ObjectKey, ProjectedHandler>,
+    port_preflights: HashMap<ObjectKey, PortPreflight>,
 }
 
 impl ProjectedDispatchRegistry {
@@ -265,6 +283,12 @@ impl ProjectedDispatchRegistry {
             <P::Object as CanonicalObject>::KEY,
             canonical_port_handler(port),
         );
+        self.port_preflights.insert(
+            <P::Object as CanonicalObject>::KEY,
+            Arc::new(move |target, target_id, params| {
+                canonical_port_preflight::<P>(target, target_id, params)
+            }),
+        );
         self
     }
 
@@ -275,6 +299,25 @@ impl ProjectedDispatchRegistry {
     #[must_use]
     pub fn resolves(&self, target: DispatchTarget) -> bool {
         self.ports.contains_key(&target.object())
+    }
+
+    /// Run the owning canonical port's PURE preflight for a projected payload,
+    /// without dispatching or executing. `preflight_action` routes the projected
+    /// dry run here so `would_execute` reflects the port's own verdict, not just
+    /// the §16 gates and submit criteria. An unresolved roster target fails
+    /// closed (`NotWiredYet`), matching [`Self::dispatch`].
+    pub fn preflight(
+        &self,
+        target: DispatchTarget,
+        target_id: Option<Uuid>,
+        params: Value,
+    ) -> Result<(), ActionError> {
+        match self.port_preflights.get(&target.object()) {
+            Some(preflight) => preflight(target, target_id, params),
+            None => Err(ActionError::NotWiredYet {
+                target: Some(target.as_str().to_owned()),
+            }),
+        }
     }
 
     /// Route to the owning port (canonical target) or to the per-action handler
@@ -295,6 +338,89 @@ impl ProjectedDispatchRegistry {
             }),
         }
     }
+}
+
+/// Decode a projected payload into the owning port's query, re-check that the
+/// decoded query names the contract's target (the fail-closed seam — a port
+/// whose serde tags and `target()` ever disagree is refused here rather than
+/// writing under the wrong target), and bind the payload subject to the gated
+/// `target_id`. Shared by the dispatcher and the preflight path so the two can
+/// never disagree on decode, target, or subject binding.
+fn decode_canonical_query<P>(
+    target: DispatchTarget,
+    target_id: Option<Uuid>,
+    params: Value,
+) -> Result<P::Query, ActionError>
+where
+    P: CanonicalPort,
+    P::Query: DeserializeOwned,
+{
+    let mut payload = match params {
+        Value::Object(map) => map,
+        Value::Null => serde_json::Map::new(),
+        other => {
+            return Err(ActionError::Validation(format!(
+                "params must be a JSON object for {}, got {other}",
+                target.as_str()
+            )));
+        }
+    };
+    // The contract's own spelling of the target, never the caller's: `from_str`
+    // already rejected anything else, so a payload cannot choose which variant
+    // it decodes to.
+    payload.insert(
+        "target".to_owned(),
+        Value::String(target.as_str().to_owned()),
+    );
+    let query: P::Query = serde_json::from_value(Value::Object(payload)).map_err(|error| {
+        ActionError::Validation(format!(
+            "params do not decode as {}: {error}",
+            target.as_str()
+        ))
+    })?;
+    if query.dispatch_target() != target {
+        return Err(ActionError::Validation(format!(
+            "payload decoded as {} but the action names {}",
+            query.dispatch_target().as_str(),
+            target.as_str()
+        )));
+    }
+    match (target_id, query.subject_id()) {
+        (Some(bound), Some(subject)) if bound != subject => {
+            return Err(ActionError::Validation(format!(
+                "payload subject {subject} does not match the action target_id {bound}"
+            )));
+        }
+        (None, Some(subject)) => {
+            return Err(ActionError::Validation(format!(
+                "payload subject {subject} requires target_id on the projected action"
+            )));
+        }
+        _ => {}
+    }
+    Ok(query)
+}
+
+/// The PURE preflight verdict of the owning canonical port for a projected
+/// payload: decode, target re-check, subject bind, and `P::preflight` — no
+/// execute, no connection, no side effect. `P::preflight` is an associated
+/// function (`no &self`), so this is free to call on a dry run without spending
+/// an approval or opening a transaction.
+fn canonical_port_preflight<P>(
+    target: DispatchTarget,
+    target_id: Option<Uuid>,
+    params: Value,
+) -> Result<(), ActionError>
+where
+    P: CanonicalPort,
+    P::Query: DeserializeOwned,
+{
+    let query = decode_canonical_query::<P>(target, target_id, params)?;
+    let preflight = P::preflight(&query);
+    if !preflight.is_ok() {
+        return Err(ActionError::Validation(preflight.blockers().join("; ")));
+    }
+    Ok(())
 }
 
 /// ONE handler for every target a canonical port owns.
@@ -334,6 +460,8 @@ where
                 target_id,
                 params,
                 command_id,
+                action_key,
+                object_type_id,
                 ..
             } = input;
             let Ok(target) = DispatchTarget::from_str(&target) else {
@@ -352,52 +480,7 @@ where
                 ))
             })?;
 
-            let mut payload = match params {
-                Value::Object(map) => map,
-                Value::Null => serde_json::Map::new(),
-                other => {
-                    return Err(ActionError::Validation(format!(
-                        "params must be a JSON object for {}, got {other}",
-                        target.as_str()
-                    )));
-                }
-            };
-            // The contract's own spelling of the target, never the caller's:
-            // `from_str` already rejected anything else, so a payload cannot
-            // choose which variant it decodes to.
-            payload.insert(
-                "target".to_owned(),
-                Value::String(target.as_str().to_owned()),
-            );
-            let query: P::Query =
-                serde_json::from_value(Value::Object(payload)).map_err(|error| {
-                    ActionError::Validation(format!(
-                        "params do not decode as {}: {error}",
-                        target.as_str()
-                    ))
-                })?;
-            if query.dispatch_target() != target {
-                return Err(ActionError::Validation(format!(
-                    "payload decoded as {} but the action names {}",
-                    query.dispatch_target().as_str(),
-                    target.as_str()
-                )));
-            }
-            match (target_id, query.subject_id()) {
-                (Some(bound), Some(subject)) if bound != subject => {
-                    return Err(ActionError::Validation(format!(
-                        "payload subject {subject} does not match the action target_id {bound}"
-                    )));
-                }
-                (None, Some(subject)) => {
-                    // Subject-bearing writes must carry the gated instance id;
-                    // otherwise the bind above is a no-op and approval scope is lost.
-                    return Err(ActionError::Validation(format!(
-                        "payload subject {subject} requires target_id on the projected action"
-                    )));
-                }
-                _ => {}
-            }
+            let query = decode_canonical_query::<P>(target, target_id, params)?;
 
             // PURE, and run before anything opens a connection.
             let preflight = P::preflight(&query);
@@ -410,6 +493,8 @@ where
                 CommandId::from_uuid(command_id),
                 principal.user_id,
                 query,
+                &action_key,
+                object_type_id,
             );
             // `CanonicalPort::execute` is synchronous and blocks on a runtime
             // handle, which panics on a worker thread. The blocking pool is not
@@ -1635,24 +1720,11 @@ impl OntologyRestState {
 
         match prepared.command.prepared_dispatch() {
             PreparedDispatch::ProjectedUsecase => {
-                let gates = self.evaluate_gates(principal, &prepared).await?;
-                if !gates.allow {
-                    return Err(ActionError::GateDenied(
-                        "an action gate is not satisfied".to_owned(),
-                    ));
-                }
                 // No engine domain writeback: route to the owning domain crate's
                 // use-case, which owns its own RLS + tx (§9.3 — no second source of
                 // truth). An unwired/unknown target fails closed (`NotWiredYet`).
                 // Non-roster handlers keep their own audit; canonical ports do not
                 // (raw `begin()`), so success below emits `ontology.action.execute`.
-                //
-                // The §16 gate chain was already enforced fail-closed above. TOCTOU-
-                // safety of the domain MUTATION is the domain use-case's own
-                // responsibility and varies by use-case (a work-order transition
-                // locks its row + guards the from-state; an equipment update is
-                // last-write-wins with non-destructive version capture) — the engine
-                // makes no claim about it here.
                 //
                 // The "submission criteria are not evaluable for a projected action"
                 // refusal now lives in `PreparedCommand::prepare`, so preflight
@@ -1665,11 +1737,152 @@ impl OntologyRestState {
                         // A projected action with no target can never resolve a handler.
                         ActionError::NotWiredYet { target: None },
                     )?;
-                // The §16 chain (incl. the four-eyes peek) passed above, but a
-                // projected use-case owns its own tx we cannot join, so we bind-match
-                // AND consume the approval in our own committed step right before
-                // dispatch (single-use — a replay is denied). A failed dispatch spends
-                // the approval: fail-closed, the requester re-requests.
+                let canonical_target = DispatchTarget::from_str(&target).ok();
+
+                // A canonical port REPLAYS a repeat of the same command_id and
+                // returns the stored receipt verbatim. Peek the receipt store
+                // BEFORE the gate chain: a retry whose single-use approval was
+                // spent on the first attempt would otherwise be denied by the
+                // four-eyes gate's non-consuming peek inside `evaluate_gates` and
+                // never reach the port that replays it. Mirror InstanceRevision's
+                // replay — the stored receipt's actor must match, then dispatch
+                // (the port replays) and skip the gate chain and the single-use
+                // consume. The accepted `action_key` is read back so the repair
+                // audit records the ACCEPTED wrapper, not the retry's.
+                let prior = match (canonical_target, command.command_id) {
+                    (Some(_), Some(command_id)) => {
+                        let org = current_org().map_err(|e| {
+                            ActionError::Store(PgOntologyError::from(KernelError::from(e)))
+                        })?;
+                        // Tenant-scoped read: `ont_action_command_receipts` is
+                        // FORCE-RLS on `app.current_org`, so the peek must run in
+                        // the same armed transaction the writers use, not on a
+                        // bare pool checkout (which would see no rows).
+                        with_org_conn::<_, _, PgOntologyError>(
+                            self.registry.pool(),
+                            org,
+                            move |tx| {
+                                Box::pin(async move {
+                                    let row: Option<(Uuid, Option<String>, Option<Uuid>)> =
+                                        sqlx::query_as(
+                                            "SELECT actor_id, action_key, object_type_id \
+                                                 FROM ont_action_command_receipts \
+                                                 WHERE org_id = $1 AND command_id = $2",
+                                        )
+                                        .bind(*org.as_uuid())
+                                        .bind(command_id)
+                                        .fetch_optional(tx.as_mut())
+                                        .await?;
+                                    Ok(row)
+                                })
+                            },
+                        )
+                        .await
+                        .map_err(ActionError::Store)?
+                    }
+                    _ => None,
+                };
+                if let Some((prior_actor, prior_action_key, prior_object_type_id)) = prior {
+                    if prior_actor != *principal.user_id.as_uuid() {
+                        return Err(ActionError::Store(PgOntologyError::Domain(
+                            KernelError::forbidden("command_id belongs to another principal"),
+                        )));
+                    }
+                    // Reject a cross-action replay: the stored receipt binds the
+                    // ACCEPTED action key, and a retry that reuses the same
+                    // `command_id` through a DIFFERENT action (same canonical
+                    // target + payload, possibly different checklist/four-eyes/
+                    // egress controls) must not be handed the stored receipt.
+                    // Legacy receipts written before 0219 carry a NULL action_key
+                    // and keep the retry's-key fallback below.
+                    if let Some(prior_key) = prior_action_key.as_deref()
+                        && prior_key != action_key
+                    {
+                        return Err(ActionError::domain(KernelError::conflict(
+                            "command_id was accepted under a different action",
+                        )));
+                    }
+                    // Reject a cross-object-type replay: `action_key` is unique
+                    // only per object type, so the same stable key on a DIFFERENT
+                    // object type (same canonical target + payload, possibly
+                    // different controls) must not be handed the stored receipt.
+                    // Legacy receipts written before this column existed carry a
+                    // NULL object_type_id and keep the retry's fallback.
+                    if let Some(prior_type) = prior_object_type_id
+                        && prior_type != *command.object_type_id.as_uuid()
+                    {
+                        return Err(ActionError::domain(KernelError::conflict(
+                            "command_id was accepted under a different object type",
+                        )));
+                    }
+                    // Recheck the CURRENT authority effect: owning the historical
+                    // receipt is proof of ownership, not of present authorization.
+                    // A requester who has since lost the org-wide capability is
+                    // refused with 409 rather than handed the stored receipt.
+                    if authority_effect(principal) == AuthorityEffect::Deny {
+                        return Err(ActionError::domain(KernelError::conflict(
+                            "the requester no longer holds the capability to \
+                             replay this command",
+                        )));
+                    }
+                    let projected = self
+                        .projected_dispatch
+                        .dispatch(ProjectedDispatch {
+                            principal: principal.clone(),
+                            target: target.clone(),
+                            target_id: command.instance_id.map(|id| *id.as_uuid()),
+                            command_id: command.command_id,
+                            action_key: action_key.to_owned(),
+                            object_type_id: *command.object_type_id.as_uuid(),
+                            params: prepared.command.params().clone(),
+                            reason: command.reason.clone(),
+                            occurred_at: OffsetDateTime::now_utc(),
+                        })
+                        .await?;
+                    // Replay: the stored receipt is returned verbatim; the gate
+                    // chain is not re-evaluated (the four-eyes approval is already
+                    // spent). Idempotently ensure the execute audit exists — a
+                    // first attempt whose port committed its mutation + receipt
+                    // but whose audit emission then failed must not replay to
+                    // success while the mutation stays unaudited. After the
+                    // cross-action rejection above, a non-NULL accepted action key
+                    // is guaranteed equal to `action_key`; a NULL (legacy) key
+                    // falls back to the retry's, which the digest check in the
+                    // port has already bound to the accepted command.
+                    emit_canonical_projected_audit(
+                        self,
+                        principal,
+                        action_key,
+                        &target,
+                        command.command_id,
+                        &projected,
+                    )
+                    .await?;
+                    return Ok(ExecuteOutcome {
+                        dispatch: ActionDispatch::ProjectedUsecase,
+                        gates: GateChainOutcome {
+                            gates: Vec::new(),
+                            allow: true,
+                        },
+                        instance: None,
+                        projected: Some(projected),
+                        receipt: None,
+                    });
+                }
+
+                // First attempt: run the §16 gate chain (authority → checklist →
+                // four-eyes peek → egress) fail-closed, then consume the single-use
+                // approval in our own committed step right before dispatch. A failed
+                // first dispatch spends the approval: fail-closed, the requester
+                // re-requests. TOCTOU-safety of the domain MUTATION is the domain
+                // use-case's own responsibility and varies by use-case — the engine
+                // makes no claim about it here.
+                let gates = self.evaluate_gates(principal, &prepared).await?;
+                if !gates.allow {
+                    return Err(ActionError::GateDenied(
+                        "an action gate is not satisfied".to_owned(),
+                    ));
+                }
                 if let Some(request_ref) = prepared
                     .command
                     .four_eyes_request_ref()
@@ -1689,29 +1902,6 @@ impl OntologyRestState {
                         ));
                     }
                 }
-                // Snapshot receipt presence before dispatch so an idempotent
-                // canonical replay (same command_id) does not mint a second audit
-                // row — same shape as InstanceRevision's early return with `vec![]`.
-                let canonical_target = DispatchTarget::from_str(&target).ok();
-                let prior_canonical_receipt = match (canonical_target, command.command_id) {
-                    (Some(_), Some(command_id)) => {
-                        let org = current_org().map_err(|e| {
-                            ActionError::Store(PgOntologyError::from(KernelError::from(e)))
-                        })?;
-                        sqlx::query_scalar::<_, bool>(
-                            "SELECT EXISTS(
-                                SELECT 1 FROM ont_action_command_receipts
-                                WHERE org_id = $1 AND command_id = $2
-                             )",
-                        )
-                        .bind(*org.as_uuid())
-                        .bind(command_id)
-                        .fetch_one(self.registry.pool())
-                        .await
-                        .map_err(|e| ActionError::Store(PgOntologyError::Db(DbError::Sqlx(e))))?
-                    }
-                    _ => false,
-                };
                 let projected = self
                     .projected_dispatch
                     .dispatch(ProjectedDispatch {
@@ -1719,12 +1909,14 @@ impl OntologyRestState {
                         target: target.clone(),
                         target_id: command.instance_id.map(|id| *id.as_uuid()),
                         command_id: command.command_id,
+                        action_key: action_key.to_owned(),
+                        object_type_id: *command.object_type_id.as_uuid(),
                         params: prepared.command.params().clone(),
                         reason: command.reason.clone(),
                         occurred_at: OffsetDateTime::now_utc(),
                     })
                     .await?;
-                if canonical_target.is_some() && !prior_canonical_receipt {
+                if canonical_target.is_some() {
                     emit_canonical_projected_audit(
                         self,
                         principal,
@@ -1888,10 +2080,12 @@ impl OntologyRestState {
     /// preflight does report comes from the non-consuming peek in
     /// [`Self::evaluate_gates`].
     ///
-    /// A `projected_usecase` action returns `Ok` untouched: its target is a
-    /// domain row this engine cannot read, let alone simulate a write to, and
-    /// a preflight that silently dispatched into a domain use-case to find out
-    /// would be the side effect §4-42 forbids.
+    /// A `projected_usecase` action cannot have its domain write simulated
+    /// (that would be the side effect §4-42 forbids), but it CAN run the owning
+    /// canonical port's PURE `P::preflight` — an associated function with no
+    /// `&self`, no IO and no side effect — so a projected dispatch refused at
+    /// execute time is refused here too. A non-roster handler has no pure
+    /// preflight and stays `Ok`.
     ///
     /// The transaction takes the same `FOR UPDATE` head lock the real writeback
     /// takes, for the length of the simulation. That is the honest cost of a dry
@@ -1906,7 +2100,17 @@ impl OntologyRestState {
         let PreparedDispatch::InstanceRevision { attributes } =
             prepared.command.prepared_dispatch().clone()
         else {
-            return Ok(());
+            let Some(target_str) = prepared.command.dispatch_target() else {
+                return Ok(());
+            };
+            let Ok(target) = DispatchTarget::from_str(target_str) else {
+                return Ok(());
+            };
+            return self.projected_dispatch.preflight(
+                target,
+                command.instance_id.map(|id| *id.as_uuid()),
+                prepared.command.params().clone(),
+            );
         };
         let org = current_org()
             .map_err(|e| ActionError::Store(PgOntologyError::from(KernelError::from(e))))?;
@@ -2046,15 +2250,15 @@ async fn action_execute(
 /// dispatch.
 ///
 /// Canonical Postgres ports open `pool.begin()` and commit domain + receipt
-/// rows without an `audit_events` insert. InstanceRevision already uses
-/// `AuditAction::new("ontology.action.execute")` inside `with_audits`; reuse
-/// that single action key here (smallest sufficient taxonomy — do not mint
-/// `ontology.canonical.*` per target). Distinguish via `target_type` (= receipt
-/// owner / object key) and `target_id` (= tenant-global `command_id`), with
-/// `after_snap` carrying `dispatch_target`. Fail-closed: a failed audit insert
-/// surfaces as [`ActionError::Store`] even though the port tx already committed
-/// (inherent to the port-owned transaction boundary; same class as four-eyes
-/// consume-before-dispatch).
+/// rows without an `audit_events` insert. The canonical-projected execute is
+/// recorded under a DISTINCT action, `ontology.canonical.execute`, so its dedup
+/// key can never collide with `instance_revision_writeback`'s
+/// `ontology.action.execute` rows (both key `target_id` by a tenant-global
+/// `command_id`). Distinguish further via `target_type` (= receipt owner /
+/// object key) and `after_snap`'s `dispatch_target`. Fail-closed: a failed
+/// audit insert surfaces as [`ActionError::Store`] even though the port tx
+/// already committed (inherent to the port-owned transaction boundary; same
+/// class as four-eyes consume-before-dispatch).
 async fn emit_canonical_projected_audit(
     state: &OntologyRestState,
     principal: &Principal,
@@ -2080,14 +2284,48 @@ async fn emit_canonical_projected_audit(
         .to_owned();
     let result = projected.get("result").cloned().unwrap_or(Value::Null);
 
-    with_audits::<_, (), PgOntologyError>(state.registry.pool(), org, move |_tx| {
+    with_audits::<_, (), PgOntologyError>(state.registry.pool(), org, move |tx| {
         Box::pin(async move {
+            // Idempotent: a canonical replay re-enters this helper to repair an
+            // audit that was never recorded (the first attempt's port committed
+            // its mutation + receipt and this emission then failed). Never mint
+            // a second execute row for a command_id that already has one — under
+            // EITHER taxonomy: this deployment records
+            // `ontology.canonical.execute`, while commands accepted before it
+            // were recorded under `ontology.action.execute` with the same
+            // canonical-projected `after_snap` shape (`"dispatch":
+            // "projected_usecase"`). Recognising both keeps a replay of a legacy
+            // command from appending a second audit for one immutable mutation.
+            // The partial unique index in migration 0220 is the DB-enforced
+            // backstop for the check-then-insert window.
+            let target_id = command_id.to_string();
+            let already: bool = sqlx::query_scalar(
+                "SELECT EXISTS(
+                    SELECT 1 FROM audit_events
+                    WHERE org_id = $1
+                      AND target_id = $2
+                      AND (
+                        action = 'ontology.canonical.execute'
+                        OR (
+                          action = 'ontology.action.execute'
+                          AND after_snap->>'dispatch' = 'projected_usecase'
+                        )
+                      )
+                )",
+            )
+            .bind(*org.as_uuid())
+            .bind(target_id.clone())
+            .fetch_one(tx.as_mut())
+            .await?;
+            if already {
+                return Ok(((), Vec::new()));
+            }
             let now = OffsetDateTime::now_utc();
             let event = AuditEvent::new(
                 Some(actor),
-                AuditAction::new("ontology.action.execute")?,
+                AuditAction::new("ontology.canonical.execute")?,
                 &owner,
-                command_id.to_string(),
+                target_id,
                 TraceContext::generate(),
                 now,
             )
@@ -2106,6 +2344,20 @@ async fn emit_canonical_projected_audit(
         })
     })
     .await
+    .or_else(|error| {
+        // A concurrent repair already minted the audit: the partial unique index
+        // (migration 0220) turns the losing insert into 23505. Treat that as
+        // idempotent success — the audit exists — not as an error.
+        if matches!(
+            &error,
+            PgOntologyError::Db(DbError::Sqlx(sqlx::Error::Database(db)))
+                if db.code().as_deref() == Some("23505")
+        ) {
+            Ok(())
+        } else {
+            Err(error)
+        }
+    })
     .map_err(ActionError::Store)
 }
 
@@ -3053,6 +3305,10 @@ mod projected_dispatch_derivation;
 mod tests {
     use super::*;
     use axum::http::header::IF_MATCH;
+    use console_kernel_core::{OrgId, UserId};
+    use console_ontology_canonical_domain::{
+        CommandReceipt as CanonicalReceipt, PayRun, Preflight,
+    };
 
     #[test]
     fn divergent_child_identity_conflict_maps_to_http_409() {
@@ -3178,5 +3434,78 @@ mod tests {
         .unwrap();
 
         assert_eq!(before, after);
+    }
+
+    #[derive(Debug, serde::Deserialize)]
+    struct BlockingQuery {
+        target: String,
+    }
+
+    impl CanonicalQuery for BlockingQuery {
+        fn dispatch_target(&self) -> DispatchTarget {
+            self.target
+                .parse()
+                .expect("test payload names a roster member")
+        }
+
+        fn subject_id(&self) -> Option<Uuid> {
+            None
+        }
+    }
+
+    /// A port whose PURE preflight always blocks, so the projected dry-run path
+    /// can be observed without opening a connection or executing anything.
+    struct BlockingPort;
+
+    impl CanonicalPort for BlockingPort {
+        type Object = PayRun;
+        type Query = BlockingQuery;
+        type Command = (OrgId, CommandId, UserId, DispatchTarget);
+        type Error = std::convert::Infallible;
+
+        fn preflight(_query: &Self::Query) -> Preflight {
+            Preflight::blocked(vec!["period_end before period_start".to_owned()])
+        }
+
+        fn command(
+            org_id: OrgId,
+            command_id: CommandId,
+            actor_id: UserId,
+            query: Self::Query,
+            _action_key: &str,
+            _object_type_id: uuid::Uuid,
+        ) -> Self::Command {
+            (org_id, command_id, actor_id, query.dispatch_target())
+        }
+
+        fn execute(&self, _command: &Self::Command) -> Result<CanonicalReceipt, Self::Error> {
+            unreachable!("the preflight path must never execute")
+        }
+    }
+
+    /// RED before the fix: `dry_run_instance_revision` returned `Ok(())` for
+    /// every projected dispatch, so a port whose `P::preflight` blocks sailed
+    /// through preflight and only refused at execute time. The registry must
+    /// expose the port's pure preflight so preflight_action reports the same
+    /// refusal execute would.
+    #[test]
+    fn projected_preflight_reports_the_ports_pure_blockers() {
+        let registry = ProjectedDispatchRegistry::new().register_port(BlockingPort);
+        let error = registry
+            .preflight(
+                DispatchTarget::PayrollCreateRun,
+                None,
+                serde_json::json!({"period_end": "2026-01-01", "period_start": "2026-02-01"}),
+            )
+            .expect_err("a blocking port preflight must refuse the dry run");
+        match error {
+            ActionError::Validation(message) => {
+                assert!(
+                    message.contains("period_end before period_start"),
+                    "preflight must surface the port's blockers verbatim: {message}"
+                );
+            }
+            other => panic!("expected Validation, got {other:?}"),
+        }
     }
 }

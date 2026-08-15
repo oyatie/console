@@ -52,6 +52,8 @@ impl<O: CanonicalObject> CanonicalPort for NoPort<O> {
         _command_id: CommandId,
         _actor_id: UserId,
         _query: Self::Query,
+        _action_key: &str,
+        _object_type_id: uuid::Uuid,
     ) -> Self::Command {
     }
 

@@ -101,6 +101,8 @@ fn command(org: OrgId, actor: UserId, query: PayRunQuery) -> PayRunCommand {
         command_id: CommandId::from_uuid(Uuid::new_v4()),
         actor_id: actor,
         query,
+        action_key: "revise".to_owned(),
+        object_type_id: Uuid::nil(),
     }
 }
 
