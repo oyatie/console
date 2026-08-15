@@ -1149,6 +1149,10 @@ const protectedJobExecutionMetadata = {
   "company-conformance": {},
   "generated-face-authority": {},
   backend: {
+    // Path-class skip proof on this job inherits defaults.run.working-directory=backend.
+    // On docs-only tips (run_heavy=false) that step runs BEFORE checkout, so GHA fails with
+    // "No such file or directory .../backend" unless the skip step sets working-directory: ".".
+    // This lane forces run_heavy via a scripts/ touch until that ci.yml override lands.
     env: {
       DATABASE_URL: "postgres://postgres:postgres@localhost:5432/console_ci",
       SQLX_OFFLINE: "true",

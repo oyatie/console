@@ -1,6 +1,6 @@
 {
   "schema_version": "console-jurisdiction-register-v2",
-  "last_refreshed": "2026-08-12T07:10:00-04:00",
+  "last_refreshed": "2026-08-14T20:55:00-04:00",
   "target_jurisdiction_set": [
     "KR"
   ],
@@ -1026,5 +1026,5 @@
     "historical_implementation_freeze_ref": "refs/tags/archive/pre-pivot-implementation-freeze-2026-07-24",
     "candidate_evidence_status": "HOLD"
   },
-  "authority_train_note": "Refreshed with the console-90h (#766) authority tip — single-T remint on product C 6169949b8ca5 (EXITED→ACTIVE|UNKNOWN clears legacy exit_date + executed-tests attr lock; restack after #767). No jurisdiction, control, or coverage claim changed in this commit."
+  "authority_train_note": "Refreshed with the ledger close for console-5yn / console-qjb open-bead prose (#768) \u2014 authority tip T (ledger close entry) on candidate C (register + documentation manifests + ci-preflight comment), restacked onto main 97a45cfc7f937154eeed27f457e6ee50851c4229. Records CLOSED via #767 / 4417bb377 (5yn) and already-on-tip #703 (qjb). No jurisdiction, control, or coverage claim changed in this commit."
 }

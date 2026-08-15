@@ -7,6 +7,7 @@
 **Not product authority.** Clears no HOLD. No migration, no new dependency, no production promotion.
 **Head SHA (authority tip parent / candidate C):** `d37897aa5c56fffffc5c05cabfed173baaa9877e`
 **(Prior reviewed tip before finish-lane product commit):** `c6dea4d2075e42b0e4c3006e8a1809c5f646c367`
+**Close base:** `97a45cfc7f937154eeed27f457e6ee50851c4229` (`origin/main`, #783)
 **Review identities:** Codex connector automated review on PR #620 (7 threads, all resolved);
 Cursor-native finish/self-critic lane on worktree `console-integration` (no CLI critic wrapper).
 **Authority train note:** Finish-lane product (Buck `RESOURCE_CONFIG`, regenerated BUCK, class-sweep
@@ -19,6 +20,8 @@ Recorded separately for each lane because AGENTS.md binds review and recovery to
 candidate. Shared CI/Buck wiring that landed with this tip is listed once under Verification.
 
 ### `console-qjb` (contracts `$ref` composition)
+
+**Status:** CLOSED already-on-tip (GH #703); product on main via #620 / later Fragment work — no open residual in this ledger.
 
 | Field | Record |
 |---|---|
@@ -36,7 +39,7 @@ candidate. Shared CI/Buck wiring that landed with this tip is listed once under 
 | Blast radius | One schema property in `backend/openapi/openapi.yaml`; unit tests in `backend/crates/logistics/rest/`; CI domain-unit wiring + Buck resource metadata so the new test actually builds and runs. |
 | Detection | `cargo test -p console-logistics-rest --lib` — `published_schema_and_validator_agree_on_concrete_references` (1 passed); oracle proved RED by reverting to weak `^evidence://`. |
 | Rollback | Revert the logistics/OpenAPI/CI/Buck commits; constants 19/411/class remain in validator + migration 0212 until republished together. |
-| Stop conditions | Retyping 19/411/class into a fourth site; claiming `check:ci-preflight` inherited while `ci.yml` changed; full Unicode class enumeration or YAML-parser `$ref` totality without the tracked beads (`console-5yn`, `console-ann`). |
+| Stop conditions | Retyping 19/411/class into a fourth site; claiming `check:ci-preflight` inherited while `ci.yml` changed; full Unicode class enumeration or YAML-parser `$ref` totality without the tracked bead (`console-ann`). (`console-5yn` CLOSED via squash-merge #767 / `4417bb377`.) |
 
 ## Summary
 
@@ -86,10 +89,11 @@ their cause. A partial control is defensible; a partial control describing itsel
 is the exact failure this crate exists to prevent in published contracts, and it had
 committed that failure in its own module doc.
 
-Two of the logistics three are tracked as `console-5yn`, including the sharper one: the
+Two of the logistics three were tracked as `console-5yn`, including the sharper one: the
 agreement corpus derives from the published pattern it audits, so the two sides are not
-independent. The third — `gen_first_party.py` crashing on the crate's first `#[cfg(test)]`
-module — is fixed here.
+independent. That bead is CLOSED via squash-merge #767 (`4417bb377`); GH #691 closed with it.
+The third — `gen_first_party.py` crashing on the crate's first `#[cfg(test)]` module — is
+fixed here.
 
 ## Why one PR and not two
 
@@ -128,6 +132,27 @@ so one result covers the class. Its oracle was proved before it was wired: rever
 schema to the old weak `^evidence://` fails it with a concrete counterexample —
 `published {pattern: "^evidence://", minLength: None, maxLength: None} accepts=true, the server
 accepts=false. Candidate: "evidence://aaaaaaa"` — eighteen characters, one under the enforced floor.
+
+## Ledger-close verification (2026-08-14)
+
+Recorded at the close of `console-5yn` / `console-qjb` open-bead prose, on rebase base
+`97a45cfc7f937154eeed27f457e6ee50851c4229` (`origin/main`, #783). The closure adds disposition
+only; the candidate-bound evidence recorded above is unchanged.
+
+| Command | Result |
+|---|---|
+| `git diff --check` | clean |
+| `npm run check:doc-manifest` | OK (448 markdown files) |
+| `npm run check:doc-links` | OK (448 markdown files) |
+| `npm run check:doc-citations` | `docs/ideas/ecosystem-plan-DRAFT.md`: 679 citations, 0 BROKEN / 0 UNVERIFIABLE / 19 MISSING (nonfatal). `docs/program/false-green-gate-holes.md`: 38 citations, 0 BROKEN / 0 UNVERIFIABLE / 0 MISSING |
+| `npm run check:adrs` | 39 ADRs, 6 design notes |
+| `npm run test:adrs` | 29 passed, 0 failed |
+| `npm run check:foundation-gates` | PASS |
+| `npm run test:foundation-gates` | 6 passed, 0 failed |
+| `npm run check:ci-preflight` | PASS |
+| `npm run test:verify` | 13 passed, 0 failed |
+| `npm run verify` | PASS (fast tier) |
+| `node scripts/console/simulate-main-gate.mjs <lane-worktree> <authority-tip> 97a45cfc7f937154eeed27f457e6ee50851c4229` | MAIN BOOTSTRAP GATE: PASS — C and T both pass the pinned SSH signature, `C..T` is authority-only, synthetic M tree equals T. Authenticated candidate checks ALL PASS (validate-console-truth-ledger STRUCTURALLY_VALID_HOLD_PRESERVED + plan-fanout exact-M admission) on a clean detached C worktree. (`<authority-tip>` is the commit containing this ledger, so its SHA is not inlined; base is pinned to `97a45cfc7f937154eeed27f457e6ee50851c4229`.) |
 
 ## HOLDs remaining
 
