@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.3.7](https://github.com/jason931225/console/compare/v0.3.6...v0.3.7) (2026-08-16)
+
+
+### Features
+
+* **console:** tracked lane-receipt validator wired into CI preflight (W1.0 pilot) ([#770](https://github.com/jason931225/console/issues/770)) ([d29be0d](https://github.com/jason931225/console/commit/d29be0d73d5d4f6360f8693fc9e0b9e36aef8485))
+* **db:** 0218 employee_leave_balances schema (hee2 PR-1) ([#783](https://github.com/jason931225/console/issues/783)) ([97a45cf](https://github.com/jason931225/console/commit/97a45cfc7f937154eeed27f457e6ee50851c4229))
+* **hr:** L5-HR UUID attributes + ReassignOrgUnit→hr.transfer (console-y0n) ([#761](https://github.com/jason931225/console/issues/761)) ([681540d](https://github.com/jason931225/console/commit/681540df427c5d64ecc178fbcc1c8bbd11416634))
+* **identity:** role-set compare, no-op replay conflict, deactivated-region 409 ([#776](https://github.com/jason931225/console/issues/776)) ([de8fc64](https://github.com/jason931225/console/commit/de8fc6432bd0e24f4033a6ad8e403a644dc87a7e))
+* **p4:** retarget Employment owner to the canonical adapter ([#775](https://github.com/jason931225/console/issues/775)) ([86c35b1](https://github.com/jason931225/console/commit/86c35b19035cbda3aba12f43df2c17b9d77a0892))
+* **peas:** employment port routing ([#781](https://github.com/jason931225/console/issues/781)) ([fb9ae31](https://github.com/jason931225/console/commit/fb9ae31e6045b6a9beaa8b6dde893890e693d6ee))
+* wave-3 admit — 7sx L5-ORG + xxp L5-JOB ([#756](https://github.com/jason931225/console/issues/756)) ([9e29b62](https://github.com/jason931225/console/commit/9e29b627d401db093da9b000a9a2c20002f34037))
+* **wave4:** ADR-0030 §7 backend — aggregate path + OpenAPI generator ([#755](https://github.com/jason931225/console/issues/755)) ([84655ce](https://github.com/jason931225/console/commit/84655ce7881c764bbe81081b193cdd2d85d523c1))
+
+
+### Bug Fixes
+
+* bound release proof head polling ([#787](https://github.com/jason931225/console/issues/787)) ([0e7cfc0](https://github.com/jason931225/console/commit/0e7cfc065f46620982479852b580b0b70236f678))
+* **cursor:** ban cross-agent git process/lock races ([#757](https://github.com/jason931225/console/issues/757)) ([111e65a](https://github.com/jason931225/console/commit/111e65a1835ad6078a04f29abaff82c505e2418d))
+* **employment:** freeze gate + append-only backdating on the port (rte/r25) ([#780](https://github.com/jason931225/console/issues/780)) ([6a7b27b](https://github.com/jason931225/console/commit/6a7b27b5ff5174db35d04de02b2a1ce2bce98e3d))
+* **gates:** decouple G004 policy contract prose ([#771](https://github.com/jason931225/console/issues/771)) ([dea1f91](https://github.com/jason931225/console/commit/dea1f91bf6c336319fc718f9d9f3eb2c2047f63c))
+* **gates:** prototype-chain lookup census (console-g14a) ([#762](https://github.com/jason931225/console/issues/762)) ([ae699da](https://github.com/jason931225/console/commit/ae699daed42d0b7dd1a3c833e237eff1bd6dd90f))
+* **hardening:** fail closed on source/./timeout argv0 wrappers of real executors ([#778](https://github.com/jason931225/console/issues/778)) ([f0f8c1d](https://github.com/jason931225/console/commit/f0f8c1d63b04bca9f260c6e7238c2590b3cc1b51))
+* **hr:** B-EMP-A employment containment (31e/2kd/0hf) ([#779](https://github.com/jason931225/console/issues/779)) ([0da6c2f](https://github.com/jason931225/console/commit/0da6c2fdcc6eadc104527338a4772248f843d43d))
+* **hr:** clear exit_date on reactivation (console-90h) ([#766](https://github.com/jason931225/console/issues/766)) ([b2acd80](https://github.com/jason931225/console/commit/b2acd80c4d7f340199b9147f6df9318d74af5f8d))
+* **hr:** route employee-row creation through the Employment port (u6ih part-1) ([#782](https://github.com/jason931225/console/issues/782)) ([7fc04e3](https://github.com/jason931225/console/commit/7fc04e3e4167817f6ebc497cb5b329185c2eed5c))
+* **identity:** gate replace_user_branches on actor BranchScope (console-o498) ([#759](https://github.com/jason931225/console/issues/759)) ([5770c04](https://github.com/jason931225/console/commit/5770c04c469a842d813ddef6bd2f807e898dd3fc))
+* **logistics:** POD corpus from enforced scheme (console-5yn) ([#767](https://github.com/jason931225/console/issues/767)) ([4417bb3](https://github.com/jason931225/console/commit/4417bb377ef65eefc513dad217f886089045eba9))
+* **orgchange:** refuse CreateBranch/RenameBranch under deactivated region (console-k6wm) ([#763](https://github.com/jason931225/console/issues/763)) ([950b3b1](https://github.com/jason931225/console/commit/950b3b100f9c619ab920b30110aa14e2e17567df))
+* **payroll:** refuse changed provenance on PayRun conflict; recheck drain period gate ([#777](https://github.com/jason931225/console/issues/777)) ([f9a88ed](https://github.com/jason931225/console/commit/f9a88ed192fb7c0588c9c6ba16ea64da84f2887d))
+* residual admit — kwm §60 pin, cvh UI sight (+clippy), gc9z LifecycleError, 0lj branch-removal ([#754](https://github.com/jason931225/console/issues/754)) ([e07fffd](https://github.com/jason931225/console/commit/e07fffde0a0b41ea34b1d703ae51b3c5e09fdb8c))
+
 ## [0.3.6](https://github.com/jason931225/console/compare/v0.3.5...v0.3.6) (2026-08-11)
 
 
