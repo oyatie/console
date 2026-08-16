@@ -293,7 +293,7 @@ for (const releaseNeedle of [
 ]) {
   requireIncludes(".github/workflows/image-release.yml", releaseNeedle, `image release gate: ${releaseNeedle}`);
 }
-requireIncludes(".github/workflows/release-please.yml", "RELEASE_PLEASE_TOKEN", "release-please token fallback documented");
+requireIncludes(".github/workflows/release-please.yml", "RELEASE_PLEASE_TOKEN", "release-please branch transport token documented");
 requireIncludes("backend/rust-toolchain.toml", "channel = \"1.97.1\"", "Rust toolchain pinned to 1.97.1");
 
 // Enterprise UX benchmark matrices stay repo-owned even though the browser

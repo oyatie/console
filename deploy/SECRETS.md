@@ -363,8 +363,12 @@ during native-app rollout.
 
 ## CI / release secrets (GitHub repo settings)
 
-- `RELEASE_PLEASE_TOKEN` — fine-grained PAT (contents:write) so the release tag
-  triggers `image-release.yml` + `release.yml` (see `release-please.yml`).
+- `RELEASE_PLEASE_TOKEN` — required scheduling-capable repository token with
+  Contents read/write, used only by protected convergence for the final
+  force-with-lease update of the bot-created release branch. It is not passed to
+  Release Please or used for tag creation. Without it, required PR workflows do
+  not schedule and the release PR remains blocked (see `release-please.yml` and
+  `docs/CI-GATES.md`).
 - Mobile signing + store credentials — see `docs/release/SECRETS.md`.
 - GHCR push uses the built-in `GITHUB_TOKEN`; image signing is keyless (OIDC) —
   no secret needed.

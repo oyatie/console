@@ -17,11 +17,10 @@ jobs for the touched surfaces are green.
 
 ### Stable required-context migration
 
-At release `0.3.2`, branch protection requires the ten CI leaf contexts, five
-Security leaf contexts, and `authenticate-console-authority` as sixteen exact,
-GitHub-Actions-app-bound checks. The leaf proofs remain required while the
-workflows introduce the shadow contexts `Required / CI` and
-`Required / Security`.
+Current `main` branch protection requires exactly three GitHub-Actions-app-bound
+contexts: `Required / CI`, `Required / Security`, and
+`authenticate-console-authority`. The leaf jobs remain visible evidence inside
+their workflows but are not separately required contexts.
 
 `Required / CI` is a same-workflow strict-success aggregate over the exact ten CI
 jobs. `Required / Security` applies the same rule to the exact five Security
@@ -30,74 +29,126 @@ or is skipped. Their dependency and result sets are mutation-tested and locked b
 the repository preflight gates. Neither aggregate checks out repository content
 or executes repository scripts; each runs only its locked status comparison.
 
+The PostgreSQL reachability aggregate has three explicit states: a preflight
+failure is a successful non-evaluation (the required aggregate reports the
+preflight red once), a thin path class emits a successful skip proof, and a heavy
+path class requires all five PostgreSQL facets to succeed. This prevents skipped
+facets from being misreported as a separate database or product failure.
+
 The protected-target authority job remains a separate required boundary. Do not
 combine it with candidate-controlled CI/Security workflows or duplicate an
-aggregate display name across workflows. Only after both aggregates pass on the
-exact pull-request train and its post-merge `main` commit may branch protection
-be atomically migrated to the three stable contexts: `Required / CI`,
-`Required / Security`, and `authenticate-console-authority`. Retain all existing
-leaf requirements until that shadow evidence exists, bind the replacements to
-the GitHub Actions app, preserve strict up-to-date checks, and immediately read
-the live rule back after mutation.
+aggregate display name across workflows. Preserve the three exact required
+contexts, strict up-to-date checks, and their GitHub Actions app binding; any
+future branch-protection mutation requires separate authority and live readback.
 
 ## Review evidence gate
 
 ## Console authority bootstrap
 
 `Console authority bootstrap` is a protected-`main` `pull_request_target`
-gate for console authority trains targeting `main`. It intentionally checks out only
-protected `main` code with the complete Git graph, fetches PR Git objects without
-checking them out, verifies signed candidate
-`C` and direct authority tip `T` against the pinned SSH signer, and treats the
-GitHub synthetic merge `M` only as an unsigned structural object. Git commands and
-candidate subprocesses run with a sanitized Git environment that ignores inherited
-Git config and `HOME`/XDG configuration. Only after that
-does it create a detached `C` worktree to run the candidate validator, planner, and
-their unit tests.  It has no secrets, cache restore, npm install, or PR executable
-step before authentication. This bootstrap must remain protected-target code; a
+router for every PR targeting `main`. The required context keeps its historical
+`authenticate-console-authority` name for branch-protection compatibility; for
+ordinary PRs it is a structural coordinate check, not commit-author authentication.
+It checks out only the exact protected event base `B`, fetches the fixed
+`refs/heads/main` and numeric `refs/pull/<N>/head` refs without checking out the
+candidate, and requires event, fetched, checked-out, and live GitHub base/head
+coordinates to agree. `B` must be an ancestor of the exact PR head `H`, so both
+one-commit and multi-commit PRs are admissible without a synthetic merge, C/T
+train, signing policy, authority-ledger change, or signature. The gate repeats
+the protected-main, pull-head, and live-PR reads after validation; movement fails
+closed and the replacement PR event must establish a fresh result.
+
+Git commands run with a sanitized environment that ignores inherited Git config
+and `HOME`/XDG configuration. The workflow has no repository secret, write
+permission, OIDC, cache restore, npm install, candidate checkout, candidate
+subprocess, candidate-controlled filesystem write, or evidence artifact. Its read-only `GITHUB_TOKEN`
+reads live pull-request metadata and, only for the reserved release route, Actions
+run/job metadata. Candidate behavior belongs to `Required / CI` and
+`Required / Security`; candidate bytes are never executed in the protected-target
+context. Ordinary fork and Dependabot heads use the same structural rule. GitHub
+repository merge permission and review governance—not this context—authorize who
+may merge ordinary bytes. This router must remain protected-target code; a
 workflow supplied by the PR cannot establish its own trust root.
 
-**Release-please exception (fail-closed class, not a broad unsigned allow):** when the
-PR tip is exactly a github-actions[bot] / GitHub-noreply commit whose subject matches
-`chore(<scope>): release X.Y.Z` and whose parent..tip diff changes
-`.release-please-manifest.json` + `CHANGELOG.md` (required) and may also change the
+**Release-please route (fail-closed class, never an ordinary fallback):** any
+GitHub Actions bot creator, `release-please*` head ref, release commit envelope,
+or `.release-please-manifest.json` diff reserves this route. A near-match fails;
+it cannot downgrade to ordinary structural admission. The PR tip must be an exact
+github-actions[bot] / GitHub-noreply commit whose subject
+matches `chore(<scope>): release X.Y.Z`; its parent..tip diff must change
+`.release-please-manifest.json` + `CHANGELOG.md` and may also change the complete
 documentation custody pair `docs/documentation-manifest.seed.json` +
-`docs/documentation-index.json` (all-or-nothing; regular mode-100644 modifications),
-and the GitHub event author is `github-actions[bot]` with a
-`release-please--branches--main--components--*` head ref, the bootstrap admits that tip
-without pinned SSH signatures and skips the detached-C validator suite. Custody paths
-exist so CHANGELOG blob_sha can converge with `check:doc-manifest` /
-`check:doc-links`; `release-please.yml` rewrites the tip through
-`converge-release-please-doc-custody.mjs` when needed (protected generator only;
-`RELEASE_PLEASE_TOKEN` required for rewrites so Required checks schedule). Any other path, forged human PR
-author, or non-release subject falls back to the SSH C/T train and fails closed. CI
-`check:console-truth-ledger` / `plan-fanout` share the same class via
-`verify-console-authority-train.mjs`. See bead `console-9ry` /
-`process.release-candidate-unsigned`.
+`docs/documentation-index.json` (regular mode-100644 modifications only). The
+same-repository head ref must match
+`release-please--branches--main--components--*`.
 
-The five required Security contexts inspect a candidate checkout and therefore
+Commit headers, a PR actor, and a generic GitHub Actions status/check are not
+release authority. The bootstrap additionally polls GitHub's native run and job
+records and requires exactly one successful job named
+`release-authority-proof pr=<N> head=<T>` in the current successful attempt of
+the pinned `Release Please` workflow (`.github/workflows/release-please.yml`,
+workflow ID `296023729`, repository ID `1269693002`). That run must be a `push`
+run on `main` at exactly `T`'s parent. The gate
+uses GitHub's exact `head_sha` filter, reads every reported result page, and
+selects the globally highest workflow run number for that parent. A newer pending
+or failed protected run cannot be bypassed by an older success while a later
+successful recovery run can supersede an earlier failure. The gate
+repeats that exact paginated newest-run query after reading the proof job and
+requires the same run ID, run number, current attempt, and terminal state. It
+then reads the live PR head again and fails if either the run or PR moved. A
+human-owned PAT may therefore be the transport sender without becoming an
+authority principal.
+
+The protected producer always gives the pinned Release Please action the default
+`GITHUB_TOKEN`. Before any mutation, protected code binds the action's exact PR
+output to the live bot-created PR, `main` parent, exact two-file diff, bot commit
+identity, strictly increasing canonical manifest, and CHANGELOG bytes exactly
+derived from the action's release notes plus the parent changelog. It then runs
+the protected documentation-manifest generator in a data-only worktree.
+`RELEASE_PLEASE_TOKEN` is read only by the protected convergence process, removed
+from every non-transport child-process environment, and supplied to the final
+force-with-lease through a private one-shot askpass helper. The token is absent
+from Git argv and command-failure text; it is never passed to Release Please,
+checkout, API reads, or the proof job. The rewrite derives a validated source-tip
+committer epoch, advances it by one second, and refuses an unchanged tip, so even
+a tree-equivalent same-clock rewrite advances the branch and emits the PR event
+that schedules required workflows.
+Configure that repository secret
+as a least-privilege token able to update the release branch, but do not provision
+or rotate it as part of a source-only change without separate secret authority.
+If a protected run failed only because the secret was absent, provision it after
+the workflow source is merged, then use **Re-run failed jobs** (or **Re-run all
+jobs**) on that same Release Please run while GitHub still permits reruns.
+Any byte, path, mode, parent, identity, run, attempt, or live-head mismatch fails
+closed.
+
+General CI does not perform live signature, evidence, or authority-train admission.
+It retains the historical authority, truth-ledger, and fanout validators as
+ordinary candidate-content regression suites.
+Its separate `release-metadata-only` path class is thin only for the exact required
+manifest/changelog pair, optionally with the complete custody pair and no other
+paths. Changed paths come from NUL-delimited Git output and remain byte-exact: no
+trimming or path normalization may alias a hostile filename to an allowed one.
+That class binds the exact event base and PR-head/push-head commits, requires both
+manifests and the head changelog to be regular mode-100644 blobs, requires the
+canonical one-package manifest serialization and a strictly increasing stable
+SemVer, and requires the leading changelog release to match the head manifest. It
+then runs the documentation manifest and link proofs while the
+protected-target context independently authenticates the bot identity and graph.
+See bead `console-9ry` / `process.release-candidate-unsigned`.
+
+The five Security jobs inspect a candidate checkout and therefore
 are not, by themselves, an isolation boundary against deliberately hostile PR
 code. Their workflow shape and proof order are locked against accidental drift,
 but merge admission additionally depends on `authenticate-console-authority`,
-which runs protected-target code and rejects every PR—including forks and
-Dependabot—whose exact C/T train is not signed by the pinned authority (except the
-narrow release-please class above). Never
-remove that required-context composition or treat a green scanner context alone
-as authentication of an untrusted contribution.
+which runs protected-target code and binds the exact ordinary base/head coordinates
+or the narrower Release Please provenance class above. That context does not
+authenticate an ordinary contributor or make candidate-controlled scanner code a
+trust root. Never remove the three required-context composition or treat a green
+scanner context alone as authentication of untrusted contribution bytes.
 
-On a closed, merged same-repository `main` PR, the separate squash-binding job first
-checks out exact `S`, verifies that `HEAD` is `S`, then hook-disabled detaches to
-protected `S^` before it invokes any repository script. It verifies that the
-one-parent squash commit `S` is bound to the signed `C`/`T` authority train: its only
-parent is the trusted pre-merge base and its tree is exactly `T`'s tree. It emits the non-release
-`console-squash-binding-v1` receipt with `TREE_BOUND_HOLD_PRESERVED` and release
-disposition `HOLD`; it never checks out or executes `T` or `M`. `S` is checked out
-only as an object/tree source, `HEAD` is verified as `S`, and the job then
-hook-disabled detaches to `S^` before any repository code executes, so no repository
-code from `S` runs. Before binding,
-the protected `S^` process fetches `refs/pull/<number>/head` into a private namespace
-and requires its SHA to equal the closed-event authority-tip SHA, so a deleted PR head
-branch cannot make the signed `T` object unavailable.
+The protected-target workflow handles only open-PR coordinate/provenance events
+and emits no post-merge receipt, signature, or repository evidence.
 
 For user-facing features, PR/review evidence must prove the shipped workflow, not
 just the transport seam. API endpoint, handler, and contract tests are necessary
@@ -139,6 +190,9 @@ SQLX_OFFLINE=true cargo test -p console-platform-provisioning --test dev_princip
 npm run check:platform-contract-drift     # platform route inventory vs committed openapi.yaml
 npm run test:employee-import-contract
 npm run test:ontology-write-precondition
+
+# Release-metadata content gate (only for an exact release tip/base pair)
+node scripts/check-release-metadata.mjs --base <base-sha> --head <release-tip-sha>
 
 # Root repository gates (from repo root after npm ci)
 npm run test:adrs
@@ -235,7 +289,6 @@ names only, not incidental workflow prose or runner setup text.
 
 - `check:adrs`
 - `check:ci-preflight`
-- `check:console-truth-ledger`
 - `check:doc-citations`
 - `check:doc-manifest`
 - `check:gate-input-provenance`

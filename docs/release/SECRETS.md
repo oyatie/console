@@ -33,16 +33,18 @@ pushes to `main`.
   pull requests** enabled. The workflow-level `contents: write` and
   `pull-requests: write` permissions are not enough when that repo setting is
   disabled.
-- Optional `RELEASE_PLEASE_TOKEN`: fine-grained PAT used instead of
-  `GITHUB_TOKEN` when automatic downstream tag workflows should chain after
-  release-please creates a tag. Grant repository permissions:
-  - Contents: Read and write
-  - Pull requests: Read and write
+- Required `RELEASE_PLEASE_TOKEN`: scheduling-capable, least-privilege repository
+  token used only for the protected convergence step's final force-with-lease
+  update of the bot-created release branch. Grant **Contents: Read and write**;
+  the token is not passed to the Release Please action, checkout, API reads, tag
+  creation, or the native proof job.
 
-Without `RELEASE_PLEASE_TOKEN`, release PR/tag creation can still work through
-`GITHUB_TOKEN` after the repo setting above is enabled, but tag-triggered image
-and mobile release workflows must be triggered manually because GitHub suppresses
-recursive workflow triggers from `GITHUB_TOKEN`.
+The Release Please action retains `GITHUB_TOKEN` so the PR creator remains
+`github-actions[bot]`. Without `RELEASE_PLEASE_TOKEN`, protected convergence
+fails closed: it cannot publish the deterministic custody rewrite, required PR
+workflows are not scheduled, and the release PR remains blocked. After adding or
+rotating the secret, re-run the failed Release Please job (or all jobs in that
+run) while GitHub still permits reruns.
 
 ### Android / Play Internal Track
 

@@ -40,22 +40,6 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Derive exact console C/T/M train
-        id: derive
-        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && github.event_name == 'pull_request' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          CONSOLE_SYNTHETIC_MERGE_SHA="$(git rev-parse "$GITHUB_SHA^{commit}")"
-          test "$(git rev-parse HEAD)" = "$CONSOLE_SYNTHETIC_MERGE_SHA"
-          CONSOLE_AUTHORITY_TIP_SHA="$(git rev-parse "$CONSOLE_SYNTHETIC_MERGE_SHA^2")"
-          CONSOLE_CANDIDATE_SHA="$(git rev-parse "$CONSOLE_AUTHORITY_TIP_SHA^")"
-          {
-            printf 'CONSOLE_CANDIDATE_SHA=%s\n' "$CONSOLE_CANDIDATE_SHA"
-            printf 'CONSOLE_AUTHORITY_TIP_SHA=%s\n' "$CONSOLE_AUTHORITY_TIP_SHA"
-            printf 'CONSOLE_SYNTHETIC_MERGE_SHA=%s\n' "$CONSOLE_SYNTHETIC_MERGE_SHA"
-          } >> "$GITHUB_ENV"
-
       - name: Set up Node.js
         id: setup-node
         if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
@@ -83,7 +67,40 @@ jobs:
           set -euo pipefail
           node scripts/check-ci-preflight.mjs --emit-path-class
 
-      # DotSlash + Rust follow classification so docs-only can skip them without
+      - name: Release metadata semantic regression
+        id: release-metadata-regression
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
+        run: node --test scripts/check-release-metadata.test.mjs
+
+      - name: Release metadata semantic gate
+        id: release-metadata
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.path_class == 'release-metadata-only' }}
+        shell: bash
+        env:
+          RELEASE_METADATA_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          RELEASE_METADATA_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/check-release-metadata.mjs \
+            --base "$RELEASE_METADATA_BASE_SHA" \
+            --head "$RELEASE_METADATA_HEAD_SHA"
+
+      - name: Release metadata documentation link tests
+        id: release-doc-link-tests
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.path_class == 'release-metadata-only' }}
+        run: node --test scripts/check-doc-links.test.mjs
+
+      - name: Release metadata documentation manifest gate
+        id: release-doc-manifest
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.path_class == 'release-metadata-only' }}
+        run: npm run check:doc-manifest
+
+      - name: Release metadata documentation local-link gate
+        id: release-doc-links
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.path_class == 'release-metadata-only' }}
+        run: npm run check:doc-links
+
+      # DotSlash + Rust follow classification so thin path classes can skip them without
       # reading an empty steps.path_class output (GHA evaluates if before later steps).
       - name: Install pinned DotSlash runtime
         id: dotslash
@@ -155,16 +172,6 @@ jobs:
               ;;
           esac
 
-      - name: Console truth-ledger exact-M admission
-        id: truth-ledger-admission
-        if: ${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}
-        run: npm run check:console-truth-ledger
-
-      - name: Console fanout planner exact-M admission
-        id: fanout-admission
-        if: ${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}
-        run: node scripts/console/plan-fanout.mjs --candidate "$CONSOLE_CANDIDATE_SHA" --authority-tip "$CONSOLE_AUTHORITY_TIP_SHA" --synthetic-merge "$CONSOLE_SYNTHETIC_MERGE_SHA"
-
       - name: CI preflight contract tests
         id: ci-preflight-tests
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
@@ -188,7 +195,7 @@ jobs:
       - name: Console PR authority bootstrap regression
         id: pr-authority-bootstrap
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
-        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs
+        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs
 
       - name: Executed-tests baseline set regression
         id: executed-tests-baseline
@@ -702,14 +709,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Preflight failure non-evaluation
+        if: ${{ needs.preflight.result != 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'PostgreSQL reachability not evaluated because preflight result=%s\n' "${{ needs.preflight.result }}"
       - name: Path-class skip proof
-        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Require all PostgreSQL reachability facets
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' }}
         run: |
           test "${{ needs.postgres-reachability-app.result }}" = success &&
           test "${{ needs.postgres-reachability-platform.result }}" = success &&

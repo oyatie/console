@@ -1,10 +1,10 @@
 /**
  * Fail-closed admission class for release-please bot candidates.
  *
- * Product authority trains still require pinned SSH signatures on C and T.
- * Release Please cannot produce those signatures (GitHub web-flow / Actions at
- * best). This module admits ONLY tips that satisfy every clause below — not a
- * broad unsigned exception:
+ * Ordinary PR admission no longer uses a C/T signing train. Release-shaped PRs
+ * remain a distinct protected class because their automation provenance cannot
+ * be inferred from commit headers alone. This module classifies ONLY tips that
+ * satisfy every clause below — never a broad bot/ref exception:
  *
  * 1. Exact github-actions[bot] author + GitHub noreply committer
  * 2. Subject `chore(<scope>): release X.Y.Z`
@@ -13,9 +13,10 @@
  *    (`docs/documentation-manifest.seed.json` + `docs/documentation-index.json`)
  *    so CHANGELOG blob_sha can converge. All are regular mode-100644
  *    modifications (no adds/deletes/renames). Custody paths are all-or-nothing.
- * 4. On the pull_request_target bootstrap path: GitHub event PR author is
- *    `github-actions[bot]` and head ref matches the release-please branch pattern
- *    (commit headers alone are forgeable by a write-access collaborator)
+ * 4. On the pull_request_target bootstrap path: the same-repository head/ref
+ *    shape is combined with a native proof job from the pinned protected
+ *    Release Please run at the tip's parent. Event sender and commit headers are
+ *    not sufficient authority (a PAT transport push is human-owned).
  */
 
 import { AUTHORITY_DIFF_ARGS } from './authority-ledger-path.mjs';
@@ -40,9 +41,25 @@ function fail(message) {
   throw new Error(`release-please bot candidate: ${message}`);
 }
 
-export function assertTrustedReleasePleasePrMeta({ prAuthorLogin, prHeadRef } = {}) {
+// Compatibility validator for callers that explicitly request event metadata.
+// The protected-target admission does not treat this actor check as proof; it
+// requires the pinned native workflow proof in its own protected module.
+export function assertTrustedReleasePleasePrMeta({
+  prAuthorLogin,
+  prHeadRef,
+  eventSenderLogin,
+  prHeadRepository,
+  repository,
+} = {}) {
   if (!RELEASE_PLEASE_PR_AUTHORS.includes(prAuthorLogin)) {
     fail('PR author must be github-actions[bot] (event payload, not commit header)');
+  }
+  if (!RELEASE_PLEASE_PR_AUTHORS.includes(eventSenderLogin)) {
+    fail('event sender must be github-actions[bot] for the current release tip');
+  }
+  if (typeof repository !== 'string' || repository.length === 0
+    || typeof prHeadRepository !== 'string' || prHeadRepository !== repository) {
+    fail('PR head repository must equal the protected repository');
   }
   if (typeof prHeadRef !== 'string' || !RELEASE_PLEASE_HEAD_REF.test(prHeadRef)) {
     fail('PR head ref must match release-please--branches--main--components--*');
@@ -64,46 +81,25 @@ export function assertReleasePleaseBotIdentity(identity) {
 }
 
 /**
- * Structure-only admission for converge heal: subject + path allow-list without
- * requiring bot identity. Lets a poisoned committer/author tip be rewritten
- * when the release shape is otherwise valid; still fail-closed on sprawl.
- */
-export function assertReleasePleaseHealableStructure({ subject, changes } = {}) {
-  if (typeof subject !== 'string' || !RELEASE_PLEASE_SUBJECT.test(subject)) {
-    fail('tip subject must match chore(<scope>): release X.Y.Z');
-  }
-  assertReleasePleaseBotPathDiff(changes);
-}
-
-/**
  * Decide whether converge must rewrite the tip.
  * - noop: exact bot identity and custody already clean
- * - rewrite/identity: structure OK but author/committer poisoned (heal)
  * - rewrite/custody: identity OK but custody pair dirty
- * Path sprawl / bad subject throw (fail closed) before any rewrite plan.
+ * Poisoned identity, path sprawl, or a bad subject always throw before mutation.
  */
 export function releasePleaseCustodyRewritePlan({ identity, pathChanges, dirtyCustodyPaths } = {}) {
   if (!identity || typeof identity !== 'object') fail('commit identity is unavailable');
-  assertReleasePleaseHealableStructure({ subject: identity.subject, changes: pathChanges });
+  assertReleasePleaseBotIdentity(identity);
+  assertReleasePleaseBotPathDiff(pathChanges);
   if (!Array.isArray(dirtyCustodyPaths)) fail('dirty custody path list is unavailable');
   for (const path of dirtyCustodyPaths) {
     if (!RELEASE_PLEASE_CUSTODY_PATHS.includes(path)) {
       fail(`unexpected dirty path outside custody pair: ${path}`);
     }
   }
-  let identityOk = true;
-  try {
-    assertReleasePleaseBotIdentity(identity);
-  } catch {
-    identityOk = false;
-  }
-  if (identityOk && dirtyCustodyPaths.length === 0) {
+  if (dirtyCustodyPaths.length === 0) {
     return Object.freeze({ action: 'noop' });
   }
-  return Object.freeze({
-    action: 'rewrite',
-    reason: identityOk ? 'custody' : 'identity',
-  });
+  return Object.freeze({ action: 'rewrite', reason: 'custody' });
 }
 
 export function assertReleasePleaseBotPathDiff(changes) {
@@ -159,13 +155,13 @@ export function classifyReleasePleaseBotTip(ops, tipSha) {
 }
 
 /**
- * Dual of verifySquashBinding for a release-please tip that already landed as a
- * one-parent main squash S. Admits S as the next train's candidate C without SSH
+ * Historical regression seam for a release-please tip that already landed as a
+ * one-parent main squash S. It recognizes S as a tree-bound candidate
  * when a previously classifiable tip T0 still resolves with:
  *   parents(S) === [T0.candidateSha] && tree(S) === tree(T0)
  *
- * Fail-closed: forged unsigned C off main, wrong identity tip, path sprawl tip,
- * missing T0, or tree/parent drift returns null (callers keep the SSH bar).
+ * Fail-closed: a tip off main, wrong identity, path sprawl, missing T0, or
+ * tree/parent drift returns null. This is not live ordinary-PR admission.
  */
 export function classifyReleasePleaseSquashBinding(ops, squashSha) {
   if (!SHA.test(squashSha ?? '')) return null;
@@ -174,7 +170,7 @@ export function classifyReleasePleaseSquashBinding(ops, squashSha) {
   if (!Array.isArray(parents) || parents.length !== 1 || !SHA.test(parents[0])) return null;
   const preMergeBaseSha = parents[0];
 
-  // Protected history only — a PR-local forged C must not skip the SSH bar.
+  // Protected history only — a PR-local object must not look like a landed squash.
   if (typeof ops.mainTip !== 'function' || typeof ops.isAncestor !== 'function') return null;
   let mainTip;
   try { mainTip = ops.mainTip(); } catch { return null; }
@@ -214,14 +210,33 @@ export function classifyReleasePleaseSquashBinding(ops, squashSha) {
 
 /**
  * Admit a release-please bot tip as the authority tip of a structural M.
- * When `requirePrMeta` is true (bootstrap), event author/ref are mandatory.
+ * When `requirePrMeta` is true, legacy event author/ref checks are mandatory.
+ * Protected-target admission uses `requirePrMeta: false` only after validating
+ * its stronger pinned native workflow proof.
  */
-export function verifyReleasePleaseBotTrain(ops, { headSha, mergeSha, prAuthorLogin, prHeadRef, requirePrMeta = false }) {
+export function verifyReleasePleaseBotTrain(ops, {
+  headSha,
+  mergeSha,
+  prAuthorLogin,
+  prHeadRef,
+  eventSenderLogin,
+  prHeadRepository,
+  repository,
+  requirePrMeta = false,
+}) {
   if (!SHA.test(headSha ?? '')) fail('PR head must be a lowercase 40-character SHA');
   if (!SHA.test(mergeSha ?? '')) fail('PR merge must be a lowercase 40-character SHA');
   const classified = classifyReleasePleaseBotTip(ops, headSha);
   if (!classified) fail('tip is not a release-please bot docs-only candidate');
-  if (requirePrMeta) assertTrustedReleasePleasePrMeta({ prAuthorLogin, prHeadRef });
+  if (requirePrMeta) {
+    assertTrustedReleasePleasePrMeta({
+      prAuthorLogin,
+      prHeadRef,
+      eventSenderLogin,
+      prHeadRepository,
+      repository,
+    });
+  }
   if (!ops.hasCommit(mergeSha)) fail('PR merge object is unavailable');
   const mergeParents = ops.parents(mergeSha);
   if (!Array.isArray(mergeParents) || mergeParents.length !== 2 || mergeParents[1] !== headSha) {

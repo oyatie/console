@@ -11,6 +11,7 @@ import {
   evaluateCiPreflight,
   emitPathClassGithubOutput,
   listChangedPathsForPathClass,
+  parseNulDelimitedChangedPaths,
   resolvePathClassFromEnv,
 } from "./check-ci-preflight.mjs";
 
@@ -215,7 +216,7 @@ function swapNamedSteps(source, job, firstName, secondName) {
 }
 
 describe("CI preflight contract", () => {
-  it("classifies docs-only fail-closed and keeps every other class heavy", () => {
+  it("classifies docs-only narrowly and keeps unmapped or product paths heavy", () => {
     assert.deepEqual(classifyChangedPaths(["docs/program/foo.md"]), {
       pathClass: "docs-only",
       docsOnly: true,
@@ -226,11 +227,58 @@ describe("CI preflight contract", () => {
     assert.equal(classifyChangedPaths(["docs/a.md", "backend/app/src/lib.rs"]).pathClass, "mixed");
     assert.equal(classifyChangedPaths([".github/workflows/ci.yml"]).pathClass, "unknown");
     assert.equal(classifyChangedPaths(["docs/a.md", "../etc/passwd"]).pathClass, "unknown");
+    assert.equal(classifyChangedPaths(["./README.md"]).pathClass, "unknown");
     assert.equal(classifyChangedPaths([]).runHeavy, true);
     assert.equal(
       resolvePathClassFromEnv({ PATH_CLASS_EVENT_NAME: "workflow_dispatch" }).runHeavy,
       true,
     );
+  });
+
+  it("classifies only the complete release metadata shape as thin", () => {
+    const releasePaths = [".release-please-manifest.json", "CHANGELOG.md"];
+    const custodyPaths = [
+      "docs/documentation-manifest.seed.json",
+      "docs/documentation-index.json",
+    ];
+    const expected = {
+      pathClass: "release-metadata-only",
+      docsOnly: false,
+      runHeavy: false,
+      reason: "release-metadata-allowlist",
+    };
+
+    assert.deepEqual(classifyChangedPaths(releasePaths), expected);
+    assert.deepEqual(classifyChangedPaths([...releasePaths, ...custodyPaths]), expected);
+
+    const changelogOnly = classifyChangedPaths([releasePaths[1]]);
+    assert.notEqual(changelogOnly.pathClass, "release-metadata-only");
+    assert.equal(changelogOnly.pathClass, "docs-only");
+    assert.equal(changelogOnly.runHeavy, false);
+    for (const custodyPath of custodyPaths) {
+      const custodyOnly = classifyChangedPaths([custodyPath]);
+      assert.notEqual(custodyOnly.pathClass, "release-metadata-only");
+      assert.equal(custodyOnly.pathClass, "docs-only");
+      assert.equal(custodyOnly.runHeavy, false);
+    }
+
+    for (const paths of [
+      [releasePaths[0]],
+      [...releasePaths, custodyPaths[0]],
+      [...releasePaths, custodyPaths[1]],
+      [...releasePaths, "README.md"],
+      [...releasePaths, ...custodyPaths, "backend/app/src/lib.rs"],
+      [...releasePaths, releasePaths[0]],
+      [releasePaths[0], ` ${releasePaths[1]}`],
+      [releasePaths[0], `${releasePaths[1]} `],
+      [`./${releasePaths[0]}`, releasePaths[1]],
+      [releasePaths[0], `./${releasePaths[1]}`],
+      [releasePaths[0], `${releasePaths[1]}\n`],
+    ]) {
+      const classified = classifyChangedPaths(paths);
+      assert.notEqual(classified.pathClass, "release-metadata-only", paths.join(", "));
+      assert.equal(classified.runHeavy, true, paths.join(", "));
+    }
   });
 
   it("empty successful changed-path list keeps runHeavy / non-docs-only", () => {
@@ -356,6 +404,108 @@ describe("CI preflight contract", () => {
     }
   });
 
+  it("preserves exact Git pathname bytes so whitespace cannot alias a release path", () => {
+    const repo = mkdtempSync(join(tmpdir(), "ci-preflight-path-bytes-"));
+    const git = (args) => {
+      const result = spawnSync("git", args, { cwd: repo, encoding: "utf8" });
+      assert.equal(result.status, 0, result.stderr || result.stdout);
+      return result;
+    };
+    try {
+      git(["init", "-q"]);
+      git(["config", "user.email", "ci-preflight@example.test"]);
+      git(["config", "user.name", "ci-preflight"]);
+      writeFileSync(join(repo, "base.txt"), "base\n");
+      git(["add", "."]);
+      git(["commit", "-qm", "base"]);
+      const base = git(["rev-parse", "HEAD"]).stdout.trim();
+
+      writeFileSync(join(repo, ".release-please-manifest.json"), '{}\n');
+      writeFileSync(join(repo, " CHANGELOG.md"), "not the canonical changelog\n");
+      git(["add", "."]);
+      git(["commit", "-qm", "hostile whitespace path"]);
+      const head = git(["rev-parse", "HEAD"]).stdout.trim();
+
+      const previous = process.cwd();
+      process.chdir(repo);
+      try {
+        const environment = {
+          PATH_CLASS_EVENT_NAME: "pull_request",
+          PATH_CLASS_PR_BASE_SHA: base,
+          PATH_CLASS_PR_HEAD_SHA: head,
+        };
+        const listed = listChangedPathsForPathClass(environment);
+        assert.equal(listed.ok, true);
+        assert.deepEqual(
+          [...listed.paths].sort(),
+          [" CHANGELOG.md", ".release-please-manifest.json"].sort(),
+        );
+        const resolved = resolvePathClassFromEnv(environment);
+        assert.equal(resolved.pathClass, "unknown");
+        assert.equal(resolved.runHeavy, true);
+        assert.equal(resolved.reason, "unmapped-path");
+      } finally {
+        process.chdir(previous);
+      }
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
+  it("fails closed on malformed or non-UTF-8 NUL-delimited Git path output", () => {
+    assert.deepEqual(parseNulDelimitedChangedPaths(Buffer.from("docs/a.md\0")), {
+      ok: true,
+      reason: "ok",
+      paths: ["docs/a.md"],
+    });
+    for (const [output, reason] of [
+      [Buffer.from("docs/a.md"), "malformed-git-diff-output"],
+      [Buffer.from("docs/a.md\0\0"), "malformed-git-diff-output"],
+      [Buffer.from([0xff, 0x00]), "non-utf8-path"],
+    ]) {
+      assert.deepEqual(parseNulDelimitedChangedPaths(output), {
+        ok: false,
+        reason,
+        paths: [],
+      });
+    }
+  });
+
+  it("invokes Git with an exact NUL-delimited no-helper path inventory", () => {
+    const base = "a".repeat(40);
+    const head = "b".repeat(40);
+    const calls = [];
+    const listed = listChangedPathsForPathClass({
+      PATH_CLASS_EVENT_NAME: "pull_request",
+      PATH_CLASS_PR_BASE_SHA: base,
+      PATH_CLASS_PR_HEAD_SHA: head,
+    }, (...args) => {
+      calls.push(args);
+      return {
+        status: 0,
+        stdout: Buffer.from(".release-please-manifest.json\0CHANGELOG.md\0"),
+        stderr: Buffer.alloc(0),
+      };
+    });
+    assert.deepEqual(calls, [[
+      "git",
+      [
+        "diff",
+        "--name-only",
+        "-z",
+        "--no-renames",
+        "--no-ext-diff",
+        `${base}...${head}`,
+        "--",
+      ],
+    ]]);
+    assert.deepEqual(listed, {
+      ok: true,
+      reason: "ok",
+      paths: [".release-please-manifest.json", "CHANGELOG.md"],
+    });
+  });
+
   it("accepts the workflow's cheap preflight and protected expensive jobs", () => {
     assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
   });
@@ -451,9 +601,47 @@ describe("CI preflight contract", () => {
     }
   });
 
+  it("keeps PostgreSQL reachability non-evaluated when preflight fails", () => {
+    const model = yaml.load(workflow);
+    const aggregate = model.jobs["postgres-domain-reachability"];
+    assert.equal(aggregate.if, "${{ always() }}");
+    assert.deepEqual(
+      aggregate.steps.map((step) => ({ name: step.name, if: step.if })),
+      [
+        {
+          name: "Preflight failure non-evaluation",
+          if: "${{ needs.preflight.result != 'success' }}",
+        },
+        {
+          name: "Path-class skip proof",
+          if: "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy != 'true' }}",
+        },
+        {
+          name: "Require all PostgreSQL reachability facets",
+          if: "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' }}",
+        },
+      ],
+    );
+    assert.match(
+      aggregate.steps[0].run,
+      /PostgreSQL reachability not evaluated because preflight result=/,
+    );
+
+    for (const condition of [
+      "${{ needs.preflight.result != 'success' }}",
+      "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy != 'true' }}",
+      "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' }}",
+    ]) {
+      expectFailure(
+        workflow.replace(`        if: ${condition}\n`, "        if: ${{ always() }}\n"),
+        "PostgreSQL aggregate must distinguish preflight failure, thin skip, and heavy facets",
+      );
+    }
+  });
+
   it("rejects every run-step condition, soft-failure, and retained-text early-exit bypass", () => {
     const requiredRunStepCounts = {
-      preflight: 30,
+      preflight: 32,
       "domain-unit": 2,
       backend: 26,
       "dev-up-smoke": 7,
@@ -467,7 +655,7 @@ describe("CI preflight contract", () => {
       "postgres-reachability-ontology": 2,
       "postgres-reachability-domain-a": 2,
       "postgres-reachability-domain-b": 2,
-      "postgres-domain-reachability": 2,
+      "postgres-domain-reachability": 3,
       "required-ci": 1,
     };
     const workflowModel = yaml.load(workflow);
@@ -502,9 +690,10 @@ describe("CI preflight contract", () => {
     // 107 -> 121: path-class skip proofs on skip-proof jobs (+classify in preflight).
     // 121 -> 122: lane-receipt validator regression step in preflight.
     // 122 -> 124: fail-slow sweep collect-failures steps in preflight and backend.
-    assert.equal(runStepCount, 124, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 124*3 = 372.
-    assert.equal(mutationCount, 372, "exhaustive bypass matrix must not shrink");
+    // 125 -> 127: release metadata semantic regression + exact-ref live gate.
+    assert.equal(runStepCount, 127, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 127*3 = 381.
+    assert.equal(mutationCount, 381, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -1026,37 +1215,49 @@ describe("CI preflight contract", () => {
     );
   });
 
-  it("requires a full-history checkout for merge-tip console validation", () => {
+  it("requires a full-history checkout for fail-closed path classification", () => {
     expectFailure(
       workflow.replace("          fetch-depth: 0\n", ""),
       "preflight checkout must fetch full history with fetch-depth: 0",
     );
   });
 
-  it("requires explicit exact-M C/T derivation before every normal-PR console admission", () => {
+  it("keeps authority regressions without live C/T/M admission in general CI", () => {
     const npmCiIf = "${{ !cancelled() && steps.npm-ci.outcome == 'success' }}";
-    const npmCiPrIf = "${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}";
     const prOnlyIf = "${{ github.event_name == 'pull_request' }}";
-    expectFailure(
-      workflow.replace('          CONSOLE_AUTHORITY_TIP_SHA="$(git rev-parse "$CONSOLE_SYNTHETIC_MERGE_SHA^2")"\n', ''),
-      "derive exact C/T/M",
+    const model = yaml.load(workflow);
+    const preflightSteps = model.jobs.preflight.steps;
+    const forbiddenNames = new Set([
+      "Derive exact console C/T/M train",
+      "Console truth-ledger exact-M admission",
+      "Console fanout planner exact-M admission",
+    ]);
+    assert.deepEqual(
+      preflightSteps.filter((step) => forbiddenNames.has(step.name)).map((step) => step.name),
+      [],
     );
-    expectFailure(
-      workflow.replace('          CONSOLE_CANDIDATE_SHA="$(git rev-parse "$CONSOLE_AUTHORITY_TIP_SHA^")"\n', '          CONSOLE_CANDIDATE_SHA="$GITHUB_SHA"\n'),
-      "derive exact C/T/M",
+    assert.doesNotMatch(
+      JSON.stringify(preflightSteps),
+      /CONSOLE_(?:CANDIDATE|AUTHORITY_TIP|SYNTHETIC_MERGE)_SHA/,
     );
-    expectFailure(
-      workflow.replace(`        if: ${npmCiPrIf}\n        run: npm run check:console-truth-ledger`, `        if: ${npmCiIf}\n        run: npm run check:console-truth-ledger`),
-      "exact C/T/M derivation",
+
+    for (const command of [
+      "node --test scripts/console/verify-console-authority-train.test.mjs",
+      "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs",
+      "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+      "node --test scripts/console/plan-fanout.test.mjs",
+    ]) {
+      const matching = preflightSteps.filter((step) => step.run === command);
+      assert.equal(matching.length, 1, command);
+      assert.equal(matching[0].if, npmCiIf, command);
+    }
+
+    const injectedLiveAdmission = workflow.replace(
+      "      - name: CI preflight contract tests\n",
+      `      - name: Console truth-ledger exact-M admission\n        if: ${npmCiIf}\n        run: npm run check:console-truth-ledger\n\n      - name: CI preflight contract tests\n`,
     );
-    expectFailure(
-      workflow.replace('          CONSOLE_SYNTHETIC_MERGE_SHA="$(git rev-parse "$GITHUB_SHA^{commit}")"\n', ''),
-      "derive exact C/T/M",
-    );
-    expectFailure(
-      workflow.replace('          CONSOLE_CANDIDATE_SHA="$(git rev-parse "$CONSOLE_AUTHORITY_TIP_SHA^")"\n', '          test "$(git rev-parse HEAD)" = "$CONSOLE_SYNTHETIC_MERGE_SHA"\n          CONSOLE_CANDIDATE_SHA="$(git rev-parse "$CONSOLE_AUTHORITY_TIP_SHA^")"\n'),
-      "derive exact C/T/M",
-    );
+    expectFailure(injectedLiveAdmission, "must not run live C/T/M admission");
+
     expectFailure(
       workflow.replace(`        if: ${npmCiIf}\n        run: node --test scripts/console/validate-console-truth-ledger.test.mjs`, `        if: ${prOnlyIf}\n        run: node --test scripts/console/validate-console-truth-ledger.test.mjs`),
       "validate-console-truth-ledger.test.mjs",
@@ -1075,28 +1276,99 @@ describe("CI preflight contract", () => {
     // turned every one of its tests red locally while CI stayed green. Wiring it into ci.yml is
     // not the same as protecting it, hence both halves below.
     assert.ok(
-      workflow.includes(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs\n`),
+      workflow.includes(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs\n`),
       "preflight does not run the console PR authority bootstrap regression",
     );
     expectFailure(
-      workflow.replace(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs\n\n`, ''),
+      workflow.replace(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs\n\n`, ''),
       "verify-console-pr-authority-bootstrap.test.mjs",
     );
     expectFailure(
-      workflow.replace(`        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs`, `        if: ${prOnlyIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs`),
+      workflow.replace(`        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs`, `        if: ${prOnlyIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs`),
       "verify-console-pr-authority-bootstrap.test.mjs",
     );
+  });
+
+  it("runs release metadata semantics, custody, and links on the exact thin boundary", () => {
+    const npmCiIf = "${{ !cancelled() && steps.npm-ci.outcome == 'success' }}";
+    const releaseMetadataIf = "${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.path_class == 'release-metadata-only' }}";
+    const expected = [
+      {
+        name: "Release metadata semantic regression",
+        id: "release-metadata-regression",
+        if: npmCiIf,
+        run: "node --test scripts/check-release-metadata.test.mjs",
+      },
+      {
+        name: "Release metadata semantic gate",
+        id: "release-metadata",
+        if: releaseMetadataIf,
+        shell: "bash",
+        env: {
+          RELEASE_METADATA_BASE_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}",
+          RELEASE_METADATA_HEAD_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}",
+        },
+        run: [
+          "set -euo pipefail",
+          "node scripts/check-release-metadata.mjs \\",
+          '  --base "$RELEASE_METADATA_BASE_SHA" \\',
+          '  --head "$RELEASE_METADATA_HEAD_SHA"',
+          "",
+        ].join("\n"),
+      },
+      {
+        name: "Release metadata documentation link tests",
+        id: "release-doc-link-tests",
+        if: releaseMetadataIf,
+        run: "node --test scripts/check-doc-links.test.mjs",
+      },
+      {
+        name: "Release metadata documentation manifest gate",
+        id: "release-doc-manifest",
+        if: releaseMetadataIf,
+        run: "npm run check:doc-manifest",
+      },
+      {
+        name: "Release metadata documentation local-link gate",
+        id: "release-doc-links",
+        if: releaseMetadataIf,
+        run: "npm run check:doc-links",
+      },
+    ];
+    const model = yaml.load(workflow);
+    const actual = model.jobs.preflight.steps.filter((step) => (
+      typeof step.name === "string" && step.name.startsWith("Release metadata ")
+    ));
+    assert.deepEqual(actual, expected);
+
+    for (const proof of expected.slice(1)) {
+      expectFailure(
+        mutateNamedStep(workflow, "preflight", proof.name, (step) => (
+          step.replace(`        if: ${releaseMetadataIf}\n`, "        if: ${{ !cancelled() }}\n")
+        )),
+        "preflight must preserve release-metadata-only semantic, custody, and link proofs",
+      );
+    }
     expectFailure(
-      workflow.replace(`        if: ${npmCiPrIf}\n        run: node scripts/console/plan-fanout.mjs`, `        if: ${npmCiIf}\n        run: node scripts/console/plan-fanout.mjs`),
-      "plan-fanout.mjs",
+      workflow.replace(
+        `        if: ${npmCiIf}\n        run: node --test scripts/check-release-metadata.test.mjs`,
+        `        if: ${releaseMetadataIf}\n        run: node --test scripts/check-release-metadata.test.mjs`,
+      ),
+      "release metadata semantic regression after npm ci",
     );
     expectFailure(
-      workflow.replace('        run: npm run check:console-truth-ledger', '        run: CONSOLE_INTEGRATION_TIP_SHA="$CONSOLE_AUTHORITY_TIP_SHA" npm run check:console-truth-ledger'),
-      "CONSOLE_INTEGRATION_TIP_SHA",
+      workflow.replace(
+        "github.event.pull_request.head.sha || github.sha",
+        "github.sha || github.sha",
+      ),
+      "preflight must preserve its exact step environment allowlist",
     );
     expectFailure(
-      workflow.replace('        run: node scripts/console/plan-fanout.mjs --candidate "$CONSOLE_CANDIDATE_SHA" --authority-tip "$CONSOLE_AUTHORITY_TIP_SHA" --synthetic-merge "$CONSOLE_SYNTHETIC_MERGE_SHA"', '        run: node scripts/console/plan-fanout.mjs'),
-      "plan-fanout.mjs",
+      workflow.replace(
+        "github.event.pull_request.base.sha || github.event.before",
+        "github.event.pull_request.head.sha || github.event.before",
+      ),
+      "preflight must preserve its exact step environment allowlist",
     );
   });
 
@@ -1814,10 +2086,12 @@ describe("CI preflight contract", () => {
       "repo-gates must preserve all",
     );
     expectFailure(
-      workflow.replace(
-        "        run: npm run check:doc-manifest\n",
-        "        # run: npm run check:doc-manifest\n",
-      ),
+      mutateNamedStep(workflow, "repo-gates", "Documentation manifest gate", (manifestStep) => (
+        manifestStep.replace(
+          "        run: npm run check:doc-manifest\n",
+          "        # run: npm run check:doc-manifest\n",
+        )
+      )),
       "repo-gates must preserve all",
     );
     for (const condition of [
@@ -1923,7 +2197,7 @@ describe("CI preflight contract", () => {
         + " //backend/app:console-app-unit\n"),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
-    // Dropping the run_heavy half of the guard would let the drift suite run on docs-only.
+    // Dropping the run_heavy half of the guard would let the drift suite run on thin classes.
     expectFailure(
       workflow.replace(
         `      - name: Buck2 console-app OpenAPI drift suite\n        id: openapi-drift\n        if: ${backendIndependentIf}\n`,

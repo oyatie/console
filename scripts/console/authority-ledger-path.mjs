@@ -2,14 +2,15 @@
  * The one path prefix at which the authority tip T may ADD a file, and the diff flags every
  * reader of the C..T diff must use.
  *
- * THREE scripts gate that one diff — `verify-console-authority-train.mjs`,
- * `verify-console-pr-authority-bootstrap.mjs` (the `pull_request_target` verifier that decides
- * the merge) and `validate-console-truth-ledger.mjs`. They held three copies of the predicate
+ * THREE validators consume that one diff — `verify-console-authority-train.mjs`,
+ * `verify-console-pr-authority-bootstrap.mjs` (the protected-target verifier that is the current
+ * live merge authority), and `validate-console-truth-ledger.mjs`. General CI exercises the other
+ * validators as regressions rather than live admission. They held three copies of the predicate
  * and two different flag sets, and that is not a style problem: with
  * `--find-renames --find-copies-harder` a new ledger entry ≥50% similar to a file already in
  * the tree is reported as status `C` with two paths, and with `--no-renames` as status `A` with
- * one. The same commit was therefore refused by one gate and accepted by the two that decide
- * the merge. One definition, imported three times, is the only shape in which they cannot
+ * one. The same commit was therefore refused by one consumer and accepted by another.
+ * One definition, imported three times, is the only shape in which they cannot
  * disagree again.
  */
 

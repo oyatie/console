@@ -47,8 +47,8 @@ const JOBS = new Map([
   ["postgres-reachability-ontology", "hosted PostgreSQL facet (ontology packages); the `db` tier already exercises that harness"],
   ["postgres-reachability-domain-a", "hosted PostgreSQL facet (domain adapters A); the `db` tier already exercises that harness"],
   ["postgres-reachability-domain-b", "hosted PostgreSQL facet (domain adapters B); the `db` tier already exercises that harness"],
-  // Load-bearing aggregator: keeps the protected display name; no run steps to mirror.
-  ["postgres-domain-reachability", "load-bearing aggregator over PG facets; terminal needs/result contract is enforced by check-ci-preflight"],
+  // Load-bearing aggregator: its three hosted-only run states consume Actions `needs` results.
+  ["postgres-domain-reachability", "load-bearing hosted state machine over preflight and PG facet needs/results; exact non-evaluation/thin/heavy contract is enforced by check-ci-preflight"],
   ["generated-face-authority", "needs pinned Java + Reindeer toolchains to rebuild the full generated-face closure"],
   ["dev-up-smoke", "brings up the whole shared `console-dev` compose project; running it locally tears down other lanes' stacks"],
   ["api-contract", true],
@@ -69,7 +69,6 @@ const BOOTSTRAP_GUC = "options%5Bconsole.sqlx_test_bootstrap%5D=buck-sqlx-superu
  */
 const PLAN = new Map([
   // ---- preflight ---------------------------------------------------------
-  ["Derive exact console C/T/M train", { tier: "fast", derive: true }],
   ["Install pinned DotSlash runtime", {
     tier: "ci-only",
     why: "runner bootstrap; a local checkout already has the tools/buck2 shim",
@@ -86,18 +85,20 @@ const PLAN = new Map([
     tier: "ci-only",
     why: "Actions-only PATH_CLASS_* event SHAs; `CI preflight contract` covers classification; local mirror always exercises the heavy path",
   }],
+  ["Release metadata semantic regression", { tier: "fast" }],
+  ["Release metadata semantic gate", {
+    tier: "ci-only",
+    why: "requires the exact hosted event base/head commits after release-only classification; run manually with `node scripts/check-release-metadata.mjs --base <base-sha> --head <release-tip-sha>`",
+  }],
+  ["Release metadata documentation link tests", { tier: "fast" }],
+  ["Release metadata documentation manifest gate", { tier: "fast" }],
+  ["Release metadata documentation local-link gate", { tier: "fast" }],
   ["Cheap Buck2 generated-face admission", { tier: "fast" }],
   ["Foundation gate contract", { tier: "fast" }],
   ["Reasoning lens contract regression", { tier: "fast" }],
   ["Reasoning lens changed-record admission", {
     tier: "fast",
     run: REASONING_LENS_LOCAL_RUN,
-  }],
-  ["Console truth-ledger exact-M admission", { tier: "fast" }],
-  ["Console fanout planner exact-M admission", {
-    tier: "fast",
-    needsCleanWorktree: true,
-    why: "the planner refuses a dirty worktree, which is the normal state mid-change",
   }],
   ["CI preflight contract tests", { tier: "fast" }],
   ["Console route inventory regression", { tier: "fast" }],
@@ -137,14 +138,14 @@ const PLAN = new Map([
   // This is the exact no-database Cargo selection from CI. A former exemption
   // incorrectly claimed fast verification ran a workspace suite; it did not.
   ["Domain crate unit tests", { tier: "fast" }],
-  // Hosted skip proofs fire only when preflight sets run_heavy!=true (docs_only
-  // scheduling). Local verify never docs_only-schedules mirrored jobs — it
+  // Hosted skip proofs fire only when preflight sets run_heavy!=true (a thin
+  // path class). Local verify never thin-schedules mirrored jobs — it
   // always runs the heavy command path — so mirroring the printf proof is
   // meaningless theater. One PLAN key covers every mirrored job that carries
   // the identically-named step.
   ["Path-class skip proof", {
     tier: "ci-only",
-    why: "skip proofs run only when run_heavy!=true on hosted CI; local mirror always exercises the heavy path / docs_only is CI scheduling",
+    why: "skip proofs run only for thin path classes on hosted CI; local mirror always exercises the heavy path",
   }],
   // Fail-slow sweep collector: reads the GHA `steps` context (toJSON(steps)),
   // which exists only on a hosted runner; the same job-level red is produced
@@ -344,6 +345,10 @@ export function reasoningLensLocalRunFromPlan() {
   return PLAN.get("Reasoning lens changed-record admission")?.run ?? null;
 }
 
+export function stepMirrorDisposition(name) {
+  return PLAN.get(name) ?? null;
+}
+
 function run(command, env, cwd = ".") {
   const result = spawnSync("bash", ["-o", "pipefail", "-c", command], {
     stdio: "inherit",
@@ -351,12 +356,6 @@ function run(command, env, cwd = ".") {
     cwd,
   });
   return result.status ?? 1;
-}
-
-function capture(command) {
-  const result = spawnSync("bash", ["-o", "pipefail", "-c", command], { encoding: "utf8" });
-  if (result.status !== 0) throw new Error(`failed: ${command}\n${result.stderr}`);
-  return result.stdout.trim();
 }
 
 function captureFile(command, args) {
@@ -399,24 +398,6 @@ function generateDistinctPasswords(count) {
     if (!passwords.includes(candidate)) passwords.push(candidate);
   }
   return passwords;
-}
-
-/** Reproduce CI's C/T/M derivation against a synthetic merge, so the console
- *  authority gates can be checked before pushing rather than after. */
-function consoleTrainEnv() {
-  const tip = capture("git rev-parse HEAD");
-  const candidate = capture("git rev-parse HEAD^");
-  const base = capture(
-    `git merge-base HEAD "${process.env.CONSOLE_VERIFY_BASE ?? "origin/main"}"`,
-  );
-  const merge = capture(
-    `git commit-tree "${tip}^{tree}" -p "${base}" -p "${tip}" -m verify-synthetic-merge`,
-  );
-  return {
-    CONSOLE_CANDIDATE_SHA: candidate,
-    CONSOLE_AUTHORITY_TIP_SHA: tip,
-    CONSOLE_SYNTHETIC_MERGE_SHA: merge,
-  };
 }
 
 /** Disposable PostgreSQL carrying the seven app roles plus the `console_buck_admin`
@@ -512,11 +493,9 @@ function main() {
   const steps = assertPlanCoversCi();
   const wanted = requested === "all" ? ["fast", "db"] : [requested];
 
-  const consoleEnv = consoleTrainEnv();
-  const dirtyWorktree = capture("git status --porcelain").length > 0;
   const skipped = [];
   const failures = [];
-  let baseEnv = { ...process.env, ...consoleEnv, SQLX_OFFLINE: "true" };
+  const baseEnv = { ...process.env, SQLX_OFFLINE: "true" };
 
   // preflight and repo-gates both run `check:foundation-gates` and
   // `check:package-lock`. Same command, same cwd -- run it once. Keyed on the
@@ -531,13 +510,9 @@ function main() {
         continue;
       }
       if (!wanted.includes(plan.tier)) continue;
-      // These two CI steps are *setup*, not checks; their local equivalents ran
-      // before the loop (consoleTrainEnv / withPostgres).
-      if (plan.derive || plan.provision) continue;
-      if (plan.needsCleanWorktree && dirtyWorktree) {
-        skipped.push(`${step.name} -- ${plan.why}`);
-        continue;
-      }
+      // PostgreSQL provisioning is setup, not a check; its local equivalent ran
+      // before the loop in withPostgres.
+      if (plan.provision) continue;
       const command = plan.run ?? step.run;
       const key = `${step.cwd} ${command}`;
       if (ran.has(key)) continue;

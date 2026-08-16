@@ -58,28 +58,33 @@ const reasoningLensAdmissionScript = [
   "esac",
 ].join("\n");
 const consoleRouteInventoryTestCommand = "node --test scripts/console/route-inventory.test.mjs";
-const consoleTruthLedgerCommand = "npm run check:console-truth-ledger";
 const consoleAuthorityTrainTestCommand = "node --test scripts/console/verify-console-authority-train.test.mjs";
 const consoleTruthLedgerTestCommand = "node --test scripts/console/validate-console-truth-ledger.test.mjs";
 const consoleFanoutPlannerTestCommand = "node --test scripts/console/plan-fanout.test.mjs";
+const releaseMetadataRegressionCommand = "node --test scripts/check-release-metadata.test.mjs";
+const releaseMetadataGateRunSha256 = "9ba171262e917ba80b83342f58164d470a7d28060e5b3322fd597d9316c40c98";
 // This one gates the highest-privilege script in the repository — the `pull_request_target`
 // bootstrap verifier — and executed NOWHERE until it was wired: `package.json` declared
 // `test:console-authority-bootstrap` and no workflow ever invoked it. Breaking the verifier
 // turned all its tests red locally while CI stayed green.
-const consoleBootstrapTestCommand = "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs";
-const consoleFanoutPlannerAdmissionCommand = 'node scripts/console/plan-fanout.mjs --candidate "$CONSOLE_CANDIDATE_SHA" --authority-tip "$CONSOLE_AUTHORITY_TIP_SHA" --synthetic-merge "$CONSOLE_SYNTHETIC_MERGE_SHA"';
-const consolePrCondition = "${{ github.event_name == 'pull_request' }}";
+const consoleBootstrapTestCommand = "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs";
 /** Sibling jobs: run expensive body only when preflight classified a non-docs change. */
 const runHeavyCondition = "${{ needs.preflight.outputs.run_heavy == 'true' }}";
-/** Sibling jobs: emit explicit skip-proof success when docs-only. */
+/** Sibling jobs: emit explicit skip-proof success for a thin path class. */
 const skipProofCondition = "${{ needs.preflight.outputs.run_heavy != 'true' }}";
-/** Preflight-local: thin Rust/Buck/cargo steps on docs-only. */
+/** Preflight-local: Rust/Buck/cargo steps for heavy path classes only. */
 const preflightRunHeavyCondition = "${{ steps.path_class.outputs.run_heavy == 'true' }}";
 /** repo-gates / leaves that already gate on !cancelled(): keep cancel semantics AND run_heavy. */
 const runHeavyUnlessCancelledCondition =
   "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}";
 const runHeavyAlwaysCondition =
   "${{ always() && needs.preflight.outputs.run_heavy == 'true' }}";
+const postgresAggregateNonEvaluationCondition =
+  "${{ needs.preflight.result != 'success' }}";
+const postgresAggregateSkipCondition =
+  "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy != 'true' }}";
+const postgresAggregateHeavyCondition =
+  "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' }}";
 
 // Fail-slow one-sweep CI (D4): independent steps run even after a sibling step
 // fails; dependent steps skip (not red) when their dependency failed. The step
@@ -90,10 +95,12 @@ const preflightSetupNodeDependentCondition =
   "${{ !cancelled() && steps.setup-node.outcome == 'success' }}";
 const preflightNpmCiDependentCondition =
   "${{ !cancelled() && steps.npm-ci.outcome == 'success' }}";
-const preflightNpmCiPrCondition =
-  "${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}";
-const preflightDeriveCondition =
-  "${{ !cancelled() && steps.checkout.outcome == 'success' && github.event_name == 'pull_request' }}";
+const preflightReleaseMetadataCondition =
+  "${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.path_class == 'release-metadata-only' }}";
+const releaseMetadataEnvironment = Object.freeze({
+  RELEASE_METADATA_BASE_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}",
+  RELEASE_METADATA_HEAD_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}",
+});
 const preflightCheckoutHeavyCondition =
   "${{ !cancelled() && steps.checkout.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}";
 const preflightBuckHeavyCondition =
@@ -109,7 +116,7 @@ const backendIndependentCondition =
 const backendTopologyDependentCondition =
   "${{ !cancelled() && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}";
 
-export const PATH_CLASS_RULES_VERSION = "3";
+export const PATH_CLASS_RULES_VERSION = "4";
 const docsOnlyRootFiles = new Set([
   "README.md",
   "CHANGELOG.md",
@@ -121,10 +128,23 @@ const docsOnlyRootFiles = new Set([
   "Agents.md",
   "Claude.md",
 ]);
+const releaseMetadataRequiredPaths = Object.freeze([
+  ".release-please-manifest.json",
+  "CHANGELOG.md",
+]);
+const releaseMetadataCustodyPaths = Object.freeze([
+  "docs/documentation-manifest.seed.json",
+  "docs/documentation-index.json",
+]);
+const releaseMetadataAllowedPaths = new Set([
+  ...releaseMetadataRequiredPaths,
+  ...releaseMetadataCustodyPaths,
+]);
 
 /**
  * Fail-closed path-class classifier (S-CI2 / console-7rc mechanism B).
- * Only `docs-only` sets runHeavy=false; every other class keeps the full matrix.
+ * Only exact docs-only and release-metadata-only classes set runHeavy=false;
+ * every other class keeps the full matrix.
  */
 export function classifyChangedPaths(paths) {
   if (!Array.isArray(paths) || paths.length === 0) {
@@ -135,7 +155,7 @@ export function classifyChangedPaths(paths) {
       reason: "empty-or-unreadable",
     };
   }
-  const classes = new Set();
+  const normalizedPaths = [];
   for (const raw of paths) {
     if (typeof raw !== "string" || raw.length === 0
       || raw.includes("\0") || raw.includes("\\") || /(^|\/)\.\.(\/|$)/.test(raw)) {
@@ -146,7 +166,36 @@ export function classifyChangedPaths(paths) {
         reason: "hostile-path",
       };
     }
-    const p = raw.replace(/^\.\//, "");
+    const p = raw;
+    normalizedPaths.push(p);
+  }
+  const uniquePaths = new Set(normalizedPaths);
+  if (uniquePaths.size !== normalizedPaths.length) {
+    return {
+      pathClass: "unknown",
+      docsOnly: false,
+      runHeavy: true,
+      reason: "duplicate-path",
+    };
+  }
+  const releaseMetadataRequired = releaseMetadataRequiredPaths
+    .every((path) => uniquePaths.has(path));
+  const releaseMetadataCustodyCount = releaseMetadataCustodyPaths
+    .filter((path) => uniquePaths.has(path)).length;
+  if (releaseMetadataRequired
+    && normalizedPaths.every((path) => releaseMetadataAllowedPaths.has(path))
+    && (releaseMetadataCustodyCount === 0
+      || releaseMetadataCustodyCount === releaseMetadataCustodyPaths.length)) {
+    return {
+      pathClass: "release-metadata-only",
+      docsOnly: false,
+      runHeavy: false,
+      reason: "release-metadata-allowlist",
+    };
+  }
+
+  const classes = new Set();
+  for (const p of normalizedPaths) {
     if (p === ".github" || p.startsWith(".github/")
       || p === "security" || p.startsWith("security/")
       || p === "backend/rust-toolchain.toml" || p === "backend/deny.toml"
@@ -213,7 +262,7 @@ export function classifyChangedPaths(paths) {
   };
 }
 
-export function listChangedPathsForPathClass(env = process.env) {
+export function listChangedPathsForPathClass(env = process.env, runGit = spawnSync) {
   const event = env.PATH_CLASS_EVENT_NAME || "";
   let range = null;
   if (event === "pull_request") {
@@ -234,15 +283,42 @@ export function listChangedPathsForPathClass(env = process.env) {
   // false-greens docs_only + Path-class skip proofs (console-7rc critic E6).
   // --no-renames: default rename detection emits only the destination path, so a
   // product→docs rename would inventory as docs-only (console-q58y residual).
-  const result = spawnSync(
+  const result = runGit(
     "git",
-    ["diff", "--name-only", "--no-renames", range],
-    { encoding: "utf8" },
+    ["diff", "--name-only", "-z", "--no-renames", "--no-ext-diff", range, "--"],
   );
   if (result.status !== 0) {
     return { ok: false, reason: "git-diff-failed", paths: [] };
   }
-  const paths = result.stdout.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  return parseNulDelimitedChangedPaths(result.stdout);
+}
+
+export function parseNulDelimitedChangedPaths(output) {
+  if (!Buffer.isBuffer(output)) {
+    return { ok: false, reason: "malformed-git-diff-output", paths: [] };
+  }
+  if (output.length === 0) return { ok: true, reason: "ok", paths: [] };
+  if (output[output.length - 1] !== 0) {
+    return { ok: false, reason: "malformed-git-diff-output", paths: [] };
+  }
+  const paths = [];
+  let start = 0;
+  for (let end = output.indexOf(0, start); end !== -1; end = output.indexOf(0, start)) {
+    const raw = output.subarray(start, end);
+    if (raw.length === 0) {
+      return { ok: false, reason: "malformed-git-diff-output", paths: [] };
+    }
+    const path = raw.toString("utf8");
+    if (!Buffer.from(path, "utf8").equals(raw)) {
+      return { ok: false, reason: "non-utf8-path", paths: [] };
+    }
+    paths.push(path);
+    start = end + 1;
+    if (start === output.length) break;
+  }
+  if (start !== output.length) {
+    return { ok: false, reason: "malformed-git-diff-output", paths: [] };
+  }
   return { ok: true, reason: "ok", paths };
 }
 
@@ -289,19 +365,11 @@ const pathClassEmitScript = [
   "set -euo pipefail",
   "node scripts/check-ci-preflight.mjs --emit-path-class",
 ];
-
-const consoleTrainDerivation = [
+const postgresPreflightNonEvaluationScript = [
   "set -euo pipefail",
-  'CONSOLE_SYNTHETIC_MERGE_SHA="$(git rev-parse "$GITHUB_SHA^{commit}")"',
-  'test "$(git rev-parse HEAD)" = "$CONSOLE_SYNTHETIC_MERGE_SHA"',
-  'CONSOLE_AUTHORITY_TIP_SHA="$(git rev-parse "$CONSOLE_SYNTHETIC_MERGE_SHA^2")"',
-  'CONSOLE_CANDIDATE_SHA="$(git rev-parse "$CONSOLE_AUTHORITY_TIP_SHA^")"',
-  "{",
-  "printf 'CONSOLE_CANDIDATE_SHA=%s\\n' \"$CONSOLE_CANDIDATE_SHA\"",
-  "printf 'CONSOLE_AUTHORITY_TIP_SHA=%s\\n' \"$CONSOLE_AUTHORITY_TIP_SHA\"",
-  "printf 'CONSOLE_SYNTHETIC_MERGE_SHA=%s\\n' \"$CONSOLE_SYNTHETIC_MERGE_SHA\"",
-  '} >> "$GITHUB_ENV"',
+  "printf 'PostgreSQL reachability not evaluated because preflight result=%s\\n' \"${{ needs.preflight.result }}\"",
 ];
+
 const buckPostgresEnvironmentTestCommand = "tools/buck/run_test_with_postgres_env.test.sh";
 const buckPostgresHarnessTestCommand = "tools/buck/test_needs_postgres.test.sh";
 // The domain-unit step is now a multi-line run. What must be asserted is not the exact
@@ -735,8 +803,9 @@ const ontologyRestCrateBuildFile = readFileSync(
   new URL("../backend/crates/ontology/rest/BUCK", import.meta.url),
   "utf8",
 );
-// Always-run preflight commands (docs-only thin path still executes these).
+// Always-run preflight commands (every thin path still executes these).
 const requiredAlwaysPreflightCommands = [
+  releaseMetadataRegressionCommand,
   "npm run check:foundation-gates",
   reasoningLensTestCommand,
   ciPreflightTestCommand,
@@ -756,9 +825,16 @@ const requiredHeavyPreflightCommands = [
   "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null",
   "npm run check:executed-tests",
 ];
+const requiredReleaseMetadataPreflightCommands = [
+  "node scripts/check-release-metadata.mjs",
+  "node --test scripts/check-doc-links.test.mjs",
+  "npm run check:doc-manifest",
+  "npm run check:doc-links",
+];
 const requiredPreflightCommands = [
   ...requiredAlwaysPreflightCommands,
   ...requiredHeavyPreflightCommands,
+  ...requiredReleaseMetadataPreflightCommands,
 ];
 const protectedJobs = [
   "backend",
@@ -814,21 +890,23 @@ const proofDigest = (name, digest, options) => runDigestContract("proof", name, 
 // familiar name.
 const requiredJobRunContracts = Object.freeze({
   "preflight": [
-    setupDigest("Derive exact console C/T/M train", "b8e69e979347fa526773bb2a740bdb198be414077281026c23be96501ffd4da1", { if: preflightDeriveCondition, shell: "bash" }),
     setupRun("Install workspace dependencies", "npm ci", { if: preflightSetupNodeDependentCondition }),
     setupDigest("Classify path class", "d963a8aa99e66c44a4ed8e3ef25725d206a11973545758d6c67a055b1f48cbbd", { if: preflightNpmCiDependentCondition, shell: "bash" }),
+    proofRun("Release metadata semantic regression", releaseMetadataRegressionCommand, { if: preflightNpmCiDependentCondition }),
+    proofDigest("Release metadata semantic gate", releaseMetadataGateRunSha256, { if: preflightReleaseMetadataCondition, shell: "bash" }),
+    proofRun("Release metadata documentation link tests", "node --test scripts/check-doc-links.test.mjs", { if: preflightReleaseMetadataCondition }),
+    proofRun("Release metadata documentation manifest gate", "npm run check:doc-manifest", { if: preflightReleaseMetadataCondition }),
+    proofRun("Release metadata documentation local-link gate", "npm run check:doc-links", { if: preflightReleaseMetadataCondition }),
     setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: preflightCheckoutHeavyCondition }),
     proofRun("Cheap Buck2 generated-face admission", "tools/buck/preflight.sh", { if: preflightBuckHeavyCondition }),
     proofRun("Foundation gate contract", "npm run check:foundation-gates", { if: preflightNpmCiDependentCondition }),
     proofRun("Reasoning lens contract regression", "node --test scripts/check-reasoning-lens-contract.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofDigest("Reasoning lens changed-record admission", "b4d78de511586e6f3cb7edafcf780fbc0361279dc8f0fe544b6128cfad9d3ab9", { if: preflightNpmCiDependentCondition, shell: "bash" }),
-    proofRun("Console truth-ledger exact-M admission", "npm run check:console-truth-ledger", { if: preflightNpmCiPrCondition }),
-    proofRun("Console fanout planner exact-M admission", "node scripts/console/plan-fanout.mjs --candidate \"$CONSOLE_CANDIDATE_SHA\" --authority-tip \"$CONSOLE_AUTHORITY_TIP_SHA\" --synthetic-merge \"$CONSOLE_SYNTHETIC_MERGE_SHA\"", { if: preflightNpmCiPrCondition }),
     proofRun("CI preflight contract tests", "node --test scripts/check-ci-preflight.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console route inventory regression", "node --test scripts/console/route-inventory.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console authority-train regression", "node --test scripts/console/verify-console-authority-train.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console lane-receipt validator regression", "npm run test:lane-receipt", { if: preflightNpmCiDependentCondition }),
-    proofRun("Console PR authority bootstrap regression", "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Console PR authority bootstrap regression", "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Executed-tests baseline set regression", "npm run test:executed-tests-baseline", { if: preflightNpmCiDependentCondition }),
     proofRun("Local CI mirror contract", "node --test scripts/verify.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console truth-ledger validator exact-M regression", "node --test scripts/console/validate-console-truth-ledger.test.mjs", { if: preflightNpmCiDependentCondition }),
@@ -963,8 +1041,9 @@ const requiredJobRunContracts = Object.freeze({
     proofDigest("Run disposable PostgreSQL integration targets", "f51451ca90071e2b657f759b6fb08a8aa10dfa6e18e26eb2984d8a004a7b53c9", { if: runHeavyCondition }),
   ],
   "postgres-domain-reachability": [
-    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Require all PostgreSQL reachability facets", "7f9e079d4f3b5f15d81f9fffdb00ab11b8ca881e1d5842fbe448c5490af1152a", { if: runHeavyCondition }),
+    proofDigest("Preflight failure non-evaluation", "bd3b7317d5a581574bf8ec45e2ad2d44a24ea93159b9322157619d671e6250df", { if: postgresAggregateNonEvaluationCondition, shell: "bash" }),
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: postgresAggregateSkipCondition, shell: "bash" }),
+    proofDigest("Require all PostgreSQL reachability facets", "7f9e079d4f3b5f15d81f9fffdb00ab11b8ca881e1d5842fbe448c5490af1152a", { if: postgresAggregateHeavyCondition }),
   ],
 });
 
@@ -996,8 +1075,8 @@ function actionStep(index, name, uses, withInputs, options = {}) {
 const requiredJobActionContracts = Object.freeze({
   "preflight": [
     actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false,"fetch-depth":0}, { id: "checkout" }),
-    actionStep(2, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24.16.0","cache":"npm"}, { if: preflightCheckoutDependentCondition, id: "setup-node" }),
-    actionStep(6, "Install Rust toolchain for Cargo.lock consistency", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: preflightCheckoutHeavyCondition, id: "rust-toolchain" }),
+    actionStep(1, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24.16.0","cache":"npm"}, { if: preflightCheckoutDependentCondition, id: "setup-node" }),
+    actionStep(10, "Install Rust toolchain for Cargo.lock consistency", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: preflightCheckoutHeavyCondition, id: "rust-toolchain" }),
   ],
   "domain-unit": [
     actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
@@ -1163,6 +1242,9 @@ const protectedJobExecutionMetadata = {
         PATH_CLASS_PUSH_BEFORE_SHA: "${{ github.event.before }}",
         PATH_CLASS_SHA: "${{ github.sha }}",
       },
+    }, {
+      name: "Release metadata semantic gate",
+      env: releaseMetadataEnvironment,
     }, {
       name: reasoningLensAdmissionName,
       env: Object.fromEntries(
@@ -1573,20 +1655,57 @@ function requireReasoningLensContracts(steps, failures) {
   }
 }
 
-function requireConsoleExactMergeProof(workflow, steps, failures) {
-  const derive = steps.filter((step) => stepName(step) === "Derive exact console C/T/M train");
-  if (derive.length !== 1 || !hasOnlyExpectedCondition(derive[0], preflightDeriveCondition) || multilineRunCommands(derive[0]).join("\n") !== consoleTrainDerivation.join("\n")) {
-    failures.push("preflight must derive exact C/T/M from the pull-request synthetic merge");
-  }
-  for (const command of [consoleTruthLedgerCommand, consoleFanoutPlannerAdmissionCommand]) {
-    const matching = steps.filter((step) => runScalar(step) === command);
-    if (matching.length !== 1 || !hasOnlyExpectedCondition(matching[0], preflightNpmCiPrCondition)) failures.push(`preflight must run ${command} only after exact C/T/M derivation on pull requests`);
+function requireConsoleRegressionCoverage(workflow, steps, failures) {
+  const serializedSteps = JSON.stringify(steps);
+  if (steps.some((step) => [
+    "Derive exact console C/T/M train",
+    "Console truth-ledger exact-M admission",
+    "Console fanout planner exact-M admission",
+  ].includes(stepName(step)))
+    || /CONSOLE_(?:CANDIDATE|AUTHORITY_TIP|SYNTHETIC_MERGE)_SHA/.test(serializedSteps)
+    || steps.some((step) => runScript(step).includes("npm run check:console-truth-ledger"))
+    || steps.some((step) => /(?:^|\s)node\s+scripts\/console\/plan-fanout\.mjs(?:\s|$)/.test(runScript(step)))) {
+    failures.push("preflight must not run live C/T/M admission in general CI");
   }
   for (const command of [consoleAuthorityTrainTestCommand, consoleBootstrapTestCommand, consoleTruthLedgerTestCommand, consoleFanoutPlannerTestCommand]) {
     const matching = steps.filter((step) => runScalar(step) === command);
     if (matching.length !== 1 || !hasOnlyExpectedCondition(matching[0], preflightNpmCiDependentCondition)) failures.push(`preflight must run ${command} unconditionally on pull requests and main`);
   }
   if (workflow.includes("CONSOLE_INTEGRATION_TIP_SHA")) failures.push("preflight must not reference legacy CONSOLE_INTEGRATION_TIP_SHA");
+}
+
+function requireReleaseMetadataProofs(steps, failures) {
+  const regression = steps
+    .map((step, index) => ({ step, index }))
+    .filter(({ step }) => stepName(step) === "Release metadata semantic regression");
+  if (regression.length !== 1
+    || runScalar(regression[0].step) !== releaseMetadataRegressionCommand
+    || !hasOnlyExpectedCondition(regression[0].step, preflightNpmCiDependentCondition)) {
+    failures.push("preflight must run the release metadata semantic regression after npm ci");
+    return;
+  }
+  const contracts = [
+    ["Release metadata semantic gate", null],
+    ["Release metadata documentation link tests", "node --test scripts/check-doc-links.test.mjs"],
+    ["Release metadata documentation manifest gate", "npm run check:doc-manifest"],
+    ["Release metadata documentation local-link gate", "npm run check:doc-links"],
+  ];
+  let previousIndex = regression[0].index;
+  for (const [name, command] of contracts) {
+    const matching = steps
+      .map((step, index) => ({ step, index }))
+      .filter(({ step }) => stepName(step) === name);
+    if (matching.length !== 1
+      || (command === null
+        ? sha256(runScript(matching[0]?.step ?? "")) !== releaseMetadataGateRunSha256
+        : runScalar(matching[0]?.step ?? "") !== command)
+      || !hasOnlyExpectedCondition(matching[0]?.step ?? "", preflightReleaseMetadataCondition)
+      || matching[0].index <= previousIndex) {
+      failures.push("preflight must preserve release-metadata-only semantic, custody, and link proofs");
+      return;
+    }
+    previousIndex = matching[0].index;
+  }
 }
 
 
@@ -1727,6 +1846,40 @@ function requireOnlyLockedRuns(steps, commands, job, failures) {
   const actual = steps.map(runCommand).filter(Boolean);
   if (actual.length !== commands.length || actual.some((command, index) => command !== commands[index])) {
     failures.push(`${job} must contain only the locked ordered run steps`);
+  }
+}
+
+function requirePostgresAggregateStateMachine(steps, failures) {
+  const contracts = [
+    {
+      name: "Preflight failure non-evaluation",
+      run: postgresPreflightNonEvaluationScript.join("\n"),
+      if: postgresAggregateNonEvaluationCondition,
+      shell: "bash",
+    },
+    {
+      name: "Path-class skip proof",
+      run: pathClassSkipProofScript.join("\n"),
+      if: postgresAggregateSkipCondition,
+      shell: "bash",
+    },
+    {
+      name: "Require all PostgreSQL reachability facets",
+      run: postgresDomainReachabilityAggregatorCommands.join("\n"),
+      if: postgresAggregateHeavyCondition,
+      shell: null,
+    },
+  ];
+  const exact = steps.length === contracts.length && contracts.every((contract, index) => {
+    const step = steps[index] ?? "";
+    const shell = step.match(/^        shell: ([^\n]+)$/m)?.[1] ?? null;
+    return stepName(step) === contract.name
+      && runCommand(step) === contract.run
+      && hasOnlyExpectedCondition(step, contract.if)
+      && shell === contract.shell;
+  });
+  if (!exact) {
+    failures.push("PostgreSQL aggregate must distinguish preflight failure, thin skip, and heavy facets");
   }
 }
 
@@ -2078,7 +2231,8 @@ export function evaluateCiPreflight(
     }
   }
   requireReasoningLensContracts(preflightSteps, failures);
-  requireConsoleExactMergeProof(workflow, preflightSteps, failures);
+  requireConsoleRegressionCoverage(workflow, preflightSteps, failures);
+  requireReleaseMetadataProofs(preflightSteps, failures);
   // One job, both crates. They share console-kernel-core, so two jobs recompiled
   // the same dependencies and paid two runner startups and two cache restores.
   const domainUnit = jobBlock(workflow, "domain-unit");
@@ -2161,15 +2315,11 @@ export function evaluateCiPreflight(
   const postgresDomainReachability = jobBlock(workflow, "postgres-domain-reachability");
   if (postgresDomainReachability) {
     const steps = stepBlocks(postgresDomainReachability);
-    requireUnconditionalMultilineRun(
-      steps,
-      postgresDomainReachabilityAggregatorCommands,
-      "postgres-domain-reachability",
-      failures,
-    );
+    requirePostgresAggregateStateMachine(steps, failures);
     requireOnlyLockedRuns(
       steps,
       [
+        postgresPreflightNonEvaluationScript.join("\n"),
         pathClassSkipProofScript.join("\n"),
         postgresDomainReachabilityAggregatorCommands.join("\n"),
       ],

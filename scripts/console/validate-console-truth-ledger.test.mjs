@@ -46,11 +46,11 @@ test('current candidate truth ledger is structurally complete but remains candid
     assert.ok(typeof payload.status === 'string' && payload.status !== '');
     assert.ok(typeof payload.reason === 'string' && payload.reason.trim() !== '');
   }
-  // This suite runs against BOTH ends of the train — `candidateCheckPlan` executes it in a
-  // worktree checked out at C, where the strip has not landed yet, and CI runs it at T, where it
-  // has. So it asserts the property that holds at both: whether a stored copy is present or
-  // absent, the validator's answer is the same, because it no longer reads one. The absence in
-  // the shipped documents is a diff to read, not a runtime fact this file can pin at C; that a
+  // This suite accepts fixtures from both ends of an authority train, while ordinary CI runs the
+  // regression from the candidate checkout. It asserts the property that holds at both: whether
+  // a stored copy is present or absent, the validator's answer is the same, because it no longer
+  // reads one. The absence in the shipped documents is a diff to read, not a runtime fact this
+  // file can pin at C; that a
   // present copy is INERT is asserted below, in 'a re-added stored copy buys nothing'.
   const stripped = structuredClone(registry), strippedJurisdiction = structuredClone(jurisdiction);
   delete stripped.candidate; delete stripped.provenance.exact_current_candidate_sha;

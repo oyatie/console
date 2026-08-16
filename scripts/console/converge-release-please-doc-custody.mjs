@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Rewrite an open release-please tip so CHANGELOG custody converges.
+ * Rewrite the exact Release Please action tip so CHANGELOG custody converges.
  *
  * Release Please only edits `.release-please-manifest.json` + `CHANGELOG.md`.
  * `CHANGELOG.md` is first-party manifest evidence, so `check:doc-manifest` /
@@ -14,16 +14,18 @@
  *   directory / Actions main checkout). The tip is opened only as a data
  *   worktree; its `scripts/**` are never executed.
  * - Custody bytes are exactly the protected generator's `--write` output.
- * - Rewrites require RELEASE_PLEASE_TOKEN (or CONSOLE_RELEASE_PUSH_TOKEN): a
- *   default GITHUB_TOKEN force-push does not schedule Required checks.
+ * - The protected action output, live PR metadata, exact parent, exact bot
+ *   commit, and generated core bytes are bound before a write token is used.
+ * - Rewrites require RELEASE_PLEASE_TOKEN (or CONSOLE_RELEASE_PUSH_TOKEN) only
+ *   for transport. Non-transport child environments never inherit either
+ *   push-token name; read/API authority remains the workflow GITHUB_TOKEN.
  *
- * Intended caller: `.github/workflows/release-please.yml` after the action, or
- * a workflow_dispatch heal. Heal also rewrites tips whose subject/parent/path
- * set are valid but author/committer identity is poisoned — still fail-closed
- * on path sprawl or wrong subject.
+ * Intended caller: `.github/workflows/release-please.yml` immediately after the
+ * pinned action. There is no heuristic PR discovery and no identity-healing
+ * path: a raced or poisoned tip fails before mutation.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { appendFileSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -36,10 +38,13 @@ import {
   RELEASE_PLEASE_HEAD_REF,
   RELEASE_PLEASE_PATHS,
   RELEASE_PLEASE_SUBJECT,
+  assertReleasePleaseBotIdentity,
+  assertReleasePleaseBotPathDiff,
   gitCommitIdentity,
   gitRawDiff,
   releasePleaseCustodyRewritePlan,
 } from './release-please-bot-candidate.mjs';
+import { validateReleaseMetadataBytes } from '../check-release-metadata.mjs';
 
 const PROTECTED_ROOT = process.cwd();
 const PROTECTED_GENERATOR = join(
@@ -47,13 +52,262 @@ const PROTECTED_GENERATOR = join(
   'generate-documentation-manifest.mjs',
 );
 const ALLOWED = [...RELEASE_PLEASE_PATHS, ...RELEASE_PLEASE_CUSTODY_PATHS];
+const SHA = /^[0-9a-f]{40}$/;
+const ACTION_BODY_PREFIX = ':robot: I have created a release *beep* *boop*\n---\n\n\n';
+const ACTION_BODY_SUFFIX = '\n\n---\nThis PR was generated with [Release Please](https://github.com/googleapis/release-please). See [documentation](https://github.com/googleapis/release-please#release-please).';
+const CHANGELOG_PREFIX = '# Changelog\n\n';
+const RELEASE_PUSH_ASKPASS = `#!/bin/sh
+set -eu
+case "\${1-}" in
+  Password*) printf '%s\\n' "\$CONSOLE_RELEASE_PUSH_TOKEN" ;;
+  *) exit 1 ;;
+esac
+`;
+
+function fail(message) {
+  throw new Error(`release custody convergence: ${message}`);
+}
+
+function nonEmptyString(value, label) {
+  if (typeof value !== 'string' || value.length === 0) fail(`${label} must be a non-empty string`);
+  return value;
+}
+
+function exactSha(value, label) {
+  if (!SHA.test(value ?? '')) fail(`${label} must be a lowercase 40-character SHA`);
+  return value;
+}
+
+function exactUtf8(value, label) {
+  if (!Buffer.isBuffer(value)) fail(`${label} must be exact bytes`);
+  const text = value.toString('utf8');
+  if (!Buffer.from(text, 'utf8').equals(value)) fail(`${label} must be valid UTF-8`);
+  return text;
+}
+
+export function parseReleasePleaseActionPr(raw) {
+  if (typeof raw !== 'string' || raw.length === 0) fail('release action PR output is missing');
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    fail('release action PR output must be valid JSON');
+  }
+  if (parsed === null || Array.isArray(parsed) || typeof parsed !== 'object') {
+    fail('release action PR output must be an object');
+  }
+  if (!Number.isSafeInteger(parsed.number) || parsed.number <= 0) {
+    fail('release action PR output number must be a positive integer');
+  }
+  for (const key of ['headBranchName', 'baseBranchName', 'title', 'body']) {
+    nonEmptyString(parsed[key], `release action PR output ${key}`);
+  }
+  if (!Array.isArray(parsed.labels) || !parsed.labels.every((value) => typeof value === 'string')) {
+    fail('release action PR output labels must be a string array');
+  }
+  if (!Array.isArray(parsed.files)) fail('release action PR output files must be an array');
+  return Object.freeze({
+    headBranchName: parsed.headBranchName,
+    baseBranchName: parsed.baseBranchName,
+    number: parsed.number,
+    title: parsed.title,
+    body: parsed.body,
+    labels: Object.freeze([...parsed.labels]),
+    files: Object.freeze([...parsed.files]),
+  });
+}
+
+function actionReleaseNotes(body) {
+  if (!body.startsWith(ACTION_BODY_PREFIX) || !body.endsWith(ACTION_BODY_SUFFIX)) {
+    fail('release action PR body must have the exact Release Please envelope');
+  }
+  const notes = body.slice(ACTION_BODY_PREFIX.length, -ACTION_BODY_SUFFIX.length);
+  if (notes.length === 0 || notes.includes('\r')) {
+    fail('release action PR body must contain canonical LF-only release notes');
+  }
+  return notes;
+}
+
+/**
+ * Bind Release Please's protected action output to the exact two-file core tip.
+ * A later PAT rewrite may add only deterministic custody bytes; it cannot bless
+ * a raced human tip or content not represented by the pinned action output.
+ */
+export function assertReleasePleaseActionCoreBinding({
+  actionPr,
+  livePr,
+  repository,
+  actualHeadSha,
+  expectedParentSha,
+  actualParentSha,
+  identity,
+  pathChanges,
+  baseManifest,
+  headManifest,
+  baseChangelog,
+  headChangelog,
+} = {}) {
+  if (!actionPr || typeof actionPr !== 'object') fail('release action PR output is unavailable');
+  if (!livePr || typeof livePr !== 'object') fail('live PR metadata is unavailable');
+  const repo = nonEmptyString(repository, 'protected repository');
+  const parentSha = exactSha(actualParentSha, 'release tip parent');
+  if (parentSha !== exactSha(expectedParentSha, 'triggering main SHA')) {
+    fail(`release tip parent ${parentSha} must equal triggering main SHA ${expectedParentSha}`);
+  }
+  const headSha = exactSha(actualHeadSha, 'action-bound release tip SHA');
+  if (exactSha(livePr?.head?.sha, 'live PR head SHA') !== headSha) {
+    fail('live PR head SHA must equal the action-bound release tip SHA');
+  }
+
+  if (livePr.number !== actionPr.number) fail('live PR number must equal release action PR output');
+  if (livePr.state !== 'open') fail('live PR must remain open');
+  if (livePr.title !== actionPr.title) fail('live PR title must equal release action PR output');
+  if (livePr.body !== actionPr.body) fail('live PR body must equal release action PR output');
+  if (livePr?.user?.login !== RELEASE_PLEASE_BOT_NAME) {
+    fail('live PR creator must be exactly github-actions[bot]');
+  }
+  if (livePr?.head?.repo?.full_name !== repo) fail('live PR head repository must equal the protected repository');
+  if (livePr?.head?.ref !== actionPr.headBranchName) fail('live PR head ref must equal release action PR output');
+  if (livePr?.base?.ref !== actionPr.baseBranchName || actionPr.baseBranchName !== 'main') {
+    fail('live PR base must equal the release action output and protected main branch');
+  }
+  if (!RELEASE_PLEASE_HEAD_REF.test(actionPr.headBranchName)) {
+    fail('release action PR head ref must match the release-please branch pattern');
+  }
+
+  assertReleasePleaseBotIdentity(identity);
+  if (identity.subject !== actionPr.title) fail('release tip subject must equal release action PR title');
+
+  const changedPaths = Array.isArray(pathChanges)
+    ? pathChanges.map((change) => change?.path).sort()
+    : [];
+  if (changedPaths.length !== RELEASE_PLEASE_PATHS.length
+    || JSON.stringify(changedPaths) !== JSON.stringify([...RELEASE_PLEASE_PATHS].sort())) {
+    fail('release core must change exactly .release-please-manifest.json and CHANGELOG.md in order');
+  }
+  assertReleasePleaseBotPathDiff(pathChanges);
+
+  const metadata = validateReleaseMetadataBytes({ baseManifest, headManifest, headChangelog });
+  const titleMatch = actionPr.title.match(/ release (\d+\.\d+\.\d+)$/);
+  if (!titleMatch || titleMatch[1] !== metadata.headVersion) {
+    fail(`release action PR title must name manifest version ${metadata.headVersion}`);
+  }
+
+  const baseText = exactUtf8(baseChangelog, 'base CHANGELOG.md');
+  const headText = exactUtf8(headChangelog, 'head CHANGELOG.md');
+  if (!baseText.startsWith(CHANGELOG_PREFIX)) fail('base CHANGELOG.md must start with the canonical heading');
+  const expectedHead = `${CHANGELOG_PREFIX}${actionReleaseNotes(actionPr.body)}\n\n${baseText.slice(CHANGELOG_PREFIX.length)}`;
+  if (headText !== expectedHead) {
+    fail('head CHANGELOG.md must exactly prepend the release action notes to the parent CHANGELOG.md');
+  }
+
+  return Object.freeze({
+    prNumber: actionPr.number,
+    headRef: actionPr.headBranchName,
+    headSha,
+    parentSha,
+    version: metadata.headVersion,
+  });
+}
+
+export function sanitizedChildEnvironment(source = process.env) {
+  const environment = { ...source };
+  delete environment.CONSOLE_RELEASE_PUSH_TOKEN;
+  delete environment.RELEASE_PLEASE_TOKEN;
+  return environment;
+}
+
+export function releaseTransportCommitEnvironment({
+  sourceCommitterEpoch,
+  sourceEnvironment = process.env,
+} = {}) {
+  const rawEpoch = nonEmptyString(sourceCommitterEpoch, 'source tip committer epoch');
+  if (!/^(0|[1-9][0-9]{0,9})$/.test(rawEpoch)) {
+    fail('source tip committer epoch must be a canonical non-negative Git timestamp');
+  }
+  const epoch = BigInt(rawEpoch);
+  if (epoch > 9_999_999_998n) {
+    fail('source tip committer epoch cannot produce a bounded distinct timestamp');
+  }
+  return {
+    ...sanitizedChildEnvironment(sourceEnvironment),
+    GIT_AUTHOR_NAME: RELEASE_PLEASE_BOT_NAME,
+    GIT_AUTHOR_EMAIL: RELEASE_PLEASE_BOT_EMAIL,
+    GIT_COMMITTER_NAME: RELEASE_PLEASE_COMMITTER_NAME,
+    GIT_COMMITTER_EMAIL: RELEASE_PLEASE_COMMITTER_EMAIL,
+    // The action tip and transport rewrite can otherwise share every commit
+    // field in the same second. A provably distinct committer timestamp makes
+    // the PAT push advance the ref and therefore emit the required PR event.
+    GIT_COMMITTER_DATE: `@${epoch + 1n} +0000`,
+  };
+}
+
+export function createReleasePushAskpass(directory) {
+  const root = nonEmptyString(directory, 'release push transport directory');
+  const askpassPath = join(root, 'git-askpass.sh');
+  writeFileSync(askpassPath, RELEASE_PUSH_ASKPASS, {
+    encoding: 'utf8',
+    flag: 'wx',
+    mode: 0o700,
+  });
+  return askpassPath;
+}
+
+export function releasePushInvocation({
+  repository,
+  headRef,
+  leaseTip,
+  token,
+  askpassPath,
+  sourceEnvironment = process.env,
+} = {}) {
+  const repo = nonEmptyString(repository, 'release push repository');
+  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)) {
+    fail('release push repository must be an exact owner/name pair');
+  }
+  const ref = nonEmptyString(headRef, 'release push head ref');
+  if (!RELEASE_PLEASE_HEAD_REF.test(ref)) fail('release push head ref is outside the release-please class');
+  const expectedTip = exactSha(leaseTip, 'release push lease tip');
+  const secret = nonEmptyString(token, 'release push token');
+  if (/[\0\r\n]/.test(secret)) fail('release push token must not contain control bytes');
+  const askpass = nonEmptyString(askpassPath, 'release push askpass path');
+  return Object.freeze({
+    args: Object.freeze([
+      '-c', 'credential.helper=',
+      'push',
+      `--force-with-lease=refs/heads/${ref}:${expectedTip}`,
+      `https://x-access-token@github.com/${repo}.git`,
+      `HEAD:refs/heads/${ref}`,
+    ]),
+    env: Object.freeze({
+      ...sanitizedChildEnvironment(sourceEnvironment),
+      CONSOLE_RELEASE_PUSH_TOKEN: secret,
+      GIT_ASKPASS: askpass,
+      GIT_ASKPASS_REQUIRE: 'force',
+      GIT_TERMINAL_PROMPT: '0',
+      LANG: 'C',
+      LC_ALL: 'C',
+    }),
+  });
+}
+
+export function redactReleasePushError(error, tokens = [
+  process.env.CONSOLE_RELEASE_PUSH_TOKEN,
+  process.env.RELEASE_PLEASE_TOKEN,
+]) {
+  let message = error instanceof Error ? error.stack || error.message : String(error);
+  for (const token of tokens) {
+    if (typeof token === 'string' && token.length > 0) message = message.replaceAll(token, '[REDACTED]');
+  }
+  return message;
+}
 
 function run(cmd, args, opts = {}) {
   return execFileSync(cmd, args, {
     cwd: opts.cwd ?? PROTECTED_ROOT,
-    encoding: 'utf8',
+    encoding: Object.hasOwn(opts, 'encoding') ? opts.encoding : 'utf8',
     stdio: opts.stdio ?? ['ignore', 'pipe', 'pipe'],
-    env: opts.env ?? process.env,
+    env: opts.env ?? sanitizedChildEnvironment(),
   });
 }
 
@@ -66,44 +320,19 @@ function git(cwd, args) {
   return run('git', args, { cwd });
 }
 
-/** Discover by head-ref + release title; tip identity must still be the bot. */
-function findOpenReleasePr() {
-  const prs = ghJson([
-    'pr', 'list',
-    '--state', 'open',
-    '--base', 'main',
-    '--json', 'number,title,headRefName,headRefOid,author',
-    '--limit', '50',
-  ]) ?? [];
-  const matches = prs.filter((pr) => (
-    typeof pr.headRefName === 'string'
-    && RELEASE_PLEASE_HEAD_REF.test(pr.headRefName)
-    && RELEASE_PLEASE_SUBJECT.test(pr.title ?? '')
-  ));
-  if (matches.length === 0) return null;
-  if (matches.length > 1) {
-    throw new Error(`expected at most one open release-please PR, found ${matches.length}`);
-  }
-  return matches[0];
+function gitBytes(cwd, args) {
+  return run('git', args, { cwd, encoding: null });
 }
 
 function pushToken() {
   return process.env.CONSOLE_RELEASE_PUSH_TOKEN
     || process.env.RELEASE_PLEASE_TOKEN
-    || process.env.GH_TOKEN
-    || process.env.GITHUB_TOKEN
     || '';
 }
 
 function assertPushTokenCanScheduleChecks(token) {
   const defaultActions = process.env.GITHUB_TOKEN || '';
-  const usingDefaultOnly = Boolean(
-    defaultActions
-    && token === defaultActions
-    && !process.env.RELEASE_PLEASE_TOKEN
-    && !process.env.CONSOLE_RELEASE_PUSH_TOKEN,
-  );
-  if (usingDefaultOnly) {
+  if (defaultActions && token === defaultActions) {
     throw new Error(
       'refusing to rewrite release tip with default GITHUB_TOKEN: GitHub suppresses '
       + 'workflow triggers on that push, so Required checks would not schedule. '
@@ -112,35 +341,53 @@ function assertPushTokenCanScheduleChecks(token) {
   }
 }
 
-function isDirty(cwd, path) {
-  try {
-    git(cwd, ['diff', '--quiet', 'HEAD', '--', path]);
-    return false;
-  } catch {
-    return true;
-  }
+function emitProofOutputs({ prNumber, headSha, parentSha }) {
+  const output = process.env.GITHUB_OUTPUT;
+  if (!output) return;
+  appendFileSync(output, `pr_number=${prNumber}\nhead_sha=${headSha}\nparent_sha=${parentSha}\n`, 'utf8');
 }
 
 export function main() {
-  const token = pushToken();
-  if (!token) throw new Error('RELEASE_PLEASE_TOKEN, CONSOLE_RELEASE_PUSH_TOKEN, GH_TOKEN, or GITHUB_TOKEN is required');
-
-  const pr = findOpenReleasePr();
-  if (!pr) {
-    console.log('converge-release-please-doc-custody: no open release-please PR; nothing to do');
-    return { status: 'noop' };
+  const actionPr = parseReleasePleaseActionPr(process.env.RELEASE_PLEASE_PR ?? '');
+  const repository = nonEmptyString(process.env.GITHUB_REPOSITORY, 'GITHUB_REPOSITORY');
+  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository)) {
+    fail('GITHUB_REPOSITORY must be an exact owner/name pair');
   }
-
-  run('git', ['fetch', '--no-tags', 'origin', pr.headRefName]);
-  const tip = run('git', ['rev-parse', `origin/${pr.headRefName}`]).trim();
-  if (tip !== pr.headRefOid) {
-    throw new Error(`origin/${pr.headRefName} tip ${tip} != PR head ${pr.headRefOid}`);
+  const expectedParentSha = exactSha(process.env.GITHUB_SHA, 'GITHUB_SHA');
+  if (!RELEASE_PLEASE_HEAD_REF.test(actionPr.headBranchName)) {
+    fail('release action PR head ref must match the release-please branch pattern');
   }
+  if (actionPr.baseBranchName !== 'main') fail('release action PR base must be main');
+
+  const pr = ghJson(['api', `repos/${repository}/pulls/${actionPr.number}`]);
+  run('git', [
+    'fetch', '--no-tags', 'origin',
+    `+refs/heads/${actionPr.headBranchName}:refs/remotes/origin/${actionPr.headBranchName}`,
+  ]);
+  const tip = run('git', ['rev-parse', `refs/remotes/origin/${actionPr.headBranchName}`]).trim();
 
   const gitAt = (root, args) => run('git', ['-C', root, ...args]);
   const identity = gitCommitIdentity(PROTECTED_ROOT, tip, gitAt);
-  const parent = gitAt(PROTECTED_ROOT, ['rev-parse', `${tip}^`]).trim();
+  const commitLine = gitAt(PROTECTED_ROOT, ['rev-list', '--parents', '-n', '1', tip]).trim().split(' ');
+  if (commitLine.length !== 2 || commitLine[0] !== tip) {
+    fail('release action tip must be a one-parent commit');
+  }
+  const parent = commitLine[1];
   const pathChanges = gitRawDiff(PROTECTED_ROOT, parent, tip, gitAt);
+  const binding = assertReleasePleaseActionCoreBinding({
+    actionPr,
+    livePr: pr,
+    repository,
+    actualHeadSha: tip,
+    expectedParentSha,
+    actualParentSha: parent,
+    identity,
+    pathChanges,
+    baseManifest: gitBytes(PROTECTED_ROOT, ['show', `${parent}:.release-please-manifest.json`]),
+    headManifest: gitBytes(PROTECTED_ROOT, ['show', `${tip}:.release-please-manifest.json`]),
+    baseChangelog: gitBytes(PROTECTED_ROOT, ['show', `${parent}:CHANGELOG.md`]),
+    headChangelog: gitBytes(PROTECTED_ROOT, ['show', `${tip}:CHANGELOG.md`]),
+  });
 
   const work = mkdtempSync(join(tmpdir(), 'console-rp-custody-'));
   try {
@@ -149,40 +396,48 @@ export function main() {
 
     run('node', [PROTECTED_GENERATOR, '--write'], { cwd: work });
 
-    const dirty = ALLOWED.filter((path) => isDirty(work, path));
+    const dirty = [
+      ...git(work, ['diff', '--name-only', '-z', 'HEAD']).split('\0').filter(Boolean),
+      ...git(work, ['ls-files', '--others', '--exclude-standard', '-z']).split('\0').filter(Boolean),
+    ].sort();
     const dirtyCustodyPaths = dirty.filter((path) => RELEASE_PLEASE_CUSTODY_PATHS.includes(path));
-    // Fail closed if the generator dirtied a non-custody allowlisted path.
+    // Fail closed if the protected generator dirtied anything outside custody.
     for (const path of dirty) {
       if (!RELEASE_PLEASE_CUSTODY_PATHS.includes(path)) {
         throw new Error(`unexpected dirty path outside custody pair: ${path}`);
       }
     }
 
-    // Structure (subject + path allow-list) first; identity may be poisoned and
-    // still rewrite. Path sprawl / wrong subject throw inside the plan helper.
+    // The action/core binding above already authenticated the exact bot tip.
+    // The plan may now decide only whether deterministic custody bytes changed.
     const plan = releasePleaseCustodyRewritePlan({
       identity,
       pathChanges,
       dirtyCustodyPaths,
     });
-    if (plan.action === 'noop') {
-      console.log(`converge-release-please-doc-custody: PR #${pr.number} custody already converged`);
-      return { status: 'converged', pr: pr.number, tip };
+    if (dirtyCustodyPaths.length !== 0
+      && dirtyCustodyPaths.length !== RELEASE_PLEASE_CUSTODY_PATHS.length) {
+      throw new Error('documentation custody paths must be regenerated together');
     }
-
+    // Even if custody is already current, replace the default-token action tip
+    // with a tree-equivalent PAT transport commit so PR workflows are scheduled.
+    const reason = plan.action === 'noop' ? 'transport' : plan.reason;
+    const token = pushToken();
+    if (!token) throw new Error('RELEASE_PLEASE_TOKEN or CONSOLE_RELEASE_PUSH_TOKEN is required');
     assertPushTokenCanScheduleChecks(token);
 
     const subject = identity.subject;
     if (!RELEASE_PLEASE_SUBJECT.test(subject)) {
       throw new Error(`tip subject is not a release subject: ${subject}`);
     }
+    const sourceCommitterEpoch = git(work, ['show', '-s', '--format=%ct', tip]).trim();
 
     git(work, ['reset', '--soft', parent]);
     git(work, ['add', '--', ...ALLOWED]);
-    const staged = git(work, ['diff', '--cached', '--name-only'])
-      .split('\n').map((s) => s.trim()).filter(Boolean)
+    const staged = git(work, ['diff', '--cached', '--name-only', '-z'])
+      .split('\0').filter(Boolean)
       .sort();
-    const expected = [...ALLOWED].sort();
+    const expected = [...RELEASE_PLEASE_PATHS, ...dirtyCustodyPaths].sort();
     if (JSON.stringify(staged) !== JSON.stringify(expected)) {
       throw new Error(`staged set ${JSON.stringify(staged)} != allowlisted ${JSON.stringify(expected)}`);
     }
@@ -191,39 +446,63 @@ export function main() {
     // gpgsign=false: bot tips are unsigned by design; identity headers are the gate.
     run('git', ['-c', 'commit.gpgsign=false', 'commit', '--no-verify', '-m', subject], {
       cwd: work,
-      env: {
-        ...process.env,
-        GIT_AUTHOR_NAME: RELEASE_PLEASE_BOT_NAME,
-        GIT_AUTHOR_EMAIL: RELEASE_PLEASE_BOT_EMAIL,
-        GIT_COMMITTER_NAME: RELEASE_PLEASE_COMMITTER_NAME,
-        GIT_COMMITTER_EMAIL: RELEASE_PLEASE_COMMITTER_EMAIL,
-      },
+      env: releaseTransportCommitEnvironment({ sourceCommitterEpoch }),
     });
     const newTip = git(work, ['rev-parse', 'HEAD']).trim();
-    const healed = gitCommitIdentity(work, newTip, (root, args) => git(root, args));
-    // Post-rewrite identity must be exact bot/GitHub — never leave a poisoned tip.
-    if (
-      healed.authorName !== RELEASE_PLEASE_BOT_NAME
-      || healed.authorEmail !== RELEASE_PLEASE_BOT_EMAIL
-      || healed.committerName !== RELEASE_PLEASE_COMMITTER_NAME
-      || healed.committerEmail !== RELEASE_PLEASE_COMMITTER_EMAIL
-    ) {
-      throw new Error('rewrite produced non-bot identity; refusing to push');
+    if (newTip === tip) {
+      throw new Error('custody transport commit did not advance the release tip; refusing a no-op push');
     }
+    const healed = gitCommitIdentity(work, newTip, (root, args) => git(root, args));
+    assertReleasePleaseBotIdentity(healed);
+    const rewrittenParents = git(work, ['rev-list', '--parents', '-n', '1', newTip]).trim().split(' ');
+    if (rewrittenParents.length !== 2 || rewrittenParents[1] !== parent) {
+      throw new Error('rewrite changed the action-bound parent; refusing to push');
+    }
+    try {
+      git(work, ['diff', '--quiet', tip, newTip, '--', ...RELEASE_PLEASE_PATHS]);
+    } catch {
+      throw new Error('rewrite changed action-bound release core bytes; refusing to push');
+    }
+    assertReleasePleaseBotPathDiff(gitRawDiff(work, parent, newTip, (root, args) => git(root, args)));
 
-    // Push with the scheduling-capable token (not the Actions default).
-    const remote = `https://x-access-token:${token}@github.com/${run('gh', ['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner']).trim()}.git`;
-    git(work, [
-      'push',
-      '--force-with-lease=refs/heads/' + pr.headRefName + ':' + tip,
-      remote,
-      `HEAD:refs/heads/${pr.headRefName}`,
-    ]);
+    // Push with the scheduling-capable token (not the Actions default). A
+    // private one-shot askpass keeps the credential out of argv and therefore
+    // out of Node command-failure stacks and process listings.
+    const transportDirectory = mkdtempSync(join(tmpdir(), 'console-rp-transport-'));
+    try {
+      const askpassPath = createReleasePushAskpass(transportDirectory);
+      const invocation = releasePushInvocation({
+        repository,
+        headRef: actionPr.headBranchName,
+        leaseTip: tip,
+        token,
+        askpassPath,
+      });
+      run('git', invocation.args, { cwd: work, env: invocation.env });
+    } finally {
+      rmSync(transportDirectory, { recursive: true, force: true });
+    }
+    const finalPr = ghJson(['api', `repos/${repository}/pulls/${actionPr.number}`]);
+    if (
+      finalPr?.number !== actionPr.number
+      || finalPr?.state !== 'open'
+      || finalPr?.head?.sha !== newTip
+      || finalPr?.head?.ref !== actionPr.headBranchName
+      || finalPr?.head?.repo?.full_name !== repository
+      || finalPr?.base?.ref !== 'main'
+      || finalPr?.title !== actionPr.title
+      || finalPr?.body !== actionPr.body
+    ) {
+      throw new Error('live PR moved or metadata changed after custody push; refusing proof output');
+    }
+    emitProofOutputs({ prNumber: binding.prNumber, headSha: newTip, parentSha: parent });
     console.log(
       `converge-release-please-doc-custody: PR #${pr.number} tip ${tip} -> ${newTip}`
-      + ` (rewritten reason=${plan.reason})`,
+      + ` (rewritten reason=${reason})`,
     );
-    return { status: 'rewritten', pr: pr.number, tip, newTip, reason: plan.reason };
+    return {
+      status: 'rewritten', pr: pr.number, tip, newTip, parent, reason,
+    };
   } finally {
     try { run('git', ['worktree', 'remove', '--force', work]); } catch { /* best-effort */ }
     try { rmSync(work, { recursive: true, force: true }); } catch { /* best-effort */ }
@@ -234,7 +513,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
     main();
   } catch (error) {
-    console.error(error instanceof Error ? error.stack || error.message : error);
+    console.error(redactReleasePushError(error));
     process.exit(1);
   }
 }

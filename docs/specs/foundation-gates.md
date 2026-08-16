@@ -58,7 +58,7 @@ Required before production-impacting completion claims:
 1. CI must keep Rust fmt, clippy `-D warnings`, tests, OpenAPI contract, generated client drift, TypeScript, Kotlin, web lint/test/build, browser e2e, Android, and iOS gates intact.
 2. Security workflow must keep Trivy filesystem/secret/IaC scans, cargo audit, cargo deny, and npm audit high/critical gates intact.
 3. Image release must wait for CI, build immutable digests, run blocking Trivy image scan, sign with cosign, attest provenance/SBOM, and auto-bump GitOps overlays as desired state; live deployment claims still require default `scripts/deploy.sh` rollout/pod-digest/endpoint verification, not bump-only output.
-4. Release Please must use `RELEASE_PLEASE_TOKEN` when recursive release PR/tag automation is required; default `GITHUB_TOKEN` is not sufficient when repository settings disallow PR creation or recursive workflow triggering.
+4. Release Please retains `GITHUB_TOKEN` for bot-authored PR/tag operations; protected custody convergence requires `RELEASE_PLEASE_TOKEN` only for the release-branch update that schedules required PR workflows.
 5. Rust is pinned to 1.96.0 for CI/local parity.
 6. OCI/free-tier, backup/restore, KMS/secrets, Argo, and observability hardening remain G009/G008 execution work unless a lane changes those artifacts; this G002 gate only proves the baseline and the follow-on evidence columns.
 

@@ -10,7 +10,6 @@ import {
   RELEASE_PLEASE_TRAIN_CLASS,
   assertReleasePleaseBotIdentity,
   assertReleasePleaseBotPathDiff,
-  assertReleasePleaseHealableStructure,
   assertTrustedReleasePleasePrMeta,
   classifyReleasePleaseBotTip,
   classifyReleasePleaseSquashBinding,
@@ -22,6 +21,13 @@ const C = 'c'.repeat(40);
 const T = 'a'.repeat(40);
 const M = 'b'.repeat(40);
 const BASE = 'd'.repeat(40);
+const trustedPrMeta = Object.freeze({
+  prAuthorLogin: 'github-actions[bot]',
+  prHeadRef: 'release-please--branches--main--components--console',
+  eventSenderLogin: 'github-actions[bot]',
+  prHeadRepository: 'jason931225/console',
+  repository: 'jason931225/console',
+});
 
 const botIdentity = {
   authorName: RELEASE_PLEASE_BOT_NAME,
@@ -66,10 +72,7 @@ function ops(overrides = {}) {
 test('accepts exact bot identity, subject, and two-file path allow-list', () => {
   assert.doesNotThrow(() => assertReleasePleaseBotIdentity(botIdentity));
   assert.doesNotThrow(() => assertReleasePleaseBotPathDiff(releaseDiff));
-  assert.doesNotThrow(() => assertTrustedReleasePleasePrMeta({
-    prAuthorLogin: 'github-actions[bot]',
-    prHeadRef: 'release-please--branches--main--components--console',
-  }));
+  assert.doesNotThrow(() => assertTrustedReleasePleasePrMeta(trustedPrMeta));
   const classified = classifyReleasePleaseBotTip(ops(), T);
   assert.equal(classified.trainClass, RELEASE_PLEASE_TRAIN_CLASS);
   assert.equal(classified.candidateSha, C);
@@ -77,8 +80,7 @@ test('accepts exact bot identity, subject, and two-file path allow-list', () => 
     verifyReleasePleaseBotTrain(ops(), {
       headSha: T,
       mergeSha: M,
-      prAuthorLogin: 'github-actions[bot]',
-      prHeadRef: 'release-please--branches--main--components--console',
+      ...trustedPrMeta,
       requirePrMeta: true,
     }),
     {
@@ -136,6 +138,19 @@ test('rejects forged author, wrong committer, bad subject, and path sprawl', () 
     () => assertReleasePleaseBotPathDiff(releaseDiff.map((entry) => ({ ...entry, status: 'A', oldMode: '000000' }))),
     /mode-100644 modifications/,
   );
+  for (const [mutation, pattern] of [
+    [{ newMode: '100755' }, /mode-100644 modifications/],
+    [{ newMode: '120000' }, /mode-100644 modifications/],
+    [{ newType: 'commit' }, /remain blobs/],
+  ]) {
+    assert.throws(
+      () => assertReleasePleaseBotPathDiff([
+        { ...releaseDiff[0], ...mutation },
+        releaseDiff[1],
+      ]),
+      pattern,
+    );
+  }
   assert.throws(
     () => assertReleasePleaseBotPathDiff([...releaseDiff, custodyDiff[0]]),
     /documentation custody paths must be regenerated together/,
@@ -153,17 +168,34 @@ test('rejects forged author, wrong committer, bad subject, and path sprawl', () 
   );
 });
 
-test('bootstrap requirePrMeta rejects human PR author and non-release head ref', () => {
+test('bootstrap requirePrMeta rejects human creator/updater, fork heads, and non-release refs', () => {
   assert.throws(
     () => assertTrustedReleasePleasePrMeta({
       prAuthorLogin: 'jason931225',
       prHeadRef: 'release-please--branches--main--components--console',
+      eventSenderLogin: 'github-actions[bot]',
+      prHeadRepository: 'jason931225/console',
+      repository: 'jason931225/console',
     }),
     /PR author/,
   );
   assert.throws(
     () => assertTrustedReleasePleasePrMeta({
-      prAuthorLogin: 'github-actions[bot]',
+      ...trustedPrMeta,
+      eventSenderLogin: 'jason931225',
+    }),
+    /event sender/,
+  );
+  assert.throws(
+    () => assertTrustedReleasePleasePrMeta({
+      ...trustedPrMeta,
+      prHeadRepository: 'attacker/console',
+    }),
+    /head repository/,
+  );
+  assert.throws(
+    () => assertTrustedReleasePleasePrMeta({
+      ...trustedPrMeta,
       prHeadRef: 'evil-branch',
     }),
     /PR head ref/,
@@ -172,11 +204,11 @@ test('bootstrap requirePrMeta rejects human PR author and non-release head ref',
     () => verifyReleasePleaseBotTrain(ops(), {
       headSha: T,
       mergeSha: M,
-      prAuthorLogin: 'jason931225',
-      prHeadRef: 'release-please--branches--main--components--console',
+      ...trustedPrMeta,
+      eventSenderLogin: 'jason931225',
       requirePrMeta: true,
     }),
-    /PR author/,
+    /event sender/,
   );
 });
 
@@ -252,24 +284,20 @@ test('admits main squash that tree-binds a classifiable release-please tip; forg
   );
 });
 
-test('poisoned committer with valid release+custody paths is healable and plans rewrite', () => {
+test('poisoned committer is never healable even when release paths are valid', () => {
   const poisoned = {
     ...botIdentity,
     committerName: 'Jason Lee',
     committerEmail: 'jason19931225@gmail.com',
   };
   assert.throws(() => assertReleasePleaseBotIdentity(poisoned), /tip committer/);
-  assert.doesNotThrow(() => assertReleasePleaseHealableStructure({
-    subject: poisoned.subject,
-    changes: releaseWithCustodyDiff,
-  }));
-  assert.deepEqual(
-    releasePleaseCustodyRewritePlan({
+  assert.throws(
+    () => releasePleaseCustodyRewritePlan({
       identity: poisoned,
       pathChanges: releaseWithCustodyDiff,
       dirtyCustodyPaths: [],
     }),
-    { action: 'rewrite', reason: 'identity' },
+    /tip committer/,
   );
   assert.deepEqual(
     releasePleaseCustodyRewritePlan({
@@ -281,7 +309,7 @@ test('poisoned committer with valid release+custody paths is healable and plans 
   );
   assert.throws(
     () => releasePleaseCustodyRewritePlan({
-      identity: poisoned,
+      identity: botIdentity,
       pathChanges: [...releaseWithCustodyDiff, {
         path: 'README.md', status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob',
       }],
@@ -290,4 +318,3 @@ test('poisoned committer with valid release+custody paths is healable and plans 
     /documentation custody pair|only .*release-please/,
   );
 });
-

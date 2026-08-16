@@ -1,57 +1,300 @@
 #!/usr/bin/env node
 /**
- * Default-branch verifier for a console candidate C, authority tip T, and
- * GitHub synthetic merge M.  This file is trusted only because it runs from
- * the protected target branch; no PR file is executed before this check.
+ * Protected-target PR router.
+ *
+ * Ordinary PRs are bound to the exact live base/head graph without executing
+ * candidate bytes. Release-shaped PRs enter a separate fail-closed route that
+ * additionally requires the pinned Release Please run/job proof. This module
+ * does not authenticate ordinary commit authors and has no signing capability.
  */
-import { execFileSync, spawnSync } from 'node:child_process';
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
-// The ONLY repository import in this file, and it resolves from the same protected checkout
-// this script does — never from the pull request. It is here because the alternative is a
-// third copy of the ledger-prefix rule that has already drifted once; see
-// authority-ledger-path.mjs.
-import { AUTHORITY_DIFF_ARGS, LEDGER_DIRECTORY, isLedgerEntryPath } from './authority-ledger-path.mjs';
+import { execFileSync } from 'node:child_process';
 import {
+  RELEASE_PLEASE_BOT_EMAIL,
+  RELEASE_PLEASE_BOT_NAME,
+  RELEASE_PLEASE_HEAD_REF,
+  RELEASE_PLEASE_SUBJECT,
   RELEASE_PLEASE_TRAIN_CLASS,
-  assertTrustedReleasePleasePrMeta,
   classifyReleasePleaseBotTip,
-  classifyReleasePleaseSquashBinding,
   verifyReleasePleaseBotTrain,
 } from './release-please-bot-candidate.mjs';
 
-export const TRUSTED_PRINCIPAL = 'jason19931225@gmail.com';
-export const TRUSTED_FINGERPRINT = 'SHA256:5grGNUtX9Zgmy1SWne6wF9DR8W1ElUQaF/Z8SYRz8E8';
-export const TRUSTED_ALLOWED_SIGNER = `${TRUSTED_PRINCIPAL} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAgMAp8vHS9V/9UQQVTa5FtmS9Q9fdB8I520DsZMMDTR`;
-export const POLICY_PATH = '.github/trust/console.allowed_signers';
-export const AUTHORITY_PATHS = Object.freeze([
-  'docs/program/console-capability-registry.json',
-  'docs/program/console-jurisdiction-register.json',
-  'docs/program/console-program-ledger.md',
-]);
-// One file per new ledger entry, so two lanes never write the same bytes. Status `A` is
-// accepted for this prefix and NOWHERE else: the two registers and the legacy ledger .md
-// stay modify-only, and an added file anywhere outside this directory is still refused.
-export { LEDGER_DIRECTORY };
-const isAuthorityPath = (file) => AUTHORITY_PATHS.includes(file) || isLedgerEntryPath(file);
-const allowedChange = (change) => isAuthorityPath(change.path)
-  && (change.status === 'M' || (change.status === 'A' && isLedgerEntryPath(change.path)))
-  && change.newMode === '100644' && change.newType === 'blob'
-  && (change.status === 'A' ? change.oldMode === '000000' && change.oldType === null : change.oldMode === '100644' && change.oldType === 'blob');
 const SHA = /^[0-9a-f]{40}$/;
+export const PINNED_RELEASE_REPOSITORY = 'jason931225/console';
+export const PINNED_RELEASE_REPOSITORY_ID = 1269693002;
+export const RELEASE_PLEASE_BOT_ID = 41898282;
+export const RELEASE_PLEASE_WORKFLOW_ID = 296023729;
+export const RELEASE_PLEASE_WORKFLOW_PATH = '.github/workflows/release-please.yml';
+const RELEASE_PLEASE_WORKFLOW_NAME = 'Release Please';
+const RELEASE_PLEASE_WORKFLOW_EVENTS = Object.freeze(['push']);
+const RAW_DIFF_ARGS = Object.freeze(['diff', '--raw', '-z', '--abbrev=40', '--no-renames', '--no-ext-diff']);
 const SAFE_ENVIRONMENT_KEYS = Object.freeze(['PATH', 'SystemRoot', 'SYSTEMROOT', 'ComSpec', 'TEMP', 'TMP', 'TMPDIR', 'LANG', 'LC_ALL', 'TZ']);
 const fail = (message) => { throw new Error(`console authority bootstrap: ${message}`); };
 const exactSha = (value, label) => { if (!SHA.test(value ?? '')) fail(`${label} must be a lowercase 40-character SHA`); return value; };
+
+function exactPositiveInteger(value, label) {
+  if (!Number.isSafeInteger(value) || value <= 0) fail(`${label} must be a positive integer`);
+  return value;
+}
+
+function releaseProofJobName(prNumber, headSha) {
+  return `release-authority-proof pr=${prNumber} head=${headSha}`;
+}
+
+/** Validate GitHub's native run/job record; generic statuses and checks are not inputs. */
+export function assertReleaseAuthorityProof({
+  runs,
+  jobs,
+  repository,
+  prNumber,
+  headSha,
+  parentSha,
+} = {}) {
+  if (repository !== PINNED_RELEASE_REPOSITORY) fail('release proof repository name is not pinned');
+  const number = exactPositiveInteger(prNumber, 'release proof PR number');
+  const T = exactSha(headSha, 'release proof head SHA');
+  const C = exactSha(parentSha, 'release proof parent SHA');
+  if (!Array.isArray(runs) || runs.length !== 1) fail('release proof requires exactly one protected workflow run');
+  const [run] = runs;
+  if (!run || typeof run !== 'object') fail('release proof workflow run is malformed');
+  if (run.workflow_id !== RELEASE_PLEASE_WORKFLOW_ID) fail('release proof workflow id is not pinned');
+  if (run.path !== RELEASE_PLEASE_WORKFLOW_PATH) fail('release proof workflow path is not pinned');
+  if (!RELEASE_PLEASE_WORKFLOW_EVENTS.includes(run.event)) {
+    fail('release proof must originate from an allowed event');
+  }
+  if (run.head_branch !== 'main') fail('release proof run must use the main branch');
+  if (run.head_sha !== C) fail('release proof run head must equal the release tip parent SHA');
+  if (run?.repository?.id !== PINNED_RELEASE_REPOSITORY_ID) fail('release proof repository id is not pinned');
+  if (run?.repository?.full_name !== PINNED_RELEASE_REPOSITORY) fail('release proof repository name is not pinned');
+  const runId = exactPositiveInteger(run.id, 'release proof run id');
+  const runNumber = exactPositiveInteger(run.run_number, 'release proof run number');
+  const runAttempt = exactPositiveInteger(run.run_attempt, 'release proof run attempt');
+  if (run.status !== 'completed' || run.conclusion !== 'success') {
+    fail('release proof workflow run must have completed successfully');
+  }
+
+  if (!Array.isArray(jobs)) fail('release proof jobs are unavailable');
+  const name = releaseProofJobName(number, T);
+  const matching = jobs.filter((entry) => entry?.name === name);
+  if (matching.length !== 1) fail('release proof requires exactly one exact proof job');
+  const [job] = matching;
+  const jobId = exactPositiveInteger(job.id, 'release proof job id');
+  if (job.run_id !== runId) fail('release proof job run id must equal the protected run');
+  if (job.run_attempt !== runAttempt) fail('release proof job run attempt must equal the current run attempt');
+  if (job.workflow_name !== RELEASE_PLEASE_WORKFLOW_NAME) fail('release proof workflow name is not pinned');
+  if (job.head_sha !== C) fail('release proof job head must equal the release tip parent SHA');
+  if (job.status !== 'completed' || job.conclusion !== 'success') {
+    fail('release proof job must have completed successfully');
+  }
+  return Object.freeze({
+    workflowId: RELEASE_PLEASE_WORKFLOW_ID,
+    runId,
+    runNumber,
+    runAttempt,
+    jobId,
+    prNumber: number,
+    headSha: T,
+    parentSha: C,
+  });
+}
+
+function assertLiveReleasePr(pr, { repository, prNumber, headSha, headRef }, phase) {
+  if (
+    pr?.number !== prNumber
+    || pr?.state !== 'open'
+    || pr?.user?.login !== RELEASE_PLEASE_BOT_NAME
+    || pr?.head?.sha !== headSha
+    || pr?.head?.ref !== headRef
+    || pr?.head?.repo?.full_name !== repository
+    || pr?.base?.ref !== 'main'
+  ) {
+    fail(`live PR head or protected release shape moved ${phase} proof polling`);
+  }
+}
+
+async function listAllReleaseProofRuns({ request, repository, parentSha }) {
+  const endpoint = `/repos/${repository}/actions/workflows/${RELEASE_PLEASE_WORKFLOW_ID}/runs`
+    + `?branch=main&event=push&head_sha=${parentSha}&per_page=100`;
+  const runs = [];
+  const seenRunIds = new Set();
+  let totalCount = null;
+  for (let page = 1; page <= 10; page += 1) {
+    const response = await request(`${endpoint}&page=${page}`);
+    if (!Number.isSafeInteger(response?.total_count) || response.total_count < 0) {
+      fail('release proof run search total_count is unavailable');
+    }
+    if (response.total_count > 1000) {
+      fail('release proof run search exceeds the GitHub 1000-result search bound');
+    }
+    if (totalCount === null) totalCount = response.total_count;
+    if (response.total_count !== totalCount) {
+      fail('release proof run search changed while paginating');
+    }
+    const pageRuns = response.workflow_runs;
+    if (!Array.isArray(pageRuns) || pageRuns.length > 100) {
+      fail('release proof run search page is malformed');
+    }
+    for (const entry of pageRuns) {
+      const runId = exactPositiveInteger(entry?.id, 'release proof run id');
+      if (seenRunIds.has(runId)) fail('release proof run search repeated a run across pages');
+      seenRunIds.add(runId);
+      runs.push(entry);
+    }
+    if (runs.length === totalCount) return runs;
+    if (runs.length > totalCount || pageRuns.length === 0) {
+      fail('release proof run search pagination is incomplete');
+    }
+  }
+  fail('release proof run search did not complete within ten pages');
+}
+
+function selectNewestReleaseProofRuns(allRuns, parentSha) {
+  const runs = allRuns.filter((entry) => (
+    entry?.workflow_id === RELEASE_PLEASE_WORKFLOW_ID && entry?.head_sha === parentSha
+  ));
+  if (runs.length === 0) return [];
+  const numbered = runs.map((entry) => ({
+    entry,
+    number: exactPositiveInteger(entry?.run_number, 'release proof run number'),
+  }));
+  const newestNumber = Math.max(...numbered.map(({ number }) => number));
+  const selected = numbered
+    .filter(({ number }) => number === newestNumber)
+    .map(({ entry }) => entry);
+  if (selected.length !== 1) {
+    fail('release proof requires exactly one newest protected workflow run');
+  }
+  return selected;
+}
+
+function releaseProofRunSnapshot(run) {
+  return JSON.stringify([
+    run?.id,
+    run?.workflow_id,
+    run?.path,
+    run?.event,
+    run?.head_branch,
+    run?.head_sha,
+    run?.run_number,
+    run?.run_attempt,
+    run?.status,
+    run?.conclusion,
+    run?.repository?.id,
+    run?.repository?.full_name,
+  ]);
+}
+
+export async function pollReleaseAuthorityProof({
+  request,
+  sleep,
+  repository,
+  prNumber,
+  headSha,
+  parentSha,
+  headRef,
+  maxAttempts = 60,
+} = {}) {
+  if (typeof request !== 'function' || typeof sleep !== 'function') fail('release proof polling adapters are required');
+  if (repository !== PINNED_RELEASE_REPOSITORY) fail('release proof repository name is not pinned');
+  const number = exactPositiveInteger(prNumber, 'release proof PR number');
+  const T = exactSha(headSha, 'release proof head SHA');
+  const C = exactSha(parentSha, 'release proof parent SHA');
+  if (typeof headRef !== 'string' || !RELEASE_PLEASE_HEAD_REF.test(headRef)) {
+    fail('release proof PR head ref is outside the exact release-please class');
+  }
+  if (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 120) {
+    fail('release proof max attempts must be between 1 and 120');
+  }
+  const pullEndpoint = `/repos/${repository}/pulls/${number}`;
+  assertLiveReleasePr(await request(pullEndpoint), {
+    repository, prNumber: number, headSha: T, headRef,
+  }, 'before');
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const allRuns = await listAllReleaseProofRuns({ request, repository, parentSha: C });
+    const selectedRuns = selectNewestReleaseProofRuns(allRuns, C);
+    if (selectedRuns.length === 1 && selectedRuns[0]?.status === 'completed') {
+      if (selectedRuns[0].conclusion !== 'success') {
+        assertReleaseAuthorityProof({ runs: selectedRuns, jobs: [], repository, prNumber: number, headSha: T, parentSha: C });
+      }
+      const runId = exactPositiveInteger(selectedRuns[0].id, 'release proof run id');
+      const runAttempt = exactPositiveInteger(selectedRuns[0].run_attempt, 'release proof run attempt');
+      const jobsEndpoint = `/repos/${repository}/actions/runs/${runId}/attempts/${runAttempt}/jobs?per_page=100`;
+      const jobsResponse = await request(jobsEndpoint);
+      const jobs = Array.isArray(jobsResponse?.jobs) ? jobsResponse.jobs : [];
+      if (jobs.some((entry) => entry?.name === releaseProofJobName(number, T))) {
+        const proof = assertReleaseAuthorityProof({
+          runs: selectedRuns, jobs, repository, prNumber: number, headSha: T, parentSha: C,
+        });
+        const refreshedRuns = selectNewestReleaseProofRuns(
+          await listAllReleaseProofRuns({ request, repository, parentSha: C }),
+          C,
+        );
+        if (refreshedRuns.length !== 1
+          || releaseProofRunSnapshot(refreshedRuns[0]) !== releaseProofRunSnapshot(selectedRuns[0])) {
+          fail('release proof run changed during proof validation');
+        }
+        assertReleaseAuthorityProof({
+          runs: refreshedRuns, jobs, repository, prNumber: number, headSha: T, parentSha: C,
+        });
+        assertLiveReleasePr(await request(pullEndpoint), {
+          repository, prNumber: number, headSha: T, headRef,
+        }, 'after');
+        return proof;
+      }
+    }
+    if (attempt + 1 < maxAttempts) await sleep();
+  }
+  fail(`release proof timed out after ${maxAttempts} bounded attempts`);
+}
 
 function mapReleasePleaseError(error) {
   const message = error instanceof Error ? error.message : String(error);
   fail(message.replace(/^release-please bot candidate: /, ''));
 }
 
+function assertReleaseProofCoordinates(proof, {
+  prNumber,
+  headSha,
+  parentSha,
+  prHeadRef,
+  prHeadRepository,
+  repository,
+}) {
+  if (repository !== PINNED_RELEASE_REPOSITORY || prHeadRepository !== repository) {
+    fail('release PR head repository must equal the pinned protected repository');
+  }
+  if (typeof prHeadRef !== 'string' || !RELEASE_PLEASE_HEAD_REF.test(prHeadRef)) {
+    fail('release PR head ref must match the exact release-please class');
+  }
+  const number = typeof prNumber === 'string' && /^\d+$/.test(prNumber)
+    ? Number(prNumber)
+    : prNumber;
+  exactPositiveInteger(number, 'release authority proof PR number');
+  if (
+    !proof
+    || typeof proof !== 'object'
+    || proof.workflowId !== RELEASE_PLEASE_WORKFLOW_ID
+    || !Number.isSafeInteger(proof.runId)
+    || proof.runId <= 0
+    || !Number.isSafeInteger(proof.runNumber)
+    || proof.runNumber <= 0
+    || !Number.isSafeInteger(proof.runAttempt)
+    || proof.runAttempt <= 0
+    || !Number.isSafeInteger(proof.jobId)
+    || proof.jobId <= 0
+    || proof.prNumber !== number
+    || proof.headSha !== headSha
+    || proof.parentSha !== parentSha
+  ) {
+    fail('release authority proof does not bind the exact PR, head, parent, and protected workflow');
+  }
+}
+
 function sanitizedGitEnvironment(source = process.env) {
   const environment = {};
-  for (const key of SAFE_ENVIRONMENT_KEYS) if (source[key] !== undefined) environment[key] = source[key];
+  for (const key of SAFE_ENVIRONMENT_KEYS) {
+    if (Object.hasOwn(source, key)) environment[key] = source[key];
+  }
   return {
     ...environment,
     HOME: '/dev/null',
@@ -64,154 +307,183 @@ function sanitizedGitEnvironment(source = process.env) {
   };
 }
 
-export function validatePinnedPolicy(raw) {
-  if (raw !== `${TRUSTED_ALLOWED_SIGNER}\n`) fail('C signing policy must contain exactly the pinned signer');
-  return raw;
-}
-function assertSigned(status, label) {
-  if (status?.ok !== true || status.principal !== TRUSTED_PRINCIPAL || status.fingerprint !== TRUSTED_FINGERPRINT) fail(`${label} is not signed by the pinned SSH authority`);
-}
+/**
+ * Three-state router. Any protected release signal reserves the release lane;
+ * incomplete or contradictory signals cannot downgrade into ordinary admission.
+ */
+export function classifyProtectedPrRoute(ops, {
+  baseSha,
+  headSha,
+  prAuthorId,
+  prAuthorLogin,
+  prHeadRef,
+  prHeadRepository,
+  repository,
+}) {
+  const B = exactSha(baseSha, 'protected base');
+  const H = exactSha(headSha, 'PR head');
+  if (repository !== PINNED_RELEASE_REPOSITORY) fail('repository name is not pinned');
+  if (typeof prHeadRef !== 'string' || prHeadRef.length === 0) fail('PR head ref is unavailable');
+  if (typeof prHeadRepository !== 'string' || prHeadRepository.length === 0) fail('PR head repository is unavailable');
 
-/** SSH-signed C/T authority train (product / docs authority PRs). */
-function verifySignedAuthorityTrain(ops, authorityTipSha) {
-  const T = exactSha(authorityTipSha, 'PR head');
-  if (!ops.hasCommit(T)) fail('PR head object is unavailable');
-  // C is Git's own answer, not the PR's: T's single parent. This gate reads NOTHING out of a
-  // document the pull request controls in order to locate C — it used to read the registry's
-  // `candidate.sha` and then require it to equal T's parent, a comparison that could not lose
-  // and whose only lasting effect was to make the register store a copy of a commit SHA.
-  const tipParents = ops.parents(T);
-  if (!Array.isArray(tipParents) || tipParents.length !== 1) fail('T must be the direct single-parent child of C');
-  const C = exactSha(tipParents[0], 'candidate C');
-  if (!ops.hasCommit(C)) fail('C object is unavailable');
-  const policyEntry = ops.treeEntry(C, POLICY_PATH);
-  if (policyEntry?.mode !== '100644' || policyEntry.type !== 'blob') fail('C signing policy must be a regular mode-100644 blob');
-  const policy = validatePinnedPolicy(ops.readFile(C, POLICY_PATH));
-  const authority = { policy, principal: TRUSTED_PRINCIPAL, fingerprint: TRUSTED_FINGERPRINT };
-  // After a release-please squash lands on main, C is that unsigned squash. Admit it only when
-  // it tree-binds a previously classifiable bot tip (verifySquashBinding dual); T still needs
-  // the pinned SSH signature. Arbitrary unsigned C stays fail-closed.
-  const squashBinding = typeof ops.commitIdentity === 'function'
-    ? classifyReleasePleaseSquashBinding(ops, C)
-    : null;
-  if (!squashBinding) {
-    assertSigned(ops.verifyCommit(C, authority), 'C');
-  }
-  assertSigned(ops.verifyCommit(T, authority), 'T');
-  const changes = ops.diff(C, T);
-  if (!Array.isArray(changes)) fail('C..T diff is unavailable');
-  const changed = new Set();
-  for (const change of changes) {
-    if (!allowedChange(change) || changed.has(change.path)) fail('C..T may only make regular mode-100644 modifications to the authority documents, or add regular mode-100644 files under docs/program/ledger/');
-    changed.add(change.path);
-  }
-  // Allow-list, not a checklist — see verify-console-authority-train.mjs for why "all three" is gone.
-  if (changed.size === 0) fail('C..T must modify at least one authority document');
-  return { candidateSha: C, authorityTipSha: T, trainClass: 'ssh-authority' };
-}
+  let identity;
+  try { identity = ops.commitIdentity(H); } catch { fail('PR head commit identity is unavailable'); }
+  if (!identity || typeof identity !== 'object') fail('PR head commit identity is unavailable');
+  let changes;
+  try { changes = ops.diff(B, H); } catch { fail('protected base..head diff is unavailable'); }
+  if (!Array.isArray(changes)) fail('protected base..head diff is unavailable');
 
-/** A pure seam used by hermetic tests; ops only reads Git object facts. */
-export function verifyBootstrapGraph(ops, { headSha, mergeSha, prAuthorLogin, prHeadRef }) {
-  const T = exactSha(headSha, 'PR head');
-  if (!ops.hasCommit(T)) fail('PR head object is unavailable');
-  // Release-please bot tips cannot carry the pinned SSH signature. Admit them only through the
-  // fail-closed bot+docs-only class, and only when the GitHub event author/ref match (commit
-  // headers alone are forgeable by anyone with write access).
-  if (typeof ops.commitIdentity === 'function' && classifyReleasePleaseBotTip(ops, T)) {
-    try {
-      const admitted = verifyReleasePleaseBotTrain(ops, {
-        headSha: T,
-        mergeSha: exactSha(mergeSha, 'PR merge'),
-        prAuthorLogin,
-        prHeadRef,
-        requirePrMeta: true,
-      });
-      return Object.freeze({
-        candidateSha: admitted.candidateSha,
-        integrationTipSha: admitted.integrationTipSha,
-        mergeSha: admitted.mergeSha,
-        trainClass: RELEASE_PLEASE_TRAIN_CLASS,
-      });
-    } catch (error) {
-      mapReleasePleaseError(error);
-    }
-  }
-  const train = verifySignedAuthorityTrain(ops, headSha);
-  const { candidateSha: C, authorityTipSha: tip } = train;
-  const M = exactSha(mergeSha, 'PR merge');
-  if (!ops.hasCommit(M)) fail('PR merge object is unavailable');
-  const mergeParents = ops.parents(M);
-  if (!Array.isArray(mergeParents) || mergeParents.length !== 2 || mergeParents[1] !== tip) fail('M must be a two-parent merge whose second parent is T');
-  if (ops.tree(M) !== ops.tree(tip) || !ops.sameTreeDiff(M, tip)) fail('M tree/diff must equal T exactly');
-  return Object.freeze({ candidateSha: C, integrationTipSha: tip, mergeSha: M, trainClass: train.trainClass });
-}
+  const classifiedRelease = classifyReleasePleaseBotTip(ops, H);
+  const creatorClaimsRelease = prAuthorId === RELEASE_PLEASE_BOT_ID
+    || prAuthorLogin === RELEASE_PLEASE_BOT_NAME;
+  const refClaimsRelease = prHeadRef.startsWith('release-please');
+  const envelopeClaimsRelease = identity.authorName === RELEASE_PLEASE_BOT_NAME
+    || identity.authorEmail === RELEASE_PLEASE_BOT_EMAIL
+    || (typeof identity.subject === 'string' && RELEASE_PLEASE_SUBJECT.test(identity.subject));
+  const manifestClaimsRelease = changes.some((change) => change?.path === '.release-please-manifest.json');
+  const hasReleaseClaim = creatorClaimsRelease || refClaimsRelease
+    || envelopeClaimsRelease || manifestClaimsRelease || classifiedRelease !== null;
 
-/** A pure post-merge seam. It never reads candidate, T, or S executable content. */
-export function verifySquashBinding(ops, { authorityTipSha, squashSha, preMergeBaseSha, prAuthorLogin, prHeadRef }) {
-  const T = exactSha(authorityTipSha, 'PR head');
-  let train;
-  if (typeof ops.commitIdentity === 'function' && classifyReleasePleaseBotTip(ops, T)) {
-    try {
-      assertTrustedReleasePleasePrMeta({ prAuthorLogin, prHeadRef });
-    } catch (error) {
-      mapReleasePleaseError(error);
-    }
-    train = {
-      candidateSha: classifyReleasePleaseBotTip(ops, T).candidateSha,
-      authorityTipSha: T,
-      trainClass: RELEASE_PLEASE_TRAIN_CLASS,
-    };
-  } else {
-    train = verifySignedAuthorityTrain(ops, authorityTipSha);
-  }
-  const S = exactSha(squashSha, 'squash commit');
-  const B = exactSha(preMergeBaseSha, 'pre-merge base');
-  if (!ops.hasCommit(S) || !ops.hasCommit(B)) fail('squash commit or pre-merge base object is unavailable');
-  const squashParents = ops.parents(S);
-  if (!Array.isArray(squashParents) || squashParents.length !== 1 || squashParents[0] !== B) fail('S must be a one-parent squash commit on the trusted pre-merge base');
-  if (ops.tree(S) !== ops.tree(train.authorityTipSha) || !ops.sameTreeDiff(S, train.authorityTipSha)) fail('S tree/diff must equal T exactly');
+  if (!hasReleaseClaim) return Object.freeze({ admissionClass: 'ordinary-pr' });
+  const exactRelease = classifiedRelease !== null
+    && classifiedRelease.candidateSha === B
+    && prAuthorId === RELEASE_PLEASE_BOT_ID
+    && prAuthorLogin === RELEASE_PLEASE_BOT_NAME
+    && RELEASE_PLEASE_HEAD_REF.test(prHeadRef)
+    && prHeadRepository === repository;
+  if (!exactRelease) return Object.freeze({ admissionClass: 'malformed-release-claim' });
   return Object.freeze({
-    candidateSha: train.candidateSha,
-    authorityTipSha: train.authorityTipSha,
-    squashSha: S,
-    preMergeBaseSha: B,
-    trainClass: train.trainClass,
+    admissionClass: RELEASE_PLEASE_TRAIN_CLASS,
+    candidateSha: classifiedRelease.candidateSha,
   });
 }
-export function squashBindingReceipt(binding) {
-  return Object.freeze({ schema: 'console-squash-binding-v1', verdict: 'TREE_BOUND_HOLD_PRESERVED', release_disposition: 'HOLD', ...binding });
+
+/** Pure structural seam. It reads Git object facts but never candidate bytes. */
+export function verifyBootstrapGraph(ops, coordinates) {
+  const B = exactSha(coordinates?.baseSha, 'protected base');
+  const H = exactSha(coordinates?.headSha, 'PR head');
+  if (!ops.hasCommit(B)) fail('protected base object is unavailable');
+  if (!ops.hasCommit(H)) fail('PR head object is unavailable');
+  if (!ops.isAncestor(B, H)) fail('protected base must be an ancestor of the PR head');
+  const route = classifyProtectedPrRoute(ops, coordinates);
+  if (route.admissionClass === 'malformed-release-claim') {
+    fail('malformed protected release claim cannot use ordinary admission');
+  }
+  if (route.admissionClass === 'ordinary-pr') {
+    return Object.freeze({ baseSha: B, headSha: H, admissionClass: 'ordinary-pr' });
+  }
+
+  try {
+    assertReleaseProofCoordinates(coordinates.releaseAuthorityProof, {
+      prNumber: coordinates.prNumber,
+      headSha: H,
+      parentSha: B,
+      prHeadRef: coordinates.prHeadRef,
+      prHeadRepository: coordinates.prHeadRepository,
+      repository: coordinates.repository,
+    });
+    const M = exactSha(coordinates.mergeSha, 'PR merge');
+    const admitted = verifyReleasePleaseBotTrain(ops, {
+      headSha: H,
+      mergeSha: M,
+      requirePrMeta: false,
+    });
+    const mergeParents = ops.parents(M);
+    if (!Array.isArray(mergeParents) || mergeParents.length !== 2
+      || mergeParents[0] !== B || mergeParents[1] !== H) {
+      fail('release merge parents must equal the protected base and exact release head');
+    }
+    if (admitted.candidateSha !== B) fail('release tip parent must equal the protected base');
+    return Object.freeze({
+      baseSha: B,
+      headSha: H,
+      mergeSha: M,
+      admissionClass: RELEASE_PLEASE_TRAIN_CLASS,
+    });
+  } catch (error) {
+    mapReleasePleaseError(error);
+  }
+}
+
+export function assertLivePullRequestSnapshot(pr, {
+  repository,
+  prNumber,
+  baseSha,
+  headSha,
+}, phase) {
+  if (repository !== PINNED_RELEASE_REPOSITORY) fail('live PR repository name is not pinned');
+  const number = typeof prNumber === 'string' && /^\d+$/.test(prNumber)
+    ? Number(prNumber)
+    : prNumber;
+  exactPositiveInteger(number, 'live PR number');
+  const B = exactSha(baseSha, 'live PR expected base');
+  const H = exactSha(headSha, 'live PR expected head');
+  if (
+    pr?.number !== number
+    || pr?.state !== 'open'
+    || pr?.draft !== false
+    || !Number.isSafeInteger(pr?.user?.id)
+    || typeof pr?.user?.login !== 'string'
+    || pr.user.login.length === 0
+    || pr?.base?.ref !== 'main'
+    || pr?.base?.sha !== B
+    || pr?.base?.repo?.id !== PINNED_RELEASE_REPOSITORY_ID
+    || pr?.base?.repo?.full_name !== repository
+    || pr?.head?.sha !== H
+    || typeof pr?.head?.ref !== 'string'
+    || pr.head.ref.length === 0
+    || typeof pr?.head?.repo?.full_name !== 'string'
+    || pr.head.repo.full_name.length === 0
+  ) {
+    fail(`live PR snapshot does not match the exact protected coordinates ${phase}`);
+  }
+  return Object.freeze({
+    prNumber: number,
+    prAuthorId: pr.user.id,
+    prAuthorLogin: pr.user.login,
+    prHeadRef: pr.head.ref,
+    prHeadRepository: pr.head.repo.full_name,
+  });
 }
 
 function git(repo, args, options = {}) {
   const { env, ...rest } = options;
-  return execFileSync('git', ['-C', repo, '-c', 'core.hooksPath=/dev/null', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: sanitizedGitEnvironment(env), ...rest });
+  return execFileSync('git', ['-C', repo, '-c', 'core.hooksPath=/dev/null', ...args], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: sanitizedGitEnvironment(env),
+    ...rest,
+  });
 }
-function gitOk(repo, args) { try { git(repo, args); return true; } catch { return false; } }
-function treeEntry(repo, sha, file) { const entry = git(repo, ['ls-tree', sha, '--', file]).trim().match(/^(\d{6}) (\w+) [0-9a-f]{40}\t/); return entry ? { mode: entry[1], type: entry[2] } : null; }
+
+function gitOk(repo, args) {
+  try { git(repo, args); return true; } catch { return false; }
+}
+
 export function rawDiff(repo, from, to) {
-  const fields = git(repo, [...AUTHORITY_DIFF_ARGS, from, to]).split('\0'); const changes = [];
+  const fields = git(repo, [...RAW_DIFF_ARGS, from, to]).split('\0');
+  const changes = [];
   for (let index = 0; index < fields.length - 1;) {
-    const header = fields[index++]; if (!header) continue;
-    const match = header.match(/^:(\d{6}) (\d{6}) [0-9a-f]{40} [0-9a-f]{40} ([A-Z])$/); if (!match) fail('Git diff contains an unsupported entry');
+    const header = fields[index++];
+    if (!header) continue;
+    const match = header.match(/^:(\d{6}) (\d{6}) [0-9a-f]{40} [0-9a-f]{40} ([A-Z])$/);
+    if (!match) fail('Git diff contains an unsupported entry');
     const [, oldMode, newMode, status] = match;
-    changes.push({ path: fields[index++], status, oldMode, newMode, oldType: oldMode === '000000' ? null : 'blob', newType: newMode === '000000' ? null : 'blob' });
+    changes.push({
+      path: fields[index++],
+      status,
+      oldMode,
+      newMode,
+      oldType: oldMode === '000000' ? null : 'blob',
+      newType: newMode === '000000' ? null : 'blob',
+    });
   }
   return changes;
 }
-export function verifyPinnedSshCommit(repo, sha, policy, environment = process.env) {
-  const directory = mkdtempSync(path.join(tmpdir(), 'console-signers-')); const policyFile = path.join(directory, 'allowed_signers');
-  try {
-    writeFileSync(policyFile, policy, { mode: 0o600 }); chmodSync(policyFile, 0o600);
-    const result = spawnSync('git', ['-C', repo, '-c', 'core.hooksPath=/dev/null', '-c', 'gpg.format=ssh', '-c', 'gpg.ssh.program=ssh-keygen', '-c', `gpg.ssh.allowedSignersFile=${policyFile}`, 'verify-commit', '--raw', sha], { encoding: 'utf8', env: sanitizedGitEnvironment(environment) });
-    const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
-    return { ok: result.status === 0, principal: output.match(/Good "git" signature for (.+?) with /)?.[1] ?? null, fingerprint: output.match(/key (SHA256:[A-Za-z0-9+/]+={0,2})/)?.[1] ?? null, command: ['gpg.format=ssh', 'gpg.ssh.program=ssh-keygen', 'gpg.ssh.allowedSignersFile=<0600-temp>'] };
-  } finally { rmSync(directory, { recursive: true, force: true }); }
-}
-function gitOps(repo) {
+
+export function createProtectedGitOps(repo) {
   return {
     hasCommit: (sha) => gitOk(repo, ['cat-file', '-e', `${sha}^{commit}`]),
-    readFile: (sha, file) => git(repo, ['show', `${sha}:${file}`]),
-    treeEntry: (sha, file) => treeEntry(repo, sha, file),
     parents: (sha) => git(repo, ['show', '-s', '--format=%P', sha]).trim().split(/\s+/).filter(Boolean),
     commitIdentity: (sha) => {
       const raw = git(repo, ['show', '-s', '--format=%an%x00%ae%x00%cn%x00%ce%x00%s', sha]);
@@ -220,159 +492,147 @@ function gitOps(repo) {
     },
     diff: (from, to) => rawDiff(repo, from, to),
     tree: (sha) => git(repo, ['show', '-s', '--format=%T', sha]).trim(),
-    sameTreeDiff: (left, right) => git(repo, ['diff', '--quiet', '--no-ext-diff', left, right]) === '',
-    verifyCommit: (sha, authority) => verifyPinnedSshCommit(repo, sha, authority.policy),
-    mainTip: () => {
-      // Prefer remotes: shared hubs often leave refs/heads/main stale across worktrees.
-      for (const ref of ['refs/remotes/origin/main', 'origin/main', 'refs/heads/main']) {
-        try {
-          const tip = git(repo, ['rev-parse', ref]).trim();
-          if (/^[0-9a-f]{40}$/.test(tip)) return tip;
-        } catch { /* try next */ }
-      }
-      fail('protected main tip is unresolvable');
-    },
+    sameTreeDiff: (left, right) => gitOk(repo, ['diff', '--quiet', '--no-ext-diff', left, right]),
     isAncestor: (ancestor, descendant) => gitOk(repo, ['merge-base', '--is-ancestor', ancestor, descendant]),
-    pullHead: (number) => {
-      const parsed = String(number);
-      if (!/^\d+$/.test(parsed)) fail('PR number is invalid');
-      const ref = `refs/console-release-squash-binding/${parsed}/head`;
-      git(repo, ['fetch', '--no-tags', '--no-recurse-submodules', 'origin', `+refs/pull/${parsed}/head:${ref}`]);
-      const tip = git(repo, ['rev-parse', ref]).trim();
-      if (!/^[0-9a-f]{40}$/.test(tip)) fail('release-please pre-merge tip is unresolvable');
-      return tip;
-    },
   };
 }
-function safeBaseBranch(base) { return base === 'main'; }
+
 function parseArgs(argv) {
   const result = {};
+  const allowed = new Set(['--pr-number', '--head', '--base-sha', '--base', '--repository']);
   for (let index = 0; index < argv.length; index += 2) {
     const key = argv[index];
     const value = argv[index + 1];
-    if (!['--pr-number', '--head', '--merge', '--base', '--author', '--head-ref'].includes(key) || value === undefined) {
-      fail('usage: --pr-number N --head SHA --merge SHA --base branch --author LOGIN --head-ref REF');
+    const name = typeof key === 'string' ? key.slice(2) : '';
+    if (!allowed.has(key) || value === undefined || Object.hasOwn(result, name)) {
+      fail('usage: --pr-number N --head SHA --base-sha SHA --base main --repository OWNER/REPO');
     }
-    result[key.slice(2)] = value;
-  }
-  if (!/^\d+$/.test(result['pr-number'] ?? '')) fail('PR number is invalid'); exactSha(result.head, 'PR head');
-  // `--merge` is informational only. GitHub computes `merge_commit_sha`
-  // asynchronously, so it is null on `opened` and stale on `synchronize`; the
-  // authoritative value is the `refs/pull/N/merge` ref resolved at fetch time.
-  // Validate it only when the event actually supplied one.
-  if (result.merge !== undefined && result.merge !== '' && result.merge !== 'null') exactSha(result.merge, 'PR merge');
-  if (!safeBaseBranch(result.base)) fail('PR base is outside the console foundation trust scope');
-  if (typeof result.author !== 'string' || result.author.trim() === '') fail('PR author is required');
-  if (typeof result['head-ref'] !== 'string' || result['head-ref'].trim() === '') fail('PR head ref is required');
-  return result;
-}
-/**
- * Fetch the pull request's head and synthetic merge objects, and return the
- * merge SHA that GitHub actually has right now.
- *
- * `head` is compared strictly: it pins the exact reviewed code, and a mismatch
- * means the event and the refs disagree about what is being verified.
- *
- * `merge` is deliberately NOT compared to the event payload. GitHub regenerates
- * the synthetic test-merge commit asynchronously and it embeds a timestamp, so
- * its SHA changes on every recompute — including recomputes triggered by the
- * very event that starts this job. Comparing the payload's (already stale)
- * `merge_commit_sha` against the freshly fetched ref therefore fails on every
- * force-push, and on reopen, with no security benefit: the merge commit is only
- * a vehicle. Its integrity is established structurally downstream by
- * `verifyBootstrapGraph`, which requires exactly two parents with the verified
- * authority tip as parent 2. So we resolve the ref and hand that SHA onward.
- */
-function fetchExactPullObjects(repo, number, expectedHead) {
-  const namespace = `refs/console-bootstrap/${number}`;
-  git(repo, ['fetch', '--no-tags', '--no-recurse-submodules', 'origin', `+refs/pull/${number}/head:${namespace}/head`, `+refs/pull/${number}/merge:${namespace}/merge`]);
-  if (git(repo, ['rev-parse', `${namespace}/head`]).trim() !== expectedHead) fail('GitHub pull head ref does not match the event head SHA');
-  const resolvedMerge = git(repo, ['rev-parse', `${namespace}/merge`]).trim();
-  if (!/^[0-9a-f]{40}$/.test(resolvedMerge)) fail('GitHub pull merge ref is unresolvable');
-  return resolvedMerge;
-}
-export function fetchExactAuthorityTip(repo, number, expectedHead) {
-  const parsedNumber = String(number);
-  if (!/^\d+$/.test(parsedNumber)) fail('PR number is invalid');
-  const T = exactSha(expectedHead, 'PR head');
-  const ref = `refs/console-squash-binding/${parsedNumber}/head`;
-  git(repo, ['fetch', '--no-tags', '--no-recurse-submodules', 'origin', `+refs/pull/${parsedNumber}/head:${ref}`]);
-  if (git(repo, ['rev-parse', ref]).trim() !== T) fail('GitHub pull head ref does not match event SHA');
-  return T;
-}
-export function candidateCheckPlan(C, T, M) {
-  return Object.freeze({
-    environment: Object.freeze({ CONSOLE_CANDIDATE_SHA: C, CONSOLE_AUTHORITY_TIP_SHA: T, CONSOLE_SYNTHETIC_MERGE_SHA: M }),
-    commands: Object.freeze([
-      ['node', ['scripts/console/validate-console-truth-ledger.mjs']],
-      ['node', ['scripts/console/plan-fanout.mjs', '--candidate', C, '--authority-tip', T, '--synthetic-merge', M]],
-      // This file's OWN regression suite is in the list. It was not, so the highest-privilege
-      // script in the repository was the one console script uncovered on the `pull_request_target`
-      // path — the path that actually gates the merge.
-      ['node', ['--test', 'scripts/console/validate-console-truth-ledger.test.mjs', 'scripts/console/plan-fanout.test.mjs', 'scripts/console/verify-console-authority-train.test.mjs', 'scripts/console/verify-console-pr-authority-bootstrap.test.mjs', 'scripts/console/release-please-bot-candidate.test.mjs']],
-    ]),
-  });
-}
-function runAuthenticatedCandidateChecks(repo, C, T, M) {
-  const candidate = mkdtempSync(path.join(tmpdir(), 'console-candidate-'));
-  try {
-    git(repo, ['worktree', 'add', '--detach', '--no-checkout', candidate]); git(repo, ['-C', candidate, 'checkout', '--detach', C]);
-    const plan = candidateCheckPlan(C, T, M);
-    const environment = { ...sanitizedGitEnvironment(), ...plan.environment };
-    for (const [binary, args] of plan.commands) {
-      if (spawnSync(binary, args, { cwd: candidate, env: environment, stdio: 'inherit' }).status !== 0) fail(`authenticated C check failed: ${binary} ${args.join(' ')}`);
-    }
-  } finally { try { git(repo, ['worktree', 'remove', '--force', candidate]); } catch { rmSync(candidate, { recursive: true, force: true }); } }
-}
-function parseSquashBindingArgs(argv) {
-  const result = {};
-  for (let index = 0; index < argv.length; index += 2) {
-    const key = argv[index];
-    const value = argv[index + 1];
-    if (!['--pr-number', '--head', '--squash', '--base', '--author', '--head-ref'].includes(key) || value === undefined) {
-      fail('usage: squash-binding --pr-number N --head SHA --squash SHA --base main --author LOGIN --head-ref REF');
-    }
-    result[key.slice(2)] = value;
+    result[name] = value;
   }
   if (!/^\d+$/.test(result['pr-number'] ?? '')) fail('PR number is invalid');
   exactSha(result.head, 'PR head');
-  exactSha(result.squash, 'squash commit');
-  if (!safeBaseBranch(result.base)) fail('PR base is outside the protected main trust scope');
-  if (typeof result.author !== 'string' || result.author.trim() === '') fail('PR author is required');
-  if (typeof result['head-ref'] !== 'string' || result['head-ref'].trim() === '') fail('PR head ref is required');
+  exactSha(result['base-sha'], 'protected base');
+  if (result.base !== 'main') fail('PR base is outside the protected main trust scope');
+  if (result.repository !== PINNED_RELEASE_REPOSITORY) fail('repository name is not pinned');
   return result;
 }
-function main() {
+
+function exactPrNumber(value) {
+  const parsed = String(value);
+  if (!/^\d+$/.test(parsed) || Number(parsed) <= 0) fail('PR number is invalid');
+  return parsed;
+}
+
+export function fetchExactProtectedBase(repo, expectedBase) {
+  const B = exactSha(expectedBase, 'protected base');
+  const ref = 'refs/console-bootstrap/protected-main';
+  git(repo, ['fetch', '--no-tags', '--no-recurse-submodules', 'origin', `+refs/heads/main:${ref}`]);
+  if (git(repo, ['rev-parse', ref]).trim() !== B) fail('protected main ref does not match the event base SHA');
+  return B;
+}
+
+export function fetchExactPullHead(repo, number, expectedHead) {
+  const parsed = exactPrNumber(number);
+  const H = exactSha(expectedHead, 'PR head');
+  const ref = `refs/console-bootstrap/${parsed}/head`;
+  git(repo, ['fetch', '--no-tags', '--no-recurse-submodules', 'origin', `+refs/pull/${parsed}/head:${ref}`]);
+  if (git(repo, ['rev-parse', ref]).trim() !== H) fail('GitHub pull head ref does not match event SHA');
+  return H;
+}
+
+function fetchExactPullMerge(repo, number) {
+  const parsed = exactPrNumber(number);
+  const ref = `refs/console-bootstrap/${parsed}/merge`;
+  git(repo, ['fetch', '--no-tags', '--no-recurse-submodules', 'origin', `+refs/pull/${parsed}/merge:${ref}`]);
+  return exactSha(git(repo, ['rev-parse', ref]).trim(), 'GitHub pull merge ref');
+}
+
+export async function githubJsonRequest(endpoint, {
+  token = process.env.GITHUB_TOKEN,
+  fetchImpl = globalThis.fetch,
+} = {}) {
+  if (typeof token !== 'string' || token.length === 0) fail('protected GITHUB_TOKEN is required for GitHub reads');
+  if (typeof endpoint !== 'string' || !endpoint.startsWith(`/repos/${PINNED_RELEASE_REPOSITORY}/`)) {
+    fail('request must use a relative GitHub API path for the pinned repository');
+  }
+  if (typeof fetchImpl !== 'function') fail('GitHub API fetch adapter is unavailable');
+  let response;
+  try {
+    response = await fetchImpl(`https://api.github.com${endpoint}`, {
+      method: 'GET',
+      redirect: 'error',
+      signal: AbortSignal.timeout(15_000),
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${token}`,
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'console-authority-bootstrap',
+      },
+    });
+  } catch {
+    fail('GitHub API request failed');
+  }
+  if (!response.ok) fail(`GitHub API read failed with HTTP ${response.status}`);
+  try {
+    return await response.json();
+  } catch {
+    fail('GitHub API response was not JSON');
+  }
+}
+
+async function main() {
   const args = parseArgs(process.argv.slice(2));
   const repo = process.cwd();
-  const mergeSha = fetchExactPullObjects(repo, args['pr-number'], args.head);
-  const graph = verifyBootstrapGraph(gitOps(repo), {
-    headSha: args.head,
-    mergeSha,
-    prAuthorLogin: args.author,
-    prHeadRef: args['head-ref'],
-  });
-  // Release-please bot tips have no signed product candidate C to re-check; the class itself is
-  // the admission. SSH trains still run the detached-C validator/planner suite.
-  if (graph.trainClass !== RELEASE_PLEASE_TRAIN_CLASS) {
-    runAuthenticatedCandidateChecks(repo, graph.candidateSha, graph.integrationTipSha, graph.mergeSha);
+  const prNumber = Number(args['pr-number']);
+  const baseSha = args['base-sha'];
+  const headSha = args.head;
+  if (git(repo, ['rev-parse', 'HEAD']).trim() !== baseSha) {
+    fail('protected checkout HEAD does not equal the event base SHA');
+  }
+  fetchExactProtectedBase(repo, baseSha);
+  fetchExactPullHead(repo, prNumber, headSha);
+  const pullEndpoint = `/repos/${args.repository}/pulls/${prNumber}`;
+  const expected = { repository: args.repository, prNumber, baseSha, headSha };
+  const before = assertLivePullRequestSnapshot(
+    await githubJsonRequest(pullEndpoint),
+    expected,
+    'before validation',
+  );
+  const ops = createProtectedGitOps(repo);
+  const coordinates = {
+    ...expected,
+    ...before,
+  };
+  const route = classifyProtectedPrRoute(ops, coordinates);
+  if (route.admissionClass === 'malformed-release-claim') {
+    fail('malformed protected release claim cannot use ordinary admission');
+  }
+  if (route.admissionClass === RELEASE_PLEASE_TRAIN_CLASS) {
+    coordinates.releaseAuthorityProof = await pollReleaseAuthorityProof({
+      request: githubJsonRequest,
+      sleep: () => new Promise((resolve) => setTimeout(resolve, 3_000)),
+      repository: args.repository,
+      prNumber,
+      headSha,
+      parentSha: route.candidateSha,
+      headRef: before.prHeadRef,
+      maxAttempts: 60,
+    });
+    coordinates.mergeSha = fetchExactPullMerge(repo, prNumber);
+  }
+  const graph = verifyBootstrapGraph(ops, coordinates);
+
+  fetchExactProtectedBase(repo, baseSha);
+  fetchExactPullHead(repo, prNumber, headSha);
+  const after = assertLivePullRequestSnapshot(
+    await githubJsonRequest(pullEndpoint),
+    expected,
+    'after validation',
+  );
+  if (JSON.stringify(after) !== JSON.stringify(before)) {
+    fail('live PR routing metadata moved during validation');
   }
   process.stdout.write(`${JSON.stringify({ verdict: 'PASS', ...graph }, null, 2)}\n`);
 }
-function squashBindingMain() {
-  const args = parseSquashBindingArgs(process.argv.slice(3));
-  const repo = process.cwd();
-  const preMergeBaseSha = git(repo, ['rev-parse', 'HEAD']).trim();
-  const authorityTipSha = fetchExactAuthorityTip(repo, args['pr-number'], args.head);
-  const binding = verifySquashBinding(gitOps(repo), {
-    authorityTipSha,
-    squashSha: args.squash,
-    preMergeBaseSha,
-    prAuthorLogin: args.author,
-    prHeadRef: args['head-ref'],
-  });
-  process.stdout.write(`${JSON.stringify(squashBindingReceipt(binding), null, 2)}\n`);
-}
-if (import.meta.url === new URL(`file://${process.argv[1]}`).href) {
-  if (process.argv[2] === 'squash-binding') squashBindingMain(); else main();
-}
+
+if (import.meta.url === new URL(`file://${process.argv[1]}`).href) await main();

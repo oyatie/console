@@ -274,10 +274,10 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
   }
   nonempty(continuationReset.reason, 'continuation reset reason');
   nonempty(continuationReset.historical_snapshot_scope, 'continuation reset historical snapshot scope');
-  // The candidate SHA arrives from OUTSIDE these documents and is the only source: CI derives it
-  // from git parentage (`ci.yml` "Derive exact console C/T/M train") and the planner takes
-  // `--candidate`. The registers used to store a copy and this function compared the two, which
-  // is a value checked against a copy of itself — the file was written from the same git fact.
+  // The candidate SHA arrives from OUTSIDE these documents and is the only source: callers bind
+  // it from Git object identity, and the planner takes `--candidate`. The registers used to store
+  // a copy and this function compared the two, which is a value checked against a copy of itself
+  // — the file was written from the same Git fact.
   const candidate = { sha: sha(expectedCandidateSha, 'candidate sha') };
   if (!resolveSha(candidate.sha)) fail('candidate SHA is unresolvable');
   const provenanceDocuments = [

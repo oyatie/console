@@ -19,28 +19,12 @@
       "reason": "Post-i91 residual — resourceBudgets?.[key] on runtime budget map."
     },
     {
-      "file": "scripts/console/simulate-main-gate.mjs",
-      "line": 29,
-      "kind": "undefined-compare",
-      "key": "key",
-      "snippet": "for (const key of SAFE) if (source[key] !== undefined) environment[key] = source[key];",
-      "reason": "Trusted SAFE key allowlist today; still untrusted-keyed !== undefined shape — residual until own-property."
-    },
-    {
       "file": "scripts/console/validate-console-truth-ledger.mjs",
       "line": 303,
       "kind": "optional-computed",
       "key": "area",
       "snippet": "for (const area of ['identity_scope', 'object_action_workflow', 'search', 'audit_lineage', 'interoperability']) nonempty(omni.required_outcomes?.[area], `shared omni-platform gate ${area}`);",
       "reason": "Post-i91 residual — required_outcomes?.[area] on ledger omni maps."
-    },
-    {
-      "file": "scripts/console/verify-console-pr-authority-bootstrap.mjs",
-      "line": 54,
-      "kind": "undefined-compare",
-      "key": "key",
-      "snippet": "for (const key of SAFE_ENVIRONMENT_KEYS) if (source[key] !== undefined) environment[key] = source[key];",
-      "reason": "Trusted SAFE_ENVIRONMENT_KEYS today; residual until own-property (line shifted 53→54 on main restack)."
     }
   ]
 }

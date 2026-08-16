@@ -25,6 +25,30 @@ test("every mirrored CI run-step is classified", () => {
   assert.ok(steps.length > 0, "expected mirrored CI steps");
 });
 
+test("local verification mirrors release content proofs without deriving an authority train", () => {
+  assert.deepEqual(
+    verifyModule.stepMirrorDisposition("Release metadata semantic gate"),
+    {
+      tier: "ci-only",
+      why: "requires the exact hosted event base/head commits after release-only classification; run manually with `node scripts/check-release-metadata.mjs --base <base-sha> --head <release-tip-sha>`",
+    },
+  );
+  for (const name of [
+    "Release metadata semantic regression",
+    "Release metadata documentation link tests",
+    "Release metadata documentation manifest gate",
+    "Release metadata documentation local-link gate",
+  ]) {
+    assert.deepEqual(verifyModule.stepMirrorDisposition(name), { tier: "fast" });
+  }
+
+  const source = readFileSync(new URL("./verify.mjs", import.meta.url), "utf8");
+  assert.doesNotMatch(
+    source,
+    /consoleTrainEnv|git commit-tree|CONSOLE_(?:CANDIDATE|AUTHORITY_TIP|SYNTHETIC_MERGE)_SHA|needsCleanWorktree/,
+  );
+});
+
 test("a new CI step that nobody classified fails the guard", () => {
   const steps = assertPlanCoversCi().concat({
     job: "backend",
@@ -94,7 +118,7 @@ test("a plan entry whose CI step disappeared fails the guard", () => {
 
 test("domain-unit is part of the local mirror", () => {
   const domain = assertPlanCoversCi().filter((step) => step.job === "domain-unit");
-  // Path-class skip proof is ci-only (docs_only scheduling); Domain crate unit
+  // Path-class skip proof is ci-only (thin-path scheduling); Domain crate unit
   // tests is the load-bearing local mirror step for this job.
   assert.deepEqual(domain.map((step) => step.name), [
     "Path-class skip proof",
