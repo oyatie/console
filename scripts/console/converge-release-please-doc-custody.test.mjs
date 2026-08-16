@@ -8,8 +8,10 @@ import test from 'node:test';
 import yaml from 'js-yaml';
 import {
   assertReleasePleaseActionCoreBinding,
+  assertReleasePleasePrePushSnapshot,
   createReleasePushAskpass,
   parseReleasePleaseActionPr,
+  pollReleasePleasePostPushHead,
   redactReleasePushError,
   releasePushInvocation,
   releaseTransportCommitEnvironment,
@@ -25,7 +27,10 @@ import {
 
 const C = 'c'.repeat(40);
 const T = 'a'.repeat(40);
+const N = 'b'.repeat(40);
 const REPOSITORY = 'jason931225/console';
+const REPOSITORY_ID = 1269693002;
+const BOT_ID = 41898282;
 const HEAD_REF = 'release-please--branches--main--components--console';
 const NOTES = [
   '## [0.3.7](https://github.com/jason931225/console/compare/v0.3.6...v0.3.7) (2026-08-16)',
@@ -69,11 +74,20 @@ const actionPr = Object.freeze({
 const livePr = Object.freeze({
   number: 760,
   state: 'open',
+  draft: false,
   title: actionPr.title,
   body: actionPr.body,
-  user: { login: 'github-actions[bot]' },
-  head: { ref: HEAD_REF, sha: T, repo: { full_name: REPOSITORY } },
-  base: { ref: 'main' },
+  user: { login: 'github-actions[bot]', id: BOT_ID },
+  head: {
+    ref: HEAD_REF,
+    sha: T,
+    repo: { full_name: REPOSITORY, id: REPOSITORY_ID },
+  },
+  base: {
+    ref: 'main',
+    sha: C,
+    repo: { full_name: REPOSITORY, id: REPOSITORY_ID },
+  },
 });
 const identity = Object.freeze({
   authorName: RELEASE_PLEASE_BOT_NAME,
@@ -105,14 +119,245 @@ const fixture = (overrides = {}) => ({
   headChangelog: Buffer.from(HEAD_CHANGELOG),
   ...overrides,
 });
+const postPushPr = (headSha) => ({
+  ...structuredClone(livePr),
+  head: { ...structuredClone(livePr.head), sha: headSha },
+});
+const pollFixture = (overrides = {}) => ({
+  actionPr,
+  initialPr: postPushPr(T),
+  repository: REPOSITORY,
+  expectedParentSha: C,
+  oldTip: T,
+  newTip: N,
+  maxReads: 3,
+  delayMs: 0,
+  readPullRequest: () => postPushPr(N),
+  sleep: () => {},
+  ...overrides,
+});
 const protectedReleaseIssuerClosure = Object.freeze([
-  ['./converge-release-please-doc-custody.mjs', '8ed1a06fddbe64ef2893f0252502f17d55cd0b5ab1716d20c37c63baf553605c'],
+  ['./converge-release-please-doc-custody.mjs', '5079387e9c5553e00f7ec34fa1d120b5bcd33a5a995201ab6a9f0669f6227693'],
   ['./generate-documentation-manifest.mjs', 'eb353f442a6d7d84b659d43424dd52fbf9243f73d813f840e2d14aa7277fef77'],
   ['./release-please-bot-candidate.mjs', 'ae3d1069165ca4aaa88a36cac8f13d8d45d952f87fb23c510da0d0a957e62fdf'],
   ['./authority-ledger-path.mjs', '756e838e3979508d3be0b7d9974a0e719de9f1a08effbe60c272c2cad25b498e'],
   ['../check-release-metadata.mjs', '534b49d8426a1a3ae86e88ca026cf034162dd1d6289de3f9c4103e447b998b4a'],
 ]);
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
+
+test('post-push proof polling accepts only the exact new tip with bounded old-tip retries', () => {
+  for (const [sequence, expectedReads, expectedSleeps] of [
+    [[N], 1, 0],
+    [[T, N], 2, 1],
+    [[T, T, N], 3, 2],
+  ]) {
+    let reads = 0;
+    let sleeps = 0;
+    const accepted = pollReleasePleasePostPushHead(pollFixture({
+      readPullRequest: () => postPushPr(sequence[reads++]),
+      sleep: (milliseconds) => {
+        assert.equal(milliseconds, 0);
+        sleeps += 1;
+      },
+    }));
+    assert.equal(accepted.head.sha, N);
+    assert.equal(reads, expectedReads);
+    assert.equal(sleeps, expectedSleeps);
+  }
+});
+
+test('pre-push validation rejects stable metadata drift before transport work', () => {
+  const independentlyBoundFields = new Set([
+    'number',
+    'state',
+    'draft state',
+    'title',
+    'body',
+    'creator login',
+    'head ref',
+    'head repository name',
+    'base ref',
+    'base SHA',
+    'base repository name',
+  ]);
+  for (const [label, mutate] of postPushMetadataMutations) {
+    if (!independentlyBoundFields.has(label)) continue;
+    const initialPr = postPushPr(T);
+    mutate(initialPr);
+    assert.throws(
+      () => assertReleasePleasePrePushSnapshot({
+        actionPr,
+        initialPr,
+        repository: REPOSITORY,
+        expectedParentSha: C,
+        oldTip: T,
+      }),
+      new RegExp(`pre-push live PR ${label} changed`, 'i'),
+      label,
+    );
+  }
+});
+
+test('post-push proof polling times out on a persistently stale old tip', () => {
+  let reads = 0;
+  let sleeps = 0;
+  assert.throws(() => pollReleasePleasePostPushHead(pollFixture({
+    readPullRequest: () => { reads += 1; return postPushPr(T); },
+    sleep: () => { sleeps += 1; },
+  })), /old lease tip.*3 reads|timed out/);
+  assert.equal(reads, 3);
+  assert.equal(sleeps, 2);
+});
+
+test('post-push proof polling defaults to twenty reads and 500 millisecond delays', () => {
+  let reads = 0;
+  const delays = [];
+  assert.throws(() => pollReleasePleasePostPushHead(pollFixture({
+    maxReads: undefined,
+    delayMs: undefined,
+    readPullRequest: () => { reads += 1; return postPushPr(T); },
+    sleep: (milliseconds) => { delays.push(milliseconds); },
+  })), /old lease tip.*20 reads/);
+  assert.equal(reads, 20);
+  assert.deepEqual(delays, Array(19).fill(500));
+});
+
+test('post-push proof polling fails immediately on any non-old, non-new head', () => {
+  for (const sha of [undefined, '', 'ABC', 'd'.repeat(40)]) {
+    let reads = 0;
+    let sleeps = 0;
+    assert.throws(() => pollReleasePleasePostPushHead(pollFixture({
+      readPullRequest: () => {
+        reads += 1;
+        const candidate = postPushPr(T);
+        candidate.head.sha = sha;
+        return candidate;
+      },
+      sleep: () => { sleeps += 1; },
+    })), /head SHA|unexpected post-push PR head/);
+    assert.equal(reads, 1);
+    assert.equal(sleeps, 0);
+  }
+});
+
+test('post-push proof polling never retries API, response, or sleep failures', () => {
+  let reads = 0;
+  let sleeps = 0;
+  const apiFailure = new Error('GitHub API unavailable');
+  assert.throws(() => pollReleasePleasePostPushHead(pollFixture({
+    readPullRequest: () => { reads += 1; throw apiFailure; },
+    sleep: () => { sleeps += 1; },
+  })), (error) => error === apiFailure);
+  assert.equal(reads, 1);
+  assert.equal(sleeps, 0);
+
+  for (const response of [null, [], 'not an object']) {
+    reads = 0;
+    sleeps = 0;
+    assert.throws(() => pollReleasePleasePostPushHead(pollFixture({
+      readPullRequest: () => { reads += 1; return response; },
+      sleep: () => { sleeps += 1; },
+    })), /metadata must be an object/);
+    assert.equal(reads, 1);
+    assert.equal(sleeps, 0);
+  }
+
+  reads = 0;
+  const sleepFailure = new Error('sleep interrupted');
+  assert.throws(() => pollReleasePleasePostPushHead(pollFixture({
+    readPullRequest: () => { reads += 1; return postPushPr(T); },
+    sleep: () => { throw sleepFailure; },
+  })), (error) => error === sleepFailure);
+  assert.equal(reads, 1);
+});
+
+const postPushMetadataMutations = [
+  ['number', (pr) => { pr.number = 761; }],
+  ['state', (pr) => { pr.state = 'closed'; }],
+  ['draft state', (pr) => { pr.draft = true; }],
+  ['title', (pr) => { pr.title = `${pr.title} forged`; }],
+  ['body', (pr) => { pr.body = `${pr.body}\nforged`; }],
+  ['creator login', (pr) => { pr.user.login = 'attacker'; }],
+  ['creator id', (pr) => { pr.user.id += 1; }],
+  ['head ref', (pr) => { pr.head.ref = `${pr.head.ref}-attacker`; }],
+  ['head repository name', (pr) => { pr.head.repo.full_name = 'attacker/console'; }],
+  ['head repository id', (pr) => { pr.head.repo.id += 1; }],
+  ['base ref', (pr) => { pr.base.ref = 'attacker'; }],
+  ['base SHA', (pr) => { pr.base.sha = 'e'.repeat(40); }],
+  ['base repository name', (pr) => { pr.base.repo.full_name = 'attacker/console'; }],
+  ['base repository id', (pr) => { pr.base.repo.id += 1; }],
+];
+
+test('post-push proof polling validates all stable metadata before old/new SHA handling', () => {
+  for (const headSha of [T, N]) {
+    for (const [label, mutate] of postPushMetadataMutations) {
+      let reads = 0;
+      let sleeps = 0;
+      const candidate = postPushPr(headSha);
+      mutate(candidate);
+      assert.throws(
+        () => pollReleasePleasePostPushHead(pollFixture({
+          readPullRequest: () => { reads += 1; return candidate; },
+          sleep: () => { sleeps += 1; },
+        })),
+        new RegExp(`post-push live PR ${label} changed`, 'i'),
+        `${label} at ${headSha}`,
+      );
+      assert.equal(reads, 1, label);
+      assert.equal(sleeps, 0, label);
+    }
+  }
+});
+
+const invalidInitialMutations = [
+  (pr) => { pr.head.sha = N; },
+  (pr) => { delete pr.user.id; },
+  (pr) => { pr.user.id = 0; },
+  (pr) => { delete pr.head.repo.id; },
+  (pr) => { pr.head.repo.id = 0; },
+  (pr) => { delete pr.base.repo.id; },
+  (pr) => { pr.base.repo.id += 1; },
+];
+
+test('post-push proof polling validates all inputs before its first read', () => {
+  for (const mutate of invalidInitialMutations) {
+    let reads = 0;
+    const initialPr = postPushPr(T);
+    mutate(initialPr);
+    assert.throws(() => pollReleasePleasePostPushHead(pollFixture({
+      initialPr,
+      readPullRequest: () => { reads += 1; return postPushPr(N); },
+    })));
+    assert.equal(reads, 0);
+  }
+
+  for (const overrides of [
+    { oldTip: N },
+    { newTip: T },
+    { oldTip: 'A'.repeat(40) },
+    { newTip: 'short' },
+    { actionPr: { ...actionPr, number: 0 } },
+    { actionPr: { ...actionPr, baseBranchName: 'attacker' } },
+    { repository: 'not-an-owner-name' },
+    { readPullRequest: null },
+    { sleep: null },
+    { maxReads: 0 },
+    { maxReads: 21 },
+    { maxReads: 1.5 },
+    { delayMs: -1 },
+    { delayMs: 501 },
+    { delayMs: 0.5 },
+  ]) {
+    let reads = 0;
+    assert.throws(() => pollReleasePleasePostPushHead(pollFixture({
+      ...overrides,
+      ...(Object.hasOwn(overrides, 'readPullRequest') ? {} : {
+        readPullRequest: () => { reads += 1; return postPushPr(N); },
+      }),
+    })));
+    assert.equal(reads, 0);
+  }
+});
 
 test('binds an exact release action output to the generated core tip', () => {
   assert.deepEqual(parseReleasePleaseActionPr(JSON.stringify(actionPr)), actionPr);
@@ -291,6 +536,25 @@ test('keeps the push token out of argv, process errors, and non-password askpass
   }
 });
 
+test('protected producer validates before transport and accepts the exact post-push head before proof', () => {
+  const source = readFileSync(
+    new URL('./converge-release-please-doc-custody.mjs', import.meta.url),
+    'utf8',
+  );
+  const main = source.slice(source.indexOf('export function main()'));
+  assert.equal([...main.matchAll(/assertReleasePleasePrePushSnapshot\(\{/g)].length, 1);
+  assert.equal([...main.matchAll(/pollReleasePleasePostPushHead\(\{/g)].length, 1);
+  assert.equal([...main.matchAll(/emitProofOutputs\(\{/g)].length, 1);
+  const prePushValidation = main.indexOf('assertReleasePleasePrePushSnapshot({');
+  const worktree = main.indexOf("run('git', ['worktree', 'add', '--detach', work, tip]);");
+  const push = main.indexOf("run('git', invocation.args, { cwd: work, env: invocation.env });");
+  const poll = main.indexOf('pollReleasePleasePostPushHead({', push);
+  const output = main.indexOf('emitProofOutputs({ prNumber: binding.prNumber', poll);
+  assert.ok(prePushValidation >= 0 && worktree > prePushValidation);
+  assert.ok(push > worktree && poll > push && output > poll);
+  assert.doesNotMatch(main.slice(push, output), /const finalPr = ghJson/);
+});
+
 const expectedReleaseWorkflow = Object.freeze({
   name: 'Release Please',
   on: {
@@ -301,6 +565,7 @@ const expectedReleaseWorkflow = Object.freeze({
   jobs: {
     'release-please': {
       'runs-on': 'ubuntu-latest',
+      'timeout-minutes': 10,
       permissions: { contents: 'write', 'pull-requests': 'write' },
       outputs: {
         pr_number: '${{ steps.converge.outputs.pr_number }}',
@@ -380,6 +645,7 @@ test('protected release workflow keeps the PAT transport-only and emits one nati
   );
   const model = yaml.load(source);
   assert.deepEqual(model, expectedReleaseWorkflow);
+  assert.equal(model.jobs['release-please']['timeout-minutes'], 10);
   const releaseConfig = JSON.parse(readFileSync(
     new URL('../../release-please-config.json', import.meta.url),
     'utf8',

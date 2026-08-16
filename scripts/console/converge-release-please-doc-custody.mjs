@@ -78,6 +78,38 @@ function exactSha(value, label) {
   return value;
 }
 
+function positiveSafeInteger(value, label) {
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    fail(`${label} must be a positive safe integer`);
+  }
+  return value;
+}
+
+function assertStableReleasePr(pr, expected, phase) {
+  if (pr === null || Array.isArray(pr) || typeof pr !== 'object') {
+    fail(`${phase} live PR metadata must be an object`);
+  }
+  const checks = [
+    [pr.number === expected.number, 'number'],
+    [pr.state === 'open', 'state'],
+    [pr.draft === false, 'draft state'],
+    [pr.title === expected.title, 'title'],
+    [pr.body === expected.body, 'body'],
+    [pr?.user?.login === expected.creatorLogin, 'creator login'],
+    [pr?.user?.id === expected.creatorId, 'creator id'],
+    [pr?.head?.ref === expected.headRef, 'head ref'],
+    [pr?.head?.repo?.full_name === expected.repository, 'head repository name'],
+    [pr?.head?.repo?.id === expected.repositoryId, 'head repository id'],
+    [pr?.base?.ref === 'main', 'base ref'],
+    [pr?.base?.sha === expected.parentSha, 'base SHA'],
+    [pr?.base?.repo?.full_name === expected.repository, 'base repository name'],
+    [pr?.base?.repo?.id === expected.repositoryId, 'base repository id'],
+  ];
+  for (const [valid, label] of checks) {
+    if (!valid) fail(`${phase} live PR ${label} changed`);
+  }
+}
+
 function exactUtf8(value, label) {
   if (!Buffer.isBuffer(value)) fail(`${label} must be exact bytes`);
   const text = value.toString('utf8');
@@ -115,6 +147,99 @@ export function parseReleasePleaseActionPr(raw) {
     labels: Object.freeze([...parsed.labels]),
     files: Object.freeze([...parsed.files]),
   });
+}
+
+export function assertReleasePleasePrePushSnapshot({
+  actionPr,
+  initialPr,
+  repository,
+  expectedParentSha,
+  oldTip,
+} = {}) {
+  if (!actionPr || typeof actionPr !== 'object') fail('release action PR output is unavailable');
+  const repo = nonEmptyString(repository, 'protected repository');
+  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)) {
+    fail('protected repository must be an exact owner/name pair');
+  }
+  const parentSha = exactSha(expectedParentSha, 'triggering main SHA');
+  const oldSha = exactSha(oldTip, 'pre-push lease tip SHA');
+  if (initialPr === null || Array.isArray(initialPr) || typeof initialPr !== 'object') {
+    fail('pre-push live PR metadata must be an object');
+  }
+  const prNumber = positiveSafeInteger(actionPr.number, 'release action PR number');
+  const title = nonEmptyString(actionPr.title, 'release action PR title');
+  const body = nonEmptyString(actionPr.body, 'release action PR body');
+  const headRef = nonEmptyString(actionPr.headBranchName, 'release action PR head ref');
+  if (!RELEASE_PLEASE_HEAD_REF.test(headRef)) {
+    fail('release action PR head ref must match the release-please branch pattern');
+  }
+  if (actionPr.baseBranchName !== 'main') fail('release action PR base must be main');
+
+  const expected = Object.freeze({
+    number: prNumber,
+    title,
+    body,
+    creatorLogin: RELEASE_PLEASE_BOT_NAME,
+    creatorId: positiveSafeInteger(initialPr?.user?.id, 'pre-push PR creator id'),
+    headRef,
+    repository: repo,
+    repositoryId: positiveSafeInteger(initialPr?.head?.repo?.id, 'pre-push repository id'),
+    parentSha,
+  });
+  if (initialPr?.base?.repo?.id !== expected.repositoryId) {
+    fail('pre-push head and base repository ids must match');
+  }
+  assertStableReleasePr(initialPr, expected, 'pre-push');
+  if (exactSha(initialPr?.head?.sha, 'pre-push live PR head SHA') !== oldSha) {
+    fail('pre-push live PR head must equal the lease tip');
+  }
+  return Object.freeze({ expected, oldSha });
+}
+
+export function pollReleasePleasePostPushHead({
+  actionPr,
+  initialPr,
+  repository,
+  expectedParentSha,
+  oldTip,
+  newTip,
+  readPullRequest,
+  sleep,
+  maxReads = 20,
+  delayMs = 500,
+} = {}) {
+  const newSha = exactSha(newTip, 'post-push custody tip SHA');
+  if (typeof readPullRequest !== 'function') fail('post-push PR reader must be a function');
+  if (typeof sleep !== 'function') fail('post-push sleeper must be a function');
+  if (!Number.isSafeInteger(maxReads) || maxReads < 1 || maxReads > 20) {
+    fail('post-push maximum reads must be an integer from 1 through 20');
+  }
+  if (!Number.isSafeInteger(delayMs) || delayMs < 0 || delayMs > 500) {
+    fail('post-push delay must be an integer from 0 through 500 milliseconds');
+  }
+  const { expected, oldSha } = assertReleasePleasePrePushSnapshot({
+    actionPr,
+    initialPr,
+    repository,
+    expectedParentSha,
+    oldTip,
+  });
+  if (oldSha === newSha) fail('pre-push and post-push tips must differ');
+
+  for (let read = 1; read <= maxReads; read += 1) {
+    const current = readPullRequest();
+    assertStableReleasePr(current, expected, 'post-push');
+    const currentSha = exactSha(current?.head?.sha, 'post-push live PR head SHA');
+    if (currentSha === newSha) return current;
+    if (currentSha !== oldSha) {
+      fail(`unexpected post-push PR head ${currentSha}; expected old lease tip or new custody tip`);
+    }
+    if (read === maxReads) {
+      fail(`post-push PR remained at old lease tip after ${maxReads} reads`);
+    }
+    sleep(delayMs);
+  }
+  fail('post-push PR polling exhausted unexpectedly');
 }
 
 function actionReleaseNotes(body) {
@@ -388,6 +513,13 @@ export function main() {
     baseChangelog: gitBytes(PROTECTED_ROOT, ['show', `${parent}:CHANGELOG.md`]),
     headChangelog: gitBytes(PROTECTED_ROOT, ['show', `${tip}:CHANGELOG.md`]),
   });
+  assertReleasePleasePrePushSnapshot({
+    actionPr,
+    initialPr: pr,
+    repository,
+    expectedParentSha,
+    oldTip: tip,
+  });
 
   const work = mkdtempSync(join(tmpdir(), 'console-rp-custody-'));
   try {
@@ -482,19 +614,20 @@ export function main() {
     } finally {
       rmSync(transportDirectory, { recursive: true, force: true });
     }
-    const finalPr = ghJson(['api', `repos/${repository}/pulls/${actionPr.number}`]);
-    if (
-      finalPr?.number !== actionPr.number
-      || finalPr?.state !== 'open'
-      || finalPr?.head?.sha !== newTip
-      || finalPr?.head?.ref !== actionPr.headBranchName
-      || finalPr?.head?.repo?.full_name !== repository
-      || finalPr?.base?.ref !== 'main'
-      || finalPr?.title !== actionPr.title
-      || finalPr?.body !== actionPr.body
-    ) {
-      throw new Error('live PR moved or metadata changed after custody push; refusing proof output');
-    }
+    pollReleasePleasePostPushHead({
+      actionPr,
+      initialPr: pr,
+      repository,
+      expectedParentSha,
+      oldTip: tip,
+      newTip,
+      readPullRequest: () => ghJson([
+        'api', `repos/${repository}/pulls/${actionPr.number}`,
+      ]),
+      sleep: (milliseconds) => {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
+      },
+    });
     emitProofOutputs({ prNumber: binding.prNumber, headSha: newTip, parentSha: parent });
     console.log(
       `converge-release-please-doc-custody: PR #${pr.number} tip ${tip} -> ${newTip}`

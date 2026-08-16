@@ -24,6 +24,9 @@ concurrency:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    # Bound protected API and transport work, including a connection that
+    # stalls inside one of the finite post-push polling reads.
+    timeout-minutes: 10
     permissions:
       contents: write
       pull-requests: write
