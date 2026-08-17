@@ -91,6 +91,23 @@ test("a duplicated canonical identifier fails closed", () => {
   assert.match(manifestFailures(mutated, LIVE)[0], /cannot parse the canonical lens list/);
 });
 
+test("a parenthesized ordered-list entry fails closed", () => {
+  // `17)` renders as an ordered-list item exactly like `17.`, so a guard keyed
+  // on the dot alone treated it as prose and the new lens never reached either
+  // projection.
+  for (const delimiter of [")", "]", ":"]) {
+    const mutated = AGENTS.replace(
+      "<!-- SHARED:REASONING-LENSES:END -->",
+      `17${delimiter} **New required lens** — definition\n<!-- SHARED:REASONING-LENSES:END -->`,
+    );
+    assert.match(
+      manifestFailures(mutated, LIVE)[0] ?? "",
+      /cannot parse the canonical lens list/,
+      `delimiter ${delimiter} must fail closed`,
+    );
+  }
+});
+
 test("renumbering the canonical list fails closed", () => {
   const mutated = AGENTS.replace("2. **Essentialism / YAGNI**", "3. **Essentialism / YAGNI**");
   assert.match(manifestFailures(mutated, LIVE)[0], /cannot parse the canonical lens list/);

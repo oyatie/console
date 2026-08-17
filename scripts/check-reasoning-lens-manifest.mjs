@@ -63,10 +63,12 @@ export function canonicalLenses(agentsText) {
   const names = [];
   for (const line of block.split("\n")) {
     const trimmed = line.trim();
-    // Any numbered entry must parse. Skipping unrecognised ones let a new lens
-    // written with an ASCII hyphen instead of an em dash be treated as prose,
-    // so it never reached the projections and every gate stayed green.
-    if (!/^\d+\./.test(trimmed)) continue;
+    // Any numbered entry must parse, whatever ordered-list delimiter it uses.
+    // Skipping unrecognised ones let a new lens written with an ASCII hyphen
+    // instead of an em dash be treated as prose; keying the guard on `.` alone
+    // then let `17) **Lens** — definition`, which Markdown renders identically,
+    // slip through the same way.
+    if (!/^\d+\s*[.)\]:]/.test(trimmed)) continue;
     const match = /^(\d+)\.\s+\*\*(.+?)\*\*\s+—\s+\S/.exec(trimmed);
     if (!match) return null;
     if (Number(match[1]) !== names.length + 1) return null;
