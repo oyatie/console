@@ -15,7 +15,7 @@ Two instruction tiers exist. **Tier 1 (north-star):** the programme SSOT plan �
 
 ## B. Reasoning map (before implementing / verdicting / planning)
 
-1. **Lens selection** — pick the smallest task-fit subset (≥2) from `CANONICAL_LENSES_V1` (`scripts/check-reasoning-lens-contract.mjs`). Root-level decisions get the full battery; leaves inherit. High-risk domains (authz/migration/contracts/approval/HR-payroll/release/production/compliance) MUST include Red Team, Operability, Blast-radius, Zero-trust or record durable N/A.
+1. **Lens selection** — pick the smallest task-fit subset (≥2) from the canonical list in `AGENTS.md` (drift-checked by `scripts/check-reasoning-lens-manifest.mjs`). Root-level decisions get the full battery; leaves inherit. High-risk domains (authz/migration/contracts/approval/HR-payroll/release/production/compliance) SHOULD include Red Team, Operability, Blast-radius, Zero-trust. No gate demands a per-record evidence block; none can evaluate one.
 2. **Claim graph** — for each load-bearing claim, tag it `E` (evidence: observed via command/file), `I` (inference from evidence), or `U` (uncertainty/assumption). A verdict or plan built on untagged claims is narrative, not reasoning.
 3. **Challenges[]** — record at least one real challenge to the brief/plan/ADR you were handed (Chesterton first, then still replace if indefensible). Empty or templated challenges = stamp; reject your own work.
 

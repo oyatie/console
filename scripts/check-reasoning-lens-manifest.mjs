@@ -2,77 +2,111 @@
 /**
  * Reasoning-lens MANIFEST drift check.
  *
- * This replaces `check-reasoning-lens-contract.mjs`, which did two jobs. Only
- * one of them was checkable.
+ * `AGENTS.md` is the source. `CLAUDE.md` and `README.md` each carry an
+ * identifier-only projection of its lens list, and each tells the reader that
+ * projection is drift-checked. This enforces that claim.
  *
- * KEPT — the identifier-only lens manifest projected into CLAUDE.md must not
- * drift from the canonical list. Two lists either match or they do not, so the
- * check is falsifiable, instant, and its red means something specific.
+ * Three properties, each learned from a way an earlier revision of this file
+ * failed to hold them:
  *
- * REMOVED — the per-record `lens_contract` evidence block. It required every
- * added or modified governed document to carry a JSON object naming the lenses
- * applied, with a prose rationale per lens. That gate could only verify the
- * object's SHAPE: replacing all six rationales in a real ledger with the string
- * "banana banana banana" left it green. It asserted that reasoning happened,
- * which is not decidable from text, and it produced repeated red for missing
- * paperwork rather than for defects -- `git log` carries seven commits whose
- * whole purpose was healing it, one of which was reverted.
+ * 1. The expected list is PARSED FROM `AGENTS.md`, not from an array in this
+ *    module. A hardcoded copy means renaming a lens in AGENTS.md and nowhere
+ *    else leaves every projection stale with the gate green -- it would check
+ *    a duplicate against a duplicate.
+ * 2. The whole marked block is compared, not searched for. `includes()` accepts
+ *    a block that keeps all sixteen lines and appends a seventeenth, so
+ *    additions, duplicates and trailing drift pass unnoticed.
+ * 3. Every file carrying the marker is checked. Dropping README from the sweep
+ *    leaves the repository's entry point stale while the gate passes.
  *
- * The lens policy itself survives in AGENTS.md as guidance. What is gone is the
- * machine demanding proof it cannot evaluate.
+ * This replaces `check-reasoning-lens-contract.mjs`, which also required a
+ * per-record `lens_contract` evidence block on every governed document. That
+ * half is retired: it could only verify the JSON's shape -- replacing all six
+ * rationales in a real ledger with "banana banana banana" left it green -- so
+ * it asserted that reasoning happened, which is not decidable from text.
  */
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const START = "<!-- SHARED:REASONING-LENSES:START -->";
+const END = "<!-- SHARED:REASONING-LENSES:END -->";
 
-export const CANONICAL_LENSES_V1 = Object.freeze([
-  "Cartesian doubt",
-  "Essentialism / YAGNI",
-  "Chesterton's Fence",
-  "Contrarian / outside-the-box",
-  "Socratic",
-  "Pragmatism",
-  "Red Team",
-  "Systems Thinking",
-  "Operability / Day-2",
-  "Opportunity Cost",
-  "Blast-radius / cell-based",
-  "Constant-work / anti-fragility",
-  "Shared-nothing / eventual consistency",
-  "FinOps / unit-cost",
-  "Telemetry-first",
-  "Zero-trust / defense-in-depth",
-]);
+export const SOURCE = "AGENTS.md";
+export const PROJECTIONS = Object.freeze(["CLAUDE.md", "README.md"]);
 
-const MANIFEST_PREAMBLE =
-  "## Reasoning lens manifest\n\nCanonical definitions and routing rules live in [AGENTS.md](AGENTS.md#task-selected-reasoning-lenses). This identifier-only projection is drift-checked and does not duplicate policy.";
+const PREAMBLE = "## Reasoning lens manifest\n\nCanonical definitions and routing rules live in "
+  + "[AGENTS.md](AGENTS.md#task-selected-reasoning-lenses). This identifier-only projection is "
+  + "drift-checked and does not duplicate policy.";
 
-export const CANONICAL_MANIFEST_BODY_V1 = `${MANIFEST_PREAMBLE}\n\n${CANONICAL_LENSES_V1.map(
-  (name, index) => `${index + 1}. ${name}`,
-).join("\n")}`;
+/** The marked block's interior, or null when the markers are missing/inverted. */
+export function markedBlock(text) {
+  const from = text.indexOf(START);
+  const to = text.indexOf(END);
+  if (from < 0 || to < 0 || to < from) return null;
+  return text.slice(from + START.length, to).trim();
+}
 
-/** @returns {string[]} failure messages; empty means the projection is intact. */
-export function manifestFailures(text, repoPath = "CLAUDE.md") {
-  if (text.includes(CANONICAL_MANIFEST_BODY_V1)) return [];
-  const expected = CANONICAL_MANIFEST_BODY_V1.split("\n");
-  const actual = text.split("\n");
-  const at = expected.findIndex((line, i) => actual[actual.indexOf(expected[0]) + i] !== line);
-  return [
-    `${repoPath}: reasoning lens manifest has drifted from the canonical list`
-    + (at >= 0 ? ` (first difference at manifest line ${at + 1}: expected ${JSON.stringify(expected[at])})` : ""),
-  ];
+/** Canonical lens names, in order, parsed from the source's numbered bold entries. */
+export function canonicalLenses(agentsText) {
+  const block = markedBlock(agentsText);
+  if (block === null) return null;
+  const names = [];
+  for (const line of block.split("\n")) {
+    const match = /^(\d+)\.\s+\*\*(.+?)\*\*\s+—/.exec(line.trim());
+    if (!match) continue;
+    if (Number(match[1]) !== names.length + 1) return null;
+    names.push(match[2]);
+  }
+  return names.length ? names : null;
+}
+
+export function expectedProjection(names) {
+  return `${PREAMBLE}\n\n${names.map((name, i) => `${i + 1}. ${name}`).join("\n")}`;
+}
+
+export function manifestFailures(agentsText, projections) {
+  const names = canonicalLenses(agentsText);
+  if (!names) {
+    return [`${SOURCE}: cannot parse the canonical lens list from the marked block`];
+  }
+  const expected = expectedProjection(names);
+  const failures = [];
+  for (const [path, text] of Object.entries(projections)) {
+    const block = markedBlock(text);
+    if (block === null) {
+      failures.push(`${path}: the SHARED:REASONING-LENSES markers are missing or inverted`);
+      continue;
+    }
+    // Whole-block equality: a projection that keeps every canonical line and
+    // adds one more must fail.
+    if (block !== expected) {
+      const actual = block.split("\n");
+      const wanted = expected.split("\n");
+      const at = wanted.findIndex((line, i) => actual[i] !== line);
+      const detail = at >= 0
+        ? `line ${at + 1}: expected ${JSON.stringify(wanted[at])}, found ${JSON.stringify(actual[at] ?? "(end of block)")}`
+        : `${actual.length - wanted.length} unexpected trailing line(s), first ${JSON.stringify(actual[wanted.length])}`;
+      failures.push(`${path}: reasoning lens projection has drifted from ${SOURCE} — ${detail}`);
+    }
+  }
+  return failures;
 }
 
 const isMain = process.argv[1] && process.argv[1].endsWith("check-reasoning-lens-manifest.mjs");
 if (isMain) {
-  const failures = manifestFailures(readFileSync(resolve(root, "CLAUDE.md"), "utf8"));
+  const read = (p) => readFileSync(resolve(root, p), "utf8");
+  const failures = manifestFailures(
+    read(SOURCE),
+    Object.fromEntries(PROJECTIONS.map((p) => [p, read(p)])),
+  );
   if (failures.length) {
     console.error(failures.join("\n"));
-    console.error("Regenerate the numbered list in CLAUDE.md from AGENTS.md#task-selected-reasoning-lenses.");
+    console.error(`Regenerate the numbered lists in ${PROJECTIONS.join(" and ")} from ${SOURCE}.`);
     process.exitCode = 1;
   } else {
-    console.log(`reasoning lens manifest OK (${CANONICAL_LENSES_V1.length} lenses)`);
+    const count = canonicalLenses(read(SOURCE)).length;
+    console.log(`reasoning lens manifest OK (${count} lenses, ${PROJECTIONS.length} projections)`);
   }
 }

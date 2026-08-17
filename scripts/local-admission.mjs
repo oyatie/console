@@ -171,14 +171,14 @@ export function planGates(files, opts = {}) {
     }
   }
 
-  // The manifest is a projection of AGENTS.md's lens list into CLAUDE.md, so
-  // those two files are the only way it can drift. The retired gate keyed off
-  // ledger/docs-index/baseline changes, none of which can move it.
-  if (files.some((path) => path === "AGENTS.md" || path === "CLAUDE.md")) {
+  // AGENTS.md is the source; CLAUDE.md and README.md each carry a projection of
+  // it and each says so. Any of the three can cause drift. The retired gate
+  // keyed off ledger/docs-index/baseline changes, none of which can move it.
+  if (files.some((path) => ["AGENTS.md", "CLAUDE.md", "README.md"].includes(path))) {
     gates.push({
       id: "check:reasoning-lens-manifest",
       cmd: ["node", "scripts/check-reasoning-lens-manifest.mjs"],
-      when: "AGENTS.md or CLAUDE.md changed",
+      when: "AGENTS.md, CLAUDE.md or README.md changed",
     });
   }
 
