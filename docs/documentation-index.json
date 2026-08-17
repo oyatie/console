@@ -3924,6 +3924,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/program/ledger/2026-08-17-p4-payroll-calculation-append-only.md",
+      "blob_sha": "a3c4f019b2759c52fd6482acca66c8f795b4c634",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "archive_tag": null
+    },
+    {
       "path": "docs/program/legacy-intent-register.md",
       "class": "evidence",
       "owner": "repository maintainers",

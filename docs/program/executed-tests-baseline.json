@@ -258,7 +258,7 @@
     "backend/crates/orgchange/domain/src/lib.rs": 8,
     "backend/crates/payroll/adapter-postgres/src/lib.rs": 15,
     "backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs": 15,
-    "backend/crates/payroll/adapter-postgres/tests/payroll_lifecycle_rls_as_runtime_role.rs": 1,
+    "backend/crates/payroll/adapter-postgres/tests/payroll_lifecycle_rls_as_runtime_role.rs": 2,
     "backend/crates/payroll/adapter-postgres/tests/payroll_rls_surfaces_as_runtime_role.rs": 4,
     "backend/crates/payroll/domain/src/lib.rs": 49,
     "backend/crates/payroll/rest/src/lib.rs": 10,

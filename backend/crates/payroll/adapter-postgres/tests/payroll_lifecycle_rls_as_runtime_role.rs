@@ -198,3 +198,76 @@ async fn lifecycle_tables_are_org_isolated_and_write_checked(pool: PgPool) {
     assert_eq!(own.open, 1);
     assert_eq!(own.items[0].kind, "OVERTIME_ALLOWANCE");
 }
+
+/// REG-P4: `payroll_line_calculations` must be append-only in the database,
+/// not in review.
+///
+/// Migration 0186 declares these rows append-only with only the `payable` flip
+/// as a legal update. Before 0222 that was enforced by nothing: `console_rt`
+/// held table-wide INSERT and UPDATE, so it could both set `payable` and
+/// rewrite `gross_won`/`net_won` after calculation and review.
+///
+/// Every direction is asserted. Proving only the denials would let an
+/// over-broad revoke pass while breaking the calculation writer, and the
+/// SQLSTATE is checked rather than "an error occurred" -- a misspelled column
+/// also errors, and would otherwise read as a denial.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn runtime_role_cannot_write_calculations_after_insert(pool: PgPool) {
+    let rt_pool = runtime_role_pool(&pool).await;
+
+    // Column privileges are resolved at plan time, so `WHERE FALSE` proves the
+    // denial without seeding a row the runtime role could not write anyway.
+    for statement in [
+        // the `payable` flip -- the release-gate bit
+        "UPDATE payroll_line_calculations SET payable = TRUE WHERE FALSE",
+        "INSERT INTO payroll_line_calculations (org_id, version, payable) \
+         SELECT NULL, 1, TRUE WHERE FALSE",
+        // and the money columns, which feed payslip issuance verbatim
+        "UPDATE payroll_line_calculations SET net_won = 1 WHERE FALSE",
+        "UPDATE payroll_line_calculations SET gross_won = 1 WHERE FALSE",
+        "UPDATE payroll_line_calculations SET tax_table_version = 'x' WHERE FALSE",
+        // DELETE defeats append-only exactly as UPDATE does, and it is never
+        // granted explicitly: migration 0031 hands it to `console_rt` through
+        // ALTER DEFAULT PRIVILEGES on every future table.
+        //
+        // NOTE: this assertion cannot fail in this harness, and that is a
+        // property of the harness, not of the grant. 0031 scopes the default
+        // to `FOR ROLE console_app`, while `#[sqlx::test]` applies migrations
+        // as `console_buck_admin`, so `console_rt` never receives DELETE here
+        // and the case is unreachable. Measured on a database built the
+        // production way -- migrations applied as `console_app` -- `console_rt`
+        // holds INSERT,SELECT,UPDATE,DELETE before 0222 and SELECT after it.
+        // The enforcement that covers this is the migration's own
+        // `payroll_payable.runtime_delete_not_revoked` assertion, which runs
+        // wherever migrations run.
+        "DELETE FROM payroll_line_calculations WHERE FALSE",
+        // Both FKs cascade, so deleting a parent erases calculations without
+        // ever needing DELETE on the child. Revoking the child alone is not
+        // append-only.
+        "DELETE FROM payroll_draft_lines WHERE FALSE",
+        "DELETE FROM payroll_draft_runs WHERE FALSE",
+    ] {
+        let error = sqlx::query(statement)
+            .execute(&rt_pool)
+            .await
+            .expect_err("console_rt must not be able to rewrite a calculation");
+        let code = error
+            .as_database_error()
+            .and_then(|e| e.code())
+            .map(|c| c.into_owned())
+            .unwrap_or_default();
+        assert_eq!(
+            code, "42501",
+            "must be insufficient_privilege, not an unrelated failure: {error}"
+        );
+    }
+
+    // The calculation writer inserts an explicit column list excluding
+    // `payable` (see lifecycle.rs). That write must survive untouched.
+    sqlx::query(
+        "INSERT INTO payroll_line_calculations (org_id, version) SELECT NULL, 1 WHERE FALSE",
+    )
+    .execute(&rt_pool)
+    .await
+    .expect("console_rt must retain INSERT omitting payable");
+}
