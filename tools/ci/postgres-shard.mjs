@@ -170,7 +170,12 @@ if (isMain) {
     for (const id of SHARD_IDS) {
       console.log(`${id}\t${parts[id].length}`);
     }
-    console.log(`partition ok (${doc.counts?.workflow_targets ?? "?"} workflow targets)`);
+    // Report what this run partitioned, not what the file claims it would:
+    // reading `doc.counts` here printed `207 workflow targets` while the five
+    // shard lines directly above summed to 209. A success line that restates
+    // stored metadata is not a measurement.
+    const partitioned = SHARD_IDS.reduce((total, id) => total + parts[id].length, 0);
+    console.log(`partition ok (${partitioned} workflow targets)`);
   } else {
     console.error("usage: node tools/ci/postgres-shard.mjs --check [map.json]");
     process.exit(2);

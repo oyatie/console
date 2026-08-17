@@ -5,7 +5,14 @@ import { fileURLToPath } from "node:url";
 import { partitionFailures, partitionWorkflowEntries, SHARD_IDS } from "./postgres-shard.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const map = JSON.parse(readFileSync(resolve(root, "tools/ci/postgres-cargo-map.json"), "utf8"));
+// Optional map path, matching the sibling `postgres-shard.mjs --check [map]`.
+// Without it this gate could only ever be run against the real file, so no test
+// could prove it goes red -- and an unfalsifiable gate is how the drift it now
+// catches survived in the first place.
+const mapPath = process.argv[2]
+  ? resolve(process.argv[2])
+  : resolve(root, "tools/ci/postgres-cargo-map.json");
+const map = JSON.parse(readFileSync(mapPath, "utf8"));
 const wf = readFileSync(resolve(root, ".github/workflows/ci.yml"), "utf8");
 // S1: harness runs on facet jobs; still accept legacy monolith block for S0-only trees.
 const startFacet = wf.indexOf("postgres-reachability-app:");
@@ -57,6 +64,33 @@ if (usesCargo) {
     const name = String(u.wrapper || "").replace(/^.*:/, "");
     if (needed.has(name) || needed.has(u.wrapper)) {
       failures.push(`unmapped but required by workflow: ${u.wrapper}`);
+    }
+  }
+}
+
+// `counts` is a hand-written block that nothing verified, so it drifted from
+// the entries it describes and then reported the stale number as if measured:
+// `postgres-shard.mjs --check` printed `partition ok (207 workflow targets)`
+// while partitioning 209. History shows the drift is chronic, not a one-off --
+// consistent at 1746bc2e/ede052d3/7b568df9, drifted by e391abb9, re-synced by
+// hand at fb9ae31e, drifted again by 97a45cfc and 0da6c2fd. A number that
+// describes the file it lives in must be derived from that file or checked
+// against it; otherwise it is decoration that reads as evidence.
+{
+  const observed = {
+    mapped: (map.entries ?? []).length,
+    unmapped: (map.unmapped ?? []).length,
+    workflow_targets: mapped.size,
+    workflow_mapped: mapped.size,
+    workflow_missing: 0,
+  };
+  const declared = map.counts ?? {};
+  for (const [key, value] of Object.entries(observed)) {
+    if (declared[key] !== value) {
+      failures.push(
+        `postgres-cargo-map counts.${key} declares ${JSON.stringify(declared[key])} `
+        + `but the file contains ${value}`,
+      );
     }
   }
 }
