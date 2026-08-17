@@ -546,7 +546,10 @@ const domainUnitOpenApiGenCommands = [
 ];
 const domainUnitExpectedCommands = [
   [...domainCargoPrefix, "--lib", ...domainUnitPackages.flatMap((pkg) => ["-p", pkg])],
-  [...domainCargoPrefix, "--doc", "-p", "console-kernel-core"],
+  // Workspace-wide by contract: a `-p` list here executed 0 doctests for years
+  // while 23 real ones -- including 10 `compile_fail` authorization claims --
+  // never ran. See the matching note in .github/workflows/ci.yml.
+  [...domainCargoPrefix, "--doc", "--workspace"],
   ...domainUnitIntegrationInvocations.flatMap(([pkg, tests]) => {
     const cargoTest = [
       ...domainCargoPrefix,
@@ -925,7 +928,7 @@ const requiredJobRunContracts = Object.freeze({
   ],
   "domain-unit": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Domain crate unit tests", "754df637470658378c9449a3daf2eaa8ca05446b3a024660591c528d14489215", { if: runHeavyCondition }),
+    proofDigest("Domain crate unit tests", "3fb8655b1970c16da3809f3c41c151c215fce2ade26293651798aab4da2756ed", { if: runHeavyCondition }),
   ],
   "backend": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),

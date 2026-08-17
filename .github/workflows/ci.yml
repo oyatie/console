@@ -415,8 +415,16 @@ jobs:
           # `compile_fail` doctests are the only artifact that can hold a NEGATIVE
           # type-boundary claim ("this must not compile"), and they execute nowhere
           # unless --doc is invoked explicitly.
+          # `--workspace`, NOT a package list: this step ran `-p console-kernel-core`
+          # from 4a9c7579 until 2026-08-17, and that crate has never contained a
+          # single doc fence -- so the gate executed 0 tests every build while 23
+          # real doctests went dark, 10 of them `compile_fail` claims guarding
+          # ResourceBranch, authorize, authorize_scoped and GrantValidity. A
+          # hand-maintained package list is what failed; deriving the set from the
+          # workspace is what keeps it from failing again. Do not narrow this back
+          # to `-p`.
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
-            --doc -p console-kernel-core
+            --doc --workspace
           check_status "domain --doc"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-attendance-application --test attendance_policy
