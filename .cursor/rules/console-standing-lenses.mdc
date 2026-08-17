@@ -25,7 +25,7 @@ Apply **all** of these; they are additive, never replaced by ad-hoc lenses.
 
 ## 16-lens scope (canonical contract, not stamping)
 
-Canonical lenses: the marked list in `AGENTS.md`, projected into `CLAUDE.md` and `README.md` and drift-checked by `scripts/check-reasoning-lens-manifest.mjs`. Smallest task-appropriate subset **≥2**; full 16-lens battery only at **root-level** decisions (wave topology, keeps/overturns, mechanism replacements) — leaf lanes inherit the root battery. High-risk domains (authz/migration/contracts/approval/HR-payroll/release/production/compliance) MUST include Red Team, Operability / Day-2, Blast-radius / cell-based, Zero-trust / defense-in-depth. **Reject `all-16` with empty or templated challenges** — a lens without a recorded challenge is a stamp, not reasoning.
+Canonical lenses: the marked list in `AGENTS.md`, projected into `CLAUDE.md` and `README.md` and drift-checked by `scripts/check-reasoning-lens-manifest.mjs`. Smallest task-appropriate subset **≥2**; full 16-lens battery only at **root-level** decisions (wave topology, keeps/overturns, mechanism replacements) — leaf lanes inherit the root battery. High-risk domains (authz/migration/contracts/approval/HR-payroll/release/production/compliance) SHOULD include Red Team, Operability / Day-2, Blast-radius / cell-based, Zero-trust / defense-in-depth, matching AGENTS.md. **Reject `all-16` with empty or templated challenges** — a lens without a recorded challenge is a stamp, not reasoning.
 
 ## Critic transport
 

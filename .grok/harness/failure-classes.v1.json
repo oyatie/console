@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "description": "Reusable failure classes for Console process intelligence. Process edits add controls here + in workflows/tools — never one-shot PR-named hooks.",
+  "description": "Reusable failure classes for Console process intelligence. Process edits add controls here + in workflows/tools \u2014 never one-shot PR-named hooks.",
   "promote_process_edit_after_repeats": 2,
   "classes": [
     {
@@ -49,7 +49,7 @@
       "id": "ops.mid-run-push",
       "symptom": "Push while Required CI in_progress cancels running cone",
       "detector": "gh run list status in_progress on same branch",
-      "control": "Batch local fixes → one push → wait complete",
+      "control": "Batch local fixes \u2192 one push \u2192 wait complete",
       "admit_commands": []
     },
     {
@@ -112,6 +112,16 @@
       "control": "Admit requires baseline --update commit",
       "admit_commands": [
         "node scripts/check-executed-tests.mjs"
+      ]
+    },
+    {
+      "id": "lens.manifest-drift",
+      "symptom": "CLAUDE.md or README.md lens projection drifted from the AGENTS.md canonical list",
+      "detector": "node scripts/check-reasoning-lens-manifest.mjs",
+      "control": "Regenerate the numbered projections from AGENTS.md; never hand-edit one projection alone",
+      "admit_commands": [
+        "node --test scripts/check-reasoning-lens-manifest.test.mjs",
+        "node scripts/check-reasoning-lens-manifest.mjs"
       ]
     }
   ]

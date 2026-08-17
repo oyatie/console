@@ -174,11 +174,26 @@ export function planGates(files, opts = {}) {
   // AGENTS.md is the source; CLAUDE.md and README.md each carry a projection of
   // it and each says so. Any of the three can cause drift. The retired gate
   // keyed off ledger/docs-index/baseline changes, none of which can move it.
-  if (files.some((path) => ["AGENTS.md", "CLAUDE.md", "README.md"].includes(path))) {
+  const lensInputs = ["AGENTS.md", "CLAUDE.md", "README.md"];
+  const lensImpl = [
+    "scripts/check-reasoning-lens-manifest.mjs",
+    "scripts/check-reasoning-lens-manifest.test.mjs",
+  ];
+  if (files.some((path) => lensInputs.includes(path) || lensImpl.includes(path))) {
+    // Editing the checker itself has to run it. Otherwise a weakened parser
+    // passes local admission and fails only in hosted preflight -- and the
+    // regression suite is the only thing that proves the parser still rejects.
+    if (files.some((path) => lensImpl.includes(path))) {
+      gates.push({
+        id: "test:reasoning-lens-manifest",
+        cmd: ["node", "--test", "scripts/check-reasoning-lens-manifest.test.mjs"],
+        when: "the manifest checker or its test changed",
+      });
+    }
     gates.push({
       id: "check:reasoning-lens-manifest",
       cmd: ["node", "scripts/check-reasoning-lens-manifest.mjs"],
-      when: "AGENTS.md, CLAUDE.md or README.md changed",
+      when: "AGENTS.md, CLAUDE.md, README.md, or the checker changed",
     });
   }
 

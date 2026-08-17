@@ -76,6 +76,21 @@ test("an unparseable canonical entry fails closed rather than being skipped", ()
   assert.match(failures[0], /cannot parse the canonical lens list/);
 });
 
+test("a blank canonical identifier fails closed", () => {
+  // Renaming a lens to whitespace keeps the count at 16 and, if both
+  // projections are updated to match, leaves every gate green with an
+  // unnameable lens in the manifest.
+  const mutated = AGENTS.replace("**Socratic**", "**   **");
+  assert.match(manifestFailures(mutated, LIVE)[0], /cannot parse the canonical lens list/);
+});
+
+test("a duplicated canonical identifier fails closed", () => {
+  // 16 entries, 15 distinct choices: selection becomes ambiguous while the
+  // count assertion still passes.
+  const mutated = AGENTS.replace("**Socratic**", "**Red Team**");
+  assert.match(manifestFailures(mutated, LIVE)[0], /cannot parse the canonical lens list/);
+});
+
 test("renumbering the canonical list fails closed", () => {
   const mutated = AGENTS.replace("2. **Essentialism / YAGNI**", "3. **Essentialism / YAGNI**");
   assert.match(manifestFailures(mutated, LIVE)[0], /cannot parse the canonical lens list/);

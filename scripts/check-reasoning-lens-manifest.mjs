@@ -70,7 +70,12 @@ export function canonicalLenses(agentsText) {
     const match = /^(\d+)\.\s+\*\*(.+?)\*\*\s+—\s+\S/.exec(trimmed);
     if (!match) return null;
     if (Number(match[1]) !== names.length + 1) return null;
-    names.push(match[2]);
+    // A name that trims to nothing, or repeats an earlier one, leaves the
+    // manifest with a blank or ambiguous identifier while every count still
+    // matches. Selection has to name a lens unambiguously, so both fail closed.
+    const name = match[2].trim();
+    if (!name || names.includes(name)) return null;
+    names.push(name);
   }
   return names.length ? names : null;
 }
