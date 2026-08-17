@@ -36,9 +36,22 @@ describe("local-admission gate plan", () => {
     assert.ok(cargo[0].cmd.includes("console-inspection-domain"));
   });
 
-  it("plans lens when ledger changes", () => {
-    const gates = planGates(["docs/program/ledger/x.md"]);
-    assert.ok(gates.some((g) => g.id === "check:reasoning-lens-contract"));
+  it("plans the lens manifest check only for the files that can move it", () => {
+    // The manifest is a projection of AGENTS.md's lens list into CLAUDE.md, so
+    // only those two files can cause drift. The retired gate keyed off
+    // ledger/docs-index/baseline changes, none of which can.
+    for (const changed of [["AGENTS.md"], ["CLAUDE.md"]]) {
+      assert.ok(
+        planGates(changed).some((g) => g.id === "check:reasoning-lens-manifest"),
+        `manifest check must be planned for ${JSON.stringify(changed)}`,
+      );
+    }
+    for (const changed of [["docs/program/ledger/x.md"], ["backend/src/lib.rs"]]) {
+      assert.ok(
+        !planGates(changed).some((g) => g.id === "check:reasoning-lens-manifest"),
+        `manifest check must NOT be planned for ${JSON.stringify(changed)}`,
+      );
+    }
   });
 
   it("plans preflight when ci.yml changes", () => {

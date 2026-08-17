@@ -643,9 +643,14 @@ describe("CI preflight contract", () => {
     // 122 -> 124: fail-slow sweep collect-failures steps in preflight and backend.
     // 125 -> 127: release metadata semantic regression + exact-ref live gate.
     // 127 -> 128: dependency bootstrap for the image-release hardening suite.
-    assert.equal(runStepCount, 128, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 128*3 = 384.
-    assert.equal(mutationCount, 384, "exhaustive bypass matrix must not shrink");
+    // 128 -> 127: retired the per-record reasoning-lens evidence gate. Two
+    // preflight steps (its regression suite and its event/base admission
+    // matrix) collapsed into one manifest drift check. This ratchet exists to
+    // catch steps disappearing silently, so the deliberate decrement is
+    // recorded here rather than the assertion being loosened.
+    assert.equal(runStepCount, 127, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 127*3 = 381.
+    assert.equal(mutationCount, 381, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {

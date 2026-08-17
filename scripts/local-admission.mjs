@@ -171,11 +171,16 @@ export function planGates(files, opts = {}) {
     }
   }
 
-  gates.push({
-    id: "check:reasoning-lens-manifest",
-    cmd: ["node", "scripts/check-reasoning-lens-manifest.mjs"],
-    when: "always (manifest drift is cheap and decidable)",
-  });
+  // The manifest is a projection of AGENTS.md's lens list into CLAUDE.md, so
+  // those two files are the only way it can drift. The retired gate keyed off
+  // ledger/docs-index/baseline changes, none of which can move it.
+  if (files.some((path) => path === "AGENTS.md" || path === "CLAUDE.md")) {
+    gates.push({
+      id: "check:reasoning-lens-manifest",
+      cmd: ["node", "scripts/check-reasoning-lens-manifest.mjs"],
+      when: "AGENTS.md or CLAUDE.md changed",
+    });
+  }
 
   if (flags.docsIndex || flags.ledger) {
     // doc-links is the durable custody surface when available
