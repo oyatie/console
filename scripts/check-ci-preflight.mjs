@@ -1126,30 +1126,35 @@ const requiredJobActionContracts = Object.freeze({
     actionStep(2, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
     actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
+    actionStep(6, "Upload per-target durations", "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02", {"name":"postgres-timings-app","path":"${{ runner.temp }}/postgres-timings-app.jsonl","if-no-files-found":"warn","retention-days":14}, { if: "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}" }),
   ],
   "postgres-reachability-platform": [
     actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
     actionStep(2, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
     actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
+    actionStep(6, "Upload per-target durations", "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02", {"name":"postgres-timings-platform","path":"${{ runner.temp }}/postgres-timings-platform.jsonl","if-no-files-found":"warn","retention-days":14}, { if: "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}" }),
   ],
   "postgres-reachability-ontology": [
     actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
     actionStep(2, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
     actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
+    actionStep(6, "Upload per-target durations", "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02", {"name":"postgres-timings-ontology","path":"${{ runner.temp }}/postgres-timings-ontology.jsonl","if-no-files-found":"warn","retention-days":14}, { if: "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}" }),
   ],
   "postgres-reachability-domain-a": [
     actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
     actionStep(2, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
     actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
+    actionStep(6, "Upload per-target durations", "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02", {"name":"postgres-timings-domain-a","path":"${{ runner.temp }}/postgres-timings-domain-a.jsonl","if-no-files-found":"warn","retention-days":14}, { if: "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}" }),
   ],
   "postgres-reachability-domain-b": [
     actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
     actionStep(2, "Free runner disk for PostgreSQL cargo tests", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
     actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
+    actionStep(6, "Upload per-target durations", "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02", {"name":"postgres-timings-domain-b","path":"${{ runner.temp }}/postgres-timings-domain-b.jsonl","if-no-files-found":"warn","retention-days":14}, { if: "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}" }),
   ],
   "postgres-domain-reachability": [
   ],
@@ -1260,11 +1265,36 @@ const protectedJobExecutionMetadata = {
     }],
   },
   "domain-unit": {},
-  "postgres-reachability-app": {},
-  "postgres-reachability-platform": {},
-  "postgres-reachability-ontology": {},
-  "postgres-reachability-domain-a": {},
-  "postgres-reachability-domain-b": {},
+  "postgres-reachability-app": {
+    stepEnv: [{
+      name: "Run disposable PostgreSQL integration targets",
+      env: { CARGO_POSTGRES_TIMINGS: "${{ runner.temp }}/postgres-timings-app.jsonl" },
+    }],
+  },
+  "postgres-reachability-platform": {
+    stepEnv: [{
+      name: "Run disposable PostgreSQL integration targets",
+      env: { CARGO_POSTGRES_TIMINGS: "${{ runner.temp }}/postgres-timings-platform.jsonl" },
+    }],
+  },
+  "postgres-reachability-ontology": {
+    stepEnv: [{
+      name: "Run disposable PostgreSQL integration targets",
+      env: { CARGO_POSTGRES_TIMINGS: "${{ runner.temp }}/postgres-timings-ontology.jsonl" },
+    }],
+  },
+  "postgres-reachability-domain-a": {
+    stepEnv: [{
+      name: "Run disposable PostgreSQL integration targets",
+      env: { CARGO_POSTGRES_TIMINGS: "${{ runner.temp }}/postgres-timings-domain-a.jsonl" },
+    }],
+  },
+  "postgres-reachability-domain-b": {
+    stepEnv: [{
+      name: "Run disposable PostgreSQL integration targets",
+      env: { CARGO_POSTGRES_TIMINGS: "${{ runner.temp }}/postgres-timings-domain-b.jsonl" },
+    }],
+  },
   "postgres-domain-reachability": {},
   "company-conformance": {},
   "generated-face-authority": {},

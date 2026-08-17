@@ -708,11 +708,11 @@ describe("CI preflight contract", () => {
       "api-contract": 2,
       "generated-face-authority": 4,
       "company-conformance": 3,
-      "postgres-reachability-app": 4,
-      "postgres-reachability-platform": 4,
-      "postgres-reachability-ontology": 4,
-      "postgres-reachability-domain-a": 4,
-      "postgres-reachability-domain-b": 4,
+      "postgres-reachability-app": 5,
+      "postgres-reachability-platform": 5,
+      "postgres-reachability-ontology": 5,
+      "postgres-reachability-domain-a": 5,
+      "postgres-reachability-domain-b": 5,
     };
     const workflowModel = yaml.load(workflow);
     const bypasses = [
@@ -817,7 +817,10 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(mutationCount, 300, "setup-action identity/input/interleaving matrix must not shrink");
+    // 300 -> 360: five postgres shards each gained an upload-artifact step that
+    // persists per-target durations, and every setup action carries three
+    // bypass mutations plus its order swaps.
+    assert.equal(mutationCount, 360, "setup-action identity/input/interleaving matrix must not shrink");
   });
 
   it("locks the candidate-controlled local free-runner-disk action body", () => {

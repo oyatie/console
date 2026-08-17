@@ -537,10 +537,25 @@ jobs:
           shared-key: backend-cargo
           cache-all-crates: "true"
           save-if: false
+      # CARGO_POSTGRES_TIMINGS records per-target durations. The shard
+      # partitioner bin-packs by ENTRY COUNT, which does not predict time:
+      # measured per-entry cost ranges 17.8s (app) to 32.4s (ontology), and the
+      # two equal-count domain halves ran 1097s and 1345s. Nothing could balance
+      # by duration because duration was never recorded. Same env on all five.
       - name: Run disposable PostgreSQL integration targets
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        env:
+          CARGO_POSTGRES_TIMINGS: ${{ runner.temp }}/postgres-timings-app.jsonl
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id app --num-threads=1
+      - name: Upload per-target durations
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: postgres-timings-app
+          path: ${{ runner.temp }}/postgres-timings-app.jsonl
+          if-no-files-found: warn
+          retention-days: 14
 
   postgres-reachability-platform:
     name: Test PostgreSQL — platform
@@ -577,8 +592,18 @@ jobs:
           save-if: false
       - name: Run disposable PostgreSQL integration targets
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        env:
+          CARGO_POSTGRES_TIMINGS: ${{ runner.temp }}/postgres-timings-platform.jsonl
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id platform --num-threads=1
+      - name: Upload per-target durations
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: postgres-timings-platform
+          path: ${{ runner.temp }}/postgres-timings-platform.jsonl
+          if-no-files-found: warn
+          retention-days: 14
 
   postgres-reachability-ontology:
     name: Test PostgreSQL — ontology
@@ -615,8 +640,18 @@ jobs:
           save-if: false
       - name: Run disposable PostgreSQL integration targets
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        env:
+          CARGO_POSTGRES_TIMINGS: ${{ runner.temp }}/postgres-timings-ontology.jsonl
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id ontology --num-threads=1
+      - name: Upload per-target durations
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: postgres-timings-ontology
+          path: ${{ runner.temp }}/postgres-timings-ontology.jsonl
+          if-no-files-found: warn
+          retention-days: 14
 
   postgres-reachability-domain-a:
     name: Test PostgreSQL — domain adapters A
@@ -653,8 +688,18 @@ jobs:
           save-if: false
       - name: Run disposable PostgreSQL integration targets
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        env:
+          CARGO_POSTGRES_TIMINGS: ${{ runner.temp }}/postgres-timings-domain-a.jsonl
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-a --num-threads=1
+      - name: Upload per-target durations
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: postgres-timings-domain-a
+          path: ${{ runner.temp }}/postgres-timings-domain-a.jsonl
+          if-no-files-found: warn
+          retention-days: 14
 
   postgres-reachability-domain-b:
     name: Test PostgreSQL — domain adapters B
@@ -691,8 +736,18 @@ jobs:
           save-if: false
       - name: Run disposable PostgreSQL integration targets
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        env:
+          CARGO_POSTGRES_TIMINGS: ${{ runner.temp }}/postgres-timings-domain-b.jsonl
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-b --num-threads=1
+      - name: Upload per-target durations
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: postgres-timings-domain-b
+          path: ${{ runner.temp }}/postgres-timings-domain-b.jsonl
+          if-no-files-found: warn
+          retention-days: 14
 
   postgres-domain-reachability:
     # REQUIRED as of 2026-07-29: a red here blocks the merge. It was promoted
