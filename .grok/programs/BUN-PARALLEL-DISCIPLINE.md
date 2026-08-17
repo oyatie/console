@@ -59,7 +59,7 @@ When a mistake class repeats **twice**, promote a process edit (see `learning-lo
 | Class ID | Observed | Control (must live in tool/workflow) |
 |----------|----------|--------------------------------------|
 | `auth.unsigned-tip` | C/T not pinned SSH after rebase | Signed train checklist in handoff; authority bootstrap |
-| `lens.noncanonical-json` | Hosted preflight lens fail | `check-reasoning-lens-contract` in admit for ledger paths |
+| `lens.manifest-drift` | Hosted preflight lens fail | `check-reasoning-lens-manifest` in admit when AGENTS.md, CLAUDE.md or README.md touched |
 | `docs.tip-blob-prebind` | Manifest ≠ tip blob | `check:doc-manifest` on tip content before push |
 | `ci.verify-job-ids` | verify.mjs / preflight digests | `check:ci-preflight` + `test:verify` |
 | `ci.residual-buck-growth` | New Buck wrappers in ci.yml | `check:product-buck-residual` |

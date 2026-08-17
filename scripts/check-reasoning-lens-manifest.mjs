@@ -40,12 +40,20 @@ const PREAMBLE = "## Reasoning lens manifest\n\nCanonical definitions and routin
   + "[AGENTS.md](AGENTS.md#task-selected-reasoning-lenses). This identifier-only projection is "
   + "drift-checked and does not duplicate policy.";
 
-/** The marked block's interior, or null when the markers are missing/inverted. */
+/**
+ * The marked block's interior, or null when the markers are missing, inverted,
+ * or repeated. Exactly one pair is required: a second complete block after the
+ * first END marker is invisible to whole-block equality, so a projection could
+ * carry 32 identifiers while the first 16 still matched.
+ */
 export function markedBlock(text) {
-  const from = text.indexOf(START);
-  const to = text.indexOf(END);
-  if (from < 0 || to < 0 || to < from) return null;
-  return text.slice(from + START.length, to).trim();
+  const starts = [...text.matchAll(new RegExp(START.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), "g"))];
+  const ends = [...text.matchAll(new RegExp(END.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), "g"))];
+  if (starts.length !== 1 || ends.length !== 1) return null;
+  const from = starts[0].index + START.length;
+  const to = ends[0].index;
+  if (to < from) return null;
+  return text.slice(from, to).trim();
 }
 
 /** Canonical lens names, in order, parsed from the source's numbered bold entries. */
@@ -54,8 +62,13 @@ export function canonicalLenses(agentsText) {
   if (block === null) return null;
   const names = [];
   for (const line of block.split("\n")) {
-    const match = /^(\d+)\.\s+\*\*(.+?)\*\*\s+—/.exec(line.trim());
-    if (!match) continue;
+    const trimmed = line.trim();
+    // Any numbered entry must parse. Skipping unrecognised ones let a new lens
+    // written with an ASCII hyphen instead of an em dash be treated as prose,
+    // so it never reached the projections and every gate stayed green.
+    if (!/^\d+\./.test(trimmed)) continue;
+    const match = /^(\d+)\.\s+\*\*(.+?)\*\*\s+—\s+\S/.exec(trimmed);
+    if (!match) return null;
     if (Number(match[1]) !== names.length + 1) return null;
     names.push(match[2]);
   }

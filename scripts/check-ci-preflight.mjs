@@ -16,6 +16,8 @@ const reindeerToolchainOverride = /^(?:export\s+)?REINDEER_TOOLCHAIN\s*=/;
 const ciPreflightTestCommand = "node --test scripts/check-ci-preflight.test.mjs";
 const reasoningLensManifestCommand = "node scripts/check-reasoning-lens-manifest.mjs";
 const reasoningLensManifestName = "Reasoning lens manifest drift";
+const reasoningLensRegressionCommand = "node --test scripts/check-reasoning-lens-manifest.test.mjs";
+const reasoningLensRegressionName = "Reasoning lens manifest regression";
 const consoleRouteInventoryTestCommand = "node --test scripts/console/route-inventory.test.mjs";
 const consoleAuthorityTrainTestCommand = "node --test scripts/console/verify-console-authority-train.test.mjs";
 const consoleTruthLedgerTestCommand = "node --test scripts/console/validate-console-truth-ledger.test.mjs";
@@ -861,6 +863,7 @@ const requiredJobRunContracts = Object.freeze({
     setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: preflightCheckoutHeavyCondition }),
     proofRun("Cheap Buck2 generated-face admission", "tools/buck/preflight.sh", { if: preflightBuckHeavyCondition }),
     proofRun("Foundation gate contract", "npm run check:foundation-gates", { if: preflightNpmCiDependentCondition }),
+    proofRun(reasoningLensRegressionName, reasoningLensRegressionCommand, { if: preflightNpmCiDependentCondition }),
     proofRun(reasoningLensManifestName, reasoningLensManifestCommand, { if: preflightNpmCiDependentCondition }),
     proofRun("CI preflight contract tests", "node --test scripts/check-ci-preflight.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console route inventory regression", "node --test scripts/console/route-inventory.test.mjs", { if: preflightNpmCiDependentCondition }),
@@ -1584,15 +1587,20 @@ function requireReasoningLensManifest(steps, failures) {
   // JSON's shape, not that any reasoning happened. What remains is the manifest
   // drift check, which is decidable -- two identifier lists either match or
   // they do not.
-  const byName = steps.filter((step) => stepName(step) === reasoningLensManifestName);
-  const byCommand = steps.filter((step) => runScalar(step) === reasoningLensManifestCommand);
-  if (
-    byName.length !== 1
-    || byCommand.length !== 1
-    || byName[0] !== byCommand[0]
-    || !hasOnlyExpectedCondition(byName[0] ?? "", preflightNpmCiDependentCondition)
-  ) {
-    failures.push("preflight must run the reasoning-lens manifest drift check once and only after npm ci succeeds");
+  for (const [name, command, label] of [
+    [reasoningLensRegressionName, reasoningLensRegressionCommand, "regression suite"],
+    [reasoningLensManifestName, reasoningLensManifestCommand, "drift check"],
+  ]) {
+    const byName = steps.filter((step) => stepName(step) === name);
+    const byCommand = steps.filter((step) => runScalar(step) === command);
+    if (
+      byName.length !== 1
+      || byCommand.length !== 1
+      || byName[0] !== byCommand[0]
+      || !hasOnlyExpectedCondition(byName[0] ?? "", preflightNpmCiDependentCondition)
+    ) {
+      failures.push(`preflight must run the reasoning-lens ${label} once and only after npm ci succeeds`);
+    }
   }
 }
 

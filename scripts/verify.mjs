@@ -89,6 +89,7 @@ const PLAN = new Map([
   ["Release metadata documentation local-link gate", { tier: "fast" }],
   ["Cheap Buck2 generated-face admission", { tier: "fast" }],
   ["Foundation gate contract", { tier: "fast" }],
+  ["Reasoning lens manifest regression", { tier: "fast" }],
   ["Reasoning lens manifest drift", { tier: "fast" }],
   ["CI preflight contract tests", { tier: "fast" }],
   ["Console route inventory regression", { tier: "fast" }],

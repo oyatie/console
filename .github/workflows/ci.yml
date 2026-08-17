@@ -125,6 +125,11 @@ jobs:
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run check:foundation-gates
 
+      - name: Reasoning lens manifest regression
+        id: reasoning-lens-manifest-regression
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
+        run: node --test scripts/check-reasoning-lens-manifest.test.mjs
+
       - name: Reasoning lens manifest drift
         id: reasoning-lens-manifest
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}

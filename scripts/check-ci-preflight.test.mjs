@@ -592,7 +592,7 @@ describe("CI preflight contract", () => {
 
   it("rejects every run-step condition, soft-failure, and retained-text early-exit bypass", () => {
     const requiredRunStepCounts = {
-      preflight: 31,
+      preflight: 32,
       "domain-unit": 2,
       backend: 26,
       "dev-up-smoke": 7,
@@ -645,12 +645,13 @@ describe("CI preflight contract", () => {
     // 127 -> 128: dependency bootstrap for the image-release hardening suite.
     // 128 -> 127: retired the per-record reasoning-lens evidence gate. Two
     // preflight steps (its regression suite and its event/base admission
-    // matrix) collapsed into one manifest drift check. This ratchet exists to
-    // catch steps disappearing silently, so the deliberate decrement is
-    // recorded here rather than the assertion being loosened.
-    assert.equal(runStepCount, 127, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 127*3 = 381.
-    assert.equal(mutationCount, 381, "exhaustive bypass matrix must not shrink");
+    // matrix) collapsed into one manifest drift check.
+    // 127 -> 128: restored a regression suite for the replacement gate. Review
+    // caught that the drift check shipped with no test, so a weakened parser
+    // could stay green whenever the checked-in files happened to match.
+    assert.equal(runStepCount, 128, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 128*3 = 384.
+    assert.equal(mutationCount, 384, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -872,18 +873,14 @@ describe("CI preflight contract", () => {
     }
   });
 
-  it("locks the reasoning-lens manifest check to one step gated on npm ci", () => {
-    // Replaces two tests that guarded the retired per-record evidence gate: one
-    // for its regression suite, one for its event/base admission matrix. The
-    // manifest check has no base to compute and no events to branch on, so the
-    // contract it needs is just "exactly once, after npm ci, unconditionally".
+  it("locks both reasoning-lens steps to one occurrence each, gated on npm ci", () => {
+    // Two steps now: the regression suite that proves the gate can fail, and
+    // the drift check itself. Review caught that the drift check had shipped
+    // with no suite, so a weakened parser could stay green whenever the
+    // checked-in files happened to match.
     assert.ok(workflow.includes(reasoningLensManifestStep), "manifest step fixture drifted");
-    const message = "reasoning-lens manifest drift check once and only after npm ci succeeds";
+    const message = "reasoning-lens drift check once and only after npm ci succeeds";
     expectFailure(workflow.replace(reasoningLensManifestStep, ""), message);
-    expectFailure(
-      workflow.replace(reasoningLensManifestStep, reasoningLensManifestStep.repeat(2)),
-      message,
-    );
     expectFailure(
       workflow.replace(reasoningLensManifestStep, addFalseCondition(reasoningLensManifestStep)),
       message,
@@ -891,6 +888,12 @@ describe("CI preflight contract", () => {
     expectFailure(
       workflow.replace(reasoningLensManifestStep, addContinueOnError(reasoningLensManifestStep)),
       message,
+    );
+    // Deleting the regression suite must fail too: without it the drift check
+    // is unfalsifiable, which is the defect this pair exists to prevent.
+    expectFailure(
+      workflow.replace("        run: node --test scripts/check-reasoning-lens-manifest.test.mjs\n", ""),
+      "reasoning-lens regression suite once and only after npm ci succeeds",
     );
   });
 
