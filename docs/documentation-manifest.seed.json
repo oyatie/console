@@ -3000,6 +3000,16 @@
     "archive_tag": null
   },
   {
+    "path": "docs/program/entity-platform-decision-register.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "849994a394b4b84f3edd2a192043b16cb05104f7",
+    "archive_tag": null
+  },
+  {
     "path": "docs/program/false-green-gate-holes.md",
     "class": "evidence",
     "owner": "repository maintainers",
