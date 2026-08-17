@@ -42,7 +42,7 @@ function setupFixture() {
   return { root, bin, log: join(root, "cargo.log") };
 }
 
-function runRunner({ root, bin, log, rows, args = [] }) {
+function runRunner({ root, bin, log, rows, args = [], extraEnv = {} }) {
   return spawnSync(runner, args, {
     input: rows.map((row) => JSON.stringify(row)).join("\n") + "\n",
     encoding: "utf8",
@@ -52,6 +52,7 @@ function runRunner({ root, bin, log, rows, args = [] }) {
       CARGO_REPO_ROOT: root,
       RUST_TEST_THREADS: "1",
       CARGO_INVOCATION_LOG: log,
+      ...extraEnv,
     },
   });
 }
@@ -107,6 +108,62 @@ test("exit 0 only when every invocation passed", () => {
     assert.equal(result.status, 0, result.stdout + result.stderr);
     assert.match(result.stdout, /2 passed, 0 failed/);
     assert.match(result.stdout, /all 2 invocations passed/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("records per-target durations as JSONL when CARGO_POSTGRES_TIMINGS is set", () => {
+  // The shard partitioner bin-packs by entry count, which does not predict
+  // time. Nothing could balance by duration because duration was never
+  // recorded; this file is that record, so it is asserted as a contract rather
+  // than left as a debugging aid.
+  const { root, bin, log } = setupFixture();
+  const timings = join(root, "timings.jsonl");
+  try {
+    const result = runRunner({ root, bin, log, rows: ROWS, extraEnv: { CARGO_POSTGRES_TIMINGS: timings } });
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+
+    const lines = readFileSync(timings, "utf8").trim().split("\n");
+    assert.equal(lines.length, ROWS.length, "one record per target, failures included");
+
+    const records = lines.map((line) => JSON.parse(line));
+    assert.deepEqual(records.map((r) => r.name), ["pass-a", "fail-b", "pass-c"]);
+    assert.deepEqual(records.map((r) => r.package), ["pkg-pass-a", "pkg-fail-b", "pkg-pass-c"]);
+    assert.deepEqual(records.map((r) => r.status), ["pass", "fail", "pass"]);
+    for (const record of records) {
+      assert.equal(typeof record.seconds, "number");
+      assert.ok(record.seconds >= 0, "duration must be a non-negative integer");
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a target whose name needs JSON escaping still produces parseable records", () => {
+  // A printf-built line would break here. This is why the record is emitted
+  // through python rather than assembled in shell.
+  const { root, bin, log } = setupFixture();
+  const timings = join(root, "timings.jsonl");
+  const awkward = { name: 'quote"and\\backslash', package: "pkg-pass-a", argv: ["cargo", "test", "-p", "pkg-pass-a"] };
+  try {
+    runRunner({ root, bin, log, rows: [awkward], extraEnv: { CARGO_POSTGRES_TIMINGS: timings } });
+    const record = JSON.parse(readFileSync(timings, "utf8").trim());
+    assert.equal(record.name, awkward.name);
+    assert.equal(record.status, "pass");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("no timings file is written when CARGO_POSTGRES_TIMINGS is unset", () => {
+  // Capture must be opt-in: the runner is used locally too, and silently
+  // writing files into a developer's tree is not acceptable.
+  const { root, bin, log } = setupFixture();
+  try {
+    const result = runRunner({ root, bin, log, rows: [ROWS[0]] });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stdout, /PASS {2}pass-a/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
