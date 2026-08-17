@@ -4,9 +4,10 @@
 > [`docs/CI-GATES.md`](../CI-GATES.md), the exact candidate's workflows, and their
 > executable validators for current truth.
 
-# False-green gate holes — nine confirmed, one shape
+# False-green gate holes — ten confirmed, one shape
 
-Recorded 2026-07-25 during the wave-4 hotfix pass; H-9 added 2026-07-26. Every item below was a
+Recorded 2026-07-25 during the wave-4 hotfix pass; H-9 added 2026-07-26, H-10 added 2026-08-17.
+Every item below was a
 **confident green over a broken reality**, and not one was caught by a gate —
 each was found by a person or agent reading code and checking a claim.
 
@@ -667,3 +668,49 @@ is run directly by the `preflight` job, so all three execute on every push and P
 context* is proposed here: all three ride inside jobs that already report, which is deliberate,
 because a required context that has never reported blocks every merge until it does. Nothing in
 this pass touched a database, and no claim above needs one.
+
+---
+
+## H-10 · A gate aimed at a scope containing none of the thing it checks
+
+Added 2026-08-17. The doctest gate was `--doc -p console-kernel-core`, and that
+crate contains no doc fence anywhere in its source. The step therefore
+discovered and executed **zero tests on every build** while reporting green. It
+was not a gate that drifted out of coverage; it never had any.
+
+This is the family shape at its purest. The proxy being verified was *"a `--doc`
+invocation is present in the workflow"*. The contract was *"the repository's
+`compile_fail` claims execute"*. Nothing compared the two, so the gate could not
+distinguish arming from vacuum.
+
+**Proven by execution, not by reading.**
+
+- `cargo test --locked --manifest-path backend/Cargo.toml --doc -p console-kernel-core`
+  → `running 0 tests`.
+- `grep -rc '```' backend/crates/kernel/core/src` → no matches at all.
+- Introduced in `4a9c7579` (#559), *"ci(kernel): the crate 152 others depend on
+  ran its tests nowhere"* — the `--doc` line was added beside a `--lib` fix for
+  the same crate, and was vacuous from its first run. The commit that fixed one
+  "ran nowhere" defect silently created another.
+
+**What sat dark.** `--doc --workspace` discovers 23 doctests: 18 execute and
+pass, 5 are `ignore` fences that never execute by design. Of the 18, **ten are
+`compile_fail`** in `console-platform-authz`, guarding `ResourceBranch`,
+`authorize`, `authorize_scoped`, and `GrantValidity` — the branch-scope and
+effective-dated-grant contracts. The step's own comment already stated the
+stake: `compile_fail` doctests are the only artifact that can hold a NEGATIVE
+type-boundary claim, and they execute nowhere unless `--doc` is invoked
+explicitly. The comment was right; the invocation was empty.
+
+**Remedy, landed as #789.** `--doc --workspace` rather than a longer `-p` list.
+A hand-maintained package list is what failed, and it stayed failed because
+nothing compared the list against the tree. The preflight step-digest pin now
+doubles as the guard: narrowing back to `-p` changes the step hash and fails
+`check-ci-preflight` until someone re-pins it deliberately.
+
+**The measurement that would have caught it.** Not a code review — a count. Any
+gate that can report success on zero executed units should have to state the
+unit count it observed, and a count of zero should be a failure rather than a
+pass. That generalises past doctests: it is the same missing assertion behind
+H-8, where a migration guard took most of CI offline and the suites that
+vanished reported nothing at all.
