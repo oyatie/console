@@ -3,7 +3,9 @@ name: Release Please
 # Enforced semantic versioning. Conventional-commit history on main drives an
 # automatically maintained release PR; merging it bumps the version, updates the
 # changelog, and pushes a vX.Y.Z tag. Image publication remains a separate
-# exact-main-CI workflow_run boundary in image-release.yml.
+# exact-main-CI workflow_run boundary in image-release.yml. That wake-up is not
+# release authority: publication additionally requires an immutable live release,
+# its exact lightweight tag, and exact successful CI + Security runs.
 #
 # The protected action always uses GITHUB_TOKEN so the release PR is created by
 # github-actions[bot]. RELEASE_PLEASE_TOKEN is transport-only: after protected

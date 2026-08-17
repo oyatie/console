@@ -267,6 +267,10 @@ const PLAN = new Map([
   ["Governed command-database DARK wiring regression", { tier: "fast" }],
   ["Render manifests and NetworkPolicy enforcement preflight", { tier: "fast" }],
   ["Production hardening contract", { tier: "fast" }],
+  ["Install production-hardening test dependencies", {
+    tier: "ci-only",
+    why: "hosted dependency bootstrap; `npm ci --ignore-scripts` would replace an already-installed local node_modules tree",
+  }],
   ["Production hardening regression tests", { tier: "fast" }],
 
   // ---- company-conformance ------------------------------------------------

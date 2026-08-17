@@ -18,8 +18,9 @@ permissions:
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   # Cancel superseded runs only for PRs. On main, every push must run CI to
-  # completion: image-release is triggered by this completed successful CI run
-  # for the exact SHA, so a rapid merge train must not cancel main CI.
+  # completion. Its completion wakes image-release's read-only classifier; only
+  # an exact immutable source release with matching CI + Security may allocate
+  # native image builders. A rapid merge train must not cancel main CI.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -1604,6 +1605,10 @@ jobs:
       - name: Production hardening contract
         if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run check:production-hardening
+
+      - name: Install production-hardening test dependencies
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
+        run: npm ci --ignore-scripts
 
       - name: Production hardening regression tests
         if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}

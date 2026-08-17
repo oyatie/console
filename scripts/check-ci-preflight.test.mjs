@@ -645,7 +645,7 @@ describe("CI preflight contract", () => {
       "domain-unit": 2,
       backend: 26,
       "dev-up-smoke": 7,
-      "kubernetes-manifests": 7,
+      "kubernetes-manifests": 8,
       "repo-gates": 26,
       "api-contract": 5,
       "generated-face-authority": 5,
@@ -691,9 +691,10 @@ describe("CI preflight contract", () => {
     // 121 -> 122: lane-receipt validator regression step in preflight.
     // 122 -> 124: fail-slow sweep collect-failures steps in preflight and backend.
     // 125 -> 127: release metadata semantic regression + exact-ref live gate.
-    assert.equal(runStepCount, 127, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 127*3 = 381.
-    assert.equal(mutationCount, 381, "exhaustive bypass matrix must not shrink");
+    // 127 -> 128: dependency bootstrap for the image-release hardening suite.
+    assert.equal(runStepCount, 128, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 128*3 = 384.
+    assert.equal(mutationCount, 384, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -1985,6 +1986,20 @@ describe("CI preflight contract", () => {
   });
 
   it("locks the Kubernetes production-hardening proof", () => {
+    expectFailure(
+      workflow.replace(
+        `      - name: Install production-hardening test dependencies\n        if: ${runHeavyUnlessCancelledIf}\n        run: npm ci --ignore-scripts\n\n`,
+        "",
+      ),
+      "kubernetes-manifests must preserve all 8 ordered setup/proof run steps",
+    );
+    expectFailure(
+      workflow.replace(
+        "        run: npm ci --ignore-scripts\n",
+        "        run: npm ci\n",
+      ),
+      "kubernetes-manifests setup run step 7 must preserve its exact name, command, condition, and execution semantics",
+    );
     expectFailure(
       workflow.replace(
         `      - name: Production hardening contract\n        if: ${runHeavyUnlessCancelledIf}\n`,

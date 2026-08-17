@@ -9,6 +9,10 @@ name: Image Release
 # per-arch digests into one manifest list with `docker buildx imagetools
 # create`. The manifest-LIST digest (the multi-arch index) is the immutable
 # artifact that gets Trivy-scanned, cosign-signed, and provenance-attested.
+# Completed CI is only a wake-up: ordinary main commits stop after one read-only
+# classification job. Native builders run only for a canonical version-changing
+# bot commit bound to an immutable published GitHub release, its exact lightweight
+# tag, current main, and exact successful CI + Security workflow/job records.
 # Updating the prod overlay is a separate, explicit workflow_dispatch action
 # guarded by the protected production environment; a push or merge never
 # mutates production desired state.
@@ -45,55 +49,402 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # `workflow_run` starts only after CI completes. The admission job still proves
-  # its exact successful main-push candidate is current main before allocating any
-  # native build runner. Manual recovery has no polling: it makes one exact-SHA
-  # CI lookup and rejects stale/non-successful candidates.
+  # `workflow_run` is only a wake-up signal. This read-only job classifies the
+  # exact CI candidate and emits `eligible=false` for ordinary/stale main
+  # commits. A release-version change is privileged: it must bind to an
+  # immutable GitHub release + lightweight tag and exact successful CI/Security
+  # workflow runs before any packages:write or OIDC job can start. No candidate
+  # bytes are checked out or executed here.
   ci-admission:
-    name: Admit exact successful CI candidate
+    name: Classify exact immutable source release
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       actions: read
     outputs:
+      eligible: ${{ steps.admit.outputs.eligible }}
       release_sha: ${{ steps.admit.outputs.release_sha }}
+      release_tag: ${{ steps.admit.outputs.release_tag }}
+      release_version: ${{ steps.admit.outputs.release_version }}
+      ci_run_id: ${{ steps.admit.outputs.ci_run_id }}
+      security_run_id: ${{ steps.admit.outputs.security_run_id }}
     steps:
-      - name: Fail closed unless CI and immutable main authorize one exact SHA
+      - name: Bind immutable release, tag, CI, Security, and current main
         id: admit
         env:
           EVENT_NAME: ${{ github.event_name }}
           REPO: ${{ github.repository }}
+          EXPECTED_REPOSITORY_ID: "1269693002"
           GH_TOKEN: ${{ github.token }}
-          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
-          WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
-          WORKFLOW_EVENT: ${{ github.event.workflow_run.event }}
-          WORKFLOW_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-          WORKFLOW_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          TRIGGER_RUN_ID: ${{ github.event.workflow_run.id }}
+          TRIGGER_WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          TRIGGER_WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          TRIGGER_WORKFLOW_EVENT: ${{ github.event.workflow_run.event }}
+          TRIGGER_WORKFLOW_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          TRIGGER_WORKFLOW_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           DISPATCH_CANDIDATE_SHA: ${{ inputs.candidate_sha }}
           DISPATCH_REF: ${{ github.ref }}
           RUN_ATTEMPT: ${{ github.run_attempt }}
+          ADMISSION_MAX_POLLS: "12"
+          ADMISSION_POLL_SECONDS: "10"
         run: |
           set -euo pipefail
+
+          readonly CI_WORKFLOW_ID="296023727"
+          readonly CI_WORKFLOW_PATH=".github/workflows/ci.yml"
+          readonly SECURITY_WORKFLOW_ID="296023731"
+          readonly SECURITY_WORKFLOW_PATH=".github/workflows/security.yml"
+          readonly RELEASE_BOT_ID="41898282"
+          readonly WEB_FLOW_ID="19864447"
+          readonly STABLE_VERSION_RE='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
+          readonly RELEASE_SUBJECT_RE='^chore\(main\): release ((0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)) \(#[1-9][0-9]*\)$'
+
+          die() {
+            echo "::error::$*" >&2
+            exit 1
+          }
+
+          skip_publication() {
+            local reason="$1"
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Image publication skipped"
+              echo ""
+              echo "- reason: ${reason}"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          }
+
+          api() {
+            timeout 20s gh api \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              -H "Cache-Control: no-cache" \
+              "$@"
+          }
+
+          current_main() {
+            local ref
+            ref="$(api "repos/${REPO}/git/ref/heads/main")" || die "unable to read current main"
+            jq -e \
+              '.object.type == "commit" and (.object.sha | type == "string") and
+               (.object.sha | length == 40 and test("^[0-9a-f]{40}$"))' \
+              <<< "$ref" >/dev/null \
+              || die "main ref is not one exact commit"
+            jq -r '.object.sha' <<< "$ref"
+          }
+
+          read_manifest_version() {
+            local sha="$1" version
+            # Keep the untrusted raw response out of a Bash variable: command
+            # substitution strips NUL bytes before jq can reject them. Only
+            # capture jq's already validated ASCII SemVer result.
+            version="$(
+              api -H "Accept: application/vnd.github.raw+json" \
+                "repos/${REPO}/contents/.release-please-manifest.json?ref=${sha}" \
+                | jq -er --arg stable_re "$STABLE_VERSION_RE" \
+                    'if type == "object" and keys == ["."] and
+                        (.["."] | type == "string" and length > 0 and
+                         (explode | all(. == 46 or (. >= 48 and . <= 57))) and
+                         test($stable_re))
+                     then .["."]
+                     else error("release manifest must be the canonical root-only object")
+                     end'
+            )" || die "unable to read or validate release manifest at ${sha}"
+            [[ "$version" =~ $STABLE_VERSION_RE ]] \
+              || die "release manifest version is not stable SemVer"
+            printf '%s' "$version"
+          }
+
+          # Sets EVIDENCE_RUN_ID and EVIDENCE_RUN_ATTEMPT. Return 10 only for
+          # genuinely pending/absent evidence; terminal disagreement exits.
+          verify_workflow_evidence() {
+            local workflow_id="$1" workflow_path="$2" aggregate_name="$3"
+            local expected_trigger_id="${4:-}" runs total run jobs matches fresh_runs fresh_run
+            runs="$(api "repos/${REPO}/actions/workflows/${workflow_id}/runs?event=push&branch=main&head_sha=${candidate_sha}&per_page=100")" \
+              || die "unable to read ${aggregate_name} workflow runs"
+            jq -e '(.total_count | type == "number" and . >= 0 and floor == .) and
+              (.workflow_runs | type == "array")' <<< "$runs" >/dev/null \
+              || die "${aggregate_name} run evidence is malformed"
+            total="$(jq -r '.total_count' <<< "$runs")"
+            if [[ "$total" == "0" ]]; then
+              return 10
+            fi
+            [[ "$total" == "1" && "$(jq '.workflow_runs | length' <<< "$runs")" == "1" ]] \
+              || die "${aggregate_name} must have exactly one exact-SHA main-push run"
+            run="$(jq -c '.workflow_runs[0]' <<< "$runs")"
+            jq -e \
+              --argjson repository_id "$EXPECTED_REPOSITORY_ID" \
+              --argjson workflow_id "$workflow_id" \
+              --arg path "$workflow_path" \
+              --arg sha "$candidate_sha" \
+              '.repository.id == $repository_id and .workflow_id == $workflow_id and
+               .path == $path and .event == "push" and .head_branch == "main" and
+               .head_sha == $sha and
+               (.id | type == "number" and . >= 1 and floor == .) and
+               (.run_attempt | type == "number" and . >= 1 and floor == .)' \
+              <<< "$run" >/dev/null || die "${aggregate_name} run identity disagrees with the protected workflow"
+            EVIDENCE_RUN_ID="$(jq -r '.id' <<< "$run")"
+            EVIDENCE_RUN_ATTEMPT="$(jq -r '.run_attempt' <<< "$run")"
+            if [[ -n "$expected_trigger_id" && "$EVIDENCE_RUN_ID" != "$expected_trigger_id" ]]; then
+              die "triggering CI run is not the unique exact-SHA CI run"
+            fi
+            if ! jq -e '.status == "completed"' <<< "$run" >/dev/null; then
+              jq -e '(.status | type == "string") and .conclusion == null' \
+                <<< "$run" >/dev/null \
+                || die "${aggregate_name} workflow status is malformed"
+              return 10
+            fi
+            jq -e '.conclusion == "success"' <<< "$run" >/dev/null \
+              || die "${aggregate_name} workflow is terminally non-success"
+
+            jobs="$(api "repos/${REPO}/actions/runs/${EVIDENCE_RUN_ID}/attempts/${EVIDENCE_RUN_ATTEMPT}/jobs?per_page=100")" \
+              || die "unable to read ${aggregate_name} jobs"
+            jq -e '(.total_count | type == "number" and . >= 0 and . <= 100 and floor == .) and
+              (.jobs | type == "array") and (.jobs | length) == .total_count' \
+              <<< "$jobs" >/dev/null \
+              || die "${aggregate_name} job evidence is malformed or truncated"
+            matches="$(jq -c --arg name "$aggregate_name" '[.jobs[] | select(.name == $name)]' <<< "$jobs")"
+            jq -e 'length == 1' <<< "$matches" >/dev/null \
+              || die "${aggregate_name} must identify exactly one aggregate job"
+            if ! jq -e '.[0].status == "completed"' <<< "$matches" >/dev/null; then
+              jq -e '(.[0].status | type == "string") and .[0].conclusion == null' \
+                <<< "$matches" >/dev/null \
+                || die "${aggregate_name} aggregate status is malformed"
+              return 10
+            fi
+            jq -e '.[0].conclusion == "success"' <<< "$matches" >/dev/null \
+              || die "${aggregate_name} aggregate is terminally non-success"
+
+            # A rerun can advance the current attempt between the run-list read
+            # and the attempt-scoped jobs read. Re-list after the aggregate and
+            # require the same attempt to remain the unique completed success.
+            fresh_runs="$(api "repos/${REPO}/actions/workflows/${workflow_id}/runs?event=push&branch=main&head_sha=${candidate_sha}&per_page=100")" \
+              || die "unable to re-read ${aggregate_name} workflow run"
+            jq -e '.total_count == 1 and
+              (.workflow_runs | type == "array" and length == 1)' \
+              <<< "$fresh_runs" >/dev/null \
+              || die "${aggregate_name} run set changed while aggregate evidence was read"
+            fresh_run="$(jq -c '.workflow_runs[0]' <<< "$fresh_runs")"
+            jq -e \
+              --argjson run_id "$EVIDENCE_RUN_ID" \
+              --argjson run_attempt "$EVIDENCE_RUN_ATTEMPT" \
+              '.id == $run_id and .run_attempt == $run_attempt and
+               .status == "completed" and .conclusion == "success"' \
+              <<< "$fresh_run" >/dev/null \
+              || die "${aggregate_name} current attempt changed while aggregate evidence was read"
+            return 0
+          }
+
+          # Sets RELEASE_ID after proving both release endpoints and the
+          # lightweight tag describe the exact immutable candidate.
+          verify_release_snapshot() {
+            local by_tag by_id tag_ref
+            if ! by_tag="$(api "repos/${REPO}/releases/tags/${release_tag}" 2>&1)"; then
+              if [[ "$by_tag" == *"(HTTP 404)"* ]]; then
+                return 10
+              fi
+              die "unable to read source release by tag"
+            fi
+            jq -e \
+              --arg tag "$release_tag" \
+              --arg sha "$candidate_sha" \
+              --argjson bot_id "$RELEASE_BOT_ID" \
+              '.tag_name == $tag and .target_commitish == $sha and
+               .draft == false and .prerelease == false and .immutable == true and
+               (.published_at | type == "string" and length > 0) and
+               (.id | type == "number" and . >= 1 and floor == .) and
+               .author.id == $bot_id and
+               .author.login == "github-actions[bot]" and .author.type == "Bot"' \
+              <<< "$by_tag" >/dev/null \
+              || die "source release is mutable, unpublished, or disagrees with the exact candidate"
+            RELEASE_ID="$(jq -r '.id' <<< "$by_tag")"
+            by_id="$(api "repos/${REPO}/releases/${RELEASE_ID}")" \
+              || die "unable to reread source release by immutable ID"
+            [[ "$(jq -cS . <<< "$by_id")" == "$(jq -cS . <<< "$by_tag")" ]] \
+              || die "release-by-ID and release-by-tag disagree"
+            tag_ref="$(api "repos/${REPO}/git/ref/tags/${release_tag}")" \
+              || die "unable to read source release tag"
+            jq -e --arg sha "$candidate_sha" \
+              '.object.type == "commit" and .object.sha == $sha' \
+              <<< "$tag_ref" >/dev/null \
+              || die "source release tag is annotated or moved away from the candidate"
+          }
+
+          [[ "$REPO" == "jason931225/console" && "$EXPECTED_REPOSITORY_ID" == "1269693002" ]] \
+            || die "image publication is bound to the canonical repository"
+          [[ "$RUN_ATTEMPT" == "1" ]] || die "Image Release reruns are not release authority"
+
           case "$EVENT_NAME" in
             workflow_run)
-              [[ "$WORKFLOW_NAME" == "CI" ]] || { echo "::error::unexpected completed workflow"; exit 1; }
-              [[ "$WORKFLOW_CONCLUSION" == "success" ]] || { echo "::error::CI conclusion is not success"; exit 1; }
-              [[ "$WORKFLOW_EVENT" == "push" && "$WORKFLOW_HEAD_BRANCH" == "main" ]] || { echo "::error::only main push CI may release"; exit 1; }
-              candidate_sha="$WORKFLOW_HEAD_SHA"
+              [[ "$TRIGGER_RUN_ID" =~ ^[1-9][0-9]*$ && "$TRIGGER_WORKFLOW_NAME" == "CI" ]] \
+                || die "unexpected completed workflow"
+              [[ "$TRIGGER_WORKFLOW_EVENT" == "push" && "$TRIGGER_WORKFLOW_HEAD_BRANCH" == "main" ]] \
+                || die "only main push CI may wake image publication"
+              candidate_sha="$TRIGGER_WORKFLOW_HEAD_SHA"
+              [[ "$candidate_sha" =~ ^[0-9a-f]{40}$ ]] || die "trigger lacks an exact candidate SHA"
+              trigger_run="$(api "repos/${REPO}/actions/runs/${TRIGGER_RUN_ID}")" \
+                || die "unable to live-read triggering CI run"
+              jq -e \
+                --argjson repository_id "$EXPECTED_REPOSITORY_ID" \
+                --argjson workflow_id "$CI_WORKFLOW_ID" \
+                --argjson run_id "$TRIGGER_RUN_ID" \
+                --arg path "$CI_WORKFLOW_PATH" \
+                --arg sha "$candidate_sha" \
+                --arg conclusion "$TRIGGER_WORKFLOW_CONCLUSION" \
+                '.repository.id == $repository_id and .workflow_id == $workflow_id and
+                 .id == $run_id and .path == $path and .event == "push" and
+                 .head_branch == "main" and .head_sha == $sha and .status == "completed" and
+                 .conclusion == $conclusion and
+                 (.run_attempt | type == "number" and . >= 1 and floor == .)' \
+                <<< "$trigger_run" >/dev/null || die "triggering CI metadata changed or is untrusted"
+              [[ "$TRIGGER_WORKFLOW_CONCLUSION" == "success" ]] \
+                || skip_publication "source CI did not succeed"
+              [[ "$(jq -r '.run_attempt' <<< "$trigger_run")" == "1" ]] \
+                || skip_publication "source CI rerun is not automatic publication authority"
+              trigger_run_attempt="1"
               ;;
             workflow_dispatch)
-              [[ "$DISPATCH_REF" == "refs/heads/main" && "$RUN_ATTEMPT" == "1" ]] || { echo "::error::manual recovery requires first-attempt main dispatch"; exit 1; }
+              [[ "$DISPATCH_REF" == "refs/heads/main" ]] \
+                || die "manual recovery requires a first-attempt main dispatch"
               candidate_sha="$DISPATCH_CANDIDATE_SHA"
-              [[ "$candidate_sha" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::candidate_sha must be a full lowercase SHA"; exit 1; }
-              runs="$(gh api "repos/${REPO}/actions/workflows/ci.yml/runs?event=push&branch=main&head_sha=${candidate_sha}&status=completed")"
-              jq -e '[.workflow_runs[] | select(.head_sha == $sha and .event == "push" and .head_branch == "main" and .conclusion == "success")] | length > 0' --arg sha "$candidate_sha" <<<"$runs" >/dev/null || { echo "::error::manual recovery candidate lacks successful exact-SHA main CI"; exit 1; }
+              [[ "$candidate_sha" =~ ^[0-9a-f]{40}$ ]] \
+                || die "candidate_sha must be a full lowercase SHA"
               ;;
-            *) echo "::error::unsupported release trigger"; exit 1 ;;
+            *) die "unsupported release trigger" ;;
           esac
-          [[ "$candidate_sha" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::missing exact candidate SHA"; exit 1; }
-          current_main_sha="$(gh api "repos/${REPO}/git/ref/heads/main" --jq '.object.sha')"
-          [[ "$current_main_sha" == "$candidate_sha" ]] || { echo "::error::candidate is no longer immutable current main"; exit 1; }
-          echo "release_sha=$candidate_sha" >> "$GITHUB_OUTPUT"
+
+          current_main_sha="$(current_main)"
+          if [[ "$current_main_sha" != "$candidate_sha" ]]; then
+            [[ "$EVENT_NAME" == "workflow_run" ]] \
+              && skip_publication "candidate is no longer current main"
+            die "manual recovery candidate is not current main"
+          fi
+
+          commit="$(api "repos/${REPO}/commits/${candidate_sha}")" \
+            || die "unable to read candidate commit"
+          jq -e --arg sha "$candidate_sha" \
+            '.sha == $sha and (.parents | length) == 1 and
+             (.parents[0].sha | type == "string" and length == 40 and
+              test("^[0-9a-f]{40}$"))' \
+            <<< "$commit" >/dev/null || die "candidate must have one exact parent"
+          parent_sha="$(jq -r '.parents[0].sha' <<< "$commit")"
+          candidate_version="$(read_manifest_version "$candidate_sha")"
+          parent_version="$(read_manifest_version "$parent_sha")"
+          if [[ "$candidate_version" == "$parent_version" ]]; then
+            skip_publication "release manifest version is unchanged"
+          fi
+
+          jq -e --arg subject_re "$RELEASE_SUBJECT_RE" \
+            '(.commit.message | type == "string") and
+             (.commit.message | split("\n")[0] | test($subject_re))' \
+            <<< "$commit" >/dev/null \
+            || die "version-changing candidate lacks the exact release subject"
+          subject="$(jq -r '.commit.message | split("\n")[0]' <<< "$commit")"
+          [[ "$subject" =~ $RELEASE_SUBJECT_RE ]] \
+            || die "version-changing candidate lacks the exact release subject"
+          [[ "${BASH_REMATCH[1]}" == "$candidate_version" ]] \
+            || die "release subject and manifest version disagree"
+          jq -e \
+            --argjson bot_id "$RELEASE_BOT_ID" \
+            --argjson web_flow_id "$WEB_FLOW_ID" \
+            '.commit.author.name == "github-actions[bot]" and
+             .commit.author.email == "41898282+github-actions[bot]@users.noreply.github.com" and
+             .commit.committer.name == "GitHub" and .commit.committer.email == "noreply@github.com" and
+             .commit.verification.verified == true and .commit.verification.reason == "valid" and
+             .author.id == $bot_id and .author.login == "github-actions[bot]" and .author.type == "Bot" and
+             .committer.id == $web_flow_id and .committer.login == "web-flow" and
+             ([.files[] | {filename, status}] | sort_by(.filename)) ==
+               ([
+                 {filename: ".release-please-manifest.json", status: "modified"},
+                 {filename: "CHANGELOG.md", status: "modified"},
+                 {filename: "docs/documentation-index.json", status: "modified"},
+                 {filename: "docs/documentation-manifest.seed.json", status: "modified"}
+               ] | sort_by(.filename))' \
+            <<< "$commit" >/dev/null || die "release commit identity or exact four-file envelope is invalid"
+
+          release_tag="v${candidate_version}"
+          max_polls="${ADMISSION_MAX_POLLS:-12}"
+          poll_seconds="${ADMISSION_POLL_SECONDS:-10}"
+          [[ "$max_polls" =~ ^[1-9][0-9]*$ && "$poll_seconds" =~ ^[0-9]+$ ]] \
+            || die "admission polling bounds are invalid"
+
+          ready=false
+          for ((poll = 1; poll <= max_polls; poll++)); do
+            polled_main_sha="$(current_main)"
+            if [[ "$polled_main_sha" != "$candidate_sha" ]]; then
+              [[ "$EVENT_NAME" == "workflow_run" ]] \
+                && skip_publication "main advanced while release evidence was pending"
+              die "main advanced while release evidence was pending"
+            fi
+            pending=false
+            if verify_release_snapshot; then
+              :
+            else
+              evidence_status="$?"
+              [[ "$evidence_status" == "10" ]] || exit "$evidence_status"
+              pending=true
+            fi
+            if verify_workflow_evidence "$CI_WORKFLOW_ID" "$CI_WORKFLOW_PATH" "Required / CI" \
+              "$([[ "$EVENT_NAME" == "workflow_run" ]] && printf '%s' "$TRIGGER_RUN_ID")"; then
+              ci_run_id="$EVIDENCE_RUN_ID"
+              ci_run_attempt="$EVIDENCE_RUN_ATTEMPT"
+              if [[ "$EVENT_NAME" == "workflow_run" && "$ci_run_attempt" != "$trigger_run_attempt" ]]; then
+                skip_publication "source CI attempt advanced after the wake-up"
+              fi
+            else
+              evidence_status="$?"
+              [[ "$evidence_status" == "10" ]] || exit "$evidence_status"
+              pending=true
+            fi
+            if verify_workflow_evidence "$SECURITY_WORKFLOW_ID" "$SECURITY_WORKFLOW_PATH" "Required / Security"; then
+              security_run_id="$EVIDENCE_RUN_ID"
+              security_run_attempt="$EVIDENCE_RUN_ATTEMPT"
+            else
+              evidence_status="$?"
+              [[ "$evidence_status" == "10" ]] || exit "$evidence_status"
+              pending=true
+            fi
+            if [[ "$pending" == "false" ]]; then
+              ready=true
+              break
+            fi
+            [[ "$poll" -lt "$max_polls" ]] || die "release, CI, or Security evidence did not converge within the bounded wait"
+            sleep "$poll_seconds"
+          done
+          [[ "$ready" == "true" ]] || die "release admission ended without complete evidence"
+
+          release_id="$RELEASE_ID"
+          verify_release_snapshot || die "source release disappeared during final readback"
+          [[ "$RELEASE_ID" == "$release_id" ]] || die "source release ID changed during admission"
+          verify_workflow_evidence "$CI_WORKFLOW_ID" "$CI_WORKFLOW_PATH" "Required / CI" \
+            "$([[ "$EVENT_NAME" == "workflow_run" ]] && printf '%s' "$TRIGGER_RUN_ID")" \
+            || die "CI changed during final readback"
+          [[ "$EVIDENCE_RUN_ID" == "$ci_run_id" && "$EVIDENCE_RUN_ATTEMPT" == "$ci_run_attempt" ]] \
+            || die "CI run identity changed during admission"
+          verify_workflow_evidence "$SECURITY_WORKFLOW_ID" "$SECURITY_WORKFLOW_PATH" "Required / Security" \
+            || die "Security changed during final readback"
+          [[ "$EVIDENCE_RUN_ID" == "$security_run_id" && "$EVIDENCE_RUN_ATTEMPT" == "$security_run_attempt" ]] \
+            || die "Security run identity changed during admission"
+          [[ "$(current_main)" == "$candidate_sha" ]] \
+            || die "candidate stopped being current main before publication authorization"
+
+          {
+            echo "eligible=true"
+            echo "release_sha=$candidate_sha"
+            echo "release_tag=$release_tag"
+            echo "release_version=$candidate_version"
+            echo "ci_run_id=$ci_run_id"
+            echo "security_run_id=$security_run_id"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "### Exact immutable source release admitted"
+            echo ""
+            echo "- release: ${release_tag} (ID ${release_id})"
+            echo "- source SHA: ${candidate_sha}"
+            echo "- CI run: ${ci_run_id} attempt ${ci_run_attempt}"
+            echo "- Security run: ${security_run_id} attempt ${security_run_attempt}"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # One native build per (image, arch). Each leg builds its arch on the matching
   # native runner (amd64 → ubuntu-24.04, arm64 → ubuntu-24.04-arm) and pushes the
@@ -104,6 +455,7 @@ jobs:
   build:
     name: ${{ matrix.image.name }} (${{ matrix.platform.arch }}) — build / push by digest
     needs: ci-admission
+    if: needs.ci-admission.outputs.eligible == 'true'
     runs-on: ${{ matrix.platform.runner }}
     permissions:
       contents: read
@@ -151,6 +503,8 @@ jobs:
           labels: |
             org.opencontainers.image.title=${{ matrix.image.name }}
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ needs.ci-admission.outputs.release_version }}
+            org.opencontainers.image.revision=${{ needs.ci-admission.outputs.release_sha }}
 
       - name: Build and push by digest (${{ matrix.platform.target }})
         id: build
@@ -211,14 +565,6 @@ jobs:
       IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
 
     steps:
-      # Checkout is only needed to resolve the local setup-trivy composite
-      # action below; the image itself comes from the downloaded digest.
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-        with:
-          ref: ${{ needs.ci-admission.outputs.release_sha }}
-          persist-credentials: false
-
       - name: Set up Buildx
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
 
@@ -234,15 +580,18 @@ jobs:
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
         with:
           images: ${{ env.IMAGE_NAME }}
+          flavor: latest=false
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=ref,event=branch
-            type=sha,format=long
-            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}},value=${{ needs.ci-admission.outputs.release_tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.ci-admission.outputs.release_tag }}
+            type=raw,value=main
+            type=raw,value=edge
+            type=raw,value=sha-${{ needs.ci-admission.outputs.release_sha }}
           labels: |
             org.opencontainers.image.title=${{ matrix.image.name }}
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ needs.ci-admission.outputs.release_version }}
+            org.opencontainers.image.revision=${{ needs.ci-admission.outputs.release_sha }}
 
       - name: Download amd64 digest
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -287,7 +636,21 @@ jobs:
       # --image-src remote scans the REMOTE registry image (buildx push never
       # loads it into the local daemon); --platform selects each arch's
       # manifest out of the multi-arch index.
-      - uses: ./.github/actions/setup-trivy
+      # This packages:write/OIDC job deliberately does not checkout or execute
+      # candidate-local actions. Install the same checksum-pinned scanner used
+      # by Security before scanning the already-pushed immutable digest.
+      - name: Install checksum-pinned Trivy without candidate checkout
+        run: |
+          archive="${RUNNER_TEMP}/trivy_0.71.1_Linux-64bit.tar.gz"
+          install_dir="${RUNNER_TEMP}/trivy-install"
+          curl --disable --fail --silent --show-error --location \
+            "https://github.com/aquasecurity/trivy/releases/download/v0.71.1/trivy_0.71.1_Linux-64bit.tar.gz" \
+            --output "$archive"
+          printf '%s  %s\n' '3cbae37cd440cd8676e5ce9207fe460b5641c7579a17e9d00f8894928c41a88d' "$archive" | sha256sum --check
+          mkdir -p "$install_dir"
+          tar -xzf "$archive" -C "$install_dir" trivy
+          sudo install -m 0755 "$install_dir/trivy" /usr/local/bin/trivy
+          /usr/local/bin/trivy --version
       - name: Trivy scan both arches (fail on HIGH/CRITICAL)
         run: |
           for platform in linux/amd64 linux/arm64; do

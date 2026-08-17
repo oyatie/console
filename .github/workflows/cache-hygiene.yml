@@ -9,8 +9,10 @@ name: Cache hygiene
 # Triggers:
 #   - schedule: daily off-peak
 #   - workflow_dispatch: manual / dry-run
-#   - workflow_run: after Image Release succeeds (catch any residual type=gha
-#     writes immediately rather than waiting for the daily tick)
+#
+# Image Release uses GHCR registry caches and does not wake this write-capable
+# workflow. Keeping cleanup on its own schedule prevents a read-only Image
+# Release classification from cascading into cache deletion jobs.
 #
 # Fail-soft for individual deletes; fails the job if usage remains above the
 # hard threshold after cleanup (problem stays visible).
@@ -31,9 +33,6 @@ on:
         required: false
         default: "14"
         type: string
-  workflow_run:
-    workflows: ["Image Release"]
-    types: [completed]
 
 permissions:
   actions: write  # list + delete caches
@@ -48,10 +47,6 @@ jobs:
     name: Hygiene policy unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # Always run policy tests on schedule / dispatch; skip on failed image-release
-    if: >-
-      github.event_name != 'workflow_run'
-      || github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
@@ -71,9 +66,6 @@ jobs:
     needs: [policy-unit]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: >-
-      github.event_name != 'workflow_run'
-      || github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7

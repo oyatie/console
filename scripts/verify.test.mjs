@@ -25,6 +25,16 @@ test("every mirrored CI run-step is classified", () => {
   assert.ok(steps.length > 0, "expected mirrored CI steps");
 });
 
+test("hosted hardening dependency bootstrap is explicit and lifecycle-script free", () => {
+  assert.deepEqual(
+    verifyModule.stepMirrorDisposition("Install production-hardening test dependencies"),
+    {
+      tier: "ci-only",
+      why: "hosted dependency bootstrap; `npm ci --ignore-scripts` would replace an already-installed local node_modules tree",
+    },
+  );
+});
+
 test("local verification mirrors release content proofs without deriving an authority train", () => {
   assert.deepEqual(
     verifyModule.stepMirrorDisposition("Release metadata semantic gate"),

@@ -888,7 +888,7 @@ const validWorkflowFiles = {
   "package.json": JSON.stringify({
     scripts: {
       "test:production-hardening":
-        "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs",
+        "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs scripts/check-image-release-workflow.test.mjs",
       "check:production-authority-blocked":
         "node scripts/check-production-authority-blocked.mjs",
     },
@@ -2162,7 +2162,7 @@ jobs:
     );
     assertHasFailure(
       result,
-      "image-release must trigger only from completed CI",
+      "image-release must use completed CI only as a wake-up",
     );
     assertHasFailure(result, "image-release must actively cosign sign");
   });

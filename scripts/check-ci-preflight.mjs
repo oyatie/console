@@ -971,6 +971,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Governed command-database DARK wiring regression", "node --test scripts/check-command-database-wiring.test.mjs", { if: runHeavyCondition }),
     proofRun("Render manifests and NetworkPolicy enforcement preflight", "npm run check:k8s", { if: runHeavyUnlessCancelledCondition }),
     proofRun("Production hardening contract", "npm run check:production-hardening", { if: runHeavyUnlessCancelledCondition }),
+    setupRun("Install production-hardening test dependencies", "npm ci --ignore-scripts", { if: runHeavyUnlessCancelledCondition }),
     proofRun("Production hardening regression tests", "npm run test:production-hardening", { if: runHeavyUnlessCancelledCondition }),
   ],
   "repo-gates": [

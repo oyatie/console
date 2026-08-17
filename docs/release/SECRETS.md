@@ -17,8 +17,14 @@ Release gating is intentionally split:
 - `.github/workflows/release.yml` waits for the same SHA's CI and iOS UI test
   workflows before any Play/TestFlight upload step starts. Dry-run dispatches
   skip that upstream wait so local build checks remain cheap.
-- `.github/workflows/image-release.yml` separately waits for the same SHA's CI
-  workflow before building, scanning, signing, and publishing images.
+- `.github/workflows/image-release.yml` treats completed main CI only as a
+  wake-up. Ordinary commits emit `eligible=false`; a version-changing commit
+  must additionally have an immutable published release, exact lightweight tag,
+  current-main identity, and exact successful CI and Security aggregates before
+  any image build, scan, signature, attestation, or publication job starts.
+- Repository immutable releases must be enabled before the next Release Please
+  release. Existing mutable releases cannot be recovered through this image lane
+  because GitHub does not make immutability retroactive.
 
 ## GitHub Secrets
 

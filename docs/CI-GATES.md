@@ -137,6 +137,36 @@ then runs the documentation manifest and link proofs while the
 protected-target context independently authenticates the bot identity and graph.
 See bead `console-9ry` / `process.release-candidate-unsigned`.
 
+Image publication is a separate post-merge authority cell. Completed main CI is
+retained only as a reliable `workflow_run` wake-up because a release/tag created
+with Release Please's `GITHUB_TOKEN` does not schedule a second workflow. The
+read-only `ci-admission` job executes no candidate bytes. It live-reads the exact
+CI run and compares the root release manifest at the candidate and its single
+parent. An unchanged version, a non-successful first CI attempt, or a stale
+automatic candidate produces a green `eligible=false` proof; every package-write
+or OIDC stage remains skipped.
+
+A version change is not a skip. Before emitting `eligible=true`, admission
+requires the exact four-file release commit envelope and bot/web-flow identity,
+stable manifest version and matching release subject, current `main`, a
+lightweight `v<version>` tag at that SHA, and one published GitHub release whose
+tag, target, author, and numeric ID agree. The release must be non-draft,
+non-prerelease, and `immutable=true`. It also requires the unique exact-SHA
+main-push runs for workflow IDs `296023727` (CI) and `296023731` (Security), plus
+successful `Required / CI` and `Required / Security` aggregate jobs from their
+current attempts. API reads have finite per-call and total bounds; release,
+tag, main, CI, and Security are re-read before the exact SHA is emitted.
+
+Repository immutable releases are therefore an operational prerequisite for the
+next source release. The setting was disabled when this contract was authored;
+enable it and read it back before merging the next Release Please PR. Existing
+mutable releases are intentionally ineligible because immutability is not
+retroactive. A missing or mutable release for a real version-changing commit is
+a visible Image Release failure, not permission to publish. Manual image recovery
+uses the same admission and does not authorize production promotion. Production
+overlay mutation remains separately manual, protected, false by default, and
+outside this source-release authority.
+
 The five Security jobs inspect a candidate checkout and therefore
 are not, by themselves, an isolation boundary against deliberately hostile PR
 code. Their workflow shape and proof order are locked against accidental drift,

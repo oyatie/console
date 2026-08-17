@@ -282,7 +282,17 @@ requireIncludes("package.json", "\"check:trivy-dev-codegen-exceptions\"", "Trivy
 requireIncludes("package.json", "\"test:trivy-dev-codegen-exceptions\"", "Trivy exception projection regression script");
 for (const releaseNeedle of [
   "workflow_run:",
-  "Admit exact successful CI candidate",
+  "Classify exact immutable source release",
+  "eligible: ${{ steps.admit.outputs.eligible }}",
+  "needs.ci-admission.outputs.eligible == 'true'",
+  "type=semver,pattern={{version}},value=${{ needs.ci-admission.outputs.release_tag }}",
+  "type=raw,value=sha-${{ needs.ci-admission.outputs.release_sha }}",
+  "org.opencontainers.image.version=${{ needs.ci-admission.outputs.release_version }}",
+  "org.opencontainers.image.revision=${{ needs.ci-admission.outputs.release_sha }}",
+  ".immutable == true",
+  'readonly SECURITY_WORKFLOW_ID="296023731"',
+  "Required / Security",
+  "Install checksum-pinned Trivy without candidate checkout",
   "Trivy scan both arches (fail on HIGH/CRITICAL)",
   "target: linux/amd64",
   "target: linux/arm64",
@@ -293,6 +303,12 @@ for (const releaseNeedle of [
 ]) {
   requireIncludes(".github/workflows/image-release.yml", releaseNeedle, `image release gate: ${releaseNeedle}`);
 }
+requireFile("scripts/check-image-release-workflow.test.mjs", "image release admission regressions");
+requireIncludes(
+  "package.json",
+  "scripts/check-image-release-workflow.test.mjs",
+  "image release regressions execute in production-hardening suite",
+);
 requireIncludes(".github/workflows/release-please.yml", "RELEASE_PLEASE_TOKEN", "release-please branch transport token documented");
 requireIncludes("backend/rust-toolchain.toml", "channel = \"1.97.1\"", "Rust toolchain pinned to 1.97.1");
 

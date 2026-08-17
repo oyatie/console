@@ -1333,7 +1333,7 @@ export function evaluateActionPinChecks(
 export function evaluateWorkflowHardeningChecks(readText) {
   const result = createResult();
   const productionHardeningTestCommand =
-    "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs";
+    "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs scripts/check-image-release-workflow.test.mjs";
   const ciPath = ".github/workflows/ci.yml";
   const securityPath = ".github/workflows/security.yml";
   const imageReleasePath = ".github/workflows/image-release.yml";
@@ -1558,24 +1558,37 @@ export function evaluateWorkflowHardeningChecks(readText) {
       /branches:\s*\[main\]/.test(workflowRunTrigger) &&
       !/^  push:/m.test(activeImageRelease) &&
       ciAdmissionJob !== "" &&
-      /WORKFLOW_CONCLUSION:\s*\$\{\{\s*github\.event\.workflow_run\.conclusion\s*\}\}/.test(ciAdmissionJob) &&
-      /WORKFLOW_HEAD_SHA:\s*\$\{\{\s*github\.event\.workflow_run\.head_sha\s*\}\}/.test(ciAdmissionJob) &&
-      /\[\[ "\$WORKFLOW_CONCLUSION" == "success" \]\]/.test(ciAdmissionJob) &&
-      /\[\[ "\$WORKFLOW_EVENT" == "push" && "\$WORKFLOW_HEAD_BRANCH" == "main" \]\]/.test(ciAdmissionJob) &&
-      /candidate_sha="\$WORKFLOW_HEAD_SHA"/.test(ciAdmissionJob) &&
-      /actions\/workflows\/ci\.yml\/runs\?event=push&branch=main&head_sha=\$\{candidate_sha\}&status=completed/.test(ciAdmissionJob) &&
-      /\.head_sha == \$sha/.test(ciAdmissionJob) &&
-      /\.conclusion == "success"/.test(ciAdmissionJob) &&
+      /TRIGGER_RUN_ID:\s*\$\{\{\s*github\.event\.workflow_run\.id\s*\}\}/.test(ciAdmissionJob) &&
+      /TRIGGER_WORKFLOW_HEAD_SHA:\s*\$\{\{\s*github\.event\.workflow_run\.head_sha\s*\}\}/.test(ciAdmissionJob) &&
+      /CI_WORKFLOW_ID="296023727"/.test(ciAdmissionJob) &&
+      /SECURITY_WORKFLOW_ID="296023731"/.test(ciAdmissionJob) &&
+      /contents:\s*read/.test(ciAdmissionJob) &&
+      /actions:\s*read/.test(ciAdmissionJob) &&
+      /eligible:\s*\$\{\{\s*steps\.admit\.outputs\.eligible\s*\}\}/.test(ciAdmissionJob) &&
+      /eligible=false/.test(ciAdmissionJob) &&
+      /eligible=true/.test(ciAdmissionJob) &&
+      /\.immutable == true/.test(ciAdmissionJob) &&
+      /releases\/tags\/\$\{release_tag\}/.test(ciAdmissionJob) &&
+      /git\/ref\/tags\/\$\{release_tag\}/.test(ciAdmissionJob) &&
+      /Required \/ CI/.test(ciAdmissionJob) &&
+      /Required \/ Security/.test(ciAdmissionJob) &&
+      /actions\/workflows\/\$\{workflow_id\}\/runs\?event=push&branch=main&head_sha=\$\{candidate_sha\}&per_page=100/.test(ciAdmissionJob) &&
       /repos\/\$\{REPO\}\/git\/ref\/heads\/main/.test(ciAdmissionJob) &&
-      /candidate is no longer immutable current main/.test(ciAdmissionJob) &&
+      /release manifest version is unchanged/.test(ciAdmissionJob) &&
+      /candidate stopped being current main before publication authorization/.test(ciAdmissionJob) &&
+      /RUN_ATTEMPT" == "1/.test(ciAdmissionJob) &&
+      /timeout 20s gh api/.test(ciAdmissionJob) &&
+      /ADMISSION_MAX_POLLS:\s*"12"/.test(ciAdmissionJob) &&
       /release_sha=\$candidate_sha/.test(ciAdmissionJob) &&
-      !/wait-for-protected-main-ci|\bsleep\b|gh\s+run\s+list/.test(ciAdmissionJob) &&
+      /release_tag=\$release_tag/.test(ciAdmissionJob) &&
+      !/actions\/checkout|actions\/cache|download-artifact|gh\s+run\s+list/.test(ciAdmissionJob) &&
       /needs:\s*ci-admission/.test(buildJob) &&
+      /if:\s*needs\.ci-admission\.outputs\.eligible == 'true'/.test(buildJob) &&
       /needs:\s*(?:build|\[[^\]]*\bbuild\b[^\]]*\])/.test(mergeJob) &&
       /needs:\s*(?:merge|\[[^\]]*\bmerge\b[^\]]*\])/.test(releaseProbeForAdmission) &&
       (activeImageRelease.match(/needs\.ci-admission\.outputs\.release_sha/g) ?? []).length >= 5,
-    "image-release admission: completed CI exact-SHA immutable-main gate before publication",
-    "image-release must trigger only from completed CI, fail closed on non-success/stale exact SHAs, avoid polling, and wire the admitted SHA before build, scan, sign, promote, or publication",
+    "image-release admission: completed CI wake-up, immutable release classifier, and exact CI/Security proof before publication",
+    "image-release must use completed CI only as a wake-up, classify ordinary candidates as ineligible, and require one immutable exact-SHA release plus exact CI/Security before any build, scan, sign, promote, or publication",
   );
   const workflowDispatch = extractYamlMappingBlock(
     activeImageRelease,
@@ -1594,10 +1607,11 @@ export function evaluateWorkflowHardeningChecks(readText) {
   );
   requirement(
     result,
-    extractYamlScalar(candidateShaInput, "required") === "true" &&
+      extractYamlScalar(candidateShaInput, "required") === "true" &&
       extractYamlScalar(candidateShaInput, "type") === "string" &&
       /DISPATCH_CANDIDATE_SHA:\s*\$\{\{\s*inputs\.candidate_sha\s*\}\}/.test(ciAdmissionJob) &&
-      /\[\[ "\$DISPATCH_REF" == "refs\/heads\/main" && "\$RUN_ATTEMPT" == "1" \]\]/.test(ciAdmissionJob) &&
+      /\[\[ "\$DISPATCH_REF" == "refs\/heads\/main" \]\]/.test(ciAdmissionJob) &&
+      /\[\[ "\$RUN_ATTEMPT" == "1" \]\]/.test(ciAdmissionJob) &&
       /\[\[ "\$candidate_sha" =~ \^\[0-9a-f\]\{40\}\$ \]\]/.test(ciAdmissionJob),
     "image-release recovery: required exact-SHA first-attempt main dispatch",
     "image-release workflow_dispatch recovery must require a lowercase 40-character candidate_sha and reject non-main or rerun attempts",
