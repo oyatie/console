@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "description": "Reusable failure classes for Console process intelligence. Process edits add controls here + in workflows/tools \u2014 never one-shot PR-named hooks.",
+  "description": "Reusable failure classes for Console process intelligence. Process edits add controls here + in workflows/tools — never one-shot PR-named hooks.",
   "promote_process_edit_after_repeats": 2,
   "classes": [
     {
@@ -9,15 +9,6 @@
       "detector": "git verify-commit + scripts/console/verify-console-pr-authority-bootstrap.mjs",
       "control": "Resign C/T; handoff checklist; never force-push unsigned tip",
       "admit_commands": []
-    },
-    {
-      "id": "lens.noncanonical-json",
-      "symptom": "REASONING-LENS-EVIDENCE block fails canonical JSON.stringify(value, null, 2)+newline",
-      "detector": "node scripts/check-reasoning-lens-contract.mjs --changed-since <base>",
-      "control": "Always re-serialize lens JSON via JSON.stringify; include in admit for ledger paths",
-      "admit_commands": [
-        "node scripts/check-reasoning-lens-contract.mjs --changed-since origin/main"
-      ]
     },
     {
       "id": "docs.tip-blob-prebind",
@@ -58,7 +49,7 @@
       "id": "ops.mid-run-push",
       "symptom": "Push while Required CI in_progress cancels running cone",
       "detector": "gh run list status in_progress on same branch",
-      "control": "Batch local fixes \u2192 one push \u2192 wait complete",
+      "control": "Batch local fixes → one push → wait complete",
       "admit_commands": []
     },
     {

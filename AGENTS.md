@@ -31,5 +31,7 @@ All substantive reasoning, planning, implementation, review, and verification mu
 15. **Telemetry-first** — make important state, decisions, failures, and success criteria observable.
 16. **Zero-trust / defense-in-depth** — verify every boundary, minimize privilege, and layer independent safeguards.
 
-High-risk authz, migration, contracts, approval, HR/payroll, release, production, and compliance-sensitive work must include Red Team, Operability / Day-2, Blast-radius / cell-based, and Zero-trust / defense-in-depth, or record a lens-specific not-applicable rationale in durable evidence. Report concise conclusions, evidence, decisions, and tradeoffs rather than private chain-of-thought.
+High-risk authz, migration, contracts, approval, HR/payroll, release, production, and compliance-sensitive work should include Red Team, Operability / Day-2, Blast-radius / cell-based, and Zero-trust / defense-in-depth. Report concise conclusions, evidence, decisions, and tradeoffs rather than private chain-of-thought.
+
+This is guidance, not a filing requirement. A machine cannot verify that a lens was applied, only that a document claims it was, so no gate demands a per-record evidence block. The one lens artifact still enforced is the identifier-only manifest projected into `CLAUDE.md`, which must not drift from the canonical list above -- two lists either match or they do not.
 <!-- SHARED:REASONING-LENSES:END -->

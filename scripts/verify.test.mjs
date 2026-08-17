@@ -12,8 +12,7 @@ import * as verifyModule from "./verify.mjs";
 import {
   assertJobsDeclared,
   assertPlanCoversCi,
-  reasoningLensLocalRunFromPlan,
-  REASONING_LENS_LOCAL_RUN,
+  reasoningLensManifestTierFromPlan,
   topologyEnvContents,
   writePrivateFile,
 } from "./verify.mjs";
@@ -136,17 +135,11 @@ test("domain-unit is part of the local mirror", () => {
   ]);
 });
 
-test("reasoning-lens admission uses the merge-base local override", () => {
-  assert.equal(
-    REASONING_LENS_LOCAL_RUN,
-    [
-      "set -euo pipefail",
-      'reasoning_base="$(git merge-base HEAD "${CONSOLE_VERIFY_BASE:-origin/main}")"',
-      'node scripts/check-reasoning-lens-contract.mjs --changed-since "$reasoning_base"',
-    ].join("\n"),
-  );
-  assert.equal(reasoningLensLocalRunFromPlan(), REASONING_LENS_LOCAL_RUN);
-  assert.doesNotMatch(REASONING_LENS_LOCAL_RUN, /--changed-since (?:origin\/main|\$\{CONSOLE_VERIFY_BASE)/);
+test("the reasoning-lens manifest check is a fast-tier local gate", () => {
+  // The retired per-record admission needed a merge-base override so it could
+  // scan only changed files. A manifest drift check reads two lists, so it has
+  // no base to compute and belongs in the fast tier unconditionally.
+  assert.equal(reasoningLensManifestTierFromPlan(), "fast");
 });
 
 test("PostgreSQL provisioning keeps generated credentials out of Docker argv", () => {

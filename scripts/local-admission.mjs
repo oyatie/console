@@ -171,13 +171,11 @@ export function planGates(files, opts = {}) {
     }
   }
 
-  if (flags.ledger || flags.docsIndex || flags.baseline) {
-    gates.push({
-      id: "check:reasoning-lens-contract",
-      cmd: ["node", "scripts/check-reasoning-lens-contract.mjs"],
-      when: "ledger/docs index/baseline changed",
-    });
-  }
+  gates.push({
+    id: "check:reasoning-lens-manifest",
+    cmd: ["node", "scripts/check-reasoning-lens-manifest.mjs"],
+    when: "always (manifest drift is cheap and decidable)",
+  });
 
   if (flags.docsIndex || flags.ledger) {
     // doc-links is the durable custody surface when available

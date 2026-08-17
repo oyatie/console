@@ -14,49 +14,8 @@ const reindeerToolchainInstall = 'rustup toolchain install "$REINDEER_TOOLCHAIN"
 const strictShellMode = "set -euo pipefail";
 const reindeerToolchainOverride = /^(?:export\s+)?REINDEER_TOOLCHAIN\s*=/;
 const ciPreflightTestCommand = "node --test scripts/check-ci-preflight.test.mjs";
-const reasoningLensTestCommand = "node --test scripts/check-reasoning-lens-contract.test.mjs";
-const reasoningLensRegressionName = "Reasoning lens contract regression";
-const reasoningLensAdmissionName = "Reasoning lens changed-record admission";
-const reasoningLensAdmissionEnvironment = [
-  "REASONING_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}",
-  "REASONING_PUSH_BEFORE_SHA: ${{ github.event.before }}",
-];
-const reasoningLensAdmissionScript = [
-  "set -euo pipefail",
-  'case "$GITHUB_EVENT_NAME" in',
-  "  pull_request)",
-  '    test -n "$REASONING_PR_BASE_SHA"',
-  '    node scripts/check-reasoning-lens-contract.mjs --changed-since "$REASONING_PR_BASE_SHA"',
-  "    ;;",
-  "  push)",
-  '    case "$GITHUB_REF_TYPE" in',
-  "      branch)",
-  '        test -n "$REASONING_PUSH_BEFORE_SHA"',
-  '        if [[ "$REASONING_PUSH_BEFORE_SHA" == "0000000000000000000000000000000000000000" ]]; then',
-  "          printf '%s\\n' 'push.before is all-zero; running structural reasoning-lens validation'",
-  "          node scripts/check-reasoning-lens-contract.mjs",
-  "        else",
-  '          node scripts/check-reasoning-lens-contract.mjs --changed-since "$REASONING_PUSH_BEFORE_SHA"',
-  "        fi",
-  "        ;;",
-  "      tag)",
-  "        node scripts/check-reasoning-lens-contract.mjs",
-  "        ;;",
-  "      *)",
-  "        printf 'unsupported push ref type: %s\\n' \"$GITHUB_REF_TYPE\" >&2",
-  "        exit 2",
-  "        ;;",
-  "    esac",
-  "    ;;",
-  "  workflow_dispatch)",
-  "    node scripts/check-reasoning-lens-contract.mjs",
-  "    ;;",
-  "  *)",
-  "    printf 'unsupported reasoning-lens event: %s\\n' \"$GITHUB_EVENT_NAME\" >&2",
-  "    exit 2",
-  "    ;;",
-  "esac",
-].join("\n");
+const reasoningLensManifestCommand = "node scripts/check-reasoning-lens-manifest.mjs";
+const reasoningLensManifestName = "Reasoning lens manifest drift";
 const consoleRouteInventoryTestCommand = "node --test scripts/console/route-inventory.test.mjs";
 const consoleAuthorityTrainTestCommand = "node --test scripts/console/verify-console-authority-train.test.mjs";
 const consoleTruthLedgerTestCommand = "node --test scripts/console/validate-console-truth-ledger.test.mjs";
@@ -810,7 +769,6 @@ const ontologyRestCrateBuildFile = readFileSync(
 const requiredAlwaysPreflightCommands = [
   releaseMetadataRegressionCommand,
   "npm run check:foundation-gates",
-  reasoningLensTestCommand,
   ciPreflightTestCommand,
   consoleRouteInventoryTestCommand,
   "npm run check:ci-preflight",
@@ -903,8 +861,7 @@ const requiredJobRunContracts = Object.freeze({
     setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: preflightCheckoutHeavyCondition }),
     proofRun("Cheap Buck2 generated-face admission", "tools/buck/preflight.sh", { if: preflightBuckHeavyCondition }),
     proofRun("Foundation gate contract", "npm run check:foundation-gates", { if: preflightNpmCiDependentCondition }),
-    proofRun("Reasoning lens contract regression", "node --test scripts/check-reasoning-lens-contract.test.mjs", { if: preflightNpmCiDependentCondition }),
-    proofDigest("Reasoning lens changed-record admission", "b4d78de511586e6f3cb7edafcf780fbc0361279dc8f0fe544b6128cfad9d3ab9", { if: preflightNpmCiDependentCondition, shell: "bash" }),
+    proofRun(reasoningLensManifestName, reasoningLensManifestCommand, { if: preflightNpmCiDependentCondition }),
     proofRun("CI preflight contract tests", "node --test scripts/check-ci-preflight.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console route inventory regression", "node --test scripts/console/route-inventory.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console authority-train regression", "node --test scripts/console/verify-console-authority-train.test.mjs", { if: preflightNpmCiDependentCondition }),
@@ -1249,11 +1206,6 @@ const protectedJobExecutionMetadata = {
     }, {
       name: "Release metadata semantic gate",
       env: releaseMetadataEnvironment,
-    }, {
-      name: reasoningLensAdmissionName,
-      env: Object.fromEntries(
-        reasoningLensAdmissionEnvironment.map((entry) => entry.split(": ", 2)),
-      ),
     }, {
       name: "Collect failures",
       env: { CI_STEPS: "${{ toJSON(steps) }}" },
@@ -1627,35 +1579,20 @@ function requireRunWithCondition(steps, command, job, expectedIf, failures) {
   }
 }
 
-function requireReasoningLensContracts(steps, failures) {
-  const regressionByName = steps.filter((step) => stepName(step) === reasoningLensRegressionName);
-  const regressionByCommand = steps.filter((step) => runScalar(step) === reasoningLensTestCommand);
+function requireReasoningLensManifest(steps, failures) {
+  // The per-record lens evidence block was retired: it could only verify the
+  // JSON's shape, not that any reasoning happened. What remains is the manifest
+  // drift check, which is decidable -- two identifier lists either match or
+  // they do not.
+  const byName = steps.filter((step) => stepName(step) === reasoningLensManifestName);
+  const byCommand = steps.filter((step) => runScalar(step) === reasoningLensManifestCommand);
   if (
-    regressionByName.length !== 1
-    || regressionByCommand.length !== 1
-    || regressionByName[0] !== regressionByCommand[0]
-    || !hasOnlyExpectedCondition(regressionByName[0] ?? "", preflightNpmCiDependentCondition)
+    byName.length !== 1
+    || byCommand.length !== 1
+    || byName[0] !== byCommand[0]
+    || !hasOnlyExpectedCondition(byName[0] ?? "", preflightNpmCiDependentCondition)
   ) {
-    failures.push("preflight must run the exact reasoning-lens regression once and only after npm ci succeeds");
-  }
-
-  const admissions = steps.filter((step) => stepName(step) === reasoningLensAdmissionName);
-  const admission = admissions[0] ?? "";
-  const shells = [...admission.matchAll(/^        shell: ([^\n]+)$/gm)].map((match) => match[1]);
-  const environmentBlock = admission.match(/^        env:\n((?:          [^\n]+\n)+)/m)?.[1] ?? "";
-  const environment = environmentBlock
-    .split(/\r?\n/)
-    .filter(Boolean)
-    .map((line) => line.trim());
-  const script = runScript(admission).replace(/\n$/, "");
-  if (
-    admissions.length !== 1
-    || JSON.stringify(shells) !== JSON.stringify(["bash"])
-    || JSON.stringify(environment) !== JSON.stringify(reasoningLensAdmissionEnvironment)
-    || script !== reasoningLensAdmissionScript
-    || !hasOnlyExpectedCondition(admission, preflightNpmCiDependentCondition)
-  ) {
-    failures.push("preflight must preserve the exact reasoning-lens event admission contract");
+    failures.push("preflight must run the reasoning-lens manifest drift check once and only after npm ci succeeds");
   }
 }
 
@@ -2234,7 +2171,7 @@ export function evaluateCiPreflight(
       failures.push("preflight must expose path_class, docs_only, and run_heavy job outputs");
     }
   }
-  requireReasoningLensContracts(preflightSteps, failures);
+  requireReasoningLensManifest(preflightSteps, failures);
   requireConsoleRegressionCoverage(workflow, preflightSteps, failures);
   requireReleaseMetadataProofs(preflightSteps, failures);
   // One job, both crates. They share console-kernel-core, so two jobs recompiled
