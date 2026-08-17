@@ -20,7 +20,7 @@ ERP and finance modules, communications, compliance products, ingest/evidence pr
 - Tenant isolation, deny-by-omission, and nondisclosure apply at every read and write boundary.
 - Effective-dated truth uses half-open intervals; history is closed and appended, never overwritten.
 - Projected objects have exactly one domain writer. Ontology and adapters do not create alternate write paths.
-- Requester and approver are distinct natural persons even when their capacities differ.
+- Requester and approver are distinct natural persons for `company.*`, `hr.*`, and `payroll.*` approvals, even when their capacities differ. All other kinds — including `organization.*` and `people.*` — hold only the account-level `approver_id <> requested_by` bar. `requires_natural_person_four_eyes` (`backend/crates/governance/domain`) is prefix-scoped and a test asserts the exclusion. Extending the bar to the remaining kinds is **unscheduled, not blocked**: migration 0076 shows only that `users.employee_id` is nullable, and a NULL resolution can fail closed exactly as the enforced kinds already do. Whether unbound accounts actually exist is an open question no census has answered, so the compatibility risk is a hypothesis on HOLD rather than a reason to leave six of thirteen dispatch targets outside the invariant.
 - Preflight uses the same authorization, policy, state, revision, and input validation as execute and performs no mutation.
 - Legal sources are versioned evidence, not transferable compliance conclusions. Production exposure and compliance claims require separate authority.
 
@@ -30,7 +30,7 @@ The existing Rust backend is reused as verified substrate rather than rewritten 
 
 `Company → OrgUnit → JobPosition → Person/Employment → HR action → PayRun`
 
-REST and any future server functions are sibling adapters over the same application-layer use cases. The frontend, when admitted, reads real contracts, omits unauthorized data server-side, and contains no client-side business authority. Cargo is the target build system; existing Buck paths remain repository reality until a dedicated, evidence-backed convergence change removes them without losing test coverage.
+REST and any future server functions are *intended as* sibling adapters over the same application-layer use cases. This is an aspiration, not an enforced boundary: `Layer::allowed_deps` lets `Layer::Rest` reach Adapter, Platform, Domain and Kernel directly, and 6 of the 34 non-platform REST crates (analytics-quant, consulting, facilities, logistics, orgchange, production) declare no application dependency at all. Counting every package whose name ends `-rest` the ratio is 9 of 37: `console-platform-auth-rest`, `console-platform-authz-rest` and `console-platform-rest` also declare none, and are excluded above only because the layer gate classifies `crates/platform/*` as Platform before it reaches the `-rest` suffix. Converging them is unscheduled work. The frontend, when admitted, reads real contracts, omits unauthorized data server-side, and contains no client-side business authority. Cargo is the target build system; existing Buck paths remain repository reality until a dedicated, evidence-backed convergence change removes them without losing test coverage.
 
 ## Holds
 
