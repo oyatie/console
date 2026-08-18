@@ -44,7 +44,6 @@ const JOBS = new Map([
   // Load-bearing aggregator: its three hosted-only run states consume Actions `needs` results.
   ["postgres-domain-reachability", "load-bearing hosted state machine over preflight and PG facet needs/results; exact non-evaluation/thin/heavy contract is enforced by check-ci-preflight"],
   ["generated-face-authority", "needs pinned Java + Reindeer toolchains to rebuild the full generated-face closure"],
-  ["dev-up-smoke", "brings up the whole shared `console-dev` compose project; running it locally tears down other lanes' stacks"],
   ["api-contract", true],
   ["company-conformance", true],
   ["required-ci", "terminal status aggregate; its exact needs/result contract is enforced by check-ci-preflight"],
