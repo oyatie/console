@@ -241,6 +241,9 @@ echo "cargo-postgres: building packages..."
 # cargo-test-runner.sh so it is unit-testable without Docker (fake map + stubbed
 # cargo). Default is --keep-going; --fail-fast opts back out for local use.
 export CARGO_REPO_ROOT="${repo_root}"
+# Attributes each `cargo-postgres-timing:` line to its shard, so durations
+# harvested from five separate job logs can be re-packed as one population.
+export CARGO_POSTGRES_SHARD_ID="${shard_id}"
 export RUST_TEST_THREADS="${num_threads}"
 if [[ "${keep_going}" == 1 ]]; then
   "${repo_root}/tools/ci/cargo-test-runner.sh" --keep-going <"${tmp_list}"

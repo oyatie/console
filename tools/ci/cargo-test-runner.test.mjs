@@ -14,6 +14,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { parseTimingLines } from "./postgres-timings.mjs";
+
 const runner = resolve(dirname(fileURLToPath(import.meta.url)), "cargo-test-runner.sh");
 
 /**
@@ -107,6 +109,54 @@ test("exit 0 only when every invocation passed", () => {
     assert.equal(result.status, 0, result.stdout + result.stderr);
     assert.match(result.stdout, /2 passed, 0 failed/);
     assert.match(result.stdout, /all 2 invocations passed/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("emits one parseable timing line per invocation, tagged pass/fail", () => {
+  const { root, bin, log } = setupFixture();
+  try {
+    const result = runRunner({ root, bin, log, rows: ROWS });
+    const timings = parseTimingLines(result.stdout);
+    assert.equal(timings.length, 3, "one line per invocation, failures included");
+    assert.deepEqual(timings.map((row) => row.name), ["pass-a", "fail-b", "pass-c"]);
+    assert.deepEqual(timings.map((row) => row.status), ["pass", "fail", "pass"]);
+    assert.deepEqual(timings.map((row) => row.package), [
+      "pkg-pass-a",
+      "pkg-fail-b",
+      "pkg-pass-c",
+    ]);
+    // A duration that is absent, negative, or non-finite would silently
+    // under-weight a package in the bin-pack rather than fail the harvest.
+    for (const row of timings) {
+      assert.equal(typeof row.seconds, "number");
+      assert.ok(row.seconds >= 0, `duration must be non-negative, got ${row.seconds}`);
+      assert.ok(Number.isFinite(row.seconds));
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("stamps the shard id from the environment so logs stay attributable", () => {
+  const { root, bin, log } = setupFixture();
+  try {
+    const result = spawnSync(runner, [], {
+      input: JSON.stringify(ROWS[0]) + "\n",
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PATH: `${bin}:${process.env.PATH}`,
+        CARGO_REPO_ROOT: root,
+        RUST_TEST_THREADS: "1",
+        CARGO_INVOCATION_LOG: log,
+        CARGO_POSTGRES_SHARD_ID: "domain-b",
+      },
+    });
+    const timings = parseTimingLines(result.stdout);
+    assert.equal(timings.length, 1);
+    assert.equal(timings[0].shard, "domain-b");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
