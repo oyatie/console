@@ -25,8 +25,8 @@ const trustedPrMeta = Object.freeze({
   prAuthorLogin: 'github-actions[bot]',
   prHeadRef: 'release-please--branches--main--components--console',
   eventSenderLogin: 'github-actions[bot]',
-  prHeadRepository: 'jason931225/console',
-  repository: 'jason931225/console',
+  prHeadRepository: 'oyatie/console',
+  repository: 'oyatie/console',
 });
 
 const botIdentity = {
@@ -174,8 +174,8 @@ test('bootstrap requirePrMeta rejects human creator/updater, fork heads, and non
       prAuthorLogin: 'jason931225',
       prHeadRef: 'release-please--branches--main--components--console',
       eventSenderLogin: 'github-actions[bot]',
-      prHeadRepository: 'jason931225/console',
-      repository: 'jason931225/console',
+      prHeadRepository: 'oyatie/console',
+      repository: 'oyatie/console',
     }),
     /PR author/,
   );

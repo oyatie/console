@@ -13,7 +13,7 @@ import {
 
 const manifest = (version) => Buffer.from(`${JSON.stringify({ ".": version }, null, 2)}\n`);
 const changelog = (previous, version) => Buffer.from(
-  `# Changelog\n\n## [${version}](https://github.com/jason931225/console/compare/v${previous}...v${version}) (2026-08-15)\n\n### Bug Fixes\n\n* bounded release fixture\n`,
+  `# Changelog\n\n## [${version}](https://github.com/oyatie/console/compare/v${previous}...v${version}) (2026-08-15)\n\n### Bug Fixes\n\n* bounded release fixture\n`,
 );
 
 test("accepts canonical monotonic release metadata and numeric component ordering", () => {

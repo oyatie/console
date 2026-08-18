@@ -372,7 +372,7 @@ test('workflow emits one unconditional protected-code-only required context', ()
 });
 
 const protectedExecutableClosure = Object.freeze([
-  ['./verify-console-pr-authority-bootstrap.mjs', '45813ea5ac4ee0e2e558de2196e6380b349aa9d38740a9ac3e3bde7a695105f3'],
+  ['./verify-console-pr-authority-bootstrap.mjs', 'df55666f5d348a24e650cf9fc94e90d8cb9cb783dfa815d80b00d010490b9b83'],
   ['./authority-ledger-path.mjs', '756e838e3979508d3be0b7d9974a0e719de9f1a08effbe60c272c2cad25b498e'],
   ['./release-please-bot-candidate.mjs', 'ae3d1069165ca4aaa88a36cac8f13d8d45d952f87fb23c510da0d0a957e62fdf'],
 ]);

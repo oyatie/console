@@ -28,17 +28,17 @@ import {
 const C = 'c'.repeat(40);
 const T = 'a'.repeat(40);
 const N = 'b'.repeat(40);
-const REPOSITORY = 'jason931225/console';
+const REPOSITORY = 'oyatie/console';
 const REPOSITORY_ID = 1269693002;
 const BOT_ID = 41898282;
 const HEAD_REF = 'release-please--branches--main--components--console';
 const NOTES = [
-  '## [0.3.7](https://github.com/jason931225/console/compare/v0.3.6...v0.3.7) (2026-08-16)',
+  '## [0.3.7](https://github.com/oyatie/console/compare/v0.3.6...v0.3.7) (2026-08-16)',
   '',
   '',
   '### Bug Fixes',
   '',
-  '* **ci:** separate candidate validation from release authority ([abc1234](https://github.com/jason931225/console/commit/abc1234))',
+  '* **ci:** separate candidate validation from release authority ([abc1234](https://github.com/oyatie/console/commit/abc1234))',
 ].join('\n');
 const PR_BODY = [
   ':robot: I have created a release *beep* *boop*',
@@ -53,7 +53,7 @@ const PR_BODY = [
 const BASE_CHANGELOG = [
   '# Changelog',
   '',
-  '## [0.3.6](https://github.com/jason931225/console/compare/v0.3.5...v0.3.6) (2026-08-11)',
+  '## [0.3.6](https://github.com/oyatie/console/compare/v0.3.5...v0.3.6) (2026-08-11)',
   '',
   '',
   '### Bug Fixes',
@@ -387,7 +387,7 @@ test('rejects PR metadata, repository, action body, or bot identity drift', () =
   for (const [overrides, pattern] of [
     [{ livePr: { ...livePr, body: `${PR_BODY}\nforged` } }, /body/],
     [{ livePr: { ...livePr, title: 'chore(main): release 9.9.9' } }, /title/],
-    [{ livePr: { ...livePr, user: { login: 'jason931225' } } }, /creator/],
+    [{ livePr: { ...livePr, user: { login: 'oyatie' } } }, /creator/],
     [{ livePr: { ...livePr, head: { ...livePr.head, repo: { full_name: 'attacker/console' } } } }, /repository/],
     [{ actionPr: { ...actionPr, headBranchName: 'evil' } }, /head ref/],
     [{ identity: { ...identity, committerName: 'Jason Lee' } }, /tip committer/],
@@ -516,7 +516,7 @@ test('keeps the push token out of argv, process errors, and non-password askpass
       },
     });
     assert.doesNotMatch(JSON.stringify(invocation.args), new RegExp(token));
-    assert.match(JSON.stringify(invocation.args), /https:\/\/x-access-token@github\.com\/jason931225\/console\.git/);
+    assert.match(JSON.stringify(invocation.args), /https:\/\/x-access-token@github\.com\/oyatie\/console\.git/);
     assert.equal(invocation.env.CONSOLE_RELEASE_PUSH_TOKEN, token);
     assert.equal(invocation.env.RELEASE_PLEASE_TOKEN, undefined);
     assert.equal(invocation.env.GIT_ASKPASS, askpassPath);

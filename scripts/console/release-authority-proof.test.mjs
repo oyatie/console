@@ -404,7 +404,7 @@ test('GitHub proof adapter pins the API origin, authentication, and JSON success
   assert.equal(observed.options.headers.Authorization, 'Bearer test-token');
 
   await assert.rejects(
-    () => githubJsonRequest('/repos/jason931225/console/pulls/760', { token: '', fetchImpl: async () => {} }),
+    () => githubJsonRequest('/repos/oyatie/console/pulls/760', { token: '', fetchImpl: async () => {} }),
     /GITHUB_TOKEN/,
   );
   await assert.rejects(
@@ -412,14 +412,14 @@ test('GitHub proof adapter pins the API origin, authentication, and JSON success
     /relative GitHub API path/,
   );
   await assert.rejects(
-    () => githubJsonRequest('/repos/jason931225/console/pulls/760', {
+    () => githubJsonRequest('/repos/oyatie/console/pulls/760', {
       token: 'test-token',
       fetchImpl: async () => ({ ok: false, status: 403 }),
     }),
     /HTTP 403/,
   );
   await assert.rejects(
-    () => githubJsonRequest('/repos/jason931225/console/pulls/760', {
+    () => githubJsonRequest('/repos/oyatie/console/pulls/760', {
       token: 'test-token',
       fetchImpl: async () => ({ ok: true, status: 200, json: async () => { throw new Error('bad JSON'); } }),
     }),

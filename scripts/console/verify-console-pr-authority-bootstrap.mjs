@@ -19,7 +19,12 @@ import {
 } from './release-please-bot-candidate.mjs';
 
 const SHA = /^[0-9a-f]{40}$/;
-export const PINNED_RELEASE_REPOSITORY = 'jason931225/console';
+// Repository transferred to the `oyatie` organisation. The numeric id below is
+// unchanged (1269693002), which is what proves this is the same repository
+// rather than a look-alike: GitHub preserves the id across a transfer and
+// cannot preserve it across a re-creation. The id pin stays load-bearing; only
+// the human-readable name moved.
+export const PINNED_RELEASE_REPOSITORY = 'oyatie/console';
 export const PINNED_RELEASE_REPOSITORY_ID = 1269693002;
 export const RELEASE_PLEASE_BOT_ID = 41898282;
 export const RELEASE_PLEASE_WORKFLOW_ID = 296023729;

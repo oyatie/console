@@ -271,7 +271,7 @@ jobs:
               || die "source release tag is annotated or moved away from the candidate"
           }
 
-          [[ "$REPO" == "jason931225/console" && "$EXPECTED_REPOSITORY_ID" == "1269693002" ]] \
+          [[ "$REPO" == "oyatie/console" && "$EXPECTED_REPOSITORY_ID" == "1269693002" ]] \
             || die "image publication is bound to the canonical repository"
           [[ "$RUN_ATTEMPT" == "1" ]] || die "Image Release reruns are not release authority"
 
