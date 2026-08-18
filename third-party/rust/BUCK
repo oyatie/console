@@ -7053,23 +7053,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "h2-0.4.14.crate",
-    sha256 = "171fefbc92fe4a4de27e0698d6a5b392d6a0e333506bc49133760b3bcf948733",
-    strip_prefix = "h2-0.4.14",
-    urls = ["https://static.crates.io/crates/h2/0.4.14/download"],
+    name = "h2-0.4.16.crate",
+    sha256 = "a9f37a958b41b3b19ee2707c06439c0e9e547e847223eb791ecb0cb821c65e27",
+    strip_prefix = "h2-0.4.16",
+    urls = ["https://static.crates.io/crates/h2/0.4.16/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "h2-0.4",
-    srcs = [":h2-0.4.14.crate"],
+    srcs = [":h2-0.4.16.crate"],
     crate = "h2",
-    crate_root = "h2-0.4.14.crate/src/lib.rs",
+    crate_root = "h2-0.4.16.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "h2",
         "CARGO_CRATE_NAME": "h2",
-        "CARGO_MANIFEST_DIR": "h2-0.4.14.crate",
+        "CARGO_MANIFEST_DIR": "h2-0.4.16.crate",
         "CARGO_PKG_AUTHORS": "Carl Lerche <me@carllerche.com>:Sean McArthur <sean@seanmonstar.com>",
         "CARGO_PKG_DESCRIPTION": "An HTTP/2 client and server",
         "CARGO_PKG_HOMEPAGE": "",
@@ -7077,10 +7077,10 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/hyperium/h2",
         "CARGO_PKG_RUST_VERSION": "1.63",
-        "CARGO_PKG_VERSION": "0.4.14",
+        "CARGO_PKG_VERSION": "0.4.16",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "4",
-        "CARGO_PKG_VERSION_PATCH": "14",
+        "CARGO_PKG_VERSION_PATCH": "16",
         "CARGO_PKG_VERSION_PRE": "",
     },
     visibility = [],
