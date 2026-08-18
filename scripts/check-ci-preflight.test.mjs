@@ -740,8 +740,11 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(actionStepCount, 46, "required and planned job setup-action coverage must not shrink");
-    assert.equal(mutationCount, 92, "setup-action bypass matrix must not shrink");
+    // 46 -> 51: each of the five postgres shards gained an upload-artifact step
+    // that persists per-target durations, so the sharder can eventually balance
+    // by measured time instead of entry count. Two bypass mutations per action.
+    assert.equal(actionStepCount, 51, "required and planned job setup-action coverage must not shrink");
+    assert.equal(mutationCount, 102, "setup-action bypass matrix must not shrink");
   });
 
   it("locks every setup action's identity, inputs, totality, and interleaving", () => {
@@ -1580,7 +1583,6 @@ describe("CI preflight contract", () => {
     const mutations = [
       ["preflight", "      - name: CI preflight contract tests\n"],
       ["dev-up-smoke", "      - name: dev-up bootstrap (compose deps + migrate + backend readyz)\n"],
-      ["postgres-reachability-app", "      - name: Run disposable PostgreSQL integration targets\n"],
       ["company-conformance", "      - name: Company conformance against disposable PostgreSQL\n"],
       ["generated-face-authority", "      - name: Full generated-face closure\n"],
       ["backend", "      - name: Layer-boundary gate\n"],
@@ -1601,6 +1603,18 @@ describe("CI preflight contract", () => {
         '          KUBECTL_VERSION: "v1.36.2"\n          BASH_ENV: scripts/noop.sh\n',
       ),
       "kubernetes-manifests must preserve its exact step environment allowlist",
+    );
+
+    // The postgres shards carry their own `env:` (CARGO_POSTGRES_TIMINGS), so
+    // injection has to append a key to the existing block. Adding a second
+    // `env:` would produce duplicate mapping keys and fail YAML parsing, which
+    // proves nothing about the allowlist.
+    expectFailure(
+      workflow.replace(
+        "          CARGO_POSTGRES_TIMINGS: ${{ runner.temp }}/postgres-timings-app.jsonl\n",
+        "          CARGO_POSTGRES_TIMINGS: ${{ runner.temp }}/postgres-timings-app.jsonl\n          BASH_ENV: scripts/noop.sh\n",
+      ),
+      "postgres-reachability-app must preserve its exact step environment allowlist",
     );
   });
 
