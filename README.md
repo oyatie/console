@@ -32,7 +32,17 @@ npm ci
 npm run verify
 ```
 
-`npm ci` installs the pinned repository tooling; `npm run verify` is the one supported local repository verification entrypoint. Run narrower tests while developing and any additional checks required by the touched surface, then record the exact candidate SHA, commands, environment, discovered/executed counts, failures, and remaining HOLDs as described in [`docs/current/DELIVERY.md`](docs/current/DELIVERY.md).
+`npm ci` installs the pinned repository tooling; `npm run verify` is the supported local repository verification entrypoint.
+
+For a local full CI-path parity run, install the pinned DotSlash runtime first:
+
+```sh
+tools/buck/install_dotslash.sh
+export PATH="${CONSOLE_DOTSLASH_BIN_DIR:-${RUNNER_TEMP:-${TMPDIR:-/tmp}/console-dotslash}/bin}:$PATH"
+npm run verify
+```
+
+Run narrower tests while developing and any additional checks required by the touched surface, then record the exact candidate SHA, commands, environment, discovered/executed counts, failures, and remaining HOLDs as described in [`docs/current/DELIVERY.md`](docs/current/DELIVERY.md).
 
 <!-- SHARED:REASONING-LENSES:START -->
 ## Reasoning lens manifest

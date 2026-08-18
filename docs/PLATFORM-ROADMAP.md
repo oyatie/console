@@ -1,7 +1,7 @@
-# KNL one-stop platform — historical vision notes (non-authority)
+# KNL one-stop platform — archived historical roadmap (non-authority)
 
 > **HISTORICAL / NON-AUTHORITY.**  
-> **Current ordered roadmap:** [`current/ROADMAP.md`](current/ROADMAP.md), constrained by [`current/PRODUCT.md`](current/PRODUCT.md).  
+> **Current ordered roadmap:** [`docs/current/ROADMAP.md`](docs/current/ROADMAP.md), constrained by [`docs/current/PRODUCT.md`](docs/current/PRODUCT.md).  
 > This file is a **frozen pre-pivot plan**. It is not a living plan, does not dispatch work, and cannot clear HOLDs.  
 > Phrases below such as “Living plan”, “Already built”, or live hostnames are **historical claims**, not present-tense product truth.
 

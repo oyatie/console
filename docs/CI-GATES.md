@@ -2,6 +2,8 @@
 
 # CI Gates
 
+Refreshed: 2026-08-17 from the live `.github/workflows/ci.yml` and `.github/workflows/security.yml` workflows on this branch.
+
 The GitHub Actions workflow in `.github/workflows/ci.yml` is the **executable inventory**
 of CI enforcement (this doc is a non-authority mirror). This document mirrors the current gate inventory and splits
 the checks into two groups: core local gates that a fresh development session can
