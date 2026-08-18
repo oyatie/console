@@ -28,7 +28,7 @@ const releaseMetadataGateRunSha256 = "9ba171262e917ba80b83342f58164d470a7d28060e
 // bootstrap verifier — and executed NOWHERE until it was wired: `package.json` declared
 // `test:console-authority-bootstrap` and no workflow ever invoked it. Breaking the verifier
 // turned all its tests red locally while CI stayed green.
-const consoleBootstrapTestCommand = "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs";
+const consoleBootstrapTestCommand = "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs";
 /** Sibling jobs: run expensive body only when preflight classified a non-docs change. */
 const runHeavyCondition = "${{ needs.preflight.outputs.run_heavy == 'true' }}";
 /** Sibling jobs: emit explicit skip-proof success for a thin path class. */
@@ -59,8 +59,8 @@ const preflightNpmCiDependentCondition =
 const preflightReleaseMetadataCondition =
   "${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.path_class == 'release-metadata-only' }}";
 const releaseMetadataEnvironment = Object.freeze({
-  RELEASE_METADATA_BASE_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}",
-  RELEASE_METADATA_HEAD_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}",
+  RELEASE_METADATA_BASE_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}",
+  RELEASE_METADATA_HEAD_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event.merge_group.head_sha || github.sha }}",
 });
 const preflightCheckoutHeavyCondition =
   "${{ !cancelled() && steps.checkout.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}";
@@ -230,6 +230,17 @@ export function listChangedPathsForPathClass(env = process.env, runGit = spawnSy
     const base = env.PATH_CLASS_PR_BASE_SHA;
     const head = env.PATH_CLASS_PR_HEAD_SHA || env.PATH_CLASS_SHA;
     if (!base || !head) return { ok: false, reason: "missing-pr-shas", paths: [] };
+    range = `${base}...${head}`;
+  } else if (event === "merge_group") {
+    // A merge group is a candidate merge commit, not a PR. GitHub supplies the
+    // queued base and head, so the diff is the same shape as a PR's. Without
+    // this branch the classifier falls to `unsupported-event`, which is
+    // fail-closed (runHeavy=true) and therefore SAFE but runs the full matrix
+    // for every queue entry -- which caps queue throughput at the length of the
+    // slowest shard.
+    const base = env.PATH_CLASS_MERGE_GROUP_BASE_SHA;
+    const head = env.PATH_CLASS_MERGE_GROUP_HEAD_SHA || env.PATH_CLASS_SHA;
+    if (!base || !head) return { ok: false, reason: "missing-merge-group-shas", paths: [] };
     range = `${base}...${head}`;
   } else if (event === "push") {
     const before = env.PATH_CLASS_PUSH_BEFORE_SHA;
@@ -868,7 +879,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Console route inventory regression", "node --test scripts/console/route-inventory.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console authority-train regression", "node --test scripts/console/verify-console-authority-train.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console lane-receipt validator regression", "npm run test:lane-receipt", { if: preflightNpmCiDependentCondition }),
-    proofRun("Console PR authority bootstrap regression", "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Console PR authority bootstrap regression", consoleBootstrapTestCommand, { if: preflightNpmCiDependentCondition }),
     proofRun("Executed-tests baseline set regression", "npm run test:executed-tests-baseline", { if: preflightNpmCiDependentCondition }),
     proofRun("Local CI mirror contract", "node --test scripts/verify.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console truth-ledger validator exact-M regression", "node --test scripts/console/validate-console-truth-ledger.test.mjs", { if: preflightNpmCiDependentCondition }),
@@ -1119,7 +1130,7 @@ const requiredJobMetadataSha256 = Object.freeze({
   "postgres-domain-reachability": "a550cd1d598d606236777ed184ee873c60a3a0e8844401c3ac14a5dc4bf8f074",
 });
 
-const workflowExecutionEnvelopeSha256 = "e91330f0f5ccd53cb457ef43231e1c8e59d9f986ec7a2fa68f98e93665b439bd";
+const workflowExecutionEnvelopeSha256 = "1619dddbbbce5a1985e65244880e40c26015efd2bdc43a8fcb014d36fe2c3ef7";
 const freeRunnerDiskActionSha256 = "1c1a2307321f732c3dcd67e3af2f33a771ce5b81ea814445390b65946b52fc8f";
 const exactCiJobIds = Object.freeze([
   "api-contract",
@@ -1184,6 +1195,8 @@ const protectedJobExecutionMetadata = {
         PATH_CLASS_PR_BASE_SHA: "${{ github.event.pull_request.base.sha }}",
         PATH_CLASS_PR_HEAD_SHA: "${{ github.event.pull_request.head.sha }}",
         PATH_CLASS_PUSH_BEFORE_SHA: "${{ github.event.before }}",
+        PATH_CLASS_MERGE_GROUP_BASE_SHA: "${{ github.event.merge_group.base_sha }}",
+        PATH_CLASS_MERGE_GROUP_HEAD_SHA: "${{ github.event.merge_group.head_sha }}",
         PATH_CLASS_SHA: "${{ github.sha }}",
       },
     }, {

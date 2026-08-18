@@ -1,0 +1,45 @@
+name: Console authority merge group
+
+# The merge-queue half of the `authenticate-console-authority` required context.
+#
+# It is a SEPARATE FILE on purpose. `console-authority-bootstrap.yml` is
+# contract-bound to contain no `if:` at all, so that nobody can make the
+# authority check conditionally skip; adding event-gated jobs there would have
+# broken that guarantee. Two files, one event each, no conditionals in either.
+#
+# A merge group is not a pull request, so PR-shaped authentication has nothing
+# to authenticate. What the queue depends on is that every queued pull request
+# ALREADY passed authentication -- it could not have been queued otherwise --
+# and that is what this verifies.
+
+on:
+  merge_group:
+
+# Same posture as the pull_request_target half: protected target code only, no
+# PR bytes executed, read-only metadata, no write or OIDC scope.
+permissions:
+  actions: read
+  contents: read
+  checks: read
+  pull-requests: read
+
+jobs:
+  authenticate-console-authority:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout protected target code only
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ github.event.merge_group.base_sha }}
+          persist-credentials: false
+      - name: Verify every queued pull request already passed authentication
+        env:
+          HOME: ${{ runner.temp }}/hostile-home
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_GROUP_HEAD_REF: ${{ github.event.merge_group.head_ref }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          node scripts/console/verify-console-merge-group-authority.mjs \
+          --head-ref "$MERGE_GROUP_HEAD_REF" \
+          --repository "$REPOSITORY"

@@ -1,6 +1,10 @@
 name: CI
 
 on:
+  # A merge group is the queue's candidate merge commit. Without this trigger
+  # every required context stays Pending for every queue entry and merges
+  # deadlock -- the queue waits forever for a check that never starts.
+  merge_group:
   push:
     branches:
       - main
@@ -63,6 +67,8 @@ jobs:
           PATH_CLASS_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PATH_CLASS_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PATH_CLASS_PUSH_BEFORE_SHA: ${{ github.event.before }}
+          PATH_CLASS_MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          PATH_CLASS_MERGE_GROUP_HEAD_SHA: ${{ github.event.merge_group.head_sha }}
           PATH_CLASS_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
@@ -78,8 +84,8 @@ jobs:
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.path_class == 'release-metadata-only' }}
         shell: bash
         env:
-          RELEASE_METADATA_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-          RELEASE_METADATA_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          RELEASE_METADATA_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
+          RELEASE_METADATA_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event.merge_group.head_sha || github.sha }}
         run: |
           set -euo pipefail
           node scripts/check-release-metadata.mjs \
@@ -158,7 +164,7 @@ jobs:
       - name: Console PR authority bootstrap regression
         id: pr-authority-bootstrap
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
-        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs
+        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs
 
       - name: Executed-tests baseline set regression
         id: executed-tests-baseline

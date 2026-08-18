@@ -186,6 +186,40 @@ describe("CI preflight contract", () => {
     );
   });
 
+  it("resolves a merge group's diff range, and fails closed without its SHAs", () => {
+    // A merge group is the queue's candidate merge commit, not a PR. Before the
+    // classifier knew the event it fell to `unsupported-event`, which is
+    // fail-closed (runHeavy=true) and therefore safe -- but it ran the full
+    // matrix for every queue entry, capping throughput at the slowest shard.
+    const calls = [];
+    const runGit = (bin, args) => {
+      calls.push(args);
+      return { status: 0, stdout: Buffer.from("docs/current/PRODUCT.md\0") };
+    };
+    const listed = listChangedPathsForPathClass({
+      PATH_CLASS_EVENT_NAME: "merge_group",
+      PATH_CLASS_MERGE_GROUP_BASE_SHA: "b".repeat(40),
+      PATH_CLASS_MERGE_GROUP_HEAD_SHA: "h".repeat(40),
+    }, runGit);
+    assert.equal(listed.ok, true);
+    assert.deepEqual(listed.paths, ["docs/current/PRODUCT.md"]);
+    assert.ok(
+      calls[0].includes(`${"b".repeat(40)}...${"h".repeat(40)}`),
+      "must diff the queued base against the queued head",
+    );
+
+    // Missing either SHA must not silently diff the wrong range.
+    for (const env of [
+      { PATH_CLASS_EVENT_NAME: "merge_group", PATH_CLASS_MERGE_GROUP_HEAD_SHA: "h".repeat(40) },
+      { PATH_CLASS_EVENT_NAME: "merge_group", PATH_CLASS_MERGE_GROUP_BASE_SHA: "b".repeat(40) },
+    ]) {
+      const bad = listChangedPathsForPathClass(env, runGit);
+      assert.equal(bad.ok, false);
+      assert.equal(bad.reason, "missing-merge-group-shas");
+      assert.equal(resolvePathClassFromEnv(env).runHeavy, true, "must fail closed");
+    }
+  });
+
   it("classifies only the complete release metadata shape as thin", () => {
     const releasePaths = [".release-please-manifest.json", "CHANGELOG.md"];
     const custodyPaths = [
@@ -1141,7 +1175,7 @@ describe("CI preflight contract", () => {
 
     for (const command of [
       "node --test scripts/console/verify-console-authority-train.test.mjs",
-      "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs",
+      "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs",
       "node --test scripts/console/validate-console-truth-ledger.test.mjs",
       "node --test scripts/console/plan-fanout.test.mjs",
     ]) {
@@ -1174,15 +1208,15 @@ describe("CI preflight contract", () => {
     // turned every one of its tests red locally while CI stayed green. Wiring it into ci.yml is
     // not the same as protecting it, hence both halves below.
     assert.ok(
-      workflow.includes(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs\n`),
+      workflow.includes(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs\n`),
       "preflight does not run the console PR authority bootstrap regression",
     );
     expectFailure(
-      workflow.replace(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs\n\n`, ''),
+      workflow.replace(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs\n\n`, ''),
       "verify-console-pr-authority-bootstrap.test.mjs",
     );
     expectFailure(
-      workflow.replace(`        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs`, `        if: ${prOnlyIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs`),
+      workflow.replace(`        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs`, `        if: ${prOnlyIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs`),
       "verify-console-pr-authority-bootstrap.test.mjs",
     );
   });
@@ -1203,8 +1237,8 @@ describe("CI preflight contract", () => {
         if: releaseMetadataIf,
         shell: "bash",
         env: {
-          RELEASE_METADATA_BASE_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}",
-          RELEASE_METADATA_HEAD_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}",
+          RELEASE_METADATA_BASE_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}",
+          RELEASE_METADATA_HEAD_SHA: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event.merge_group.head_sha || github.sha }}",
         },
         run: [
           "set -euo pipefail",
@@ -1256,15 +1290,15 @@ describe("CI preflight contract", () => {
     );
     expectFailure(
       workflow.replace(
-        "github.event.pull_request.head.sha || github.sha",
-        "github.sha || github.sha",
+        "github.event.pull_request.head.sha || github.event.merge_group.head_sha || github.sha",
+        "github.sha || github.event.merge_group.head_sha || github.sha",
       ),
       "preflight must preserve its exact step environment allowlist",
     );
     expectFailure(
       workflow.replace(
-        "github.event.pull_request.base.sha || github.event.before",
-        "github.event.pull_request.head.sha || github.event.before",
+        "github.event.pull_request.base.sha || github.event.merge_group.base_sha",
+        "github.event.pull_request.head.sha || github.event.merge_group.base_sha",
       ),
       "preflight must preserve its exact step environment allowlist",
     );

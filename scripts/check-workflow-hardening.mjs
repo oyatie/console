@@ -29,6 +29,9 @@ const TRIVY_INSTALL = [
 const REQUIRED_WORKFLOW_ENVELOPE = Object.freeze({
   name: "Security",
   on: {
+    // Required context: without merge_group it stays Pending for every merge-queue
+    // entry and merges deadlock waiting on a check that never starts.
+    merge_group: null,
     push: { branches: ["main"] },
     pull_request: null,
     workflow_dispatch: null,

@@ -5,6 +5,9 @@ name: Security
 # and base images that were clean at merge time).
 
 on:
+  # Required context: must report on the queue's merge group or merges
+  # deadlock waiting for a check that never starts.
+  merge_group:
   push:
     branches: [main]
   pull_request:
