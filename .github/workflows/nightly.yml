@@ -1,0 +1,89 @@
+name: Nightly
+
+# Tier-2 proofs: expensive, and not required to be true *before* a merge.
+#
+# `dev-up.mjs smoke` measured 731s on run 32097786166 -- the 7th-longest job in a
+# 16-job run -- and it validates the developer bring-up path (compose deps ->
+# migrate -> /readyz), not product correctness. A break here blocks local
+# onboarding and is fixable forward; it does not corrupt data, weaken authz, or
+# ship a wrong payslip. That is what makes it safe to move off the pre-merge
+# gate, and it is the only CI job that currently qualifies. `company-conformance`
+# (generic-engine regression) and `generated-face-authority` (drift authority)
+# were considered and deliberately KEPT in ci.yml: both guard correctness, and a
+# regression that merges and sits on main is exactly the failure this repo has
+# spent its history engineering against.
+#
+# Detection is deliberately NOT 24 hours. This runs on every push to main, so a
+# break surfaces ~15 minutes after the merge that caused it, against a candidate
+# set of one. The schedule is the backstop that catches decay with no push --
+# expired fixtures, upstream image drift, a compose base that moved.
+#
+# The trade is explicit: this proof no longer blocks a PR. It moved from
+# "cannot merge" to "main goes red immediately, with one obvious culprit".
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "41 5 * * *" # 05:41 UTC daily — off-peak, and off the :00/:30 stampede
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Nightly proofs are idempotent and always run against a tip, so a superseded
+  # run carries no information a newer one lacks.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dev-up-smoke:
+    name: dev-up.mjs smoke — compose deps + migrate + /readyz
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_PROFILE_DEV_DEBUG: "0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: dev-up compose contract unit test
+        run: node --test scripts/dev-up-compose.test.mjs
+
+      - name: Install pinned DotSlash runtime
+        run: tools/buck/install_dotslash.sh
+
+      - name: Free runner disk for Rust backend
+        uses: ./.github/actions/free-runner-disk
+
+      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: "1.97.1"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: PostgreSQL topology integration regression
+        run: ops/postgres-topology.integration.test.sh
+
+      - name: dev-up bootstrap (compose deps + migrate + backend readyz)
+        # macOS/Windows GH-hosted runners cannot run Linux containers reliably,
+        # so this smoke test is ubuntu-only; the other OSes' acceptance is the
+        # `doctor` self-check (documented deviation from the plan's "macos
+        # runner" wording, per W2.5 reviewer note).
+        run: node scripts/dev-up.mjs bootstrap
+
+      - name: Confirm /readyz reachable
+        run: curl -fsS "http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz"
+
+      - name: dev-up down
+        if: ${{ always() }}
+        run: node scripts/dev-up.mjs down

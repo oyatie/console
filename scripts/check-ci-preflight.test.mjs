@@ -461,7 +461,7 @@ describe("CI preflight contract", () => {
     assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
   });
 
-  it("locks Required / CI to the exact ten existing CI proofs", () => {
+  it("locks Required / CI to the exact nine existing CI proofs", () => {
     const requiredDependencies = [
       "preflight",
       "domain-unit",
@@ -469,14 +469,15 @@ describe("CI preflight contract", () => {
       "company-conformance",
       "generated-face-authority",
       "backend",
-      "dev-up-smoke",
       "repo-gates",
       "api-contract",
       "kubernetes-manifests",
     ];
     const model = yaml.load(workflow);
-    // 11 protected proofs + 5 PostgreSQL facets (S2 splits domain)
-    assert.equal(Object.keys(model.jobs).length, 16);
+    // 10 protected proofs + 5 PostgreSQL facets (S2 splits domain).
+    // dev-up-smoke moved to Nightly: it proves developer bring-up, not product
+    // correctness, so it no longer blocks a merge.
+    assert.equal(Object.keys(model.jobs).length, 15);
     assert.equal(model.jobs["required-ci"].name, "Required / CI");
     assert.deepEqual(model.jobs["required-ci"].needs, requiredDependencies);
     assert.equal(model.jobs["required-ci"]["timeout-minutes"], 5);
@@ -595,7 +596,6 @@ describe("CI preflight contract", () => {
       preflight: 32,
       "domain-unit": 2,
       backend: 26,
-      "dev-up-smoke": 7,
       "kubernetes-manifests": 8,
       "repo-gates": 26,
       "api-contract": 5,
@@ -649,9 +649,12 @@ describe("CI preflight contract", () => {
     // 127 -> 128: restored a regression suite for the replacement gate. Review
     // caught that the drift check shipped with no test, so a weakened parser
     // could stay green whenever the checked-in files happened to match.
-    assert.equal(runStepCount, 128, "required and planned job run-step coverage must not shrink");
+    // 2026-08-18: dev-up-smoke (7 run steps, 4 setup actions) moved to Nightly,
+    // so these ratchets step down by exactly its step counts and no more. A
+    // shrink that does NOT match a job leaving ci.yml is still a regression.
+    assert.equal(runStepCount, 121, "required and planned job run-step coverage must not shrink");
     // Three mutations per run step: 128*3 = 384.
-    assert.equal(mutationCount, 384, "exhaustive bypass matrix must not shrink");
+    assert.equal(mutationCount, 363, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -659,7 +662,6 @@ describe("CI preflight contract", () => {
       preflight: 3,
       "domain-unit": 3,
       backend: 4,
-      "dev-up-smoke": 4,
       "kubernetes-manifests": 1,
       "repo-gates": 2,
       "api-contract": 2,
@@ -697,8 +699,11 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(actionStepCount, 46, "required and planned job setup-action coverage must not shrink");
-    assert.equal(mutationCount, 92, "setup-action bypass matrix must not shrink");
+    // 2026-08-18: dev-up-smoke (7 run steps, 4 setup actions) moved to Nightly,
+    // so these ratchets step down by exactly its step counts and no more. A
+    // shrink that does NOT match a job leaving ci.yml is still a regression.
+    assert.equal(actionStepCount, 42, "required and planned job setup-action coverage must not shrink");
+    assert.equal(mutationCount, 84, "setup-action bypass matrix must not shrink");
   });
 
   it("locks every setup action's identity, inputs, totality, and interleaving", () => {
@@ -706,7 +711,6 @@ describe("CI preflight contract", () => {
       "preflight",
       "domain-unit",
       "backend",
-      "dev-up-smoke",
       "kubernetes-manifests",
       "repo-gates",
       "api-contract",
@@ -774,7 +778,7 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(mutationCount, 300, "setup-action identity/input/interleaving matrix must not shrink");
+    assert.equal(mutationCount, 277, "setup-action identity/input/interleaving matrix must not shrink");
   });
 
   it("locks the candidate-controlled local free-runner-disk action body", () => {
@@ -797,7 +801,6 @@ describe("CI preflight contract", () => {
       "preflight",
       "domain-unit",
       "backend",
-      "dev-up-smoke",
       "kubernetes-manifests",
       "repo-gates",
       "api-contract",
@@ -929,27 +932,6 @@ describe("CI preflight contract", () => {
         "backend must preserve the locked fail-fast step multiset and failure semantics",
       );
     }
-  });
-
-  it("requires dev-up smoke to install pinned DotSlash before its indirect Buck2 build", () => {
-    const devUp = workflow.indexOf("  dev-up-smoke:\n");
-    const installStep =
-      `      - name: Install pinned DotSlash runtime\n        if: ${runHeavyIf}\n        run: tools/buck/install_dotslash.sh\n\n`;
-    const devUpWorkflow = workflow.slice(devUp);
-    const withoutDotSlash = workflow.slice(0, devUp) + devUpWorkflow.replace(installStep, "");
-    expectFailure(
-      withoutDotSlash,
-      "dev-up-smoke must install pinned DotSlash from tools/buck/install_dotslash.sh",
-    );
-
-    const firstBootstrap = "        run: node scripts/dev-up.mjs bootstrap\n";
-    const afterFirstBootstrap = devUpWorkflow
-      .replace(installStep, "")
-      .replace(firstBootstrap, `${firstBootstrap}\n${installStep}`);
-    expectFailure(
-      workflow.slice(0, devUp) + afterFirstBootstrap,
-      "dev-up-smoke must install pinned DotSlash before its first Buck invocation",
-    );
   });
 
   it("rejects CONSOLE_APP_BIN anywhere in the text-only API contract job", () => {
@@ -1419,7 +1401,7 @@ describe("CI preflight contract", () => {
       workflow.replace("  company-conformance:\n", "  company-conformance:\n    if: false\n"),
       "company-conformance must not define job-level if",
     );
-    for (const job of ["backend", "dev-up-smoke", "api-contract", "company-conformance"]) {
+    for (const job of ["backend", "api-contract", "company-conformance"]) {
       expectFailure(
         workflow.replace(`  ${job}:\n`, `  ${job}:\n    continue-on-error: true\n`),
         `${job} must not define job-level continue-on-error`,
@@ -1488,13 +1470,6 @@ describe("CI preflight contract", () => {
       "postgres-reachability-app must preserve its exact job env/defaults execution metadata",
     );
     expectFailure(
-      workflow.replace(
-        '      CARGO_PROFILE_DEV_DEBUG: "0"\n\n    steps:\n',
-        '      CARGO_PROFILE_DEV_DEBUG: "0"\n      NODE_OPTIONS: --require scripts/noop.js\n\n    steps:\n',
-      ),
-      "dev-up-smoke must preserve its exact job env/defaults execution metadata",
-    );
-    expectFailure(
       workflow.replace("  repo-gates:\n", "  repo-gates:\n    env:\n      PATH: /tmp/noop\n"),
       "repo-gates must preserve its exact job env/defaults execution metadata",
     );
@@ -1510,7 +1485,6 @@ describe("CI preflight contract", () => {
   it("rejects step environment injection across every protected proof class", () => {
     const mutations = [
       ["preflight", "      - name: CI preflight contract tests\n"],
-      ["dev-up-smoke", "      - name: dev-up bootstrap (compose deps + migrate + backend readyz)\n"],
       ["postgres-reachability-app", "      - name: Run disposable PostgreSQL integration targets\n"],
       ["company-conformance", "      - name: Company conformance against disposable PostgreSQL\n"],
       ["generated-face-authority", "      - name: Full generated-face closure\n"],
@@ -1842,7 +1816,7 @@ describe("CI preflight contract", () => {
     );
   });
 
-  it("preserves fail-fast backend and dev-up ordering", () => {
+  it("preserves fail-fast backend ordering", () => {
     const sourceGateDisplaced = workflow
       .replace("      - name: Layer-boundary gate\n", "      - name: Displaced source gate\n")
       .replace("      - name: Reconcile portable PostgreSQL role topology\n", "      - name: Layer-boundary gate\n");
@@ -1852,33 +1826,6 @@ describe("CI preflight contract", () => {
       .replace("      - name: Buck2 console-app unit suite\n", "      - name: Temporary Buck2 step\n")
       .replace("      - name: Buck2 console-app inline PostgreSQL suites\n", "      - name: Buck2 console-app unit suite\n");
     expectFailure(unitAfterPostgres, "backend must preserve the locked fail-fast step order");
-
-    const devUpContractAfterDiskPurge = workflow
-      .replace("      - name: dev-up compose contract unit test\n", "      - name: Temporary dev-up step\n")
-      .replace("      - name: Free runner disk for Rust backend\n", "      - name: dev-up compose contract unit test\n");
-    expectFailure(devUpContractAfterDiskPurge, "dev-up-smoke must preserve the locked fail-fast step order");
-  });
-
-  it("locks the complete dev-up proof and cleanup", () => {
-    expectFailure(
-      workflow.replace(
-        `      - name: PostgreSQL topology integration regression\n        if: ${runHeavyIf}\n        run: ops/postgres-topology.integration.test.sh\n`,
-        "",
-      ),
-      "dev-up-smoke must preserve the locked fail-fast step multiset and failure semantics",
-    );
-    expectFailure(
-      workflow.replace("        run: node scripts/dev-up.mjs bootstrap", "        run: true"),
-      "dev-up-smoke must preserve the locked fail-fast step multiset and failure semantics",
-    );
-    expectFailure(
-      workflow.replace('        run: curl -fsS "http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz"', "        run: true"),
-      "dev-up-smoke must preserve the locked fail-fast step multiset and failure semantics",
-    );
-    expectFailure(
-      workflow.replace("        run: node scripts/dev-up.mjs down", "        run: true"),
-      "dev-up-smoke must preserve the locked fail-fast step multiset and failure semantics",
-    );
   });
 
   it("locks the company-conformance proof and its execution semantics", () => {
@@ -1979,13 +1926,6 @@ describe("CI preflight contract", () => {
         "        # env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
-    );
-    expectFailure(
-      workflow.replace(
-        `      - name: dev-up compose contract unit test\n        if: ${runHeavyIf}\n        run: node --test scripts/dev-up-compose.test.mjs`,
-        `      - name: dev-up compose contract unit test\n        if: ${runHeavyIf}\n        continue-on-error: true\n        run: node --test scripts/dev-up-compose.test.mjs`,
-      ),
-      "dev-up-smoke must preserve the locked fail-fast step multiset and failure semantics",
     );
   });
 

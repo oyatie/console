@@ -801,7 +801,6 @@ const requiredPreflightCommands = [
 ];
 const protectedJobs = [
   "backend",
-  "dev-up-smoke",
   "repo-gates",
   "api-contract",
   "kubernetes-manifests",
@@ -917,15 +916,6 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: backendIndependentCondition, workingDirectory: "." }),
     proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { if: backendTopologyDependentCondition, workingDirectory: "." }),
     proofRun("Collect failures", "node scripts/ci-collect-failures.mjs", { if: collectFailuresCondition, workingDirectory: "." }),
-  ],
-  "dev-up-smoke": [
-    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofRun("dev-up compose contract unit test", "node --test scripts/dev-up-compose.test.mjs", { if: runHeavyCondition }),
-    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: runHeavyCondition }),
-    proofRun("PostgreSQL topology integration regression", "ops/postgres-topology.integration.test.sh", { if: runHeavyCondition }),
-    proofRun("dev-up bootstrap (compose deps + migrate + backend readyz)", "node scripts/dev-up.mjs bootstrap", { if: runHeavyCondition }),
-    proofRun("Confirm /readyz reachable", "curl -fsS \"http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz\"", { if: runHeavyCondition }),
-    cleanupRun("dev-up down", "node scripts/dev-up.mjs down", { if: runHeavyAlwaysCondition }),
   ],
   "kubernetes-manifests": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
@@ -1053,12 +1043,6 @@ const requiredJobActionContracts = Object.freeze({
     actionStep(4, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1","components":"rustfmt, clippy"}, { if: backendIndependentCondition, id: "rust" }),
     actionStep(5, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/main' }}"}, { if: backendIndependentCondition, id: "rust-cache" }),
   ],
-  "dev-up-smoke": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
-    actionStep(4, "Free runner disk for Rust backend", "./.github/actions/free-runner-disk", { if: runHeavyCondition }),
-    actionStep(5, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1"}, { if: runHeavyCondition }),
-    actionStep(6, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24","cache":"npm"}, { if: runHeavyCondition }),
-  ],
   "kubernetes-manifests": [
     actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"fetch-depth":0}, { if: runHeavyCondition }),
   ],
@@ -1122,7 +1106,6 @@ const requiredJobMetadataSha256 = Object.freeze({
   "preflight": "1f3b5c6437ba04ccda98e2cbdf78506a69c6f82be7ce2abf7c661660c88fe87f",
   "domain-unit": "4948a02022fffb8b39aa14b4cb9ee3f776fe20c04844942dedd31f90ebe90bef",
   "backend": "f4f6b9faa5c4382a00d5639bebfb9ab8db664ecf38b79752d80afa567161393f",
-  "dev-up-smoke": "39ca186b8c6093adb4f30f8b2ed82c3eabb34fc5b9721652757d34a86c7922d8",
   "kubernetes-manifests": "1b215a62dac6d9a3decea6d6912792de3d033986833356b403fb157a15cb8b96",
   "repo-gates": "da8a07f3a19a6f46a5901e6a6d8eac2f7f1c11f52818b7dea25caf362335ee92",
   "api-contract": "101b70d29b1776058160ea23296e707a4f682f5987a9873371cb57180a737d41",
@@ -1142,7 +1125,6 @@ const exactCiJobIds = Object.freeze([
   "api-contract",
   "backend",
   "company-conformance",
-  "dev-up-smoke",
   "domain-unit",
   "generated-face-authority",
   "kubernetes-manifests",
@@ -1166,7 +1148,6 @@ const requiredCiAggregator = Object.freeze({
     "company-conformance",
     "generated-face-authority",
     "backend",
-    "dev-up-smoke",
     "repo-gates",
     "api-contract",
     "kubernetes-manifests",
@@ -1183,7 +1164,6 @@ const requiredCiAggregator = Object.freeze({
       '  test "${{ needs.company-conformance.result }}" = success &&',
       '  test "${{ needs.generated-face-authority.result }}" = success &&',
       '  test "${{ needs.backend.result }}" = success &&',
-      '  test "${{ needs.dev-up-smoke.result }}" = success &&',
       '  test "${{ needs.repo-gates.result }}" = success &&',
       '  test "${{ needs.api-contract.result }}" = success &&',
       '  test "${{ needs.kubernetes-manifests.result }}" = success\n',
@@ -1240,12 +1220,6 @@ const protectedJobExecutionMetadata = {
       name: "Collect failures",
       env: { CI_STEPS: "${{ toJSON(steps) }}" },
     }],
-  },
-  "dev-up-smoke": {
-    env: {
-      CARGO_INCREMENTAL: "0",
-      CARGO_PROFILE_DEV_DEBUG: "0",
-    },
   },
   "repo-gates": {},
   "api-contract": {},
@@ -1903,7 +1877,7 @@ function requireExactRequiredJobContracts(workflowModel, failures) {
     failures.push("CI workflow must preserve its exact job-id set");
   }
   if (!isDeepStrictEqual(workflowModel.jobs?.["required-ci"], requiredCiAggregator)) {
-    failures.push("Required / CI must preserve its exact ten-job success aggregation contract");
+    failures.push("Required / CI must preserve its exact nine-job success aggregation contract");
   }
 
   for (const [jobName, contracts] of Object.entries(requiredJobRunContracts)) {
@@ -2420,40 +2394,6 @@ export function evaluateCiPreflight(
     }
   }
 
-  const devUpSmoke = jobBlock(workflow, "dev-up-smoke");
-  if (devUpSmoke) {
-    const devUpSteps = stepBlocks(devUpSmoke);
-    const devUpRunContracts = [
-      { name: "Path-class skip proof", run: pathClassSkipProofScript.join("\n"), if: skipProofCondition },
-      { name: "dev-up compose contract unit test", run: "node --test scripts/dev-up-compose.test.mjs", if: runHeavyCondition },
-      { name: "Install pinned DotSlash runtime", run: dotSlashBootstrap, if: runHeavyCondition },
-      { name: "PostgreSQL topology integration regression", run: "ops/postgres-topology.integration.test.sh", if: runHeavyCondition },
-      { name: "dev-up bootstrap (compose deps + migrate + backend readyz)", run: "node scripts/dev-up.mjs bootstrap", if: runHeavyCondition },
-      { name: "Confirm /readyz reachable", run: 'curl -fsS "http://127.0.0.1:${CONSOLE_DEV_HTTP_PORT:-8090}/readyz"', if: runHeavyCondition },
-      { name: "dev-up down", run: "node scripts/dev-up.mjs down", if: runHeavyAlwaysCondition },
-    ];
-    requireOrderedStepContracts(
-      devUpSteps,
-      [
-        { name: "Path-class skip proof", run: pathClassSkipProofScript.join("\n"), if: skipProofCondition },
-        { name: "Checkout", run: null, if: runHeavyCondition },
-        { name: "dev-up compose contract unit test", run: "node --test scripts/dev-up-compose.test.mjs", if: runHeavyCondition },
-        { name: "Install pinned DotSlash runtime", run: dotSlashBootstrap, if: runHeavyCondition },
-        { name: "Free runner disk for Rust backend", run: null, if: runHeavyCondition },
-        { name: "Install Rust toolchain (pinned via rust-toolchain.toml)", run: null, if: runHeavyCondition },
-        { name: "Set up Node.js", run: null, if: runHeavyCondition },
-        ...devUpRunContracts.slice(3),
-      ],
-      "dev-up-smoke",
-      failures,
-    );
-    const actualRunNames = devUpSteps.filter((step) => runCommand(step) !== null).map(stepName);
-    const expectedRunNames = devUpRunContracts.map(({ name }) => name);
-    if (JSON.stringify(actualRunNames) !== JSON.stringify(expectedRunNames)) {
-      failures.push("dev-up-smoke must contain only the locked ordered proof and cleanup run steps");
-    }
-  }
-
   const fullGeneratedFaces = jobBlock(workflow, "generated-face-authority");
   if (fullGeneratedFaces) {
     const fullGeneratedFaceSteps = stepBlocks(fullGeneratedFaces);
@@ -2540,7 +2480,7 @@ export function evaluateCiPreflight(
     }
   }
 
-  for (const job of ["backend", "dev-up-smoke"]) {
+  for (const job of ["backend"]) {
     const block = jobBlock(workflow, job);
     if (block) requireEffectiveDotSlashBootstrap(block, job, failures);
   }
@@ -2600,7 +2540,7 @@ export function evaluateCiPreflight(
   }
   // Buck2 never writes backend/target, so a rust-cache step on a Buck2-only job is pure
   // transfer cost and an LRU slot taken from the jobs that do use it.
-  for (const job of ["company-conformance", "dev-up-smoke", "api-contract"]) {
+  for (const job of ["company-conformance", "api-contract"]) {
     const block = jobBlock(workflow, job);
     if (block && /Swatinem\/rust-cache/.test(block)) {
       failures.push(`${job} runs no cargo and must not carry a rust-cache step`);
