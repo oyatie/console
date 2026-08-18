@@ -122,6 +122,32 @@ async fn seed_employee(owner_pool: &PgPool, org: Uuid, source_key: &str) -> Uuid
     .unwrap()
 }
 
+/// Stamp a legacy `employees` head into an OrgUnit without opening an
+/// employment binding. Reassign selects on this column; the fail-closed
+/// path under test is "matched the unit, no `employment_source_bindings` row".
+async fn stamp_legacy_org_unit(owner_pool: &PgPool, employee: Uuid, org_unit: Uuid) {
+    sqlx::query(
+        "UPDATE employees SET org_unit = $1, employment_status = 'ACTIVE' WHERE id = $2",
+    )
+    .bind(org_unit.to_string())
+    .bind(employee)
+    .execute(owner_pool)
+    .await
+    .unwrap();
+}
+
+/// Arm `app.current_org` the same way the existing reassign cases do, so a
+/// missed SET cannot look like a deny.
+async fn begin_org_armed_tx(owner_pool: &PgPool) -> sqlx::Transaction<'_, sqlx::Postgres> {
+    let mut tx = owner_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    tx
+}
+
 /// The tenant, its actor, seeded OrgUnit/JobPosition rows, and the port built
 /// on a `console_rt` pool.
 async fn fixture(owner_pool: &PgPool) -> (OrgId, UserId, PgEmploymentPort) {
@@ -2116,4 +2142,215 @@ async fn a_lock_on_the_kst_business_date_refuses_a_utc_instant(owner_pool: PgPoo
         matches!(&refused, EmploymentError::Frozen(error) if error.kind == ErrorKind::Conflict),
         "got {refused:?}"
     );
+}
+
+/// An ACTIVE legacy head in the source unit with no `employment_source_bindings`
+/// row must fail closed as `UnboundEmployeeForTransfer`. Reassign is a transfer
+/// of bound employments, not a bulk rewrite of unbound heads.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn reassign_org_unit_refuses_unbound_employee_and_writes_nothing(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let unbound = seed_employee(&owner_pool, ORG, "unbound-head").await;
+    stamp_legacy_org_unit(&owner_pool, unbound, ORG_UNIT_SALES).await;
+
+    let bindings: i64 = sqlx::query_scalar(
+        "SELECT count(*)::bigint FROM employment_source_bindings WHERE employee_id = $1",
+    )
+    .bind(unbound)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        bindings, 0,
+        "fixture must be an unbound legacy head, not an appointed employment"
+    );
+    assert_eq!(
+        legacy_head(&owner_pool, unbound).await.1,
+        Some(ORG_UNIT_SALES.to_string())
+    );
+
+    let revisions_before = count_rows(&owner_pool, COUNT_REVISIONS).await;
+    let receipts_before = count_rows(&owner_pool, COUNT_RECEIPTS).await;
+
+    let mut tx = begin_org_armed_tx(&owner_pool).await;
+    let refused = reassign_org_unit_via_transfers_in_tx(
+        &mut tx,
+        org,
+        actor,
+        Uuid::new_v4(),
+        &ORG_UNIT_SALES.to_string(),
+        &ORG_UNIT_TECH.to_string(),
+        "ACME",
+        at(86_400),
+    )
+    .await
+    .expect_err("an unbound ACTIVE head must not transfer");
+    drop(tx);
+
+    assert!(
+        matches!(
+            refused,
+            EmploymentError::UnboundEmployeeForTransfer { employee_id } if employee_id == unbound
+        ),
+        "unbound reassign must name the unmatched employee, not succeed or rewrite; got {refused:?}"
+    );
+    assert_eq!(
+        legacy_head(&owner_pool, unbound).await.1,
+        Some(ORG_UNIT_SALES.to_string()),
+        "refused reassign must leave the unbound head in the source unit"
+    );
+    assert_eq!(
+        count_rows(&owner_pool, COUNT_REVISIONS).await,
+        revisions_before,
+        "refused reassign must not append a revision"
+    );
+    assert_eq!(
+        count_rows(&owner_pool, COUNT_RECEIPTS).await,
+        receipts_before,
+        "refused reassign must not store a receipt"
+    );
+
+    let _ = port;
+}
+
+/// One bound peer must not move if another ACTIVE head in the same unit is
+/// unbound. The apply is one transaction: a partial transfer would leave the
+/// org-change audit claiming a move the Employment port did not complete.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn reassign_org_unit_refuses_when_a_peer_is_unbound(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (bound_employee, bound_employment) =
+        appointed(&owner_pool, org, actor, &port, "reassign-bound-peer").await;
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id: bound_employment,
+                valid_from: at(3_600),
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    let unbound = seed_employee(&owner_pool, ORG, "reassign-unbound-peer").await;
+    stamp_legacy_org_unit(&owner_pool, unbound, ORG_UNIT_SALES).await;
+
+    let revisions_before = count_rows(&owner_pool, COUNT_REVISIONS).await;
+    let receipts_before = count_rows(&owner_pool, COUNT_RECEIPTS).await;
+    assert_eq!(
+        legacy_head(&owner_pool, bound_employee).await.1,
+        Some(ORG_UNIT_SALES.to_string())
+    );
+
+    let mut tx = begin_org_armed_tx(&owner_pool).await;
+    let refused = reassign_org_unit_via_transfers_in_tx(
+        &mut tx,
+        org,
+        actor,
+        Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_00ac),
+        &ORG_UNIT_SALES.to_string(),
+        &ORG_UNIT_TECH.to_string(),
+        "ACME",
+        at(86_400),
+    )
+    .await
+    .expect_err("a mixed bound+unbound unit must refuse the whole reassign");
+    drop(tx);
+
+    assert!(
+        matches!(
+            refused,
+            EmploymentError::UnboundEmployeeForTransfer { employee_id } if employee_id == unbound
+        ),
+        "got {refused:?}"
+    );
+    assert_eq!(
+        legacy_head(&owner_pool, bound_employee).await.1,
+        Some(ORG_UNIT_SALES.to_string()),
+        "the bound peer must not move when a peer is unbound"
+    );
+    assert_eq!(
+        legacy_head(&owner_pool, unbound).await.1,
+        Some(ORG_UNIT_SALES.to_string())
+    );
+    assert_eq!(
+        count_rows(&owner_pool, COUNT_REVISIONS).await,
+        revisions_before
+    );
+    assert_eq!(
+        count_rows(&owner_pool, COUNT_RECEIPTS).await,
+        receipts_before
+    );
+
+    let _ = port;
+}
+
+/// Identity reassign is not a no-op success. The source and target must differ
+/// before any SELECT, or an apply would audit `moved=N` while changing nothing.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn reassign_org_unit_same_source_and_target_is_refused(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let sales = ORG_UNIT_SALES.to_string();
+
+    let mut tx = begin_org_armed_tx(&owner_pool).await;
+    let refused = reassign_org_unit_via_transfers_in_tx(
+        &mut tx,
+        org,
+        actor,
+        Uuid::new_v4(),
+        &sales,
+        &sales,
+        "ACME",
+        at(86_400),
+    )
+    .await
+    .expect_err("source == target must fail closed");
+    drop(tx);
+
+    let EmploymentError::Blocked(blockers) = &refused else {
+        panic!("same source and target must be Blocked, got {refused:?}");
+    };
+    assert!(
+        blockers
+            .iter()
+            .any(|blocker| blocker.contains("source and target must differ")),
+        "got {blockers:?}"
+    );
+
+    let _ = port;
+}
+
+/// A syntactically valid but nonexistent destination OrgUnit must fail closed
+/// as `UnknownOrgUnit` before any employee is selected. The source-unknown
+/// case is already covered; the destination is an independent end.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn reassign_org_unit_unknown_to_org_unit_is_refused(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let unknown_to = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_0099);
+
+    let mut tx = begin_org_armed_tx(&owner_pool).await;
+    let refused = reassign_org_unit_via_transfers_in_tx(
+        &mut tx,
+        org,
+        actor,
+        Uuid::new_v4(),
+        &ORG_UNIT_SALES.to_string(),
+        &unknown_to.to_string(),
+        "ACME",
+        at(86_400),
+    )
+    .await
+    .expect_err("unknown destination OrgUnit must not succeed");
+    drop(tx);
+
+    assert!(
+        matches!(refused, EmploymentError::UnknownOrgUnit(id) if id == unknown_to),
+        "unknown destination must be UnknownOrgUnit, not Ok(0); got {refused:?}"
+    );
+
+    let _ = port;
 }
