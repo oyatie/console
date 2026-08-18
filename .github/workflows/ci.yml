@@ -472,14 +472,25 @@ jobs:
     needs: preflight
     timeout-minutes: 45
     env:
-      # MUST match the cache writer (`backend`). rust-cache folds
-      # CARGO_INCREMENTAL into its environment hash, so a shard that
-      # leaves it unset computes a different key and can never restore
-      # the entry `backend` saves: measured 2026-08-18, shard domain-b
-      # asked for ...-b587c171- while main held ...-f3304cdf- (identical
-      # lockfile half), logged "No cache found." and recompiled 925
-      # crates in 195s. Incremental is dead weight in CI regardless.
-      CARGO_INCREMENTAL: "0"
+      # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
+      # variable present into its environment hash, and `backend` is the only
+      # job that set these two -- so the shards computed a different key and
+      # could never restore the entry `backend` saves. Measured 2026-08-18 on
+      # run 32108350947: shard domain-b asked for ...-b587c171- while main held
+      # ...-f3304cdf- (identical lockfile half), logged "No cache found." and
+      # recompiled 925 crates in 195s.
+      #
+      # CARGO_INCREMENTAL and CARGO_TERM_COLOR are NOT listed here on purpose:
+      # dtolnay/rust-toolchain already writes both into GITHUB_ENV for every job
+      # that uses it, so both sides already agreed on them. Setting them here
+      # changed nothing, which is exactly how the first attempt at this fix
+      # failed -- it aligned two variables that were never misaligned.
+      #
+      # These two are also not merely hash cosmetics: a target dir built WITH
+      # debug info cannot be reused by a build that wants it off, so matching
+      # the writer's profile is what makes the restored cache actually usable.
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
     steps:
       - name: Path-class skip proof
         if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
@@ -519,14 +530,25 @@ jobs:
     needs: preflight
     timeout-minutes: 45
     env:
-      # MUST match the cache writer (`backend`). rust-cache folds
-      # CARGO_INCREMENTAL into its environment hash, so a shard that
-      # leaves it unset computes a different key and can never restore
-      # the entry `backend` saves: measured 2026-08-18, shard domain-b
-      # asked for ...-b587c171- while main held ...-f3304cdf- (identical
-      # lockfile half), logged "No cache found." and recompiled 925
-      # crates in 195s. Incremental is dead weight in CI regardless.
-      CARGO_INCREMENTAL: "0"
+      # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
+      # variable present into its environment hash, and `backend` is the only
+      # job that set these two -- so the shards computed a different key and
+      # could never restore the entry `backend` saves. Measured 2026-08-18 on
+      # run 32108350947: shard domain-b asked for ...-b587c171- while main held
+      # ...-f3304cdf- (identical lockfile half), logged "No cache found." and
+      # recompiled 925 crates in 195s.
+      #
+      # CARGO_INCREMENTAL and CARGO_TERM_COLOR are NOT listed here on purpose:
+      # dtolnay/rust-toolchain already writes both into GITHUB_ENV for every job
+      # that uses it, so both sides already agreed on them. Setting them here
+      # changed nothing, which is exactly how the first attempt at this fix
+      # failed -- it aligned two variables that were never misaligned.
+      #
+      # These two are also not merely hash cosmetics: a target dir built WITH
+      # debug info cannot be reused by a build that wants it off, so matching
+      # the writer's profile is what makes the restored cache actually usable.
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
     steps:
       - name: Path-class skip proof
         if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
@@ -566,14 +588,25 @@ jobs:
     needs: preflight
     timeout-minutes: 45
     env:
-      # MUST match the cache writer (`backend`). rust-cache folds
-      # CARGO_INCREMENTAL into its environment hash, so a shard that
-      # leaves it unset computes a different key and can never restore
-      # the entry `backend` saves: measured 2026-08-18, shard domain-b
-      # asked for ...-b587c171- while main held ...-f3304cdf- (identical
-      # lockfile half), logged "No cache found." and recompiled 925
-      # crates in 195s. Incremental is dead weight in CI regardless.
-      CARGO_INCREMENTAL: "0"
+      # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
+      # variable present into its environment hash, and `backend` is the only
+      # job that set these two -- so the shards computed a different key and
+      # could never restore the entry `backend` saves. Measured 2026-08-18 on
+      # run 32108350947: shard domain-b asked for ...-b587c171- while main held
+      # ...-f3304cdf- (identical lockfile half), logged "No cache found." and
+      # recompiled 925 crates in 195s.
+      #
+      # CARGO_INCREMENTAL and CARGO_TERM_COLOR are NOT listed here on purpose:
+      # dtolnay/rust-toolchain already writes both into GITHUB_ENV for every job
+      # that uses it, so both sides already agreed on them. Setting them here
+      # changed nothing, which is exactly how the first attempt at this fix
+      # failed -- it aligned two variables that were never misaligned.
+      #
+      # These two are also not merely hash cosmetics: a target dir built WITH
+      # debug info cannot be reused by a build that wants it off, so matching
+      # the writer's profile is what makes the restored cache actually usable.
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
     steps:
       - name: Path-class skip proof
         if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
@@ -613,14 +646,25 @@ jobs:
     needs: preflight
     timeout-minutes: 45
     env:
-      # MUST match the cache writer (`backend`). rust-cache folds
-      # CARGO_INCREMENTAL into its environment hash, so a shard that
-      # leaves it unset computes a different key and can never restore
-      # the entry `backend` saves: measured 2026-08-18, shard domain-b
-      # asked for ...-b587c171- while main held ...-f3304cdf- (identical
-      # lockfile half), logged "No cache found." and recompiled 925
-      # crates in 195s. Incremental is dead weight in CI regardless.
-      CARGO_INCREMENTAL: "0"
+      # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
+      # variable present into its environment hash, and `backend` is the only
+      # job that set these two -- so the shards computed a different key and
+      # could never restore the entry `backend` saves. Measured 2026-08-18 on
+      # run 32108350947: shard domain-b asked for ...-b587c171- while main held
+      # ...-f3304cdf- (identical lockfile half), logged "No cache found." and
+      # recompiled 925 crates in 195s.
+      #
+      # CARGO_INCREMENTAL and CARGO_TERM_COLOR are NOT listed here on purpose:
+      # dtolnay/rust-toolchain already writes both into GITHUB_ENV for every job
+      # that uses it, so both sides already agreed on them. Setting them here
+      # changed nothing, which is exactly how the first attempt at this fix
+      # failed -- it aligned two variables that were never misaligned.
+      #
+      # These two are also not merely hash cosmetics: a target dir built WITH
+      # debug info cannot be reused by a build that wants it off, so matching
+      # the writer's profile is what makes the restored cache actually usable.
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
     steps:
       - name: Path-class skip proof
         if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
@@ -660,14 +704,25 @@ jobs:
     needs: preflight
     timeout-minutes: 45
     env:
-      # MUST match the cache writer (`backend`). rust-cache folds
-      # CARGO_INCREMENTAL into its environment hash, so a shard that
-      # leaves it unset computes a different key and can never restore
-      # the entry `backend` saves: measured 2026-08-18, shard domain-b
-      # asked for ...-b587c171- while main held ...-f3304cdf- (identical
-      # lockfile half), logged "No cache found." and recompiled 925
-      # crates in 195s. Incremental is dead weight in CI regardless.
-      CARGO_INCREMENTAL: "0"
+      # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
+      # variable present into its environment hash, and `backend` is the only
+      # job that set these two -- so the shards computed a different key and
+      # could never restore the entry `backend` saves. Measured 2026-08-18 on
+      # run 32108350947: shard domain-b asked for ...-b587c171- while main held
+      # ...-f3304cdf- (identical lockfile half), logged "No cache found." and
+      # recompiled 925 crates in 195s.
+      #
+      # CARGO_INCREMENTAL and CARGO_TERM_COLOR are NOT listed here on purpose:
+      # dtolnay/rust-toolchain already writes both into GITHUB_ENV for every job
+      # that uses it, so both sides already agreed on them. Setting them here
+      # changed nothing, which is exactly how the first attempt at this fix
+      # failed -- it aligned two variables that were never misaligned.
+      #
+      # These two are also not merely hash cosmetics: a target dir built WITH
+      # debug info cannot be reused by a build that wants it off, so matching
+      # the writer's profile is what makes the restored cache actually usable.
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
     steps:
       - name: Path-class skip proof
         if: ${{ needs.preflight.outputs.run_heavy != 'true' }}

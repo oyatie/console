@@ -1461,12 +1461,31 @@ describe("CI preflight contract", () => {
   });
 
   it("locks exact job-level environment and defaults metadata", () => {
+    // Scoped to the backend block: the postgres shards now carry the same two
+    // CARGO_PROFILE_* vars (so they can share backend's rust-cache entry), so a
+    // bare workflow.replace() would mutate the first shard instead.
     expectFailure(
-      workflow.replace(
+      replaceJob(workflow, "backend", (block) => block.replace(
         '      CARGO_PROFILE_TEST_DEBUG: "0"\n',
         '      CARGO_PROFILE_TEST_DEBUG: "0"\n      RUSTC_WRAPPER: scripts/noop.sh\n',
-      ),
+      )),
       "backend must preserve its exact job env/defaults execution metadata",
+    );
+    expectFailure(
+      replaceJob(workflow, "postgres-reachability-domain-b", (block) => block.replace(
+        '      CARGO_PROFILE_TEST_DEBUG: "0"\n',
+        '      CARGO_PROFILE_TEST_DEBUG: "0"\n      RUSTC_WRAPPER: scripts/noop.sh\n',
+      )),
+      "postgres-reachability-domain-b must preserve its exact job env/defaults execution metadata",
+    );
+    // The shard env exists to match the cache writer; dropping it silently
+    // restores the permanent cache miss this alignment was written to fix.
+    expectFailure(
+      replaceJob(workflow, "postgres-reachability-app", (block) => block.replace(
+        '      CARGO_PROFILE_DEV_DEBUG: "0"\n',
+        '',
+      )),
+      "postgres-reachability-app must preserve its exact job env/defaults execution metadata",
     );
     expectFailure(
       workflow.replace(
