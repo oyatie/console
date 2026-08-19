@@ -157,6 +157,43 @@ test("postgres-partition", async (t) => {
     assert.deepEqual(partitionFailures(entries, 5), []);
   });
 
+  await t.test("a package that keeps NO measurement fails closed", () => {
+    // The hole the entry-count share guard cannot close. Cost is seconds and the
+    // map's seconds are wildly non-uniform, so a share of ENTRIES cannot bound
+    // the error a lost measurement introduces: on the real map, dropping the
+    // single 318.8s writer-ownership-canonical-census-pg (sole member of its
+    // package, 0.48% of entries) imputed it at 14.3s from the global mean and
+    // reported "partition ok" while its shard really ran 904.1s against a
+    // planned 599.6s. Within a package the sibling mean is a real estimate;
+    // across packages it is a guess with no ceiling, so that is what is refused.
+    const entries = Array.from({ length: 40 }, (_, i) => e(`m${i}`, `pkg${i % 5}`, 10));
+    entries.push({ name: "lone", package: "solo-pkg", in_workflow_postgres_job: true });
+    const failures = partitionFailures(entries, 5);
+    assert.ok(
+      failures.some((f) => /no measured entry at all/.test(f)),
+      `expected an unmeasured-package failure, got ${JSON.stringify(failures)}`,
+    );
+    assert.ok(failures.some((f) => /solo-pkg/.test(f)), "the offending package must be named");
+  });
+
+  await t.test("a new test in a package that still has measured siblings passes", () => {
+    // The case imputation exists to allow must keep working: this is exactly
+    // #802's shape, one new suite joining a package full of measured ones.
+    const entries = Array.from({ length: 40 }, (_, i) => e(`m${i}`, `pkg${i % 5}`, 10));
+    entries.push({ name: "brand-new", package: "pkg0", in_workflow_postgres_job: true });
+    assert.deepEqual(partitionFailures(entries, 5), []);
+  });
+
+  await t.test("packageWeights names the packages that kept no measurement", () => {
+    const { unmeasuredPackages } = packageWeights([
+      e("a", "measured-pkg", 10),
+      { name: "n", package: "measured-pkg", in_workflow_postgres_job: true },
+      { name: "x", package: "blind-pkg", in_workflow_postgres_job: true },
+    ]);
+    assert.deepEqual(unmeasuredPackages, ["blind-pkg"],
+      "a package with a measured sibling is bounded; one without is not");
+  });
+
   await t.test("a drifted map still fails closed", () => {
     // The case the guard was actually for: entries that silently lost weights
     // they once had. Distinguished from "new test" by share, not by kind.

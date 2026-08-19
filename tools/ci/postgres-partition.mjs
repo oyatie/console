@@ -88,9 +88,27 @@ export function packageWeights(entries) {
     }
     weights.set(pkg, (weights.get(pkg) ?? 0) + entry.measured_seconds);
   }
+  // Packages where EVERY entry is unmeasured. Imputing these from the global
+  // mean is unbounded: the estimate borrows from unrelated packages, and the
+  // error is invisible because the imputed value -- not the true one -- is what
+  // the share guard weighs. Measured: dropping the single 318.8s
+  // `writer-ownership-canonical-census-pg` (sole member of its package) imputes
+  // it at 14.3s, 1/209 = 0.48% of entries, and reports `partition ok` while its
+  // shard really runs 904.1s against a planned 599.6s.
+  const packagesWithMeasurement = new Set(measured.map((entry) => String(entry.package)));
+  const unmeasuredPackages = [
+    ...new Set(
+      workflow
+        .filter((entry) => !isMeasured(entry))
+        .map((entry) => String(entry.package))
+        .filter((pkg) => !packagesWithMeasurement.has(pkg)),
+    ),
+  ].sort();
+
   return {
     weights,
     unmeasured: [...unmeasured].sort(),
+    unmeasuredPackages,
     imputedSeconds,
     measuredCount: measured.length,
   };
@@ -154,13 +172,14 @@ export function packPackages(weights, shardCount) {
  *   assignment maps package -> shard index.
  */
 export function partitionByDuration(entries, shardCount) {
-  const { weights, unmeasured, imputedSeconds, measuredCount } = packageWeights(entries);
+  const { weights, unmeasured, unmeasuredPackages, imputedSeconds, measuredCount } =
+    packageWeights(entries);
   const bins = packPackages(weights, shardCount);
   const assignment = new Map();
   for (const bin of bins) {
     for (const pkg of bin.packages) assignment.set(pkg, bin.index);
   }
-  return { assignment, bins, unmeasured, imputedSeconds, measuredCount };
+  return { assignment, bins, unmeasured, unmeasuredPackages, imputedSeconds, measuredCount };
 }
 
 /**
@@ -233,6 +252,21 @@ export function partitionFailures(entries, shardCount) {
     if (unmeasured.length && result.measuredCount === 0) {
       failures.push(
         "no workflow entry has a measured_seconds, so there is no basis to impute from",
+      );
+    }
+    // The share guard is denominated in ENTRIES while the cost is SECONDS, and
+    // the map's seconds are wildly non-uniform -- one entry is worth 318.8s
+    // against a 15.8s mean. A share of entries therefore cannot bound the error
+    // a lost measurement introduces. What CAN bound it is refusing to impute
+    // across a package that retains no measurement of its own: within a package
+    // the sibling mean is a real estimate, and outside one it is a guess with no
+    // ceiling.
+    if (result.unmeasuredPackages?.length) {
+      failures.push(
+        `${result.unmeasuredPackages.length} package(s) have no measured entry at all, so their `
+        + "weight would be guessed from unrelated packages with no bound on the error; "
+        + "regenerate weights before trusting the balance:\n  "
+        + result.unmeasuredPackages.slice(0, 10).join("\n  "),
       );
     }
   }
