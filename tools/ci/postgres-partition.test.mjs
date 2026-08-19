@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 import {
+  MAX_UNMEASURED_SHARE,
   SHARD_ORDER,
   balanceSummary,
   entriesForShard,
@@ -34,7 +35,7 @@ test("postgres-partition", async (t) => {
     assert.equal(weights.has("q"), false);
   });
 
-  await t.test("reports unmeasured entries instead of treating them as free", () => {
+  await t.test("reports unmeasured entries and never treats them as free", () => {
     const { weights, unmeasured } = packageWeights([
       e("good", "p", 10),
       { name: "nope", package: "q", in_workflow_postgres_job: true },
@@ -42,8 +43,46 @@ test("postgres-partition", async (t) => {
       { name: "neg", package: "s", measured_seconds: -1, in_workflow_postgres_job: true },
     ]);
     assert.deepEqual(unmeasured, ["nan", "neg", "nope"]);
-    // still placed, at zero weight, so the partition stays complete
-    for (const pkg of ["q", "r", "s"]) assert.equal(weights.get(pkg), 0);
+    // Placed at the imputed global mean, never 0: a free entry lands in the
+    // lightest bin, which is exactly where a heavy newcomer hurts most.
+    for (const pkg of ["q", "r", "s"]) assert.equal(weights.get(pkg), 10);
+  });
+
+  await t.test("a new test is imputed from its own package, not the global mean", () => {
+    // A new suite usually resembles the suite it joins, so its siblings are a
+    // better estimate than the repo-wide average.
+    const { weights, unmeasured, imputedSeconds } = packageWeights([
+      e("sib-a", "heavy", 100),
+      e("sib-b", "heavy", 200),
+      e("elsewhere", "light", 1),
+      { name: "brand-new", package: "heavy", in_workflow_postgres_job: true },
+    ]);
+    assert.deepEqual(unmeasured, ["brand-new"]);
+    assert.equal(imputedSeconds, 150, "mean of heavy's measured siblings, not of everything");
+    assert.equal(weights.get("heavy"), 450);
+  });
+
+  await t.test("a new package with no measured sibling falls back to the global mean", () => {
+    const { weights, imputedSeconds } = packageWeights([
+      e("a", "p", 10),
+      e("b", "q", 30),
+      { name: "orphan", package: "brand-new-pkg", in_workflow_postgres_job: true },
+    ]);
+    assert.equal(imputedSeconds, 20);
+    assert.equal(weights.get("brand-new-pkg"), 20);
+  });
+
+  await t.test("an unmeasured entry never skews the mean used to weigh it", () => {
+    // Imputation bases are computed over measured entries only. If an imputed
+    // value fed back into the mean, adding N new tests would drag the estimate
+    // toward whatever the first one happened to get.
+    const one = packageWeights([e("a", "p", 10), e("b", "p", 30),
+      { name: "n1", package: "p", in_workflow_postgres_job: true }]);
+    const two = packageWeights([e("a", "p", 10), e("b", "p", 30),
+      { name: "n1", package: "p", in_workflow_postgres_job: true },
+      { name: "n2", package: "p", in_workflow_postgres_job: true }]);
+    assert.equal(one.imputedSeconds, 20, "one newcomer at the sibling mean");
+    assert.equal(two.imputedSeconds, 40, "two newcomers, each still at the same mean");
   });
 
   await t.test("LPT beats the naive split it replaces", () => {
@@ -97,12 +136,47 @@ test("postgres-partition", async (t) => {
     );
   });
 
-  await t.test("fails closed when weights are missing", () => {
+  await t.test("a whole map with no measurement at all fails closed", () => {
     const failures = partitionFailures(
       [{ name: "x", package: "p", in_workflow_postgres_job: true }],
       1,
     );
-    assert.ok(failures.some((f) => /no measured_seconds/.test(f)));
+    assert.ok(
+      failures.some((f) => /no basis to impute from/.test(f)),
+      `expected an imputation-basis failure, got ${JSON.stringify(failures)}`,
+    );
+  });
+
+  await t.test("ONE new test does not fail the partition", () => {
+    // The regression this guards. Weights are harvested from a finished CI log,
+    // so a test that has never run cannot have a measurement -- and it cannot
+    // run until its PR is green. Failing closed here made every new PostgreSQL
+    // test unmergeable.
+    const entries = Array.from({ length: 20 }, (_, i) => e(`m${i}`, `pkg${i % 5}`, 10 + i));
+    entries.push({ name: "brand-new", package: "pkg0", in_workflow_postgres_job: true });
+    assert.deepEqual(partitionFailures(entries, 5), []);
+  });
+
+  await t.test("a drifted map still fails closed", () => {
+    // The case the guard was actually for: entries that silently lost weights
+    // they once had. Distinguished from "new test" by share, not by kind.
+    const entries = Array.from({ length: 10 }, (_, i) => e(`m${i}`, `pkg${i % 5}`, 10));
+    for (let i = 0; i < 5; i += 1) {
+      entries.push({ name: `lost${i}`, package: `pkg${i}`, in_workflow_postgres_job: true });
+    }
+    const failures = partitionFailures(entries, 5);
+    assert.ok(
+      failures.some((f) => /has drifted/.test(f)),
+      `expected a drift failure, got ${JSON.stringify(failures)}`,
+    );
+  });
+
+  await t.test("the drift threshold is the documented share", () => {
+    assert.equal(MAX_UNMEASURED_SHARE, 0.1);
+    const atLimit = Array.from({ length: 10 }, (_, i) =>
+      i === 0 ? { name: "u", package: "p0", in_workflow_postgres_job: true } : e(`m${i}`, `p${i % 3}`, 10));
+    // exactly 10% is allowed; the guard fires above the limit, not at it
+    assert.deepEqual(partitionFailures(atLimit, 3), []);
   });
 
   await t.test("fails closed on an entry with no package", () => {

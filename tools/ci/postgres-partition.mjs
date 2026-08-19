@@ -25,33 +25,86 @@
  */
 
 /**
- * Sum measured seconds per package.
+ * Sum measured seconds per package, imputing a weight for entries that have
+ * none.
  *
- * Entries with no measurement contribute 0 and are reported separately: a new
- * target defaulting to zero lands in the lightest bin, which is harmless, but
- * silently treating an unmeasured package as free is how the entry-count scheme
- * drifted in the first place.
+ * Weights are harvested from `cargo-postgres-timing:` lines in a finished CI
+ * log, so a test that has never run in CI cannot have a measurement -- and a
+ * test cannot run in CI until its PR is green. Failing closed on any unmeasured
+ * entry therefore made every NEW PostgreSQL test unmergeable, which is not what
+ * that guard was for: it exists to catch a map that has DRIFTED, where entries
+ * silently lost the weights they once had.
+ *
+ * The two cases are distinguishable by scale, so they are treated differently.
+ * A handful of unmeasured entries is a new test and gets an imputed weight; a
+ * map where a large share has no measurement has drifted and still fails
+ * closed (see `partitionFailures`).
+ *
+ * Imputation is the mean of the entry's OWN package where that package has any
+ * measured sibling -- a new test usually resembles the suite it joins -- and
+ * the global mean otherwise. Never 0: treating an unmeasured entry as free is
+ * how the entry-count scheme drifted in the first place, and a free entry lands
+ * in the lightest bin, which is exactly where a heavy newcomer hurts most.
  *
  * @param {Array<{package?:string, measured_seconds?:number, in_workflow_postgres_job?:boolean}>} entries
- * @returns {{weights: Map<string, number>, unmeasured: string[]}}
+ * @returns {{weights: Map<string, number>, unmeasured: string[], imputedSeconds: number, measuredCount: number}}
  */
 export function packageWeights(entries) {
+  const workflow = (entries ?? []).filter(
+    (entry) => entry?.in_workflow_postgres_job && String(entry.package ?? ""),
+  );
+  const isMeasured = (entry) => {
+    const seconds = entry.measured_seconds;
+    return typeof seconds === "number" && Number.isFinite(seconds) && seconds >= 0;
+  };
+
+  // Imputation bases, computed before anything is placed so that an unmeasured
+  // entry never influences the mean used to weigh it.
+  const measured = workflow.filter(isMeasured);
+  const globalMean = measured.length
+    ? measured.reduce((sum, entry) => sum + entry.measured_seconds, 0) / measured.length
+    : 0;
+  const perPackage = new Map();
+  for (const entry of measured) {
+    const pkg = String(entry.package);
+    const acc = perPackage.get(pkg) ?? { total: 0, count: 0 };
+    acc.total += entry.measured_seconds;
+    acc.count += 1;
+    perPackage.set(pkg, acc);
+  }
+
   const weights = new Map();
   const unmeasured = new Set();
-  for (const entry of entries ?? []) {
-    if (!entry?.in_workflow_postgres_job) continue;
-    const pkg = String(entry.package ?? "");
-    if (!pkg) continue;
-    const seconds = entry.measured_seconds;
-    if (typeof seconds !== "number" || !Number.isFinite(seconds) || seconds < 0) {
+  let imputedSeconds = 0;
+  for (const entry of workflow) {
+    const pkg = String(entry.package);
+    if (!isMeasured(entry)) {
       unmeasured.add(String(entry.name ?? pkg));
-      weights.set(pkg, weights.get(pkg) ?? 0);
+      const sibling = perPackage.get(pkg);
+      const imputed = sibling && sibling.count > 0 ? sibling.total / sibling.count : globalMean;
+      imputedSeconds += imputed;
+      weights.set(pkg, (weights.get(pkg) ?? 0) + imputed);
       continue;
     }
-    weights.set(pkg, (weights.get(pkg) ?? 0) + seconds);
+    weights.set(pkg, (weights.get(pkg) ?? 0) + entry.measured_seconds);
   }
-  return { weights, unmeasured: [...unmeasured].sort() };
+  return {
+    weights,
+    unmeasured: [...unmeasured].sort(),
+    imputedSeconds,
+    measuredCount: measured.length,
+  };
 }
+
+/**
+ * Share of workflow entries allowed to carry an imputed weight before the map
+ * is treated as drifted rather than merely new.
+ *
+ * At the observed 209 workflow entries this permits 20 unmeasured entries --
+ * far more than any one PR adds, far fewer than a regeneration that silently
+ * dropped its timings.
+ */
+export const MAX_UNMEASURED_SHARE = 0.1;
 
 /**
  * Longest-processing-time bin packing: heaviest first, into the lightest bin.
@@ -96,17 +149,18 @@ export function packPackages(weights, shardCount) {
  *
  * @param {Array<object>} entries
  * @param {number} shardCount
- * @returns {{assignment: Map<string, number>, bins: Array<object>, unmeasured: string[]}}
+ * @returns {{assignment: Map<string, number>, bins: Array<object>, unmeasured: string[],
+ *   imputedSeconds: number, measuredCount: number}}
  *   assignment maps package -> shard index.
  */
 export function partitionByDuration(entries, shardCount) {
-  const { weights, unmeasured } = packageWeights(entries);
+  const { weights, unmeasured, imputedSeconds, measuredCount } = packageWeights(entries);
   const bins = packPackages(weights, shardCount);
   const assignment = new Map();
   for (const bin of bins) {
     for (const pkg of bin.packages) assignment.set(pkg, bin.index);
   }
-  return { assignment, bins, unmeasured };
+  return { assignment, bins, unmeasured, imputedSeconds, measuredCount };
 }
 
 /**
@@ -162,11 +216,25 @@ export function partitionFailures(entries, shardCount) {
     }
   }
 
-  if (unmeasured.length) {
-    failures.push(
-      `${unmeasured.length} workflow entr(ies) have no measured_seconds; `
-      + `regenerate weights before trusting the balance:\n  ${unmeasured.slice(0, 10).join("\n  ")}`,
-    );
+  // A few unmeasured entries are new tests, which cannot have a measurement yet
+  // and are imputed above. A large share means the map lost weights it once had
+  // -- the drift this guard exists to catch -- and imputing across it would
+  // silently produce a balance nobody measured.
+  if (workflow.length > 0) {
+    const share = unmeasured.length / workflow.length;
+    if (share > MAX_UNMEASURED_SHARE) {
+      failures.push(
+        `${unmeasured.length} of ${workflow.length} workflow entries have no measured_seconds `
+        + `(${(share * 100).toFixed(1)}%, limit ${(MAX_UNMEASURED_SHARE * 100).toFixed(0)}%); `
+        + `the map has drifted -- regenerate weights before trusting the balance:\n  `
+        + unmeasured.slice(0, 10).join("\n  "),
+      );
+    }
+    if (unmeasured.length && result.measuredCount === 0) {
+      failures.push(
+        "no workflow entry has a measured_seconds, so there is no basis to impute from",
+      );
+    }
   }
   return failures;
 }
@@ -287,10 +355,19 @@ if (isMain) {
     console.error(failures.join("\n"));
     process.exit(1);
   }
-  const { bins } = partitionByDuration(
+  const { bins, unmeasured, imputedSeconds } = partitionByDuration(
     (doc.entries ?? []).filter((e) => e.in_workflow_postgres_job),
     shardCount,
   );
+  if (unmeasured.length) {
+    // Named, not silent: these carry an estimate, and the next timings harvest
+    // should replace it with a measurement.
+    console.log(
+      `imputed ${imputedSeconds.toFixed(1)}s across ${unmeasured.length} unmeasured `
+      + `entr${unmeasured.length === 1 ? "y" : "ies"} (replace at the next timings harvest):`,
+    );
+    for (const name of unmeasured) console.log(`  ${name}`);
+  }
   for (const bin of bins) {
     console.log(`shard-${bin.index}\t${bin.seconds.toFixed(1)}s\t${bin.packages.length} packages`);
   }
