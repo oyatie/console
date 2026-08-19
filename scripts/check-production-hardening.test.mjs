@@ -514,7 +514,7 @@ const validPr473Files = {
     },
   }),
   ".github/workflows/ci.yml": `jobs:
-  backend:
+  migration-expand-contract:
     steps:
       - name: Reconcile portable PostgreSQL role topology
         run: |
@@ -564,7 +564,7 @@ const validPr473Files = {
             echo "CONSOLE_APALIS_RUNTIME_DATABASE_URL=postgres://console_rt:\${RT_PASSWORD}@localhost:5432/console_apalis_contract"
             echo "CONSOLE_APALIS_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/console_apalis_contract"
           } >> "$GITHUB_ENV"
-      - name: PR 473 migration operational gate
+      - name: Expand/contract migration rehearsal (0165, 0166)
         working-directory: .
         run: npm run check:pr473-migration-operational
 `,
@@ -683,14 +683,14 @@ describe("production hardening PR 473 typed operational gate", () => {
   it("rejects a wrapper step before topology and an inexact package alias", () => {
     const beforeTopology = evaluatePr473({
       ".github/workflows/ci.yml": `steps:
-  - name: PR 473 migration operational gate
+  - name: Expand/contract migration rehearsal (0165, 0166)
     working-directory: .
     run: npm run check:pr473-migration-operational
   - name: Reconcile portable PostgreSQL role topology
     run: ./ops/postgres-reconcile-topology.sh
 `,
     });
-    assertHasFailure(beforeTopology, "backend job must contain");
+    assertHasFailure(beforeTopology, "migration-expand-contract job must contain");
 
     const alias = evaluatePr473({
       "package.json": JSON.stringify({
@@ -703,19 +703,19 @@ describe("production hardening PR 473 typed operational gate", () => {
     assertHasFailure(alias, "package alias must be exactly");
   });
 
-  it("binds the exact topology command and wrapper ordering to the backend job", () => {
+  it("binds the exact topology command and wrapper ordering to the rehearsal job", () => {
     const crossJob = evaluatePr473({
       ".github/workflows/ci.yml": validPr473Files[".github/workflows/ci.yml"]
         .replace(
-          "  backend:\n    steps:\n      - name: Reconcile portable PostgreSQL role topology",
+          "  migration-expand-contract:\n    steps:\n      - name: Reconcile portable PostgreSQL role topology",
           "  topology-only:\n    steps:\n      - name: Reconcile portable PostgreSQL role topology",
         )
         .replace(
-          "      - name: PR 473 migration operational gate",
-          "  backend:\n    steps:\n      - name: PR 473 migration operational gate",
+          "      - name: Expand/contract migration rehearsal (0165, 0166)",
+          "  migration-expand-contract:\n    steps:\n      - name: Expand/contract migration rehearsal (0165, 0166)",
         ),
     });
-    assertHasFailure(crossJob, "backend job must contain");
+    assertHasFailure(crossJob, "migration-expand-contract job must contain");
 
     const fakeTopology = evaluatePr473({
       ".github/workflows/ci.yml": validPr473Files[

@@ -495,7 +495,7 @@ describe("CI preflight contract", () => {
     assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
   });
 
-  it("locks Required / CI to the exact nine existing CI proofs", () => {
+  it("locks Required / CI to the exact ten existing CI proofs", () => {
     const requiredDependencies = [
       "preflight",
       "domain-unit",
@@ -503,15 +503,18 @@ describe("CI preflight contract", () => {
       "company-conformance",
       "generated-face-authority",
       "backend",
+      "migration-expand-contract",
       "repo-gates",
       "api-contract",
       "kubernetes-manifests",
     ];
     const model = yaml.load(workflow);
-    // 10 protected proofs + 5 PostgreSQL facets (S2 splits domain).
+    // 11 protected proofs + 5 PostgreSQL facets (S2 splits domain).
     // dev-up-smoke moved to Nightly: it proves developer bring-up, not product
     // correctness, so it no longer blocks a merge.
-    assert.equal(Object.keys(model.jobs).length, 15);
+    // migration-expand-contract split out of `backend` 2026-08-18: one 445s step
+    // of a 1176s job, and `backend` was the critical path.
+    assert.equal(Object.keys(model.jobs).length, 16);
     assert.equal(model.jobs["required-ci"].name, "Required / CI");
     assert.deepEqual(model.jobs["required-ci"].needs, requiredDependencies);
     assert.equal(model.jobs["required-ci"]["timeout-minutes"], 5);
@@ -629,7 +632,9 @@ describe("CI preflight contract", () => {
     const requiredRunStepCounts = {
       preflight: 32,
       "domain-unit": 2,
-      backend: 26,
+      // -1: the expand/contract rehearsal moved to its own job.
+      backend: 25,
+      "migration-expand-contract": 5,
       "kubernetes-manifests": 8,
       "repo-gates": 26,
       "api-contract": 5,
@@ -686,9 +691,11 @@ describe("CI preflight contract", () => {
     // 2026-08-18: dev-up-smoke (7 run steps, 4 setup actions) moved to Nightly,
     // so these ratchets step down by exactly its step counts and no more. A
     // shrink that does NOT match a job leaving ci.yml is still a regression.
-    assert.equal(runStepCount, 121, "required and planned job run-step coverage must not shrink");
+    // 2026-08-18: +5 run steps / +3 setup actions from migration-expand-contract,
+    // split out of `backend`. Coverage GREW; the ratchet moves up, never down.
+    assert.equal(runStepCount, 125, "required and planned job run-step coverage must not shrink");
     // Three mutations per run step: 128*3 = 384.
-    assert.equal(mutationCount, 363, "exhaustive bypass matrix must not shrink");
+    assert.equal(mutationCount, 375, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -700,6 +707,7 @@ describe("CI preflight contract", () => {
       preflight: 3,
       "domain-unit": 3,
       backend: 3,
+      "migration-expand-contract": 3,
       "kubernetes-manifests": 1,
       "repo-gates": 2,
       "api-contract": 2,
@@ -742,9 +750,9 @@ describe("CI preflight contract", () => {
     // shrink that does NOT match a job leaving ci.yml is still a regression.
     // 2026-08-18: -7, exactly the Free runner disk steps removed from ci.yml
     // (5 postgres shards + backend + company-conformance) and no more.
-    assert.equal(actionStepCount, 35, "required and planned job setup-action coverage must not shrink");
+    assert.equal(actionStepCount, 38, "required and planned job setup-action coverage must not shrink");
     // 2026-08-18: -14 = 7 removed setup actions x 2 bypass mutations each.
-    assert.equal(mutationCount, 70, "setup-action bypass matrix must not shrink");
+    assert.equal(mutationCount, 76, "setup-action bypass matrix must not shrink");
   });
 
   it("locks every setup action's identity, inputs, totality, and interleaving", () => {

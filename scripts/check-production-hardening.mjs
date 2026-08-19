@@ -1208,14 +1208,19 @@ export function evaluateExpandContractReleaseChecks(readText) {
 
   const ciText = readText(".github/workflows/ci.yml");
   const activeCi = stripHashComments(ciText);
-  const backendJob = extractYamlMappingBlock(activeCi, "backend", 2);
+  // The rehearsal moved out of `backend` into its own job 2026-08-18 (it was 445s
+  // of a 1176s job, and `backend` was the critical path). The invariant this gate
+  // enforces is unchanged -- the wrapper still runs exactly once, still after the
+  // topology reconcile, still from the repository root -- so it now reads the job
+  // that owns the step rather than the job that used to.
+  const backendJob = extractYamlMappingBlock(activeCi, "migration-expand-contract", 2);
   const topologyStep = extractNamedWorkflowStep(
     backendJob,
     "Reconcile portable PostgreSQL role topology",
   );
   const wrapperStep = extractNamedWorkflowStep(
     backendJob,
-    "PR 473 migration operational gate",
+    "Expand/contract migration rehearsal (0165, 0166)",
   );
   const topologyIndex = backendJob.indexOf(topologyStep);
   const wrapperIndex = backendJob.indexOf(wrapperStep);
@@ -1237,7 +1242,7 @@ export function evaluateExpandContractReleaseChecks(readText) {
       topologyIndex >= 0 &&
       wrapperIndex > topologyIndex,
     "PR 473 CI wrapper runs after PostgreSQL role topology",
-    "PR 473 backend job must contain the topology and wrapper steps in that order",
+    "migration-expand-contract job must contain the topology and wrapper steps in that order",
   );
   requirement(
     result,

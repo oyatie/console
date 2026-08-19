@@ -919,13 +919,22 @@ const requiredJobRunContracts = Object.freeze({
     proofDigest("Buck2 CI-gate mutation suites — every gate proven to still reject", "f6614509bd73220754a83d449b8bf422e616309ba48965f730f0d3dcff9d2cf4", { if: backendIndependentCondition, workingDirectory: "." }),
     proofRun("PR 473 migration operational contract tests", "python3 scripts/check-pr473-migration-operational.test.py -v", { if: backendIndependentCondition, workingDirectory: "." }),
     setupDigest("Reconcile portable PostgreSQL role topology", "5da0f2d8c399657dbc0a9d358c81d71399af1ea6c659074a365653db21fcaded", { if: backendIndependentCondition }),
-    proofRun("PR 473 migration operational gate", "npm run check:pr473-migration-operational", { if: backendTopologyDependentCondition, workingDirectory: "." }),
     proofDigest("Boot smoke — migrate + serve + /readyz", "d51d75f8cd49be1557c5b5c1f5f641345bc82f842d2384e9608e9872b0714d79", { if: backendTopologyDependentCondition }),
     proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { if: backendTopologyDependentCondition, workingDirectory: "." }),
     proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit", { if: backendIndependentCondition, workingDirectory: "." }),
     proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { if: backendIndependentCondition, workingDirectory: "." }),
     proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: backendIndependentCondition, workingDirectory: "." }),
     proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { if: backendTopologyDependentCondition, workingDirectory: "." }),
+    proofRun("Collect failures", "node scripts/ci-collect-failures.mjs", { if: collectFailuresCondition, workingDirectory: "." }),
+  ],
+  // Split out of `backend` 2026-08-18: this single gate was 445s of a 1176s job.
+  // Contracts are duplicated from `backend` rather than shared because the mirror
+  // pins per job; keeping them explicit is what makes a weakened step here fail.
+  "migration-expand-contract": [
+    proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
+    setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh", { if: backendIndependentCondition }),
+    setupDigest("Reconcile portable PostgreSQL role topology", "5da0f2d8c399657dbc0a9d358c81d71399af1ea6c659074a365653db21fcaded", { if: backendIndependentCondition }),
+    proofRun("Expand/contract migration rehearsal (0165, 0166)", "npm run check:pr473-migration-operational", { if: backendTopologyDependentCondition, workingDirectory: "." }),
     proofRun("Collect failures", "node scripts/ci-collect-failures.mjs", { if: collectFailuresCondition, workingDirectory: "." }),
   ],
   "kubernetes-manifests": [
@@ -1053,6 +1062,11 @@ const requiredJobActionContracts = Object.freeze({
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1","components":"rustfmt, clippy"}, { if: backendIndependentCondition, id: "rust" }),
     actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/main' }}"}, { if: backendIndependentCondition, id: "rust-cache" }),
   ],
+  "migration-expand-contract": [
+    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { id: "checkout" }),
+    actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1","components":"rustfmt, clippy"}, { if: backendIndependentCondition, id: "rust" }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/main' }}"}, { if: backendIndependentCondition, id: "rust-cache" }),
+  ],
   "kubernetes-manifests": [
     actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"fetch-depth":0}, { if: runHeavyCondition }),
   ],
@@ -1110,6 +1124,7 @@ const requiredJobMetadataSha256 = Object.freeze({
   "preflight": "1f3b5c6437ba04ccda98e2cbdf78506a69c6f82be7ce2abf7c661660c88fe87f",
   "domain-unit": "4948a02022fffb8b39aa14b4cb9ee3f776fe20c04844942dedd31f90ebe90bef",
   "backend": "f4f6b9faa5c4382a00d5639bebfb9ab8db664ecf38b79752d80afa567161393f",
+  "migration-expand-contract": "c6f45dea77b33bcfd29183837e5dfa6dccc44a83c6ebb2bb530d0db186b09c08",
   "kubernetes-manifests": "1b215a62dac6d9a3decea6d6912792de3d033986833356b403fb157a15cb8b96",
   "repo-gates": "da8a07f3a19a6f46a5901e6a6d8eac2f7f1c11f52818b7dea25caf362335ee92",
   "api-contract": "101b70d29b1776058160ea23296e707a4f682f5987a9873371cb57180a737d41",
@@ -1132,6 +1147,7 @@ const exactCiJobIds = Object.freeze([
   "domain-unit",
   "generated-face-authority",
   "kubernetes-manifests",
+  "migration-expand-contract",
   "postgres-domain-reachability",
   "postgres-reachability-app",
   "postgres-reachability-domain-a",
@@ -1152,6 +1168,7 @@ const requiredCiAggregator = Object.freeze({
     "company-conformance",
     "generated-face-authority",
     "backend",
+    "migration-expand-contract",
     "repo-gates",
     "api-contract",
     "kubernetes-manifests",
@@ -1168,6 +1185,7 @@ const requiredCiAggregator = Object.freeze({
       '  test "${{ needs.company-conformance.result }}" = success &&',
       '  test "${{ needs.generated-face-authority.result }}" = success &&',
       '  test "${{ needs.backend.result }}" = success &&',
+      '  test "${{ needs.migration-expand-contract.result }}" = success &&',
       '  test "${{ needs.repo-gates.result }}" = success &&',
       '  test "${{ needs.api-contract.result }}" = success &&',
       '  test "${{ needs.kubernetes-manifests.result }}" = success\n',
@@ -1226,6 +1244,20 @@ const protectedJobExecutionMetadata = {
       name: "Collect failures",
       env: { CI_STEPS: "${{ toJSON(steps) }}" },
     }],
+  },
+  "migration-expand-contract": {
+    defaults: { run: { "working-directory": "backend" } },
+    stepEnv: [{
+      name: "Collect failures",
+      env: { CI_STEPS: "${{ toJSON(steps) }}" },
+    }],
+    env: {
+      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/console_ci",
+      SQLX_OFFLINE: "true",
+      CARGO_INCREMENTAL: "0",
+      CARGO_PROFILE_DEV_DEBUG: "0",
+      CARGO_PROFILE_TEST_DEBUG: "0",
+    },
   },
   "repo-gates": {},
   "api-contract": {},
@@ -1883,7 +1915,7 @@ function requireExactRequiredJobContracts(workflowModel, failures) {
     failures.push("CI workflow must preserve its exact job-id set");
   }
   if (!isDeepStrictEqual(workflowModel.jobs?.["required-ci"], requiredCiAggregator)) {
-    failures.push("Required / CI must preserve its exact nine-job success aggregation contract");
+    failures.push("Required / CI must preserve its exact ten-job success aggregation contract");
   }
 
   for (const [jobName, contracts] of Object.entries(requiredJobRunContracts)) {
@@ -2321,7 +2353,6 @@ export function evaluateCiPreflight(
         ...sourceGateContracts.map(([name, run]) => ({ name, run, if: backendIndependentCondition })),
         { name: "PR 473 migration operational contract tests", run: pr473ContractTestCommand, if: backendIndependentCondition },
         { name: "Reconcile portable PostgreSQL role topology", run: undefined, if: backendIndependentCondition },
-        { name: "PR 473 migration operational gate", run: "npm run check:pr473-migration-operational", if: backendTopologyDependentCondition },
         { name: "Boot smoke — migrate + serve + /readyz", run: undefined, if: backendTopologyDependentCondition },
       ],
       "backend",

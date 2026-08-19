@@ -1204,30 +1204,6 @@ jobs:
             echo "CONSOLE_APALIS_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/console_apalis_contract"
           } >> "$GITHUB_ENV"
 
-      - name: PR 473 migration operational gate
-        id: pr473-gate
-        if: ${{ !cancelled() && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}
-        working-directory: .
-        # SQLX_OFFLINE=true so the query! macros compile against the committed
-        # .sqlx cache (the documented contract — see crates/platform/db/src/lib.rs)
-        # rather than the unmigrated CI service DB. The #[sqlx::test] runtime
-        # tests still use DATABASE_URL to create their own per-test databases.
-        # Without this, a Cargo.lock change busts the build cache and the macros
-        # re-check online against a schema-less DB ("audit_events does not exist").
-        # The wrapper isolates the 11 migration regressions for exact one-test
-        # runtime-result validation. It does NOT preserve a full workspace run --
-        # migration 0196 restricts migration application to the console_buck_admin
-        # harness identity, so the service DB cannot host one (H-8 in
-        # docs/program/false-green-gate-holes.md). Every test binary remains
-        # serial because topology upgrade tests mutate cluster-global roles.
-        run: npm run check:pr473-migration-operational
-
-      # Boot smoke: the real console-app binary, migrate then serve mode, against
-      # this job's fresh service DB — catches route-panic-at-boot regressions
-      # (e.g. a bad router/state wiring) that unit/integration tests never
-      # exercise because they never call `serve()`. Mirrors the minimal env
-      # image-release.yml's release-probe job uses to boot the shipped image;
-      # a throwaway keypair is fine, this only proves the app comes up.
       - name: Boot smoke — migrate + serve + /readyz
         id: boot-smoke
         if: ${{ !cancelled() && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}
@@ -1367,6 +1343,211 @@ jobs:
           CI_STEPS: ${{ toJSON(steps) }}
         working-directory: .
         run: node scripts/ci-collect-failures.mjs
+
+  migration-expand-contract:
+  # Split out of `backend` 2026-08-18. Measured on merge-group run 32206464663,
+  # this one step was 445s of a 1176s job -- the largest step anywhere in CI and,
+  # with `backend` on the critical path, the binding constraint on wall clock.
+  # Isolating it takes `backend` to ~731s, below the PostgreSQL shards, which
+  # become the critical path instead. Splitting `backend` further is wasted until
+  # the shards get faster, so this is deliberately one new job and not three.
+  #
+  # It carries the same services/env/setup as `backend` and re-runs the topology
+  # reconcile (7s) because the gate asserts on `steps.topology.outcome`.
+    name: Migration expand/contract rehearsal — 0165 ontology key-revision, 0166 leave
+    runs-on: ubuntu-latest
+    needs: preflight
+    # Serial integration execution avoids cluster-global role mutation races.
+    #
+    # NOTE: the "full workspace" this number was originally sized for no longer
+    # runs here. Migration 0196 admits only `console_buck_admin` (with
+    # `console.sqlx_test_bootstrap` armed) for applying migrations, so the workspace
+    # run was dropped rather than re-identified. The topology step below now
+    # provisions that role, so restoring the sweep is a matter of pointing it at
+    # $CONSOLE_BUCK_ADMIN_DATABASE_URL -- see H-8 in
+    # docs/program/false-green-gate-holes.md. Deliberately not done here: it
+    # will surface a genuine backlog and belongs in its own change.
+    #
+    # 90 rather than 45 because the harness performs 13 per-invocation Docker
+    # bring-ups (2 Apalis + 11 guarded regressions), each with container start
+    # and topology reconcile, and this branch carries considerably more code
+    # than main.
+    timeout-minutes: 90
+    services:
+      postgres:
+        image: postgres:18.4
+        env:
+          POSTGRES_DB: console_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U postgres -d console_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/console_ci
+      # Job-level so every step (including the gate binaries, which didn't
+      # previously set it themselves) compiles query! macros against the
+      # committed .sqlx cache instead of an unmigrated DB. Cheap insurance;
+      # steps below still set it explicitly too, which is a harmless no-op.
+      SQLX_OFFLINE: "true"
+      # Backend CI compiles the full workspace, tests, and custom gates on the
+      # standard GitHub runner. Keep artifacts lean so unrelated UI-only PRs do
+      # not fail from runner disk exhaustion while preserving the same checks.
+      CARGO_INCREMENTAL: "0"
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Path-class skip proof
+        id: skip-proof
+        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
+
+      - name: Install pinned DotSlash runtime
+        id: dotslash
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
+        run: ../tools/buck/install_dotslash.sh
+
+      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        id: rust
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          # rust-toolchain.toml drives the exact version; this step just
+          # ensures rustup is available and honours the file.
+          toolchain: "1.97.1"
+          components: rustfmt, clippy
+
+      - name: Cache Rust dependencies + build artifacts
+        id: rust-cache
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
+        # rust-cache keys on Cargo.lock + rustc + job, caches registry/git deps
+        # and prunes stale crates from target/ (so the cache does not grow
+        # unbounded on every Cargo.lock change the way a raw target/ cache does).
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        with:
+          workspaces: backend
+          # One shared entry, not one per job. rust-cache keys on job name by
+          # default, so these two maintained separate near-duplicate copies of the
+          # same workspace and evicted each other out of the 10GB LRU budget.
+          shared-key: backend-cargo
+          cache-all-crates: "true"
+          # The ONLY writer. `backend` runs clippy --all-targets over the whole
+          # workspace, a strict superset of every other cargo job, so its target dir
+          # is the one worth sharing. Saving only from main keeps PR branches from
+          # publishing a cache shaped by their own diff.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Reconcile portable PostgreSQL role topology
+        id: topology
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
+        run: |
+          APP_PASSWORD="$(openssl rand -hex 32)"
+          RT_PASSWORD="$(openssl rand -hex 32)"
+          LEAVE_COMMAND_PASSWORD="$(openssl rand -hex 32)"
+          ONTOLOGY_COMMAND_PASSWORD="$(openssl rand -hex 32)"
+          PLATFORM_FORCE_COMMAND_PASSWORD="$(openssl rand -hex 32)"
+          docker run --rm --network host \
+            -v "$GITHUB_WORKSPACE/ops/postgres-reconcile-topology.sh:/usr/local/bin/postgres-reconcile-topology:ro" \
+            -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=console_ci \
+            -e POSTGRES_ADMIN_USER=postgres -e POSTGRES_ADMIN_PASSWORD=postgres \
+            -e CONSOLE_APP_POSTGRES_PASSWORD="$APP_PASSWORD" \
+            -e CONSOLE_RT_POSTGRES_PASSWORD="$RT_PASSWORD" \
+            -e CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
+            -e CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
+            -e CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
+            --entrypoint bash postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20 \
+            /usr/local/bin/postgres-reconcile-topology
+
+          # The Apalis adapter contract intentionally mutates only its own
+          # dedicated database while proving direct console_app/console_rt logins. The
+          # job-level DATABASE_URL stays on the cluster administrator for the
+          # boot smoke; it can no longer serve migration-applying tests, which
+          # migration 0196 restricts to the console_buck_admin harness identity.
+          docker run --rm --network host \
+            -e PGPASSWORD=postgres \
+            --entrypoint psql \
+            postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20 \
+            -h 127.0.0.1 -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "DROP DATABASE IF EXISTS console_apalis_contract WITH (FORCE)" \
+            -c "CREATE DATABASE console_apalis_contract OWNER console_app"
+
+          # Migration 0196 restricts migration application to a superuser named
+          # exactly `console_buck_admin` with `console.sqlx_test_bootstrap` armed (and a
+          # test database it owns). The `postgres` service account therefore
+          # cannot apply a single migration, which silently breaks every direct
+          # `cargo test` that relies on `#[sqlx::test]`. Provision that identity
+          # here so those suites can run; the password crosses through a
+          # mode-0600 file, never argv.
+          BUCK_ADMIN_PASSWORD="$(openssl rand -hex 32)"
+          umask 077
+          printf "CREATE ROLE console_buck_admin SUPERUSER LOGIN PASSWORD '%s';\n" \
+            "$BUCK_ADMIN_PASSWORD" > "$RUNNER_TEMP/buck-admin.sql"
+          docker run --rm --network host \
+            -e PGPASSWORD=postgres \
+            -v "$RUNNER_TEMP/buck-admin.sql:/buck-admin.sql:ro" \
+            --entrypoint psql \
+            postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20 \
+            -h 127.0.0.1 -U postgres -d postgres -v ON_ERROR_STOP=1 -f /buck-admin.sql
+          rm -f "$RUNNER_TEMP/buck-admin.sql"
+
+          echo "::add-mask::$APP_PASSWORD"
+          echo "::add-mask::$RT_PASSWORD"
+          echo "::add-mask::$BUCK_ADMIN_PASSWORD"
+          {
+            echo "CONSOLE_BUCK_ADMIN_DATABASE_URL=postgres://console_buck_admin:${BUCK_ADMIN_PASSWORD}@localhost:5432/console_ci?options%5Bconsole.sqlx_test_bootstrap%5D=buck-sqlx-superuser-v1"
+            echo "CONSOLE_APALIS_OWNER_DATABASE_URL=postgres://console_app:${APP_PASSWORD}@localhost:5432/console_apalis_contract"
+            echo "CONSOLE_APALIS_RUNTIME_DATABASE_URL=postgres://console_rt:${RT_PASSWORD}@localhost:5432/console_apalis_contract"
+            echo "CONSOLE_APALIS_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/console_apalis_contract"
+          } >> "$GITHUB_ENV"
+
+      - name: Expand/contract migration rehearsal (0165, 0166)
+        id: pr473-gate
+        if: ${{ !cancelled() && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}
+        working-directory: .
+        # SQLX_OFFLINE=true so the query! macros compile against the committed
+        # .sqlx cache (the documented contract — see crates/platform/db/src/lib.rs)
+        # rather than the unmigrated CI service DB. The #[sqlx::test] runtime
+        # tests still use DATABASE_URL to create their own per-test databases.
+        # Without this, a Cargo.lock change busts the build cache and the macros
+        # re-check online against a schema-less DB ("audit_events does not exist").
+        # The wrapper isolates the 11 migration regressions for exact one-test
+        # runtime-result validation. It does NOT preserve a full workspace run --
+        # migration 0196 restricts migration application to the console_buck_admin
+        # harness identity, so the service DB cannot host one (H-8 in
+        # docs/program/false-green-gate-holes.md). Every test binary remains
+        # serial because topology upgrade tests mutate cluster-global roles.
+        run: npm run check:pr473-migration-operational
+
+      # Boot smoke: the real console-app binary, migrate then serve mode, against
+      # this job's fresh service DB — catches route-panic-at-boot regressions
+      # (e.g. a bad router/state wiring) that unit/integration tests never
+      # exercise because they never call `serve()`. Mirrors the minimal env
+      # image-release.yml's release-probe job uses to boot the shipped image;
+      # a throwaway keypair is fine, this only proves the app comes up.
+      - name: Collect failures
+        if: ${{ !cancelled() }}
+        env:
+          CI_STEPS: ${{ toJSON(steps) }}
+        working-directory: .
+        run: node scripts/ci-collect-failures.mjs
+
 
   repo-gates:
     name: Repo gates — ADR / foundation / domain maturity
@@ -1607,6 +1788,7 @@ jobs:
       - company-conformance
       - generated-face-authority
       - backend
+      - migration-expand-contract
       - repo-gates
       - api-contract
       - kubernetes-manifests
@@ -1622,6 +1804,7 @@ jobs:
             test "${{ needs.company-conformance.result }}" = success &&
             test "${{ needs.generated-face-authority.result }}" = success &&
             test "${{ needs.backend.result }}" = success &&
+            test "${{ needs.migration-expand-contract.result }}" = success &&
             test "${{ needs.repo-gates.result }}" = success &&
             test "${{ needs.api-contract.result }}" = success &&
             test "${{ needs.kubernetes-manifests.result }}" = success

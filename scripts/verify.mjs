@@ -31,6 +31,9 @@ const WORKFLOW = ".github/workflows/ci.yml";
 const JOBS = new Map([
   ["preflight", true],
   ["backend", true],
+  // Split out of `backend` 2026-08-18; it was one step of that job, so it keeps
+  // the same local-mirror disposition rather than acquiring a new exemption.
+  ["migration-expand-contract", true],
   ["repo-gates", true],
   ["kubernetes-manifests", true],
   ["domain-unit", true],
@@ -176,7 +179,7 @@ const PLAN = new Map([
     provision: true,
     why: "replaced locally by a disposable container carrying the same seven roles plus console_buck_admin",
   }],
-  ["PR 473 migration operational gate", { tier: "db" }],
+  ["Expand/contract migration rehearsal (0165, 0166)", { tier: "db" }],
   ["Boot smoke — migrate + serve + /readyz", {
     tier: "db",
     run: "CONSOLE_APP_ROLE=migrate SQLX_OFFLINE=true cargo run -q -p console-app",
