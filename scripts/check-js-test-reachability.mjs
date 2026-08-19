@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url";
 import process from "node:process";
 
 import { executableWorkflowCommands } from "./lib/ci-workflow-executables.mjs";
+import { sweepReachableText } from "../tools/ci/gate-sweep.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const baselinePath = "docs/program/js-test-reachability-baseline.json";
@@ -119,7 +120,11 @@ function main() {
   failures.push(...unresolvable);
 
   const invoked = expandInvokedNpmScripts(runText, scripts);
-  const expanded = runText + [...invoked].map((n) => scripts[n] ?? "").join("\n");
+  // tools/ci/gate-sweep.json is a real execution path and therefore a real
+  // reachability source; see sweepReachableText. Without it every suite the
+  // sweep runs reports dark here.
+  const expanded = runText + [...invoked].map((n) => scripts[n] ?? "").join("\n")
+    + sweepReachableText(root);
 
   const wired = [];
   const basenameOnly = [];

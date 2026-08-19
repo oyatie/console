@@ -101,6 +101,36 @@ export function report(results) {
   return lines.join("\n");
 }
 
+/**
+ * The sweep's commands as one blob of text, for reachability scanners.
+ *
+ * `check:ci-preflight` used to name its test files inline in package.json, which
+ * is where both reachability scanners look. The chain became this sweep and the
+ * commands moved into a manifest, so a scanner that reads only package.json now
+ * reports live suites as dark -- and the natural response is to baseline them,
+ * retiring real coverage on the strength of a blind spot.
+ *
+ * Exported rather than duplicated: there are TWO scanners with this same blind
+ * spot (tools/ci/check-mjs-dark-suites.mjs and
+ * scripts/check-js-test-reachability.mjs). Patching them independently is how
+ * the second one gets missed, which is exactly what happened.
+ *
+ * Takes a root because check-js-test-reachability validates a CANDIDATE tree,
+ * not necessarily this one. A missing manifest yields "" rather than throwing:
+ * these scanners must keep working against a tree that predates the sweep.
+ *
+ * @param {string} root
+ * @returns {string}
+ */
+export function sweepReachableText(root) {
+  try {
+    const doc = JSON.parse(readFileSync(resolve(root, "tools/ci/gate-sweep.json"), "utf8"));
+    return "\n" + (doc.gates ?? []).map((gate) => gate?.run ?? "").join("\n");
+  } catch {
+    return "";
+  }
+}
+
 const isMain = process.argv[1] && process.argv[1].endsWith("gate-sweep.mjs");
 if (isMain) {
   const gates = loadGates();

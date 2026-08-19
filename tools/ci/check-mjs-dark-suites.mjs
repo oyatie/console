@@ -16,6 +16,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { sweepReachableText } from "./gate-sweep.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const args = new Set(process.argv.slice(2));
@@ -84,22 +85,6 @@ function listTestMjs(dir, baseRoot, acc = []) {
   return acc;
 }
 
-/**
- * Commands declared in the fail-slow gate sweep, as one blob of text.
- * Absent manifest returns "" rather than throwing: this scanner must keep
- * working in a tree that predates the sweep.
- * @param {string} repoRoot
- * @returns {string}
- */
-function sweepManifestText(repoRoot) {
-  try {
-    const doc = JSON.parse(readFileSync(join(repoRoot, "tools/ci/gate-sweep.json"), "utf8"));
-    return "\n" + (doc.gates ?? []).map((gate) => gate?.run ?? "").join("\n");
-  } catch {
-    return "";
-  }
-}
-
 export function resolveDarkSuites(repoRoot = root) {
   const pkg = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8"));
   const scripts = pkg.scripts ?? {};
@@ -146,7 +131,7 @@ export function resolveDarkSuites(repoRoot = root) {
   // manifest. Without reading it, 20 suites that DO run every CI cycle report
   // as dark -- and the natural "fix" is to baseline them, which would retire
   // live coverage on the strength of a scanner blind spot.
-  const sweepText = sweepManifestText(repoRoot);
+  const sweepText = sweepReachableText(repoRoot);
   const expanded = runText + [...invoked].map((n) => scripts[n]).join("\n") + sweepText;
   const suites = listTestMjs(repoRoot, repoRoot);
   const dark = [];
