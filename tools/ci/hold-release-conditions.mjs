@@ -55,14 +55,37 @@ export function kebabCase(snake) {
  * @returns {string[]}
  */
 export function holdObjects(markdown) {
+  // Matches the bullet in EITHER state. Releasing the hold must not retire the
+  // checking that justified releasing it: if an owning port or a single-writer
+  // boundary regresses after release, that is worse than it never having been
+  // released, and a parser that only recognised "**HOLD**" would go silent at
+  // exactly that moment. So the released form is still parsed and still checked.
   const line = markdown
     .split("\n")
-    .find((l) => l.includes("projection fan-out is **HOLD**"));
+    .find((l) => /projection fan-out is \*\*(HOLD|RELEASED)\*\*/.test(l));
   if (!line) {
-    throw new Error("PRODUCT.md no longer contains a projection fan-out HOLD bullet");
+    throw new Error(
+      "PRODUCT.md no longer contains a projection fan-out bullet in either the HOLD or the "
+        + "RELEASED form; the condition this verifies has no subject",
+    );
   }
   const subject = line.slice(line.indexOf("- ") + 2, line.indexOf("projection fan-out"));
   return subject.match(/[A-Z][A-Za-z]+/g) ?? [];
+}
+
+/**
+ * Whether the projection fan-out bullet currently reads as released.
+ *
+ * Reported, not enforced: this file decides nothing about whether release was
+ * correct. It exists so the output says which state it is checking, and so a
+ * reader cannot mistake "every leg met" under a released bullet for a hold that
+ * is still in force.
+ *
+ * @param {string} markdown
+ * @returns {boolean}
+ */
+export function holdReleased(markdown) {
+  return /projection fan-out is \*\*RELEASED\*\*/.test(markdown);
 }
 
 /**
@@ -137,6 +160,7 @@ export function evaluate(root = ROOT) {
   const map = JSON.parse(readFileSync(resolve(root, "tools/ci/postgres-cargo-map.json"), "utf8"));
 
   const named = holdObjects(product);
+  const released = holdReleased(product);
   const keys = registry(domain);
   const suites = portSuites(root);
 
@@ -144,7 +168,7 @@ export function evaluate(root = ROOT) {
     // A verifier that examines nothing must fail; a regex that silently stopped
     // matching would otherwise report a clean bill of health over zero objects.
     failures.push("registry: parsed zero object keys from canonical-domain/src/lib.rs");
-    return { failures, rows: [] };
+    return { failures, rows: [], released };
   }
 
   // Every object the hold names must actually be a registry key. A hold naming
@@ -192,12 +216,15 @@ export function evaluate(root = ROOT) {
       ci: Boolean(mapped?.in_workflow_postgres_job),
     });
   }
-  return { failures, rows };
+  return { failures, rows, released };
 }
 
 const isMain = process.argv[1] && process.argv[1].endsWith("hold-release-conditions.mjs");
 if (isMain) {
-  const { failures, rows } = evaluate();
+  const { failures, rows, released } = evaluate();
+  console.log(
+    `projection fan-out: ${released ? "RELEASED — the legs below are what keeps it releasable" : "HOLD"}`,
+  );
   for (const r of rows) {
     const mark = r.owner && r.tables > 0 && r.suite && r.ci ? "MET" : "NOT MET";
     console.log(

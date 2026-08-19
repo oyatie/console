@@ -1,7 +1,14 @@
 #!/usr/bin/env node
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { evaluate, holdObjects, kebabCase, registry, snakeCase } from "./hold-release-conditions.mjs";
+import {
+  evaluate,
+  holdObjects,
+  holdReleased,
+  kebabCase,
+  registry,
+  snakeCase,
+} from "./hold-release-conditions.mjs";
 
 test("hold-release-conditions", async (t) => {
   await t.test("the three naming transforms agree across the six files", () => {
@@ -25,6 +32,34 @@ test("hold-release-conditions", async (t) => {
   await t.test("a rewritten hold is followed, not ignored", () => {
     const md = "- Company and OrgUnit projection fan-out is **HOLD** until each has an explicit owning port.";
     assert.deepEqual(holdObjects(md), ["Company", "OrgUnit"]);
+  });
+
+  await t.test("the RELEASED form is still parsed and still checked", () => {
+    // Releasing must not retire the checking that justified releasing. A parser
+    // that only recognised "**HOLD**" would go silent at exactly the moment a
+    // regression matters most — after the boundary has been declared sound.
+    const md = "- Company, Person, Employment, and PayRun projection fan-out is **RELEASED** (2026-08-19). Evidence follows.";
+    assert.deepEqual(holdObjects(md), ["Company", "Person", "Employment", "PayRun"]);
+    assert.equal(holdReleased(md), true);
+  });
+
+  await t.test("the HOLD form still reports as not released", () => {
+    const md = "- Company and PayRun projection fan-out is **HOLD** until each has an explicit owning port.";
+    assert.equal(holdReleased(md), false);
+    assert.deepEqual(holdObjects(md), ["Company", "PayRun"]);
+  });
+
+  await t.test("release does not weaken any leg", () => {
+    // The load-bearing assertion after release: every leg is still required.
+    const { failures, rows, released } = evaluate();
+    assert.equal(released, true, "this tree has released the projection fan-out hold");
+    assert.deepEqual(failures, [], failures.join("\n"));
+    for (const row of rows) {
+      assert.ok(row.owner.startsWith("console-"), `${row.key} owner`);
+      assert.ok(row.tables > 0, `${row.key} owns no table`);
+      assert.ok(row.suite, `${row.key} has no port suite`);
+      assert.ok(row.ci, `${row.key} port suite is not CI-wired`);
+    }
   });
 
   await t.test("a deleted hold bullet is an error, not a silent pass", () => {
