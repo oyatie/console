@@ -16,21 +16,16 @@ Merge only the reviewed candidate through the repository's protected integration
 
 ## Verification method
 
-Run the smallest targeted regression first, then the applicable format, lint/type, contract, security, and domain gates. The supported repository entrypoint is:
+Run the smallest targeted regression first, then the applicable format, lint/type, contract, security, and domain gates. A new clone must install pinned Node tooling and put the pinned DotSlash runtime on `PATH` before the supported repository entrypoint. The installer cannot modify its parent shell (`GITHUB_PATH` exists only in GitHub Actions).
 
 ```sh
-# one-time: install the pinned DotSlash runtime that tools/buck2 shells out to,
-# then put it on PATH -- the installer only appends to $GITHUB_PATH, which does
-# not exist outside GitHub Actions, and it cannot modify its parent shell.
+npm ci
 tools/buck/install_dotslash.sh
 export PATH="${CONSOLE_DOTSLASH_BIN_DIR:-${RUNNER_TEMP:-${TMPDIR:-/tmp}/console-dotslash}/bin}:$PATH"
-
 npm run verify
 ```
 
-The Buck2-backed steps require the pinned DotSlash runtime on PATH. Without the
-`export` above, `npm run verify` exits 1 with six failures that are
-environment, not regressions.
+This is the same sequence as [`README.md`](../../README.md). Buck2-backed steps fail as environment errors, not product regressions, if DotSlash is missing from `PATH`.
 
 For documentation-authority changes, also run the doc-link tests and gate, ADR tests and gate, citation checks, foundation tests and gate, CI-preflight tests and gate, verifier tests, `npm run verify`, and `git diff --check`. Inspect the exact changed-path allowlist and ignored/untracked state before signing a candidate.
 
@@ -47,4 +42,4 @@ Keep the issue open when work is partial, unpublished, on a local branch or unme
 
 ## Non-authority
 
-Historical plans, evidence, branches, chats, handoffs, and transient runtime state may explain or support delivery facts. They never replace current authority or exact-candidate proof.
+Historical plans, evidence, branches, chats, handoffs, and transient runtime state may explain or support delivery facts. They never replace current authority or exact-candidate proof. Document classes (`current`, `decision`, `executable-contract`, `evidence`, `historical`, `quarry`) describe custody, not permission to ship aspirations.

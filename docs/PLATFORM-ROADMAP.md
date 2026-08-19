@@ -1,68 +1,45 @@
-# KNL one-stop platform — historical vision notes (non-authority)
+# KNL one-stop platform — frozen pre-pivot notes (non-authority)
 
-> **HISTORICAL / NON-AUTHORITY.**  
-> **Current ordered roadmap:** [`current/ROADMAP.md`](current/ROADMAP.md), constrained by [`current/PRODUCT.md`](current/PRODUCT.md).  
-> This file is a **frozen pre-pivot plan**. It is not a living plan, does not dispatch work, and cannot clear HOLDs.  
-> Phrases below such as “Living plan”, “Already built”, or live hostnames are **historical claims**, not present-tense product truth.
+> **STOP. HISTORICAL / NON-AUTHORITY. DO NOT DISPATCH WORK FROM THIS PAGE.**
+> A skim of headings below is not a work order.
+> **Current ordered roadmap:** [`docs/current/ROADMAP.md`](current/ROADMAP.md), constrained by [`docs/current/PRODUCT.md`](current/PRODUCT.md).
+> This file is a **frozen pre-pivot plan**. It cannot clear HOLDs. Frontend, storefront, FSM, and live-hostname claims below are historical.
+> ERP, communications, MES, sales storefront, and public-web items contradict current PRODUCT scope and remain quarry/history only.
 
 ## Historical snapshot (pre-pivot claims; not current verification)
-- **FSM operations** — dispatch board, work orders (= the per-asset maintenance record),
-  daily plans, evidence upload, mobile offline sync. State machine RECEIVED→…→FINAL_COMPLETED.
-- **Approvals / 기안서 chain** — purchase-request approval incl. executive final-approve
-  (`admin-13-financial`, `exec-03-purchase-final-approve`; `PurchaseFinalApprove` feature).
-- **CX / customer relations** — REAL support tickets (`/api/v1/support/intake` → support_tickets)
-  + sales inquiries. Not a board.
-- **Governance & observability** — multi-tenant platform admin (onboard/suspend/reactivate),
-  cross-tenant ops-health rollup, KPI + ops dashboards, audit_events.
+
+- **FSM operations** — dispatch board, work orders (= the per-asset maintenance record), daily plans, evidence upload, mobile offline sync. State machine RECEIVED→…→FINAL_COMPLETED.
+- **Approvals / 기안서 chain** — purchase-request approval incl. executive final-approve (`admin-13-financial`, `exec-03-purchase-final-approve`; `PurchaseFinalApprove` feature).
+- **CX / customer relations** — REAL support tickets (`/api/v1/support/intake` → support_tickets) + sales inquiries. Not a board.
+- **Governance & observability** — multi-tenant platform admin (onboard/suspend/reactivate), cross-tenant ops-health rollup, KPI + ops dashboards, audit_events.
 - **Sales** — sales_listings + public storefront + inquiries.
-- **Platform** — multi-tenant org isolation + RLS, passkey/WebAuthn auth (cold-start OTP →
-  enroll → usernameless login), org-scoped roles (RECEPTIONIST/MECHANIC/ADMIN/EXECUTIVE/SUPER_ADMIN).
+- **Platform** — multi-tenant org isolation + RLS, passkey/WebAuthn auth (cold-start OTP → enroll → usernameless login), org-scoped roles (RECEPTIONIST/MECHANIC/ADMIN/EXECUTIVE/SUPER_ADMIN).
 - **Live** — knllogistic.com (storefront) + console.knllogistic.com (console; legacy fsm.knllogistic.com 301-redirects here) on the OCI/Talos cluster.
 
-## In progress
-- **Web front door redesign** — unified one-stop site (corporate + FSM/CX-SaaS), online-centric.
-  - DONE + committed: FSM/console access from the landing; maintenance-request as the primary
-    online CTA (→ /support/new); phone demoted to last resort; `consoleHref()` cross-host helper.
-  - DESIGNING: full integrated homepage + IA (expert design panel), reusing the real corporate
-    (`storefront.*`) + FSM-SaaS (`landing.*`) copy already in `ko.ts`; ISO + partner-wall credibility.
+## Historical "in progress" claims at freeze — not current work
 
-## Net-new domains — agreed sequence
-1. **Asset lifecycle & cost analytics** ⟵ **FIRST (user-chosen)**
-   - Capture **acquisition cost** (+ date, vendor) per asset; roll up **maintenance cost** per
-     asset (parts/labor/outsource) from work orders; **TCO analytics** per asset; tie into the
-     sale (compare sale price vs acquisition + maintenance). Spans acquisition→maintenance→sale.
-2. **Procurement price governance** — extend 기안서 so each purchase request surfaces **past
-   price records** for the item/equipment and **flags abnormal pricing** for management.
-3. **Payroll** — internal payroll (net-new).
-4. **Bookkeeping / accounting** — double-entry internal accounting (net-new).
-5. **Employee / HR cycle** — hiring/onboarding → records → (feeds payroll).
-6. **Manufacturing execution / MES** — future scope after group/org, people, assets/inventory,
-   ontology, workflow, policy, and ERP foundations. Target capabilities include production orders,
-   dispatch lists, work-center/line execution, operator work instructions, quality/NC handling,
-   material consumption, genealogy/traceability, OEE/downtime, labor capture, and ERP/asset/quality
-   integration. See [`docs/specs/mes.md`](./specs/mes.md); this must be benchmarked against
-   SAP Digital Manufacturing, Siemens Opcenter Execution, Rockwell Plex MES, Tulip, and Dynamics
-   production-floor patterns before implementation.
-7. **Customer accounts / portal** — decide whether clients/guests get accounts to track their
-   own tickets/orders (today: guests file tickets w/o account; clients = SaaS tenants + staff
-   sign in via the console). **Open decision.**
+These bullets were written as present-tense before the 2026-07-28 pivot. They do not authorize implementation.
 
-## Cross-cutting requirements
-- **Unified sign-in** — clients (SaaS tenants) + employees via the passkey console; guests file
-  tickets with no account. Prominent + clear per audience.
-- **Real ticket system** everywhere "contact/support" appears (never a static board).
-- **Cost & governance woven in** — acquisition cost, maintenance cost, price history/anomaly,
-  who-approved-what (audit), per-asset and per-tenant.
-- Every new read is **RLS-armed** (`with_org_conn`/`current_org`; the `console-gate-rls-arming`
-  gate flags bare-pool reads). All migrations bounded-text + CHECK constraints per repo convention.
+- **Web front door redesign** — unified one-stop site (corporate + FSM/CX-SaaS). The `web/` surface this described was deleted. Do not rebuild it from this page.
 
-## Verification / debt
-- Browser-E2E harness (`e2e/run.sh`, WebAuthn virtual authenticator) — keep green per change.
-- GAP specs to add: **sales-listing create/publish** (the "put assets up for sale" path),
-  **public customer support-request** (`/support/new`).
-- Stale specs to update: `landing.spec.ts` (tests removed #10 page — replace with the new
-  homepage), `mech-01-02-dispatch.spec.ts` (a "현장 담당자" text assertion).
-- Live deploy of the web changes needs a `console-web` image rebuild plus the default
-  verified `scripts/deploy.sh` path (digest bump + Argo sync + rollout/pod digest
-  + endpoint evidence); bump-only mode is not a deployed/verified claim. See
-  `deploy/OPS-RUNBOOK.md`.
+## Historical domain sequence — superseded, do not implement from this page
+
+The numbered list below is a frozen pre-pivot sequence. Current ordered work is only in [`docs/current/ROADMAP.md`](current/ROADMAP.md).
+
+1. Asset lifecycle & cost analytics (historical first pick)
+2. Procurement price governance
+3. Payroll as a net-new domain (current PRODUCT instead projects existing payroll truth as PayRun)
+4. Bookkeeping / accounting (out of current PRODUCT scope)
+5. Employee / HR cycle (current PRODUCT has a narrower HR writer path)
+6. Manufacturing execution / MES (out of current PRODUCT scope; [`docs/specs/mes.md`](./specs/mes.md) is historical/quarry)
+7. Customer accounts / portal (open historical decision; not current work)
+
+## Historical cross-cutting notes — not current requirements
+
+- Unified sign-in, ticket system, cost/governance, and RLS-arming notes below described the pre-pivot product.
+- The `console-gate-rls-arming` name remains a live CI binary; citing it here does not revive storefront or FSM scope.
+
+## Historical verification notes — not a current test plan
+
+- Browser-E2E, `e2e/run.sh`, `landing.spec.ts`, and `console-web` image rebuilds refer to deleted or out-of-repo surfaces.
+- Live deploy language is not a go-live grant. Production remains HOLD in [`docs/current/PRODUCT.md`](current/PRODUCT.md).

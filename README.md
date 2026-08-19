@@ -25,14 +25,16 @@ The full first-party Markdown manifest is the generated [`docs/documentation-ind
 
 ## Supported verification entrypoint
 
-From the repository root, run:
+A new clone needs Node tooling **and** the pinned DotSlash runtime on `PATH` before `npm run verify`. The installer cannot modify its parent shell (`GITHUB_PATH` exists only in GitHub Actions).
 
 ```sh
 npm ci
+tools/buck/install_dotslash.sh
+export PATH="${CONSOLE_DOTSLASH_BIN_DIR:-${RUNNER_TEMP:-${TMPDIR:-/tmp}/console-dotslash}/bin}:$PATH"
 npm run verify
 ```
 
-`npm ci` installs the pinned repository tooling; `npm run verify` is the one supported local repository verification entrypoint. Run narrower tests while developing and any additional checks required by the touched surface, then record the exact candidate SHA, commands, environment, discovered/executed counts, failures, and remaining HOLDs as described in [`docs/current/DELIVERY.md`](docs/current/DELIVERY.md).
+`npm ci` installs the pinned repository tooling. `npm run verify` is the supported local repository verification entrypoint (`fast` tier). Buck2-backed steps fail as environment errors, not product regressions, if DotSlash is missing from `PATH`. The same sequence is recorded in [`docs/current/DELIVERY.md`](docs/current/DELIVERY.md). Run narrower tests while developing and any additional checks required by the touched surface, then record the exact candidate SHA, commands, environment, discovered/executed counts, failures, and remaining HOLDs there.
 
 <!-- SHARED:REASONING-LENSES:START -->
 ## Reasoning lens manifest

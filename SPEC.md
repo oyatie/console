@@ -1,5 +1,7 @@
-# SPEC — one-release redirect
+# SPEC — tombstone
 
-Current product scope, invariants, architecture, and holds live in [`docs/current/PRODUCT.md`](docs/current/PRODUCT.md).
+Not current authority. Do not dispatch work from this path.
 
-This path remains for one release so existing links resolve. It is not current authority and cannot dispatch work; use the replacement above.
+Replacement: [`docs/current/PRODUCT.md`](docs/current/PRODUCT.md)
+
+This file remains so existing links resolve. It is not a one-release promise and is not a specification.

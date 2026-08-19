@@ -19,6 +19,8 @@ The six classes describe authority and lifecycle, not CI consumption:
 
 `path` and `blob_sha` are generated from exact-index-tree custody. `class`, `owner`, `status`, `replacement`, `retention`, and `archive_tag` are reviewed semantics; the generator never invents them. A document's class does not change merely because a gate reads it.
 
+Current vs historical is a label, not a suggestion. Aspirations, frozen plans, and deleted-surface essays are not shipped product. Short pages under `docs/current/` are how-to and explanation for active work; ADRs are decisions; inventories such as [`CI-GATES.md`](CI-GATES.md) are executable contracts.
+
 Run `npm run check:doc-manifest` for the default fail-closed check. Regenerate generated fields and the index with `node scripts/console/generate-documentation-manifest.mjs --write`, then review and classify any semantic skeleton before checking again. A new or edited tracked Markdown blob fails until it is explicitly classified and regenerated. This manifest claims first-party-manifest coverage only; it does not claim complete coverage or archive validation.
 
 This page is a directory pointer, not another authority. ADRs, evidence, executable contracts, historical records, and quarry material may supply evidence or enforce behavior, but they cannot dispatch work or override the three active authorities unless an active authority explicitly delegates to a machine-readable contract.
