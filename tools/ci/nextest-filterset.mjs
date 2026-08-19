@@ -47,16 +47,28 @@ export function binaryIdForEntry(entry) {
 }
 
 /**
- * Escape a binary id for use inside a nextest `binary_id(...)` matcher.
- * nextest treats the bare form as a glob, so ids are quoted and quotes/
- * backslashes escaped; a package containing a glob metacharacter would
- * otherwise silently widen the selection.
+ * Render a binary id as an exact-match nextest matcher.
+ *
+ * The `=` prefix is exact match, and it must be UNQUOTED. Measured 2026-08-18
+ * against cargo-nextest 0.9.138: `binary_id(=pkg::name)` matches 4 tests while
+ * `binary_id(="pkg::name")` matches 0 and the run dies with "operator didn't
+ * match any binary IDs". The earlier quoted form looked safer and selected
+ * nothing.
+ *
+ * Because the value cannot be quoted, an id carrying expression syntax would
+ * corrupt the filterset rather than be escaped. nextest binary ids are
+ * `<cargo package>::<target>`, both of which are restricted to word characters
+ * and hyphens, so anything else is rejected outright rather than emitted.
  *
  * @param {string} id
  * @returns {string}
  */
 export function quoteBinaryId(id) {
-  return `binary_id(=${JSON.stringify(String(id))})`;
+  const value = String(id);
+  if (!/^[A-Za-z0-9_.-]+(::[A-Za-z0-9_.-]+)?$/.test(value)) {
+    throw new Error(`binary id is not safe to embed unquoted in a filterset: ${JSON.stringify(value)}`);
+  }
+  return `binary_id(=${value})`;
 }
 
 /**

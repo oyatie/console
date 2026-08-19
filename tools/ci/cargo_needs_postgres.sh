@@ -8,11 +8,13 @@ map_path="${repo_root}/tools/ci/postgres-cargo-map.json"
 only_csv=""
 workflow_only=0
 num_threads=1
+# cargo | nextest. See the nextest branch below for why this is opt-in per shard.
+runner=cargo
 shard_id=""
 keep_going=1
 
 usage() {
-  echo "usage: cargo_needs_postgres.sh [--map PATH] [--workflow-only] [--only name[,name...]] [--shard-id app|platform|ontology|domain-a|domain-b] [--num-threads N] [--keep-going|--fail-fast]" >&2
+  echo "usage: cargo_needs_postgres.sh [--map PATH] [--workflow-only] [--only name[,name...]] [--shard-id app|platform|ontology|domain-a|domain-b] [--runner cargo|nextest] [--num-threads N] [--keep-going|--fail-fast]" >&2
   exit 2
 }
 
@@ -25,6 +27,8 @@ while [[ $# -gt 0 ]]; do
     --only=*) only_csv="${1#*=}"; shift ;;
     --shard-id) shard_id="$2"; shift 2 ;;
     --shard-id=*) shard_id="${1#*=}"; shift ;;
+    --runner) runner="$2"; shift 2 ;;
+    --runner=*) runner="${1#*=}"; shift ;;
     --num-threads) num_threads="$2"; shift 2 ;;
     --num-threads=*) num_threads="${1#*=}"; shift ;;
     --keep-going) keep_going=1; shift ;;
@@ -44,6 +48,11 @@ case "${shard_id}" in
     echo "cargo-postgres: invalid --shard-id ${shard_id} (want app|platform|ontology|domain-a|domain-b)" >&2
     exit 2
     ;;
+esac
+
+case "${runner}" in
+  cargo|nextest) ;;
+  *) echo "cargo-postgres: invalid --runner ${runner} (want cargo|nextest)" >&2; exit 2 ;;
 esac
 
 [[ -f "${map_path}" ]] || { echo "cargo-postgres: map missing: ${map_path}" >&2; exit 1; }
@@ -241,6 +250,48 @@ echo "cargo-postgres: building packages..."
 # a summary table, and exit non-zero if any failed. The keep-going loop lives in
 # cargo-test-runner.sh so it is unit-testable without Docker (fake map + stubbed
 # cargo). Default is --keep-going; --fail-fast opts back out for local use.
+if [[ "${runner}" == nextest ]]; then
+  # One `cargo nextest run` over a filterset instead of N serial `cargo test`
+  # invocations, each pinned to --test-threads=1.
+  #
+  # Measured 2026-08-18 on run 32115833327: 209 invocations, 3299.4s of test
+  # execution, 88% of it in #[sqlx::test] cases that are serial only because the
+  # cargo path forces them to be. `.config/nextest.toml` already encodes the
+  # parallel/serial split this repo decided on (ADR-0039 / DN-0005 P3): only the
+  # `cluster-global` group is max-threads=1 and its comment says the rest stay
+  # parallel. Nothing has ever invoked it -- the ledger records the runner swap
+  # as deferred on "preflight command locks", not on a safety concern.
+  #
+  # The filterset is derived from the SAME map rows the cargo path would run, so
+  # the two runners select an identical target set by construction. The
+  # translator exits non-zero on any row it cannot map rather than silently
+  # narrowing the selection.
+  filterset="$(node "${repo_root}/tools/ci/nextest-filterset.mjs" <"${tmp_list}")" || {
+    echo "cargo-postgres: filterset translation failed; refusing to run a narrowed set" >&2
+    rm -f "${tmp_list}" "${tmp_pkgs}"
+    exit 1
+  }
+  # --config-file is REQUIRED, not decoration. nextest resolves its config from
+  # <workspace-root>/.config/nextest.toml, and this workspace root is backend/,
+  # while .config/nextest.toml lives at the REPO root. Measured 2026-08-18:
+  # without this flag nextest reports `profile 'ci' not found (known profiles:
+  # default, default-miri)` -- it had read no config at all, which silently
+  # disables the `cluster-global` max-threads=1 group that ADR-0039 / DN-0005 P3
+  # landed as the serial safety mechanism. The config existing is not the same
+  # as the tool reading it.
+  nextest_args=(cargo nextest run --locked --manifest-path "${repo_root}/backend/Cargo.toml"
+    --config-file "${repo_root}/.config/nextest.toml" --profile ci)
+  while IFS= read -r p; do
+    [[ -n "${p}" ]] && nextest_args+=(-p "${p}")
+  done <"${tmp_pkgs}"
+  nextest_args+=(-E "${filterset}")
+  echo "cargo-postgres: running ${count} targets via cargo-nextest (shard=${shard_id})"
+  ( cd "${repo_root}" && SQLX_OFFLINE=true CARGO_TERM_COLOR=always "${nextest_args[@]}" )
+  status=$?
+  rm -f "${tmp_list}" "${tmp_pkgs}"
+  exit "${status}"
+fi
+
 export CARGO_REPO_ROOT="${repo_root}"
 # Attributes each `cargo-postgres-timing:` line to its shard, so durations
 # harvested from five separate job logs can be re-packed as one population.

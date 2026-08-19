@@ -36,11 +36,19 @@ test("nextest-filterset", async (t) => {
     assert.equal(binaryIdForEntry(entry("p", "cargo", "test", "--locked")), null);
   });
 
-  await t.test("quotes binary ids exactly so a glob cannot widen selection", () => {
-    assert.equal(quoteBinaryId("a::b"), 'binary_id(="a::b")');
-    // A package with a glob metacharacter must not select siblings.
-    assert.equal(quoteBinaryId("we*rd"), 'binary_id(="we*rd")');
-    assert.equal(quoteBinaryId('has"quote'), 'binary_id(="has\\"quote")');
+  await t.test("renders the UNQUOTED exact-match form nextest actually matches", () => {
+    // Measured against cargo-nextest 0.9.138: binary_id(=pkg::name) matches,
+    // binary_id("pkg::name") matches nothing and aborts the run.
+    assert.equal(quoteBinaryId("a::b"), "binary_id(=a::b)");
+    assert.equal(quoteBinaryId("solo"), "binary_id(=solo)");
+  });
+
+  await t.test("rejects ids that cannot be embedded unquoted", () => {
+    // The value cannot be quoted, so expression syntax must be refused rather
+    // than escaped -- otherwise it corrupts the filterset silently.
+    for (const bad of ["we*rd", 'has"quote', "has space", "a)b", "a+b", "a,b", ""]) {
+      assert.throws(() => quoteBinaryId(bad), /not safe to embed unquoted/, `should reject ${bad}`);
+    }
   });
 
   await t.test("joins ids with nextest union syntax, sorted", () => {
@@ -49,7 +57,7 @@ test("nextest-filterset", async (t) => {
       entry("alpha", "cargo", "test", "--test", "a"),
     ]);
     assert.deepEqual(ids, ["alpha::a", "zeta::b"]);
-    assert.equal(expression, 'binary_id(="alpha::a") + binary_id(="zeta::b")');
+    assert.equal(expression, "binary_id(=alpha::a) + binary_id(=zeta::b)");
   });
 
   await t.test("collapses duplicate binaries instead of repeating them", () => {
