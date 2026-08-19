@@ -15,8 +15,8 @@
 
 use console_kernel_core::OrgId;
 use console_payroll_adapter_postgres::lifecycle::{
-    LifecycleError, close_attendance_in_tx, get_disbursement_in_tx, list_exceptions_in_tx,
-    payslip_delivery_in_tx,
+    LifecycleError, close_attendance_in_tx, close_preflight_in_tx, get_disbursement_in_tx,
+    list_exceptions_in_tx, payslip_delivery_in_tx,
 };
 use console_platform_db::with_org_conn;
 use console_platform_test_support::runtime_role_pool;
@@ -270,4 +270,113 @@ async fn runtime_role_cannot_write_calculations_after_insert(pool: PgPool) {
     .execute(&rt_pool)
     .await
     .expect("console_rt must retain INSERT omitting payable");
+}
+
+async fn seed_payroll_period_lock(owner_pool: &PgPool, org: Uuid) {
+    sqlx::query(
+        "INSERT INTO period_locks (org_id, domain, period_start, period_end, reason) \
+         VALUES ($1, 'payroll', $2, $3, 'test lock')",
+    )
+    .bind(org)
+    .bind(date!(2026 - 06 - 01))
+    .bind(date!(2026 - 06 - 30))
+    .execute(owner_pool)
+    .await
+    .unwrap();
+}
+
+/// A run with NO roster lines must not pass the attendance gate.
+///
+/// `missing_total` counts lines that LACK attendance material, so over an empty
+/// roster it is 0, and `ok: missing_total == 0` was `0 == 0` — true. Since
+/// `can_close` is the AND of the hard checks, an empty run closed on the period
+/// lock alone and took a 근태 원천 확보 attestation over zero evidence, then
+/// carried on down the lifecycle toward payment.
+///
+/// This is the same rule the repository already applies elsewhere — the
+/// canonical enforcement floor refuses to claim enforcement over zero tables,
+/// and the preflight sweep refuses a manifest declaring zero gates. A guard that
+/// examines no subject must fail, not pass. On payroll it is the difference
+/// between a gate and a rubber stamp.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn an_empty_roster_cannot_satisfy_the_attendance_gate(pool: PgPool) {
+    let org = Uuid::new_v4();
+    seed_org(&pool, org, "empty-roster").await;
+    let run = seed_run(&pool, org).await;
+    // The OTHER hard check passes, so the attendance check alone decides.
+    seed_payroll_period_lock(&pool, org).await;
+
+    // Plain owner transaction: this proves the GATE's arithmetic, not RLS —
+    // the isolation properties are covered by the suite above.
+    let mut tx = pool.begin().await.unwrap();
+    let preflight = close_preflight_in_tx(&mut tx, run)
+        .await
+        .unwrap()
+        .expect("the run exists, so a preflight must be produced");
+    let attendance = preflight
+        .checks
+        .iter()
+        .find(|check| check.key == "attendance_material")
+        .expect("the attendance check must be present");
+    assert!(
+        !attendance.ok,
+        "an empty roster must not satisfy 근태 원천 확보; it did, so the gate is vacuous"
+    );
+    assert!(
+        !preflight.can_close,
+        "an empty run must not be closeable on the period lock alone"
+    );
+    assert_eq!(
+        attendance.note.as_deref(),
+        Some("명세 대상 없음(로스터 0명)"),
+        "the note must say the roster is empty, not that 0 people lack material"
+    );
+    drop(tx);
+
+    // And the close itself must refuse, not merely report.
+    let mut tx = pool.begin().await.unwrap();
+    let closed =
+        close_attendance_in_tx(&mut tx, run, Uuid::new_v4(), OffsetDateTime::now_utc()).await;
+    assert!(
+        matches!(closed, Err(LifecycleError::PreflightBlocked(_))),
+        "closing an empty run must be blocked, got {closed:?}"
+    );
+}
+
+/// The positive control: a roster line WITH attendance material still closes.
+///
+/// Without this, the guard above could be satisfied by a check that always
+/// fails, which would block every real payroll run — a worse outcome than the
+/// bug it fixes.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_roster_line_with_attendance_material_still_closes(pool: PgPool) {
+    let org = Uuid::new_v4();
+    seed_org(&pool, org, "material-present").await;
+    let run = seed_run(&pool, org).await;
+    let line = seed_line(&pool, org, run).await;
+    seed_payroll_period_lock(&pool, org).await;
+    sqlx::query("UPDATE payroll_draft_lines SET attendance_source_row_count = 3 WHERE id = $1")
+        .bind(line)
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    let mut tx = pool.begin().await.unwrap();
+    let preflight = close_preflight_in_tx(&mut tx, run)
+        .await
+        .unwrap()
+        .expect("the run exists, so a preflight must be produced");
+    let attendance = preflight
+        .checks
+        .iter()
+        .find(|check| check.key == "attendance_material")
+        .expect("the attendance check must be present");
+    assert!(
+        attendance.ok,
+        "a roster of one line carrying attendance material must satisfy the gate"
+    );
+    assert!(
+        preflight.can_close,
+        "with both hard checks green the run must close"
+    );
 }

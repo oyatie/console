@@ -330,12 +330,31 @@ async fn preflight_for(
     .bind(PREFLIGHT_REF_CAP)
     .fetch_all(tx.as_mut())
     .await?;
+    // A run with NO lines had `missing_total == 0` and so passed this check
+    // vacuously: `COUNT(*) WHERE ... = 0` over an empty roster is 0, and 0 == 0.
+    // Since `can_close` is the AND of the hard checks, an empty run closed on the
+    // period lock alone, took a 근태 원천 확보 attestation over zero evidence, and
+    // carried on down the lifecycle. A guard that examines no subject must fail,
+    // not pass -- the same rule this repository already applies to the canonical
+    // enforcement floor and the preflight gate sweep.
+    let roster_total: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM payroll_draft_lines WHERE run_id = $1")
+            .bind(run.id)
+            .fetch_one(tx.as_mut())
+            .await?;
     let attendance = PreflightCheck {
         key: "attendance_material",
         label_ko: "근태 원천 확보",
-        ok: missing_total == 0,
+        ok: roster_total > 0 && missing_total == 0,
         warn: false,
-        note: (missing_total > 0).then(|| format!("근태 원천 누락 {missing_total}명")),
+        note: if roster_total == 0 {
+            // Distinct from the missing-material note: nothing to attest is a
+            // different problem from someone lacking attendance, and an attestor
+            // reading "근태 원천 누락 0명" would reasonably read it as clean.
+            Some("명세 대상 없음(로스터 0명)".to_owned())
+        } else {
+            (missing_total > 0).then(|| format!("근태 원천 누락 {missing_total}명"))
+        },
         blocking_refs: missing_refs,
     };
 
