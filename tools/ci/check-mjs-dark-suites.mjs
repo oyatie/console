@@ -84,6 +84,22 @@ function listTestMjs(dir, baseRoot, acc = []) {
   return acc;
 }
 
+/**
+ * Commands declared in the fail-slow gate sweep, as one blob of text.
+ * Absent manifest returns "" rather than throwing: this scanner must keep
+ * working in a tree that predates the sweep.
+ * @param {string} repoRoot
+ * @returns {string}
+ */
+function sweepManifestText(repoRoot) {
+  try {
+    const doc = JSON.parse(readFileSync(join(repoRoot, "tools/ci/gate-sweep.json"), "utf8"));
+    return "\n" + (doc.gates ?? []).map((gate) => gate?.run ?? "").join("\n");
+  } catch {
+    return "";
+  }
+}
+
 export function resolveDarkSuites(repoRoot = root) {
   const pkg = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8"));
   const scripts = pkg.scripts ?? {};
@@ -123,7 +139,15 @@ export function resolveDarkSuites(repoRoot = root) {
     }
   }
 
-  const expanded = runText + [...invoked].map((n) => scripts[n]).join("\n");
+  // tools/ci/gate-sweep.json is a real execution path, so it is a real
+  // reachability source. `check:ci-preflight` used to be an `&&` chain that
+  // named its test files inline in package.json, which is where this scan
+  // looks; the chain became a fail-slow sweep and moved those commands into a
+  // manifest. Without reading it, 20 suites that DO run every CI cycle report
+  // as dark -- and the natural "fix" is to baseline them, which would retire
+  // live coverage on the strength of a scanner blind spot.
+  const sweepText = sweepManifestText(repoRoot);
+  const expanded = runText + [...invoked].map((n) => scripts[n]).join("\n") + sweepText;
   const suites = listTestMjs(repoRoot, repoRoot);
   const dark = [];
   const wired = [];
