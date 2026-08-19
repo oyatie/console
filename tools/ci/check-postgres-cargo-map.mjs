@@ -2,10 +2,10 @@
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { partitionFailures, partitionWorkflowEntries, SHARD_IDS } from "./postgres-shard.mjs";
+import { SHARD_ORDER, entriesForShard, partitionFailures } from "./postgres-partition.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-// Optional map path, matching the sibling `postgres-shard.mjs --check [map]`.
+// Optional map path, matching the sibling `postgres-partition.mjs --check [map]`.
 // Without it this gate could only ever be run against the real file, so no test
 // could prove it goes red -- and an unfalsifiable gate is how the drift it now
 // catches survived in the first place.
@@ -23,8 +23,8 @@ const block = start >= 0 && end > start ? wf.slice(start, end) : wf;
 const failures = [];
 
 // Package→facet partition must stay complete/disjoint (S0; used by --shard-id).
-for (const msg of partitionFailures(map.entries ?? [])) {
-  failures.push(`postgres-shard: ${msg}`);
+for (const msg of partitionFailures(map.entries ?? [], SHARD_ORDER.length)) {
+  failures.push(`postgres-partition: ${msg}`);
 }
 
 const usesCargo = /tools\/ci\/cargo_needs_postgres\.sh\s+--workflow-only/.test(block);
@@ -99,8 +99,10 @@ if (failures.length) {
   console.error(failures.join("\n"));
   process.exit(1);
 }
-const parts = partitionWorkflowEntries(map.entries ?? []);
-const facetSummary = SHARD_IDS.map((id) => `${id}=${parts[id].length}`).join(" ");
+const parts = Object.fromEntries(
+  SHARD_ORDER.map((id) => [id, entriesForShard(map.entries ?? [], id).map((e) => e.name)]),
+);
+const facetSummary = SHARD_ORDER.map((id) => `${id}=${parts[id].length}`).join(" ");
 console.log(
   usesCargo
     ? `postgres-cargo-map OK (cargo harness; ${mapped.size} workflow entries; facets ${facetSummary})`

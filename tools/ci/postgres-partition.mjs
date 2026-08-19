@@ -187,6 +187,37 @@ export function balanceSummary(bins) {
   };
 }
 
+/**
+ * Stable shard-id order. These names are HISTORICAL LABELS, not descriptions:
+ * they used to mean "the app package", "the ontology packages" and so on, and
+ * under duration packing they mean nothing but "bin 0..4". They are kept only
+ * because they are the ci.yml job ids, which the preflight mirror,
+ * scripts/verify.mjs and the doc-citation gate all name; renaming them is a
+ * separate change across those four registries.
+ */
+export const SHARD_ORDER = Object.freeze([
+  "app",
+  "platform",
+  "ontology",
+  "domain-a",
+  "domain-b",
+]);
+
+/**
+ * Entries belonging to one shard, in map order.
+ *
+ * @param {Array<object>} entries full map entries
+ * @param {string} shardId one of SHARD_ORDER
+ * @returns {Array<object>} the entries assigned to that shard
+ */
+export function entriesForShard(entries, shardId) {
+  const index = SHARD_ORDER.indexOf(shardId);
+  if (index < 0) throw new Error(`unknown shard id ${shardId}`);
+  const workflow = (entries ?? []).filter((e) => e?.in_workflow_postgres_job);
+  const { assignment } = partitionByDuration(workflow, SHARD_ORDER.length);
+  return workflow.filter((e) => assignment.get(String(e.package ?? "")) === index);
+}
+
 const isMain = process.argv[1] && process.argv[1].endsWith("postgres-partition.mjs");
 if (isMain) {
   const { readFileSync } = await import("node:fs");
@@ -200,6 +231,57 @@ if (isMain) {
     ? resolve(args.find((a) => !a.startsWith("--")))
     : resolve(root, "tools/ci/postgres-cargo-map.json");
   const doc = JSON.parse(readFileSync(mapPath, "utf8"));
+  const emitArg = args.find((a) => a.startsWith("--emit-shard="));
+  if (emitArg) {
+    // Emits exactly the rows tools/ci/cargo_needs_postgres.sh feeds its runner.
+    // This exists so the shard assignment has ONE implementation: the harness
+    // used to carry a Python copy of the family logic that had to be kept in
+    // step with the JS by hand.
+    const shardId = emitArg.slice("--emit-shard=".length);
+    const onlyArg = args.find((a) => a.startsWith("--only="));
+    // An empty --only= is "no filter", not "select nothing": the harness always
+    // passes the flag and leaves it empty when the caller gave no --only.
+    const onlyNames = onlyArg
+      ? onlyArg.slice("--only=".length).split(",").map((x) => x.trim()).filter(Boolean)
+      : [];
+    const only = onlyNames.length ? new Set(onlyNames) : null;
+    const failures = partitionFailures(doc.entries ?? [], SHARD_ORDER.length);
+    if (failures.length) {
+      console.error(failures.join("\n"));
+      process.exit(1);
+    }
+    // An empty shard id selects the whole workflow set, matching the harness's
+    // no---shard-id behaviour for local single-target probes.
+    const selected = shardId === ""
+      ? (doc.entries ?? []).filter((e) => e?.in_workflow_postgres_job)
+      : entriesForShard(doc.entries ?? [], shardId);
+    let emitted = 0;
+    for (const entry of selected) {
+      if (only && !only.has(entry.name)) continue;
+      emitted += 1;
+      process.stdout.write(JSON.stringify({
+        name: entry.name,
+        package: entry.package,
+        argv: entry.cargo_argv,
+      }) + "\n");
+    }
+    if (only && emitted !== only.size) {
+      // A misspelled --only would otherwise run a silently smaller set.
+      console.error(
+        // Keep the phrase "no map entries selected" when the selection is empty:
+        // backend/ci/gates/writer-ownership asserts on it to prove the harness
+        // runs canonical enforcement BEFORE it selects targets. The stricter
+        // partial-match check below is additive to that contract, not a
+        // replacement for it.
+        (emitted === 0
+          ? `no map entries selected: --only matched none of ${only.size} requested target(s)`
+          : `--only selected ${emitted} of ${only.size} requested targets`)
+        + ` in shard ${shardId || "(all)"}`,
+      );
+      process.exit(1);
+    }
+    process.exit(0);
+  }
   const failures = partitionFailures(doc.entries ?? [], shardCount);
   if (failures.length) {
     console.error(failures.join("\n"));

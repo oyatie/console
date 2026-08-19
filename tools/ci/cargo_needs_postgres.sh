@@ -159,62 +159,16 @@ export RUST_TEST_THREADS="${num_threads}"
 export CARGO_TERM_COLOR=always
 
 tmp_list="$(mktemp "${TMPDIR:-/tmp}/console-cargo-list.XXXXXX")"
-python3 - "${map_path}" "${workflow_only}" "${only_csv}" "${shard_id}" >"${tmp_list}" <<'PY'
-import json, sys
-
-def package_family(package_name: str) -> str:
-    p = package_name or ""
-    if p == "console-app":
-        return "app"
-    if "ontology" in p:
-        return "ontology"
-    if p.startswith("console-platform") or p == "console-platform-db":
-        return "platform"
-    return "domain"
-
-def domain_subshard_by_package(entries):
-    """Greedy balance by workflow entry count (must match tools/ci/postgres-shard.mjs)."""
-    counts = {}
-    for e in entries:
-        if not e.get("in_workflow_postgres_job"):
-            continue
-        p = e.get("package") or ""
-        if package_family(p) != "domain":
-            continue
-        counts[p] = counts.get(p, 0) + 1
-    ordered = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
-    out = {}
-    count_a = 0
-    count_b = 0
-    for pkg, n in ordered:
-        if count_a <= count_b:
-            out[pkg] = "domain-a"
-            count_a += n
-        else:
-            out[pkg] = "domain-b"
-            count_b += n
-    return out
-
-def shard_id_for_package(package_name: str, domain_map: dict) -> str:
-    family = package_family(package_name)
-    if family != "domain":
-        return family
-    return domain_map.get(package_name, "domain-a")
-
-path, workflow_only, only_csv, shard_id = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
-doc = json.load(open(path))
-entries = doc["entries"]
-domain_map = domain_subshard_by_package(entries)
-only_set = set(only_csv.split(",")) if only_csv.strip() else None
-for e in entries:
-    if workflow_only == "1" and not e.get("in_workflow_postgres_job"):
-        continue
-    if only_set is not None and e["name"] not in only_set:
-        continue
-    if shard_id and shard_id_for_package(e.get("package") or "", domain_map) != shard_id:
-        continue
-    print(json.dumps({"name": e["name"], "package": e["package"], "argv": e["cargo_argv"]}))
-PY
+# Shard selection has ONE implementation: tools/ci/postgres-partition.mjs.
+# This used to be a Python copy of the family logic in postgres-shard.mjs,
+# kept in step with the JS by hand -- two implementations of a rule that
+# decides which tests run is a false-green waiting to happen.
+node "${repo_root}/tools/ci/postgres-partition.mjs" \
+  --emit-shard="${shard_id}" --only="${only_csv}" "${map_path}" >"${tmp_list}" || {
+  echo "cargo-postgres: shard partition failed; refusing to run a partial set" >&2
+  rm -f "${tmp_list}"
+  exit 1
+}
 
 if [[ ! -s "${tmp_list}" ]]; then
   echo "cargo-postgres: no map entries selected" >&2
