@@ -35,7 +35,7 @@ REST and any future server functions are *intended as* sibling adapters over the
 ## Holds
 
 - Frontend work is **HOLD** until ADR-0030 gates are freshly green, `Layer::Ui` is accepted, contracts and an SSR shell are stable, and real E2E evidence exists.
-- Company, Person, Employment, and PayRun projection fan-out is **HOLD** until each has an explicit owning port and a proven single-writer boundary.
+- Company, Person, Employment, and PayRun projection fan-out is **HOLD** until each has an explicit owning port and a proven single-writer boundary. Whether that condition currently holds is decided by `node tools/ci/hold-release-conditions.mjs`, which reports each object's owning crate, owned tables, the port suite proving its boundary, and whether that suite runs in the workflow PostgreSQL job. Releasing the hold remains a separate authority decision; the command reports evidence and does not confer it.
 - Live production, DNS, TLS, secret, exposure, payment, credential-reset, and compliance-claim actions are **HOLD** without separate authority and evidence.
 - Korea compliance conclusions remain **HOLD** pending qualified authority.
 - The grandfathered OCI Ampere A1 instance (4 OCPU / 24 GB) must **never** be destroyed, terminated, resized, or reprovisioned; re-creation permanently loses the reserved capacity.
