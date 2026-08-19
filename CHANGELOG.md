@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.8](https://github.com/oyatie/console/compare/v0.3.7...v0.3.8) (2026-08-19)
+
+
+### Bug Fixes
+
+* **authority:** repin the repository after the transfer to the oyatie org ([#801](https://github.com/oyatie/console/issues/801)) ([8f8e0cb](https://github.com/oyatie/console/commit/8f8e0cbdac26aebd84c03b92ba88bc1c0e43baaf))
+* **ci:** align the shards on the profile vars, not the ones that already matched ([03e7292](https://github.com/oyatie/console/commit/03e7292d37d6d6cd034372a15b21a4d2cc675926))
+* **deps:** bump h2 0.4.14 -&gt; 0.4.16 for RUSTSEC-2026-0258 ([60a9099](https://github.com/oyatie/console/commit/60a9099947b84530efc1848055b2dbbd3cfd2d79))
+* **deps:** regenerate third-party/rust/BUCK for the h2 bump ([a8ff2cf](https://github.com/oyatie/console/commit/a8ff2cf9624f2bc26f884def0a1d3a1fb25b12a7))
+* **lens:** add the missing regression suite; reject duplicate blocks and unparseable entries ([13d6207](https://github.com/oyatie/console/commit/13d62077aaae94d8554c670470460258167a1ad1))
+* **lens:** derive the manifest from AGENTS.md, compare whole blocks, keep README ([5bacf8e](https://github.com/oyatie/console/commit/5bacf8ee031efff9fed5e1f844f4dcb60707c6fa))
+* **lens:** reject any numbered-list delimiter, not just the dot ([7705578](https://github.com/oyatie/console/commit/7705578e82a8ef2420e18168c4eec50268e8648c))
+* **lens:** reject blank/duplicate identifiers, catalogue the class, schedule the checker ([7511a91](https://github.com/oyatie/console/commit/7511a919e7851026ecb985f9f30ef00c9fad4a3b))
+* **payroll:** make `payable` fail closed in the database, not in review ([#793](https://github.com/oyatie/console/issues/793)) ([1532322](https://github.com/oyatie/console/commit/1532322afc72516cd8d0ff8e5ec5a1e155999cd2))
+
+
+### Performance Improvements
+
+* **ci:** let the postgres shards reach the Rust cache they never could ([bdc6c81](https://github.com/oyatie/console/commit/bdc6c81aa3189d3a8599ecb27085946112d853d5))
+
 ## [0.3.7](https://github.com/jason931225/console/compare/v0.3.6...v0.3.7) (2026-08-16)
 
 
