@@ -307,7 +307,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
-use console_ontology_canonical_domain::ObjectKey;
+use console_ontology_canonical_domain::{ObjectKey, ReceiptOwner};
 
 /// One production-source DML statement against a canonical-object table held by
 /// a crate that does not own it.
@@ -319,9 +319,28 @@ pub struct Violation {
     pub path: String,
 }
 
+/// One production-source DML statement against a SHARED authority table held by
+/// a crate that is not permitted to write it.
+///
+/// Kept separate from [`Violation`] deliberately: a shared table has no single
+/// owner, so there is no `owner_crate` to name, and — more importantly — these
+/// are NOT ratchetable. [`KNOWN_SECOND_WRITERS`] cannot exempt one.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SharedWriteViolation {
+    pub table: String,
+    pub permitted_crates: Vec<&'static str>,
+    pub offending_crate: String,
+    pub path: String,
+}
+
 #[derive(Debug, Default)]
 pub struct Report {
     pub violations: Vec<Violation>,
+    /// Writes to a shared authority table by a crate outside its permitted set.
+    pub shared_violations: Vec<SharedWriteViolation>,
+    /// `(table, crate)` for every PERMITTED crate actually observed writing a
+    /// shared table. Feeds [`Report::stale_permitted_writers`].
+    pub shared_writers: BTreeSet<(&'static str, String)>,
     pub scanned_files: usize,
 }
 
@@ -329,7 +348,7 @@ impl Report {
     /// True when the tree holds no second writer at all — the end state.
     #[must_use]
     pub fn passed(&self) -> bool {
-        self.violations.is_empty()
+        self.violations.is_empty() && self.shared_violations.is_empty()
     }
 
     /// Second writers that are NOT in [`KNOWN_SECOND_WRITERS`]. Any of these
@@ -362,6 +381,67 @@ impl Report {
             })
             .collect()
     }
+}
+
+impl Report {
+    /// Permitted writers that write nothing.
+    ///
+    /// This is the half that makes the shared roster a RATCHET rather than a
+    /// growing allowance. [`Report::unknown`] and [`Report::stale_exemptions`]
+    /// together make `KNOWN_SECOND_WRITERS` able only to shrink; a permitted-
+    /// writer set derived from a roster has the opposite bias — it grows
+    /// silently, because declaring a seventh object key would grant its owner
+    /// crate DML on the shared store with no gate edit and no failing test.
+    ///
+    /// So a permitted crate that holds no write against the table fails the
+    /// gate. The permission and the write must both exist, or neither does.
+    #[must_use]
+    pub fn stale_permitted_writers(&self) -> Vec<(&'static str, &'static str)> {
+        let mut stale = Vec::new();
+        for rule in shared_authority_roster() {
+            for permitted in &rule.permitted_crates {
+                if !self
+                    .shared_writers
+                    .iter()
+                    .any(|(table, crate_name)| *table == rule.table && crate_name == permitted)
+                {
+                    stale.push((rule.table, *permitted));
+                }
+            }
+        }
+        stale
+    }
+}
+
+/// A table with no single owner, written by several named crates and by nobody
+/// else.
+///
+/// The receipt store is the case this exists for: it is the authority record
+/// for every dispatch target, so each object's owner writes ITS rows there. That
+/// is not a single-writer table and pretending otherwise would mean collapsing
+/// six owners into one crate — measured as a false green, because
+/// `scan`'s `owner_of` map would become constant and could never charge a
+/// cross-object write again.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SharedAuthorityRule {
+    pub table: &'static str,
+    pub permitted_crates: Vec<&'static str>,
+}
+
+/// The shared-authority roster, derived from [`ReceiptOwner::ALL`] so it cannot
+/// go stale against the writer-ownership registry.
+#[must_use]
+pub fn shared_authority_roster() -> Vec<SharedAuthorityRule> {
+    let mut permitted: Vec<&'static str> = ReceiptOwner::ALL
+        .iter()
+        .map(|owner| owner.writer_crate())
+        .collect();
+    permitted.sort_unstable();
+    permitted.dedup();
+    vec![SharedAuthorityRule {
+        table: ReceiptOwner::RECEIPT_STORE,
+        permitted_crates: permitted,
+    }]
 }
 
 /// One second writer that already exists, named exactly, with the lane that
@@ -463,6 +543,10 @@ pub fn scan(root: &Path) -> Result<Report, std::io::Error> {
         })
         .collect();
 
+    // Shared authority tables have no single owner, so they are charged by a
+    // permitted-SET rule rather than by `owner_of`.
+    let shared = shared_authority_roster();
+
     let mut report = Report::default();
     let mut sources = Vec::new();
     let mut manifests = Vec::new();
@@ -507,6 +591,30 @@ pub fn scan(root: &Path) -> Result<Report, std::io::Error> {
                 if **owner != crate_name && names_table(&names, owned) {
                     hit.insert(owned);
                 }
+            }
+        }
+
+        // Shared-store pass. Runs on the same extracted targets as the owned
+        // pass, including the unresolved-target fallback: a write whose target
+        // could not be read is a write to an UNKNOWN table, and the shared store
+        // must not be the one place that reasoning stops applying.
+        for rule in &shared {
+            let named_directly = targets.tables.iter().any(|table| table == rule.table);
+            let named_unresolved = targets.unresolved && names_table(&names, rule.table);
+            if !(named_directly || named_unresolved) {
+                continue;
+            }
+            if rule.permitted_crates.contains(&crate_name.as_str()) {
+                report
+                    .shared_writers
+                    .insert((rule.table, crate_name.clone()));
+            } else {
+                report.shared_violations.push(SharedWriteViolation {
+                    table: rule.table.to_owned(),
+                    permitted_crates: rule.permitted_crates.clone(),
+                    offending_crate: crate_name.clone(),
+                    path: path.display().to_string(),
+                });
             }
         }
 

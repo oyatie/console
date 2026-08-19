@@ -2846,3 +2846,196 @@ fn console_workflow_no_longer_writes_the_pay_run_tables() -> Result<(), Box<dyn 
     );
     Ok(())
 }
+
+// ---------------------------------------------------------------------------
+// SHARED AUTHORITY TABLE: the receipt store
+//
+// `ont_action_command_receipts` is the authority record for every dispatch
+// target, so each object's owner writes ITS rows there. It has no single owner
+// and therefore no entry in the writer-ownership registry — which meant, until
+// this rule landed, that the gate never examined it at all. Measured before the
+// fix: appending an `INSERT INTO ont_action_command_receipts` to
+// `backend/app/src/hr.rs` left the suite at 48 passed / 0 failed, while the same
+// probe against `employment_heads` turned three tests red.
+//
+// Collapsing the writers into one crate to reuse the single-owner rule was
+// designed and REFUTED: retargeting `ObjectKey::PayRun.owner_crate` makes
+// `scan`'s `owner_of` map constant across all twenty tables, so
+// `**owner != crate_name` could never fire again for any cross-object pair. That
+// is a false green, so the boundary here is a permitted SET.
+// ---------------------------------------------------------------------------
+
+use console_gate_writer_ownership::shared_authority_roster;
+use console_ontology_canonical_domain::ReceiptOwner;
+
+/// A crate outside the permitted set that writes the receipt store is charged.
+#[test]
+fn gate_detects_an_unpermitted_writer_of_the_shared_receipt_store()
+-> Result<(), Box<dyn std::error::Error>> {
+    let root = temp_tree("shared-unpermitted")?;
+    crate_with_source(
+        &root,
+        "app",
+        "console-app",
+        "src/lib.rs",
+        "pub async fn f(p: &sqlx::PgPool) {\n    \
+         sqlx::query(\"INSERT INTO ont_action_command_receipts (org_id) VALUES ($1)\")\n        \
+         .execute(p).await.unwrap();\n}\n",
+    )?;
+    let report = console_gate_writer_ownership::scan(&root)?;
+    assert_eq!(
+        report.shared_violations.len(),
+        1,
+        "expected exactly one shared-table violation: {:#?}",
+        report.shared_violations
+    );
+    let violation = &report.shared_violations[0];
+    assert_eq!(violation.offending_crate, "console-app");
+    assert_eq!(violation.table, ReceiptOwner::RECEIPT_STORE);
+    assert!(
+        !report.passed(),
+        "a shared-table violation must fail the gate"
+    );
+    Ok(())
+}
+
+/// Each permitted crate writes it freely, and is RECORDED as having written it.
+#[test]
+fn every_permitted_crate_may_write_the_shared_receipt_store()
+-> Result<(), Box<dyn std::error::Error>> {
+    for permitted in &shared_authority_roster()[0].permitted_crates {
+        let root = temp_tree(&format!("shared-permitted-{permitted}"))?;
+        crate_with_source(
+            &root,
+            "w",
+            permitted,
+            "src/lib.rs",
+            "pub async fn f(p: &sqlx::PgPool) {\n    \
+             sqlx::query(\"INSERT INTO ont_action_command_receipts (org_id) VALUES ($1)\")\n        \
+             .execute(p).await.unwrap();\n}\n",
+        )?;
+        let report = console_gate_writer_ownership::scan(&root)?;
+        assert!(
+            report.shared_violations.is_empty(),
+            "{permitted} is permitted and must not be charged: {:#?}",
+            report.shared_violations
+        );
+        assert!(
+            report
+                .shared_writers
+                .contains(&(ReceiptOwner::RECEIPT_STORE, (*permitted).to_owned())),
+            "{permitted}'s write must be RECORDED, or stale_permitted_writers cannot ratchet"
+        );
+    }
+    Ok(())
+}
+
+/// Reading the store is not writing it.
+#[test]
+fn selecting_from_the_shared_receipt_store_is_not_a_write() -> Result<(), Box<dyn std::error::Error>>
+{
+    let root = temp_tree("shared-select")?;
+    crate_with_source(
+        &root,
+        "app",
+        "console-app",
+        "src/lib.rs",
+        "pub async fn f(p: &sqlx::PgPool) {\n    \
+         sqlx::query(\"SELECT receipt FROM ont_action_command_receipts WHERE org_id = $1\")\n        \
+         .fetch_one(p).await.unwrap();\n}\n",
+    )?;
+    let report = console_gate_writer_ownership::scan(&root)?;
+    assert!(
+        report.shared_violations.is_empty(),
+        "a read must not be charged: {:#?}",
+        report.shared_violations
+    );
+    Ok(())
+}
+
+/// An unreadable write target that NAMES the store is still charged — the
+/// `format!("INSERT INTO {t}")` evasion the owned-table pass already refuses.
+#[test]
+fn an_unresolved_write_naming_the_shared_store_is_still_charged()
+-> Result<(), Box<dyn std::error::Error>> {
+    let root = temp_tree("shared-unresolved")?;
+    crate_with_source(
+        &root,
+        "app",
+        "console-app",
+        "src/lib.rs",
+        "pub async fn f(p: &sqlx::PgPool, t: &str) {\n    \
+         let _ = \"ont_action_command_receipts\";\n    \
+         sqlx::query(&format!(\"INSERT INTO {t} (org_id) VALUES ($1)\"))\n        \
+         .execute(p).await.unwrap();\n}\n",
+    )?;
+    let report = console_gate_writer_ownership::scan(&root)?;
+    assert_eq!(
+        report.shared_violations.len(),
+        1,
+        "an unresolved target naming the store must be charged: {:#?}",
+        report.shared_violations
+    );
+    Ok(())
+}
+
+/// The permitted set is a RATCHET, not a growing allowance: a crate permitted to
+/// write the store that holds no write fails the gate. Without this, declaring a
+/// seventh object key would silently grant its owner DML on the receipt store.
+#[test]
+fn a_permitted_crate_that_writes_nothing_is_stale() -> Result<(), Box<dyn std::error::Error>> {
+    let root = temp_tree("shared-stale-permission")?;
+    // A tree where NOBODY writes the store: every permitted crate is stale.
+    crate_with_source(&root, "x", "console-app", "src/lib.rs", "pub fn f() {}\n")?;
+    let report = console_gate_writer_ownership::scan(&root)?;
+    let stale = report.stale_permitted_writers();
+    assert_eq!(
+        stale.len(),
+        shared_authority_roster()[0].permitted_crates.len(),
+        "every permitted crate writes nothing here, so every one is stale: {stale:#?}"
+    );
+    Ok(())
+}
+
+/// The shared roster is DISJOINT from the owned-table registry, and that is
+/// deliberate.
+///
+/// The executed PostgreSQL census in `ops/postgres-reconcile-topology.sh`
+/// derives its roster from `ObjectKey::owned_tables()` and examines exactly
+/// those twenty tables. The shared store is governed by the STATIC half only.
+/// Pinning the disjointness makes that asymmetry a declared property rather than
+/// a silent one: if anyone later adds the receipt store to an object's
+/// `owned_tables`, this fails and forces the database half to be considered too.
+#[test]
+fn the_shared_roster_is_disjoint_from_the_owned_registry() {
+    let owned: std::collections::BTreeSet<&str> = ObjectKey::ALL
+        .iter()
+        .flat_map(|key| key.owned_tables().iter().copied())
+        .collect();
+    for rule in shared_authority_roster() {
+        assert!(
+            !owned.contains(rule.table),
+            "{} is in BOTH the shared roster and an object's owned_tables; the static gate would \
+             charge it twice and the PostgreSQL census would silently disagree about its scope",
+            rule.table
+        );
+    }
+}
+
+/// The permitted set is derived from `ReceiptOwner::ALL`, not hand-listed.
+#[test]
+fn the_permitted_set_is_derived_from_the_receipt_owner_roster() {
+    let rule = &shared_authority_roster()[0];
+    for owner in ReceiptOwner::ALL {
+        assert!(
+            rule.permitted_crates.contains(&owner.writer_crate()),
+            "{:?}'s writer crate is not permitted to write the store it owns rows in",
+            owner
+        );
+    }
+    // Exactly the distinct writer crates, no extras.
+    let mut expected: Vec<&str> = ReceiptOwner::ALL.iter().map(|o| o.writer_crate()).collect();
+    expected.sort_unstable();
+    expected.dedup();
+    assert_eq!(rule.permitted_crates, expected);
+}

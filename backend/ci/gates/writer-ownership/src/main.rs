@@ -41,8 +41,32 @@ fn main() -> ExitCode {
         );
     }
 
-    if unknown.is_empty() && stale.is_empty() {
-        println!("writer-ownership: OK — no new second writer, no stale ratchet entry");
+    for violation in &report.shared_violations {
+        println!(
+            "writer-ownership SHARED-TABLE VIOLATION: {} writes `{}`, permitted writers are {} ({})",
+            violation.offending_crate,
+            violation.table,
+            violation.permitted_crates.join(", "),
+            violation.path
+        );
+    }
+    let stale_permitted = report.stale_permitted_writers();
+    for (table, permitted) in &stale_permitted {
+        println!(
+            "writer-ownership STALE SHARED PERMISSION: {permitted} is permitted to write `{table}` \
+             but holds no write — remove the permission or the receipt owner that grants it"
+        );
+    }
+
+    if unknown.is_empty()
+        && stale.is_empty()
+        && report.shared_violations.is_empty()
+        && stale_permitted.is_empty()
+    {
+        println!(
+            "writer-ownership: OK — no new second writer, no stale ratchet entry, \
+             no unpermitted shared-table writer"
+        );
         return ExitCode::SUCCESS;
     }
     ExitCode::FAILURE

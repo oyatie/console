@@ -311,6 +311,32 @@ impl ReceiptOwner {
         Self::Canonical(ObjectKey::PayRun),
     ];
 
+    /// The table every stored receipt lands in.
+    ///
+    /// Named once, here, beside the roster that partitions it. The
+    /// writer-ownership gate reads this rather than repeating the literal, so a
+    /// rename cannot leave the gate guarding a table that no longer exists while
+    /// still reporting success.
+    pub const RECEIPT_STORE: &'static str = "ont_action_command_receipts";
+
+    /// The single production crate permitted to write THIS owner's receipt rows.
+    ///
+    /// Derived from [`ObjectKey::owner_crate`] for canonical owners, so the
+    /// permitted set cannot drift from the writer-ownership registry: adding a
+    /// seventh object key extends this set through the same edit that gives the
+    /// key its owner, and no second place needs updating.
+    ///
+    /// `OntologyAction` is the pre-existing instance-action path, whose writer
+    /// is the ontology REST crate — the rows that predate the canonical ports
+    /// and are why the store is shared at all.
+    #[must_use]
+    pub const fn writer_crate(self) -> &'static str {
+        match self {
+            Self::OntologyAction => "console-ontology-rest",
+            Self::Canonical(key) => key.owner_crate(),
+        }
+    }
+
     /// The stored `owner` value.
     #[must_use]
     pub const fn as_str(self) -> &'static str {
