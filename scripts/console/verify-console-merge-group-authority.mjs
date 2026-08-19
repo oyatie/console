@@ -41,8 +41,49 @@ export function pullRequestNumberFromHeadRef(headRef) {
 }
 
 /** @returns {{ok: boolean, reason: string}} */
-export function evaluateCheckRuns(runs, checkName) {
+/**
+ * Parse the NDJSON `gh api --paginate --jq` emits: one object per line, across
+ * every page.
+ *
+ * @param {string} stdout
+ * @returns {Array<{name:string, conclusion:string}>|null} null if any line is unparseable
+ */
+export function parseCheckRunLines(stdout) {
+  const lines = String(stdout ?? "").split("\n").filter((line) => line.trim() !== "");
+  const out = [];
+  for (const line of lines) {
+    try {
+      out.push(JSON.parse(line));
+    } catch {
+      return null;
+    }
+  }
+  return out;
+}
+
+/**
+ * @param {Array<object>|null} runs
+ * @param {string} checkName
+ * @param {number|null} expectedTotal the API's own `total_count`, when known
+ */
+export function evaluateCheckRuns(runs, checkName, expectedTotal = null) {
   if (!Array.isArray(runs)) return { ok: false, reason: "unreadable check-run list" };
+  // A short list and an absent check are the same observation to a filter, and
+  // treating them alike is what made this gate eject a PR that had passed. If
+  // the API says there are more check runs than were read, say THAT -- never
+  // "no such run", which reads as a missing gate rather than a missing page.
+  if (
+    typeof expectedTotal === "number"
+    && Number.isFinite(expectedTotal)
+    && runs.length < expectedTotal
+  ) {
+    return {
+      ok: false,
+      reason:
+        `read only ${runs.length} of ${expectedTotal} check runs on the queued head; `
+        + "the list is incomplete, so absence of a run cannot be concluded",
+    };
+  }
   const named = runs.filter((run) => run && run.name === checkName);
   if (named.length === 0) return { ok: false, reason: `no ${checkName} run on the queued head` };
   const conclusions = new Set(named.map((run) => run.conclusion));
@@ -87,17 +128,29 @@ if (isMain) {
       if (!/^[0-9a-f]{40}$/.test(headSha)) {
         fail(`cannot read the head SHA of queued pull request #${number}`);
       } else {
+        // `--paginate` with an explicit per_page: the API defaults to 30 per
+        // page, and this repository's pull requests already carry more than
+        // that (32 when #820 was ejected). Without it the authority check falls
+        // off page one whenever it sorts late, and the gate reports it missing
+        // on a pull request that passed it -- a non-deterministic ejection that
+        // grows more likely with every job added to CI.
         const checks = spawnSync("gh", [
-          "api", `repos/${repository}/commits/${headSha}/check-runs`,
-          "--jq", "[.check_runs[] | {name, conclusion}]",
+          "api", "--paginate",
+          `repos/${repository}/commits/${headSha}/check-runs?per_page=100`,
+          "--jq", ".check_runs[] | {name, conclusion}",
         ], { encoding: "utf8" });
-        let runs = null;
-        try {
-          runs = checks.status === 0 ? JSON.parse(checks.stdout) : null;
-        } catch {
-          runs = null;
-        }
-        const verdict = evaluateCheckRuns(runs, "authenticate-console-authority");
+        const runs = checks.status === 0 ? parseCheckRunLines(checks.stdout) : null;
+
+        // The API's own count, used to prove the read was complete rather than
+        // assumed complete.
+        const counted = spawnSync("gh", [
+          "api", `repos/${repository}/commits/${headSha}/check-runs?per_page=1`,
+          "--jq", ".total_count",
+        ], { encoding: "utf8" });
+        const parsedTotal = counted.status === 0 ? Number(counted.stdout.trim()) : NaN;
+        const expectedTotal = Number.isFinite(parsedTotal) ? parsedTotal : null;
+
+        const verdict = evaluateCheckRuns(runs, "authenticate-console-authority", expectedTotal);
         if (!verdict.ok) {
           fail(`pull request #${number} at ${headSha}: ${verdict.reason}`);
         } else {

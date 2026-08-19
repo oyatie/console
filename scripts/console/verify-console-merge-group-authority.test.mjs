@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-  evaluateCheckRuns,
-  pullRequestNumberFromHeadRef,
-} from "./verify-console-merge-group-authority.mjs";
+import { evaluateCheckRuns, parseCheckRunLines, pullRequestNumberFromHeadRef } from "./verify-console-merge-group-authority.mjs";
 
 const SHA = "a".repeat(40);
 
@@ -58,4 +55,68 @@ test("a re-run that produced one success and one failure is refused", () => {
     name,
   );
   assert.equal(verdict.ok, false);
+});
+
+test("check-run pagination", async (t) => {
+  const run = (name, conclusion = "success") => ({ name, conclusion });
+
+  await t.test("an incomplete read is not reported as a missing run", () => {
+    // The #820 ejection. The API defaults to 30 check runs per page and the PR
+    // had 32, so authenticate-console-authority fell off page one and the gate
+    // said "no authenticate-console-authority run on the queued head" about a
+    // pull request that had passed it. A short read must be named as a short
+    // read -- "missing page" and "missing gate" demand opposite responses.
+    const page = Array.from({ length: 30 }, (_, i) => run(`filler-${i}`));
+    const verdict = evaluateCheckRuns(page, "authenticate-console-authority", 32);
+    assert.equal(verdict.ok, false);
+    assert.match(verdict.reason, /read only 30 of 32/);
+    assert.doesNotMatch(verdict.reason, /no authenticate-console-authority run/);
+  });
+
+  await t.test("a complete read that truly lacks the run still says so", () => {
+    const runs = [run("something-else")];
+    const verdict = evaluateCheckRuns(runs, "authenticate-console-authority", 1);
+    assert.equal(verdict.ok, false);
+    assert.match(verdict.reason, /no authenticate-console-authority run/);
+  });
+
+  await t.test("a complete read containing the run passes", () => {
+    const runs = [...Array.from({ length: 31 }, (_, i) => run(`filler-${i}`)),
+      run("authenticate-console-authority")];
+    assert.equal(evaluateCheckRuns(runs, "authenticate-console-authority", 32).ok, true);
+  });
+
+  await t.test("an unknown total does not manufacture a short-read failure", () => {
+    // total_count is a best-effort probe; if it cannot be read the gate must
+    // still work off what it has rather than refusing everything.
+    const runs = [run("authenticate-console-authority")];
+    assert.equal(evaluateCheckRuns(runs, "authenticate-console-authority", null).ok, true);
+  });
+
+  await t.test("more runs than the reported total is not a short read", () => {
+    // Check runs can be added between the two API calls; only a SHORT read is
+    // suspicious.
+    const runs = [run("authenticate-console-authority"), run("x"), run("y")];
+    assert.equal(evaluateCheckRuns(runs, "authenticate-console-authority", 2).ok, true);
+  });
+
+  await t.test("parses the NDJSON gh --paginate emits across pages", () => {
+    const stdout = '{"name":"a","conclusion":"success"}\n{"name":"b","conclusion":"failure"}\n';
+    assert.deepEqual(parseCheckRunLines(stdout), [
+      { name: "a", conclusion: "success" },
+      { name: "b", conclusion: "failure" },
+    ]);
+  });
+
+  await t.test("blank lines between pages are tolerated", () => {
+    assert.deepEqual(parseCheckRunLines('\n{"name":"a","conclusion":"success"}\n\n'),
+      [{ name: "a", conclusion: "success" }]);
+  });
+
+  await t.test("a truncated page yields null, not a partial list", () => {
+    // Returning a partial list here would re-create the original bug one layer
+    // down: a truncated read that looks like a complete one.
+    assert.equal(parseCheckRunLines('{"name":"a","conclusion":"success"}\n{"name":"b"'), null);
+    assert.equal(evaluateCheckRuns(null, "authenticate-console-authority").ok, false);
+  });
 });
