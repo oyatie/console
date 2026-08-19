@@ -509,9 +509,6 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
-      - name: Free runner disk for PostgreSQL cargo tests
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
-        uses: ./.github/actions/free-runner-disk
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -567,9 +564,6 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
-      - name: Free runner disk for PostgreSQL cargo tests
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
-        uses: ./.github/actions/free-runner-disk
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -625,9 +619,6 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
-      - name: Free runner disk for PostgreSQL cargo tests
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
-        uses: ./.github/actions/free-runner-disk
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -683,9 +674,6 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
-      - name: Free runner disk for PostgreSQL cargo tests
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
-        uses: ./.github/actions/free-runner-disk
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -741,9 +729,6 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
-      - name: Free runner disk for PostgreSQL cargo tests
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
-        uses: ./.github/actions/free-runner-disk
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -838,10 +823,6 @@ jobs:
       - name: Install pinned DotSlash runtime
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: tools/buck/install_dotslash.sh
-
-      - name: Free runner disk for PostgreSQL Buck2 tests
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
-        uses: ./.github/actions/free-runner-disk
 
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
@@ -989,11 +970,6 @@ jobs:
         id: dotslash
         if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: ../tools/buck/install_dotslash.sh
-
-      - name: Free runner disk for Rust backend
-        id: free-disk
-        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
-        uses: ./.github/actions/free-runner-disk
 
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
         id: rust

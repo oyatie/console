@@ -692,20 +692,24 @@ describe("CI preflight contract", () => {
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
+    // 2026-08-18: the Free runner disk step was removed from every ci.yml job
+    // (measured: 87G already free before it ran, 110G after, and zero ENOSPC in
+    // any log). These counts step down by exactly one per job that carried it,
+    // and by no more.
     const requiredActionStepCounts = {
       preflight: 3,
       "domain-unit": 3,
-      backend: 4,
+      backend: 3,
       "kubernetes-manifests": 1,
       "repo-gates": 2,
       "api-contract": 2,
       "generated-face-authority": 4,
-      "company-conformance": 3,
-      "postgres-reachability-app": 4,
-      "postgres-reachability-platform": 4,
-      "postgres-reachability-ontology": 4,
-      "postgres-reachability-domain-a": 4,
-      "postgres-reachability-domain-b": 4,
+      "company-conformance": 2,
+      "postgres-reachability-app": 3,
+      "postgres-reachability-platform": 3,
+      "postgres-reachability-ontology": 3,
+      "postgres-reachability-domain-a": 3,
+      "postgres-reachability-domain-b": 3,
     };
     const workflowModel = yaml.load(workflow);
     const bypasses = [
@@ -736,8 +740,11 @@ describe("CI preflight contract", () => {
     // 2026-08-18: dev-up-smoke (7 run steps, 4 setup actions) moved to Nightly,
     // so these ratchets step down by exactly its step counts and no more. A
     // shrink that does NOT match a job leaving ci.yml is still a regression.
-    assert.equal(actionStepCount, 42, "required and planned job setup-action coverage must not shrink");
-    assert.equal(mutationCount, 84, "setup-action bypass matrix must not shrink");
+    // 2026-08-18: -7, exactly the Free runner disk steps removed from ci.yml
+    // (5 postgres shards + backend + company-conformance) and no more.
+    assert.equal(actionStepCount, 35, "required and planned job setup-action coverage must not shrink");
+    // 2026-08-18: -14 = 7 removed setup actions x 2 bypass mutations each.
+    assert.equal(mutationCount, 70, "setup-action bypass matrix must not shrink");
   });
 
   it("locks every setup action's identity, inputs, totality, and interleaving", () => {
@@ -812,7 +819,7 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(mutationCount, 277, "setup-action identity/input/interleaving matrix must not shrink");
+    assert.equal(mutationCount, 249, "setup-action identity/input/interleaving matrix must not shrink");
   });
 
   it("locks the candidate-controlled local free-runner-disk action body", () => {
