@@ -28,6 +28,14 @@ WITH import_rows AS (
      AND run.org_id = r.org_id
     WHERE run.entity_type = 'employee_hr'
       AND run.source_filename LIKE '2026/5월/%'
+      -- Provenance. `data_import_runs.status` admits PREVIEWED/DRY_RUN/APPLIED/
+      -- FAILED and `data_import_rows.row_status` admits CANDIDATE/PRESERVED/
+      -- ERROR (migration 0070). This filtered on NEITHER: the only thing keeping
+      -- unapplied rows out was a human hand-typing one vetted filename above. A
+      -- never-applied DRY_RUN, or a FAILED run's ERROR rows, would otherwise
+      -- materialise a roster and count as payroll/attendance source material.
+      AND run.status = 'APPLIED'
+      AND r.row_status <> 'ERROR'
 ), import_orgs AS (
     SELECT
         org_id,
@@ -82,6 +90,19 @@ WITH import_rows AS (
         legal_basis = EXCLUDED.legal_basis,
         source_summary = EXCLUDED.source_summary,
         updated_at = now()
+    -- Re-running this script must never rewind a run that has left the
+    -- pre-close states. Without this the DO UPDATE reset status to
+    -- BLOCKED_LEGAL_GATE unconditionally, so a re-stage over an
+    -- ATTENDANCE_CLOSED, CALCULATED, APPROVED, ISSUED or PAID run rewound it and
+    -- rewrote its source_summary -- invalidating the close_receipt that attested
+    -- it and desynchronising the append-only payroll_line_calculations from the
+    -- lines they were computed from. The three admissible states are the same
+    -- ones `CLOSEABLE` names in payroll/adapter-postgres/src/lifecycle.rs.
+    --
+    -- A run past those states is skipped entirely: it returns no row here, so
+    -- `upsert_lines` joins nothing for it and its line evidence is left alone
+    -- too. Doing nothing is the correct outcome; rewinding a paid run is not.
+    WHERE payroll_draft_runs.status IN ('STAGED', 'BLOCKED_LEGAL_GATE', 'READY_FOR_REVIEW')
     RETURNING id, org_id
 ), employee_basis AS (
     SELECT
