@@ -94,6 +94,31 @@ requireNotIncludes(
   "stage SQL avoids broad raw selects",
 );
 
+// Provenance of the material that reaches payroll_draft_lines. `data_import_runs.status`
+// admits PREVIEWED/DRY_RUN/APPLIED/FAILED and `data_import_rows.row_status` admits
+// CANDIDATE/PRESERVED/ERROR (migration 0070). The stage SQL filtered on NEITHER: the only
+// thing keeping unapplied rows out of a payroll roster was a human hand-typing one vetted
+// source_filename. Measured against a live PostgreSQL: with these two predicates removed, a
+// never-applied DRY_RUN and a run whose rows are all ERROR each materialise a roster line.
+requireIncludes(
+  "scripts/stage_coss_group_payroll_readiness.sql",
+  "run.status = 'APPLIED'",
+  "stage SQL admits only APPLIED import runs as payroll source material",
+);
+requireIncludes(
+  "scripts/stage_coss_group_payroll_readiness.sql",
+  "r.row_status <> 'ERROR'",
+  "stage SQL never treats an ERROR import row as payroll source material",
+);
+// Re-running the stage must not rewind a run that has left the pre-close states. Without the
+// guard the ON CONFLICT DO UPDATE reset status to BLOCKED_LEGAL_GATE unconditionally, so a
+// re-stage over a PAID run rewound it -- measured: PAID -> BLOCKED_LEGAL_GATE.
+requireIncludes(
+  "scripts/stage_coss_group_payroll_readiness.sql",
+  "WHERE payroll_draft_runs.status IN ('STAGED', 'BLOCKED_LEGAL_GATE', 'READY_FOR_REVIEW')",
+  "stage SQL refuses to rewind a run past the pre-close states",
+);
+
 requireIncludes(
   "package.json",
   '"check:g008-payroll-readiness"',
