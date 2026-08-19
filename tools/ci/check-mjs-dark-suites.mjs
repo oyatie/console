@@ -16,6 +16,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { sweepReachableText } from "./gate-sweep.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const args = new Set(process.argv.slice(2));
@@ -123,7 +124,15 @@ export function resolveDarkSuites(repoRoot = root) {
     }
   }
 
-  const expanded = runText + [...invoked].map((n) => scripts[n]).join("\n");
+  // tools/ci/gate-sweep.json is a real execution path, so it is a real
+  // reachability source. `check:ci-preflight` used to be an `&&` chain that
+  // named its test files inline in package.json, which is where this scan
+  // looks; the chain became a fail-slow sweep and moved those commands into a
+  // manifest. Without reading it, 20 suites that DO run every CI cycle report
+  // as dark -- and the natural "fix" is to baseline them, which would retire
+  // live coverage on the strength of a scanner blind spot.
+  const sweepText = sweepReachableText(repoRoot);
+  const expanded = runText + [...invoked].map((n) => scripts[n]).join("\n") + sweepText;
   const suites = listTestMjs(repoRoot, repoRoot);
   const dark = [];
   const wired = [];

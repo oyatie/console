@@ -78,6 +78,34 @@ class LaneResult:
     error: str = ""
 
 
+def _in_slice(path: str, allow) -> bool:
+    """Is `path` inside a declared slice?
+
+    Exact-set membership was the original rule (`f not in allow`), which cannot
+    express a subtree: declaring `backend/crates/payroll` made every file beneath
+    it read as an out-of-slice breach, so any lane owning a directory reported a
+    false isolation failure. `.claude/workflows/lane-fanout.js:110-172` already
+    carries the correct algebra; this is the same rule.
+
+    A declared entry matches the path itself or anything under it as a PATH
+    prefix -- `a/b` covers `a/b/c` but never `a/bc`, because a shared string
+    prefix is not a shared directory. `..` is refused rather than normalised:
+    collapsing ownership across directories is exactly what a slice must not do.
+    """
+    for raw in allow:
+        entry = str(raw).strip().rstrip("/")
+        if not entry:
+            continue
+        if ".." in entry.split("/"):
+            raise ValueError(
+                f"allow entry contains '..' ({raw!r}) -- refuse rather than "
+                "collapse ownership across directories"
+            )
+        if path == entry or path.startswith(entry + "/"):
+            return True
+    return False
+
+
 def _build_env() -> dict:
     """Environment for a lane: shared compilation cache, private target dir.
 
@@ -97,6 +125,17 @@ def _build_env() -> dict:
     if shutil.which("sccache"):
         env.setdefault("RUSTC_WRAPPER", "sccache")
         env.setdefault("SCCACHE_CACHE_SIZE", "50G")
+        # Without this the wrapper above buys NOTHING, which is the same 0%-hits
+        # outcome this docstring already records. Cargo defaults `incremental` on
+        # for the dev and test profiles and `backend/Cargo.toml` does not override
+        # it; rustc invoked with `-C incremental=...` is not a cacheable
+        # compilation, so sccache does not MISS it, it never sees it.
+        #
+        # Measured in scripts/console/lane-env.sh:26-37, one crate, `cargo clean -p`
+        # then `sccache --zero-stats` before each:
+        #   incremental on      -> 0 hits, 0 misses, 0 non-cacheable  (invisible)
+        #   CARGO_INCREMENTAL=0 -> 1 miss                             (entered the cache)
+        env.setdefault("CARGO_INCREMENTAL", "0")
     return env
 
 
@@ -153,8 +192,7 @@ def run_lanes(spec_path: Path, model: str, sandbox: str) -> int:
                                  logs / f"lane-{lane}.jsonl")
         elapsed = time.time() - start
         changed = _changed(wt)
-        allow = set(item.get("allow", []))
-        out_of_slice = [f for f in changed if f not in allow]
+        out_of_slice = [f for f in changed if not _in_slice(f, item.get("allow", []))]
         return LaneResult(lane, ok and not out_of_slice, round(elapsed, 1),
                           changed, out_of_slice, answer[:4000], err if not ok else "")
 
