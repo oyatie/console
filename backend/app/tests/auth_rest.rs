@@ -1566,6 +1566,32 @@ async fn otp_redeem_rate_limit_wires_up_on_real_clock_path(pool: PgPool) {
         .unwrap(),
     );
 
+    // The limiter buckets into a FIXED one-minute TUMBLING window -- see
+    // `floor_to_window` in crates/platform/auth-rest/src/lib.rs, which floors to
+    // `unix - unix.rem_euclid(60)` -- not a sliding one. Every request below
+    // must therefore land inside the SAME window: if the loop straddles a minute
+    // boundary the counter resets mid-loop and the eleventh request comes back
+    // 401 instead of 429.
+    //
+    // That is not hypothetical. This test drives eleven real DB-backed requests,
+    // so on a loaded runner it occupies a meaningful fraction of the window and
+    // fails whenever it starts late in one. It did exactly that on run
+    // 32225725163, on a pull request that changed nothing near auth.
+    //
+    // The sibling test named in this test's own doc comment
+    // (`rate_limit_trips_at_cap_and_resets_after_window`) drives `now` directly
+    // and so has no such exposure; this one exists to prove the REAL clock path
+    // is wired, so it cannot inject a clock -- but it can decline to start near
+    // a boundary.
+    let into_window = OffsetDateTime::now_utc().unix_timestamp().rem_euclid(60);
+    const WINDOW_SECS: i64 = 60;
+    // Budget generously: the eleven requests each round-trip to PostgreSQL.
+    const NEEDED_SECS: i64 = 30;
+    if into_window > WINDOW_SECS - NEEDED_SECS {
+        let wait = (WINDOW_SECS - into_window + 1) as u64;
+        tokio::time::sleep(std::time::Duration::from_secs(wait)).await;
+    }
+
     // Drive the real ingress boundary: the XFF identity is accepted only from
     // the configured trusted transport peer. The first identity exhausts its
     // own bucket while the second remains independently usable.
