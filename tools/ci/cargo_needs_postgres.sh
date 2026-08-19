@@ -98,7 +98,8 @@ if ! docker image inspect "${postgres_image}" >/dev/null 2>&1; then
 fi
 
 docker run -d --rm --name "${container_name}" -p 127.0.0.1::5432 \
-  --env-file "${container_env_file}" "${postgres_image}" >/dev/null
+  --env-file "${container_env_file}" "${postgres_image}" \
+  -c fsync=off -c synchronous_commit=off -c full_page_writes=off >/dev/null
 docker cp "${repo_root}/ops/postgres-reconcile-topology.sh" "${container_name}:/topology.sh"
 docker cp "${container_env_file}" "${container_name}:/topology.env"
 
