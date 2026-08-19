@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "description": "Buck sh_test postgres wrappers → cargo test argv for tools/ci/cargo_needs_postgres.sh",
+  "description": "Buck sh_test postgres wrappers \u2192 cargo test argv for tools/ci/cargo_needs_postgres.sh",
   "counts": {
-    "mapped": 224,
+    "mapped": 226,
     "unmapped": 3,
-    "workflow_targets": 209,
-    "workflow_mapped": 209,
+    "workflow_targets": 211,
+    "workflow_mapped": 211,
     "workflow_missing": 0
   },
   "entries": [
@@ -5195,6 +5195,52 @@
       ],
       "in_workflow_postgres_job": true,
       "measured_seconds": 64.7
+    },
+    {
+      "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-employment-reassign-as-runtime-role-pg",
+      "name": "ontology-canonical-adapter-postgres-employment-reassign-as-runtime-role-pg",
+      "buck_inner": "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-employment_reassign_as_runtime_role",
+      "package": "console-ontology-canonical-adapter-postgres",
+      "crate_dir": "backend/crates/ontology/canonical-adapter-postgres",
+      "kind": "test",
+      "test": "employment_reassign_as_runtime_role",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-ontology-canonical-adapter-postgres",
+        "--test",
+        "employment_reassign_as_runtime_role",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
+    },
+    {
+      "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-employment-reassign-identity-as-runtime-role-pg",
+      "name": "ontology-canonical-adapter-postgres-employment-reassign-identity-as-runtime-role-pg",
+      "buck_inner": "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-employment_reassign_identity_as_runtime_role",
+      "package": "console-ontology-canonical-adapter-postgres",
+      "crate_dir": "backend/crates/ontology/canonical-adapter-postgres",
+      "kind": "test",
+      "test": "employment_reassign_identity_as_runtime_role",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-ontology-canonical-adapter-postgres",
+        "--test",
+        "employment_reassign_identity_as_runtime_role",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-job-position-port-as-runtime-role-pg",
