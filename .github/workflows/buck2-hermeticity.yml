@@ -1,0 +1,61 @@
+# Buck2 graph hermeticity check.
+#
+# Buck2's differentiator here is not speed: it forces declared inputs where Cargo
+# tolerates undeclared ones, so drift surfaces as a failure here rather than as an
+# unreproducible build later. That is drift-catching, not a critical path, so it
+# runs on a schedule and is NOT a required context. See DN-0008.
+#
+# Deliberately a separate workflow rather than a job inside nightly.yml: that
+# workflow's contract test asserts the locked dev-up-smoke step list covers every
+# step the file declares, so adding a job there would weaken a guard this change
+# does not own.
+name: Buck2 hermeticity
+
+on:
+  schedule:
+    - cron: "53 6 * * *" # daily, off the :00/:30 stampede and clear of nightly (05:41) and cache-hygiene (06:17)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  buck2-graph:
+    name: Buck2 graph builds with declared inputs
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Buck2 and the toolchains it resolves against
+        uses: ./.github/actions/buck2-setup
+
+      # The cache only makes this faster. cas-warm falls back to --no-remote-cache
+      # when it is unreachable, because Buck2 treats a configured-but-absent CAS as
+      # fatal rather than degrading.
+      - name: Start the in-runner warm cache
+        uses: ./.github/actions/cas-inrunner
+
+      - name: Warm cache preflight
+        id: warm
+        uses: ./.github/actions/cas-warm
+        with:
+          endpoint: "127.0.0.1:50051"
+          role: writer
+
+      - name: Build the Buck2 gate graph
+        run: |
+          tools/buck2 --isolation-dir ci build --config-file infra/ci/buckconfig/warm-cache.buckconfig \
+            ${{ steps.warm.outputs.flags }} \
+            //backend/ci/gates/... --console=simple 2>&1 | tail -12
+
+      - name: Report cache effectiveness
+        if: always()
+        run: du -sh ~/nativelink-cas || true

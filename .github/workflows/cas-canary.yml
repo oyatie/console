@@ -1,0 +1,131 @@
+# Warm cache for CI. Deliberately NOT a required context and not referenced by
+# check-ci-preflight or check-foundation-gates: Buck2 hard-fails when a configured
+# CAS is unreachable, so a build cache must never be able to fail Required CI.
+#
+# Durability model:
+#   push:main     -> build and SAVE. Default-branch caches are readable from every
+#                    branch and PR, so one save serves everyone.
+#   pull_request  -> RESTORE only. A PR never writes, so no PR can spend the shared
+#                    ~10 GB Actions budget (cache-hygiene.yml hard-fails above 8 GiB).
+name: CAS canary
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  fallback:
+    name: Warm cache degrades to local
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with: { persist-credentials: false }
+      - name: Preflight against an endpoint that is not there
+        id: cas
+        uses: ./.github/actions/cas-warm
+        with: { endpoint: "127.0.0.1:59999", role: reader }
+      - name: A cache outage must not fail the build
+        env:
+          CAS_UP: ${{ steps.cas.outputs.cas-up }}
+          FLAGS: ${{ steps.cas.outputs.flags }}
+        run: |
+          [ "$CAS_UP" = "0" ] || { echo "expected the probe to report down"; exit 1; }
+          [ "$FLAGS" = "--no-remote-cache" ] || { echo "expected the fallback flag"; exit 1; }
+          [ ! -f .buckconfig.local ] || { echo "unreachable cache must not leave RE config"; exit 1; }
+          echo "OK: cold path selected, build may proceed locally"
+
+  seed:
+    name: Seed the durable cache (main only)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/buck2-setup
+      - uses: ./.github/actions/cas-inrunner
+      - uses: ./.github/actions/cas-warm
+        id: warm
+        with: { endpoint: "127.0.0.1:50051", role: writer }
+      - name: Build the gate Required CI runs
+        run: |
+          tools/buck2 --isolation-dir ci build --config-file infra/ci/buckconfig/warm-cache.buckconfig \
+            ${{ steps.warm.outputs.flags }} \
+            //backend/ci/gates/layer-boundary:console-gate-layer-boundary --console=simple 2>&1 | tail -5
+      - name: Store size
+        run: du -sh ~/nativelink-cas || true
+      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ~/nativelink-cas
+          key: nativelink-cas-linux-x64-${{ github.run_id }}
+
+  consume:
+    name: A PR reuses what main seeded
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/buck2-setup
+      - uses: ./.github/actions/cas-inrunner
+        id: cas
+      - uses: ./.github/actions/cas-warm
+        id: warm
+        with: { endpoint: "127.0.0.1:50051", role: reader }
+      - name: Build, and require hits when a seeded cache was restored
+        run: |
+          set -o pipefail
+          tools/buck2 --isolation-dir ci build --config-file infra/ci/buckconfig/warm-cache.buckconfig \
+            ${{ steps.warm.outputs.flags }} \
+            //backend/ci/gates/layer-boundary:console-gate-layer-boundary --console=simple 2>&1 | tee /tmp/b.log | tail -5
+          echo "--- verdict ---"
+          if [ -z "${{ steps.cas.outputs.restored-key }}" ]; then
+            # No main-seeded cache exists yet. Report it; do not invent a pass or a failure.
+            echo "NO SEEDED CACHE YET — nothing to reuse. This becomes a real assertion once main has seeded one."
+            grep -E 'Cache hits|Commands:' /tmp/b.log || true
+            exit 0
+          fi
+          if grep -qE 'Cache hits: (100|[1-9][0-9])%' /tmp/b.log; then
+            echo "OK: this PR reused the cache main seeded"
+          else
+            echo "REGRESSION: a seeded cache was restored but produced no hits"
+            grep -E 'Cache hits|Commands:' /tmp/b.log || true
+            exit 1
+          fi
+
+  prune:
+    name: Keep the shared cache budget bounded
+    needs: [seed]
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Retain only the newest CAS caches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # cache-hygiene.yml holds the repo to an 8 GiB soft budget and hard-fails
+          # above it. Keep the two newest seeds so a restore always has a target,
+          # and delete the rest rather than waiting for the daily protocol.
+          gh api "repos/${GITHUB_REPOSITORY}/actions/caches?per_page=100" \
+            -q '[.actions_caches[] | select(.key|startswith("nativelink-cas-"))] | sort_by(.created_at) | reverse | .[2:] | .[] | "\(.id) \(.key) \(.size_in_bytes)"' \
+          | while read -r id key size; do
+              echo "deleting $key ($((size/1048576)) MiB)"
+              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/actions/caches/${id}" || true
+            done
+          gh api "repos/${GITHUB_REPOSITORY}/actions/cache/usage" \
+            -q '"usage now: \(.active_caches_size_in_bytes/1073741824*100|round/100) GiB across \(.active_caches_count) caches"'

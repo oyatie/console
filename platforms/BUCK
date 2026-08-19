@@ -1,0 +1,10 @@
+load(":defs.bzl", "remote_cache_platform")
+
+# Execution platform that can actually reach a REAPI cache.
+# Root .buckconfig deliberately does NOT select this; apply it opt-in via
+#   --config-file infra/ci/buckconfig/warm-cache.buckconfig
+remote_cache_platform(
+    name = "remote-cache",
+    base_platform = "prelude//platforms:default",
+    visibility = ["PUBLIC"],
+)

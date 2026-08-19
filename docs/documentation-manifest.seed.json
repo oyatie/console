@@ -1066,7 +1066,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "ec8bb4375a36304f81d1c03c83340fe66c976f4d",
+    "blob_sha": "91f8c30f962a984add3da9a625fe636b4fec5ea2",
     "archive_tag": null
   },
   {
@@ -1127,6 +1127,26 @@
     "replacement": null,
     "retention": "retain",
     "blob_sha": "8fb88aef0b1413513c308480f7e45e8bab222cef",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/decisions/notes/DN-0007-buck2-warm-cache-measured.md",
+    "class": "decision",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "773290d5c0e1b5d16f37a37fc5068ac28a554a9a",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/decisions/notes/DN-0008-cargo-primary-buck2-hermeticity.md",
+    "class": "decision",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "a3690dfe1dcd8f9960939385df7da9ec5b3152fb",
     "archive_tag": null
   },
   {
@@ -2226,7 +2246,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "b5aeea52c475e6b669ca7db25e4dc91e79bcd4d4",
+    "blob_sha": "ad9130bf19091ebbb542be1d92ce18d20bf85aa7",
     "archive_tag": null
   },
   {

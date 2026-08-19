@@ -1,9 +1,0 @@
-# Opt-in WARM READ-ONLY overlay — shared laptop NativeLink CAS reader listener.
-# Canary / probe only. allow_cache_upload stays false (no [buck2] upload default).
-
-[buck2_re_client]
-  engine_address = grpcs://127.0.0.1:50052
-  cas_address = grpcs://127.0.0.1:50052
-  action_cache_address = grpcs://127.0.0.1:50052
-  instance_name = main
-  tls = true

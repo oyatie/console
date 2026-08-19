@@ -1,0 +1,15 @@
+# Opt-in warm-cache overlay. Do NOT merge into root .buckconfig.
+#
+#   tools/buck2 --config-file infra/ci/buckconfig/warm-cache.buckconfig build //...
+#
+# This file carries ONLY [build] execution_platforms, because that is per-command
+# config. [buck2_re_client] is DAEMON-STARTUP config and cannot be delivered by
+# --config-file -- doing so fails with "Error: (No engine address)". The RE client
+# block must be written to a mode-0600 .buckconfig.local by
+# scripts/cas/materialize-buckconfig-local.sh.
+#
+# prelude//platforms:default carries a Local-only executor, so without this
+# override every [buck2_re_client] setting is inert and no action can reach a CAS.
+
+[build]
+  execution_platforms = root//platforms:remote-cache

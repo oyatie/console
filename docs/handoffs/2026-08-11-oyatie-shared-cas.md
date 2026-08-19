@@ -7,6 +7,11 @@
 
 ---
 
+> **Correction (2026-08-18):** the substrate section below records
+> `GREEN_REAPI` as evidence of a working warm cache. That canary proved server
+> reachability only; the Buck2 client side never reached the CAS. Measured
+> correction and the now-proven wiring: **DN-0007**.
+
 ## Founder decisions (binding)
 
 1. Shared CAS substrate for console + oyatie (multi-repo, digest-keyed).
@@ -80,10 +85,18 @@ Helpers:
 Example local warm build:
 
 ```bash
-scripts/cas/materialize-buckconfig-local.sh --role writer
-tools/buck2 --config-file infra/ci/buckconfig/warm-cache-lab-rw.buckconfig \
-  build //backend/ci/gates/layer-boundary:console-gate-layer-boundary
+scripts/cas/materialize-buckconfig-local.sh --role writer            # writes [buck2_re_client]
+eval "$(scripts/cas/cas-preflight.sh --endpoint 127.0.0.1:50051)"    # sets BUCK2_CAS_FLAGS
+tools/buck2 --config-file infra/ci/buckconfig/warm-cache.buckconfig \
+  build $BUCK2_CAS_FLAGS //backend/ci/gates/layer-boundary:console-gate-layer-boundary
 ```
+
+> **Corrected 2026-08-18 (DN-0007).** The original example named
+> `warm-cache-lab-rw.buckconfig` and could not work: `--config-file` cannot
+> deliver `[buck2_re_client]` (daemon-startup config), and
+> `prelude//platforms:default` has no remote executor, so the overlay was inert.
+> The four `warm-cache-{lab,gha}-{ro,rw}` overlays are replaced by one
+> `warm-cache.buckconfig` plus script flags.
 
 ---
 

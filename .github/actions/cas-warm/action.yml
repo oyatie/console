@@ -1,0 +1,61 @@
+name: Warm cache preflight
+description: >
+  Point Buck2 at the shared NativeLink CAS/AC when it is reachable, and degrade to a
+  purely local build when it is not. Never fails the job.
+inputs:
+  endpoint:
+    description: host:port of the CAS/AC listener, reachable from this runner.
+    required: false
+    default: 127.0.0.1:50051
+  instance:
+    description: REAPI instance_name.
+    required: false
+    default: main
+  role:
+    description: writer (uploads permitted) or reader.
+    required: false
+    default: reader
+  timeout:
+    description: Probe timeout in seconds.
+    required: false
+    default: "3"
+outputs:
+  flags:
+    description: Pass verbatim to `buck2 build`. Empty when warm, `--no-remote-cache` when cold.
+    value: ${{ steps.probe.outputs.flags }}
+  cas-up:
+    description: "1 when the cache answered, 0 otherwise."
+    value: ${{ steps.probe.outputs.cas_up }}
+runs:
+  using: composite
+  steps:
+    # Fork pull_request events receive no secrets, so connectivity is never established
+    # and the probe below simply reports the cache as down. That is the intended path:
+    # untrusted builds must never hold CAS credentials, and must still succeed.
+    - name: Materialize RE client config
+      shell: bash
+      env:
+        CAS_ENDPOINT: ${{ inputs.endpoint }}
+        CAS_ROLE: ${{ inputs.role }}
+        CAS_INSTANCE: ${{ inputs.instance }}
+      run: |
+        scripts/cas/materialize-buckconfig-local.sh \
+          --role "$CAS_ROLE" \
+          --endpoint "$CAS_ENDPOINT" \
+          --instance "$CAS_INSTANCE" \
+          --no-tls \
+          || echo "cas-warm: could not materialize RE client config; continuing cold"
+
+    - name: Probe the cache
+      id: probe
+      shell: bash
+      env:
+        CAS_ENDPOINT: ${{ inputs.endpoint }}
+        CAS_TIMEOUT: ${{ inputs.timeout }}
+      run: |
+        scripts/cas/cas-preflight.sh --endpoint "$CAS_ENDPOINT" --timeout "$CAS_TIMEOUT" >/dev/null
+
+    - name: Drop RE config when the cache is unreachable
+      if: steps.probe.outputs.cas_up != '1'
+      shell: bash
+      run: rm -f .buckconfig.local

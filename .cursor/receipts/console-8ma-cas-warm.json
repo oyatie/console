@@ -1,0 +1,102 @@
+{
+  "kind": "lane",
+  "lane": "console-8ma-cas-warm",
+  "role": "implementer",
+  "status": "done",
+  "worktree": "/Users/jasonlee/Developer/console-cas-worktree",
+  "branch": "ci/buck2-warm-cache-measured",
+  "baseSha": "8dbec91b18e4d970077b5621e8cc1add1d35d8b1",
+  "headSha": "627db01bb7b22bf9c26c68b09dc7815ccf5e30e9",
+  "ownedRoots": [
+    "platforms/",
+    "infra/ci/buckconfig/",
+    "scripts/cas/",
+    ".github/actions/cas-warm/",
+    ".github/actions/cas-inrunner/",
+    ".github/actions/buck2-setup/",
+    ".github/workflows/cas-canary.yml",
+    "docs/decisions/notes/DN-0007-buck2-warm-cache-measured.md",
+    ".cursor/receipts/console-8ma-cas-warm.json"
+  ],
+  "summary": "Wave A warm cache could never work: root .buckconfig selects prelude//platforms:default, a Local-only executor, so every [buck2_re_client] key was inert; and [buck2_re_client] is daemon-startup config that --config-file cannot deliver. Adds //platforms:remote-cache, collapses four address-bearing overlays into one, emits the RE client block from the materialize script, and adds a probe with a --no-remote-cache fallback because Buck2 hard-fails when a configured CAS is unreachable. Measured cross-OS sharing to be impossible, so CI is warmed by an in-runner NativeLink seeded from actions/cache rather than by reaching the laptop.",
+  "filesChanged": [
+    "platforms/BUCK",
+    "platforms/defs.bzl",
+    "infra/ci/buckconfig/warm-cache.buckconfig",
+    "infra/ci/buckconfig/warm-cache-lab-rw.buckconfig",
+    "infra/ci/buckconfig/warm-cache-lab-ro.buckconfig",
+    "infra/ci/buckconfig/warm-cache-gha-rw.buckconfig",
+    "infra/ci/buckconfig/warm-cache-gha-ro.buckconfig",
+    "scripts/cas/materialize-buckconfig-local.sh",
+    "scripts/cas/cas-preflight.sh",
+    ".github/actions/cas-warm/action.yml",
+    ".github/actions/cas-inrunner/action.yml",
+    ".github/actions/buck2-setup/action.yml",
+    ".github/workflows/cas-canary.yml",
+    "docs/decisions/notes/DN-0007-buck2-warm-cache-measured.md",
+    "docs/decisions/README.md",
+    "docs/handoffs/2026-08-11-oyatie-shared-cas.md",
+    "docs/documentation-index.json",
+    "docs/documentation-manifest.seed.json"
+  ],
+  "redBaseline": "Before the change, //backend/ci/gates/layer-boundary:console-gate-layer-boundary built with the Wave A overlay reported Commands: 97 (cached: 0, remote: 0, local: 97), Network up 0B, and the NativeLink server logged zero client connections. buck2 audit providers prelude//platforms:default showed executor: Local(LocalExecutorOptions) with no remote executor. Passing the overlay via --config-file failed with Error: (No engine address).",
+  "verification": "Warm: Cache hits 100%, Commands 97 (cached: 97, local: 0), 0.6s from a wiped buck-out and killed daemon. Path independence: 100% from a second checkout root. CAS unreachable: BUILD SUCCEEDED via --no-remote-cache, up 0B. Cold build without the overlay unchanged. GHA run 32207794923: seed runner 97 local/206MB store; reuse runner Cache hits 100%, 97 cached/0 local; fallback job green with cas_up=0; prune returned usage to 2.16 GiB vs 2.15 GiB baseline. Gates: check-adrs, check-doc-links, documentation-manifest --check, check-ci-preflight, check-foundation-gates, gha-cache-hygiene tests (6 pass).",
+  "commands": [
+    "buck2 audit providers prelude//platforms:default",
+    "buck2 --isolation-dir nat1 build --config-file infra/ci/buckconfig/warm-cache.buckconfig //backend/ci/gates/layer-boundary:console-gate-layer-boundary",
+    "scripts/cas/cas-preflight.sh --endpoint 127.0.0.1:50051",
+    "node scripts/check-ci-preflight.mjs",
+    "node scripts/check-foundation-gates.mjs",
+    "node scripts/console/generate-documentation-manifest.mjs --check",
+    "gh run view 32207794923 --repo oyatie/console --log"
+  ],
+  "commandsRun": [
+    "buck2 audit providers prelude//platforms:default",
+    "buck2 --isolation-dir nat1 build --config-file infra/ci/buckconfig/warm-cache.buckconfig //backend/ci/gates/layer-boundary:console-gate-layer-boundary",
+    "node scripts/check-ci-preflight.mjs",
+    "node scripts/check-foundation-gates.mjs"
+  ],
+  "contractBreaches": "none \u2014 root .buckconfig untouched (0 diff), ci.yml untouched, no Required context added or altered, no warm_reads license flipped, no secrets or TLS material introduced.",
+  "enforcementPlacement": "WHERE: .github/workflows/cas-canary.yml reuse job fails unless the build reports a non-zero, non-0% cache hit rate, so the cross-runner property is asserted rather than reported. The preflight probe in scripts/cas/cas-preflight.sh converts CAS unreachability into --no-remote-cache instead of a failed build.",
+  "peripheralsUpdated": "DN-0007 records the measurements and corrects DN-0006's substrate claim; docs/decisions/README.md ADR-0039 row cites it; the 2026-08-11 handoff gained a correction banner and a working example; documentation manifest and index regenerated.",
+  "classification": {
+    "personalData": false,
+    "holdAdjacent": true,
+    "notes": "Hold-adjacent, and deliberately clear of it. adjacent but clear: docs/current/PRODUCT.md holds live production, DNS, TLS, secret, exposure, payment, credential-reset and compliance-claim actions without separate authority. This candidate introduces no secret, no TLS material, no DNS record and no external exposure; the cache is loopback-only inside the runner and on the developer machine. The mesh/tunnel work that would require that authority is deliberately NOT in this candidate. none \u2014 no personal data is read, written, or logged by any added path. The grandfathered A1 hold is untouched: nothing here provisions, resizes, or reprovisions any OCI resource. OCI was read-only this session."
+  },
+  "preMortem": "Most likely failure: someone adds warm-cache to a Required job, and a cache outage then fails merges, because Buck2 treats an unreachable configured CAS as fatal. Second: the execution platform target label or the buck2 isolation dir is renamed, silently invalidating every consumer's cache. Third: the in-runner store grows and pushes the shared Actions cache past the 8 GiB hygiene threshold, hard-failing cache-hygiene.yml.",
+  "blastRadius": "Bounded to opt-in callers. Root .buckconfig is unchanged, so a build that does not pass the overlay behaves exactly as before. The canary is not a Required context. The in-runner store is capped at 1 GiB and its key prefix is deliberately not a cache-hygiene KEEP_PREFIX, so the daily protocol can always reclaim it.",
+  "detection": "cas-canary reuse job fails on any regression that loses cross-runner hits; the fallback job fails if a cache outage stops degrading safely; cache-hygiene.yml hard-fails if the shared budget is exceeded.",
+  "rollback": "Revert the candidate. Because root .buckconfig was never modified, reverting restores exactly the prior cold behaviour with no cleanup; no cache state has to be drained and no Required context changes.",
+  "stopConditions": "Stop and escalate before: attaching warm cache to any Required CI job; introducing CAS credentials, TLS material or an external tunnel (HOLD in docs/current/PRODUCT.md); adding the cache key prefix to cache-hygiene KEEP_PREFIXES; or renaming //platforms:remote-cache or the isolation dir, which invalidates the cache fleet-wide.",
+  "reviewIdentities": [
+    "implementer: Claude Opus 5 under jasonlee",
+    "inherited: seven review findings on PR #769 (Cursor Bugbot), mapped and closed or shown satisfied in af3e1a2a",
+    "no independent human review yet"
+  ],
+  "remainingHolds": [
+    "Mesh / Headscale / Tailscale and any CI-reachable CAS remain HOLD pending separate authority per docs/current/PRODUCT.md (secret, exposure, DNS, TLS).",
+    "Attaching warm cache to Required CI is out of scope pending the Phase 2 CI overhaul lane.",
+    "Console-native ci/{core,ports,adapters,facade} capability from the #769 disposition is not implemented here."
+  ],
+  "result": "green",
+  "followUps": [
+    "Link this candidate on PR #769 and map its retained/rejected hunks, per that PR's disposition.",
+    "Phase 2 CI overhaul lane owns attaching warm cache to real jobs and the main-only save policy.",
+    "Mesh/OCI VM work needs separate authority under the PRODUCT.md exposure/secret HOLD before any host is provisioned.",
+    "Console-native ci/{core,ports,adapters,facade} capability from the #769 disposition is not implemented here."
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth",
+    "Telemetry-first"
+  ],
+  "challenges": [
+    "GREEN_REAPI was read as evidence of a working warm cache; it only ever proved server reachability. Measured the client side and found it never contacted the server.",
+    "Assumed NativeLink was amd64-only from the docs' pinned v1.3.2; v1.6.5 ships a multiarch index plus signed macOS and aarch64 binaries.",
+    "Assumed a mesh would let CI reuse the desktop cache; measured that macOS and Linux configuration hashes differ, so they can never share entries."
+  ]
+}
