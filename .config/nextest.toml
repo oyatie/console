@@ -7,13 +7,20 @@
 [test-groups.cluster-global]
 max-threads = 1
 
+# binary(), NOT test(). `test()` matches TEST NAMES; every name below is a test
+# BINARY name, so the old `test(/apalis_adapter/)` form grouped only the tests whose
+# own name happened to contain the binary name. Measured 2026-08-18 with
+# `cargo nextest show-config test-groups`: apalis_adapter 1 of 4 tests grouped,
+# apalis_schema_contract 1 of 1, and leave_migration_expand_contract 0 of 9 -- the
+# serial control covered 2 of 14 tests across those binaries while reading as if it
+# covered all of them. With binary() the same three report 4/4, 1/1 and 9/9.
 [[profile.default.overrides]]
 filter = '''
-  test(/leave_migration_expand_contract/)
-  + test(/key_revision_migration_upgrade/)
-  + test(/attendance_console_migration_contract/)
-  + test(/apalis_adapter/)
-  + test(/apalis_schema_contract/)
+  binary(leave_migration_expand_contract)
+  + binary(key_revision_migration_upgrade)
+  + binary(attendance_console_migration_contract)
+  + binary(apalis_adapter)
+  + binary(apalis_schema_contract)
 '''
 test-group = 'cluster-global'
 
