@@ -27,3 +27,16 @@ test-group = 'cluster-global'
 [profile.ci]
 # Hosted: no flake-hide retries. Slow timeout generous for PG.
 slow-timeout = { period = "120s", terminate-after = 3 }
+
+# census_binds_to_an_executed_database is EIGHT sequential migrate+enforce
+# cycles against a Docker PostgreSQL in one test -- the mutation matrix for the
+# canonical-enforcement census. Measured 263s locally and it hit the 360s
+# terminate ceiling on a hosted runner the first time every shard ran under
+# nextest. That cost is legitimate and serial by construction (each cycle
+# re-installs the topology script), so the ceiling is raised for THIS binary
+# only. The global 360s stays: it is what catches a genuinely hung test, and
+# widening it everywhere to accommodate one known-slow suite would hide hangs
+# in the other 153.
+[[profile.ci.overrides]]
+filter = 'binary(census_executes_against_postgres)'
+slow-timeout = { period = "120s", terminate-after = 8 }

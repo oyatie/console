@@ -540,13 +540,13 @@ const domainUnitExpectedCommands = [
 // S1: facet harness invocations (must appear in workflow). Aggregator no longer runs cargo.
 const postgresReachabilityFacetCommands = Object.freeze({
   "postgres-reachability-app":
-    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id app --num-threads=1",
+    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id app --num-threads=1 --runner nextest",
   "postgres-reachability-platform":
-    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id platform --num-threads=1",
+    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id platform --num-threads=1 --runner nextest",
   "postgres-reachability-ontology":
-    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id ontology --num-threads=1",
+    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id ontology --num-threads=1 --runner nextest",
   "postgres-reachability-domain-a":
-    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-a --num-threads=1",
+    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-a --num-threads=1 --runner nextest",
   // domain-b is the nextest pilot. The runner is named in the pinned command so
   // a silent revert to cargo -- which would erase the measured speedup while
   // still passing -- shows up here as a contract break.
@@ -570,7 +570,15 @@ const NEXTEST_PINNED_URL =
   "https://github.com/nextest-rs/nextest/releases/download/cargo-nextest-0.9.138/cargo-nextest-0.9.138-x86_64-unknown-linux-gnu.tar.gz";
 const NEXTEST_PINNED_SHA256 =
   "3793bf0c27607b196f502c39b2108f571de89fcda7586ae6beefa11ee177b216";
+const nextestInstallSetupCommands = [
+  'tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"',
+  'echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"',
+].join("\n");
 const postgresReachabilityFacetSetupCommands = Object.freeze({
+  "postgres-reachability-app": nextestInstallSetupCommands,
+  "postgres-reachability-platform": nextestInstallSetupCommands,
+  "postgres-reachability-ontology": nextestInstallSetupCommands,
+  "postgres-reachability-domain-a": nextestInstallSetupCommands,
   "postgres-reachability-domain-b": [
     'tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"',
     'echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"',
@@ -1022,19 +1030,23 @@ const requiredJobRunContracts = Object.freeze({
   ],
   "postgres-reachability-app": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Run disposable PostgreSQL integration targets", "dec004b51611ecfc41bd089768de8e426f3793824265115b220099b6287a8f37", { if: runHeavyCondition }),
+    setupDigest("Install pinned cargo-nextest", "1b9eee0f6292b56cca32c14842d9e03cff331ffcb13efc791e6efc486d5c58bb", { if: runHeavyCondition }),
+    proofDigest("Run disposable PostgreSQL integration targets", "0644348a698f55fe8ae9c9e657f2594af26b9d218cdfb285a5f370bf110eaad9", { if: runHeavyCondition }),
   ],
   "postgres-reachability-platform": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Run disposable PostgreSQL integration targets", "28c6206d6f41065a7c007db0d17f9bee193f8344e14e239e56dd4563b4627d90", { if: runHeavyCondition }),
+    setupDigest("Install pinned cargo-nextest", "1b9eee0f6292b56cca32c14842d9e03cff331ffcb13efc791e6efc486d5c58bb", { if: runHeavyCondition }),
+    proofDigest("Run disposable PostgreSQL integration targets", "bd7fc913d56d851c24d2ff0ef7324c0821470eededbec21bc6270e4a2ead672a", { if: runHeavyCondition }),
   ],
   "postgres-reachability-ontology": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Run disposable PostgreSQL integration targets", "b1a2666e7aa08ebc7fdbcca5d216f8f7a75878e94a73ec60a73e18bdeb2d1339", { if: runHeavyCondition }),
+    setupDigest("Install pinned cargo-nextest", "1b9eee0f6292b56cca32c14842d9e03cff331ffcb13efc791e6efc486d5c58bb", { if: runHeavyCondition }),
+    proofDigest("Run disposable PostgreSQL integration targets", "b3ef40b98392e7c736237e81608e8bf70e0bff9a53742abd5baa6f3a910258e1", { if: runHeavyCondition }),
   ],
   "postgres-reachability-domain-a": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Run disposable PostgreSQL integration targets", "52d06f35b2f6f7b65b7b873af1d1c896eb496d96758b163e9f2cf3a727501096", { if: runHeavyCondition }),
+    setupDigest("Install pinned cargo-nextest", "1b9eee0f6292b56cca32c14842d9e03cff331ffcb13efc791e6efc486d5c58bb", { if: runHeavyCondition }),
+    proofDigest("Run disposable PostgreSQL integration targets", "076a06223fbb66290f9c13c3e07e58c8c736f54e276a0c031ec7ca4647fe6899", { if: runHeavyCondition }),
   ],
   "postgres-reachability-domain-b": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),

@@ -522,10 +522,15 @@ jobs:
           shared-key: backend-cargo
           cache-all-crates: "true"
           save-if: false
+      - name: Install pinned cargo-nextest
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        run: |
+          tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"
+          echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"
       - name: Run disposable PostgreSQL integration targets
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
-          tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id app --num-threads=1
+          tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id app --num-threads=1 --runner nextest
 
   postgres-reachability-platform:
     name: Test PostgreSQL — platform
@@ -577,10 +582,15 @@ jobs:
           shared-key: backend-cargo
           cache-all-crates: "true"
           save-if: false
+      - name: Install pinned cargo-nextest
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        run: |
+          tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"
+          echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"
       - name: Run disposable PostgreSQL integration targets
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
-          tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id platform --num-threads=1
+          tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id platform --num-threads=1 --runner nextest
 
   postgres-reachability-ontology:
     name: Test PostgreSQL — ontology
@@ -632,10 +642,15 @@ jobs:
           shared-key: backend-cargo
           cache-all-crates: "true"
           save-if: false
+      - name: Install pinned cargo-nextest
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        run: |
+          tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"
+          echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"
       - name: Run disposable PostgreSQL integration targets
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
-          tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id ontology --num-threads=1
+          tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id ontology --num-threads=1 --runner nextest
 
   postgres-reachability-domain-a:
     name: Test PostgreSQL — domain adapters A
@@ -687,10 +702,15 @@ jobs:
           shared-key: backend-cargo
           cache-all-crates: "true"
           save-if: false
+      - name: Install pinned cargo-nextest
+        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        run: |
+          tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"
+          echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"
       - name: Run disposable PostgreSQL integration targets
         if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
         run: |
-          tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-a --num-threads=1
+          tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-a --num-threads=1 --runner nextest
 
   postgres-reachability-domain-b:
     name: Test PostgreSQL — domain adapters B
