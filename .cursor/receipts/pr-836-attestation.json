@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "commit_sha": "982823987e18f6bc2e08753e6283f70119fb93f5",
+  "pr_number": 836,
+  "attestation_engine": "Oyatie Autonomous Engineering Pipeline",
+  "timestamp_utc": "2026-08-20T00:00:46.778242+00:00",
+  "gates_verified": [
+    "DocGuard (ADR & Doc Parity)",
+    "CedarGuard (IAM & Policy-as-Code)",
+    "ComplianceGuard (KR FSS & HIPAA Sovereignty)",
+    "ApiContractGuard (OpenAPI Schema Integrity)",
+    "CellIsolationGuard (Multi-Tenant Isolation)",
+    "SupplyChainGuard (Dependency & CVE Audit)",
+    "PreMergeGuard (Secret & Migration Safety)"
+  ],
+  "verdict": "CERTIFIED_READY"
+}

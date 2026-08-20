@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "commit_sha": "388c105cece7a4ccb4dab9a025f6487603453970",
+  "pr_number": 844,
+  "attestation_engine": "Oyatie Autonomous Engineering Pipeline",
+  "timestamp_utc": "2026-08-20T05:58:29.741509+00:00",
+  "gates_verified": [],
+  "verdict": "PENDING_CERTIFICATION"
+}
