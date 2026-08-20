@@ -702,6 +702,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/employment_reassign_identity_as_runtime_role.rs': 'postgres',
             'tests/job_position_port_as_runtime_role.rs': 'postgres',
             'tests/org_unit_port_as_runtime_role.rs': 'postgres',
+            'tests/receipt_owner_widening.rs': 'postgres',
             'tests/person_port_as_runtime_role.rs': 'postgres',
         },
     },
