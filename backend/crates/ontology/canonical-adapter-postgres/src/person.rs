@@ -313,10 +313,24 @@ impl PgPersonPort {
 
         // The receipt store, and with it the tenant-global command-id
         // namespace this port shares with every other receipt owner.
+        // Attribute the receipt to the object whose action it records.
+        //
+        // DERIVED from the command's own query, which already implements
+        // `dispatch_target()` -- the same value the projected-dispatch path uses.
+        // NOT from `action_key`: that is "unique only per object type" (a bare
+        // "revise"), so it cannot name a target on its own, and the internal
+        // reassign path carries "internal.reassign_org_unit", which names none at
+        // all. The query knows; the string does not.
+        //
+        // Without this the row takes the `owner` DEFAULT of 'ontology.action',
+        // filing a canonical receipt under the pre-existing instance-action path
+        // -- a wrong attribution recorded as fact.
+        let receipt_target = command.query.dispatch_target();
+        let receipt_owner = ReceiptOwner::Canonical(receipt_target.object());
         sqlx::query(
             "INSERT INTO ont_action_command_receipts \
-             (org_id, command_id, actor_id, payload_digest, receipt, action_key, object_type_id, created_at) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+             (org_id, command_id, actor_id, payload_digest, receipt, action_key, object_type_id, created_at, owner, target) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
         )
         .bind(org)
         .bind(command_uuid)
@@ -326,6 +340,8 @@ impl PgPersonPort {
         .bind(&command.action_key)
         .bind(command.object_type_id)
         .bind(created_at)
+        .bind(receipt_owner.as_str())
+        .bind(receipt_target.as_str())
         .execute(&mut *tx)
         .await?;
 
