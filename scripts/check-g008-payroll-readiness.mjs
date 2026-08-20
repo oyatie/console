@@ -143,6 +143,56 @@ requireMatches(
   "all five stage SQL source-material flags require a non-blank value",
 );
 
+// THE PRODUCTION WRITER, not only the script.
+//
+// Until PR #846 `payroll_draft_lines` had no production writer, so pinning the
+// staging SQL pinned the only path a roster could come from. It is not any more:
+// `roster::materialise_roster_in_tx` runs on every `payroll.create_run`, and the
+// twelve pins above sit on a file production no longer needs. Left alone, the two
+// encodings of "what may become a payroll roster" could drift, and the gate would
+// stay green while the executed one weakened.
+//
+// These pin the SAME provenance properties on the writer that actually runs.
+// Deliberately NOT re-pointed from the script verbatim: the script's
+// `raw_row ?| array[...]` idiom is the key-presence fabrication vector, and a
+// gate that REQUIRED it on the writer would mandate the bug.
+const rosterWriter = "backend/crates/payroll/adapter-postgres/src/roster.rs";
+requireIncludes(
+  rosterWriter,
+  "run.status = 'APPLIED'",
+  "production roster writer admits only APPLIED import runs",
+);
+requireIncludes(
+  rosterWriter,
+  "r.row_status <> 'ERROR'",
+  "production roster writer never treats an ERROR import row as material",
+);
+requireIncludes(
+  rosterWriter,
+  "run.pay_period_start = $3",
+  "production roster writer scopes by the declared pay period, by equality",
+);
+// Counted, not merely present: there are four source-material flags, and a plain
+// `includes` passes while three of them are weakened.
+requireMatches(
+  rosterWriter,
+  /(?:btrim\(kv\.value\) <> ''[\s\S]*?){4}/,
+  "all four production source-material flags require a non-blank value",
+);
+requireNotIncludes(
+  rosterWriter,
+  "?|array",
+  "production roster writer never treats a merely PRESENT column as material",
+);
+// 0222 revoked DELETE on this table from console_rt and asserts the revocation,
+// so a reconciliation delete raises 42501 at PLAN time — killing every
+// payroll.create_run, not just the re-stage that introduced it.
+requireNotIncludes(
+  rosterWriter,
+  "DELETE FROM payroll_draft_lines",
+  "production roster writer never deletes: console_rt holds no DELETE on this table",
+);
+
 requireIncludes(
   "package.json",
   '"check:g008-payroll-readiness"',
