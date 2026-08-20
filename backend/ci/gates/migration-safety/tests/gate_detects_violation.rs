@@ -374,3 +374,51 @@ GRANT SELECT ON TABLE audit_events TO app_user;
     );
     Ok(())
 }
+
+/// A gate that examined NO migration must fail, not pass.
+///
+/// `check_files` reports violations, so over zero migrations it reports none and
+/// the binary printed "PASSED" — measured by running it from an empty directory
+/// before this floor existed. The workspace holds hundreds of migrations, so zero
+/// means the scan did not find them (a moved directory, a wrong cwd), never that
+/// they are all safe.
+///
+/// The repository already applies this rule where it matters:
+/// `topology.canonical_enforcement` refuses to claim enforcement over zero tables
+/// and `tools/ci/gate-sweep.mjs` refuses a manifest declaring zero gates. Payroll's
+/// close preflight did not, and an empty roster silently satisfied it.
+#[test]
+fn examining_no_migration_is_refused_not_passed() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = temp_workspace("empty-subject-set")?;
+    // No `panic!`: clippy forbids it here. An Ok result collapses to an empty
+    // string, which fails the `contains` below with the result printed.
+    let outcome = match console_gate_migration_safety::check_workspace(&dir) {
+        Ok(_) => String::new(),
+        Err(message) => message,
+    };
+    assert!(
+        outcome.contains("examined no migration files"),
+        "an empty workspace must be REFUSED, naming the empty subject set; got {outcome:?}"
+    );
+    Ok(())
+}
+
+/// The positive control: a workspace WITH a migration still passes.
+///
+/// Without this, the floor above could be satisfied by a gate that refuses
+/// everything, which would block every migration change — worse than the hole.
+#[test]
+fn a_workspace_with_a_safe_migration_still_passes() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = temp_workspace("floor-positive-control")?;
+    write_file(
+        &dir.join("backend/crates/platform/db/migrations/0001_create_widgets.sql"),
+        "CREATE TABLE widgets (id UUID PRIMARY KEY);\n",
+    )?;
+    let result = console_gate_migration_safety::check_workspace(&dir)?;
+    assert!(
+        result.violations.is_empty(),
+        "a safe migration must not be charged: {:#?}",
+        result.violations
+    );
+    Ok(())
+}

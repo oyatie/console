@@ -51,6 +51,25 @@ impl GateResult {
 
 pub fn check_workspace(workspace_dir: &Path) -> Result<GateResult, String> {
     let files = collect_migration_files(workspace_dir)?;
+    // A gate that examined NO subject must fail, not pass. `check_files` reports
+    // violations, so over zero migrations it reports none and the gate prints
+    // PASSED -- measured: run from an empty directory this binary exits 0 saying
+    // "console-gate-migration-safety: PASSED". The workspace holds hundreds of
+    // migrations, so zero means the scan did not find them (a moved directory, a
+    // wrong cwd), never that they are all safe.
+    //
+    // This is the rule the repository already applies elsewhere:
+    // `topology.canonical_enforcement` refuses to claim enforcement over zero
+    // tables, and `tools/ci/gate-sweep.mjs` refuses a manifest declaring zero
+    // gates. Payroll's close preflight did NOT, and an empty roster silently
+    // satisfied it.
+    if files.is_empty() {
+        return Err(format!(
+            "examined no migration files under {} -- a gate that examines nothing \
+             cannot report safety",
+            workspace_dir.display()
+        ));
+    }
     Ok(check_files(files))
 }
 
