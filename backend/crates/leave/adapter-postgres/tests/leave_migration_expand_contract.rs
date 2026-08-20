@@ -422,9 +422,9 @@ async fn migrate_staged_f6ff_employee_import(owner_pool: &PgPool) {
     sqlx::query(
         "INSERT INTO data_import_runs \
          (id,org_id,entity_type,status,source_filename,source_format,source_sha256, \
-          input_rows,candidate_rows,preserved_rows,created_by,dry_run_summary) \
+          input_rows,candidate_rows,preserved_rows,created_by,dry_run_summary, pay_period_start, pay_period_end) \
          VALUES ($1,$2,'employee_hr','DRY_RUN','staged.xlsx','xlsx',repeat('a',64), \
-                 1,1,0,$3,'{\"ready_rows\":1}'::jsonb)",
+                 1,1,0,$3,'{\"ready_rows\":1}'::jsonb, DATE '2026-06-01', DATE '2026-06-30')",
     )
     .bind(STAGED_IMPORT_RUN)
     .bind(ORG)
@@ -1868,9 +1868,9 @@ async fn staged_employee_import_rejects_payload_not_equal_to_immutable_ledger(ow
     sqlx::query(
         "INSERT INTO data_import_runs \
          (id,org_id,entity_type,status,source_filename,source_format,source_sha256, \
-          input_rows,candidate_rows,preserved_rows,created_by,dry_run_summary) \
+          input_rows,candidate_rows,preserved_rows,created_by,dry_run_summary, pay_period_start, pay_period_end) \
          VALUES ($1,$2,'employee_hr','DRY_RUN','bound.xlsx','xlsx',repeat('b',64), \
-                 1,1,0,$3,'{\"ready_rows\":1}'::jsonb)",
+                 1,1,0,$3,'{\"ready_rows\":1}'::jsonb, DATE '2026-06-01', DATE '2026-06-30')",
     )
     .bind(run_id)
     .bind(ORG)

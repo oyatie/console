@@ -1107,8 +1107,8 @@ async fn seed_run(pool: &PgPool, org: OrgId) -> Uuid {
 async fn seed_verified_import_row(pool: &PgPool, org: OrgId) -> Uuid {
     let import_run: Uuid = sqlx::query_scalar(
         "INSERT INTO data_import_runs \
-         (org_id, entity_type, status, source_filename, source_format, source_sha256) \
-         VALUES ($1, 'employee_hr', 'DRY_RUN', 'payroll-source.xlsx', 'xlsx', $2) RETURNING id",
+         (org_id, entity_type, status, source_filename, source_format, source_sha256, pay_period_start, pay_period_end) \
+         VALUES ($1, 'employee_hr', 'DRY_RUN', 'payroll-source.xlsx', 'xlsx', $2, DATE '2026-06-01', DATE '2026-06-30') RETURNING id",
     )
     .bind(*org.as_uuid())
     .bind(SHA256_FIXTURE)

@@ -1103,8 +1103,8 @@ async fn runtime_expand_bridge_allows_exact_f6ff_apply_but_denies_laundering_and
         .unwrap();
     sqlx::query(
         "INSERT INTO data_import_runs \
-         (id,org_id,entity_type,status,source_filename,source_format,source_sha256) \
-         VALUES ($1,$2,'employee_hr','DRY_RUN','employees.xlsx','xlsx',$3)",
+         (id,org_id,entity_type,status,source_filename,source_format,source_sha256, pay_period_start, pay_period_end) \
+         VALUES ($1,$2,'employee_hr','DRY_RUN','employees.xlsx','xlsx',$3, DATE '2026-06-01', DATE '2026-06-30')",
     )
     .bind(run_id)
     .bind(org_id)
@@ -1287,8 +1287,8 @@ async fn runtime_expand_bridge_allows_exact_f6ff_apply_but_denies_laundering_and
         .unwrap();
     sqlx::query(
         "INSERT INTO data_import_runs \
-         (id,org_id,entity_type,status,source_filename,source_format,source_sha256) \
-         VALUES ($1,$2,'attendance_direct','DRY_RUN','attendance.xlsx','xlsx',$3)",
+         (id,org_id,entity_type,status,source_filename,source_format,source_sha256, pay_period_start, pay_period_end) \
+         VALUES ($1,$2,'attendance_direct','DRY_RUN','attendance.xlsx','xlsx',$3, DATE '2026-06-01', DATE '2026-06-30')",
     )
     .bind(attendance_run_id)
     .bind(org_id)

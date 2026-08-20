@@ -709,6 +709,8 @@ def emit_sql(
     rows: list[SourceRow],
     stats: dict[str, Any],
     org_ids: dict[str, str],
+    pay_period_start: str,
+    pay_period_end: str,
 ) -> None:
     grouped: dict[tuple[str, str, str], list[SourceRow]] = defaultdict(list)
     for row in rows:
@@ -792,13 +794,15 @@ def emit_sql(
                 "INSERT INTO data_import_runs "
                 "(id, org_id, entity_type, status, source_filename, source_format, source_sha256, "
                 "mapping_profile, dry_run_summary, apply_summary, input_rows, candidate_rows, preserved_rows, "
-                "created_by, applied_by, created_at, updated_at, applied_at) VALUES ("
+                "created_by, applied_by, created_at, updated_at, applied_at, "
+                "pay_period_start, pay_period_end) VALUES ("
                 f"{sql_uuid(run_id)}, {sql_uuid(uuid.UUID(org_id))}, 'employee_hr', 'APPLIED', "
                 f"{sql_str(rel)}, 'xlsx', {sql_str(file_sha)}, "
                 f"{sql_json(mapping_profile(columns, {'relpath': rel, 'org_slug': org_slug}))}, "
                 f"{sql_json(dry_run)}, {sql_json(apply_summary)}, "
                 f"{len(run_rows)}, {len(candidate_rows)}, {len(preserved_rows)}, "
-                "NULL, NULL, now(), now(), now()) "
+                "NULL, NULL, now(), now(), now(), "
+                f"{sql_str(pay_period_start)}::date, {sql_str(pay_period_end)}::date) "
                 "ON CONFLICT (id) DO UPDATE SET "
                 "status='APPLIED', mapping_profile=EXCLUDED.mapping_profile, "
                 "dry_run_summary=EXCLUDED.dry_run_summary, apply_summary=EXCLUDED.apply_summary, "
@@ -914,6 +918,11 @@ def emit_sql(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", default="/Users/jasonlee/Desktop/COSS Group")
+    # REQUIRED, and never derived from the folder path. Deriving it would
+    # recreate exactly the `source_filename LIKE '2026/5월/%'` coupling that made
+    # a payroll roster depend on one operator's directory layout.
+    parser.add_argument("--pay-period-start", required=True, help="ISO date, e.g. 2026-05-01")
+    parser.add_argument("--pay-period-end", required=True, help="ISO date, e.g. 2026-05-31")
     parser.add_argument("--summary-out", required=True)
     parser.add_argument("--sql-out", required=True)
     parser.add_argument(
@@ -949,7 +958,15 @@ def main() -> int:
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     sql_path.parent.mkdir(parents=True, exist_ok=True)
 
-    emit_sql(sql_path, workbook_imports, rows, stats, org_ids)
+    emit_sql(
+        sql_path,
+        workbook_imports,
+        rows,
+        stats,
+        org_ids,
+        args.pay_period_start,
+        args.pay_period_end,
+    )
     os.chmod(sql_path, 0o600)
     summary_path.write_text(json.dumps(stats, ensure_ascii=False, indent=2), encoding="utf-8")
 
