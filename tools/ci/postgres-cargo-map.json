@@ -2,10 +2,10 @@
   "schema_version": 1,
   "description": "Buck sh_test postgres wrappers → cargo test argv for tools/ci/cargo_needs_postgres.sh",
   "counts": {
-    "mapped": 227,
+    "mapped": 228,
     "unmapped": 3,
-    "workflow_targets": 212,
-    "workflow_mapped": 212,
+    "workflow_targets": 213,
+    "workflow_mapped": 213,
     "workflow_missing": 0
   },
   "entries": [
@@ -5052,6 +5052,29 @@
       ],
       "in_workflow_postgres_job": true,
       "measured_seconds": 21.3
+    },
+    {
+      "buck_wrapper": "//tools/buck:platform-db-data-import-pay-period-contract-pg",
+      "name": "platform-db-data-import-pay-period-contract-pg",
+      "buck_inner": "//backend/crates/platform/db:console-platform-db-itest-data_import_pay_period_contract",
+      "package": "console-platform-db",
+      "crate_dir": "backend/crates/platform/db",
+      "kind": "test",
+      "test": "data_import_pay_period_contract",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-db",
+        "--test",
+        "data_import_pay_period_contract",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:auth-rest-lib-pg",

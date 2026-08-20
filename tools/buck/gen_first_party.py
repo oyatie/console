@@ -804,6 +804,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'postgres',
         'integration': {
             'tests/attendance_console_migration_contract.rs': 'postgres',
+            'tests/data_import_pay_period_contract.rs': 'postgres',
             'tests/code_issuance.rs': 'postgres',
             'tests/employee_leave_balances_migration_contract.rs': 'postgres',
             'tests/feature_catalog_covers_every_feature.rs': 'postgres',

@@ -189,9 +189,8 @@ async fn seed_dry_run(pool: &PgPool, tag: &str) -> Uuid {
     sqlx::query(
         r#"
         INSERT INTO data_import_runs (
-            id, org_id, entity_type, status, source_filename, source_format, source_sha256
-        )
-        VALUES ($1, $2, 'attendance_direct', 'DRY_RUN', $3, 'csv', $4)
+            id, org_id, entity_type, status, source_filename, source_format, source_sha256, pay_period_start, pay_period_end)
+         VALUES ($1, $2, 'attendance_direct', 'DRY_RUN', $3, 'csv', $4, DATE '2026-06-01', DATE '2026-06-30')
         "#,
     )
     .bind(run_id)
