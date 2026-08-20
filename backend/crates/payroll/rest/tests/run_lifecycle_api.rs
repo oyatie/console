@@ -292,6 +292,56 @@ async fn executive_drives_full_lifecycle_with_audit_readback(pool: PgPool) {
     assert_eq!(status, StatusCode::OK, "{approved}");
     assert_eq!(approved["run"]["status"], "APPROVED");
 
+    // ---- Issuing BEFORE the run is PAID must refuse, and must leak no payslip.
+    //
+    // THIS BLOCK MUST STAY ABOVE THE LEGITIMATE ISSUANCE BELOW. `emit_inbox_doc`
+    // dedups on `payroll-run:{run}:line:{line}`, so a leaked document created
+    // after the real one collapses into it and the `leaked == 0` assertion below
+    // becomes vacuously true. Order is load-bearing here, not stylistic.
+    //
+    // The release gate is registered FIRST so that the PAID check is the guard
+    // actually under test: without it the request is refused by the legal gate
+    // and this proves nothing about status. The gate is removed again
+    // afterwards, so the legal-gate refusal below still exercises its own path.
+    //
+    // The status assertion alone would NOT catch a missing PAID check.
+    // `record_payslip_deliveries_in_tx` raises the identical `invalid_state`
+    // error, so the 409 survives even with the guard deleted. What does not
+    // survive is the vault: `issue_payslips` emits documents OUTSIDE the
+    // refusing transaction, so a payslip for an unpaid run reaches the
+    // employee's inbox while the caller sees a clean refusal. That is what the
+    // count asserts.
+    register_release_gate(&pool, run).await;
+    let (status, premature) = send(
+        &rt,
+        &keys,
+        "POST",
+        &format!("/api/v1/payroll/runs/{run}/issue-payslips"),
+        &submitter_token,
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::CONFLICT, "{premature}");
+    let leaked: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM inbox_docs WHERE kind = 'payslip' AND source_id = $1",
+    )
+    .bind(run.to_string())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        leaked, 0,
+        "a run at APPROVED must issue no payslip; the caller's 409 does not undo a document \
+         already emitted outside the refusing transaction"
+    );
+    sqlx::query(
+        "UPDATE payroll_draft_runs SET legal_basis = legal_basis - 'release_gate' WHERE id = $1",
+    )
+    .bind(run)
+    .execute(&pool)
+    .await
+    .unwrap();
+
     // ---- Disbursement: past date 422; then the operator-attested FSM.
     let past = (OffsetDateTime::now_utc() - Duration::hours(1))
         .format(&Rfc3339)
