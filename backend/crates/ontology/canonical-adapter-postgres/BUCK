@@ -270,3 +270,33 @@ rust_test(
         ":console-ontology-canonical-adapter-postgres",
     ],
 )
+
+rust_test(
+    name = "console-ontology-canonical-adapter-postgres-itest-receipt_owner_widening",
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/receipt_owner_widening.rs"], external = {
+        "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+    }),
+    crate = "receipt_owner_widening",
+    edition = "2024",
+    crate_root = "backend/crates/ontology/canonical-adapter-postgres/tests/receipt_owner_widening.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/canonical-adapter-postgres", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
+    labels = ["owner.backend.crates.ontology.canonical-adapter-postgres", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/request-context:console-platform-request-context",
+        "//third-party/rust:hex",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:sha2",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:thiserror",
+        "//third-party/rust:time",
+        "//third-party/rust:tokio",
+        "//third-party/rust:uuid",
+        ":console-ontology-canonical-adapter-postgres",
+    ],
+)

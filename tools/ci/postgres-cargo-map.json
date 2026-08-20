@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "description": "Buck sh_test postgres wrappers \u2192 cargo test argv for tools/ci/cargo_needs_postgres.sh",
+  "description": "Buck sh_test postgres wrappers → cargo test argv for tools/ci/cargo_needs_postgres.sh",
   "counts": {
-    "mapped": 226,
+    "mapped": 227,
     "unmapped": 3,
-    "workflow_targets": 211,
-    "workflow_mapped": 211,
+    "workflow_targets": 212,
+    "workflow_mapped": 212,
     "workflow_missing": 0
   },
   "entries": [
@@ -5313,6 +5313,30 @@
       ],
       "in_workflow_postgres_job": true,
       "measured_seconds": 32.3
+    },
+    {
+      "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-receipt-owner-widening-pg",
+      "name": "ontology-canonical-adapter-postgres-receipt-owner-widening-pg",
+      "buck_inner": "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-receipt_owner_widening",
+      "package": "console-ontology-canonical-adapter-postgres",
+      "crate_dir": "backend/crates/ontology/canonical-adapter-postgres",
+      "kind": "test",
+      "test": "receipt_owner_widening",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-ontology-canonical-adapter-postgres",
+        "--test",
+        "receipt_owner_widening",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true,
+      "measured_seconds": 3.3
     },
     {
       "buck_wrapper": "//tools/buck:orgchange-adapter-postgres-apply-refuses-deactivated-region-pg",
