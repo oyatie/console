@@ -547,8 +547,34 @@ const postgresReachabilityFacetCommands = Object.freeze({
     "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id ontology --num-threads=1",
   "postgres-reachability-domain-a":
     "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-a --num-threads=1",
+  // domain-b is the nextest pilot. The runner is named in the pinned command so
+  // a silent revert to cargo -- which would erase the measured speedup while
+  // still passing -- shows up here as a contract break.
   "postgres-reachability-domain-b":
-    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-b --num-threads=1",
+    "tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-b --num-threads=1 --runner nextest",
+});
+// Extra locked SETUP run steps for a facet job, keyed by job name. Every facet
+// otherwise carries exactly two run steps (skip proof, then the harness), and
+// `requireOnlyLockedRuns` enforces that. domain-b is the cargo-nextest pilot and
+// installs the pinned runner first; the install is locked here so it cannot be
+// swapped for an unpinned fetch, and so no OTHER facet can quietly gain a step.
+// The installer's pinned artifact, asserted against the script itself. The ci.yml
+// step digest above only proves the job CALLS the installer; these two constants
+// are what make the fetch reproducible, and nothing else in the tree would notice
+// if they were replaced with `curl | sh` against a moving "latest" URL.
+const nextestInstallerFile = readFileSync(
+  new URL("../tools/ci/install_nextest.sh", import.meta.url),
+  "utf8",
+);
+const NEXTEST_PINNED_URL =
+  "https://github.com/nextest-rs/nextest/releases/download/cargo-nextest-0.9.138/cargo-nextest-0.9.138-x86_64-unknown-linux-gnu.tar.gz";
+const NEXTEST_PINNED_SHA256 =
+  "3793bf0c27607b196f502c39b2108f571de89fcda7586ae6beefa11ee177b216";
+const postgresReachabilityFacetSetupCommands = Object.freeze({
+  "postgres-reachability-domain-b": [
+    'tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"',
+    'echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"',
+  ].join("\n"),
 });
 const postgresDomainReachabilityAggregatorCommands = [
   'test "${{ needs.postgres-reachability-app.result }}" = success &&',
@@ -1012,7 +1038,14 @@ const requiredJobRunContracts = Object.freeze({
   ],
   "postgres-reachability-domain-b": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Run disposable PostgreSQL integration targets", "f51451ca90071e2b657f759b6fb08a8aa10dfa6e18e26eb2984d8a004a7b53c9", { if: runHeavyCondition }),
+    // SETUP, not proof: installing the runner prepares the evidence, it is not
+    // the evidence. This digest locks the STEP TEXT only -- it says the job calls
+    // the installer, nothing about what the installer does. The URL and sha256
+    // inside the script are pinned separately by `requireNextestInstallerPin`;
+    // without that, this digest would look like supply-chain protection while
+    // protecting nothing.
+    setupDigest("Install pinned cargo-nextest", "1b9eee0f6292b56cca32c14842d9e03cff331ffcb13efc791e6efc486d5c58bb", { if: runHeavyCondition }),
+    proofDigest("Run disposable PostgreSQL integration targets", "4ea121588589036833c7f24f19f7cc2cfdd8e146cb4b5749f31d17227f5bf861", { if: runHeavyCondition }),
   ],
   "postgres-domain-reachability": [
     proofDigest("Preflight failure non-evaluation", "bd3b7317d5a581574bf8ec45e2ad2d44a24ea93159b9322157619d671e6250df", { if: postgresAggregateNonEvaluationCondition, shell: "bash" }),
@@ -2266,13 +2299,48 @@ export function evaluateCiPreflight(
       jobName,
       failures,
     );
+    const facetSetup = postgresReachabilityFacetSetupCommands[jobName];
     requireOnlyLockedRuns(
       steps,
-      [pathClassSkipProofScript.join("\n"), command],
+      facetSetup
+        ? [pathClassSkipProofScript.join("\n"), facetSetup, command]
+        : [pathClassSkipProofScript.join("\n"), command],
       jobName,
       failures,
     );
   }
+  // The installer must fetch ONE pinned artifact and verify it BEFORE extracting.
+  // Checked against the script, not the workflow: the step digest above proves
+  // only that the job calls this file.
+  if (!nextestInstallerFile.includes(NEXTEST_PINNED_URL)) {
+    failures.push("tools/ci/install_nextest.sh must fetch the pinned cargo-nextest release URL");
+  }
+  if (!nextestInstallerFile.includes(NEXTEST_PINNED_SHA256)) {
+    failures.push("tools/ci/install_nextest.sh must verify the pinned cargo-nextest sha256");
+  }
+  // Comment lines are excluded deliberately. A plain `includes` was satisfied by
+  // the file's own prose ("uses the same curl + `sha256sum --check` pattern"),
+  // so deleting the real verification would have left this pin green -- the same
+  // shape of hole this gate exists to refuse.
+  const nextestExecutableLines = nextestInstallerFile
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("#"));
+  const nextestVerifyIndex = nextestExecutableLines.findIndex((line) =>
+    /\|\s*sha256sum --check\b/.test(line),
+  );
+  const nextestExtractIndex = nextestExecutableLines.findIndex((line) => /\btar -xzf\b/.test(line));
+  if (nextestVerifyIndex === -1) {
+    failures.push("tools/ci/install_nextest.sh must verify the archive with sha256sum --check");
+  }
+  if (nextestExtractIndex === -1) {
+    failures.push("tools/ci/install_nextest.sh must extract the pinned archive with tar -xzf");
+  }
+  // Verification has to precede extraction, or a poisoned archive is unpacked
+  // before anyone looks at it. Ordering is the property, so ordering is asserted.
+  if (nextestVerifyIndex !== -1 && nextestExtractIndex !== -1 && nextestVerifyIndex > nextestExtractIndex) {
+    failures.push("tools/ci/install_nextest.sh must verify the sha256 BEFORE extracting the archive");
+  }
+
   const postgresDomainReachability = jobBlock(workflow, "postgres-domain-reachability");
   if (postgresDomainReachability) {
     const steps = stepBlocks(postgresDomainReachability);
