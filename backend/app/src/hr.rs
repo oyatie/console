@@ -2658,6 +2658,8 @@ async fn preview_attendance_import(
 
     let preview = with_audit::<_, _, HrError>(&state.pool, event, |tx| {
         let filename = filename.clone();
+        let pay_period_start = upload.pay_period_start;
+        let pay_period_end = upload.pay_period_end;
         let source_sha256 = source_sha256.clone();
         let parsed = parsed.clone();
         let mapping_profile = mapping_profile.clone();
@@ -2667,9 +2669,9 @@ async fn preview_attendance_import(
                 INSERT INTO data_import_runs (
                     id, org_id, entity_type, status, source_filename, source_format,
                     source_sha256, mapping_profile, input_rows, candidate_rows,
-                    preserved_rows, created_by
+                    preserved_rows, created_by, pay_period_start, pay_period_end
                 )
-                VALUES ($1, $2, 'attendance_direct', 'PREVIEWED', $3, $4, $5, $6, $7, $8, $9, $10)
+                VALUES ($1, $2, 'attendance_direct', 'PREVIEWED', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                 "#,
             )
             .bind(run_id)
@@ -2682,6 +2684,8 @@ async fn preview_attendance_import(
             .bind(candidate_rows)
             .bind(preserved_rows)
             .bind(*actor.as_uuid())
+            .bind(pay_period_start)
+            .bind(pay_period_end)
             .execute(tx.as_mut())
             .await?;
 
@@ -3020,6 +3024,8 @@ async fn preview_employee_import(
         let rows = parsed.rows.clone();
         let columns = parsed.columns.clone();
         let filename = upload.filename.clone();
+        let pay_period_start = upload.pay_period_start;
+        let pay_period_end = upload.pay_period_end;
         let source_sha256 = source_sha256.clone();
         let mapping_profile = mapping_profile.clone();
         Box::pin(async move {
@@ -3028,9 +3034,9 @@ async fn preview_employee_import(
                 INSERT INTO data_import_runs (
                     id, org_id, entity_type, status, source_filename, source_format,
                     source_sha256, mapping_profile, input_rows, candidate_rows,
-                    preserved_rows, created_by
+                    preserved_rows, created_by, pay_period_start, pay_period_end
                 )
-                VALUES ($1, $2, 'employee_hr', 'PREVIEWED', $3, 'xlsx', $4, $5, $6, $7, $8, $9)
+                VALUES ($1, $2, 'employee_hr', 'PREVIEWED', $3, 'xlsx', $4, $5, $6, $7, $8, $9, $10, $11)
                 "#,
             )
             .bind(run_id)
@@ -3042,6 +3048,8 @@ async fn preview_employee_import(
             .bind(candidate_rows)
             .bind(preserved_rows)
             .bind(*actor.as_uuid())
+            .bind(pay_period_start)
+            .bind(pay_period_end)
             .execute(tx.as_mut())
             .await?;
 
@@ -3716,89 +3724,141 @@ impl StoredEmployeeImportRow {
 struct XlsxUpload {
     filename: String,
     bytes: Vec<u8>,
+    /// The pay period this upload covers, declared by the uploader.
+    ///
+    /// Not optional and never defaulted. `data_import_runs.pay_period_*` is NOT
+    /// NULL precisely so an upload cannot acquire a period nobody chose; a
+    /// default here would put that fabricated provenance back one layer up.
+    pay_period_start: Date,
+    pay_period_end: Date,
 }
 
-async fn read_xlsx_upload(mut multipart: Multipart) -> Result<XlsxUpload, HrError> {
+/// Read one multipart text part as a `YYYY-MM-DD` date.
+fn parse_period_part(name: &str, raw: &str) -> Result<Date, HrError> {
+    Date::parse(
+        raw.trim(),
+        &time::format_description::well_known::Iso8601::DATE,
+    )
+    .map_err(|_| HrError::validation(format!("{name} must be an ISO date (YYYY-MM-DD)")))
+}
+
+/// Collect the file part and the declared pay period from a multipart upload.
+///
+/// EVERY part is drained before anything is decided. The previous readers
+/// `return Ok(...)` from INSIDE the `next_field()` loop the moment they had the
+/// file, so any part sent AFTER `file` was silently discarded -- a period field
+/// would have vanished with no error at all, and the upload would have been
+/// rejected later for a reason that named the wrong thing.
+async fn read_periodised_upload(
+    mut multipart: Multipart,
+    default_filename: &str,
+    accept: fn(&str) -> bool,
+    accept_message: &'static str,
+) -> Result<XlsxUpload, HrError> {
+    let mut filename: Option<String> = None;
+    let mut bytes: Option<Vec<u8>> = None;
+    let mut start_raw: Option<String> = None;
+    let mut end_raw: Option<String> = None;
+
     while let Some(mut field) = multipart
         .next_field()
         .await
         .map_err(|err| HrError::validation(err.to_string()))?
     {
-        if field.name() != Some("file") {
-            continue;
-        }
-        let filename = field
-            .file_name()
-            .map(ToOwned::to_owned)
-            .unwrap_or_else(|| "employees.xlsx".to_owned());
-        if !filename.to_ascii_lowercase().ends_with(".xlsx") {
-            return Err(HrError::validation(
-                "employee import currently accepts .xlsx workbooks only",
-            ));
-        }
-        let mut bytes = Vec::new();
-        while let Some(chunk) = field
-            .chunk()
-            .await
-            .map_err(|err| HrError::validation(err.to_string()))?
-        {
-            if bytes.len() + chunk.len() > MAX_IMPORT_BYTES {
-                return Err(HrError::validation(
-                    "uploaded file exceeds the maximum import size",
-                ));
+        match field.name() {
+            Some("file") => {
+                let name = field
+                    .file_name()
+                    .map(ToOwned::to_owned)
+                    .unwrap_or_else(|| default_filename.to_owned());
+                if !accept(&name.to_ascii_lowercase()) {
+                    return Err(HrError::validation(accept_message));
+                }
+                let mut buffer = Vec::new();
+                while let Some(chunk) = field
+                    .chunk()
+                    .await
+                    .map_err(|err| HrError::validation(err.to_string()))?
+                {
+                    if buffer.len() + chunk.len() > MAX_IMPORT_BYTES {
+                        return Err(HrError::validation(
+                            "uploaded file exceeds the maximum import size",
+                        ));
+                    }
+                    buffer.extend_from_slice(&chunk);
+                }
+                filename = Some(name);
+                bytes = Some(buffer);
             }
-            bytes.extend_from_slice(&chunk);
+            Some("pay_period_start") => {
+                start_raw = Some(
+                    field
+                        .text()
+                        .await
+                        .map_err(|err| HrError::validation(err.to_string()))?,
+                );
+            }
+            Some("pay_period_end") => {
+                end_raw = Some(
+                    field
+                        .text()
+                        .await
+                        .map_err(|err| HrError::validation(err.to_string()))?,
+                );
+            }
+            _ => continue,
         }
-        if bytes.is_empty() {
-            return Err(HrError::validation("uploaded file is empty"));
-        }
-        return Ok(XlsxUpload { filename, bytes });
     }
-    Err(HrError::validation(
-        "multipart upload is missing the 'file' field",
-    ))
+
+    let (Some(filename), Some(bytes)) = (filename, bytes) else {
+        return Err(HrError::validation(
+            "multipart upload is missing the 'file' field",
+        ));
+    };
+    if bytes.is_empty() {
+        return Err(HrError::validation("uploaded file is empty"));
+    }
+    // Required, not defaulted. An import with no declared period cannot be
+    // scoped to a payroll run, and guessing one is how a roster ends up built
+    // from the wrong month.
+    let (Some(start_raw), Some(end_raw)) = (start_raw, end_raw) else {
+        return Err(HrError::validation(
+            "multipart upload must declare 'pay_period_start' and 'pay_period_end'",
+        ));
+    };
+    let pay_period_start = parse_period_part("pay_period_start", &start_raw)?;
+    let pay_period_end = parse_period_part("pay_period_end", &end_raw)?;
+    if pay_period_end < pay_period_start {
+        return Err(HrError::validation(
+            "pay_period_end must not precede pay_period_start",
+        ));
+    }
+    Ok(XlsxUpload {
+        filename,
+        bytes,
+        pay_period_start,
+        pay_period_end,
+    })
 }
 
-async fn read_attendance_upload(mut multipart: Multipart) -> Result<XlsxUpload, HrError> {
-    while let Some(mut field) = multipart
-        .next_field()
-        .await
-        .map_err(|err| HrError::validation(err.to_string()))?
-    {
-        if field.name() != Some("file") {
-            continue;
-        }
-        let filename = field
-            .file_name()
-            .map(ToOwned::to_owned)
-            .unwrap_or_else(|| "attendance.csv".to_owned());
-        let lower = filename.to_ascii_lowercase();
-        if !(lower.ends_with(".xlsx") || lower.ends_with(".csv")) {
-            return Err(HrError::validation(
-                "attendance import accepts .xlsx workbooks or .csv files only",
-            ));
-        }
-        let mut bytes = Vec::new();
-        while let Some(chunk) = field
-            .chunk()
-            .await
-            .map_err(|err| HrError::validation(err.to_string()))?
-        {
-            if bytes.len() + chunk.len() > MAX_IMPORT_BYTES {
-                return Err(HrError::validation(
-                    "uploaded file exceeds the maximum import size",
-                ));
-            }
-            bytes.extend_from_slice(&chunk);
-        }
-        if bytes.is_empty() {
-            return Err(HrError::validation("uploaded file is empty"));
-        }
-        return Ok(XlsxUpload { filename, bytes });
-    }
-    Err(HrError::validation(
-        "multipart upload is missing the 'file' field",
-    ))
+async fn read_xlsx_upload(multipart: Multipart) -> Result<XlsxUpload, HrError> {
+    read_periodised_upload(
+        multipart,
+        "employees.xlsx",
+        |lower| lower.ends_with(".xlsx"),
+        "employee import currently accepts .xlsx workbooks only",
+    )
+    .await
+}
+
+async fn read_attendance_upload(multipart: Multipart) -> Result<XlsxUpload, HrError> {
+    read_periodised_upload(
+        multipart,
+        "attendance.csv",
+        |lower| lower.ends_with(".xlsx") || lower.ends_with(".csv"),
+        "attendance import accepts .xlsx workbooks or .csv files only",
+    )
+    .await
 }
 
 #[derive(Debug)]
@@ -9114,9 +9174,10 @@ E-001,홍길동,본사,2026-07-01,25:99
             r#"
             INSERT INTO data_import_runs (
                 id, org_id, entity_type, status, source_filename, source_format,
-                source_sha256, mapping_profile, input_rows, candidate_rows, preserved_rows
+                source_sha256, mapping_profile, input_rows, candidate_rows, preserved_rows,
+                pay_period_start, pay_period_end
             )
-            VALUES ($1, $2, 'attendance_direct', 'DRY_RUN', 'attendance.csv', 'csv', $3, '{}', 2, 2, 0)
+            VALUES ($1, $2, 'attendance_direct', 'DRY_RUN', 'attendance.csv', 'csv', $3, '{}', 2, 2, 0, DATE '2026-06-01', DATE '2026-06-30')
             "#,
         )
         .bind(run_id)
@@ -9950,8 +10011,10 @@ E-001,홍길동,본사,2026-07-01,abc
         let run_id = Uuid::new_v4();
         sqlx::query(
             "INSERT INTO data_import_runs (id,org_id,entity_type,status,source_filename,\
-             source_format,source_sha256,mapping_profile,input_rows,candidate_rows,preserved_rows) \
-             VALUES ($1,$2,'employee_hr','DRY_RUN','employees.xlsx','xlsx',$3,'{}',2,2,0)",
+             source_format,source_sha256,mapping_profile,input_rows,candidate_rows,preserved_rows,\
+             pay_period_start,pay_period_end) \
+             VALUES ($1,$2,'employee_hr','DRY_RUN','employees.xlsx','xlsx',$3,'{}',2,2,0,\
+                     DATE '2026-06-01', DATE '2026-06-30')",
         )
         .bind(run_id)
         .bind(org_id)
@@ -12145,9 +12208,10 @@ E-001,홍길동,본사,2026-07-01,abc
             r#"
             INSERT INTO data_import_runs (
                 id, org_id, entity_type, status, source_filename, source_format,
-                source_sha256, mapping_profile, input_rows, candidate_rows, preserved_rows
+                source_sha256, mapping_profile, input_rows, candidate_rows, preserved_rows,
+                pay_period_start, pay_period_end
             )
-            VALUES ($1, $2, 'attendance_direct', 'DRY_RUN', 'attendance.csv', 'csv', $3, '{}', 2, 2, 0)
+            VALUES ($1, $2, 'attendance_direct', 'DRY_RUN', 'attendance.csv', 'csv', $3, '{}', 2, 2, 0, DATE '2026-06-01', DATE '2026-06-30')
             "#,
         )
         .bind(run_id)
@@ -12282,9 +12346,10 @@ E-001,홍길동,본사,2026-07-01,abc
             r#"
             INSERT INTO data_import_runs (
                 id, org_id, entity_type, status, source_filename, source_format,
-                source_sha256, mapping_profile, input_rows, candidate_rows, preserved_rows
+                source_sha256, mapping_profile, input_rows, candidate_rows, preserved_rows,
+                pay_period_start, pay_period_end
             )
-            VALUES ($1, $2, 'attendance_direct', 'DRY_RUN', 'attendance.csv', 'csv', $3, '{}', 1, 1, 0)
+            VALUES ($1, $2, 'attendance_direct', 'DRY_RUN', 'attendance.csv', 'csv', $3, '{}', 1, 1, 0, DATE '2026-06-01', DATE '2026-06-30')
             "#,
         )
         .bind(run_id)

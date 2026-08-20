@@ -105,6 +105,31 @@ rust_test(
 )
 
 rust_test(
+    name = "console-platform-db-itest-data_import_pay_period_contract",
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/db", ["tests/data_import_pay_period_contract.rs"], external = {
+        "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+    }),
+    crate = "data_import_pay_period_contract",
+    edition = "2024",
+    crate_root = "backend/crates/platform/db/tests/data_import_pay_period_contract.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/db", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
+    labels = ["owner.backend.crates.platform.db", "domain.platform", "test.integration", "resource.postgres", "needs-postgres"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:thiserror",
+        "//third-party/rust:time",
+        "//third-party/rust:tokio",
+        "//third-party/rust:uuid",
+        ":console-platform-db",
+    ],
+)
+
+rust_test(
     name = "console-platform-db-itest-employee_leave_balances_migration_contract",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/db", ["tests/employee_leave_balances_migration_contract.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
