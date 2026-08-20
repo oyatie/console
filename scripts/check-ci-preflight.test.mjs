@@ -640,10 +640,10 @@ describe("CI preflight contract", () => {
       "api-contract": 5,
       "generated-face-authority": 5,
       "company-conformance": 3,
-      "postgres-reachability-app": 2,
-      "postgres-reachability-platform": 2,
-      "postgres-reachability-ontology": 2,
-      "postgres-reachability-domain-a": 2,
+      "postgres-reachability-app": 3,
+      "postgres-reachability-platform": 3,
+      "postgres-reachability-ontology": 3,
+      "postgres-reachability-domain-a": 3,
       // 3, not 2: domain-b is the cargo-nextest pilot and installs the pinned
       // runner before the harness runs. Every one of its run steps is still put
       // through the bypass mutations below, which is what this inventory is for.
@@ -697,11 +697,14 @@ describe("CI preflight contract", () => {
     // 2026-08-18: +5 run steps / +3 setup actions from migration-expand-contract,
     // split out of `backend`. Coverage GREW; the ratchet moves up, never down.
     // 2026-08-19: +1 run step from the cargo-nextest install in
-    // postgres-reachability-domain-b, the runner pilot. Coverage GREW: the new
+    // postgres-reachability-domain-b, the runner pilot.
+    // 2026-08-20: +4 more as the pilot rolled out to the remaining four shards.
+    // Coverage GREW; each new install step goes through the same three bypass
+    // mutations as every other run step. Coverage GREW: the new
     // step goes through the same three bypass mutations as every other one.
-    assert.equal(runStepCount, 126, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 126*3 = 378.
-    assert.equal(mutationCount, 378, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 130, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 130*3 = 390.
+    assert.equal(mutationCount, 390, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
