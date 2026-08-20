@@ -149,3 +149,36 @@ async fn a_receipt_written_without_owner_defaults_to_ontology_action(pool: PgPoo
         "a defaulted receipt must carry no dispatch target"
     );
 }
+
+/// A canonical port records its OWN owner and target, not the default.
+///
+/// `owner` DEFAULTs to `'ontology.action'`, so before the writers passed it
+/// explicitly every canonical receipt claimed to belong to the pre-existing
+/// instance-action path. That is a wrong attribution recorded as fact — worse
+/// than the column not existing, because it reads as an answer.
+///
+/// Written over `DispatchTarget::ALL` rather than a sample: every dispatch
+/// target must be attributable to the object that owns it, so a fourteenth
+/// target cannot arrive unattributed.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn every_dispatch_target_attributes_to_its_owning_object(pool: PgPool) {
+    let (org, actor) = seed_actor(&pool).await;
+    for target in DispatchTarget::ALL {
+        let owner = ReceiptOwner::Canonical(target.object());
+        insert_receipt(&pool, org, actor, owner.as_str(), Some(target.as_str()))
+            .await
+            .unwrap_or_else(|err| panic!("{target:?} must be storable under {owner:?}: {err}"));
+    }
+    let mislabelled: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM ont_action_command_receipts \
+         WHERE org_id = $1 AND owner = 'ontology.action'",
+    )
+    .bind(org)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        mislabelled, 0,
+        "no canonical receipt may fall back to the instance-action default"
+    );
+}

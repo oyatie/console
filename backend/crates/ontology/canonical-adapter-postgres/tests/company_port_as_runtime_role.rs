@@ -790,3 +790,37 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
         "a receipt the roster cannot read must be refused, never replayed; got {refused:?}"
     );
 }
+
+/// The port records WHOSE receipt this is, not the instance-action default.
+///
+/// `ont_action_command_receipts.owner` DEFAULTs to `'ontology.action'`, so until
+/// the writers passed it explicitly every canonical receipt claimed to belong to
+/// the pre-existing instance-action path. A wrong attribution recorded as fact is
+/// worse than an absent column, because it reads as an answer.
+///
+/// The value is derived from the command's own `query.dispatch_target()`, never
+/// from `action_key` -- this suite's commands carry `action_key: "revise"`, which
+/// is unique only per object type and names no target on its own.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_company_receipt_is_attributed_to_company(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    execute(&port, command(org, actor, revise("주식회사 아크메")))
+        .await
+        .expect("the revise must land");
+
+    let (owner, target): (String, Option<String>) =
+        sqlx::query_as("SELECT owner, target FROM ont_action_command_receipts WHERE org_id = $1")
+            .bind(*org.as_uuid())
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        owner, "company",
+        "the receipt must name the object that owns it"
+    );
+    assert_eq!(
+        target.as_deref(),
+        Some("company.revise"),
+        "and the dispatch target it records"
+    );
+}
