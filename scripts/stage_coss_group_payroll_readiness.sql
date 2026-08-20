@@ -15,13 +15,40 @@ WITH import_rows AS (
         r.raw_row,
         r.canonical_row,
         COALESCE(NULLIF(r.canonical_row->>'source_key', ''), NULLIF(r.source_key, '')) AS canonical_source_key,
+        -- Source-material flags test for a non-blank VALUE, not merely a present KEY.
+        -- These were `raw_row ?| array[...]`, which is true when the spreadsheet
+        -- merely HAS the column. Measured against a live PostgreSQL: a row whose
+        -- 출근 cell was empty produced attendance_source_row_count = 1, exactly as
+        -- if it were filled, so the close preflight's 근태 원천 확보 check was
+        -- satisfied by a blank column. Provenance (#834) established the rows were
+        -- applied; this establishes they say something.
         COALESCE(NULLIF(r.canonical_row->>'name', ''), NULLIF(r.raw_row->>'성명', ''), NULLIF(r.raw_row->>'성명_2', '')) AS imported_name,
         COALESCE(NULLIF(r.canonical_row->>'company', ''), NULLIF(r.raw_row->'__source'->>'company', ''), NULLIF(r.raw_row->>'소속', '')) AS imported_company,
-        (r.raw_row?|array['기본시급','통상시급','공제총액','소득세','건강보험','건강/장기요양','고용보험','급여산정일','지급일','연차수당','상여금','은행','계좌','주민번호']) AS is_payroll_source,
-        (r.raw_row?|array['근무일자','출근','퇴근','근무시간','기본시간','기본근무','연장시간','심야시간','특근시간','특근연장시간','특근연장','근무일명칭','지각,조퇴시간']) AS is_attendance_source,
-        (r.raw_row?|array['발생연차','사용연차','잔여연차','연차수당']) AS is_leave_source,
-        (r.raw_row?|array['기본급','상여금','월계','합계','총합','연차수당']) AS has_gross_pay_source,
-        (r.raw_row?|array['차인지급액','실지급액','공제총액','소득세','건강보험','고용보험']) AS has_net_pay_source
+        (jsonb_typeof(r.raw_row) = 'object' AND EXISTS (
+            SELECT 1 FROM jsonb_each_text(r.raw_row) kv
+             WHERE kv.key = ANY (array['기본시급','통상시급','공제총액','소득세','건강보험','건강/장기요양','고용보험','급여산정일','지급일','연차수당','상여금','은행','계좌','주민번호'])
+               AND btrim(kv.value) <> ''
+        )) AS is_payroll_source,
+        (jsonb_typeof(r.raw_row) = 'object' AND EXISTS (
+            SELECT 1 FROM jsonb_each_text(r.raw_row) kv
+             WHERE kv.key = ANY (array['근무일자','출근','퇴근','근무시간','기본시간','기본근무','연장시간','심야시간','특근시간','특근연장시간','특근연장','근무일명칭','지각,조퇴시간'])
+               AND btrim(kv.value) <> ''
+        )) AS is_attendance_source,
+        (jsonb_typeof(r.raw_row) = 'object' AND EXISTS (
+            SELECT 1 FROM jsonb_each_text(r.raw_row) kv
+             WHERE kv.key = ANY (array['발생연차','사용연차','잔여연차','연차수당'])
+               AND btrim(kv.value) <> ''
+        )) AS is_leave_source,
+        (jsonb_typeof(r.raw_row) = 'object' AND EXISTS (
+            SELECT 1 FROM jsonb_each_text(r.raw_row) kv
+             WHERE kv.key = ANY (array['기본급','상여금','월계','합계','총합','연차수당'])
+               AND btrim(kv.value) <> ''
+        )) AS has_gross_pay_source,
+        (jsonb_typeof(r.raw_row) = 'object' AND EXISTS (
+            SELECT 1 FROM jsonb_each_text(r.raw_row) kv
+             WHERE kv.key = ANY (array['차인지급액','실지급액','공제총액','소득세','건강보험','고용보험'])
+               AND btrim(kv.value) <> ''
+        )) AS has_net_pay_source
     FROM data_import_rows r
     JOIN data_import_runs run
       ON run.id = r.run_id

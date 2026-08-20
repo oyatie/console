@@ -83,9 +83,14 @@ requireIncludes(
   "data_import.payroll_readiness_stage",
   "stage SQL audits the live derivation",
 );
+// The PROPERTY this pins is classification by an allowlisted header set, never a
+// wildcard over whatever columns a workbook happens to carry. It used to be spelled
+// as the `raw_row ?| array[...]` idiom, which also — accidentally — pinned KEY
+// PRESENCE as the test. The allowlist is unchanged; how it is applied is not, so this
+// now matches the allowlist itself rather than the operator that consumed it.
 requireMatches(
   "scripts/stage_coss_group_payroll_readiness.sql",
-  /raw_row\?\|array\[/,
+  /kv\.key = ANY \(array\[/,
   "stage SQL classifies payroll/attendance source rows by allowlisted headers",
 );
 requireNotIncludes(
@@ -117,6 +122,25 @@ requireIncludes(
   "scripts/stage_coss_group_payroll_readiness.sql",
   "WHERE payroll_draft_runs.status IN ('STAGED', 'BLOCKED_LEGAL_GATE', 'READY_FOR_REVIEW')",
   "stage SQL refuses to rewind a run past the pre-close states",
+);
+
+// Source material must be a non-blank VALUE, not merely a present KEY. `?|` asks
+// whether the spreadsheet HAS the column; measured against a live PostgreSQL, a row
+// whose 출근 cell was empty produced attendance_source_row_count = 1 exactly as if it
+// were filled, so the close preflight's 근태 원천 확보 check passed on a blank column.
+requireNotIncludes(
+  "scripts/stage_coss_group_payroll_readiness.sql",
+  "?|array",
+  "stage SQL never treats a merely PRESENT column as source material",
+);
+// Counted, not merely present. There are five source-material flags
+// (is_payroll_source, is_attendance_source, is_leave_source, has_gross_pay_source,
+// has_net_pay_source); a plain "includes" check passes while four of the five are
+// weakened, which is exactly the hole this gate exists to refuse.
+requireMatches(
+  "scripts/stage_coss_group_payroll_readiness.sql",
+  /(?:btrim\(kv\.value\) <> ''[\s\S]*?){5}/,
+  "all five stage SQL source-material flags require a non-blank value",
 );
 
 requireIncludes(
