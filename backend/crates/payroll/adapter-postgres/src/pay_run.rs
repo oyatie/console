@@ -209,6 +209,36 @@ const INSERT_DRAFT_RUN_GATED_SQL: &str = "INSERT INTO payroll_draft_runs \
 /// a genuinely NEW write ([`INSERT_DRAFT_RUN_GATED_SQL`]); when that gate
 /// refuses, no row comes back and the caller sees [`StageDraftError::PeriodLocked`].
 /// The provenance check runs on every conflict either way.
+/// Materialise the roster for a staged run, in the caller's transaction.
+///
+/// Called from EVERY success path of `stage_draft_run_inner`, including the
+/// idempotent one that returns `created = false`. Gating this on `created` would
+/// mean a run whose header exists but whose roster was never written — because a
+/// previous attempt died between the two — could never acquire one, and after the
+/// close preflight learned to require `roster_total > 0` that run is stuck
+/// forever with no way to repair it.
+///
+/// An empty roster is NOT an error here. The drain leaves a failed event PENDING
+/// without incrementing `attempt_count`, so returning `Err` would be an unbounded
+/// hot retry; `close_preflight` already refuses an empty roster legibly.
+async fn materialise_roster_for(
+    tx: &mut Transaction<'_, Postgres>,
+    org_id: Uuid,
+    id: Uuid,
+    draft: &StagePayrollDraft,
+) -> Result<(), StageDraftError> {
+    // A draft with no declared period has no scope, so there is no set of import
+    // rows it could honestly claim. Writing nothing is the only truthful option:
+    // guessing a period is exactly the fabricated provenance migration 0224 exists
+    // to remove. The run is still created; the close preflight refuses its empty
+    // roster legibly.
+    let (Some(period_start), Some(period_end)) = (draft.period_start, draft.period_end) else {
+        return Ok(());
+    };
+    crate::roster::materialise_roster_in_tx(tx, org_id, id, period_start, period_end).await?;
+    Ok(())
+}
+
 async fn stage_draft_run_inner(
     tx: &mut Transaction<'_, Postgres>,
     org_id: Uuid,
@@ -247,6 +277,7 @@ async fn stage_draft_run_inner(
             if !provenance_matches(&stored, &requested) {
                 return Err(StageDraftError::ProvenanceMismatch);
             }
+            materialise_roster_for(tx, org_id, id, draft).await?;
             return Ok((id, false));
         }
         // No existing draft: the freeze-window gate applies to this NEW write.
@@ -265,6 +296,7 @@ async fn stage_draft_run_inner(
         if !created && !provenance_matches(&stored, &requested) {
             return Err(StageDraftError::ProvenanceMismatch);
         }
+        materialise_roster_for(tx, org_id, id, draft).await?;
         Ok((id, created))
     } else {
         let row: (Uuid, serde_json::Value, bool) = sqlx::query_as(INSERT_DRAFT_RUN_SQL)
@@ -279,6 +311,7 @@ async fn stage_draft_run_inner(
         if !created && !provenance_matches(&stored, &requested) {
             return Err(StageDraftError::ProvenanceMismatch);
         }
+        materialise_roster_for(tx, org_id, id, draft).await?;
         Ok((id, created))
     }
 }

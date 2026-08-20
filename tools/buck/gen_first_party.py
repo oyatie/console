@@ -745,6 +745,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'integration': {
             'tests/pay_run_port_as_runtime_role.rs': 'postgres',
             'tests/payroll_lifecycle_rls_as_runtime_role.rs': 'postgres',
+            'tests/roster_materialisation.rs': 'postgres',
             'tests/payroll_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
