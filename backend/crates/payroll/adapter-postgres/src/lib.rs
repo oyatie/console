@@ -15,6 +15,7 @@ pub mod lifecycle;
 /// `console-workflow-runtime-adapter-postgres`.
 pub mod pay_run;
 pub mod payslip_draft;
+pub mod roster;
 
 use console_kernel_core::{ErrorKind, KernelError, UserId};
 use console_platform_db::{DbError, with_org_conn};
