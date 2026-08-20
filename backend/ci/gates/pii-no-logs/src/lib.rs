@@ -65,6 +65,21 @@ impl GateResult {
 
 pub fn check_workspace(workspace_dir: &Path) -> Result<GateResult, String> {
     let files = collect_rust_files(workspace_dir)?;
+    // A gate that examined NO subject must fail, not pass. Measured: run from an
+    // empty directory this binary exits 0 saying "console-gate-pii-no-logs:
+    // PASSED", because zero files yield zero violations. The workspace holds
+    // thousands of Rust files, so zero means the scan did not find them, never
+    // that none of them log personal data.
+    //
+    // Same rule as `topology.canonical_enforcement` (refuses zero tables) and
+    // `tools/ci/gate-sweep.mjs` (refuses zero gates).
+    if files.is_empty() {
+        return Err(format!(
+            "examined no Rust source files under {} -- a gate that examines nothing \
+             cannot report absence",
+            workspace_dir.display()
+        ));
+    }
     Ok(check_files(files))
 }
 

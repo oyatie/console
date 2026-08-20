@@ -149,3 +149,44 @@ pub fn no_log() {
     );
     Ok(())
 }
+
+/// A gate that examined NO source file must fail, not pass.
+///
+/// Zero files yield zero violations, so the binary printed "PASSED" over an empty
+/// directory — measured before this floor existed. The workspace holds thousands
+/// of Rust files, so zero means the scan did not find them, never that none of
+/// them log personal data. Absence of evidence was being reported as evidence of
+/// absence, which for a PII gate is the whole point of the gate.
+#[test]
+fn examining_no_source_file_is_refused_not_passed() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = temp_workspace("empty-subject-set")?;
+    // No `panic!`: clippy forbids it here. An Ok result collapses to an empty
+    // string, which fails the `contains` below with the result printed.
+    let outcome = match console_gate_pii_no_logs::check_workspace(&dir) {
+        Ok(_) => String::new(),
+        Err(message) => message,
+    };
+    assert!(
+        outcome.contains("examined no Rust source files"),
+        "an empty workspace must be REFUSED, naming the empty subject set; got {outcome:?}"
+    );
+    Ok(())
+}
+
+/// The positive control: a workspace WITH a clean source file still passes, so the
+/// floor cannot be satisfied by a gate that refuses everything.
+#[test]
+fn a_workspace_with_a_clean_source_file_still_passes() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = temp_workspace("floor-positive-control")?;
+    write_file(
+        &dir.join("backend/crates/thing/src/lib.rs"),
+        "pub fn add(a: i32, b: i32) -> i32 {\n    a + b\n}\n",
+    )?;
+    let result = console_gate_pii_no_logs::check_workspace(&dir)?;
+    assert!(
+        result.violations.is_empty(),
+        "a clean source file must not be charged: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
