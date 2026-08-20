@@ -41,7 +41,15 @@ ALTER TABLE ont_action_command_receipts
     ADD CONSTRAINT ont_action_command_receipts_target_check
         CHECK ((owner = 'ontology.action') = (target IS NULL) AND (target IS NULL OR target IN ('company.revise', 'organization.create_org_unit', 'organization.revise_org_unit', 'organization.create_job_position', 'organization.revise_job_position', 'people.create_person', 'people.revise_person', 'hr.appoint', 'hr.promote', 'hr.transfer', 'payroll.create_run', 'payroll.submit_run', 'payroll.decide_run')));
 
+-- Personal-data classification is REQUIRED for columns introduced after the
+-- baseline froze at 0209, even though `ont_action_command_receipts` is itself on
+-- the unclassified-tables backlog: the backlog covers what was already there, and
+-- must not be allowed to grow. Both columns are closed rosters of system
+-- identifiers -- an ObjectKey slug and a DispatchTarget slug -- naming WHICH
+-- object and WHICH action a receipt belongs to. Neither carries or narrows to a
+-- natural person; the person on a receipt is `actor_id`, which is classified
+-- already.
 COMMENT ON COLUMN ont_action_command_receipts.owner IS
-    'Which object owns this receipt. Defaults to the pre-existing ontology.action rows; canonical owners are the six ObjectKeys.';
+    'pd:none — structural or non-personal attribute of a non-person row; closed ObjectKey roster naming which object owns this receipt';
 COMMENT ON COLUMN ont_action_command_receipts.target IS
-    'The dispatch target, present exactly when the owner is canonical. NULL for ontology.action rows, which have none and must not be given a fabricated one.';
+    'pd:none — structural or non-personal attribute of a non-person row; closed DispatchTarget roster, present exactly when the owner is canonical';
