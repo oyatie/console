@@ -1182,7 +1182,7 @@ const requiredJobActionContracts = Object.freeze({
 // permissions are all executable inputs and must change deliberately together.
 const requiredJobMetadataSha256 = Object.freeze({
   "preflight": "1f3b5c6437ba04ccda98e2cbdf78506a69c6f82be7ce2abf7c661660c88fe87f",
-  "domain-unit": "4948a02022fffb8b39aa14b4cb9ee3f776fe20c04844942dedd31f90ebe90bef",
+  "domain-unit": "868e85391d23aee1746d2589c8c0141098368f30f3c6df5a24942d601bdd6929",
   "backend": "6bbf9fbdb72a307430601770f5e469d6dff891d35cc8be56efef0158c2982d07",
   "migration-expand-contract": "c6f45dea77b33bcfd29183837e5dfa6dccc44a83c6ebb2bb530d0db186b09c08",
   "kubernetes-manifests": "1b215a62dac6d9a3decea6d6912792de3d033986833356b403fb157a15cb8b96",
@@ -1278,7 +1278,7 @@ const protectedJobExecutionMetadata = {
       env: { CI_STEPS: "${{ toJSON(steps) }}" },
     }],
   },
-  "domain-unit": {},
+  "domain-unit": { env: { CARGO_PROFILE_DEV_DEBUG: "0", CARGO_PROFILE_TEST_DEBUG: "0" } },
   "postgres-reachability-app": { env: { CARGO_PROFILE_DEV_DEBUG: "0", CARGO_PROFILE_TEST_DEBUG: "0" } },
   "postgres-reachability-platform": { env: { CARGO_PROFILE_DEV_DEBUG: "0", CARGO_PROFILE_TEST_DEBUG: "0" } },
   "postgres-reachability-ontology": { env: { CARGO_PROFILE_DEV_DEBUG: "0", CARGO_PROFILE_TEST_DEBUG: "0" } },
@@ -2287,8 +2287,16 @@ export function evaluateCiPreflight(
     if (!/ci-keep-going:/.test(domainStep) || !/exit 1/.test(domainStep)) {
       failures.push("domain-unit keep-going block must re-raise failures with a summary exit 1");
     }
-    if (/^    (?:env|defaults):/m.test(domainUnit)
-      || /^        env:/m.test(domainUnit)) {
+    // Job-level env is REQUIRED and pinned to exactly the two cache-key variables:
+    // without them this job's rust-cache key never matched the writer's and every
+    // run was a cold 685s build. A blanket "no env" ban is what kept that miss in
+    // place for 14 runs. Step-level env and any `defaults:` stay forbidden.
+    const domainEnvLines = (domainUnit.match(/^    env:\n((?:      [^\n]*\n)*)/m)?.[1] ?? "")
+      .split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
+    const expectedDomainEnv = ['CARGO_PROFILE_DEV_DEBUG: "0"', 'CARGO_PROFILE_TEST_DEBUG: "0"'];
+    if (/^    defaults:/m.test(domainUnit)
+      || /^        env:/m.test(domainUnit)
+      || JSON.stringify(domainEnvLines) !== JSON.stringify(expectedDomainEnv)) {
       failures.push("domain-unit must use the default shell with no job or step env/defaults overrides");
     }
     const directTokens = parsedDomainCommands.flatMap((command) => command.tokens);
