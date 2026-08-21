@@ -941,8 +941,8 @@ jobs:
         run: tools/buck/preflight.sh --full-generated-faces
 
   backend:
-    name: Backend — fmt / clippy / test / gates
-    runs-on: ubuntu-latest
+    name: Backend — ${{ matrix.leg }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     needs: preflight
     # Three legs run in PARALLEL. Measured on merge_group run 32402124838 this
     # job was the 17m critical path of a 19m CI run, and three steps were 757s
@@ -961,7 +961,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Keep strategy.matrix.leg pinned (preflight). Native cargo rustc on both
+        # ship arches via include; Buck legs stay amd64.
         leg: [cargo, buck-app, buck-dev-auth]
+        os: [ubuntu-24.04]
+        include:
+          - { leg: cargo, os: ubuntu-24.04-arm }
     # Serial integration execution avoids cluster-global role mutation races.
     #
     # NOTE: the "full workspace" this number was originally sized for no longer
@@ -1051,7 +1056,8 @@ jobs:
           # One shared entry, not one per job. rust-cache keys on job name by
           # default, so these two maintained separate near-duplicate copies of the
           # same workspace and evicted each other out of the 10GB LRU budget.
-          shared-key: backend-cargo
+          # Arch is part of the key so amd64 and arm64 do not overwrite each other.
+          shared-key: backend-cargo-${{ matrix.os }}
           cache-all-crates: "true"
           # The ONLY writer. `backend` runs clippy --all-targets over the whole
           # workspace, a strict superset of every other cargo job, so its target dir
