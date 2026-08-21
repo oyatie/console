@@ -84,76 +84,6 @@
   ],
   "documents": [
     {
-      "path": ".beads/README.md",
-      "class": "historical",
-      "owner": "repository maintainers",
-      "status": "active",
-      "replacement": null,
-      "retention": "retain",
-      "blob_sha": "63e8f4c232ee83a6a239ae43b85f9c7903601dbb",
-      "archive_tag": null
-    },
-    {
-      "path": ".cursor/PROCESS-SYNTHESIS.md",
-      "blob_sha": "040ca8c1d78a07403f42ce4c3b461cfbfa8ba8c5",
-      "class": "current",
-      "owner": "repository maintainers",
-      "status": "active",
-      "replacement": null,
-      "retention": "retain",
-      "archive_tag": null
-    },
-    {
-      "path": ".cursor/agents/lane-critic.md",
-      "blob_sha": "9dc9357231384841c19d7d60a3ee74c3c7ee6137",
-      "class": "current",
-      "owner": "repository maintainers",
-      "status": "active",
-      "replacement": null,
-      "retention": "retain",
-      "archive_tag": null
-    },
-    {
-      "path": ".cursor/agents/lane-implementer.md",
-      "blob_sha": "43ff3b765d60131c681e1afb3d0bd7bc96732157",
-      "class": "current",
-      "owner": "repository maintainers",
-      "status": "active",
-      "replacement": null,
-      "retention": "retain",
-      "archive_tag": null
-    },
-    {
-      "path": ".cursor/failure-classes-2026-08-10.md",
-      "blob_sha": "51ec61c1641e7a0dd4f17d5036c43b80d8ae3d63",
-      "class": "evidence",
-      "owner": "repository maintainers",
-      "status": "active",
-      "replacement": null,
-      "retention": "retain",
-      "archive_tag": null
-    },
-    {
-      "path": ".omx/context/reasoning-lens-contract-20260803T101035Z.md",
-      "class": "evidence",
-      "owner": "repository maintainers",
-      "status": "frozen",
-      "replacement": null,
-      "retention": "retain",
-      "blob_sha": "1db260293fbd0228b72abb72afa6a5bc0b383871",
-      "archive_tag": null
-    },
-    {
-      "path": ".omx/plans/reasoning-lens-contract.md",
-      "class": "quarry",
-      "owner": "repository maintainers",
-      "status": "frozen",
-      "replacement": null,
-      "retention": "retain as context",
-      "blob_sha": "b7e6247c098c0f6abcfb41c9b52bf1368aa5083e",
-      "archive_tag": null
-    },
-    {
       "path": "AGENTS.md",
       "class": "historical",
       "owner": "repository maintainers",
@@ -261,6 +191,16 @@
       "replacement": null,
       "retention": "retain",
       "blob_sha": "c8b570f980cdb6924f17a1ba5c7a277d27e9e4c0",
+      "archive_tag": null
+    },
+    {
+      "path": "ci/harness/README.md",
+      "class": "current",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6d1619fdc6408b6cce8932aeed1339d98279ede6",
       "archive_tag": null
     },
     {

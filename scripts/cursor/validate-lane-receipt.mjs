@@ -3,10 +3,10 @@
  * Cursor-native lane receipt validator.
  *
  * Mirrors the skim-proof BUILD_SCHEMA / REVIEW_SCHEMA fields from
- * `.claude/workflows/lane-fanout.js`. Exit nonzero = not done.
+ * `scripts/console/workflows/lane-fanout.js`. Exit nonzero = not done.
  *
  * Usage:
- *   node scripts/cursor/validate-lane-receipt.mjs .cursor/receipts/<id>.json
+ *   node scripts/cursor/validate-lane-receipt.mjs scripts/console/fixtures/<id>.json
  *   node scripts/cursor/validate-lane-receipt.mjs --schema build|critic <path>
  */
 import { readFileSync } from 'node:fs'

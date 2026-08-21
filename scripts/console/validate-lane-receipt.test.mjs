@@ -297,13 +297,13 @@ test('--dir scan FAILS a present-but-unrecognised kind instead of skipping it (p
 
 test('--dir scan of the real tracked receipts directory examines at least this lane receipt and passes', () => {
   executed += 1;
-  const result = run(['--dir', join(repoRoot, '.cursor', 'receipts')]);
+  const result = run(['--dir', join(repoRoot, 'scripts', 'console', 'fixtures')]);
   assert.equal(result.status, 0, result.stderr);
 });
 
 test('cross-authority parity: BUILD_SCHEMA required fields are a subset of laneReceipt required', () => {
   executed += 1;
-  const laneFanout = readFileSync(join(repoRoot, '.claude', 'workflows', 'lane-fanout.js'), 'utf8');
+  const laneFanout = readFileSync(join(repoRoot, 'scripts', 'console', 'workflows', 'lane-fanout.js'), 'utf8');
   const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
 
   const buildMatch = laneFanout.match(/const BUILD_SCHEMA = \{[^]*?required: \[([^\]]*)\]/);
@@ -337,7 +337,7 @@ test('cross-authority parity: BUILD_SCHEMA required fields are a subset of laneR
 
 test('this lane receipt validates under both the tracked and incumbent cursor validators', () => {
   executed += 1;
-  const receiptPath = join(repoRoot, '.cursor', 'receipts', 'v-lane-receipt-validator-20260812.json');
+  const receiptPath = join(repoRoot, 'scripts', 'console', 'fixtures', 'v-lane-receipt-validator-20260812.json');
   const tracked = run([receiptPath]);
   assert.equal(tracked.status, 0, tracked.stderr);
 

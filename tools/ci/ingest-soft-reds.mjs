@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Mechanical soft-red / block ingest → .grok/harness/lane-board.live.json
+ * Mechanical soft-red / block ingest → ci/harness/lane-board.live.json
  *
  * Realizes aspirational "no silent soft reds": any open PR that is BEHIND,
  * DIRTY, CONFLICTING, or has failing/pending Required-ish signals gets a
@@ -17,7 +17,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const boardPath = resolve(root, ".grok/harness/lane-board.live.json");
+const boardPath = resolve(root, "ci/harness/lane-board.live.json");
 
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has("--dry-run");

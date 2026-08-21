@@ -231,7 +231,7 @@ jobs:
       - name: Lane fan-out harness preflight
         id: lane-fanout
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
-        run: node .claude/workflows/lane-fanout.test.mjs
+        run: node scripts/console/workflows/lane-fanout.test.mjs
       - name: Workflow test-runner credential literals
         id: test-credentials
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}

@@ -1,3 +1,0 @@
-{"ts":"2026-08-06T11:16:15Z","event":"activate","objective":"smoke ultragoal","story_id":null,"workflow":"program-control"}
-{"ts":"2026-08-06T11:16:15Z","event":"deactivate","reason":"smoke"}
-{"ts":"2026-08-06T11:21:14Z","event":"activate","objective":"Drain tip-serial #591-593; land process soft-red tools + Wave0 domain batch via console-drive","story_id":null,"workflow":"console-drive"}

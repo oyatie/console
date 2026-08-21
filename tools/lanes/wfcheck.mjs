@@ -10,7 +10,7 @@
 // and `||` short-circuits whenever `A.repo` is passed. The broken branch was never once evaluated.
 // A default that cannot execute is not a default; it is a latent crash keyed to an unset arg.
 //
-// Usage:  node tools/lanes/wfcheck.mjs .claude/workflows/slice.js '{"task":"t","lane":"1"}'
+// Usage:  node tools/lanes/wfcheck.mjs scripts/console/workflows/slice.js '{"task":"t","lane":"1"}'
 // Exit 0 = module scope evaluated clean. Exit 1 = it threw (message printed).
 //
 // NOTE ON THE PROBE ITSELF: the first version wrapped the body in `(async()=>{})()` and try/caught

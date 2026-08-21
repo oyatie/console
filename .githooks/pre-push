@@ -1,0 +1,20 @@
+#!/bin/bash
+# Refuses to push a tree that does not build.
+#
+# Cheap check first: a push that cannot compile wastes every downstream
+# reader's time, and CI minutes, to learn what one local command knows.
+set -uo pipefail
+if [ -n "${SKIP_TRACKED_HOOKS:-}" ]; then exit 0; fi
+
+if command -v cargo >/dev/null 2>&1 && [ -f Cargo.toml ]; then
+    echo "[pre-push] checking the workspace compiles..."
+    if ! cargo check --workspace --quiet 2>&1 | tail -20; then
+        echo "[pre-push] REFUSED: the workspace does not compile."
+        exit 1
+    fi
+fi
+
+for local_hook in .beads/hooks/pre-push .git/hooks/pre-push.local; do
+    if [ -x "$local_hook" ]; then "$local_hook" "$@" || exit $?; fi
+done
+exit 0

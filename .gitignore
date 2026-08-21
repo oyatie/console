@@ -69,4 +69,15 @@ deploy/talos/**/talosconfig
 .beads/proxieddb/
 
 # Grok runtime board (materialized by tools/ci/ingest-soft-reds.mjs; not custodied)
-.grok/harness/lane-board.live.json
+ci/harness/lane-board.live.json
+
+# Agent working directories must never be committed. Load-bearing content is
+# drained to a real home first (see PLAN.md 39); these hold scratch only.
+.grok/
+.claude/
+.codex/
+.cursor/
+.agents/
+.beads/
+.omx/
+.omc/
