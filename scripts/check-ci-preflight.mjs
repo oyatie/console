@@ -71,11 +71,26 @@ const preflightRustHeavyCondition =
 const preflightNpmCiHeavyCondition =
   "${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}";
 const collectFailuresCondition = "${{ !cancelled() }}";
-/** Backend fail-slow: independent (no prior-step dependency) and topology-dependent guards. */
+/** Backend fail-slow: independent (no prior-step dependency) and topology-dependent guards.
+ *
+ * `backend` is a three-leg matrix (cargo | buck-app | buck-dev-auth). Steps that
+ * belong to ONE leg carry `matrix.leg == '<leg>' &&` ahead of the guard; steps
+ * that run on EVERY leg (setup, the topology reconcile, collect-failures) keep
+ * the leg-free form. The helpers exist so a leg name appears in exactly one
+ * place per step and cannot drift from `BACKEND_MATRIX_LEGS` below. */
+const BACKEND_MATRIX_LEGS = Object.freeze(["cargo", "buck-app", "buck-dev-auth"]);
 const backendIndependentCondition =
   "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}";
 const backendTopologyDependentCondition =
   "${{ !cancelled() && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}";
+function backendLegCondition(leg) {
+  if (!BACKEND_MATRIX_LEGS.includes(leg)) throw new Error(`unknown backend leg ${leg}`);
+  return `\${{ !cancelled() && matrix.leg == '${leg}' && needs.preflight.outputs.run_heavy == 'true' }}`;
+}
+function backendLegTopologyCondition(leg) {
+  if (!BACKEND_MATRIX_LEGS.includes(leg)) throw new Error(`unknown backend leg ${leg}`);
+  return `\${{ !cancelled() && matrix.leg == '${leg}' && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}`;
+}
 
 export const PATH_CLASS_RULES_VERSION = "4";
 const docsOnlyRootFiles = new Set([
@@ -937,28 +952,28 @@ const requiredJobRunContracts = Object.freeze({
   "backend": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
     setupRun("Install pinned DotSlash runtime", "../tools/buck/install_dotslash.sh", { if: backendIndependentCondition }),
-    proofRun("rustfmt check", "cargo fmt --all -- --check", { if: backendIndependentCondition }),
-    proofRun("clippy -D warnings", "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings", { if: backendIndependentCondition }),
-    proofRun("Layer-boundary gate", "../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary", { if: backendIndependentCondition }),
-    proofRun("Audit-coverage gate", "cargo run -p console-gate-audit-coverage", { if: backendIndependentCondition }),
-    proofRun("Migration-safety gate", "cargo run -p console-gate-migration-safety", { if: backendIndependentCondition }),
-    proofRun("Tenant-isolation gate", "cargo run -p console-gate-tenant-isolation", { if: backendIndependentCondition }),
-    proofRun("PII-no-logs gate", "cargo run -p console-gate-pii-no-logs", { if: backendIndependentCondition }),
-    proofRun("RLS-arming gate", "cargo run -p console-gate-rls-arming", { if: backendIndependentCondition }),
-    proofRun("Dev-auth-absence gate", "cargo run -p console-gate-dev-auth-absence", { if: backendIndependentCondition }),
-    proofRun("IaC tier-discipline gate", "cargo run -p console-gate-iac-tier", { if: backendIndependentCondition }),
-    proofRun("Fabricated-branch gate", "cargo run -p console-gate-fabricated-branch", { if: backendIndependentCondition }),
-    proofRun("Personal-data-classification gate", "cargo run -p console-gate-personal-data-classification", { if: backendIndependentCondition }),
-    proofRun("Writer-ownership gate", "cargo run -p console-gate-writer-ownership", { if: backendIndependentCondition }),
-    proofDigest("Buck2 CI-gate mutation suites — every gate proven to still reject", "f6614509bd73220754a83d449b8bf422e616309ba48965f730f0d3dcff9d2cf4", { if: backendIndependentCondition, workingDirectory: "." }),
-    proofRun("PR 473 migration operational contract tests", "python3 scripts/check-pr473-migration-operational.test.py -v", { if: backendIndependentCondition, workingDirectory: "." }),
+    proofRun("rustfmt check", "cargo fmt --all -- --check", { if: backendLegCondition("cargo") }),
+    proofRun("clippy -D warnings", "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings", { if: backendLegCondition("cargo") }),
+    proofRun("Layer-boundary gate", "../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary", { if: backendLegCondition("cargo") }),
+    proofRun("Audit-coverage gate", "cargo run -p console-gate-audit-coverage", { if: backendLegCondition("cargo") }),
+    proofRun("Migration-safety gate", "cargo run -p console-gate-migration-safety", { if: backendLegCondition("cargo") }),
+    proofRun("Tenant-isolation gate", "cargo run -p console-gate-tenant-isolation", { if: backendLegCondition("cargo") }),
+    proofRun("PII-no-logs gate", "cargo run -p console-gate-pii-no-logs", { if: backendLegCondition("cargo") }),
+    proofRun("RLS-arming gate", "cargo run -p console-gate-rls-arming", { if: backendLegCondition("cargo") }),
+    proofRun("Dev-auth-absence gate", "cargo run -p console-gate-dev-auth-absence", { if: backendLegCondition("cargo") }),
+    proofRun("IaC tier-discipline gate", "cargo run -p console-gate-iac-tier", { if: backendLegCondition("cargo") }),
+    proofRun("Fabricated-branch gate", "cargo run -p console-gate-fabricated-branch", { if: backendLegCondition("cargo") }),
+    proofRun("Personal-data-classification gate", "cargo run -p console-gate-personal-data-classification", { if: backendLegCondition("cargo") }),
+    proofRun("Writer-ownership gate", "cargo run -p console-gate-writer-ownership", { if: backendLegCondition("cargo") }),
+    proofDigest("Buck2 CI-gate mutation suites — every gate proven to still reject", "f6614509bd73220754a83d449b8bf422e616309ba48965f730f0d3dcff9d2cf4", { if: backendLegCondition("cargo"), workingDirectory: "." }),
+    proofRun("PR 473 migration operational contract tests", "python3 scripts/check-pr473-migration-operational.test.py -v", { if: backendLegCondition("cargo"), workingDirectory: "." }),
     setupDigest("Reconcile portable PostgreSQL role topology", "5da0f2d8c399657dbc0a9d358c81d71399af1ea6c659074a365653db21fcaded", { if: backendIndependentCondition }),
-    proofDigest("Boot smoke — migrate + serve + /readyz", "d51d75f8cd49be1557c5b5c1f5f641345bc82f842d2384e9608e9872b0714d79", { if: backendTopologyDependentCondition }),
-    proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { if: backendTopologyDependentCondition, workingDirectory: "." }),
-    proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit", { if: backendIndependentCondition, workingDirectory: "." }),
-    proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { if: backendIndependentCondition, workingDirectory: "." }),
-    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: backendIndependentCondition, workingDirectory: "." }),
-    proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { if: backendTopologyDependentCondition, workingDirectory: "." }),
+    proofDigest("Boot smoke — migrate + serve + /readyz", "d51d75f8cd49be1557c5b5c1f5f641345bc82f842d2384e9608e9872b0714d79", { if: backendLegTopologyCondition("cargo") }),
+    proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { if: backendLegTopologyCondition("buck-dev-auth"), workingDirectory: "." }),
+    proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
+    proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
+    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
+    proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { if: backendLegTopologyCondition("buck-app"), workingDirectory: "." }),
     proofRun("Collect failures", "node scripts/ci-collect-failures.mjs", { if: collectFailuresCondition, workingDirectory: "." }),
   ],
   // Split out of `backend` 2026-08-18: this single gate was 445s of a 1176s job.
@@ -1105,12 +1120,12 @@ const requiredJobActionContracts = Object.freeze({
   "backend": [
     actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { id: "checkout" }),
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1","components":"rustfmt, clippy"}, { if: backendIndependentCondition, id: "rust" }),
-    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/main' }}"}, { if: backendIndependentCondition, id: "rust-cache" }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/main' && matrix.leg == 'cargo' }}"}, { if: backendIndependentCondition, id: "rust-cache" }),
   ],
   "migration-expand-contract": [
     actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { id: "checkout" }),
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1","components":"rustfmt, clippy"}, { if: backendIndependentCondition, id: "rust" }),
-    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/main' }}"}, { if: backendIndependentCondition, id: "rust-cache" }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: backendIndependentCondition, id: "rust-cache" }),
   ],
   "kubernetes-manifests": [
     actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"fetch-depth":0}, { if: runHeavyCondition }),
@@ -1168,7 +1183,7 @@ const requiredJobActionContracts = Object.freeze({
 const requiredJobMetadataSha256 = Object.freeze({
   "preflight": "1f3b5c6437ba04ccda98e2cbdf78506a69c6f82be7ce2abf7c661660c88fe87f",
   "domain-unit": "4948a02022fffb8b39aa14b4cb9ee3f776fe20c04844942dedd31f90ebe90bef",
-  "backend": "f4f6b9faa5c4382a00d5639bebfb9ab8db664ecf38b79752d80afa567161393f",
+  "backend": "6bbf9fbdb72a307430601770f5e469d6dff891d35cc8be56efef0158c2982d07",
   "migration-expand-contract": "c6f45dea77b33bcfd29183837e5dfa6dccc44a83c6ebb2bb530d0db186b09c08",
   "kubernetes-manifests": "1b215a62dac6d9a3decea6d6912792de3d033986833356b403fb157a15cb8b96",
   "repo-gates": "da8a07f3a19a6f46a5901e6a6d8eac2f7f1c11f52818b7dea25caf362335ee92",
@@ -2353,6 +2368,26 @@ export function evaluateCiPreflight(
     failures.push("tools/ci/install_nextest.sh must verify the sha256 BEFORE extracting the archive");
   }
 
+  {
+    const backendBlock = jobBlock(workflow, "backend") ?? "";
+    const declared = [...backendBlock.matchAll(/^\s+leg: \[([^\]]+)\]/gm)]
+      .flatMap((m) => m[1].split(",").map((x) => x.trim()));
+    const referenced = [...backendBlock.matchAll(/matrix\.leg == '([a-z-]+)'/g)].map((m) => m[1]);
+    for (const leg of new Set(referenced)) {
+      if (!declared.includes(leg)) {
+        failures.push(`backend step condition names matrix leg '${leg}', which is not in strategy.matrix.leg -- that step would run on ZERO legs`);
+      }
+    }
+    for (const leg of declared) {
+      if (!referenced.includes(leg)) {
+        failures.push(`backend matrix leg '${leg}' carries no step -- a leg that runs nothing is pure setup cost and gates nothing`);
+      }
+    }
+    if (JSON.stringify(declared) !== JSON.stringify([...BACKEND_MATRIX_LEGS])) {
+      failures.push(`backend strategy.matrix.leg must be exactly ${JSON.stringify([...BACKEND_MATRIX_LEGS])}; found ${JSON.stringify(declared)}`);
+    }
+  }
+
   const postgresDomainReachability = jobBlock(workflow, "postgres-domain-reachability");
   if (postgresDomainReachability) {
     const steps = stepBlocks(postgresDomainReachability);
@@ -2429,11 +2464,11 @@ export function evaluateCiPreflight(
     const gateIndexes = requireOrderedStepContracts(
       steps,
       [
-        { name: "clippy -D warnings", run: "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings", if: backendIndependentCondition },
-        ...sourceGateContracts.map(([name, run]) => ({ name, run, if: backendIndependentCondition })),
-        { name: "PR 473 migration operational contract tests", run: pr473ContractTestCommand, if: backendIndependentCondition },
+        { name: "clippy -D warnings", run: "SQLX_OFFLINE=true cargo clippy --all-targets -- -D warnings", if: backendLegCondition("cargo") },
+        ...sourceGateContracts.map(([name, run]) => ({ name, run, if: backendLegCondition("cargo") })),
+        { name: "PR 473 migration operational contract tests", run: pr473ContractTestCommand, if: backendLegCondition("cargo") },
         { name: "Reconcile portable PostgreSQL role topology", run: undefined, if: backendIndependentCondition },
-        { name: "Boot smoke — migrate + serve + /readyz", run: undefined, if: backendTopologyDependentCondition },
+        { name: "Boot smoke — migrate + serve + /readyz", run: undefined, if: backendLegTopologyCondition("cargo") },
       ],
       "backend",
       failures,
@@ -2454,7 +2489,7 @@ export function evaluateCiPreflight(
             "//tools/buck:provisioning-dev-principal-upsert-race-postgres",
           ].join("\n"),
           workingDirectory: ".",
-          if: backendTopologyDependentCondition,
+          if: backendLegTopologyCondition("buck-dev-auth"),
         },
         {
           // Locked so the step cannot be deleted silently: the crate's residual
@@ -2463,13 +2498,13 @@ export function evaluateCiPreflight(
           name: "Buck2 platform-authz unit suite",
           run: "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit",
           workingDirectory: ".",
-          if: backendIndependentCondition,
+          if: backendLegCondition("buck-app"),
         },
         {
           name: "Buck2 console-app unit suite",
           run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit",
           workingDirectory: ".",
-          if: backendIndependentCondition,
+          if: backendLegCondition("buck-app"),
         },
         {
           // The suite H-1 is *about*. `openapi_drift` is the only thing that inventories every
@@ -2481,7 +2516,7 @@ export function evaluateCiPreflight(
           name: "Buck2 console-app OpenAPI drift suite",
           run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift",
           workingDirectory: ".",
-          if: backendIndependentCondition,
+          if: backendLegCondition("buck-app"),
         },
         {
           name: "Buck2 console-app inline PostgreSQL suites",
@@ -2491,7 +2526,7 @@ export function evaluateCiPreflight(
             "//tools/buck:app-dev-auth-persona-guard-postgres",
           ].join("\n"),
           workingDirectory: ".",
-          if: backendTopologyDependentCondition,
+          if: backendLegTopologyCondition("buck-app"),
         },
       ],
       "backend",
@@ -2616,6 +2651,11 @@ export function evaluateCiPreflight(
   const cargoRustCacheJobs = [
     "domain-unit",
     "backend",
+    // Restore-only. Was the undeclared SECOND writer of the shared entry: its
+    // rust-cache step carried `save-if: main` under a comment reading "The ONLY
+    // writer", copied from `backend` when the job was split out. Absent from this
+    // list, the one-writer check below never saw it.
+    "migration-expand-contract",
     "postgres-reachability-app",
     "postgres-reachability-platform",
     "postgres-reachability-ontology",
@@ -2642,6 +2682,19 @@ export function evaluateCiPreflight(
       const block = jobBlock(workflow, job);
       return block && !/save-if:\s*false/.test(block);
     });
+    // `backend` is a three-leg matrix. "One writer" is not enough when the one
+    // job runs three times: three legs saving the same key race each other on
+    // every main push. The textual `save-if: false` test above cannot tell one
+    // leg saving from three, so the writer's save-if must name exactly one leg.
+    {
+      const backendBlock = jobBlock(workflow, "backend") ?? "";
+      const legs = backendBlock.match(/save-if:[^\n]*matrix\.leg == '([a-z-]+)'/g) ?? [];
+      if (legs.length !== 1) {
+        failures.push(
+          `backend's rust-cache save-if must name exactly ONE matrix leg as the writer; found ${legs.length}`,
+        );
+      }
+    }
     for (const job of cargoRustCacheJobs) {
       if (job === "backend") continue;
       const block = jobBlock(workflow, job);

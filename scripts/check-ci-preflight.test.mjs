@@ -54,6 +54,15 @@ const preflightRustHeavyIf =
   "${{ !cancelled() && steps.rust-toolchain.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}";
 const backendIndependentIf =
   "${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}";
+// `backend` is a three-leg matrix. Steps that belong to ONE leg carry the leg in
+// their guard; `backendIndependentIf` above is now only right for steps that run
+// on EVERY leg (setup, topology, collect). A mutation that replaces a leg-gated
+// step's `if:` must match the leg-gated text or it silently replaces nothing --
+// which is how two of these tests went quiet when the matrix landed.
+const backendCargoLegIf =
+  "${{ !cancelled() && matrix.leg == 'cargo' && needs.preflight.outputs.run_heavy == 'true' }}";
+const backendBuckAppLegIf =
+  "${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}";
 const npmCiIf = "${{ !cancelled() && steps.npm-ci.outcome == 'success' }}";
 const npmCiPrIf = "${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}";
 
@@ -1990,7 +1999,7 @@ describe("CI preflight contract", () => {
   it("keeps protected backend steps fail-slow and runs PR 473 contract tests before topology", () => {
     expectFailure(
       workflow.replace(
-        `      - name: rustfmt check\n        id: fmt\n        if: ${backendIndependentIf}\n`,
+        `      - name: rustfmt check\n        id: fmt\n        if: ${backendCargoLegIf}\n`,
         `      - name: rustfmt check\n        id: fmt\n        if: \${{ !cancelled() }}\n`,
       ),
       "backend proof run step 3 must preserve",
@@ -2127,7 +2136,7 @@ describe("CI preflight contract", () => {
       + " //backend/app:console-app-itest-openapi_drift\n";
     const step = "      - name: Buck2 console-app OpenAPI drift suite\n"
       + "        id: openapi-drift\n"
-      + `        if: ${backendIndependentIf}\n`
+      + `        if: ${backendBuckAppLegIf}\n`
       + "        working-directory: .\n"
       + run;
     assert.ok(workflow.includes(step), "backend does not run the openapi_drift suite");
@@ -2147,7 +2156,7 @@ describe("CI preflight contract", () => {
     // Dropping the run_heavy half of the guard would let the drift suite run on thin classes.
     expectFailure(
       workflow.replace(
-        `      - name: Buck2 console-app OpenAPI drift suite\n        id: openapi-drift\n        if: ${backendIndependentIf}\n`,
+        `      - name: Buck2 console-app OpenAPI drift suite\n        id: openapi-drift\n        if: ${backendBuckAppLegIf}\n`,
         `      - name: Buck2 console-app OpenAPI drift suite\n        id: openapi-drift\n        if: \${{ !cancelled() }}\n`,
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
