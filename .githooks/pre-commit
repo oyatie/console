@@ -1,0 +1,40 @@
+#!/bin/bash
+# Tracked, reviewable pre-commit. Blocks what is mechanically detectable.
+#
+# This repository previously ran hooks from an agent working directory
+# (core.hooksPath -> .beads/hooks). Those files are untracked and gitignored, so
+# a fresh clone had no hooks at all and nothing said so. Hooks that only exist
+# on the machine that wrote them are not enforcement; they are a local habit.
+#
+# Local, untracked hooks still run: see the delegation at the end. Beads and any
+# other per-developer tooling keep working; they simply stop being the only
+# thing standing between a mistake and the remote.
+set -uo pipefail
+if [ -n "${SKIP_TRACKED_HOOKS:-}" ]; then exit 0; fi
+
+AGENT_DIRS='^\.(claude|codex|cursor|grok|agents|beads|omc|omx)/'
+staged=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null || true)
+
+offending=$(echo "$staged" | grep -E "$AGENT_DIRS" || true)
+if [ -n "$offending" ]; then
+    echo "[pre-commit] REFUSED: agent directory files are staged."
+    echo "$offending" | sed 's/^/             /'
+    echo "             Drain any load-bearing content to a tracked home first"
+    echo "             (see tools/delivery/ and tools/hooks/registration/), then"
+    echo "             leave the directory untracked. It may stay on disk."
+    exit 1
+fi
+
+while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    if git check-ignore -q "$f" 2>/dev/null; then
+        echo "[pre-commit] REFUSED: '$f' is gitignored but staged."
+        exit 1
+    fi
+done <<< "$staged"
+
+# Delegate to any local, untracked hook so per-developer tooling survives.
+for local_hook in .beads/hooks/pre-commit .git/hooks/pre-commit.local; do
+    if [ -x "$local_hook" ]; then "$local_hook" "$@" || exit $?; fi
+done
+exit 0

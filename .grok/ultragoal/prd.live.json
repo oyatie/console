@@ -1,7 +1,0 @@
-{
-  "version": 1,
-  "title": null,
-  "source": "ralph",
-  "stories": [],
-  "notes": "Ralph-style PRD. Stories need task-specific acceptanceCriteria (not generic boilerplate)."
-}

@@ -941,7 +941,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Executed-tests ratchet — a test binary must have a path from a workflow step", "npm run check:executed-tests", { if: preflightNpmCiHeavyCondition }),
     proofRun("JavaScript test reachability ratchet", "npm run check:js-test-reachability", { if: preflightNpmCiDependentCondition }),
     proofRun("JavaScript test reachability unit tests", "npm run test:js-test-reachability", { if: preflightNpmCiDependentCondition }),
-    proofRun("Lane fan-out harness preflight", "node .claude/workflows/lane-fanout.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Lane fan-out harness preflight", "node scripts/console/workflows/lane-fanout.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Workflow test-runner credential literals", "npm run check:test-credentials", { if: preflightNpmCiDependentCondition }),
     proofRun("Collect failures", "node scripts/ci-collect-failures.mjs", { if: collectFailuresCondition }),
   ],

@@ -12,7 +12,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const SCHEMA_URL = new URL('./lane-receipt.schema.json', import.meta.url);
 const SCHEMA = JSON.parse(readFileSync(SCHEMA_URL, 'utf8'));
 // Parity with the tracked incumbent (scripts/cursor/validate-lane-receipt.mjs) and
-// .claude/workflows/lane-fanout.js BUILD_SCHEMA: case-insensitive prefix, not exact equality.
+// scripts/console/workflows/lane-fanout.js BUILD_SCHEMA: case-insensitive prefix, not exact equality.
 const NA_ENFORCEMENT = /^n\/a\s*-\s*adds no enforcement\b/i;
 
 // Every JSON Schema keyword the walker implements. A schema edit that introduces a keyword
