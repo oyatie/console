@@ -1876,8 +1876,8 @@ describe("CI preflight contract", () => {
     );
     expectFailure(
       replaceJob(workflow, "domain-unit", (block) => block.replace(
-        "  domain-unit:\n",
-        "  domain-unit:\n    env:\n      CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER: true\n",
+        "      CARGO_PROFILE_TEST_DEBUG: \"0\"\n",
+        "      CARGO_PROFILE_TEST_DEBUG: \"0\"\n      CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER: true\n",
       )),
       "domain-unit must use the default shell with no job or step env/defaults overrides",
     );
