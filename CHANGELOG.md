@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.10](https://github.com/oyatie/console/compare/v0.3.9...v0.3.10) (2026-08-24)
+
+
+### Bug Fixes
+
+* **ci:** bind image release to fallback proof ([#868](https://github.com/oyatie/console/issues/868)) ([115d878](https://github.com/oyatie/console/commit/115d878dffbd27f7788d51a900844a2b55c60c35))
+
 ## [0.3.9](https://github.com/oyatie/console/compare/v0.3.8...v0.3.9) (2026-08-24)
 
 
