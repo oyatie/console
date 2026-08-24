@@ -38,11 +38,23 @@ const cacheHygiene = yaml.load(cacheHygieneText);
 const CANDIDATE = "a".repeat(40);
 const PARENT = "b".repeat(40);
 const OTHER = "c".repeat(40);
+const RELEASE_HEAD = "d".repeat(40);
+const RELEASE_TREE = "e".repeat(40);
 const REPOSITORY_ID = 1269693002;
 const CI_WORKFLOW_ID = 296023727;
+const RELEASE_WORKFLOW_ID = 296023729;
 const SECURITY_WORKFLOW_ID = 296023731;
 const CI_RUN_ID = 1101;
+const RELEASE_RUN_ID = 1701;
+const RELEASE_RUN_NUMBER = 701;
+const RELEASE_PROOF_JOB_ID = 1702;
+const RELEASE_PR_NUMBER = 760;
 const SECURITY_RUN_ID = 2201;
+const RELEASE_TRANSPORT_ID = 56489493;
+const RELEASE_TRANSPORT_LOGIN = "jason931225";
+const RELEASE_TRANSPORT_NAME = "Jason Lee";
+const RELEASE_TRANSPORT_EMAIL =
+  "56489493+jason931225@users.noreply.github.com";
 
 const temporaryRoots = [];
 after(() => {
@@ -74,12 +86,25 @@ function productionJobDigest(model = workflow) {
     .digest("hex");
 }
 
+function releaseFiles() {
+  return [
+    { filename: ".release-please-manifest.json", status: "modified" },
+    { filename: "CHANGELOG.md", status: "modified" },
+    { filename: "docs/documentation-index.json", status: "modified" },
+    {
+      filename: "docs/documentation-manifest.seed.json",
+      status: "modified",
+    },
+  ];
+}
+
 function releaseCommit() {
   return {
     sha: CANDIDATE,
     parents: [{ sha: PARENT }],
     commit: {
-      message: "chore(main): release 1.2.3 (#760)\n\nrelease notes",
+      message: `chore(main): release 1.2.3 (#${RELEASE_PR_NUMBER})\n\nrelease notes`,
+      tree: { sha: RELEASE_TREE },
       author: {
         name: "github-actions[bot]",
         email: "41898282+github-actions[bot]@users.noreply.github.com",
@@ -89,15 +114,72 @@ function releaseCommit() {
     },
     author: { login: "github-actions[bot]", id: 41898282, type: "Bot" },
     committer: { login: "web-flow", id: 19864447, type: "User" },
-    files: [
-      { filename: ".release-please-manifest.json", status: "modified" },
-      { filename: "CHANGELOG.md", status: "modified" },
-      { filename: "docs/documentation-index.json", status: "modified" },
-      {
-        filename: "docs/documentation-manifest.seed.json",
-        status: "modified",
+    files: releaseFiles(),
+  };
+}
+
+function transportAuthoredReleaseCommit() {
+  const candidate = releaseCommit();
+  return {
+    ...candidate,
+    commit: {
+      ...candidate.commit,
+      author: {
+        name: RELEASE_TRANSPORT_NAME,
+        email: RELEASE_TRANSPORT_EMAIL,
       },
-    ],
+    },
+    author: {
+      login: RELEASE_TRANSPORT_LOGIN,
+      id: RELEASE_TRANSPORT_ID,
+      type: "User",
+    },
+  };
+}
+
+function releaseHeadCommit() {
+  return {
+    sha: RELEASE_HEAD,
+    parents: [{ sha: PARENT }],
+    commit: {
+      message: "chore(main): release 1.2.3",
+      tree: { sha: RELEASE_TREE },
+      author: {
+        name: "github-actions[bot]",
+        email: "41898282+github-actions[bot]@users.noreply.github.com",
+      },
+      committer: { name: "GitHub", email: "noreply@github.com" },
+      verification: { verified: false, reason: "unsigned" },
+    },
+    author: { login: "github-actions[bot]", id: 41898282, type: "Bot" },
+    committer: { login: "web-flow", id: 19864447, type: "User" },
+    files: releaseFiles(),
+  };
+}
+
+function releasePullRequest({ transport = false } = {}) {
+  const user = transport
+    ? { id: RELEASE_TRANSPORT_ID, login: RELEASE_TRANSPORT_LOGIN, type: "User" }
+    : { id: 41898282, login: "github-actions[bot]", type: "Bot" };
+  return {
+    number: RELEASE_PR_NUMBER,
+    state: "closed",
+    draft: false,
+    merged: true,
+    merged_at: "2026-08-16T12:00:00Z",
+    merge_commit_sha: CANDIDATE,
+    title: "chore(main): release 1.2.3",
+    user,
+    base: {
+      ref: "main",
+      sha: PARENT,
+      repo: { id: REPOSITORY_ID, full_name: "oyatie/console" },
+    },
+    head: {
+      ref: "release-please--branches--main--components--console",
+      sha: RELEASE_HEAD,
+      repo: { id: REPOSITORY_ID, full_name: "oyatie/console" },
+    },
   };
 }
 
@@ -105,6 +187,9 @@ function workflowRun({
   id,
   workflowId,
   path,
+  headSha = CANDIDATE,
+  runNumber = id,
+  runAttempt = 1,
   status = "completed",
   conclusion = "success",
 }) {
@@ -112,13 +197,33 @@ function workflowRun({
     id,
     workflow_id: workflowId,
     path,
-    run_attempt: 1,
+    run_number: runNumber,
+    run_attempt: runAttempt,
     event: "push",
     head_branch: "main",
-    head_sha: CANDIDATE,
+    head_sha: headSha,
     status,
     conclusion,
     repository: { id: REPOSITORY_ID, full_name: "oyatie/console" },
+  };
+}
+
+function releaseProofJobs(overrides = {}) {
+  return {
+    total_count: 1,
+    jobs: [
+      {
+        id: RELEASE_PROOF_JOB_ID,
+        run_id: RELEASE_RUN_ID,
+        run_attempt: 1,
+        workflow_name: "Release Please",
+        head_sha: PARENT,
+        name: `release-authority-proof pr=${RELEASE_PR_NUMBER} head=${RELEASE_HEAD}`,
+        status: "completed",
+        conclusion: "success",
+        ...overrides,
+      },
+    ],
   };
 }
 
@@ -154,6 +259,13 @@ function baseRoutes() {
     workflowId: SECURITY_WORKFLOW_ID,
     path: ".github/workflows/security.yml",
   });
+  const releaseRun = workflowRun({
+    id: RELEASE_RUN_ID,
+    workflowId: RELEASE_WORKFLOW_ID,
+    path: ".github/workflows/release-please.yml",
+    headSha: PARENT,
+    runNumber: RELEASE_RUN_NUMBER,
+  });
   return {
     [`repos/oyatie/console/actions/runs/${CI_RUN_ID}`]: [ciRun],
     [`repos/oyatie/console/actions/workflows/${CI_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${CANDIDATE}&per_page=100`]: [
@@ -168,10 +280,18 @@ function baseRoutes() {
     [`repos/oyatie/console/actions/runs/${SECURITY_RUN_ID}/attempts/1/jobs?per_page=100`]: [
       aggregateJobs("Required / Security"),
     ],
+    [`repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${PARENT}&per_page=100`]: [
+      { total_count: 1, workflow_runs: [releaseRun] },
+    ],
+    [`repos/oyatie/console/actions/runs/${RELEASE_RUN_ID}/attempts/1/jobs?per_page=100`]: [
+      releaseProofJobs(),
+    ],
     [`repos/oyatie/console/git/ref/heads/main`]: [
       { object: { type: "commit", sha: CANDIDATE } },
     ],
     [`repos/oyatie/console/commits/${CANDIDATE}`]: [releaseCommit()],
+    [`repos/oyatie/console/commits/${RELEASE_HEAD}`]: [releaseHeadCommit()],
+    [`repos/oyatie/console/pulls/${RELEASE_PR_NUMBER}`]: [releasePullRequest()],
     [`repos/oyatie/console/contents/.release-please-manifest.json?ref=${CANDIDATE}`]: [
       '{".":"1.2.3"}\n',
     ],
@@ -184,6 +304,17 @@ function baseRoutes() {
       { object: { type: "commit", sha: CANDIDATE } },
     ],
   };
+}
+
+function transportRoutes() {
+  const routes = baseRoutes();
+  routes[`repos/oyatie/console/commits/${CANDIDATE}`] = [
+    transportAuthoredReleaseCommit(),
+  ];
+  routes[`repos/oyatie/console/pulls/${RELEASE_PR_NUMBER}`] = [
+    releasePullRequest({ transport: true }),
+  ];
+  return routes;
 }
 
 function fakeExecutable(path, body) {
@@ -530,6 +661,14 @@ describe("Image Release live admission shell", () => {
     assert.match(result.output, /^security_run_id=2201$/m);
   });
 
+  it("admits the exact pinned-transport squash identity", () => {
+    const routes = transportRoutes();
+    const result = runAdmission({ routes });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.output, /^eligible=true$/m);
+    assert.match(result.output, new RegExp(`^release_sha=${CANDIDATE}$`, "m"));
+  });
+
   it("classifies an unchanged manifest as an ordinary green no-op", () => {
     const routes = baseRoutes();
     routes[
@@ -660,6 +799,20 @@ describe("Image Release live admission shell", () => {
         }),
       ],
       [
+        "tree type",
+        (commit) => ({
+          ...commit,
+          commit: { ...commit.commit, tree: { sha: null } },
+        }),
+      ],
+      [
+        "tree syntax",
+        (commit) => ({
+          ...commit,
+          commit: { ...commit.commit, tree: { sha: `${RELEASE_TREE}\n` } },
+        }),
+      ],
+      [
         "commit author name",
         (commit) => ({
           ...commit,
@@ -737,13 +890,29 @@ describe("Image Release live admission shell", () => {
         (commit) => ({ ...commit, committer: { ...commit.committer, login: "github" } }),
       ],
       [
-        "file envelope",
+        "API committer type",
+        (commit) => ({ ...commit, committer: { ...commit.committer, type: "Bot" } }),
+      ],
+      [
+        "extra file",
         (commit) => ({
           ...commit,
           files: [
             ...commit.files,
             { filename: "backend/src/lib.rs", status: "modified" },
           ],
+        }),
+      ],
+      [
+        "missing file",
+        (commit) => ({ ...commit, files: commit.files.slice(0, -1) }),
+      ],
+      [
+        "file status",
+        (commit) => ({
+          ...commit,
+          files: commit.files.map((file, index) =>
+            index === 0 ? { ...file, status: "added" } : file),
         }),
       ],
     ];
@@ -754,6 +923,445 @@ describe("Image Release live admission shell", () => {
       ];
       const result = runAdmission({ routes });
       assert.notEqual(result.status, 0, `accepted wrong release-commit ${label}`);
+      assert.doesNotMatch(result.output, /^eligible=true$/m);
+    }
+  });
+
+  it("rejects every pinned-transport author disagreement", () => {
+    const mutations = [
+      [
+        "commit author name",
+        (commit) => ({
+          ...commit,
+          commit: {
+            ...commit.commit,
+            author: { ...commit.commit.author, name: "Jason" },
+          },
+        }),
+      ],
+      [
+        "commit author email",
+        (commit) => ({
+          ...commit,
+          commit: {
+            ...commit.commit,
+            author: { ...commit.commit.author, email: "jason@example.invalid" },
+          },
+        }),
+      ],
+      [
+        "API author ID",
+        (commit) => ({ ...commit, author: { ...commit.author, id: 7 } }),
+      ],
+      [
+        "API author login",
+        (commit) => ({
+          ...commit,
+          author: { ...commit.author, login: "jason" },
+        }),
+      ],
+      [
+        "API author type",
+        (commit) => ({ ...commit, author: { ...commit.author, type: "Bot" } }),
+      ],
+    ];
+    for (const [label, mutate] of mutations) {
+      const routes = transportRoutes();
+      routes[`repos/oyatie/console/commits/${CANDIDATE}`] = [
+        mutate(transportAuthoredReleaseCommit()),
+      ];
+      const result = runAdmission({ routes });
+      assert.notEqual(result.status, 0, `accepted wrong transport author ${label}`);
+      assert.doesNotMatch(result.output, /^eligible=true$/m);
+    }
+  });
+
+  it("requires native proof and an exact same-tree protected release head", () => {
+    const withoutProof = transportRoutes();
+    withoutProof[
+      `repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${PARENT}&per_page=100`
+    ] = [{ total_count: 0, workflow_runs: [] }];
+    const missingProof = runAdmission({ routes: withoutProof });
+    assert.notEqual(missingProof.status, 0, "accepted transport author without proof");
+    assert.match(missingProof.stderr, /protected Release Please proof run is missing or invalid/);
+
+    const wrongTree = transportRoutes();
+    wrongTree[`repos/oyatie/console/commits/${RELEASE_HEAD}`] = [
+      {
+        ...releaseHeadCommit(),
+        commit: {
+          ...releaseHeadCommit().commit,
+          tree: { sha: OTHER },
+        },
+      },
+    ];
+    const mismatchedTree = runAdmission({ routes: wrongTree });
+    assert.notEqual(mismatchedTree.status, 0, "accepted a different protected-head tree");
+    assert.match(mismatchedTree.stderr, /does not bind the exact squash tree/);
+  });
+
+  it("rejects every merged release-PR provenance disagreement", () => {
+    const mutations = [
+      ["number", (pr) => ({ ...pr, number: RELEASE_PR_NUMBER + 1 })],
+      ["state", (pr) => ({ ...pr, state: "open" })],
+      ["draft", (pr) => ({ ...pr, draft: true })],
+      ["merged bit", (pr) => ({ ...pr, merged: false })],
+      ["merged timestamp", (pr) => ({ ...pr, merged_at: null })],
+      ["empty merged timestamp", (pr) => ({ ...pr, merged_at: "" })],
+      ["title", (pr) => ({ ...pr, title: "chore(main): release 1.2.4" })],
+      ["merge SHA", (pr) => ({ ...pr, merge_commit_sha: OTHER })],
+      ["base ref", (pr) => ({ ...pr, base: { ...pr.base, ref: "release" } })],
+      ["base SHA", (pr) => ({ ...pr, base: { ...pr.base, sha: OTHER } })],
+      [
+        "base repository ID",
+        (pr) => ({
+          ...pr,
+          base: { ...pr.base, repo: { ...pr.base.repo, id: 7 } },
+        }),
+      ],
+      [
+        "base repository name",
+        (pr) => ({
+          ...pr,
+          base: { ...pr.base, repo: { ...pr.base.repo, full_name: "attacker/console" } },
+        }),
+      ],
+      ["head SHA", (pr) => ({ ...pr, head: { ...pr.head, sha: OTHER } })],
+      ["head SHA type", (pr) => ({ ...pr, head: { ...pr.head, sha: null } })],
+      [
+        "head SHA syntax",
+        (pr) => ({ ...pr, head: { ...pr.head, sha: `${RELEASE_HEAD}\n` } }),
+      ],
+      ["head ref", (pr) => ({ ...pr, head: { ...pr.head, ref: "feature/release" } })],
+      ["head ref type", (pr) => ({ ...pr, head: { ...pr.head, ref: null } })],
+      [
+        "head repository ID",
+        (pr) => ({
+          ...pr,
+          head: { ...pr.head, repo: { ...pr.head.repo, id: 7 } },
+        }),
+      ],
+      [
+        "head repository name",
+        (pr) => ({
+          ...pr,
+          head: { ...pr.head, repo: { ...pr.head.repo, full_name: "attacker/console" } },
+        }),
+      ],
+      ["bot creator ID", (pr) => ({ ...pr, user: { ...pr.user, id: 7 } })],
+      [
+        "bot creator login",
+        (pr) => ({ ...pr, user: { ...pr.user, login: "github-actions" } }),
+      ],
+      ["bot creator type", (pr) => ({ ...pr, user: { ...pr.user, type: "User" } })],
+    ];
+    for (const [label, mutate] of mutations) {
+      const routes = baseRoutes();
+      routes[`repos/oyatie/console/pulls/${RELEASE_PR_NUMBER}`] = [
+        mutate(releasePullRequest()),
+      ];
+      if (label === "head SHA") {
+        routes[`repos/oyatie/console/commits/${OTHER}`] = [
+          { ...releaseHeadCommit(), sha: OTHER },
+        ];
+      }
+      const result = runAdmission({ routes });
+      assert.notEqual(result.status, 0, `accepted wrong release PR ${label}`);
+      assert.match(
+        result.stderr,
+        label === "head SHA"
+          ? /native Release Please authority proof/
+          : /release pull request provenance is invalid/,
+      );
+      assert.doesNotMatch(result.output, /^eligible=true$/m);
+    }
+
+    const transportCreatorMutations = [
+      ["transport creator ID", (pr) => ({ ...pr, user: { ...pr.user, id: 7 } })],
+      [
+        "transport creator login",
+        (pr) => ({ ...pr, user: { ...pr.user, login: "jason" } }),
+      ],
+      [
+        "transport creator type",
+        (pr) => ({ ...pr, user: { ...pr.user, type: "Bot" } }),
+      ],
+    ];
+    for (const [label, mutate] of transportCreatorMutations) {
+      const routes = transportRoutes();
+      routes[`repos/oyatie/console/pulls/${RELEASE_PR_NUMBER}`] = [
+        mutate(releasePullRequest({ transport: true })),
+      ];
+      const result = runAdmission({ routes });
+      assert.notEqual(result.status, 0, `accepted wrong release PR ${label}`);
+      assert.match(result.stderr, /release pull request provenance is invalid/);
+      assert.doesNotMatch(result.output, /^eligible=true$/m);
+    }
+  });
+
+  it("rejects mixed release-PR creator and squash-author classes", () => {
+    const transportCommitForBotPull = baseRoutes();
+    transportCommitForBotPull[`repos/oyatie/console/commits/${CANDIDATE}`] = [
+      transportAuthoredReleaseCommit(),
+    ];
+    const first = runAdmission({ routes: transportCommitForBotPull });
+    assert.notEqual(first.status, 0, "accepted transport squash for a bot-created PR");
+    assert.match(first.stderr, /release commit identity or exact four-file envelope is invalid/);
+
+    const botCommitForTransportPull = baseRoutes();
+    botCommitForTransportPull[`repos/oyatie/console/pulls/${RELEASE_PR_NUMBER}`] = [
+      releasePullRequest({ transport: true }),
+    ];
+    const second = runAdmission({ routes: botCommitForTransportPull });
+    assert.notEqual(second.status, 0, "accepted bot squash for a transport-created PR");
+    assert.match(second.stderr, /release commit identity or exact four-file envelope is invalid/);
+  });
+
+  it("rejects every protected release-head disagreement", () => {
+    const mutations = [
+      ["SHA", (head) => ({ ...head, sha: OTHER })],
+      ["parent", (head) => ({ ...head, parents: [{ sha: OTHER }] })],
+      ["parent count", (head) => ({ ...head, parents: [...head.parents, { sha: OTHER }] })],
+      [
+        "subject",
+        (head) => ({
+          ...head,
+          commit: { ...head.commit, message: "chore(main): release 1.2.4" },
+        }),
+      ],
+      [
+        "Git author name",
+        (head) => ({
+          ...head,
+          commit: {
+            ...head.commit,
+            author: { ...head.commit.author, name: "github-actions" },
+          },
+        }),
+      ],
+      [
+        "Git author email",
+        (head) => ({
+          ...head,
+          commit: {
+            ...head.commit,
+            author: { ...head.commit.author, email: "actions@github.com" },
+          },
+        }),
+      ],
+      [
+        "Git committer name",
+        (head) => ({
+          ...head,
+          commit: {
+            ...head.commit,
+            committer: { ...head.commit.committer, name: "github-actions[bot]" },
+          },
+        }),
+      ],
+      [
+        "Git committer email",
+        (head) => ({
+          ...head,
+          commit: {
+            ...head.commit,
+            committer: { ...head.commit.committer, email: "actions@github.com" },
+          },
+        }),
+      ],
+      ["API author ID", (head) => ({ ...head, author: { ...head.author, id: 7 } })],
+      [
+        "API author login",
+        (head) => ({ ...head, author: { ...head.author, login: "github-actions" } }),
+      ],
+      ["API author type", (head) => ({ ...head, author: { ...head.author, type: "User" } })],
+      [
+        "API committer ID",
+        (head) => ({ ...head, committer: { ...head.committer, id: 7 } }),
+      ],
+      [
+        "API committer login",
+        (head) => ({
+          ...head,
+          committer: { ...head.committer, login: "github" },
+        }),
+      ],
+      [
+        "API committer type",
+        (head) => ({ ...head, committer: { ...head.committer, type: "Bot" } }),
+      ],
+      [
+        "tree",
+        (head) => ({
+          ...head,
+          commit: { ...head.commit, tree: { sha: OTHER } },
+        }),
+      ],
+      [
+        "message type",
+        (head) => ({ ...head, commit: { ...head.commit, message: null } }),
+      ],
+      [
+        "extra file",
+        (head) => ({
+          ...head,
+          files: [...head.files, { filename: "backend/src/lib.rs", status: "modified" }],
+        }),
+      ],
+      ["missing file", (head) => ({ ...head, files: head.files.slice(0, -1) })],
+      [
+        "file status",
+        (head) => ({
+          ...head,
+          files: head.files.map((file, index) =>
+            index === 0 ? { ...file, status: "added" } : file),
+        }),
+      ],
+    ];
+    for (const [label, mutate] of mutations) {
+      const routes = baseRoutes();
+      routes[`repos/oyatie/console/commits/${RELEASE_HEAD}`] = [
+        mutate(releaseHeadCommit()),
+      ];
+      const result = runAdmission({ routes });
+      assert.notEqual(result.status, 0, `accepted wrong protected release head ${label}`);
+      assert.match(result.stderr, /protected release head does not bind the exact squash tree/);
+      assert.doesNotMatch(result.output, /^eligible=true$/m);
+    }
+  });
+
+  it("rejects every protected Release Please run disagreement", () => {
+    const endpoint = `repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${PARENT}&per_page=100`;
+    const trusted = workflowRun({
+      id: RELEASE_RUN_ID,
+      workflowId: RELEASE_WORKFLOW_ID,
+      path: ".github/workflows/release-please.yml",
+      headSha: PARENT,
+      runNumber: RELEASE_RUN_NUMBER,
+    });
+    const mutations = [
+      ["workflow ID", (run) => ({ ...run, workflow_id: 7 })],
+      ["workflow path", (run) => ({ ...run, path: ".github/workflows/untrusted.yml" })],
+      ["event", (run) => ({ ...run, event: "workflow_dispatch" })],
+      ["branch", (run) => ({ ...run, head_branch: "release" })],
+      ["head", (run) => ({ ...run, head_sha: OTHER })],
+      [
+        "repository",
+        (run) => ({
+          ...run,
+          repository: { id: 7, full_name: "attacker/console" },
+        }),
+      ],
+      ["run ID", (run) => ({ ...run, id: "1701" })],
+      ["run number", (run) => ({ ...run, run_number: 0 })],
+      ["run attempt", (run) => ({ ...run, run_attempt: "1" })],
+      ["status", (run) => ({ ...run, status: "in_progress", conclusion: null })],
+      ["conclusion", (run) => ({ ...run, conclusion: "failure" })],
+    ];
+    for (const [label, mutate] of mutations) {
+      const routes = baseRoutes();
+      routes[endpoint] = [{ total_count: 1, workflow_runs: [mutate(trusted)] }];
+      const result = runAdmission({ routes });
+      assert.notEqual(result.status, 0, `accepted wrong Release Please run ${label}`);
+      assert.match(result.stderr, /protected Release Please proof run is missing or invalid/);
+      assert.doesNotMatch(result.output, /^eligible=true$/m);
+    }
+
+    const duplicate = baseRoutes();
+    duplicate[endpoint] = [
+      { total_count: 2, workflow_runs: [trusted, { ...trusted, id: RELEASE_RUN_ID + 1 }] },
+    ];
+    const duplicateResult = runAdmission({ routes: duplicate });
+    assert.notEqual(duplicateResult.status, 0, "accepted duplicate Release Please runs");
+    assert.match(duplicateResult.stderr, /protected Release Please proof run is missing or invalid/);
+  });
+
+  it("rejects every native Release Please proof-job disagreement", () => {
+    const endpoint = `repos/oyatie/console/actions/runs/${RELEASE_RUN_ID}/attempts/1/jobs?per_page=100`;
+    const trusted = releaseProofJobs().jobs[0];
+    const cases = [
+      ["missing", { total_count: 0, jobs: [] }],
+      ["duplicate", { total_count: 2, jobs: [trusted, { ...trusted, id: RELEASE_PROOF_JOB_ID + 1 }] }],
+      ["count type", { total_count: "1", jobs: [trusted] }],
+      ["negative count", { total_count: -1, jobs: [] }],
+      ["fractional count", { total_count: 1.5, jobs: [trusted] }],
+      [
+        "page overflow",
+        { total_count: 101, jobs: Array.from({ length: 101 }, () => trusted) },
+      ],
+      ["jobs collection type", { total_count: 1, jobs: { 0: trusted } }],
+      ["truncated page", { total_count: 2, jobs: [trusted] }],
+      ["count mismatch", { total_count: 1, jobs: [] }],
+      ["job ID", releaseProofJobs({ id: "1702" })],
+      ["run ID", releaseProofJobs({ run_id: 7 })],
+      ["run attempt", releaseProofJobs({ run_attempt: 2 })],
+      ["workflow name", releaseProofJobs({ workflow_name: "CI" })],
+      ["head", releaseProofJobs({ head_sha: OTHER })],
+      ["PR coordinate", releaseProofJobs({ name: `release-authority-proof pr=761 head=${RELEASE_HEAD}` })],
+      ["head coordinate", releaseProofJobs({ name: `release-authority-proof pr=${RELEASE_PR_NUMBER} head=${OTHER}` })],
+      ["status", releaseProofJobs({ status: "in_progress", conclusion: null })],
+      ["conclusion", releaseProofJobs({ conclusion: "failure" })],
+    ];
+    for (const [label, jobs] of cases) {
+      const routes = baseRoutes();
+      routes[endpoint] = [jobs];
+      const result = runAdmission({ routes });
+      assert.notEqual(result.status, 0, `accepted wrong Release Please proof job ${label}`);
+      assert.match(result.stderr, /native Release Please authority proof|proof jobs are malformed/);
+      assert.doesNotMatch(result.output, /^eligible=true$/m);
+    }
+  });
+
+  it("rejects release PR, protected head, or proof-run movement on final readback", () => {
+    const races = [
+      [
+        `repos/oyatie/console/pulls/${RELEASE_PR_NUMBER}`,
+        releasePullRequest(),
+        { ...releasePullRequest(), title: "chore(main): release 1.2.4" },
+        /release pull request changed during admission/,
+      ],
+      [
+        `repos/oyatie/console/commits/${RELEASE_HEAD}`,
+        releaseHeadCommit(),
+        { ...releaseHeadCommit(), files: releaseHeadCommit().files.slice(0, -1) },
+        /protected release head changed during admission/,
+      ],
+      [
+        `repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${PARENT}&per_page=100`,
+        {
+          total_count: 1,
+          workflow_runs: [
+            workflowRun({
+              id: RELEASE_RUN_ID,
+              workflowId: RELEASE_WORKFLOW_ID,
+              path: ".github/workflows/release-please.yml",
+              headSha: PARENT,
+              runNumber: RELEASE_RUN_NUMBER,
+            }),
+          ],
+        },
+        {
+          total_count: 1,
+          workflow_runs: [
+            workflowRun({
+              id: RELEASE_RUN_ID,
+              workflowId: RELEASE_WORKFLOW_ID,
+              path: ".github/workflows/release-please.yml",
+              headSha: PARENT,
+              runNumber: RELEASE_RUN_NUMBER,
+              runAttempt: 2,
+            }),
+          ],
+        },
+        /protected Release Please proof run changed during admission/,
+      ],
+    ];
+    for (const [endpoint, before, after, error] of races) {
+      const routes = baseRoutes();
+      routes[endpoint] = [before, after];
+      const result = runAdmission({ routes });
+      assert.notEqual(result.status, 0, `accepted moving release evidence at ${endpoint}`);
+      assert.match(result.stderr, error);
       assert.doesNotMatch(result.output, /^eligible=true$/m);
     }
   });

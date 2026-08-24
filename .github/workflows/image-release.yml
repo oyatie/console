@@ -11,8 +11,11 @@ name: Image Release
 # artifact that gets Trivy-scanned, cosign-signed, and provenance-attested.
 # Completed CI is only a wake-up: ordinary main commits stop after one read-only
 # classification job. Native builders run only for a canonical version-changing
-# bot commit bound to an immutable published GitHub release, its exact lightweight
-# tag, current main, and exact successful CI + Security workflow/job records.
+# signed release squash whose PR creator and author are the exact Release Please
+# bot or pinned fallback transport identity, and whose same-tree bot custody head
+# has native protected Release Please proof. The squash must also bind to an
+# immutable published GitHub release, its exact lightweight tag, current main,
+# and exact successful CI + Security workflow/job records.
 # Updating the prod overlay is a separate, explicit workflow_dispatch action
 # guarded by the protected production environment; a push or merge never
 # mutates production desired state.
@@ -93,12 +96,17 @@ jobs:
 
           readonly CI_WORKFLOW_ID="296023727"
           readonly CI_WORKFLOW_PATH=".github/workflows/ci.yml"
+          readonly RELEASE_WORKFLOW_ID="296023729"
+          readonly RELEASE_WORKFLOW_PATH=".github/workflows/release-please.yml"
+          readonly RELEASE_WORKFLOW_NAME="Release Please"
           readonly SECURITY_WORKFLOW_ID="296023731"
           readonly SECURITY_WORKFLOW_PATH=".github/workflows/security.yml"
           readonly RELEASE_BOT_ID="41898282"
+          readonly RELEASE_TRANSPORT_ID="56489493"
           readonly WEB_FLOW_ID="19864447"
           readonly STABLE_VERSION_RE='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
-          readonly RELEASE_SUBJECT_RE='^chore\(main\): release ((0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)) \(#[1-9][0-9]*\)$'
+          readonly RELEASE_SUBJECT_RE='^chore\(main\): release ((0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)) \(#([1-9][0-9]*)\)$'
+          readonly RELEASE_HEAD_REF_RE='^release-please--branches--main--components--[A-Za-z0-9._-]+$'
 
           die() {
             echo "::error::$*" >&2
@@ -154,6 +162,37 @@ jobs:
             [[ "$version" =~ $STABLE_VERSION_RE ]] \
               || die "release manifest version is not stable SemVer"
             printf '%s' "$version"
+          }
+
+          canonical_release_pr_snapshot() {
+            jq -ecS '[
+              .number, .state, .draft, .merged, .merged_at, .merge_commit_sha, .title,
+              [.user.id, .user.login, .user.type],
+              [.base.ref, .base.sha, .base.repo.id, .base.repo.full_name],
+              [.head.ref, .head.sha, .head.repo.id, .head.repo.full_name]
+            ]'
+          }
+
+          canonical_release_head_snapshot() {
+            jq -ecS '[
+              .sha, .commit.tree.sha, [.parents[].sha], .commit.message,
+              [.commit.author.name, .commit.author.email],
+              [.commit.committer.name, .commit.committer.email],
+              [.author.id, .author.login, .author.type],
+              [.committer.id, .committer.login, .committer.type],
+              ([.files[] | {filename, status}] | sort_by(.filename))
+            ]'
+          }
+
+          canonical_release_run_set_snapshot() {
+            jq -ecS '[
+              .total_count,
+              ([.workflow_runs[] | [
+                .id, .workflow_id, .path, .event, .head_branch, .head_sha,
+                .run_number, .run_attempt, .status, .conclusion,
+                .repository.id, .repository.full_name
+              ]] | sort_by(.[0]))
+            ]'
           }
 
           # Sets EVIDENCE_RUN_ID and EVIDENCE_RUN_ATTEMPT. Return 10 only for
@@ -343,17 +382,70 @@ jobs:
           subject="$(jq -r '.commit.message | split("\n")[0]' <<< "$commit")"
           [[ "$subject" =~ $RELEASE_SUBJECT_RE ]] \
             || die "version-changing candidate lacks the exact release subject"
-          [[ "${BASH_REMATCH[1]}" == "$candidate_version" ]] \
+          subject_version="${BASH_REMATCH[1]}"
+          release_pr_number="${BASH_REMATCH[5]}"
+          [[ "$subject_version" == "$candidate_version" ]] \
             || die "release subject and manifest version disagree"
+          [[ "$release_pr_number" =~ ^[1-9][0-9]{0,14}$ ]] \
+            || die "release subject PR number is outside the exact integer bound"
+          expected_release_title="chore(main): release ${candidate_version}"
+
+          release_pr="$(api "repos/${REPO}/pulls/${release_pr_number}")" \
+            || die "unable to read the release pull request"
           jq -e \
+            --argjson repository_id "$EXPECTED_REPOSITORY_ID" \
+            --argjson pr_number "$release_pr_number" \
             --argjson bot_id "$RELEASE_BOT_ID" \
+            --argjson transport_id "$RELEASE_TRANSPORT_ID" \
+            --arg candidate "$candidate_sha" \
+            --arg parent "$parent_sha" \
+            --arg title "$expected_release_title" \
+            --arg head_ref_re "$RELEASE_HEAD_REF_RE" \
+            --arg repo "$REPO" \
+            '.number == $pr_number and .state == "closed" and .draft == false and
+             .merged == true and (.merged_at | type == "string" and length > 0) and
+             .merge_commit_sha == $candidate and .title == $title and
+             .base.ref == "main" and .base.sha == $parent and
+             .base.repo.id == $repository_id and .base.repo.full_name == $repo and
+             (.head.ref | type == "string" and test($head_ref_re)) and
+             (.head.sha | type == "string" and length == 40 and test("^[0-9a-f]{40}$")) and
+             .head.repo.id == $repository_id and .head.repo.full_name == $repo and
+             ((.user.id == $bot_id and .user.login == "github-actions[bot]" and .user.type == "Bot") or
+              (.user.id == $transport_id and .user.login == "jason931225" and .user.type == "User"))' \
+            <<< "$release_pr" >/dev/null \
+            || die "release pull request provenance is invalid"
+          if jq -e --argjson bot_id "$RELEASE_BOT_ID" \
+            '.user.id == $bot_id and .user.login == "github-actions[bot]" and .user.type == "Bot"' \
+            <<< "$release_pr" >/dev/null; then
+            release_creator_class="bot"
+          elif jq -e --argjson transport_id "$RELEASE_TRANSPORT_ID" \
+            '.user.id == $transport_id and .user.login == "jason931225" and .user.type == "User"' \
+            <<< "$release_pr" >/dev/null; then
+            release_creator_class="transport"
+          else
+            die "release pull request creator is outside the protected classes"
+          fi
+          release_head_sha="$(jq -r '.head.sha' <<< "$release_pr")"
+          release_pr_snapshot="$(canonical_release_pr_snapshot <<< "$release_pr")" \
+            || die "unable to snapshot release pull request provenance"
+
+          jq -e \
+            --arg creator_class "$release_creator_class" \
+            --argjson bot_id "$RELEASE_BOT_ID" \
+            --argjson transport_id "$RELEASE_TRANSPORT_ID" \
             --argjson web_flow_id "$WEB_FLOW_ID" \
-            '.commit.author.name == "github-actions[bot]" and
-             .commit.author.email == "41898282+github-actions[bot]@users.noreply.github.com" and
+            '((($creator_class == "bot") and
+               .commit.author.name == "github-actions[bot]" and
+               .commit.author.email == "41898282+github-actions[bot]@users.noreply.github.com" and
+               .author.id == $bot_id and .author.login == "github-actions[bot]" and .author.type == "Bot") or
+              (($creator_class == "transport") and
+               .commit.author.name == "Jason Lee" and
+               .commit.author.email == "56489493+jason931225@users.noreply.github.com" and
+               .author.id == $transport_id and .author.login == "jason931225" and .author.type == "User")) and
+             (.commit.tree.sha | type == "string" and length == 40 and test("^[0-9a-f]{40}$")) and
              .commit.committer.name == "GitHub" and .commit.committer.email == "noreply@github.com" and
              .commit.verification.verified == true and .commit.verification.reason == "valid" and
-             .author.id == $bot_id and .author.login == "github-actions[bot]" and .author.type == "Bot" and
-             .committer.id == $web_flow_id and .committer.login == "web-flow" and
+             .committer.id == $web_flow_id and .committer.login == "web-flow" and .committer.type == "User" and
              ([.files[] | {filename, status}] | sort_by(.filename)) ==
                ([
                  {filename: ".release-please-manifest.json", status: "modified"},
@@ -362,6 +454,85 @@ jobs:
                  {filename: "docs/documentation-manifest.seed.json", status: "modified"}
                ] | sort_by(.filename))' \
             <<< "$commit" >/dev/null || die "release commit identity or exact four-file envelope is invalid"
+          candidate_tree="$(jq -r '.commit.tree.sha' <<< "$commit")"
+
+          release_head="$(api "repos/${REPO}/commits/${release_head_sha}")" \
+            || die "unable to read the protected release head"
+          jq -e \
+            --arg head "$release_head_sha" \
+            --arg parent "$parent_sha" \
+            --arg tree "$candidate_tree" \
+            --arg subject "$expected_release_title" \
+            --argjson bot_id "$RELEASE_BOT_ID" \
+            --argjson web_flow_id "$WEB_FLOW_ID" \
+            '.sha == $head and (.parents | length) == 1 and .parents[0].sha == $parent and
+             .commit.tree.sha == $tree and
+             (.commit.message | type == "string") and
+             (.commit.message | split("\n")[0]) == $subject and
+             .commit.author.name == "github-actions[bot]" and
+             .commit.author.email == "41898282+github-actions[bot]@users.noreply.github.com" and
+             .commit.committer.name == "GitHub" and .commit.committer.email == "noreply@github.com" and
+             .author.id == $bot_id and .author.login == "github-actions[bot]" and .author.type == "Bot" and
+             .committer.id == $web_flow_id and .committer.login == "web-flow" and .committer.type == "User" and
+             ([.files[] | {filename, status}] | sort_by(.filename)) ==
+               ([
+                 {filename: ".release-please-manifest.json", status: "modified"},
+                 {filename: "CHANGELOG.md", status: "modified"},
+                 {filename: "docs/documentation-index.json", status: "modified"},
+                 {filename: "docs/documentation-manifest.seed.json", status: "modified"}
+               ] | sort_by(.filename))' \
+            <<< "$release_head" >/dev/null \
+            || die "protected release head does not bind the exact squash tree"
+          release_head_snapshot="$(canonical_release_head_snapshot <<< "$release_head")" \
+            || die "unable to snapshot protected release head"
+
+          release_runs_endpoint="repos/${REPO}/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${parent_sha}&per_page=100"
+          release_runs="$(api "$release_runs_endpoint")" \
+            || die "unable to read protected Release Please proof runs"
+          jq -e \
+            --argjson repository_id "$EXPECTED_REPOSITORY_ID" \
+            --argjson workflow_id "$RELEASE_WORKFLOW_ID" \
+            --arg path "$RELEASE_WORKFLOW_PATH" \
+            --arg parent "$parent_sha" \
+            --arg repo "$REPO" \
+            '.total_count == 1 and (.workflow_runs | type == "array" and length == 1) and
+             .workflow_runs[0].workflow_id == $workflow_id and
+             .workflow_runs[0].path == $path and .workflow_runs[0].event == "push" and
+             .workflow_runs[0].head_branch == "main" and .workflow_runs[0].head_sha == $parent and
+             .workflow_runs[0].repository.id == $repository_id and
+             .workflow_runs[0].repository.full_name == $repo and
+             (.workflow_runs[0].id | type == "number" and . >= 1 and floor == .) and
+             (.workflow_runs[0].run_number | type == "number" and . >= 1 and floor == .) and
+             (.workflow_runs[0].run_attempt | type == "number" and . >= 1 and floor == .) and
+             .workflow_runs[0].status == "completed" and .workflow_runs[0].conclusion == "success"' \
+            <<< "$release_runs" >/dev/null \
+            || die "protected Release Please proof run is missing or invalid"
+          release_run_id="$(jq -r '.workflow_runs[0].id' <<< "$release_runs")"
+          release_run_attempt="$(jq -r '.workflow_runs[0].run_attempt' <<< "$release_runs")"
+          release_run_snapshot="$(canonical_release_run_set_snapshot <<< "$release_runs")" \
+            || die "unable to snapshot protected Release Please proof run"
+
+          release_jobs="$(api "repos/${REPO}/actions/runs/${release_run_id}/attempts/${release_run_attempt}/jobs?per_page=100")" \
+            || die "unable to read protected Release Please proof jobs"
+          jq -e '(.total_count | type == "number" and . >= 0 and . <= 100 and floor == .) and
+            (.jobs | type == "array") and (.jobs | length) == .total_count' \
+            <<< "$release_jobs" >/dev/null \
+            || die "protected Release Please proof jobs are malformed or truncated"
+          release_proof_job_name="release-authority-proof pr=${release_pr_number} head=${release_head_sha}"
+          release_proof_matches="$(jq -c --arg name "$release_proof_job_name" \
+            '[.jobs[] | select(.name == $name)]' <<< "$release_jobs")"
+          jq -e \
+            --argjson run_id "$release_run_id" \
+            --argjson run_attempt "$release_run_attempt" \
+            --arg workflow_name "$RELEASE_WORKFLOW_NAME" \
+            --arg parent "$parent_sha" \
+            'length == 1 and
+             (.[0].id | type == "number" and . >= 1 and floor == .) and
+             .[0].run_id == $run_id and .[0].run_attempt == $run_attempt and
+             .[0].workflow_name == $workflow_name and .[0].head_sha == $parent and
+             .[0].status == "completed" and .[0].conclusion == "success"' \
+            <<< "$release_proof_matches" >/dev/null \
+            || die "native Release Please authority proof does not bind the exact PR and head"
 
           release_tag="v${candidate_version}"
           max_polls="${ADMISSION_MAX_POLLS:-12}"
@@ -426,6 +597,24 @@ jobs:
             || die "Security changed during final readback"
           [[ "$EVIDENCE_RUN_ID" == "$security_run_id" && "$EVIDENCE_RUN_ATTEMPT" == "$security_run_attempt" ]] \
             || die "Security run identity changed during admission"
+          fresh_release_pr="$(api "repos/${REPO}/pulls/${release_pr_number}")" \
+            || die "release pull request disappeared during final readback"
+          fresh_release_pr_snapshot="$(canonical_release_pr_snapshot <<< "$fresh_release_pr")" \
+            || die "release pull request became malformed during final readback"
+          [[ "$fresh_release_pr_snapshot" == "$release_pr_snapshot" ]] \
+            || die "release pull request changed during admission"
+          fresh_release_head="$(api "repos/${REPO}/commits/${release_head_sha}")" \
+            || die "protected release head disappeared during final readback"
+          fresh_release_head_snapshot="$(canonical_release_head_snapshot <<< "$fresh_release_head")" \
+            || die "protected release head became malformed during final readback"
+          [[ "$fresh_release_head_snapshot" == "$release_head_snapshot" ]] \
+            || die "protected release head changed during admission"
+          fresh_release_runs="$(api "$release_runs_endpoint")" \
+            || die "protected Release Please proof run disappeared during final readback"
+          fresh_release_run_snapshot="$(canonical_release_run_set_snapshot <<< "$fresh_release_runs")" \
+            || die "protected Release Please proof run became malformed during final readback"
+          [[ "$fresh_release_run_snapshot" == "$release_run_snapshot" ]] \
+            || die "protected Release Please proof run changed during admission"
           [[ "$(current_main)" == "$candidate_sha" ]] \
             || die "candidate stopped being current main before publication authorization"
 
@@ -442,6 +631,8 @@ jobs:
             echo ""
             echo "- release: ${release_tag} (ID ${release_id})"
             echo "- source SHA: ${candidate_sha}"
+            echo "- release PR/head: #${release_pr_number} / ${release_head_sha}"
+            echo "- Release Please proof run: ${release_run_id} attempt ${release_run_attempt}"
             echo "- CI run: ${ci_run_id} attempt ${ci_run_attempt}"
             echo "- Security run: ${security_run_id} attempt ${security_run_attempt}"
           } >> "$GITHUB_STEP_SUMMARY"
