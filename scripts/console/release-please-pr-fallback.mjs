@@ -750,7 +750,7 @@ async function cli() {
     return;
   }
   if (mode === 'finalize') {
-    writeOutputs(finalizeReleasePleaseResult({
+    const result = finalizeReleasePleaseResult({
       selectionOutcome: process.env.RELEASE_PLEASE_SELECTION_OUTCOME,
       mode: process.env.RELEASE_PLEASE_SELECTION_MODE,
       selectedPr: process.env.RELEASE_PLEASE_SELECTED_PR,
@@ -759,7 +759,12 @@ async function cli() {
       headSha: process.env.RELEASE_PLEASE_CONVERGE_HEAD_SHA,
       parentSha: process.env.RELEASE_PLEASE_CONVERGE_PARENT_SHA,
       expectedParentSha: process.env.GITHUB_SHA,
-    }));
+    });
+    writeOutputs({
+      pr_number: result.prNumber,
+      head_sha: result.headSha,
+      parent_sha: result.parentSha,
+    });
     return;
   }
   fail('usage: release-please-pr-fallback.mjs snapshot|fallback|select|finalize');

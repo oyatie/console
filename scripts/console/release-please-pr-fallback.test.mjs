@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import {
   FALLBACK_HEAD_REF,
   FALLBACK_REPOSITORY,
@@ -45,6 +50,7 @@ const RUN_ID = 40000000001;
 const RUN_NUMBER = 901;
 const RUN_ATTEMPT = 1;
 const PR_NUMBER = 865;
+const FALLBACK_CLI = fileURLToPath(new URL('./release-please-pr-fallback.mjs', import.meta.url));
 const NOTES = [
   '## [0.3.9](https://github.com/oyatie/console/compare/v0.3.8...v0.3.9) (2026-08-24)',
   '',
@@ -85,6 +91,34 @@ const environment = (overrides = {}) => ({
   RELEASE_PLEASE_ACTION_RELEASES_CREATED: '',
   ...overrides,
 });
+
+function runFinalizeCli(overrides = {}) {
+  const directory = mkdtempSync(join(tmpdir(), 'console-release-proof-output-'));
+  const output = join(directory, 'github-output');
+  try {
+    const result = spawnSync(process.execPath, [FALLBACK_CLI, 'finalize'], {
+      encoding: 'utf8',
+      env: {
+        GITHUB_OUTPUT: output,
+        GITHUB_SHA: BASE,
+        RELEASE_PLEASE_SELECTION_OUTCOME: 'success',
+        RELEASE_PLEASE_SELECTION_MODE: 'fallback-pr',
+        RELEASE_PLEASE_SELECTED_PR: `{"number":${PR_NUMBER}}`,
+        RELEASE_PLEASE_CONVERGE_OUTCOME: 'success',
+        RELEASE_PLEASE_CONVERGE_PR_NUMBER: String(PR_NUMBER),
+        RELEASE_PLEASE_CONVERGE_HEAD_SHA: TIP,
+        RELEASE_PLEASE_CONVERGE_PARENT_SHA: BASE,
+        ...overrides,
+      },
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, '');
+    assert.equal(result.stderr, '');
+    return readFileSync(output, 'utf8');
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
 
 const activeRun = (overrides = {}) => ({
   id: RUN_ID,
@@ -554,4 +588,28 @@ test('final adjudicator requires convergence for every PR and exact parent-bound
     { ...prResult, headSha: BASE },
     { ...prResult, prNumber: '' },
   ]) assert.throws(() => finalizeReleasePleaseResult(mutation));
+});
+
+test('finalize CLI emits the exact snake_case workflow proof-output protocol for PR and no-op results', () => {
+  const prOutput = runFinalizeCli();
+  assert.equal(prOutput, [
+    `pr_number=${PR_NUMBER}`,
+    `head_sha=${TIP}`,
+    `parent_sha=${BASE}`,
+    '',
+  ].join('\n'));
+
+  const noOpOutput = runFinalizeCli({
+    RELEASE_PLEASE_SELECTION_MODE: 'noop',
+    RELEASE_PLEASE_SELECTED_PR: '',
+    RELEASE_PLEASE_CONVERGE_OUTCOME: 'skipped',
+    RELEASE_PLEASE_CONVERGE_PR_NUMBER: '',
+    RELEASE_PLEASE_CONVERGE_HEAD_SHA: '',
+    RELEASE_PLEASE_CONVERGE_PARENT_SHA: '',
+  });
+  assert.equal(noOpOutput, 'pr_number=\nhead_sha=\nparent_sha=\n');
+
+  for (const output of [prOutput, noOpOutput]) {
+    assert.doesNotMatch(output, /^(?:prNumber|headSha|parentSha)=/m);
+  }
 });

@@ -140,7 +140,7 @@ const pollFixture = (overrides = {}) => ({
 });
 const protectedReleaseIssuerClosure = Object.freeze([
   ['./converge-release-please-doc-custody.mjs', '084e81a401e0e0ef4479d37b15d5e2d7a6250c7a3a8c6d51cee8293b8ece48cd'],
-  ['./release-please-pr-fallback.mjs', '183b88c8febdc16a9316f9d2dcd180f1508fcfee117d5e497b6794f4c58cb770'],
+  ['./release-please-pr-fallback.mjs', '6bf38a44adbbf5c6677f91901e61bfa773fbf902691f48e772d30883c2c07962'],
   ['./release-please-pr-envelope.mjs', '3ce48af43c2bd476e4f1fc7ad4e787b23990c89ad468a28df7a0ae82a35d6240'],
   ['./generate-documentation-manifest.mjs', 'eb353f442a6d7d84b659d43424dd52fbf9243f73d813f840e2d14aa7277fef77'],
   ['./release-please-bot-candidate.mjs', 'e1bbf8819e3cca1d227293abbced2026bdc18d3953be3b1af0eaa5ed0a738108'],
