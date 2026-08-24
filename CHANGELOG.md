@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.3.9](https://github.com/oyatie/console/compare/v0.3.8...v0.3.9) (2026-08-24)
+
+
+### Features
+
+* **import:** give the ledger a real pay period, and make it immutable ([#844](https://github.com/oyatie/console/issues/844)) ([ac7b014](https://github.com/oyatie/console/commit/ac7b014ed189e5159d1a9d608353ce1e5c4a810c))
+* **ontology:** canonical receipts record whose they are ([#850](https://github.com/oyatie/console/issues/850)) ([a7fe1fb](https://github.com/oyatie/console/commit/a7fe1fb7b71c3ab5278cd37e1c3653bf81ab7d4d))
+* **ontology:** widen the receipt store so a receipt says whose it is ([#841](https://github.com/oyatie/console/issues/841)) ([d4a689d](https://github.com/oyatie/console/commit/d4a689d5e134e2f98400dedf662cea7d2c3e5f67))
+* **payroll:** give payroll_draft_lines a production writer ([#846](https://github.com/oyatie/console/issues/846)) ([5b6cabb](https://github.com/oyatie/console/commit/5b6cabbb4be77c6e62593199d218e73aa8c9c86b))
+
+
+### Bug Fixes
+
+* **ci:** emit release proof job outputs ([#867](https://github.com/oyatie/console/issues/867)) ([7d0d108](https://github.com/oyatie/console/commit/7d0d1081c009d8f3b3042a6d63788ed13ebe8a30))
+* **ci:** make the cluster-global serial group actually group ([#816](https://github.com/oyatie/console/issues/816)) ([e09e9f3](https://github.com/oyatie/console/commit/e09e9f394a0261be666a769b16b03459a4e0d5a0))
+* **ci:** recover release PR creation permission failures ([#865](https://github.com/oyatie/console/issues/865)) ([dd09c35](https://github.com/oyatie/console/commit/dd09c35bd89a5907ab213a82ec8e36846b0ea7db))
+* **lanes:** make sccache visible and let a lane own a directory ([#818](https://github.com/oyatie/console/issues/818)) ([df54c7d](https://github.com/oyatie/console/commit/df54c7d0ddc825c4ff185a9074a2f2bf227c8b1e))
+* **payroll:** a re-stage must not rewind a paid run, or admit unapplied rows ([#834](https://github.com/oyatie/console/issues/834)) ([98b7a0c](https://github.com/oyatie/console/commit/98b7a0cffd9d92827c5392a9493cc73408dea5ae))
+* **payroll:** an empty roster must not satisfy the attendance close gate ([#833](https://github.com/oyatie/console/issues/833)) ([409b5c2](https://github.com/oyatie/console/commit/409b5c290d0aca89330dc81ed8d4b6f3f6639269))
+* **payroll:** source material must say something, not merely have a column ([#836](https://github.com/oyatie/console/issues/836)) ([c5ac562](https://github.com/oyatie/console/commit/c5ac562f13a0259ee01f3721e9b28cad4d386fb5))
+
+
+### Performance Improvements
+
+* **ci:** split the expand/contract migration rehearsal off the critical path ([#817](https://github.com/oyatie/console/issues/817)) ([8dbec91](https://github.com/oyatie/console/commit/8dbec91b18e4d970077b5621e8cc1add1d35d8b1))
+
 ## [0.3.8](https://github.com/oyatie/console/compare/v0.3.7...v0.3.8) (2026-08-19)
 
 
