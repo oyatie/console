@@ -18,6 +18,12 @@ A required status context must have an executable protected workflow producer fo
 
 Merge only the reviewed candidate through the protected `main` integration path. After merge, read back the hosted commit and required checks. A local commit, branch, pull request, or green local run is unpublished evidence and is not proof that work is merged or released.
 
+## PR #862 one-time containment
+
+PR #862 merged candidate `c61949c6c57d56755a49722d82f0cec2a471680f` as `ec866c1b0450829bc6b776be570e13f6a18edbd6` with tree `2b5c870eb9494def1d64f024f51c512cf694df0b` at 2026-08-24T08:46:05Z before any independent review; GitHub recorded zero submitted reviews. That merge violated the review-before-merge rule above. This record does not waive, excuse, or retroactively satisfy it.
+
+One bounded prospective containment of that exact tree is admitted: release, promotion, and dependent authority work remains stopped until a candidate based on `ec866c1b0450829bc6b776be570e13f6a18edbd6`, changing only this receipt and the two generated documentation-manifest projections, receives independent adversarial review of the full inherited current-authority tree before merge, enters through protected `main`, and has its hosted tip and required checks read back. Current authority resumes prospectively at that new reviewed tip only. Any material content finding requires a normal reviewed correction or revert. This paragraph is not precedent or a reusable review exception and authorizes no release, environment promotion, production action, or HOLD clearance.
+
 ## Verification method
 
 Run the smallest targeted regression first, then the applicable format, lint/type, contract, security, and domain gates. A new clone must install pinned Node tooling and put the pinned DotSlash runtime on `PATH` before the supported repository entrypoint. The installer cannot modify its parent shell (`GITHUB_PATH` exists only in GitHub Actions).
