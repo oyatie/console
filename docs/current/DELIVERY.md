@@ -12,7 +12,11 @@ Never import ignored or untracked artifacts, local runtime state, workbooks, sec
 
 Evidence and reviews bind to an exact candidate SHA. High-risk authorization, migration, contract, approval, HR/payroll, release, production, and compliance-sensitive work requires independent adversarial review appropriate to the risk. CI is evidence, not a substitute for review, legal authority, release authority, or production authority.
 
-Merge only the reviewed candidate through the repository's protected integration path. After merge, read back the hosted commit and required checks. A local commit, branch, pull request, or green local run is unpublished evidence and is not proof that work is merged or released.
+`main` is the canonical integration and source-release branch and must remain the repository default. Feature, authority, and release-candidate work enters through its protected pull-request and merge-group path. `dev`, `staging`, `canary`, `production`, and other environment-named branches are non-authority mirrors: their names, tips, rulesets, or default-branch status cannot authorize product work, source release, live promotion, or exposure. Changing this branch model requires a separately reviewed current-authority candidate and exact readback of every affected required check and protection.
+
+A required status context must have an executable protected workflow producer for every branch where it is enforced. Configure and verify the producer before enabling the requirement; a context inherited from an unrelated commit or branch is not evidence. Until separately authorized, environment-branch promotion remains fail-closed and on HOLD.
+
+Merge only the reviewed candidate through the protected `main` integration path. After merge, read back the hosted commit and required checks. A local commit, branch, pull request, or green local run is unpublished evidence and is not proof that work is merged or released.
 
 ## Verification method
 
