@@ -1583,7 +1583,7 @@ export function evaluateWorkflowHardeningChecks(readText) {
       /candidate stopped being current main before publication authorization/.test(ciAdmissionJob) &&
       /RUN_ATTEMPT" == "1/.test(ciAdmissionJob) &&
       /timeout 20s gh api/.test(ciAdmissionJob) &&
-      /ADMISSION_MAX_POLLS:\s*"12"/.test(ciAdmissionJob) &&
+      /ADMISSION_MAX_POLLS:\s*"48"/.test(ciAdmissionJob) &&
       /release_sha=\$candidate_sha/.test(ciAdmissionJob) &&
       /release_tag=\$release_tag/.test(ciAdmissionJob) &&
       !/actions\/checkout|actions\/cache|download-artifact|gh\s+run\s+list/.test(ciAdmissionJob) &&

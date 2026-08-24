@@ -1706,6 +1706,20 @@ describe("production hardening workflow gates", () => {
     assert.deepEqual(evaluateWorkflows().failures, []);
   });
 
+  it("pins the finite image-release admission convergence budget", () => {
+    const releaseWorkflow =
+      validWorkflowFiles[".github/workflows/image-release.yml"];
+    assertHasFailure(
+      evaluateWorkflows({
+        ".github/workflows/image-release.yml": releaseWorkflow.replace(
+          'ADMISSION_MAX_POLLS: "48"',
+          'ADMISSION_MAX_POLLS: "12"',
+        ),
+      }),
+      "image-release must use completed CI only as a wake-up",
+    );
+  });
+
   it("binds the documented GitHub environment Team response shape exactly", () => {
     const rule = {
       type: "required_reviewers",

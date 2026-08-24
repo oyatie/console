@@ -446,7 +446,9 @@ describe("Image Release protected workflow shape", () => {
   it("keeps admission read-only and gates every privileged publication stage", () => {
     assert.deepEqual(workflow.permissions, {});
     assert.deepEqual(admission.permissions, { contents: "read", actions: "read" });
-    assert.equal(admission["timeout-minutes"], 10);
+    assert.equal(admission["timeout-minutes"], 15);
+    assert.equal(admissionStep.env.ADMISSION_MAX_POLLS, "48");
+    assert.equal(admissionStep.env.ADMISSION_POLL_SECONDS, "10");
     assert.equal(admission["continue-on-error"], undefined);
     assert.equal(admissionStep["continue-on-error"], undefined);
     assert.equal(admissionStep.if, undefined);
@@ -1455,6 +1457,57 @@ describe("Image Release live admission shell", () => {
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.output, /^eligible=true$/m);
     assert.deepEqual(result.sleeps, ["0"]);
+  });
+
+  it("outlasts the former twelve-poll bound while remaining finite", () => {
+    const routes = baseRoutes();
+    const pendingSecurity = {
+      total_count: 1,
+      workflow_runs: [
+        workflowRun({
+          id: SECURITY_RUN_ID,
+          workflowId: SECURITY_WORKFLOW_ID,
+          path: ".github/workflows/security.yml",
+          status: "in_progress",
+          conclusion: null,
+        }),
+      ],
+    };
+    const successfulSecurity = {
+      total_count: 1,
+      workflow_runs: [
+        workflowRun({
+          id: SECURITY_RUN_ID,
+          workflowId: SECURITY_WORKFLOW_ID,
+          path: ".github/workflows/security.yml",
+        }),
+      ],
+    };
+    routes[
+      `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${CANDIDATE}&per_page=100`
+    ] = [
+      ...Array.from({ length: 12 }, () => pendingSecurity),
+      successfulSecurity,
+    ];
+
+    const formerBound = runAdmission({
+      routes,
+      env: { ADMISSION_MAX_POLLS: "12" },
+    });
+    assert.notEqual(formerBound.status, 0);
+    assert.match(
+      formerBound.stderr,
+      /release, CI, or Security evidence did not converge within the bounded wait/,
+    );
+    assert.equal(formerBound.sleeps.length, 11);
+
+    const replacementBound = runAdmission({
+      routes,
+      env: { ADMISSION_MAX_POLLS: "13" },
+    });
+    assert.equal(replacementBound.status, 0, replacementBound.stderr);
+    assert.match(replacementBound.output, /^eligible=true$/m);
+    assert.equal(replacementBound.sleeps.length, 12);
   });
 
   it("polls a not-yet-visible release only for an explicit 404", () => {

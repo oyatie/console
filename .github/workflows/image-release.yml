@@ -61,7 +61,7 @@ jobs:
   ci-admission:
     name: Classify exact immutable source release
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       contents: read
       actions: read
@@ -89,7 +89,10 @@ jobs:
           DISPATCH_CANDIDATE_SHA: ${{ inputs.candidate_sha }}
           DISPATCH_REF: ${{ github.ref }}
           RUN_ATTEMPT: ${{ github.run_attempt }}
-          ADMISSION_MAX_POLLS: "12"
+          # Path-short CI can finish several minutes before Security when a
+          # hosted runner is queued. Keep that convergence wait finite and
+          # below the admission job timeout without weakening any predicate.
+          ADMISSION_MAX_POLLS: "48"
           ADMISSION_POLL_SECONDS: "10"
         run: |
           set -euo pipefail
@@ -535,7 +538,7 @@ jobs:
             || die "native Release Please authority proof does not bind the exact PR and head"
 
           release_tag="v${candidate_version}"
-          max_polls="${ADMISSION_MAX_POLLS:-12}"
+          max_polls="${ADMISSION_MAX_POLLS:-48}"
           poll_seconds="${ADMISSION_POLL_SECONDS:-10}"
           [[ "$max_polls" =~ ^[1-9][0-9]*$ && "$poll_seconds" =~ ^[0-9]+$ ]] \
             || die "admission polling bounds are invalid"
