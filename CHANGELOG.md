@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.11](https://github.com/oyatie/console/compare/v0.3.10...v0.3.11) (2026-08-24)
+
+
+### Bug Fixes
+
+* **ci:** wait for delayed release security evidence ([#870](https://github.com/oyatie/console/issues/870)) ([368ecdc](https://github.com/oyatie/console/commit/368ecdca3e94028d398fc8bece0d71b0ee59e0a4))
+
 ## [0.3.10](https://github.com/oyatie/console/compare/v0.3.9...v0.3.10) (2026-08-24)
 
 
