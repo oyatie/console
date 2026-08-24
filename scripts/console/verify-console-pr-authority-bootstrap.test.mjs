@@ -16,6 +16,10 @@ import {
   fetchExactPullHead,
   verifyBootstrapGraph,
 } from './verify-console-pr-authority-bootstrap.mjs';
+import {
+  RELEASE_PLEASE_TRANSPORT_ID,
+  RELEASE_PLEASE_TRANSPORT_NAME,
+} from './release-please-bot-candidate.mjs';
 
 const B = 'd'.repeat(40);
 const H = 'a'.repeat(40);
@@ -224,6 +228,10 @@ test('malformed release claims cannot fall through to ordinary admission', () =>
     [ordinaryOps(), ordinaryCoordinates({ prHeadRef: 'release-please--malformed' }), 'release ref'],
     [ordinaryOps({ diff: () => [modified('.release-please-manifest.json')] }), ordinaryCoordinates(), 'release manifest'],
     [releaseOps(), releaseCoordinates({ prAuthorId: 12345, prAuthorLogin: 'human' }), 'exact bytes with wrong creator'],
+    [releaseOps(), releaseCoordinates({ prAuthorLogin: RELEASE_PLEASE_TRANSPORT_NAME }), 'bot id with transport login'],
+    [releaseOps(), releaseCoordinates({ prAuthorId: RELEASE_PLEASE_TRANSPORT_ID }), 'transport id with bot login'],
+    [releaseOps(), releaseCoordinates({ prAuthorId: 12345, prAuthorLogin: RELEASE_PLEASE_TRANSPORT_NAME }), 'transport login with wrong id'],
+    [releaseOps(), releaseCoordinates({ prAuthorId: RELEASE_PLEASE_TRANSPORT_ID, prAuthorLogin: 'human' }), 'transport id with wrong login'],
   ];
   for (const [ops, args, label] of cases) {
     assert.throws(
@@ -232,6 +240,22 @@ test('malformed release claims cannot fall through to ordinary admission', () =>
       label,
     );
   }
+});
+
+test('the pinned transport principal can author an ordinary non-release PR', () => {
+  const args = ordinaryCoordinates({
+    prAuthorId: RELEASE_PLEASE_TRANSPORT_ID,
+    prAuthorLogin: RELEASE_PLEASE_TRANSPORT_NAME,
+    prHeadRepository: PINNED_RELEASE_REPOSITORY,
+  });
+  assert.deepEqual(classifyProtectedPrRoute(ordinaryOps(), args), {
+    admissionClass: 'ordinary-pr',
+  });
+  assert.deepEqual(verifyBootstrapGraph(ordinaryOps(), args), {
+    baseSha: B,
+    headSha: H,
+    admissionClass: 'ordinary-pr',
+  });
 });
 
 test('exact Release Please tip requires native protected-workflow proof and exact structural merge', () => {
@@ -253,6 +277,22 @@ test('exact Release Please tip requires native protected-workflow proof and exac
   assert.throws(
     () => verifyBootstrapGraph(releaseOps({ parents: (sha) => (sha === H ? [B] : sha === M ? [P, H] : []) }), args),
     /merge parents must equal the protected base and exact release head/,
+  );
+});
+
+test('exact pinned transport-created release PR requires the same protected proof and structural merge', () => {
+  const args = releaseCoordinates({
+    prAuthorId: RELEASE_PLEASE_TRANSPORT_ID,
+    prAuthorLogin: RELEASE_PLEASE_TRANSPORT_NAME,
+  });
+  assert.deepEqual(classifyProtectedPrRoute(releaseOps(), args), {
+    admissionClass: 'release-please-bot',
+    candidateSha: B,
+  });
+  assert.equal(verifyBootstrapGraph(releaseOps(), args).admissionClass, 'release-please-bot');
+  assert.throws(
+    () => verifyBootstrapGraph(releaseOps(), { ...args, releaseAuthorityProof: undefined }),
+    /release authority proof/,
   );
 });
 
@@ -372,9 +412,9 @@ test('workflow emits one unconditional protected-code-only required context', ()
 });
 
 const protectedExecutableClosure = Object.freeze([
-  ['./verify-console-pr-authority-bootstrap.mjs', 'df55666f5d348a24e650cf9fc94e90d8cb9cb783dfa815d80b00d010490b9b83'],
+  ['./verify-console-pr-authority-bootstrap.mjs', '1f2199ccf6d67bd0656f43799ef2c9f61f4719bd7baa15931bdeab0ddbca1a8f'],
   ['./authority-ledger-path.mjs', '756e838e3979508d3be0b7d9974a0e719de9f1a08effbe60c272c2cad25b498e'],
-  ['./release-please-bot-candidate.mjs', 'ae3d1069165ca4aaa88a36cac8f13d8d45d952f87fb23c510da0d0a957e62fdf'],
+  ['./release-please-bot-candidate.mjs', 'e1bbf8819e3cca1d227293abbced2026bdc18d3953be3b1af0eaa5ed0a738108'],
 ]);
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 

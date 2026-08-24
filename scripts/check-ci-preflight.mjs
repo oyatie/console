@@ -28,7 +28,7 @@ const releaseMetadataGateRunSha256 = "9ba171262e917ba80b83342f58164d470a7d28060e
 // bootstrap verifier — and executed NOWHERE until it was wired: `package.json` declared
 // `test:console-authority-bootstrap` and no workflow ever invoked it. Breaking the verifier
 // turned all its tests red locally while CI stayed green.
-const consoleBootstrapTestCommand = "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs";
+const consoleBootstrapTestCommand = "node --test scripts/console/release-please-pr-envelope.test.mjs scripts/console/release-please-pr-fallback.test.mjs scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs";
 /** Sibling jobs: run expensive body only when preflight classified a non-docs change. */
 const runHeavyCondition = "${{ needs.preflight.outputs.run_heavy == 'true' }}";
 /** Sibling jobs: emit explicit skip-proof success for a thin path class. */

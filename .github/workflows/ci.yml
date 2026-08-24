@@ -164,7 +164,7 @@ jobs:
       - name: Console PR authority bootstrap regression
         id: pr-authority-bootstrap
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
-        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs
+        run: node --test scripts/console/release-please-pr-envelope.test.mjs scripts/console/release-please-pr-fallback.test.mjs scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs
 
       - name: Executed-tests baseline set regression
         id: executed-tests-baseline

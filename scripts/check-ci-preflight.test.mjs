@@ -1311,7 +1311,7 @@ describe("CI preflight contract", () => {
 
     for (const command of [
       "node --test scripts/console/verify-console-authority-train.test.mjs",
-      "node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs",
+      "node --test scripts/console/release-please-pr-envelope.test.mjs scripts/console/release-please-pr-fallback.test.mjs scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs",
       "node --test scripts/console/validate-console-truth-ledger.test.mjs",
       "node --test scripts/console/plan-fanout.test.mjs",
     ]) {
@@ -1344,15 +1344,15 @@ describe("CI preflight contract", () => {
     // turned every one of its tests red locally while CI stayed green. Wiring it into ci.yml is
     // not the same as protecting it, hence both halves below.
     assert.ok(
-      workflow.includes(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs\n`),
+      workflow.includes(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/release-please-pr-envelope.test.mjs scripts/console/release-please-pr-fallback.test.mjs scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs\n`),
       "preflight does not run the console PR authority bootstrap regression",
     );
     expectFailure(
-      workflow.replace(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs\n\n`, ''),
+      workflow.replace(`      - name: Console PR authority bootstrap regression\n        id: pr-authority-bootstrap\n        if: ${npmCiIf}\n        run: node --test scripts/console/release-please-pr-envelope.test.mjs scripts/console/release-please-pr-fallback.test.mjs scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs\n\n`, ''),
       "verify-console-pr-authority-bootstrap.test.mjs",
     );
     expectFailure(
-      workflow.replace(`        if: ${npmCiIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs`, `        if: ${prOnlyIf}\n        run: node --test scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs`),
+      workflow.replace(`        if: ${npmCiIf}\n        run: node --test scripts/console/release-please-pr-envelope.test.mjs scripts/console/release-please-pr-fallback.test.mjs scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs`, `        if: ${prOnlyIf}\n        run: node --test scripts/console/release-please-pr-envelope.test.mjs scripts/console/release-please-pr-fallback.test.mjs scripts/console/verify-console-pr-authority-bootstrap.test.mjs scripts/console/release-please-bot-candidate.test.mjs scripts/console/release-authority-proof.test.mjs scripts/console/converge-release-please-doc-custody.test.mjs scripts/console/verify-console-merge-group-authority.test.mjs`),
       "verify-console-pr-authority-bootstrap.test.mjs",
     );
   });

@@ -42,9 +42,13 @@ import {
   assertReleasePleaseBotPathDiff,
   gitCommitIdentity,
   gitRawDiff,
+  releasePleasePrCreatorClass,
   releasePleaseCustodyRewritePlan,
 } from './release-please-bot-candidate.mjs';
-import { validateReleaseMetadataBytes } from '../check-release-metadata.mjs';
+import {
+  assertReleasePleasePrEnvelope,
+  deriveReleasePleasePrEnvelope,
+} from './release-please-pr-envelope.mjs';
 
 const PROTECTED_ROOT = process.cwd();
 const PROTECTED_GENERATOR = join(
@@ -53,9 +57,6 @@ const PROTECTED_GENERATOR = join(
 );
 const ALLOWED = [...RELEASE_PLEASE_PATHS, ...RELEASE_PLEASE_CUSTODY_PATHS];
 const SHA = /^[0-9a-f]{40}$/;
-const ACTION_BODY_PREFIX = ':robot: I have created a release *beep* *boop*\n---\n\n\n';
-const ACTION_BODY_SUFFIX = '\n\n---\nThis PR was generated with [Release Please](https://github.com/googleapis/release-please). See [documentation](https://github.com/googleapis/release-please#release-please).';
-const CHANGELOG_PREFIX = '# Changelog\n\n';
 const RELEASE_PUSH_ASKPASS = `#!/bin/sh
 set -eu
 case "\${1-}" in
@@ -108,13 +109,6 @@ function assertStableReleasePr(pr, expected, phase) {
   for (const [valid, label] of checks) {
     if (!valid) fail(`${phase} live PR ${label} changed`);
   }
-}
-
-function exactUtf8(value, label) {
-  if (!Buffer.isBuffer(value)) fail(`${label} must be exact bytes`);
-  const text = value.toString('utf8');
-  if (!Buffer.from(text, 'utf8').equals(value)) fail(`${label} must be valid UTF-8`);
-  return text;
 }
 
 export function parseReleasePleaseActionPr(raw) {
@@ -175,11 +169,15 @@ export function assertReleasePleasePrePushSnapshot({
   }
   if (actionPr.baseBranchName !== 'main') fail('release action PR base must be main');
 
+  if (releasePleasePrCreatorClass(initialPr?.user) === null) {
+    fail('pre-push PR creator must be the exact bot or pinned transport principal');
+  }
+
   const expected = Object.freeze({
     number: prNumber,
     title,
     body,
-    creatorLogin: RELEASE_PLEASE_BOT_NAME,
+    creatorLogin: initialPr.user.login,
     creatorId: positiveSafeInteger(initialPr?.user?.id, 'pre-push PR creator id'),
     headRef,
     repository: repo,
@@ -242,17 +240,6 @@ export function pollReleasePleasePostPushHead({
   fail('post-push PR polling exhausted unexpectedly');
 }
 
-function actionReleaseNotes(body) {
-  if (!body.startsWith(ACTION_BODY_PREFIX) || !body.endsWith(ACTION_BODY_SUFFIX)) {
-    fail('release action PR body must have the exact Release Please envelope');
-  }
-  const notes = body.slice(ACTION_BODY_PREFIX.length, -ACTION_BODY_SUFFIX.length);
-  if (notes.length === 0 || notes.includes('\r')) {
-    fail('release action PR body must contain canonical LF-only release notes');
-  }
-  return notes;
-}
-
 /**
  * Bind Release Please's protected action output to the exact two-file core tip.
  * A later PAT rewrite may add only deterministic custody bytes; it cannot bless
@@ -288,8 +275,8 @@ export function assertReleasePleaseActionCoreBinding({
   if (livePr.state !== 'open') fail('live PR must remain open');
   if (livePr.title !== actionPr.title) fail('live PR title must equal release action PR output');
   if (livePr.body !== actionPr.body) fail('live PR body must equal release action PR output');
-  if (livePr?.user?.login !== RELEASE_PLEASE_BOT_NAME) {
-    fail('live PR creator must be exactly github-actions[bot]');
+  if (releasePleasePrCreatorClass(livePr?.user) === null) {
+    fail('live PR creator must be the exact bot or pinned transport principal');
   }
   if (livePr?.head?.repo?.full_name !== repo) fail('live PR head repository must equal the protected repository');
   if (livePr?.head?.ref !== actionPr.headBranchName) fail('live PR head ref must equal release action PR output');
@@ -312,26 +299,22 @@ export function assertReleasePleaseActionCoreBinding({
   }
   assertReleasePleaseBotPathDiff(pathChanges);
 
-  const metadata = validateReleaseMetadataBytes({ baseManifest, headManifest, headChangelog });
-  const titleMatch = actionPr.title.match(/ release (\d+\.\d+\.\d+)$/);
-  if (!titleMatch || titleMatch[1] !== metadata.headVersion) {
-    fail(`release action PR title must name manifest version ${metadata.headVersion}`);
-  }
-
-  const baseText = exactUtf8(baseChangelog, 'base CHANGELOG.md');
-  const headText = exactUtf8(headChangelog, 'head CHANGELOG.md');
-  if (!baseText.startsWith(CHANGELOG_PREFIX)) fail('base CHANGELOG.md must start with the canonical heading');
-  const expectedHead = `${CHANGELOG_PREFIX}${actionReleaseNotes(actionPr.body)}\n\n${baseText.slice(CHANGELOG_PREFIX.length)}`;
-  if (headText !== expectedHead) {
-    fail('head CHANGELOG.md must exactly prepend the release action notes to the parent CHANGELOG.md');
-  }
+  const envelope = deriveReleasePleasePrEnvelope({
+    baseManifest,
+    headManifest,
+    baseChangelog,
+    headChangelog,
+    subject: identity.subject,
+    headRef: actionPr.headBranchName,
+  });
+  assertReleasePleasePrEnvelope(actionPr, envelope);
 
   return Object.freeze({
     prNumber: actionPr.number,
     headRef: actionPr.headBranchName,
     headSha,
     parentSha,
-    version: metadata.headVersion,
+    version: envelope.version,
   });
 }
 

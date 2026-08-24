@@ -9,6 +9,12 @@ import {
   githubJsonRequest,
   pollReleaseAuthorityProof,
 } from './verify-console-pr-authority-bootstrap.mjs';
+import {
+  RELEASE_PLEASE_BOT_ID,
+  RELEASE_PLEASE_BOT_NAME,
+  RELEASE_PLEASE_TRANSPORT_ID,
+  RELEASE_PLEASE_TRANSPORT_NAME,
+} from './release-please-bot-candidate.mjs';
 
 const C = 'c'.repeat(40);
 const T = 'a'.repeat(40);
@@ -104,10 +110,15 @@ test('rejects forged, failed, stale-attempt, wrong-head, or duplicate proof jobs
   assert.throws(() => assertReleaseAuthorityProof(exact({ jobs: [job, { ...job, id: job.id + 1 }] })), /exact proof job/);
 });
 
-const livePr = (sha = T) => ({
+const botCreator = Object.freeze({ id: RELEASE_PLEASE_BOT_ID, login: RELEASE_PLEASE_BOT_NAME });
+const transportCreator = Object.freeze({
+  id: RELEASE_PLEASE_TRANSPORT_ID,
+  login: RELEASE_PLEASE_TRANSPORT_NAME,
+});
+const livePr = (sha = T, creator = botCreator) => ({
   number: PR_NUMBER,
   state: 'open',
-  user: { login: 'github-actions[bot]' },
+  user: { ...creator },
   head: { sha, ref: HEAD_REF, repo: { full_name: PINNED_RELEASE_REPOSITORY } },
   base: { ref: 'main' },
 });
@@ -152,6 +163,35 @@ test('polls boundedly for delayed native proof visibility and rechecks the live 
   assert.equal(runReads, 3);
   assert.equal(sleeps, 1);
   assert.equal(pullReads, 2);
+});
+
+test('accepts the exact pinned transport creator and rejects mixed creator identities', async () => {
+  const poll = (creator) => pollReleaseAuthorityProof({
+    request: async (endpoint) => {
+      if (endpoint.includes(`/pulls/${PR_NUMBER}`)) return livePr(T, creator);
+      if (endpoint.includes('/actions/workflows/')) return runsResponse([run]);
+      if (endpoint.includes(`/actions/runs/${run.id}/attempts/${run.run_attempt}/jobs`)) {
+        return { jobs: [job] };
+      }
+      throw new Error(`unexpected endpoint: ${endpoint}`);
+    },
+    sleep: async () => {},
+    repository: PINNED_RELEASE_REPOSITORY,
+    prNumber: PR_NUMBER,
+    headSha: T,
+    parentSha: C,
+    headRef: HEAD_REF,
+    maxAttempts: 1,
+  });
+  assert.equal((await poll(transportCreator)).headSha, T);
+  for (const creator of [
+    { id: RELEASE_PLEASE_BOT_ID, login: RELEASE_PLEASE_TRANSPORT_NAME },
+    { id: RELEASE_PLEASE_TRANSPORT_ID, login: RELEASE_PLEASE_BOT_NAME },
+    { id: 1, login: RELEASE_PLEASE_TRANSPORT_NAME },
+    { id: RELEASE_PLEASE_TRANSPORT_ID, login: 'attacker' },
+  ]) {
+    await assert.rejects(() => poll(creator), /live PR head.*moved/);
+  }
 });
 
 test('fails closed when the current run attempt advances after the proof jobs are read', async () => {

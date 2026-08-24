@@ -22,9 +22,13 @@
 import { AUTHORITY_DIFF_ARGS } from './authority-ledger-path.mjs';
 
 export const RELEASE_PLEASE_BOT_NAME = 'github-actions[bot]';
+export const RELEASE_PLEASE_BOT_ID = 41898282;
 export const RELEASE_PLEASE_BOT_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com';
 export const RELEASE_PLEASE_COMMITTER_NAME = 'GitHub';
 export const RELEASE_PLEASE_COMMITTER_EMAIL = 'noreply@github.com';
+export const RELEASE_PLEASE_TRANSPORT_NAME = 'jason931225';
+export const RELEASE_PLEASE_TRANSPORT_ID = 56489493;
+export const RELEASE_PLEASE_TRANSPORT_TYPE = 'User';
 export const RELEASE_PLEASE_PR_AUTHORS = Object.freeze(['github-actions[bot]']);
 export const RELEASE_PLEASE_HEAD_REF = /^release-please--branches--main--components--[A-Za-z0-9._-]+$/;
 export const RELEASE_PLEASE_SUBJECT = /^chore\([^)]+\): release \d+\.\d+\.\d+$/;
@@ -39,6 +43,17 @@ const SHA = /^[0-9a-f]{40}$/;
 
 function fail(message) {
   throw new Error(`release-please bot candidate: ${message}`);
+}
+
+/** Classify creator metadata; protected workflow proof remains mandatory. */
+export function releasePleasePrCreatorClass(creator = {}) {
+  if (!creator || typeof creator !== 'object' || Array.isArray(creator)) return null;
+  const { id, login } = creator;
+  if (id === RELEASE_PLEASE_BOT_ID && login === RELEASE_PLEASE_BOT_NAME) return 'bot';
+  if (id === RELEASE_PLEASE_TRANSPORT_ID && login === RELEASE_PLEASE_TRANSPORT_NAME) {
+    return 'transport';
+  }
+  return null;
 }
 
 // Compatibility validator for callers that explicitly request event metadata.

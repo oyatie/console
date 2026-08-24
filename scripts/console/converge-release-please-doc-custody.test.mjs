@@ -23,6 +23,8 @@ import {
   RELEASE_PLEASE_COMMITTER_EMAIL,
   RELEASE_PLEASE_COMMITTER_NAME,
   RELEASE_PLEASE_PATHS,
+  RELEASE_PLEASE_TRANSPORT_ID,
+  RELEASE_PLEASE_TRANSPORT_NAME,
 } from './release-please-bot-candidate.mjs';
 
 const C = 'c'.repeat(40);
@@ -137,9 +139,11 @@ const pollFixture = (overrides = {}) => ({
   ...overrides,
 });
 const protectedReleaseIssuerClosure = Object.freeze([
-  ['./converge-release-please-doc-custody.mjs', '5079387e9c5553e00f7ec34fa1d120b5bcd33a5a995201ab6a9f0669f6227693'],
+  ['./converge-release-please-doc-custody.mjs', '084e81a401e0e0ef4479d37b15d5e2d7a6250c7a3a8c6d51cee8293b8ece48cd'],
+  ['./release-please-pr-fallback.mjs', '183b88c8febdc16a9316f9d2dcd180f1508fcfee117d5e497b6794f4c58cb770'],
+  ['./release-please-pr-envelope.mjs', '3ce48af43c2bd476e4f1fc7ad4e787b23990c89ad468a28df7a0ae82a35d6240'],
   ['./generate-documentation-manifest.mjs', 'eb353f442a6d7d84b659d43424dd52fbf9243f73d813f840e2d14aa7277fef77'],
-  ['./release-please-bot-candidate.mjs', 'ae3d1069165ca4aaa88a36cac8f13d8d45d952f87fb23c510da0d0a957e62fdf'],
+  ['./release-please-bot-candidate.mjs', 'e1bbf8819e3cca1d227293abbced2026bdc18d3953be3b1af0eaa5ed0a738108'],
   ['./authority-ledger-path.mjs', '756e838e3979508d3be0b7d9974a0e719de9f1a08effbe60c272c2cad25b498e'],
   ['../check-release-metadata.mjs', '534b49d8426a1a3ae86e88ca026cf034162dd1d6289de3f9c4103e447b998b4a'],
 ]);
@@ -184,6 +188,9 @@ test('pre-push validation rejects stable metadata drift before transport work', 
     if (!independentlyBoundFields.has(label)) continue;
     const initialPr = postPushPr(T);
     mutate(initialPr);
+    const expected = label === 'creator login'
+      ? /pre-push PR creator/
+      : new RegExp(`pre-push live PR ${label} changed`, 'i');
     assert.throws(
       () => assertReleasePleasePrePushSnapshot({
         actionPr,
@@ -192,7 +199,7 @@ test('pre-push validation rejects stable metadata drift before transport work', 
         expectedParentSha: C,
         oldTip: T,
       }),
-      new RegExp(`pre-push live PR ${label} changed`, 'i'),
+      expected,
       label,
     );
   }
@@ -370,6 +377,30 @@ test('binds an exact release action output to the generated core tip', () => {
   });
 });
 
+test('binds recurring native updates to the exact pinned transport-created PR', () => {
+  const transportPr = structuredClone(livePr);
+  transportPr.user = { id: RELEASE_PLEASE_TRANSPORT_ID, login: RELEASE_PLEASE_TRANSPORT_NAME };
+  assert.equal(assertReleasePleaseActionCoreBinding(fixture({ livePr: transportPr })).prNumber, 760);
+  const initialPr = structuredClone(transportPr);
+  const accepted = pollReleasePleasePostPushHead(pollFixture({
+    initialPr,
+    readPullRequest: () => ({
+      ...structuredClone(transportPr),
+      head: { ...structuredClone(transportPr.head), sha: N },
+    }),
+  }));
+  assert.equal(accepted.head.sha, N);
+  for (const user of [
+    { id: RELEASE_PLEASE_TRANSPORT_ID + 1, login: RELEASE_PLEASE_TRANSPORT_NAME },
+    { id: RELEASE_PLEASE_TRANSPORT_ID, login: RELEASE_PLEASE_BOT_NAME },
+  ]) {
+    assert.throws(
+      () => assertReleasePleaseActionCoreBinding(fixture({ livePr: { ...transportPr, user } })),
+      /creator/,
+    );
+  }
+});
+
 test('rejects a raced live PR or a tip detached from the triggering main SHA', () => {
   assert.throws(
     () => assertReleasePleaseActionCoreBinding(fixture({
@@ -399,7 +430,7 @@ test('rejects PR metadata, repository, action body, or bot identity drift', () =
 test('rejects release core bytes not deterministically represented by the action output', () => {
   for (const [overrides, pattern] of [
     [{ headManifest: Buffer.from('{\n  ".": "0.3.8"\n}\n') }, /0\.3\.8|title|body/],
-    [{ headChangelog: Buffer.from(HEAD_CHANGELOG.replace('separate candidate', 'forged candidate')) }, /CHANGELOG|release notes/],
+    [{ headChangelog: Buffer.from(HEAD_CHANGELOG.replace('separate candidate', 'forged candidate')) }, /CHANGELOG|release notes|PR body/],
     [{ headChangelog: Buffer.from(`${HEAD_CHANGELOG}\nforged`) }, /CHANGELOG|parent/],
     [{ pathChanges: [...pathChanges, { path: 'README.md', status: 'M', oldMode: '100644', newMode: '100644', oldType: 'blob', newType: 'blob' }] }, /exactly|release core/],
     [{ pathChanges: pathChanges.map((entry, index) => index === 0 ? { ...entry, newMode: '100755' } : entry) }, /mode-100644/],
@@ -566,16 +597,31 @@ const expectedReleaseWorkflow = Object.freeze({
     'release-please': {
       'runs-on': 'ubuntu-latest',
       'timeout-minutes': 10,
-      permissions: { contents: 'write', 'pull-requests': 'write' },
+      permissions: { actions: 'read', contents: 'write', 'pull-requests': 'write' },
       outputs: {
-        pr_number: '${{ steps.converge.outputs.pr_number }}',
-        head_sha: '${{ steps.converge.outputs.head_sha }}',
-        parent_sha: '${{ steps.converge.outputs.parent_sha }}',
+        pr_number: '${{ steps.finalize.outputs.pr_number }}',
+        head_sha: '${{ steps.finalize.outputs.head_sha }}',
+        parent_sha: '${{ steps.finalize.outputs.parent_sha }}',
       },
       steps: [
         {
+          uses: 'actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0',
+          with: { 'fetch-depth': 0, 'persist-credentials': false },
+        },
+        {
+          uses: 'actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e',
+          with: { 'node-version': '24.16.0' },
+        },
+        {
+          name: 'Snapshot protected release state',
+          id: 'snapshot',
+          env: { GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}' },
+          run: 'node scripts/console/release-please-pr-fallback.mjs snapshot',
+        },
+        {
           uses: 'googleapis/release-please-action@8b8fd2cc23b2e18957157a9d923d75aa0c6f6ad5',
           id: 'release',
+          'continue-on-error': true,
           with: {
             token: '${{ secrets.GITHUB_TOKEN }}',
             'config-file': 'release-please-config.json',
@@ -583,26 +629,62 @@ const expectedReleaseWorkflow = Object.freeze({
           },
         },
         {
-          uses: 'actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0',
-          if: '${{ steps.release.outputs.pr }}',
-          with: { 'fetch-depth': 0, 'persist-credentials': false },
+          name: 'Create exact release PR after permission-only action failure',
+          id: 'fallback',
+          if: "${{ steps.release.outcome == 'failure' && steps.release.outputs.pr == '' }}",
+          env: {
+            RELEASE_PLEASE_SNAPSHOT: '${{ steps.snapshot.outputs.snapshot }}',
+            RELEASE_PLEASE_ACTION_OUTCOME: '${{ steps.release.outcome }}',
+            RELEASE_PLEASE_ACTION_PR: '${{ steps.release.outputs.pr }}',
+            RELEASE_PLEASE_ACTION_PRS: '${{ steps.release.outputs.prs }}',
+            RELEASE_PLEASE_ACTION_RELEASE_CREATED: '${{ steps.release.outputs.release_created }}',
+            RELEASE_PLEASE_ACTION_RELEASES_CREATED: '${{ steps.release.outputs.releases_created }}',
+            CONSOLE_RELEASE_PUSH_TOKEN: '${{ secrets.RELEASE_PLEASE_TOKEN }}',
+            GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}',
+          },
+          run: 'node scripts/console/release-please-pr-fallback.mjs fallback',
         },
         {
-          uses: 'actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e',
-          if: '${{ steps.release.outputs.pr }}',
-          with: { 'node-version': '24.16.0' },
+          name: 'Select one exact Release Please result',
+          id: 'select',
+          if: '${{ always() }}',
+          env: {
+            RELEASE_PLEASE_SNAPSHOT_OUTCOME: '${{ steps.snapshot.outcome }}',
+            RELEASE_PLEASE_ACTION_OUTCOME: '${{ steps.release.outcome }}',
+            RELEASE_PLEASE_ACTION_PR: '${{ steps.release.outputs.pr }}',
+            RELEASE_PLEASE_ACTION_RELEASE_CREATED: '${{ steps.release.outputs.release_created }}',
+            RELEASE_PLEASE_ACTION_RELEASES_CREATED: '${{ steps.release.outputs.releases_created }}',
+            RELEASE_PLEASE_FALLBACK_OUTCOME: '${{ steps.fallback.outcome }}',
+            RELEASE_PLEASE_FALLBACK_PR: '${{ steps.fallback.outputs.pr }}',
+          },
+          run: 'node scripts/console/release-please-pr-fallback.mjs select',
         },
         {
           name: 'Converge documentation custody on release-please tip',
           id: 'converge',
-          if: '${{ steps.release.outputs.pr }}',
+          if: "${{ steps.select.outcome == 'success' && steps.select.outputs.pr != '' }}",
           env: {
-            RELEASE_PLEASE_PR: '${{ steps.release.outputs.pr }}',
+            RELEASE_PLEASE_PR: '${{ steps.select.outputs.pr }}',
             CONSOLE_RELEASE_PUSH_TOKEN: '${{ secrets.RELEASE_PLEASE_TOKEN }}',
             GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}',
             GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}',
           },
           run: 'node scripts/console/converge-release-please-doc-custody.mjs',
+        },
+        {
+          name: 'Adjudicate the complete protected release result',
+          id: 'finalize',
+          if: '${{ always() }}',
+          env: {
+            RELEASE_PLEASE_SELECTION_OUTCOME: '${{ steps.select.outcome }}',
+            RELEASE_PLEASE_SELECTION_MODE: '${{ steps.select.outputs.mode }}',
+            RELEASE_PLEASE_SELECTED_PR: '${{ steps.select.outputs.pr }}',
+            RELEASE_PLEASE_CONVERGE_OUTCOME: '${{ steps.converge.outcome }}',
+            RELEASE_PLEASE_CONVERGE_PR_NUMBER: '${{ steps.converge.outputs.pr_number }}',
+            RELEASE_PLEASE_CONVERGE_HEAD_SHA: '${{ steps.converge.outputs.head_sha }}',
+            RELEASE_PLEASE_CONVERGE_PARENT_SHA: '${{ steps.converge.outputs.parent_sha }}',
+          },
+          run: 'node scripts/console/release-please-pr-fallback.mjs finalize',
         },
       ],
     },
@@ -654,32 +736,52 @@ test('protected release workflow keeps the PAT transport-only and emits one nati
   assert.deepEqual(model.permissions, {});
 
   const producer = model.jobs['release-please'];
-  assert.deepEqual(producer.permissions, { contents: 'write', 'pull-requests': 'write' });
+  assert.deepEqual(producer.permissions, { actions: 'read', contents: 'write', 'pull-requests': 'write' });
   assert.deepEqual(producer.outputs, {
-    pr_number: '${{ steps.converge.outputs.pr_number }}',
-    head_sha: '${{ steps.converge.outputs.head_sha }}',
-    parent_sha: '${{ steps.converge.outputs.parent_sha }}',
+    pr_number: '${{ steps.finalize.outputs.pr_number }}',
+    head_sha: '${{ steps.finalize.outputs.head_sha }}',
+    parent_sha: '${{ steps.finalize.outputs.parent_sha }}',
   });
   const release = producer.steps.find((step) => step.id === 'release');
   assert.equal(release.with.token, '${{ secrets.GITHUB_TOKEN }}');
+  assert.equal(release['continue-on-error'], true);
   assert.equal(Object.hasOwn(release.with, 'bootstrap-sha'), false);
   assert.doesNotMatch(JSON.stringify(release), /RELEASE_PLEASE_TOKEN/);
+  assert.deepEqual(
+    producer.steps.filter((step) => Object.hasOwn(step, 'continue-on-error')).map((step) => step.id),
+    ['release'],
+  );
 
   const checkout = producer.steps.find((step) => String(step.uses ?? '').startsWith('actions/checkout@'));
-  assert.equal(checkout.if, '${{ steps.release.outputs.pr }}');
+  assert.equal(Object.hasOwn(checkout, 'if'), false);
   assert.equal(checkout.with['persist-credentials'], false);
   assert.equal(Object.hasOwn(checkout.with, 'token'), false);
   const setup = producer.steps.find((step) => String(step.uses ?? '').startsWith('actions/setup-node@'));
-  assert.equal(setup.if, '${{ steps.release.outputs.pr }}');
+  assert.equal(Object.hasOwn(setup, 'if'), false);
+
+  const snapshot = producer.steps.find((step) => step.id === 'snapshot');
+  assert.deepEqual(snapshot.env, { GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}' });
+  const fallback = producer.steps.find((step) => step.id === 'fallback');
+  assert.equal(fallback.if, "${{ steps.release.outcome == 'failure' && steps.release.outputs.pr == '' }}");
+  assert.equal(fallback.env.CONSOLE_RELEASE_PUSH_TOKEN, '${{ secrets.RELEASE_PLEASE_TOKEN }}');
+  const select = producer.steps.find((step) => step.id === 'select');
+  assert.equal(select.if, '${{ always() }}');
 
   const converge = producer.steps.find((step) => step.id === 'converge');
-  assert.equal(converge.if, '${{ steps.release.outputs.pr }}');
+  assert.equal(converge.if, "${{ steps.select.outcome == 'success' && steps.select.outputs.pr != '' }}");
   assert.deepEqual(converge.env, {
-    RELEASE_PLEASE_PR: '${{ steps.release.outputs.pr }}',
+    RELEASE_PLEASE_PR: '${{ steps.select.outputs.pr }}',
     CONSOLE_RELEASE_PUSH_TOKEN: '${{ secrets.RELEASE_PLEASE_TOKEN }}',
     GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}',
     GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}',
   });
+  const finalize = producer.steps.find((step) => step.id === 'finalize');
+  assert.equal(finalize.if, '${{ always() }}');
+  for (const step of producer.steps) {
+    if (!['fallback', 'converge'].includes(step.id)) {
+      assert.doesNotMatch(JSON.stringify(step), /RELEASE_PLEASE_TOKEN/);
+    }
+  }
 
   const proof = model.jobs['release-authority-proof'];
   assert.equal(proof.needs, 'release-please');

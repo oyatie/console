@@ -9,12 +9,16 @@
  */
 import { execFileSync } from 'node:child_process';
 import {
+  RELEASE_PLEASE_BOT_ID,
   RELEASE_PLEASE_BOT_EMAIL,
   RELEASE_PLEASE_BOT_NAME,
   RELEASE_PLEASE_HEAD_REF,
   RELEASE_PLEASE_SUBJECT,
+  RELEASE_PLEASE_TRANSPORT_ID,
+  RELEASE_PLEASE_TRANSPORT_NAME,
   RELEASE_PLEASE_TRAIN_CLASS,
   classifyReleasePleaseBotTip,
+  releasePleasePrCreatorClass,
   verifyReleasePleaseBotTrain,
 } from './release-please-bot-candidate.mjs';
 
@@ -26,7 +30,7 @@ const SHA = /^[0-9a-f]{40}$/;
 // the human-readable name moved.
 export const PINNED_RELEASE_REPOSITORY = 'oyatie/console';
 export const PINNED_RELEASE_REPOSITORY_ID = 1269693002;
-export const RELEASE_PLEASE_BOT_ID = 41898282;
+export { RELEASE_PLEASE_BOT_ID };
 export const RELEASE_PLEASE_WORKFLOW_ID = 296023729;
 export const RELEASE_PLEASE_WORKFLOW_PATH = '.github/workflows/release-please.yml';
 const RELEASE_PLEASE_WORKFLOW_NAME = 'Release Please';
@@ -106,7 +110,7 @@ function assertLiveReleasePr(pr, { repository, prNumber, headSha, headRef }, pha
   if (
     pr?.number !== prNumber
     || pr?.state !== 'open'
-    || pr?.user?.login !== RELEASE_PLEASE_BOT_NAME
+    || releasePleasePrCreatorClass(pr?.user) === null
     || pr?.head?.sha !== headSha
     || pr?.head?.ref !== headRef
     || pr?.head?.repo?.full_name !== repository
@@ -339,6 +343,10 @@ export function classifyProtectedPrRoute(ops, {
   if (!Array.isArray(changes)) fail('protected base..head diff is unavailable');
 
   const classifiedRelease = classifyReleasePleaseBotTip(ops, H);
+  // The pinned transport principal is also the repository's ordinary human
+  // contributor, so that identity alone cannot reserve the release lane. It is
+  // accepted only after an independent release-shaped signal below. The bot
+  // identity remains a release claim by itself because it has no ordinary lane.
   const creatorClaimsRelease = prAuthorId === RELEASE_PLEASE_BOT_ID
     || prAuthorLogin === RELEASE_PLEASE_BOT_NAME;
   const refClaimsRelease = prHeadRef.startsWith('release-please');
@@ -352,8 +360,7 @@ export function classifyProtectedPrRoute(ops, {
   if (!hasReleaseClaim) return Object.freeze({ admissionClass: 'ordinary-pr' });
   const exactRelease = classifiedRelease !== null
     && classifiedRelease.candidateSha === B
-    && prAuthorId === RELEASE_PLEASE_BOT_ID
-    && prAuthorLogin === RELEASE_PLEASE_BOT_NAME
+    && releasePleasePrCreatorClass({ id: prAuthorId, login: prAuthorLogin }) !== null
     && RELEASE_PLEASE_HEAD_REF.test(prHeadRef)
     && prHeadRepository === repository;
   if (!exactRelease) return Object.freeze({ admissionClass: 'malformed-release-claim' });

@@ -2,17 +2,21 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   RELEASE_PLEASE_BOT_EMAIL,
+  RELEASE_PLEASE_BOT_ID,
   RELEASE_PLEASE_BOT_NAME,
   RELEASE_PLEASE_COMMITTER_EMAIL,
   RELEASE_PLEASE_COMMITTER_NAME,
   RELEASE_PLEASE_CUSTODY_PATHS,
   RELEASE_PLEASE_PATHS,
   RELEASE_PLEASE_TRAIN_CLASS,
+  RELEASE_PLEASE_TRANSPORT_ID,
+  RELEASE_PLEASE_TRANSPORT_NAME,
   assertReleasePleaseBotIdentity,
   assertReleasePleaseBotPathDiff,
   assertTrustedReleasePleasePrMeta,
   classifyReleasePleaseBotTip,
   classifyReleasePleaseSquashBinding,
+  releasePleasePrCreatorClass,
   releasePleaseCustodyRewritePlan,
   verifyReleasePleaseBotTrain,
 } from './release-please-bot-candidate.mjs';
@@ -27,6 +31,26 @@ const trustedPrMeta = Object.freeze({
   eventSenderLogin: 'github-actions[bot]',
   prHeadRepository: 'oyatie/console',
   repository: 'oyatie/console',
+});
+
+test('classifies only exact bot or pinned transport PR creator pairs', () => {
+  assert.equal(releasePleasePrCreatorClass({
+    id: RELEASE_PLEASE_BOT_ID,
+    login: RELEASE_PLEASE_BOT_NAME,
+  }), 'bot');
+  assert.equal(releasePleasePrCreatorClass({
+    id: RELEASE_PLEASE_TRANSPORT_ID,
+    login: RELEASE_PLEASE_TRANSPORT_NAME,
+  }), 'transport');
+  for (const creator of [
+    { id: RELEASE_PLEASE_TRANSPORT_ID, login: RELEASE_PLEASE_BOT_NAME },
+    { id: RELEASE_PLEASE_BOT_ID, login: RELEASE_PLEASE_TRANSPORT_NAME },
+    { id: RELEASE_PLEASE_TRANSPORT_ID + 1, login: RELEASE_PLEASE_TRANSPORT_NAME },
+    { id: RELEASE_PLEASE_BOT_ID, login: `${RELEASE_PLEASE_BOT_NAME} ` },
+    null,
+  ]) {
+    assert.equal(releasePleasePrCreatorClass(creator), null);
+  }
 });
 
 const botIdentity = {
