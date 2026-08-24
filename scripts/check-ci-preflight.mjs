@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { appendFileSync, readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { appendFileSync, lstatSync, readFileSync, realpathSync } from "node:fs";
+import { dirname, posix, relative, resolve, sep } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import yaml from "js-yaml";
@@ -485,31 +485,22 @@ const domainUnitPackages = [
   // no database; lib binary darkened until wired into domain-unit --lib.
   "console-identity-adapter-postgres",
 ]
-const domainUnitIntegrationInvocations = [
-  ["console-attendance-application", ["attendance_policy"]],
-  ["console-compliance-domain", ["location_consent_fsm", "location_ping_policy"]],
-  ["console-platform-authz", ["cedar_pbac_readiness_cases", "cedar_pbac_legacy_only_observe_and_record"]],
-  ["console-attendance-domain", ["range_and_history"]],
-  // Wired into ci.yml by the p2 contract-binary pass; the mirror entry was
-  // missed in that commit, which left this contract red on arrival.
-  ["console-contracts", ["compose"]],
-  ["console-todos-rest", ["openapi_fragment"]],
-  ["console-financial-domain", ["quote_and_residual"]],
-  ["console-registry-domain", ["equipment"]],
-  ["console-messenger-domain", ["mentions", "object_code_refs", "parity", "thread_kind"]],
-  ["console-workorder-domain", ["approval_and_assignment", "serde_roundtrips", "settlement_fsm", "workorder_fsm"]],
-  ["console-platform-auth", ["jwt_es256", "jwt_verifier", "well_known"]],
-  ["console-platform-excel", ["template_fidelity", "template_fill_engine"]],
-  ["console-platform-realtime", ["hub", "notify_payload"]],
-  ["console-app", ["config", "dev_seed_notification_links", "openslo_files", "well_known", "workbench_api"]],
-  // Cargo, from a real checkout: 3 of its 41 tests assert about THIS repository
-  // (the backend crate tree and ops/postgres-reconcile-topology.sh), which the
-  // backend job's Buck2 mutation-suite step cannot materialize.
-  ["console-gate-writer-ownership", ["gate_detects_violation"]],
-];
+// Integration invocations have one authority: the protected workflow. The old array here
+// was a hand-transcribed second copy and twice drifted behind ci.yml. Read the exact ordered
+// cargo/git surface from the checked-out workflow instead. The step proof digest remains the
+// tamper-evident order/token seal; the executed-tests baseline below is the independent
+// source-level oracle that prevents a newly derived invocation from naming a phantom binary.
+const domainUnitWorkflowSource = readFileSync(
+  new URL("../.github/workflows/ci.yml", import.meta.url),
+  "utf8",
+);
+const domainUnitWorkflowCommands = domainUnitWorkflowInvocationTokens(domainUnitWorkflowSource);
+const {
+  invocations: domainUnitIntegrationInvocations,
+  failures: domainUnitInventoryFailures,
+} = parseDomainUnitIntegrationInvocations(domainUnitWorkflowCommands);
 const domainUnitTestFiles = domainUnitIntegrationInvocations.flatMap(([, tests]) => tests);
 const domainCargoPrefix = [
-  "SQLX_OFFLINE=true",
   "cargo",
   "test",
   "--locked",
@@ -518,7 +509,6 @@ const domainCargoPrefix = [
 ];
 const domainUnitOpenApiGenCommands = [
   [
-    "SQLX_OFFLINE=true",
     "cargo",
     "run",
     "--locked",
@@ -552,6 +542,10 @@ const domainUnitExpectedCommands = [
     return [cargoTest];
   }),
 ];
+const domainUnitExecutedTestsBaseline = JSON.parse(readFileSync(
+  new URL("../docs/program/executed-tests-baseline.json", import.meta.url),
+  "utf8",
+));
 // S1: facet harness invocations (must appear in workflow). Aggregator no longer runs cargo.
 const postgresReachabilityFacetCommands = Object.freeze({
   "postgres-reachability-app":
@@ -1501,6 +1495,182 @@ function shellCommandTokens(script) {
   });
 }
 
+function stripShellAssignments(tokens) {
+  let index = 0;
+  while (index < tokens.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(tokens[index])) index += 1;
+  return tokens.slice(index);
+}
+
+function domainUnitWorkflowInvocationTokens(workflow) {
+  const block = jobBlock(workflow, "domain-unit");
+  if (!block) return [];
+  const domainSteps = stepBlocks(block)
+    .filter((step) => stepName(step) === "Domain crate unit tests");
+  if (domainSteps.length !== 1) return [];
+  return shellCommandTokens(runScript(domainSteps[0]))
+    .map((command) => ({
+      malformed: command.malformed,
+      tokens: stripShellAssignments(command.tokens),
+    }))
+    .filter(({ tokens }) => tokens[0] === "cargo" || tokens[0] === "git")
+    .map(({ malformed, tokens }) => malformed
+      ? ["<malformed-domain-unit-command>", ...tokens]
+      : tokens);
+}
+
+function parseDomainUnitIntegrationInvocations(commands) {
+  const invocations = [];
+  const failures = [];
+  const cargoTestPrefix = [
+    "cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "backend/Cargo.toml",
+  ];
+  for (const tokens of commands) {
+    if (tokens[0] !== "cargo" || tokens[1] !== "test" || !tokens.includes("--test")) continue;
+    const prefixMatches = cargoTestPrefix.every((token, index) => tokens[index] === token);
+    const suffix = tokens.slice(cargoTestPrefix.length);
+    if (!prefixMatches || suffix[0] !== "-p" || !/^[A-Za-z0-9_-]+$/.test(suffix[1] ?? "")) {
+      failures.push("domain-unit integration invocations must use the locked one-package Cargo test shape");
+      continue;
+    }
+    const packageName = suffix[1];
+    const tests = [];
+    let malformed = false;
+    for (let index = 2; index < suffix.length; index += 2) {
+      if (suffix[index] !== "--test"
+        || !/^[A-Za-z0-9_-]+$/.test(suffix[index + 1] ?? "")) {
+        malformed = true;
+        break;
+      }
+      tests.push(suffix[index + 1]);
+    }
+    if (malformed || tests.length === 0 || new Set(tests).size !== tests.length) {
+      failures.push(`domain-unit integration invocation for ${packageName} must name unique --test binaries only`);
+      continue;
+    }
+    invocations.push([packageName, tests]);
+  }
+  return { invocations, failures };
+}
+
+const cargoPackageNameCache = new Map();
+let regularGitIndexSourcesCache;
+const gitEnvironment = Object.fromEntries(
+  Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
+);
+gitEnvironment.LC_ALL = "C";
+gitEnvironment.GIT_NO_REPLACE_OBJECTS = "1";
+
+function regularGitIndexSources() {
+  if (regularGitIndexSourcesCache !== undefined) return regularGitIndexSourcesCache;
+  const tree = spawnSync("git", ["--no-replace-objects", "-C", rootDir(), "write-tree"], {
+    cwd: rootDir(),
+    encoding: "utf8",
+    env: gitEnvironment,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  const treeOid = tree.status === 0 ? tree.stdout.trim() : "";
+  if (!/^[0-9a-f]{40,64}$/.test(treeOid)) {
+    regularGitIndexSourcesCache = null;
+    return regularGitIndexSourcesCache;
+  }
+  const listing = spawnSync("git", ["--no-replace-objects", "-C", rootDir(), "ls-tree", "-r", "-z", "--full-tree", treeOid], {
+    cwd: rootDir(),
+    encoding: "utf8",
+    env: gitEnvironment,
+    maxBuffer: 8 * 1024 * 1024,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (listing.status !== 0 || typeof listing.stdout !== "string") {
+    regularGitIndexSourcesCache = null;
+    return regularGitIndexSourcesCache;
+  }
+  const sources = new Set();
+  for (const entry of listing.stdout.split("\0")) {
+    if (!entry) continue;
+    const separator = entry.indexOf("\t");
+    if (separator === -1) continue;
+    const metadata = entry.slice(0, separator);
+    if (!/^(?:100644|100755) blob [0-9a-f]{40,64}$/.test(metadata)) continue;
+    sources.add(entry.slice(separator + 1));
+  }
+  regularGitIndexSourcesCache = sources;
+  return regularGitIndexSourcesCache;
+}
+
+function isCanonicalRegularRepositorySource(source) {
+  if (typeof source !== "string"
+    || posix.isAbsolute(source)
+    || source === "."
+    || source === ".."
+    || source.startsWith("../")
+    || source !== posix.normalize(source)
+    || !regularGitIndexSources()?.has(source)) {
+    return false;
+  }
+  try {
+    const repositoryRoot = realpathSync(rootDir());
+    const candidate = resolve(repositoryRoot, ...source.split("/"));
+    if (!lstatSync(candidate).isFile()) return false;
+    const canonicalSource = relative(repositoryRoot, realpathSync(candidate))
+      .split(sep)
+      .join("/");
+    return canonicalSource === source;
+  } catch {
+    return false;
+  }
+}
+
+function cargoPackageNameForTestSource(source) {
+  if (!isCanonicalRegularRepositorySource(source)) return null;
+  const packageRoot = source.match(/^(backend\/.+)\/tests\/[^/]+\.rs$/)?.[1];
+  if (!packageRoot) return null;
+  if (cargoPackageNameCache.has(packageRoot)) return cargoPackageNameCache.get(packageRoot);
+  let packageName = null;
+  try {
+    const manifest = readFileSync(resolve(rootDir(), packageRoot, "Cargo.toml"), "utf8");
+    const header = /^\[package\]\s*$/m.exec(manifest);
+    if (header) {
+      const rest = manifest.slice(header.index + header[0].length);
+      const nextSection = /^\[/m.exec(rest);
+      const packageBody = nextSection ? rest.slice(0, nextSection.index) : rest;
+      packageName = packageBody.match(/^name\s*=\s*"([^"]+)"\s*$/m)?.[1] ?? null;
+    }
+  } catch {
+    // Missing or unreadable ownership is a mismatch below, never a reason to skip the check.
+  }
+  cargoPackageNameCache.set(packageRoot, packageName);
+  return packageName;
+}
+
+function requireDomainUnitExecutedTestsBaseline(
+  invocations,
+  baselineDocument,
+  failures,
+) {
+  const baseline = baselineDocument?.test_attribute_baseline;
+  if (!baseline || typeof baseline !== "object" || Array.isArray(baseline)) {
+    failures.push("docs/program/executed-tests-baseline.json must expose test_attribute_baseline for domain-unit");
+    return;
+  }
+  for (const [packageName, tests] of invocations) {
+    for (const test of tests) {
+      const sources = Object.entries(baseline)
+        .filter(([source, count]) => source.endsWith(`/tests/${test}.rs`)
+          && Number.isInteger(count)
+          && count > 0
+          && cargoPackageNameForTestSource(source) === packageName)
+        .map(([source]) => source);
+      if (sources.length !== 1) {
+        failures.push(`domain-unit integration binary ${packageName} --test ${test} must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml`);
+      }
+    }
+  }
+}
+
 const maxExecutablePrefixDepth = 12;
 const maxExecutableTokens = 512;
 const assignmentToken = /^[A-Za-z_][A-Za-z0-9_]*=/;
@@ -2155,6 +2325,7 @@ export function evaluateCiPreflight(
   workflow,
   buckBuildFile = postgresWrapperBuildFile,
   freeRunnerDiskAction = freeRunnerDiskActionFile,
+  executedTestsBaseline = domainUnitExecutedTestsBaseline,
 ) {
   const failures = [];
   let workflowModel;
@@ -2266,16 +2437,8 @@ export function evaluateCiPreflight(
     // `check_status`, the summary). Extract only the cargo/git invocations — the
     // exact surface check-executed-tests attributes — and compare them verbatim,
     // so a rewrapped, renamed, or merged invocation still fails here.
-    const stripAssignments = (tokens) => {
-      let index = 0;
-      while (index < tokens.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(tokens[index])) index += 1;
-      return tokens.slice(index);
-    };
-    const invocationCommands = parsedDomainCommands
-      .filter((command) => !command.malformed)
-      .map((command) => stripAssignments(command.tokens))
-      .filter((tokens) => tokens[0] === "cargo" || tokens[0] === "git");
-    const expectedInvocations = domainUnitExpectedCommands.map(stripAssignments);
+    const invocationCommands = domainUnitWorkflowInvocationTokens(workflow);
+    const expectedInvocations = domainUnitExpectedCommands;
     const domainCommandsMatch = domainSteps.length === 1
       && invocationCommands.length === expectedInvocations.length
       && invocationCommands.every((tokens, index) => (
@@ -2287,6 +2450,13 @@ export function evaluateCiPreflight(
     if (!/ci-keep-going:/.test(domainStep) || !/exit 1/.test(domainStep)) {
       failures.push("domain-unit keep-going block must re-raise failures with a summary exit 1");
     }
+    const currentInventory = parseDomainUnitIntegrationInvocations(invocationCommands);
+    failures.push(...domainUnitInventoryFailures, ...currentInventory.failures);
+    requireDomainUnitExecutedTestsBaseline(
+      currentInventory.invocations,
+      executedTestsBaseline,
+      failures,
+    );
     // Job-level env is REQUIRED and pinned to exactly the two cache-key variables:
     // without them this job's rust-cache key never matched the writer's and every
     // run was a cold 685s build. A blanket "no env" ban is what kept that miss in

@@ -1,9 +1,18 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
+import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 
 import {
@@ -21,6 +30,10 @@ const freeRunnerDiskAction = readFileSync(
   new URL("../.github/actions/free-runner-disk/action.yml", import.meta.url),
   "utf8",
 );
+const executedTestsBaseline = JSON.parse(readFileSync(
+  new URL("../docs/program/executed-tests-baseline.json", import.meta.url),
+  "utf8",
+));
 const cargoLockGate = "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null";
 const ciPreflightTests = "node --test scripts/check-ci-preflight.test.mjs";
 const reasoningLensManifestStep = `      - name: Reasoning lens manifest drift
@@ -176,6 +189,96 @@ function swapNamedSteps(source, job, firstName, secondName) {
 }
 
 describe("CI preflight contract", () => {
+  it("ignores an inherited alternate Git index", () => {
+    const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
+    const temporaryRoot = mkdtempSync(join(tmpdir(), "ci-preflight-alternate-index-"));
+    const alternateIndex = join(temporaryRoot, "index");
+    const cleanGitEnvironment = Object.fromEntries(
+      Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
+    );
+    cleanGitEnvironment.LC_ALL = "C";
+    const runGit = (args, env = cleanGitEnvironment) => {
+      const result = spawnSync("git", ["-C", repositoryRoot, ...args], {
+        encoding: "utf8",
+        env,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      assert.equal(result.status, 0, result.stderr);
+      return result.stdout.trim();
+    };
+    const source = "backend/crates/attendance/application/tests/attendance_policy.rs";
+    try {
+      const preflightSource = readFileSync(
+        new URL("./check-ci-preflight.mjs", import.meta.url),
+        "utf8",
+      );
+      assert.equal(
+        [...preflightSource.matchAll(
+          /spawnSync\(\s*"git",\s*\[\s*"--no-replace-objects",\s*"-C",\s*rootDir\(\),/g,
+        )].length,
+        2,
+        "both index-tree reads must disable replacement objects explicitly",
+      );
+      assert.match(
+        preflightSource,
+        /gitEnvironment\.GIT_NO_REPLACE_OBJECTS = "1";/,
+        "the sealed Git environment must disable replacement objects",
+      );
+
+      copyFileSync(
+        runGit(["rev-parse", "--path-format=absolute", "--git-path", "index"]),
+        alternateIndex,
+      );
+      const alternateEnvironment = { ...cleanGitEnvironment, GIT_INDEX_FILE: alternateIndex };
+      runGit(
+        ["update-index", "--force-remove", "--", source],
+        alternateEnvironment,
+      );
+      assert.equal(runGit(["ls-files", "--", source], alternateEnvironment), "");
+
+      const childProbe = `
+        import { readFileSync } from "node:fs";
+        const { evaluateCiPreflight } = await import(${JSON.stringify(
+          new URL("./check-ci-preflight.mjs", import.meta.url).href,
+        )});
+        const failures = evaluateCiPreflight(
+          readFileSync(${JSON.stringify(
+            fileURLToPath(new URL("../.github/workflows/ci.yml", import.meta.url)),
+          )}, "utf8"),
+          readFileSync(${JSON.stringify(
+            fileURLToPath(new URL("../tools/buck/BUCK", import.meta.url)),
+          )}, "utf8"),
+          readFileSync(${JSON.stringify(
+            fileURLToPath(new URL("../.github/actions/free-runner-disk/action.yml", import.meta.url)),
+          )}, "utf8"),
+          JSON.parse(readFileSync(${JSON.stringify(
+            fileURLToPath(new URL("../docs/program/executed-tests-baseline.json", import.meta.url)),
+          )}, "utf8")),
+        ).failures;
+        if (failures.length > 0) {
+          process.stderr.write(failures.join("\\n"));
+          process.exitCode = 1;
+        }
+      `;
+      const child = spawnSync(
+        process.execPath,
+        ["--input-type=module", "--eval", childProbe],
+        {
+          cwd: repositoryRoot,
+          encoding: "utf8",
+          env: {
+            ...cleanGitEnvironment,
+            GIT_INDEX_FILE: alternateIndex,
+          },
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      );
+      assert.equal(child.status, 0, `${child.stdout}\n${child.stderr}`);
+    } finally {
+      rmSync(temporaryRoot, { recursive: true, force: true });
+    }
+  });
+
   it("classifies docs-only narrowly and keeps unmapped or product paths heavy", () => {
     assert.deepEqual(classifyChangedPaths(["docs/program/foo.md"]), {
       pathClass: "docs-only",
@@ -1881,6 +1984,84 @@ describe("CI preflight contract", () => {
       )),
       "domain-unit must use the default shell with no job or step env/defaults overrides",
     );
+  });
+
+  it("derives the ordered domain-unit integration inventory and checks its baseline", () => {
+    const attendance = `          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \\
+            -p console-attendance-application --test attendance_policy
+          check_status "attendance_policy"
+`;
+    const compliance = `          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \\
+            -p console-compliance-domain --test location_consent_fsm --test location_ping_policy
+          check_status "location_consent_fsm + location_ping_policy"
+`;
+    assert.ok(workflow.includes(attendance));
+    assert.ok(workflow.includes(compliance));
+
+    const omit = mutateNamedStep(workflow, "domain-unit", "Domain crate unit tests", (step) =>
+      step.replace(attendance, ""));
+    expectFailure(omit, "domain-unit must execute the locked Cargo test commands directly when run_heavy");
+
+    const insert = mutateNamedStep(workflow, "domain-unit", "Domain crate unit tests", (step) =>
+      step.replace(attendance, `${attendance}          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \\
+            -p console-attendance-application --test phantom_binary
+          check_status "phantom_binary"
+`));
+    expectFailure(
+      insert,
+      "domain-unit integration binary console-attendance-application --test phantom_binary must resolve exactly once through docs/program/executed-tests-baseline.json",
+    );
+
+    const reordered = mutateNamedStep(workflow, "domain-unit", "Domain crate unit tests", (step) =>
+      step.replace(attendance, "<attendance-invocation>")
+        .replace(compliance, attendance)
+        .replace("<attendance-invocation>", compliance));
+    expectFailure(reordered, "domain-unit must execute the locked Cargo test commands directly when run_heavy");
+
+    const changedToken = mutateNamedStep(workflow, "domain-unit", "Domain crate unit tests", (step) =>
+      step.replace("--test attendance_policy", "--test phantom_binary"));
+    expectFailure(
+      changedToken,
+      "domain-unit integration binary console-attendance-application --test phantom_binary must resolve exactly once through docs/program/executed-tests-baseline.json",
+    );
+
+    const attendanceSource =
+      "backend/crates/attendance/application/tests/attendance_policy.rs";
+    const expectAttendanceBaselineFailure = (baselineDocument, mutation) => {
+      const baselineFailures = evaluateCiPreflight(
+        workflow,
+        postgresWrapperBuildFile,
+        freeRunnerDiskAction,
+        baselineDocument,
+      ).failures;
+      assert.ok(
+        baselineFailures.some((failure) => failure.includes(
+          "domain-unit integration binary console-attendance-application --test attendance_policy must resolve exactly once through docs/program/executed-tests-baseline.json",
+        )),
+        `${mutation}:\n${baselineFailures.join("\n")}`,
+      );
+    };
+
+    const missingBaselineEntry = structuredClone(executedTestsBaseline);
+    delete missingBaselineEntry.test_attribute_baseline[attendanceSource];
+    expectAttendanceBaselineFailure(missingBaselineEntry, "missing source");
+
+    for (const alias of [
+      "backend/crates/attendance/application/no_such_dir/../tests/attendance_policy.rs",
+      "backend/crates/attendance/application//tests/attendance_policy.rs",
+      "backend/crates/attendance/application/./tests/attendance_policy.rs",
+      "backend/crates/attendance/Application/tests/attendance_policy.rs",
+    ]) {
+      const aliasedBaselineEntry = structuredClone(executedTestsBaseline);
+      const count = aliasedBaselineEntry.test_attribute_baseline[attendanceSource];
+      delete aliasedBaselineEntry.test_attribute_baseline[attendanceSource];
+      aliasedBaselineEntry.test_attribute_baseline[alias] = count;
+      expectAttendanceBaselineFailure(aliasedBaselineEntry, `noncanonical source ${alias}`);
+    }
+
+    const zeroTestBaselineEntry = structuredClone(executedTestsBaseline);
+    zeroTestBaselineEntry.test_attribute_baseline[attendanceSource] = 0;
+    expectAttendanceBaselineFailure(zeroTestBaselineEntry, "zero-test source");
   });
 
   it("preserves fail-fast backend ordering", () => {
