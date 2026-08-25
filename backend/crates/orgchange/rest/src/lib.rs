@@ -23,17 +23,19 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use console_kernel_core::{ErrorKind, KernelError};
+use console_kernel_core::{BranchId, ErrorKind, KernelError, UserId};
 use console_orgchange_adapter_postgres::{
     CreateOrgChange, DraftPatch, ListFilter, PgOrgChangeError, PgOrgChangeStore,
 };
-use console_orgchange_domain::{OrgChangeKind, OrgChangeStatus, OrgChangeTarget, OrgProposalOp};
+use console_orgchange_domain::{
+    OrgChangeKind, OrgChangeStatus, OrgChangeTarget, OrgProposalOp, TargetKind,
+};
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::{Principal, Role};
+use console_platform_authz::{Action, Feature, Principal, Role, authorize_capability};
 use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use time::Date;
+use time::{Date, OffsetDateTime, macros::offset};
 use uuid::Uuid;
 
 // The workspace `time` build has no `serde-human-readable`, so a bare `Date`
@@ -41,6 +43,10 @@ use uuid::Uuid;
 time::serde::format_description!(iso_date, Date, "[year]-[month]-[day]");
 
 pub const ORG_CHANGE_ROUTE_PATHS: &[&str] = &[
+    "/api/v1/regions",
+    "/api/v1/regions/{id}",
+    "/api/v1/branches",
+    "/api/v1/branches/{id}",
     "/api/v1/org-changes",
     "/api/v1/org-changes/{id}",
     "/api/v1/org-changes/{id}/preflight",
@@ -70,6 +76,19 @@ pub fn router(state: OrgChangeRestState) -> Router {
     let verifier = state.jwt.clone();
     let pool = state.store.pool().clone();
     let r = Router::new()
+        // Legacy org-setup mutations remain at their established URLs, but the
+        // orgchange feature owns the handlers and persists only typed drafts.
+        // Identity mounts the GET methods on these same paths.
+        .route("/api/v1/regions", post(legacy_create_region))
+        .route(
+            "/api/v1/regions/{id}",
+            axum::routing::patch(legacy_update_region).delete(legacy_deactivate_region),
+        )
+        .route("/api/v1/branches", post(legacy_create_branch))
+        .route(
+            "/api/v1/branches/{id}",
+            axum::routing::patch(legacy_update_branch).delete(legacy_deactivate_branch),
+        )
         .route("/api/v1/org-changes", post(create).get(list))
         .route("/api/v1/org-changes/{id}", get(detail).patch(update_draft))
         .route("/api/v1/org-changes/{id}/preflight", post(preflight))
@@ -105,6 +124,34 @@ struct CreateOrgChangeRequest {
     proposal: Vec<OrgProposalOp>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     supersedes_id: Option<Uuid>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LegacyCreateRegionRequest {
+    name: String,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LegacyUpdateRegionRequest {
+    name: String,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LegacyCreateBranchRequest {
+    region_id: Uuid,
+    name: String,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LegacyUpdateBranchRequest {
+    #[serde(default)]
+    region_id: Option<Uuid>,
+    #[serde(default)]
+    name: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -164,6 +211,226 @@ struct ListQuery {
 // ---------------------------------------------------------------------------
 // Handlers
 // ---------------------------------------------------------------------------
+
+async fn legacy_create_region(
+    State(s): State<OrgChangeRestState>,
+    h: HeaderMap,
+    Json(b): Json<LegacyCreateRegionRequest>,
+) -> Result<(StatusCode, Json<serde_json::Value>), RestError> {
+    let p = principal(&s, &h).await?;
+    allow_legacy_draft(&p, Feature::RegionManage)?;
+    let name = b.name.trim().to_owned();
+    draft_legacy_org_proposal(
+        &s,
+        &h,
+        p.user_id,
+        OrgChangeKind::New,
+        OrgChangeTarget {
+            kind: TargetKind::Region,
+            target_ref: Uuid::nil().to_string(),
+            label: name.clone(),
+        },
+        "Create region requested through the legacy org-setup API",
+        vec![OrgProposalOp::CreateRegion { name }],
+    )
+    .await
+}
+
+async fn legacy_update_region(
+    State(s): State<OrgChangeRestState>,
+    h: HeaderMap,
+    Path(id): Path<Uuid>,
+    Json(b): Json<LegacyUpdateRegionRequest>,
+) -> Result<(StatusCode, Json<serde_json::Value>), RestError> {
+    let p = principal(&s, &h).await?;
+    allow_legacy_draft(&p, Feature::RegionManage)?;
+    let name = b.name.trim().to_owned();
+    draft_legacy_org_proposal(
+        &s,
+        &h,
+        p.user_id,
+        OrgChangeKind::Reorg,
+        OrgChangeTarget {
+            kind: TargetKind::Region,
+            target_ref: id.to_string(),
+            label: name.clone(),
+        },
+        "Rename region requested through the legacy org-setup API",
+        vec![OrgProposalOp::RenameRegion {
+            region_id: id,
+            name,
+        }],
+    )
+    .await
+}
+
+async fn legacy_deactivate_region(
+    State(s): State<OrgChangeRestState>,
+    h: HeaderMap,
+    Path(id): Path<Uuid>,
+) -> Result<(StatusCode, Json<serde_json::Value>), RestError> {
+    let p = principal(&s, &h).await?;
+    allow_legacy_draft(&p, Feature::RegionManage)?;
+    draft_legacy_org_proposal(
+        &s,
+        &h,
+        p.user_id,
+        OrgChangeKind::Dissolve,
+        OrgChangeTarget {
+            kind: TargetKind::Region,
+            target_ref: id.to_string(),
+            label: format!("Region {id}"),
+        },
+        "Deactivate region requested through the legacy org-setup API",
+        vec![OrgProposalOp::DeactivateRegion { region_id: id }],
+    )
+    .await
+}
+
+async fn legacy_create_branch(
+    State(s): State<OrgChangeRestState>,
+    h: HeaderMap,
+    Json(b): Json<LegacyCreateBranchRequest>,
+) -> Result<(StatusCode, Json<serde_json::Value>), RestError> {
+    let p = principal(&s, &h).await?;
+    allow_legacy_draft(&p, Feature::BranchManage)?;
+    let name = b.name.trim().to_owned();
+    draft_legacy_org_proposal(
+        &s,
+        &h,
+        p.user_id,
+        OrgChangeKind::New,
+        OrgChangeTarget {
+            kind: TargetKind::Region,
+            target_ref: b.region_id.to_string(),
+            label: name.clone(),
+        },
+        "Create branch requested through the legacy org-setup API",
+        vec![OrgProposalOp::CreateBranch {
+            region_id: b.region_id,
+            name,
+        }],
+    )
+    .await
+}
+
+async fn legacy_update_branch(
+    State(s): State<OrgChangeRestState>,
+    h: HeaderMap,
+    Path(id): Path<Uuid>,
+    Json(b): Json<LegacyUpdateBranchRequest>,
+) -> Result<(StatusCode, Json<serde_json::Value>), RestError> {
+    let p = principal(&s, &h).await?;
+    allow_legacy_draft(&p, Feature::BranchManage)?;
+    conceal_out_of_scope_branch(&p, id)?;
+    let name = b.name.map(|name| name.trim().to_owned());
+    let label = name.clone().unwrap_or_else(|| format!("Branch {id}"));
+    draft_legacy_org_proposal(
+        &s,
+        &h,
+        p.user_id,
+        OrgChangeKind::Reorg,
+        OrgChangeTarget {
+            kind: TargetKind::Branch,
+            target_ref: id.to_string(),
+            label,
+        },
+        "Update branch requested through the legacy org-setup API",
+        vec![OrgProposalOp::RenameBranch {
+            branch_id: id,
+            name,
+            region_id: b.region_id,
+        }],
+    )
+    .await
+}
+
+async fn legacy_deactivate_branch(
+    State(s): State<OrgChangeRestState>,
+    h: HeaderMap,
+    Path(id): Path<Uuid>,
+) -> Result<(StatusCode, Json<serde_json::Value>), RestError> {
+    let p = principal(&s, &h).await?;
+    allow_legacy_draft(&p, Feature::BranchManage)?;
+    conceal_out_of_scope_branch(&p, id)?;
+    draft_legacy_org_proposal(
+        &s,
+        &h,
+        p.user_id,
+        OrgChangeKind::Dissolve,
+        OrgChangeTarget {
+            kind: TargetKind::Branch,
+            target_ref: id.to_string(),
+            label: format!("Branch {id}"),
+        },
+        "Deactivate branch requested through the legacy org-setup API",
+        vec![OrgProposalOp::DeactivateBranch { branch_id: id }],
+    )
+    .await
+}
+
+async fn draft_legacy_org_proposal(
+    s: &OrgChangeRestState,
+    h: &HeaderMap,
+    actor: UserId,
+    kind: OrgChangeKind,
+    target: OrgChangeTarget,
+    reason: &'static str,
+    proposal: Vec<OrgProposalOp>,
+) -> Result<(StatusCode, Json<serde_json::Value>), RestError> {
+    let idempotency_key = idem_header(h)?;
+    let effective_date = OffsetDateTime::now_utc().to_offset(offset!(+9)).date();
+    // `effective_date` is a server-owned default, not part of the caller's
+    // request. Keep it out of the fingerprint so an exact retry that crosses
+    // KST midnight still replays the original draft instead of conflicting.
+    let fingerprint_input = json!({
+        "surface": "identity.org-structure-proposal",
+        "kind": kind,
+        "target": target,
+        "reason": reason,
+        "proposal": proposal,
+    });
+    let (detail, replayed) = s
+        .store
+        .create_legacy_org_setup_proposal(
+            actor,
+            CreateOrgChange {
+                kind,
+                target,
+                effective_date,
+                reason: reason.to_owned(),
+                proposal,
+                supersedes_id: None,
+                idempotency_key,
+                fingerprint_input,
+            },
+        )
+        .await
+        .map_err(RestError::store)?;
+    let status = if replayed {
+        StatusCode::OK
+    } else {
+        StatusCode::CREATED
+    };
+    let body = serde_json::to_value(&detail)
+        .map_err(|_| RestError::internal("response serialization failed"))?;
+    Ok((status, Json(body)))
+}
+
+fn allow_legacy_draft(p: &Principal, feature: Feature) -> Result<(), RestError> {
+    allow_draft(p)?;
+    authorize_capability(p, Action::new(feature)).map_err(RestError::kernel)
+}
+
+fn conceal_out_of_scope_branch(p: &Principal, id: Uuid) -> Result<(), RestError> {
+    if p.branch_scope.allows(BranchId::from_uuid(id)) {
+        Ok(())
+    } else {
+        Err(RestError::kernel(KernelError::not_found(
+            "branch was not found",
+        )))
+    }
+}
 
 async fn create(
     State(s): State<OrgChangeRestState>,

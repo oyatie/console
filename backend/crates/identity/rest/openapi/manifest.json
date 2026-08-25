@@ -398,6 +398,7 @@
     "ErrorBody",
     "MobilePasskeyStepUpBinding",
     "MobileStepUpActionKind",
+    "OrgChangeDetail",
     "PasskeyStepUpAssertion",
     "Timestamp",
     "Uuid"

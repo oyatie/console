@@ -1,9 +1,9 @@
 //! Identity / org-setup REST integration tests.
 //!
-//! Exercises the cold-start org flow end-to-end: an admin creates regions,
-//! branches and users; the IDOR hardening restricts elevated-role grants to
-//! SUPER_ADMIN; and every authenticated user can edit their own profile (the
-//! "Cold Start Admin" fixing its own name).
+//! Exercises identity's applied org reads and user-management flow end-to-end:
+//! the IDOR hardening restricts elevated-role grants to SUPER_ADMIN, and every
+//! authenticated user can edit their own profile. Governed region/branch
+//! mutation routes are exercised through the assembled app in orgchange tests.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::collections::BTreeSet;
@@ -228,36 +228,12 @@ async fn fresh_step_up_assertion(pool: &PgPool, user_id: UserId, display_name: &
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
-async fn admin_creates_region_branch_and_user_then_lists_and_reads(pool: PgPool) {
+async fn admin_manages_users_and_reads_applied_org_structure(pool: PgPool) {
     let harness = Harness::new(pool.clone()).await;
     let admin_branch = seed_branch(&pool).await;
+    let admin_branch_id = admin_branch.to_string();
     let admin = seed_user(&pool, "Branch Admin", &["ADMIN"], Some(admin_branch)).await;
     let token = harness.token(admin, &["ADMIN"], vec![admin_branch]);
-
-    // SUPER_ADMIN is required to create regions/branches? No — ADMIN holds
-    // RegionManage/BranchManage. Create a region.
-    let (status, region) = send(
-        &harness,
-        "POST",
-        "/api/v1/regions",
-        &token,
-        Some(json!({ "name": "수도권" })),
-    )
-    .await;
-    assert_eq!(status, StatusCode::CREATED, "{region:?}");
-    let region_id = region["id"].as_str().unwrap().to_owned();
-
-    // Create a branch in that region.
-    let (status, branch) = send(
-        &harness,
-        "POST",
-        "/api/v1/branches",
-        &token,
-        Some(json!({ "region_id": region_id, "name": "강남지점" })),
-    )
-    .await;
-    assert_eq!(status, StatusCode::CREATED, "{branch:?}");
-    let branch_id = branch["id"].as_str().unwrap().to_owned();
 
     // Create a mechanic in the admin's own branch.
     let (status, user) = send(
@@ -280,19 +256,23 @@ async fn admin_creates_region_branch_and_user_then_lists_and_reads(pool: PgPool)
     assert_eq!(user["is_active"], true);
     let new_user_id = user["id"].as_str().unwrap().to_owned();
 
-    // The branch list (also used for support triage) now returns the new branch.
+    // The branch list (also used for support triage) exposes the applied row.
     let (status, branches) = send(&harness, "GET", "/api/v1/branches", &token, None).await;
     assert_eq!(status, StatusCode::OK);
-    let names: Vec<&str> = branches
+    let ids: Vec<&str> = branches
         .as_array()
         .unwrap()
         .iter()
-        .map(|b| b["name"].as_str().unwrap())
+        .map(|b| b["id"].as_str().unwrap())
         .collect();
-    assert!(names.contains(&"강남지점"), "{names:?}");
+    assert!(
+        ids.contains(&admin_branch_id.as_str()),
+        "seeded branch missing from applied-state read: {ids:?}"
+    );
 
-    // Get-one for an org-unit pin panel (UI-M2a): found → 200 + summary;
+    // Get-one for an applied org-unit pin panel (UI-M2a): found → 200 + summary;
     // an id not in the org → 404 (exercises axum routing + error mapping).
+    let branch_id = admin_branch_id;
     let (status, one) = send(
         &harness,
         "GET",
@@ -303,7 +283,6 @@ async fn admin_creates_region_branch_and_user_then_lists_and_reads(pool: PgPool)
     .await;
     assert_eq!(status, StatusCode::OK, "{one:?}");
     assert_eq!(one["id"], branch_id);
-    assert_eq!(one["name"], "강남지점");
 
     let (status, _missing) = send(
         &harness,
@@ -345,7 +324,6 @@ async fn admin_creates_region_branch_and_user_then_lists_and_reads(pool: PgPool)
         fetched["branch_ids"].as_array().unwrap()[0],
         Value::String(admin_branch.to_string())
     );
-    let _ = branch_id;
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
@@ -1122,18 +1100,8 @@ async fn mechanic_cannot_manage_users(pool: PgPool) {
     let mechanic = seed_user(&pool, "정비공", &["MECHANIC"], Some(branch)).await;
     let token = harness.token(mechanic, &["MECHANIC"], vec![branch]);
 
-    // A mechanic has neither UserManage nor RegionManage.
+    // A mechanic has no UserManage capability.
     let (status, _) = send(&harness, "GET", "/api/v1/users", &token, None).await;
-    assert_eq!(status, StatusCode::FORBIDDEN);
-
-    let (status, _) = send(
-        &harness,
-        "POST",
-        "/api/v1/regions",
-        &token,
-        Some(json!({ "name": "blocked" })),
-    )
-    .await;
     assert_eq!(status, StatusCode::FORBIDDEN);
 
     // But a mechanic CAN edit its own profile and read the branch list.

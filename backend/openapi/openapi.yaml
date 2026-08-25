@@ -2437,9 +2437,20 @@ paths:
       tags:
         - branches
       operationId: createBranch
-      summary: Create a branch inside a region
+      summary: Propose creating a branch inside a region
+      description: Creates a governed DRAFT containing one CREATE_BRANCH proposal. The live branches table is unchanged
+        until the org-change lifecycle is approved and effectuated. Requires an Idempotency-Key; an exact replay returns
+        the existing org-change request with 200.
       security:
       - bearerAuth: []
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+          maxLength: 200
       requestBody:
         required: true
         content:
@@ -2447,12 +2458,18 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateBranchRequest'
       responses:
-        '201':
-          description: Branch created.
+        '200':
+          description: Idempotent replay of the existing org-change request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BranchSummary'
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '201':
+          description: Governed branch-create draft created; no branch row was applied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -2464,22 +2481,25 @@ paths:
         '422':
           $ref: '#/components/responses/ValidationError'
         '503':
-          description: JWT verification is not configured.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorBody'
+          $ref: '#/components/responses/ServiceUnavailable'
   /api/v1/branches/{id}:
     delete:
       tags:
         - branches
       operationId: deactivateBranch
-      summary: Soft-delete (deactivate) a branch
-      description: Soft-deletes a branch. Refused with 409 while the branch still has active users or non-terminal equipment,
-        so live operational data is never orphaned. Returns the deactivated branch.
+      summary: Propose deactivating a branch
+      description: Creates a governed DRAFT containing one DEACTIVATE_BRANCH proposal. The live row is unchanged; preflight
+        and apply retain the active-user and equipment guards.
       security:
       - bearerAuth: []
       parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+          maxLength: 200
       - name: id
         in: path
         required: true
@@ -2487,11 +2507,17 @@ paths:
           $ref: '#/components/schemas/Uuid'
       responses:
         '200':
-          description: Deactivated branch.
+          description: Idempotent replay of the existing org-change request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BranchSummary'
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '201':
+          description: Governed branch-deactivation draft created; no branch row was applied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -2500,12 +2526,10 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
         '503':
-          description: JWT verification is not configured.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorBody'
+          $ref: '#/components/responses/ServiceUnavailable'
     get:
       tags:
         - branches
@@ -2541,9 +2565,17 @@ paths:
         - branches
       operationId: updateBranch
       summary: Rename a branch or move it to another region
+      description: Creates a governed DRAFT containing one RENAME_BRANCH proposal; it does not mutate the live row.
       security:
       - bearerAuth: []
       parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+          maxLength: 200
       - name: id
         in: path
         required: true
@@ -2557,11 +2589,17 @@ paths:
               $ref: '#/components/schemas/UpdateBranchRequest'
       responses:
         '200':
-          description: Updated branch.
+          description: Idempotent replay of the existing org-change request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BranchSummary'
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '201':
+          description: Governed branch-update draft created; no branch row was applied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -2573,11 +2611,7 @@ paths:
         '422':
           $ref: '#/components/responses/ValidationError'
         '503':
-          description: JWT verification is not configured.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorBody'
+          $ref: '#/components/responses/ServiceUnavailable'
   /api/v1/collaboration/calendar/events:
     get:
       tags:
@@ -14245,9 +14279,20 @@ paths:
       tags:
         - regions
       operationId: createRegion
-      summary: Create a region
+      summary: Propose creating a region
+      description: Creates a governed DRAFT containing one CREATE_REGION proposal. The live regions table is unchanged
+        until the org-change lifecycle is approved and effectuated. Requires an Idempotency-Key; an exact replay returns
+        the existing org-change request with 200.
       security:
       - bearerAuth: []
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+          maxLength: 200
       requestBody:
         required: true
         content:
@@ -14255,35 +14300,46 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateRegionRequest'
       responses:
-        '201':
-          description: Region created.
+        '200':
+          description: Idempotent replay of the existing org-change request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegionSummary'
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '201':
+          description: Governed region-create draft created; no region row was applied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
         '422':
           $ref: '#/components/responses/ValidationError'
         '503':
-          description: JWT verification is not configured.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorBody'
+          $ref: '#/components/responses/ServiceUnavailable'
   /api/v1/regions/{id}:
     delete:
       tags:
         - regions
       operationId: deactivateRegion
-      summary: Soft-delete (deactivate) a region
-      description: Soft-deletes a region. Refused with 409 while the region still has active branches, so live tenant data
-        is never orphaned. Returns the deactivated region.
+      summary: Propose deactivating a region
+      description: Creates a governed DRAFT containing one DEACTIVATE_REGION proposal. The live row is unchanged; preflight
+        and apply retain the active-branch guard.
       security:
       - bearerAuth: []
       parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+          maxLength: 200
       - name: id
         in: path
         required: true
@@ -14291,11 +14347,17 @@ paths:
           $ref: '#/components/schemas/Uuid'
       responses:
         '200':
-          description: Deactivated region.
+          description: Idempotent replay of the existing org-change request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegionSummary'
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '201':
+          description: Governed region-deactivation draft created; no region row was applied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -14304,20 +14366,26 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
         '503':
-          description: JWT verification is not configured.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorBody'
+          $ref: '#/components/responses/ServiceUnavailable'
     patch:
       tags:
         - regions
       operationId: updateRegion
       summary: Rename a region
+      description: Creates a governed DRAFT containing one RENAME_REGION proposal; it does not rename the live row.
       security:
       - bearerAuth: []
       parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+          maxLength: 200
       - name: id
         in: path
         required: true
@@ -14331,25 +14399,29 @@ paths:
               $ref: '#/components/schemas/UpdateRegionRequest'
       responses:
         '200':
-          description: Updated region.
+          description: Idempotent replay of the existing org-change request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegionSummary'
+                $ref: '#/components/schemas/OrgChangeDetail'
+        '201':
+          description: Governed region-rename draft created; no region row was applied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgChangeDetail'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
         '422':
           $ref: '#/components/responses/ValidationError'
         '503':
-          description: JWT verification is not configured.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorBody'
+          $ref: '#/components/responses/ServiceUnavailable'
   /api/v1/reporting/work-diary:
     get:
       tags:
@@ -20547,6 +20619,8 @@ components:
           $ref: '#/components/schemas/Uuid'
         name:
           type: string
+          minLength: 1
+          maxLength: 120
     CreateCalendarEventRequest:
       type: object
       required:
@@ -21544,6 +21618,8 @@ components:
       properties:
         name:
           type: string
+          minLength: 1
+          maxLength: 120
     CreateRegulationImpactRequest:
       type: object
       required: [title, jurisdiction, citation, impact_area, impact_summary, risk_level]
@@ -34431,11 +34507,14 @@ components:
           description: The number of the caller's unread notifications.
     UpdateBranchRequest:
       type: object
+      minProperties: 1
       properties:
         region_id:
           $ref: '#/components/schemas/Uuid'
         name:
           type: string
+          minLength: 1
+          maxLength: 120
     UpdateEquipmentRequest:
       type: object
       description: Partial update. Absent keys are left unchanged; nullable keys set to null clear the column.
@@ -34743,9 +34822,13 @@ components:
             $ref: '#/components/schemas/Timestamp'
     UpdateRegionRequest:
       type: object
+      required:
+      - name
       properties:
         name:
           type: string
+          minLength: 1
+          maxLength: 120
     UpdateSelfProfileRequest:
       type: object
       properties:

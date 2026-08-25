@@ -40,7 +40,7 @@ use console_platform_request_context::current_org;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Row, Transaction, postgres::PgRow};
-use std::sync::Arc;
+use std::{collections::BTreeMap, sync::Arc};
 use time::{Date, OffsetDateTime, macros::offset};
 use uuid::Uuid;
 
@@ -560,6 +560,71 @@ async fn compute_preflight(
     let mut restrict_dependents: Vec<Dependent> = Vec::new();
     let mut dependents_total: i64 = 0;
 
+    // Proposal targets can disappear or become unusable after a DRAFT is
+    // written. Re-check them on every preflight/submit so an approval chain is
+    // never spent on a request that apply already knows it cannot effectuate.
+    // Requirements are coalesced by UUID; Active dominates Exists when several
+    // ops refer to the same row.
+    let (region_requirements, branch_requirements) = org_unit_requirements(proposal);
+    let mut unavailable_regions = Vec::new();
+    for (region_id, required) in region_requirements {
+        let row: Option<(Option<OffsetDateTime>,)> =
+            sqlx::query_as("SELECT deactivated_at FROM regions WHERE id = $1")
+                .bind(region_id)
+                .fetch_optional(tx.as_mut())
+                .await?;
+        let available = row.is_some_and(|(deactivated_at,)| {
+            required == RequiredTargetState::Exists || deactivated_at.is_none()
+        });
+        if !available {
+            unavailable_regions.push(region_id);
+        }
+    }
+    let mut unavailable_branches = Vec::new();
+    for (branch_id, required) in branch_requirements {
+        let row: Option<(Option<OffsetDateTime>,)> =
+            sqlx::query_as("SELECT deactivated_at FROM branches WHERE id = $1")
+                .bind(branch_id)
+                .fetch_optional(tx.as_mut())
+                .await?;
+        let available = row.is_some_and(|(deactivated_at,)| {
+            required == RequiredTargetState::Exists || deactivated_at.is_none()
+        });
+        if !available {
+            unavailable_branches.push(branch_id);
+        }
+    }
+    if !unavailable_regions.is_empty() {
+        let count = i64::try_from(unavailable_regions.len()).unwrap_or(i64::MAX);
+        blockers.push(PreflightBlocker {
+            code: "REGION_TARGET_UNAVAILABLE".to_owned(),
+            label: "대상 지역을 찾을 수 없거나 비활성 상태입니다.".to_owned(),
+            dependent_kind: "region".to_owned(),
+            count,
+        });
+        dependents_total += count;
+        restrict_dependents.extend(unavailable_regions.into_iter().map(|id| Dependent {
+            kind: "region".to_owned(),
+            id: id.to_string(),
+            on_delete: OnDelete::Restrict,
+        }));
+    }
+    if !unavailable_branches.is_empty() {
+        let count = i64::try_from(unavailable_branches.len()).unwrap_or(i64::MAX);
+        blockers.push(PreflightBlocker {
+            code: "BRANCH_TARGET_UNAVAILABLE".to_owned(),
+            label: "대상 지점을 찾을 수 없거나 비활성 상태입니다.".to_owned(),
+            dependent_kind: "branch".to_owned(),
+            count,
+        });
+        dependents_total += count;
+        restrict_dependents.extend(unavailable_branches.into_iter().map(|id| Dependent {
+            kind: "branch".to_owned(),
+            id: id.to_string(),
+            on_delete: OnDelete::Restrict,
+        }));
+    }
+
     // Restrict-dependent scan per deactivation op — the same guards the
     // identity referential nets enforce at apply time, surfaced early.
     for op in proposal {
@@ -692,6 +757,62 @@ async fn compute_preflight(
         headcount,
         dependents_total,
     })
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+enum RequiredTargetState {
+    Exists,
+    Active,
+}
+
+fn require_target_state(
+    requirements: &mut BTreeMap<Uuid, RequiredTargetState>,
+    id: Uuid,
+    required: RequiredTargetState,
+) {
+    requirements
+        .entry(id)
+        .and_modify(|current| *current = (*current).max(required))
+        .or_insert(required);
+}
+
+fn org_unit_requirements(
+    proposal: &[OrgProposalOp],
+) -> (
+    BTreeMap<Uuid, RequiredTargetState>,
+    BTreeMap<Uuid, RequiredTargetState>,
+) {
+    let mut regions = BTreeMap::new();
+    let mut branches = BTreeMap::new();
+    for op in proposal {
+        match op {
+            OrgProposalOp::CreateRegion { .. } => {}
+            OrgProposalOp::RenameRegion { region_id, .. } => {
+                require_target_state(&mut regions, *region_id, RequiredTargetState::Exists);
+            }
+            OrgProposalOp::DeactivateRegion { region_id }
+            | OrgProposalOp::CreateBranch { region_id, .. } => {
+                require_target_state(&mut regions, *region_id, RequiredTargetState::Active);
+            }
+            OrgProposalOp::RenameBranch {
+                branch_id,
+                region_id,
+                ..
+            } => {
+                require_target_state(&mut branches, *branch_id, RequiredTargetState::Exists);
+                if let Some(region_id) = region_id {
+                    require_target_state(&mut regions, *region_id, RequiredTargetState::Active);
+                }
+            }
+            OrgProposalOp::DeactivateBranch { branch_id } => {
+                require_target_state(&mut branches, *branch_id, RequiredTargetState::Active);
+            }
+            OrgProposalOp::CreateSite { .. }
+            | OrgProposalOp::UpdateSite { .. }
+            | OrgProposalOp::ReassignOrgUnit { .. } => {}
+        }
+    }
+    (regions, branches)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1196,6 +1317,112 @@ async fn emit_region_or_branch_binding(
 // Store
 // ---------------------------------------------------------------------------
 
+/// Restore the target-state contract of the legacy region/branch mutators
+/// while they act as governed proposal inputs. The caller invokes this only
+/// after resolving an idempotent replay, so a valid retry remains a replay even
+/// when the live target changed after the original DRAFT was accepted.
+async fn validate_legacy_org_setup_targets(
+    tx: Tx<'_, '_>,
+    proposal: &[OrgProposalOp],
+) -> Result<(), PgOrgChangeError> {
+    let [op] = proposal else {
+        return Err(KernelError::validation(
+            "legacy org-setup proposals must contain exactly one operation",
+        )
+        .into());
+    };
+    match op {
+        OrgProposalOp::CreateRegion { .. } => Ok(()),
+        OrgProposalOp::RenameRegion { region_id, .. } => {
+            let exists: Option<Uuid> =
+                sqlx::query_scalar("SELECT id FROM regions WHERE id = $1 FOR UPDATE")
+                    .bind(region_id)
+                    .fetch_optional(tx.as_mut())
+                    .await?;
+            if exists.is_none() {
+                return Err(KernelError::not_found("region not found").into());
+            }
+            Ok(())
+        }
+        OrgProposalOp::DeactivateRegion { region_id } => {
+            let row: Option<(Uuid, Option<OffsetDateTime>)> =
+                sqlx::query_as("SELECT id, deactivated_at FROM regions WHERE id = $1 FOR UPDATE")
+                    .bind(region_id)
+                    .fetch_optional(tx.as_mut())
+                    .await?;
+            let Some((_, deactivated_at)) = row else {
+                return Err(KernelError::not_found("region not found").into());
+            };
+            if deactivated_at.is_some() {
+                return Err(KernelError::conflict("이미 비활성화된 지역입니다.").into());
+            }
+            Ok(())
+        }
+        OrgProposalOp::CreateBranch { region_id, .. } => {
+            validate_legacy_destination_region(tx, *region_id).await
+        }
+        OrgProposalOp::RenameBranch {
+            branch_id,
+            region_id,
+            ..
+        } => {
+            let exists: Option<Uuid> =
+                sqlx::query_scalar("SELECT id FROM branches WHERE id = $1 FOR UPDATE")
+                    .bind(branch_id)
+                    .fetch_optional(tx.as_mut())
+                    .await?;
+            if exists.is_none() {
+                return Err(KernelError::not_found("branch not found").into());
+            }
+            if let Some(region_id) = region_id {
+                validate_legacy_destination_region(tx, *region_id).await?;
+            }
+            Ok(())
+        }
+        OrgProposalOp::DeactivateBranch { branch_id } => {
+            let row: Option<(Uuid, Option<OffsetDateTime>)> =
+                sqlx::query_as("SELECT id, deactivated_at FROM branches WHERE id = $1 FOR UPDATE")
+                    .bind(branch_id)
+                    .fetch_optional(tx.as_mut())
+                    .await?;
+            let Some((_, deactivated_at)) = row else {
+                return Err(KernelError::not_found("branch not found").into());
+            };
+            if deactivated_at.is_some() {
+                return Err(KernelError::conflict("이미 비활성화된 지점입니다.").into());
+            }
+            Ok(())
+        }
+        OrgProposalOp::CreateSite { .. }
+        | OrgProposalOp::UpdateSite { .. }
+        | OrgProposalOp::ReassignOrgUnit { .. } => Err(KernelError::validation(
+            "legacy org-setup proposals only accept region or branch operations",
+        )
+        .into()),
+    }
+}
+
+async fn validate_legacy_destination_region(
+    tx: Tx<'_, '_>,
+    region_id: Uuid,
+) -> Result<(), PgOrgChangeError> {
+    let row: Option<(Uuid, Option<OffsetDateTime>)> =
+        sqlx::query_as("SELECT id, deactivated_at FROM regions WHERE id = $1 FOR UPDATE")
+            .bind(region_id)
+            .fetch_optional(tx.as_mut())
+            .await?;
+    let Some((_, deactivated_at)) = row else {
+        return Err(KernelError::not_found("region not found").into());
+    };
+    if deactivated_at.is_some() {
+        return Err(KernelError::conflict(
+            "비활성화된 지역에는 지점을 추가하거나 이동할 수 없습니다.",
+        )
+        .into());
+    }
+    Ok(())
+}
+
 impl PgOrgChangeStore {
     #[must_use]
     pub fn new(pool: PgPool) -> Self {
@@ -1231,6 +1458,27 @@ impl PgOrgChangeStore {
         &self,
         actor: UserId,
         command: CreateOrgChange,
+    ) -> Result<(OrgChangeDetail, bool), PgOrgChangeError> {
+        self.create_inner(actor, command, false).await
+    }
+
+    /// Compatibility entry point for the six legacy region/branch mutation
+    /// URLs. It shares the normal DRAFT/idempotency transaction, then restores
+    /// their tenant-scoped target validation without granting the REST adapter
+    /// a second SQL writer.
+    pub async fn create_legacy_org_setup_proposal(
+        &self,
+        actor: UserId,
+        command: CreateOrgChange,
+    ) -> Result<(OrgChangeDetail, bool), PgOrgChangeError> {
+        self.create_inner(actor, command, true).await
+    }
+
+    async fn create_inner(
+        &self,
+        actor: UserId,
+        command: CreateOrgChange,
+        validate_legacy_targets: bool,
     ) -> Result<(OrgChangeDetail, bool), PgOrgChangeError> {
         command.target.validate()?;
         validate_proposal(&command.proposal)?;
@@ -1276,6 +1524,10 @@ impl PgOrgChangeStore {
                     let id: Uuid = row.try_get("id")?;
                     let detail = require_detail(tx, id).await?;
                     return Ok(((detail, true), vec![]));
+                }
+
+                if validate_legacy_targets {
+                    validate_legacy_org_setup_targets(tx, &command.proposal).await?;
                 }
 
                 if let Some(supersedes) = command.supersedes_id {

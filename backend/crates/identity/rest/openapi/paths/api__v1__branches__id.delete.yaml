@@ -1,12 +1,19 @@
 tags:
   - branches
 operationId: deactivateBranch
-summary: Soft-delete (deactivate) a branch
-description: Soft-deletes a branch. Refused with 409 while the branch still has active users or non-terminal equipment,
-  so live operational data is never orphaned. Returns the deactivated branch.
+summary: Propose deactivating a branch
+description: Creates a governed DRAFT containing one DEACTIVATE_BRANCH proposal. The live row is unchanged; preflight
+  and apply retain the active-user and equipment guards.
 security:
 - bearerAuth: []
 parameters:
+- name: Idempotency-Key
+  in: header
+  required: true
+  schema:
+    type: string
+    minLength: 16
+    maxLength: 200
 - name: id
   in: path
   required: true
@@ -14,11 +21,17 @@ parameters:
     $ref: '#/components/schemas/Uuid'
 responses:
   '200':
-    description: Deactivated branch.
+    description: Idempotent replay of the existing org-change request.
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/BranchSummary'
+          $ref: '#/components/schemas/OrgChangeDetail'
+  '201':
+    description: Governed branch-deactivation draft created; no branch row was applied.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/OrgChangeDetail'
   '401':
     $ref: '#/components/responses/Unauthorized'
   '403':
@@ -27,9 +40,7 @@ responses:
     $ref: '#/components/responses/NotFound'
   '409':
     $ref: '#/components/responses/Conflict'
+  '422':
+    $ref: '#/components/responses/ValidationError'
   '503':
-    description: JWT verification is not configured.
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/ErrorBody'
+    $ref: '#/components/responses/ServiceUnavailable'

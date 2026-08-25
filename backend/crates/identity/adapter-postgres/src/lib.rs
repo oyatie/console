@@ -21,13 +21,10 @@ use console_identity_application::{
     RegionSummary, ReplacePolicyRoleAssignmentsCommand, UpdateBranchCommand,
     UpdatePolicyRoleCommand, UpdatePolicyRoleStatusCommand, UpdateRegionCommand,
     UpdateSelfProfileCommand, UpdateUserCommand, UserListQuery, UserPage, UserSummary,
-    account_status_for, branch_audit_event, policy_account_audit_event,
-    policy_role_assignment_audit_event, policy_role_audit_event, region_audit_event,
-    user_audit_event,
+    account_status_for, policy_account_audit_event, policy_role_assignment_audit_event,
+    policy_role_audit_event, user_audit_event,
 };
-use console_identity_domain::{
-    Team, normalize_optional_phone, validate_display_name, validate_org_name,
-};
+use console_identity_domain::{Team, normalize_optional_phone, validate_display_name};
 use console_kernel_core::{
     AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, RegionId, TraceContext,
     UserId,
@@ -74,6 +71,13 @@ impl From<sqlx::Error> for PgOrgError {
     fn from(value: sqlx::Error) -> Self {
         Self::Db(DbError::Sqlx(value))
     }
+}
+
+fn direct_org_structure_mutation_refused() -> PgOrgError {
+    KernelError::forbidden(
+        "direct region/branch mutation is disabled; submit an OrgProposal instead",
+    )
+    .into()
 }
 
 #[derive(Debug, Clone)]
@@ -1616,157 +1620,31 @@ impl PgOrgStore {
     // Regions
     // -----------------------------------------------------------------------
 
+    /// Retired direct-write entry point. The compatibility HTTP method now
+    /// creates an org-change draft; keeping this tombstone makes any stale
+    /// in-process caller fail closed before tenant lookup or SQL.
     pub async fn create_region(
         &self,
-        command: CreateRegionCommand,
+        _command: CreateRegionCommand,
     ) -> Result<RegionSummary, PgOrgError> {
-        let org = current_org().map_err(KernelError::from)?;
-        let org_uuid = *org.as_uuid();
-        let name = validate_org_name(&command.name)?;
-        let region_id = RegionId::new();
-        let event = region_audit_event(
-            "region.create",
-            Some(command.actor),
-            region_id,
-            command.trace.clone(),
-            command.occurred_at,
-        )?
-        .with_snapshots(None, Some(serde_json::json!({ "name": name })))
-        .with_org(org);
-
-        with_audit::<_, RegionSummary, PgOrgError>(&self.pool, event, |tx| {
-            Box::pin(async move {
-                sqlx::query(
-                    "INSERT INTO regions (id, name, created_at, org_id) VALUES ($1, $2, $3, $4)",
-                )
-                .bind(*region_id.as_uuid())
-                .bind(&name)
-                .bind(command.occurred_at)
-                .bind(org_uuid)
-                .execute(tx.as_mut())
-                .await?;
-                fetch_region_tx(tx, region_id).await
-            })
-        })
-        .await
+        Err(direct_org_structure_mutation_refused())
     }
 
-    /// Rename a region. Mirrors `update_branch`: org-armed + audited, 404 on an
-    /// unknown id, bounded-text validation via `validate_org_name`.
+    /// Retired direct-write entry point; see [`Self::create_region`].
     pub async fn update_region(
         &self,
-        command: UpdateRegionCommand,
+        _command: UpdateRegionCommand,
     ) -> Result<RegionSummary, PgOrgError> {
-        let org = current_org().map_err(KernelError::from)?;
-        let name = command.name.as_deref().map(validate_org_name).transpose()?;
-        let region_id = command.region_id;
-        let event = region_audit_event(
-            "region.update",
-            Some(command.actor),
-            region_id,
-            command.trace.clone(),
-            command.occurred_at,
-        )?
-        .with_snapshots(
-            None,
-            name.as_ref()
-                .map(|name| serde_json::json!({ "name": name })),
-        )
-        .with_org(org);
-
-        with_audit::<_, RegionSummary, PgOrgError>(&self.pool, event, |tx| {
-            Box::pin(async move {
-                // Lock the row and confirm it exists (and is not already gone) in
-                // the same tenant-armed tx before mutating.
-                let exists: Option<uuid::Uuid> =
-                    sqlx::query_scalar("SELECT id FROM regions WHERE id = $1 FOR UPDATE")
-                        .bind(*region_id.as_uuid())
-                        .fetch_optional(tx.as_mut())
-                        .await?;
-                if exists.is_none() {
-                    return Err(PgOrgError::Domain(KernelError::not_found(
-                        "region not found",
-                    )));
-                }
-                if let Some(name) = &name {
-                    sqlx::query("UPDATE regions SET name = $2 WHERE id = $1")
-                        .bind(*region_id.as_uuid())
-                        .bind(name)
-                        .execute(tx.as_mut())
-                        .await?;
-                }
-                fetch_region_tx(tx, region_id).await
-            })
-        })
-        .await
+        Err(direct_org_structure_mutation_refused())
     }
 
-    /// Soft-delete (deactivate) a region. Refuses with a `Conflict` while the
-    /// region still owns ACTIVE branches — deactivating it would strand them and
-    /// the pickers, so the operator must deactivate/move the branches first. The
-    /// count, the guard, the UPDATE and the audit row all run in ONE tenant-armed
-    /// transaction so the check can never race a concurrent branch insert.
+    /// Retired direct-write entry point; the orgchange apply path owns the
+    /// active-branch referential guard and the eventual soft delete.
     pub async fn deactivate_region(
         &self,
-        command: DeactivateRegionCommand,
+        _command: DeactivateRegionCommand,
     ) -> Result<RegionSummary, PgOrgError> {
-        let org = current_org().map_err(KernelError::from)?;
-        let region_id = command.region_id;
-        let occurred_at = command.occurred_at;
-        let event = region_audit_event(
-            "region.deactivate",
-            Some(command.actor),
-            region_id,
-            command.trace.clone(),
-            occurred_at,
-        )?
-        .with_snapshots(
-            Some(serde_json::json!({ "deactivated_at": null })),
-            Some(serde_json::json!({ "deactivated_at": occurred_at })),
-        )
-        .with_org(org);
-
-        with_audit::<_, RegionSummary, PgOrgError>(&self.pool, event, |tx| {
-            Box::pin(async move {
-                let row: Option<(uuid::Uuid, Option<time::OffsetDateTime>)> = sqlx::query_as(
-                    "SELECT id, deactivated_at FROM regions WHERE id = $1 FOR UPDATE",
-                )
-                .bind(*region_id.as_uuid())
-                .fetch_optional(tx.as_mut())
-                .await?;
-                let Some((_, deactivated_at)) = row else {
-                    return Err(PgOrgError::Domain(KernelError::not_found(
-                        "region not found",
-                    )));
-                };
-                if deactivated_at.is_some() {
-                    return Err(PgOrgError::Domain(KernelError::conflict(
-                        "이미 비활성화된 지역입니다.",
-                    )));
-                }
-
-                // Referential guard: refuse while ACTIVE branches remain.
-                let active_branches: i64 = sqlx::query_scalar(
-                    "SELECT count(*) FROM branches WHERE region_id = $1 AND deactivated_at IS NULL",
-                )
-                .bind(*region_id.as_uuid())
-                .fetch_one(tx.as_mut())
-                .await?;
-                if active_branches > 0 {
-                    return Err(PgOrgError::Domain(KernelError::conflict(
-                        "활성 지점이 남아 있어 지역을 삭제할 수 없습니다. 먼저 지점을 비활성화하거나 이동하세요.",
-                    )));
-                }
-
-                sqlx::query("UPDATE regions SET deactivated_at = $2 WHERE id = $1")
-                    .bind(*region_id.as_uuid())
-                    .bind(occurred_at)
-                    .execute(tx.as_mut())
-                    .await?;
-                fetch_region_tx(tx, region_id).await
-            })
-        })
-        .await
+        Err(direct_org_structure_mutation_refused())
     }
 
     /// List ACTIVE regions (deactivated rows are hidden from the org tree and the
@@ -1791,206 +1669,30 @@ impl PgOrgStore {
     // Branches
     // -----------------------------------------------------------------------
 
+    /// Retired direct-write entry point. The compatibility HTTP method now
+    /// creates an org-change draft and never inserts a live branch.
     pub async fn create_branch(
         &self,
-        command: CreateBranchCommand,
+        _command: CreateBranchCommand,
     ) -> Result<BranchSummary, PgOrgError> {
-        let org = current_org().map_err(KernelError::from)?;
-        let org_uuid = *org.as_uuid();
-        let name = validate_org_name(&command.name)?;
-        let branch_id = BranchId::new();
-        let region_id = command.region_id;
-        let event = branch_audit_event(
-            "branch.create",
-            Some(command.actor),
-            branch_id,
-            command.trace.clone(),
-            command.occurred_at,
-        )?
-        .with_snapshots(
-            None,
-            Some(serde_json::json!({
-                "region_id": region_id.to_string(),
-                "name": name,
-            })),
-        )
-        .with_org(org);
-
-        with_audit::<_, BranchSummary, PgOrgError>(&self.pool, event, |tx| {
-            Box::pin(async move {
-                ensure_region_active_tx(tx, region_id).await?;
-                sqlx::query(
-                    "INSERT INTO branches (id, region_id, name, created_at, org_id) VALUES ($1, $2, $3, $4, $5)",
-                )
-                .bind(*branch_id.as_uuid())
-                .bind(*region_id.as_uuid())
-                .bind(&name)
-                .bind(command.occurred_at)
-                .bind(org_uuid)
-                .execute(tx.as_mut())
-                .await?;
-                fetch_branch_tx(tx, branch_id).await
-            })
-        })
-        .await
+        Err(direct_org_structure_mutation_refused())
     }
 
-    /// Rename a branch and/or move it to another region.
-    ///
-    /// The authorization subject and the mutated object are both branches, so
-    /// they must be compared: a caller may only edit a branch its own scope
-    /// allows (its OWN branch stays editable; `BranchScope::All` keeps every
-    /// branch). Anything else is `not_found`, never `forbidden`, so the
-    /// existence of another branch is not revealed. Checked before the audit
-    /// event is built, so a refused rename writes no audit row.
+    /// Retired direct-write entry point; see [`Self::create_branch`].
     pub async fn update_branch(
         &self,
-        command: UpdateBranchCommand,
+        _command: UpdateBranchCommand,
     ) -> Result<BranchSummary, PgOrgError> {
-        if !command.branch_scope.allows(command.branch_id) {
-            return Err(PgOrgError::Domain(KernelError::not_found(
-                "branch not found",
-            )));
-        }
-        let org = current_org().map_err(KernelError::from)?;
-        let name = command.name.as_deref().map(validate_org_name).transpose()?;
-        let region_id = command.region_id;
-        let branch_id = command.branch_id;
-        // Org-bind the audit row so it is tenant-attributable and the FORCE-RLS
-        // `audit_events` write is armed via the same `with_audit` GUC.
-        let event = branch_audit_event(
-            "branch.update",
-            Some(command.actor),
-            branch_id,
-            command.trace.clone(),
-            command.occurred_at,
-        )?
-        .with_org(org);
-
-        with_audit::<_, BranchSummary, PgOrgError>(&self.pool, event, |tx| {
-            Box::pin(async move {
-                let exists: Option<uuid::Uuid> =
-                    sqlx::query_scalar("SELECT id FROM branches WHERE id = $1 FOR UPDATE")
-                        .bind(*branch_id.as_uuid())
-                        .fetch_optional(tx.as_mut())
-                        .await?;
-                if exists.is_none() {
-                    return Err(PgOrgError::Domain(KernelError::not_found(
-                        "branch not found",
-                    )));
-                }
-                if let Some(region_id) = region_id {
-                    ensure_region_active_tx(tx, region_id).await?;
-                    sqlx::query("UPDATE branches SET region_id = $2 WHERE id = $1")
-                        .bind(*branch_id.as_uuid())
-                        .bind(*region_id.as_uuid())
-                        .execute(tx.as_mut())
-                        .await?;
-                }
-                if let Some(name) = &name {
-                    sqlx::query("UPDATE branches SET name = $2 WHERE id = $1")
-                        .bind(*branch_id.as_uuid())
-                        .bind(name)
-                        .execute(tx.as_mut())
-                        .await?;
-                }
-                fetch_branch_tx(tx, branch_id).await
-            })
-        })
-        .await
+        Err(direct_org_structure_mutation_refused())
     }
 
-    /// Soft-delete (deactivate) a branch. Refuses with a `Conflict` while the
-    /// branch still has ACTIVE users (via `user_branches` → `users.is_active`) or
-    /// NON-TERMINAL equipment (status not in the disposed set '폐기'/'매각') —
-    /// deactivating it would strand live operational data. The guards, the UPDATE
-    /// and the audit row run in ONE tenant-armed transaction.
+    /// Retired direct-write entry point; the orgchange apply path owns the
+    /// dependent-user/equipment guards and the eventual soft delete.
     pub async fn deactivate_branch(
         &self,
-        command: DeactivateBranchCommand,
+        _command: DeactivateBranchCommand,
     ) -> Result<BranchSummary, PgOrgError> {
-        // Same self-referential comparison as `update_branch`: the referential
-        // guards below only protect a POPULATED branch, so an empty or newly
-        // created branch in another scope was deletable without this.
-        if !command.branch_scope.allows(command.branch_id) {
-            return Err(PgOrgError::Domain(KernelError::not_found(
-                "branch not found",
-            )));
-        }
-        let org = current_org().map_err(KernelError::from)?;
-        let branch_id = command.branch_id;
-        let occurred_at = command.occurred_at;
-        let event = branch_audit_event(
-            "branch.deactivate",
-            Some(command.actor),
-            branch_id,
-            command.trace.clone(),
-            occurred_at,
-        )?
-        .with_snapshots(
-            Some(serde_json::json!({ "deactivated_at": null })),
-            Some(serde_json::json!({ "deactivated_at": occurred_at })),
-        )
-        .with_org(org);
-
-        with_audit::<_, BranchSummary, PgOrgError>(&self.pool, event, |tx| {
-            Box::pin(async move {
-                let row: Option<(uuid::Uuid, Option<time::OffsetDateTime>)> = sqlx::query_as(
-                    "SELECT id, deactivated_at FROM branches WHERE id = $1 FOR UPDATE",
-                )
-                .bind(*branch_id.as_uuid())
-                .fetch_optional(tx.as_mut())
-                .await?;
-                let Some((_, deactivated_at)) = row else {
-                    return Err(PgOrgError::Domain(KernelError::not_found(
-                        "branch not found",
-                    )));
-                };
-                if deactivated_at.is_some() {
-                    return Err(PgOrgError::Domain(KernelError::conflict(
-                        "이미 비활성화된 지점입니다.",
-                    )));
-                }
-
-                // Referential guard 1: ACTIVE users assigned to this branch.
-                let active_users: i64 = sqlx::query_scalar(
-                    "SELECT count(*) FROM user_branches ub \
-                     JOIN users u ON u.id = ub.user_id \
-                     WHERE ub.branch_id = $1 AND u.is_active = true",
-                )
-                .bind(*branch_id.as_uuid())
-                .fetch_one(tx.as_mut())
-                .await?;
-                if active_users > 0 {
-                    return Err(PgOrgError::Domain(KernelError::conflict(
-                        "이 지점에 배정된 활성 사용자가 있어 삭제할 수 없습니다. 먼저 사용자를 재배정하거나 비활성화하세요.",
-                    )));
-                }
-
-                // Referential guard 2: NON-TERMINAL equipment in this branch
-                // ('폐기' 폐기/scrapped and '매각' 매각/sold are terminal states).
-                let active_equipment: i64 = sqlx::query_scalar(
-                    "SELECT count(*) FROM registry_equipment \
-                     WHERE branch_id = $1 AND status NOT IN ('폐기', '매각')",
-                )
-                .bind(*branch_id.as_uuid())
-                .fetch_one(tx.as_mut())
-                .await?;
-                if active_equipment > 0 {
-                    return Err(PgOrgError::Domain(KernelError::conflict(
-                        "이 지점에 등록된 장비가 있어 삭제할 수 없습니다. 먼저 장비를 다른 지점으로 이동하거나 폐기·매각 처리하세요.",
-                    )));
-                }
-
-                sqlx::query("UPDATE branches SET deactivated_at = $2 WHERE id = $1")
-                    .bind(*branch_id.as_uuid())
-                    .bind(occurred_at)
-                    .execute(tx.as_mut())
-                    .await?;
-                fetch_branch_tx(tx, branch_id).await
-            })
-        })
-        .await
+        Err(direct_org_structure_mutation_refused())
     }
 
     /// List ACTIVE branches (deactivated rows are hidden). Used both for org setup
@@ -2468,33 +2170,6 @@ fn normalize_system_roles(roles: Vec<String>) -> Vec<String> {
         .collect()
 }
 
-/// Refuse to create or re-parent a branch under a DEACTIVATED region
-/// (console-lx6). The region row is locked `FOR UPDATE` so a concurrent
-/// `deactivate_region` cannot slip between this check and the branch
-/// INSERT/UPDATE; a stale picker `region_id` deactivated in the meantime fails
-/// closed here instead of stranding the branch outside the org tree.
-async fn ensure_region_active_tx(
-    tx: &mut Transaction<'_, Postgres>,
-    region_id: RegionId,
-) -> Result<(), PgOrgError> {
-    let row: Option<(uuid::Uuid, Option<time::OffsetDateTime>)> =
-        sqlx::query_as("SELECT id, deactivated_at FROM regions WHERE id = $1 FOR UPDATE")
-            .bind(*region_id.as_uuid())
-            .fetch_optional(tx.as_mut())
-            .await?;
-    let Some((_, deactivated_at)) = row else {
-        return Err(PgOrgError::Domain(KernelError::not_found(
-            "region not found",
-        )));
-    };
-    if deactivated_at.is_some() {
-        return Err(PgOrgError::Domain(KernelError::conflict(
-            "비활성화된 지역에는 지점을 추가하거나 이동할 수 없습니다.",
-        )));
-    }
-    Ok(())
-}
-
 /// The outcome of a user deactivation attempt: a real transition, or a no-op
 /// replay of an already-inactive user. The no-op arm still commits a credential
 /// sweep before the caller is told the transition was redundant.
@@ -2837,17 +2512,6 @@ fn user_from_row(
     })
 }
 
-async fn fetch_region_tx(
-    tx: &mut Transaction<'_, Postgres>,
-    region_id: RegionId,
-) -> Result<RegionSummary, PgOrgError> {
-    let row = sqlx::query("SELECT id, name, deactivated_at, created_at FROM regions WHERE id = $1")
-        .bind(*region_id.as_uuid())
-        .fetch_one(tx.as_mut())
-        .await?;
-    region_from_row(&row)
-}
-
 fn region_from_row(row: &sqlx::postgres::PgRow) -> Result<RegionSummary, PgOrgError> {
     Ok(RegionSummary {
         id: RegionId::from_uuid(row.try_get("id")?),
@@ -2855,19 +2519,6 @@ fn region_from_row(row: &sqlx::postgres::PgRow) -> Result<RegionSummary, PgOrgEr
         deactivated_at: row.try_get("deactivated_at")?,
         created_at: row.try_get("created_at")?,
     })
-}
-
-async fn fetch_branch_tx(
-    tx: &mut Transaction<'_, Postgres>,
-    branch_id: BranchId,
-) -> Result<BranchSummary, PgOrgError> {
-    let row = sqlx::query(
-        "SELECT id, region_id, name, deactivated_at, created_at FROM branches WHERE id = $1",
-    )
-    .bind(*branch_id.as_uuid())
-    .fetch_one(tx.as_mut())
-    .await?;
-    branch_from_row(&row)
 }
 
 fn branch_from_row(row: &sqlx::postgres::PgRow) -> Result<BranchSummary, PgOrgError> {

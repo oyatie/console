@@ -227,11 +227,6 @@ async fn seed_approved(
 ) -> Uuid {
     let id = Uuid::new_v4();
     let proposal_json = serde_json::to_value(&proposal).unwrap();
-    let code = format!(
-        "OC-{}-{:04}",
-        today_kst().year(),
-        (id.as_u128() % 9000) + 1000
-    );
     let fingerprint = format!("{:064x}", id.as_u128());
     let mut tx = pool.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
@@ -239,6 +234,20 @@ async fn seed_approved(
         .execute(tx.as_mut())
         .await
         .unwrap();
+    // Mirror the production allocator instead of truncating a UUID into a
+    // collision-prone four-digit fixture code. Calls in this story are
+    // sequential and the tenant-armed transaction sees every prior seed.
+    let year = today_kst().year();
+    let prefix = format!("OC-{year}-");
+    let last: Option<i64> = sqlx::query_scalar(
+        "SELECT max((substring(code FROM 9))::bigint) \
+         FROM org_change_requests WHERE code LIKE $1",
+    )
+    .bind(format!("{prefix}%"))
+    .fetch_one(tx.as_mut())
+    .await
+    .unwrap();
+    let code = format!("{prefix}{:04}", last.unwrap_or(0) + 1);
     sqlx::query(
         "INSERT INTO org_change_requests \
          (id, org_id, code, kind, status, target_kind, target_ref, target_label, \

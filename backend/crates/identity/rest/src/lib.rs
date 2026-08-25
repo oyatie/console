@@ -3,14 +3,13 @@
 //! Authenticated, authz-gated endpoints for the org-setup flow:
 //!   * Users  — `/api/v1/users` (create/list/get/update/deactivate) and the
 //!     self-profile pair `/api/v1/users/me`.
-//!   * Regions — `/api/v1/regions` (list/create) and `/api/v1/regions/{id}`
-//!     (update/deactivate).
-//!   * Branches — `/api/v1/branches` (list/create) and `/api/v1/branches/{id}`
-//!     (update/deactivate); the list also backs support-ticket triage.
+//!   * Regions — read-only applied-state listing at `/api/v1/regions`.
+//!   * Branches — read-only applied-state list/detail; the list also backs
+//!     support-ticket triage.
 //!
-//! Region/branch deactivation is a SOFT delete guarded against orphaning live
-//! tenant data: deactivating a region with active branches, or a branch with
-//! active users / non-terminal equipment, is refused with a 409.
+//! The orgchange REST owner mounts the legacy region/branch mutation methods at
+//! composition time. Those methods create governed proposals; identity itself
+//! has no live org-structure write route.
 //!
 //! Authorization mirrors the IDOR-hardening in `issue_admin_otp`: creating or
 //! newly promoting a user into EXECUTIVE/SUPER_ADMIN is restricted to
@@ -32,19 +31,17 @@ use axum::routing::{delete, get, patch, post, put};
 use axum::{Json, Router};
 use console_identity_adapter_postgres::{PgOrgError, PgOrgStore};
 use console_identity_application::{
-    ActivateUserCommand, CreateBranchCommand, CreatePolicyAssignmentPreviewReceiptCommand,
-    CreatePolicyRoleCommand, CreateRegionCommand, CreateUserCommand, DeactivateBranchCommand,
-    DeactivateRegionCommand, DeactivateUserCommand, DirectoryListQuery, MAX_DIRECTORY_PAGE_LIMIT,
+    ActivateUserCommand, CreatePolicyAssignmentPreviewReceiptCommand, CreatePolicyRoleCommand,
+    CreateUserCommand, DeactivateUserCommand, DirectoryListQuery, MAX_DIRECTORY_PAGE_LIMIT,
     PolicyAuditEventSummary, PolicyRoleAssignmentSummary, PolicyRoleCondition,
     PolicyRolePermission, PolicyRoleSummary, PolicyVersionSummary,
-    ReplacePolicyRoleAssignmentsCommand, UpdateBranchCommand, UpdatePolicyRoleCommand,
-    UpdatePolicyRoleStatusCommand, UpdateRegionCommand, UpdateSelfProfileCommand,
-    UpdateUserCommand, UserListQuery, UserSummary,
+    ReplacePolicyRoleAssignmentsCommand, UpdatePolicyRoleCommand, UpdatePolicyRoleStatusCommand,
+    UpdateSelfProfileCommand, UpdateUserCommand, UserListQuery, UserSummary,
 };
 use console_identity_domain::{Team, normalize_directory_search};
 use console_kernel_core::{
-    AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, RegionId,
-    TraceContext, UserId,
+    AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
+    UserId,
 };
 use console_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
 use console_platform_authz::cedar_pbac::{engine, map::canonical_coexistence_map};
@@ -237,18 +234,9 @@ pub fn router(state: IdentityRestState) -> Router {
         .route(USER_PATH_TEMPLATE, get(get_user).patch(update_user))
         .route(USER_DEACTIVATE_PATH_TEMPLATE, post(deactivate_user))
         .route(USER_ACTIVATE_PATH_TEMPLATE, post(activate_user))
-        .route(REGIONS_PATH, get(list_regions).post(create_region))
-        .route(
-            REGION_PATH_TEMPLATE,
-            patch(update_region).delete(deactivate_region),
-        )
-        .route(BRANCHES_PATH, get(list_branches).post(create_branch))
-        .route(
-            BRANCH_PATH_TEMPLATE,
-            get(get_branch)
-                .patch(update_branch)
-                .delete(deactivate_branch),
-        )
+        .route(REGIONS_PATH, get(list_regions))
+        .route(BRANCHES_PATH, get(list_branches))
+        .route(BRANCH_PATH_TEMPLATE, get(get_branch))
         .route(PASSKEYS_PATH, get(list_passkeys))
         .route(PASSKEY_PATH_TEMPLATE, delete(delete_passkey))
         .route(POLICY_FEATURES_PATH, get(list_policy_features))
@@ -432,31 +420,6 @@ fn parse_directory_team(value: &str) -> Result<Team, RestError> {
         "RECEPTION" => Ok(Team::Reception),
         _ => Err(RestError::validation("team is invalid")),
     }
-}
-
-#[derive(Debug, Deserialize)]
-struct CreateRegionRequest {
-    name: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct CreateBranchRequest {
-    region_id: RegionId,
-    name: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct UpdateRegionRequest {
-    #[serde(default)]
-    name: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-struct UpdateBranchRequest {
-    #[serde(default)]
-    region_id: Option<RegionId>,
-    #[serde(default)]
-    name: Option<String>,
 }
 
 /// A passkey credential summary for the self-service management surface.
@@ -3713,73 +3676,6 @@ async fn list_regions(
     Ok(Json(regions))
 }
 
-async fn create_region(
-    State(state): State<IdentityRestState>,
-    headers: HeaderMap,
-    Json(body): Json<CreateRegionRequest>,
-) -> Result<impl IntoResponse, RestError> {
-    let principal = principal_from_headers(&state, &headers).await?;
-    authorize_org_manage(&principal, Feature::RegionManage)?;
-    let summary = state
-        .store
-        .create_region(CreateRegionCommand {
-            actor: principal.user_id,
-            name: body.name,
-            trace: TraceContext::generate(),
-            occurred_at: OffsetDateTime::now_utc(),
-        })
-        .await
-        .map_err(RestError::from_store)?;
-    Ok((StatusCode::CREATED, Json(summary)))
-}
-
-/// Rename a region. Mirrors `update_branch`: same `RegionManage` authority as
-/// `create_region`, org-armed + audited in the adapter, 404 on an unknown id.
-async fn update_region(
-    State(state): State<IdentityRestState>,
-    headers: HeaderMap,
-    Path(id): Path<uuid::Uuid>,
-    Json(body): Json<UpdateRegionRequest>,
-) -> Result<impl IntoResponse, RestError> {
-    let principal = principal_from_headers(&state, &headers).await?;
-    authorize_org_manage(&principal, Feature::RegionManage)?;
-    let summary = state
-        .store
-        .update_region(UpdateRegionCommand {
-            actor: principal.user_id,
-            region_id: RegionId::from_uuid(id),
-            name: body.name,
-            trace: TraceContext::generate(),
-            occurred_at: OffsetDateTime::now_utc(),
-        })
-        .await
-        .map_err(RestError::from_store)?;
-    Ok(Json(summary))
-}
-
-/// Soft-delete (deactivate) a region. The adapter refuses with a 409 while the
-/// region still owns active branches (referential guard), so live tenant data is
-/// never orphaned. 404 on an unknown id; audited.
-async fn deactivate_region(
-    State(state): State<IdentityRestState>,
-    headers: HeaderMap,
-    Path(id): Path<uuid::Uuid>,
-) -> Result<impl IntoResponse, RestError> {
-    let principal = principal_from_headers(&state, &headers).await?;
-    authorize_org_manage(&principal, Feature::RegionManage)?;
-    let summary = state
-        .store
-        .deactivate_region(DeactivateRegionCommand {
-            actor: principal.user_id,
-            region_id: RegionId::from_uuid(id),
-            trace: TraceContext::generate(),
-            occurred_at: OffsetDateTime::now_utc(),
-        })
-        .await
-        .map_err(RestError::from_store)?;
-    Ok(Json(summary))
-}
-
 // ---------------------------------------------------------------------------
 // Branch handlers
 // ---------------------------------------------------------------------------
@@ -3820,75 +3716,6 @@ async fn get_branch(
         .find(|b| b.id.as_uuid() == &id)
         .ok_or_else(|| RestError::from_kernel(KernelError::not_found("branch was not found")))?;
     Ok(Json(branch))
-}
-
-async fn create_branch(
-    State(state): State<IdentityRestState>,
-    headers: HeaderMap,
-    Json(body): Json<CreateBranchRequest>,
-) -> Result<impl IntoResponse, RestError> {
-    let principal = principal_from_headers(&state, &headers).await?;
-    authorize_org_manage(&principal, Feature::BranchManage)?;
-    let summary = state
-        .store
-        .create_branch(CreateBranchCommand {
-            actor: principal.user_id,
-            region_id: body.region_id,
-            name: body.name,
-            trace: TraceContext::generate(),
-            occurred_at: OffsetDateTime::now_utc(),
-        })
-        .await
-        .map_err(RestError::from_store)?;
-    Ok((StatusCode::CREATED, Json(summary)))
-}
-
-async fn update_branch(
-    State(state): State<IdentityRestState>,
-    headers: HeaderMap,
-    Path(id): Path<uuid::Uuid>,
-    Json(body): Json<UpdateBranchRequest>,
-) -> Result<impl IntoResponse, RestError> {
-    let principal = principal_from_headers(&state, &headers).await?;
-    authorize_org_manage(&principal, Feature::BranchManage)?;
-    let summary = state
-        .store
-        .update_branch(UpdateBranchCommand {
-            actor: principal.user_id,
-            branch_scope: principal.branch_scope.clone(),
-            branch_id: BranchId::from_uuid(id),
-            region_id: body.region_id,
-            name: body.name,
-            trace: TraceContext::generate(),
-            occurred_at: OffsetDateTime::now_utc(),
-        })
-        .await
-        .map_err(RestError::from_store)?;
-    Ok(Json(summary))
-}
-
-/// Soft-delete (deactivate) a branch. The adapter refuses with a 409 while the
-/// branch still has active users or non-terminal equipment (referential guard),
-/// so live operational data is never orphaned. 404 on an unknown id; audited.
-async fn deactivate_branch(
-    State(state): State<IdentityRestState>,
-    headers: HeaderMap,
-    Path(id): Path<uuid::Uuid>,
-) -> Result<impl IntoResponse, RestError> {
-    let principal = principal_from_headers(&state, &headers).await?;
-    authorize_org_manage(&principal, Feature::BranchManage)?;
-    let summary = state
-        .store
-        .deactivate_branch(DeactivateBranchCommand {
-            actor: principal.user_id,
-            branch_scope: principal.branch_scope.clone(),
-            branch_id: BranchId::from_uuid(id),
-            trace: TraceContext::generate(),
-            occurred_at: OffsetDateTime::now_utc(),
-        })
-        .await
-        .map_err(RestError::from_store)?;
-    Ok(Json(summary))
 }
 
 // ---------------------------------------------------------------------------

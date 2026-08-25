@@ -361,6 +361,60 @@ fn openapi_yaml_covers_configured_route_inventory() {
             );
         }
     }
+
+    // All six legacy org-setup mutation operations require an idempotency key
+    // (422 when absent/invalid) and can conflict on key reuse or live target
+    // state (409). Assert per operation: a path-level scan would let DELETE's
+    // response accidentally mask a missing PATCH response, or vice versa.
+    for (method, path) in [
+        ("post", "/api/v1/regions"),
+        ("patch", "/api/v1/regions/{id}"),
+        ("delete", "/api/v1/regions/{id}"),
+        ("post", "/api/v1/branches"),
+        ("patch", "/api/v1/branches/{id}"),
+        ("delete", "/api/v1/branches/{id}"),
+    ] {
+        let operation = openapi_operation_body(OPENAPI_YAML, path, method);
+        for status in ["409", "422"] {
+            assert!(
+                operation.contains(&format!("        '{status}':")),
+                "OpenAPI {method} {path} must document its reachable {status} response"
+            );
+        }
+    }
+}
+
+fn openapi_operation_body<'a>(yaml: &'a str, path: &str, method: &str) -> &'a str {
+    let path_needle = format!("  {path}:\n");
+    let path_start = yaml
+        .find(&path_needle)
+        .unwrap_or_else(|| panic!("OpenAPI YAML must define {path}"));
+    let path_end = yaml[path_start + path_needle.len()..]
+        .find("\n  /")
+        .map_or(yaml.len(), |offset| {
+            path_start + path_needle.len() + offset + 1
+        });
+    let path_body = &yaml[path_start..path_end];
+    let method_needle = format!("    {method}:\n");
+    let method_start = path_body
+        .find(&method_needle)
+        .unwrap_or_else(|| panic!("OpenAPI YAML must define {method} {path}"));
+    let after_method = method_start + method_needle.len();
+    let mut method_end = path_body.len();
+    let mut offset = after_method;
+    for line in path_body[after_method..].split_inclusive('\n') {
+        let trimmed = line.trim_end();
+        if line.starts_with("    ")
+            && !line.starts_with("     ")
+            && trimmed.ends_with(':')
+            && is_openapi_method(trimmed.trim_end_matches(':').trim())
+        {
+            method_end = offset;
+            break;
+        }
+        offset += line.len();
+    }
+    &path_body[method_start..method_end]
 }
 
 fn openapi_schema_body<'a>(yaml: &'a str, schema_name: &str) -> &'a str {

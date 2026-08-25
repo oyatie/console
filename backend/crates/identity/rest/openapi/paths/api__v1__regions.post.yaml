@@ -1,9 +1,20 @@
 tags:
   - regions
 operationId: createRegion
-summary: Create a region
+summary: Propose creating a region
+description: Creates a governed DRAFT containing one CREATE_REGION proposal. The live regions table is unchanged
+  until the org-change lifecycle is approved and effectuated. Requires an Idempotency-Key; an exact replay returns
+  the existing org-change request with 200.
 security:
 - bearerAuth: []
+parameters:
+- name: Idempotency-Key
+  in: header
+  required: true
+  schema:
+    type: string
+    minLength: 16
+    maxLength: 200
 requestBody:
   required: true
   content:
@@ -11,21 +22,25 @@ requestBody:
       schema:
         $ref: '#/components/schemas/CreateRegionRequest'
 responses:
-  '201':
-    description: Region created.
+  '200':
+    description: Idempotent replay of the existing org-change request.
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/RegionSummary'
+          $ref: '#/components/schemas/OrgChangeDetail'
+  '201':
+    description: Governed region-create draft created; no region row was applied.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/OrgChangeDetail'
   '401':
     $ref: '#/components/responses/Unauthorized'
   '403':
     $ref: '#/components/responses/Forbidden'
+  '409':
+    $ref: '#/components/responses/Conflict'
   '422':
     $ref: '#/components/responses/ValidationError'
   '503':
-    description: JWT verification is not configured.
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/ErrorBody'
+    $ref: '#/components/responses/ServiceUnavailable'

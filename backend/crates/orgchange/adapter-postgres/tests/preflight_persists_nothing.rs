@@ -75,6 +75,29 @@ async fn preflight_persists_nothing_across_every_table(pool: PgPool) {
         let report = detail.preflight.expect("preflight report is returned");
         assert!(report.blockers.is_empty(), "clean proposal: {report:?}");
         assert!(!report.stale);
+
+        // The proposal was valid when drafted, but its CreateBranch target can
+        // become unusable before approval. Preflight must both detect that
+        // transition and remain a strict zero-write read.
+        deactivate_region(&pool, org, region).await;
+        let unavailable_before = db_fingerprint(&pool, org).await;
+        let unavailable = store.preflight(drafter, id).await.unwrap();
+        let unavailable_after = db_fingerprint(&pool, org).await;
+        assert_eq!(
+            diff(&unavailable_before, &unavailable_after),
+            Vec::<String>::new(),
+            "target revalidation during preflight must persist nothing"
+        );
+        let report = unavailable
+            .preflight
+            .expect("unavailable-target preflight report is returned");
+        assert!(
+            report
+                .blockers
+                .iter()
+                .any(|blocker| blocker.code == "REGION_TARGET_UNAVAILABLE" && blocker.count == 1),
+            "a deactivated CreateBranch destination must block approval: {report:?}"
+        );
     })
     .await;
 }
@@ -98,6 +121,7 @@ async fn preflight_persists_nothing_even_when_it_finds_blockers(pool: PgPool) {
             .await
             .unwrap();
         let id = created.summary.id;
+        deactivate_branch(&pool, org, branch).await;
 
         let before = db_fingerprint(&pool, org).await;
         let detail = store.preflight(drafter, id).await.unwrap();
@@ -112,6 +136,13 @@ async fn preflight_persists_nothing_even_when_it_finds_blockers(pool: PgPool) {
         assert!(
             report.blockers.iter().any(|b| b.code == "ACTIVE_USERS"),
             "active resident user is a blocker: {report:?}"
+        );
+        assert!(
+            report
+                .blockers
+                .iter()
+                .any(|b| b.code == "BRANCH_TARGET_UNAVAILABLE" && b.count == 1),
+            "a deactivated proposal target is independently unavailable: {report:?}"
         );
     })
     .await;
@@ -399,6 +430,40 @@ async fn seed_region(pool: &PgPool, org: OrgId, name: &str) -> Uuid {
         .fetch_one(pool)
         .await
         .unwrap()
+}
+
+async fn deactivate_region(pool: &PgPool, org: OrgId, region: Uuid) {
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(org.as_uuid().to_string())
+        .execute(tx.as_mut())
+        .await
+        .unwrap();
+    let changed = sqlx::query("UPDATE regions SET deactivated_at = now() WHERE id = $1")
+        .bind(region)
+        .execute(tx.as_mut())
+        .await
+        .unwrap()
+        .rows_affected();
+    assert_eq!(changed, 1, "fixture must deactivate the proposal target");
+    tx.commit().await.unwrap();
+}
+
+async fn deactivate_branch(pool: &PgPool, org: OrgId, branch: Uuid) {
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(org.as_uuid().to_string())
+        .execute(tx.as_mut())
+        .await
+        .unwrap();
+    let changed = sqlx::query("UPDATE branches SET deactivated_at = now() WHERE id = $1")
+        .bind(branch)
+        .execute(tx.as_mut())
+        .await
+        .unwrap()
+        .rows_affected();
+    assert_eq!(changed, 1, "fixture must deactivate the proposal target");
+    tx.commit().await.unwrap();
 }
 
 async fn seed_branch(pool: &PgPool, org: OrgId, region: Uuid, name: &str) -> Uuid {

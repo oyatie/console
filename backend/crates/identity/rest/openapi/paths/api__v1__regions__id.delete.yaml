@@ -1,12 +1,19 @@
 tags:
   - regions
 operationId: deactivateRegion
-summary: Soft-delete (deactivate) a region
-description: Soft-deletes a region. Refused with 409 while the region still has active branches, so live tenant data
-  is never orphaned. Returns the deactivated region.
+summary: Propose deactivating a region
+description: Creates a governed DRAFT containing one DEACTIVATE_REGION proposal. The live row is unchanged; preflight
+  and apply retain the active-branch guard.
 security:
 - bearerAuth: []
 parameters:
+- name: Idempotency-Key
+  in: header
+  required: true
+  schema:
+    type: string
+    minLength: 16
+    maxLength: 200
 - name: id
   in: path
   required: true
@@ -14,11 +21,17 @@ parameters:
     $ref: '#/components/schemas/Uuid'
 responses:
   '200':
-    description: Deactivated region.
+    description: Idempotent replay of the existing org-change request.
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/RegionSummary'
+          $ref: '#/components/schemas/OrgChangeDetail'
+  '201':
+    description: Governed region-deactivation draft created; no region row was applied.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/OrgChangeDetail'
   '401':
     $ref: '#/components/responses/Unauthorized'
   '403':
@@ -27,9 +40,7 @@ responses:
     $ref: '#/components/responses/NotFound'
   '409':
     $ref: '#/components/responses/Conflict'
+  '422':
+    $ref: '#/components/responses/ValidationError'
   '503':
-    description: JWT verification is not configured.
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/ErrorBody'
+    $ref: '#/components/responses/ServiceUnavailable'

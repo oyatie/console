@@ -20,6 +20,7 @@ const EXTERNAL_SCHEMAS: &[&str] = &[
     "ErrorBody",
     "MobilePasskeyStepUpBinding",
     "MobileStepUpActionKind",
+    "OrgChangeDetail",
     "PasskeyStepUpAssertion",
     "Timestamp",
     "Uuid",
