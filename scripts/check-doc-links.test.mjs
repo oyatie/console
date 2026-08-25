@@ -1,13 +1,22 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { copyFile, mkdtemp, mkdir, readFile, symlink, unlink, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import {
+  documentationArchiveMessage,
+  documentationArchiveRef,
+  validateDocumentationArchives,
+} from "./console/validate-documentation-archive.mjs";
 const run = promisify(execFile);
 const script = join(process.cwd(), "scripts/check-doc-links.mjs");
 const generator = join(process.cwd(), "scripts/console/generate-documentation-manifest.mjs");
+const archiveValidator = join(process.cwd(), "scripts/console/validate-documentation-archive.mjs");
+const signaturePolicy = join(process.cwd(), "scripts/console/ssh-signature-policy.mjs");
 const classVocabulary = [
   "current",
   "decision",
@@ -161,6 +170,147 @@ async function makeIndexedRepo(index, extraFiles = {}) {
   );
   await run("git", ["add", "docs/documentation-index.json"], { cwd: root });
   return root;
+}
+
+function gitBlobOid(contents) {
+  const bytes = Buffer.from(contents);
+  return createHash("sha1")
+    .update(`blob ${bytes.length}\0`)
+    .update(bytes)
+    .digest("hex");
+}
+
+async function makeSshAuthority(directory, name, principal) {
+  const key = join(directory, name);
+  await run("ssh-keygen", ["-q", "-t", "ed25519", "-N", "", "-C", principal, "-f", key]);
+  const publicKey = (await readFile(`${key}.pub`, "utf8")).trim().split(/\s+/).slice(0, 2).join(" ");
+  const { stdout } = await run("ssh-keygen", ["-lf", `${key}.pub`, "-E", "sha256"]);
+  return {
+    key,
+    principal,
+    fingerprint: stdout.trim().split(/\s+/)[1],
+    policy: `${principal} ${publicKey}\n`,
+  };
+}
+
+async function makeArchiveFixture(options = {}) {
+  const directory = await mkdtemp(join(tmpdir(), "doc-archive-contract-"));
+  const principal = "archive-test@example.com";
+  const trusted = await makeSshAuthority(directory, "trusted", principal);
+  const forged = await makeSshAuthority(directory, "forged", principal);
+  const authority = { format: "ssh", principal, fingerprint: trusted.fingerprint };
+  const path = options.path ?? "docs/archive-history.md";
+  const liveContents = options.liveContents ?? "# Archived history\n";
+  const archivePath = options.archivePath ?? path;
+  const archiveContents = options.archiveContents ?? liveContents;
+  const record = {
+    path,
+    class: options.class ?? "historical",
+    owner: "repository maintainers",
+    status: options.status ?? "frozen",
+    replacement: null,
+    retention: "retain",
+    blob_sha: gitBlobOid(liveContents),
+    archive_tag: null,
+  };
+  const ref = documentationArchiveRef(record);
+  const internalRef = options.internalRef ?? ref;
+  const message = options.message ?? documentationArchiveMessage(record);
+
+  const archiveSource = join(directory, "archive-source");
+  await mkdir(archiveSource);
+  await run("git", ["init", "-q"], { cwd: archiveSource });
+  await run("git", ["config", "user.name", "Archive Test"], { cwd: archiveSource });
+  await run("git", ["config", "user.email", principal], { cwd: archiveSource });
+  await mkdir(join(archiveSource, archivePath, ".."), { recursive: true });
+  await writeFile(join(archiveSource, archivePath), archiveContents);
+  await run("git", ["--literal-pathspecs", "add", "--", archivePath], { cwd: archiveSource });
+  if (options.archiveMode === "100755") {
+    await run("git", ["update-index", "--chmod=+x", "--", archivePath], { cwd: archiveSource });
+  }
+  await run("git", ["commit", "-q", "-m", "archive fixture"], { cwd: archiveSource });
+  const { stdout: commitOutput } = await run("git", ["rev-parse", "HEAD"], { cwd: archiveSource });
+  const commit = commitOutput.trim();
+  const { stdout: treeOutput } = await run("git", ["rev-parse", "HEAD^{tree}"], { cwd: archiveSource });
+  const target = options.targetType === "tree" ? treeOutput.trim() : commit;
+  const shortInternalName = internalRef.slice("refs/tags/".length);
+  if (options.tagKind === "lightweight") {
+    await run("git", ["tag", shortInternalName, target], { cwd: archiveSource });
+  } else if (options.tagKind === "unsigned") {
+    await run("git", ["tag", "-a", "-m", message, shortInternalName, target], { cwd: archiveSource });
+  } else {
+    const signer = options.signer === "forged" ? forged : trusted;
+    await run(
+      "git",
+      [
+        "-c",
+        "gpg.format=ssh",
+        "-c",
+        `user.signingkey=${signer.key}`,
+        "tag",
+        "-s",
+        "-m",
+        message,
+        shortInternalName,
+        target,
+      ],
+      { cwd: archiveSource },
+    );
+  }
+  const { stdout: tagOutput } = await run("git", ["rev-parse", internalRef], { cwd: archiveSource });
+  const tagOid = tagOutput.trim();
+  record.archive_tag = { ref, tag_oid: tagOid };
+
+  const remotePath = join(directory, "archive-remote.git");
+  await run("git", ["init", "--bare", "-q", remotePath]);
+  await run("git", ["config", "uploadpack.allowFilter", "true"], { cwd: remotePath });
+  const remote = pathToFileURL(remotePath).href;
+  if (options.publish !== false) {
+    await run("git", ["push", "-q", remote, `${tagOid}:${ref}`], { cwd: archiveSource });
+  }
+
+  const index = validIndex();
+  index.documents.push(record);
+  index.documents.sort((left, right) => (left.path > right.path) - (left.path < right.path));
+  const root = await makeIndexedRepo(index, {
+    [path]: liveContents,
+    ".github/trust/console.allowed_signers": trusted.policy,
+  });
+  return {
+    archiveSource,
+    authority,
+    commit,
+    directory,
+    forged,
+    index,
+    liveContents,
+    path,
+    record,
+    ref,
+    remote,
+    root,
+    tagOid,
+    trusted,
+  };
+}
+
+async function stageFixtureIndex(fixture, transform) {
+  const index = structuredClone(fixture.index);
+  transform(index);
+  await writeFile(
+    join(fixture.root, "docs/documentation-index.json"),
+    `${JSON.stringify(index, null, 2)}\n`,
+  );
+  await run("git", ["add", "docs/documentation-index.json"], { cwd: fixture.root });
+  fixture.index = index;
+}
+
+function validateArchiveFixture(fixture) {
+  return validateDocumentationArchives({
+    root: fixture.root,
+    testOnlyAuthority: fixture.authority,
+    testOnlyRemoteUrl: fixture.remote,
+  });
 }
 
 test("accepts local links and ignores external/anchor links", async () => {
@@ -496,7 +646,7 @@ test("rejects every premature complete-coverage claim", async () => {
   });
   await assert.rejects(
     run(process.execPath, [script, root]),
-    /coverage complete is not accepted without a signed-archive validation contract/,
+    /coverage complete is not admitted by Phase-A archive validation/,
   );
 });
 
@@ -516,13 +666,15 @@ async function makeGeneratorRepo() {
   const root = await makeIndexedRepo(index, { "docs/CI-GATES.md": "# CI gates\n" });
   await mkdir(join(root, "scripts/console"), { recursive: true });
   await copyFile(generator, join(root, "scripts/console/generate-documentation-manifest.mjs"));
+  await copyFile(archiveValidator, join(root, "scripts/console/validate-documentation-archive.mjs"));
+  await copyFile(signaturePolicy, join(root, "scripts/console/ssh-signature-policy.mjs"));
   await writeFile(
     join(root, "docs/documentation-manifest.seed.json"),
     `${JSON.stringify(index.documents, null, 2)}\n`,
   );
   await run(
     "git",
-    ["add", "scripts/console/generate-documentation-manifest.mjs", "docs/documentation-manifest.seed.json"],
+    ["add", "scripts/console", "docs/documentation-manifest.seed.json"],
     { cwd: root },
   );
   return root;
@@ -603,17 +755,17 @@ test("P4 keeps complete coverage fail-closed", async () => {
   const root = await makeIndexedRepo(validIndex({ coverage: "complete" }));
   await assert.rejects(
     run(process.execPath, [script, root]),
-    /coverage complete is not accepted without a signed-archive validation contract/,
+    /coverage complete is not admitted by Phase-A archive validation/,
   );
 });
 
-test("P5 rejects non-null archive tags without signed-archive validation", async () => {
+test("P5 rejects non-null archive tags that are not exact pinned objects", async () => {
   const index = validIndex();
   index.documents[0].archive_tag = "archive-v1";
   const root = await makeIndexedRepo(index);
   await assert.rejects(
     run(process.execPath, [script, root]),
-    /archive_tag must be null until signed-archive validation exists/,
+    /archive_tag must be null or an exact pinned object/,
   );
 });
 
@@ -628,6 +780,9 @@ test("P6 root field allowlist drift still rejects documents", async () => {
   assert.notEqual(mutated, source);
   const mutatedScript = join(root, "scripts/check-doc-links.mjs");
   await writeFile(mutatedScript, mutated);
+  await mkdir(join(root, "scripts/console"), { recursive: true });
+  await copyFile(archiveValidator, join(root, "scripts/console/validate-documentation-archive.mjs"));
+  await copyFile(signaturePolicy, join(root, "scripts/console/ssh-signature-policy.mjs"));
   await assert.rejects(
     run(process.execPath, [mutatedScript, root]),
     /root record has unexpected field: documents/,
@@ -682,5 +837,235 @@ test("custom manifest diagnostics preserve the exact custom scope command", asyn
       { cwd: root },
     ),
     /Regenerate with: node scripts\/console\/generate-documentation-manifest\.mjs --write --file 'fixtures\/custom scope\.json'/,
+  );
+});
+
+test("A1 archive validation keeps an all-null manifest offline", async () => {
+  const root = await makeIndexedRepo(validIndex());
+  const options = { root };
+  Object.defineProperty(options, "testOnlyRemoteUrl", {
+    get() { throw new Error("archive remote must not be read for an all-null manifest"); },
+  });
+  const validation = validateDocumentationArchives(options);
+  assert.deepEqual(validation.failures, []);
+  assert.equal(validation.telemetry.candidate_count, 0);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.equal(validation.telemetry.signer_policy_blob_oid, null);
+});
+
+test("A2 validates an exact freshly fetched signed annotated archive tag", async () => {
+  const fixture = await makeArchiveFixture();
+  const validation = validateArchiveFixture(fixture);
+  assert.deepEqual(validation.failures, []);
+  assert.equal(validation.telemetry.candidate_count, 1);
+  assert.equal(validation.telemetry.validated_count, 1);
+  assert.match(validation.telemetry.signer_policy_blob_oid, /^[0-9a-f]{40}$/);
+  assert.deepEqual(validation.telemetry.results, [{
+    path: fixture.path,
+    ref: fixture.ref,
+    tag_oid: fixture.tagOid,
+    status: "validated",
+  }]);
+});
+
+test("A3 rejects an archive tag signed by an untrusted SSH key", async () => {
+  const fixture = await makeArchiveFixture({ signer: "forged" });
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /not signed exactly once by the indexed trusted SSH authority/);
+});
+
+test("A4 rejects an unsigned annotated archive tag", async () => {
+  const fixture = await makeArchiveFixture({ tagKind: "unsigned" });
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /must contain exactly one SSH signature/);
+});
+
+test("A5 rejects a lightweight archive tag", async () => {
+  const fixture = await makeArchiveFixture({ tagKind: "lightweight" });
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /not an annotated tag object/);
+});
+
+test("A6 rejects a remote archive ref moved away from its pinned tag object", async () => {
+  const fixture = await makeArchiveFixture();
+  await run(
+    "git",
+    ["push", "-q", fixture.remote, `+${fixture.commit}:${fixture.ref}`],
+    { cwd: fixture.archiveSource },
+  );
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /freshly fetched archive ref does not match pinned tag_oid/);
+});
+
+test("A7 rejects a pinned archive ref absent from the fresh remote", async () => {
+  const fixture = await makeArchiveFixture({ publish: false });
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /fresh fetch of the pinned archive ref failed/);
+});
+
+test("A8 rejects an annotated archive tag that targets a tree instead of a commit", async () => {
+  const fixture = await makeArchiveFixture({ targetType: "tree" });
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /must target a commit directly|fresh fetch of the pinned archive ref failed/);
+});
+
+test("A9 rejects an archive commit missing the exact manifest path", async () => {
+  const fixture = await makeArchiveFixture({ archivePath: "docs/a-different-history.md" });
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /must contain exactly the pinned document path/);
+});
+
+test("A10 rejects an archive commit whose document bytes differ", async () => {
+  const fixture = await makeArchiveFixture({ archiveContents: "# Rewritten history\n" });
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /blob does not match the pinned blob_sha/);
+});
+
+test("A11 rejects an archive commit whose document mode is executable", async () => {
+  const fixture = await makeArchiveFixture({ archiveMode: "100755" });
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /must be the exact 100644 document blob/);
+});
+
+test("A12 rejects two document records claiming one annotated tag object", async () => {
+  const fixture = await makeArchiveFixture();
+  const secondPath = "docs/archive-history-copy.md";
+  await writeFile(join(fixture.root, secondPath), fixture.liveContents);
+  await run("git", ["add", "--", secondPath], { cwd: fixture.root });
+  await stageFixtureIndex(fixture, (index) => {
+    const second = {
+      ...fixture.record,
+      path: secondPath,
+      archive_tag: null,
+    };
+    second.archive_tag = {
+      ref: documentationArchiveRef(second),
+      tag_oid: fixture.tagOid,
+    };
+    index.documents.push(second);
+    index.documents.sort((left, right) => (left.path > right.path) - (left.path < right.path));
+  });
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /duplicates tag_oid claimed by/);
+});
+
+test("A13 rejects malformed pins, derived-ref drift, OID drift, and internal tag-name drift", async () => {
+  const fixture = await makeArchiveFixture();
+  const original = structuredClone(fixture.index);
+  const cases = [
+    ["archive-v1", /must be null or an exact pinned object/],
+    [{ ref: fixture.ref }, /is missing tag_oid/],
+    [{ ref: fixture.ref, tag_oid: fixture.tagOid, extra: true }, /has unexpected field: extra/],
+    [{ ref: `${fixture.ref}-wrong`, tag_oid: fixture.tagOid }, /ref does not match the derived/],
+    [{ ref: fixture.ref, tag_oid: fixture.tagOid.toUpperCase() }, /tag_oid must be a 40-character lowercase/],
+  ];
+  for (const [archiveTag, expected] of cases) {
+    fixture.index = structuredClone(original);
+    await stageFixtureIndex(fixture, (index) => {
+      index.documents.find((record) => record.path === fixture.path).archive_tag = archiveTag;
+    });
+    const validation = validateArchiveFixture(fixture);
+    assert.match(validation.failures.join("\n"), expected);
+  }
+
+  const wrongInternalRef = `refs/tags/archive/documentation/v1/${"f".repeat(64)}`;
+  const internalNameFixture = await makeArchiveFixture({ internalRef: wrongInternalRef });
+  assert.notEqual(internalNameFixture.ref, wrongInternalRef);
+  const internalNameValidation = validateArchiveFixture(internalNameFixture);
+  assert.match(internalNameValidation.failures.join("\n"), /internal name does not match the pinned ref/);
+});
+
+test("A14 rejects a signed tag whose message is not canonical archive metadata", async () => {
+  const fixture = await makeArchiveFixture({ message: "not canonical archive metadata" });
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /message does not match canonical archive metadata/);
+});
+
+test("A15 treats hostile paths as literals and never executes archived document bytes", async () => {
+  const marker = join(
+    tmpdir(),
+    `console-doc-archive-must-not-exist-${process.pid}-${Date.now()}-${Math.random()}`,
+  );
+  const hostilePath = ":(glob)docs/[archive]*;$(touch owned).md";
+  const contents = `#!/bin/sh\nprintf compromised > ${JSON.stringify(marker)}\n`;
+  const fixture = await makeArchiveFixture({ path: hostilePath, liveContents: contents });
+  const validation = validateArchiveFixture(fixture);
+  assert.deepEqual(validation.failures, []);
+  assert.equal(validation.telemetry.validated_count, 1);
+  await assert.rejects(readFile(marker), { code: "ENOENT" });
+});
+
+test("A16 rejects indexed trust drift, replacement objects, and stale local archive refs", async () => {
+  const policyFixture = await makeArchiveFixture();
+  await writeFile(
+    join(policyFixture.root, ".github/trust/console.allowed_signers"),
+    policyFixture.forged.policy,
+  );
+  await run(
+    "git",
+    ["add", ".github/trust/console.allowed_signers"],
+    { cwd: policyFixture.root },
+  );
+  const policyValidation = validateArchiveFixture(policyFixture);
+  assert.match(policyValidation.failures.join("\n"), /policy fingerprint is not trusted/);
+
+  const staleFixture = await makeArchiveFixture({ publish: false });
+  await run(
+    "git",
+    ["-c", "protocol.file.allow=always", "fetch", "-q", "--no-tags", staleFixture.archiveSource, `+${staleFixture.ref}:${staleFixture.ref}`],
+    { cwd: staleFixture.root },
+  );
+  const staleValidation = validateArchiveFixture(staleFixture);
+  assert.equal(staleValidation.telemetry.validated_count, 0);
+  assert.match(staleValidation.failures.join("\n"), /fresh fetch of the pinned archive ref failed/);
+
+  const replacementRoot = await makeGeneratorRepo();
+  const indexPath = "docs/documentation-index.json";
+  const { stdout: safeStage } = await run(
+    "git",
+    ["ls-files", "--stage", "--", indexPath],
+    { cwd: replacementRoot },
+  );
+  const safeIndexOid = safeStage.trim().split(/\s+/)[1];
+  const replacedIndex = JSON.parse(await readFile(join(replacementRoot, indexPath), "utf8"));
+  replacedIndex.documents[0].archive_tag = "attacker-hidden-non-null-pin";
+  await writeFile(join(replacementRoot, indexPath), `${JSON.stringify(replacedIndex, null, 2)}\n`);
+  await run("git", ["add", indexPath], { cwd: replacementRoot });
+  const { stdout: replacedStage } = await run(
+    "git",
+    ["ls-files", "--stage", "--", indexPath],
+    { cwd: replacementRoot },
+  );
+  const replacedIndexOid = replacedStage.trim().split(/\s+/)[1];
+  assert.notEqual(replacedIndexOid, safeIndexOid);
+  await run("git", ["replace", replacedIndexOid, safeIndexOid], { cwd: replacementRoot });
+
+  await assert.rejects(
+    run(process.execPath, [script, replacementRoot]),
+    /archive_tag must be null or an exact pinned object/,
+  );
+  await assert.rejects(
+    run(
+      process.execPath,
+      ["scripts/console/generate-documentation-manifest.mjs", "--check"],
+      { cwd: replacementRoot },
+    ),
+    /generated bytes or preserved semantics are stale/,
+  );
+  const replacementValidation = validateDocumentationArchives({ root: replacementRoot });
+  assert.match(
+    replacementValidation.failures.join("\n"),
+    /archive_tag must be null or an exact pinned object/,
   );
 });

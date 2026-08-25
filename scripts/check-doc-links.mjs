@@ -2,6 +2,7 @@
 import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve, relative, isAbsolute } from "node:path";
 import { execFileSync } from "node:child_process";
+import { validateDocumentationArchives } from "./console/validate-documentation-archive.mjs";
 
 const root = resolve(process.argv[2] ?? process.cwd());
 const failures = [];
@@ -102,6 +103,7 @@ const gitEnvironment = Object.fromEntries(
   Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
 );
 gitEnvironment.LC_ALL = "C";
+gitEnvironment.GIT_NO_REPLACE_OBJECTS = "1";
 
 function git(args) {
   return execFileSync(
@@ -265,7 +267,7 @@ function validateDocumentationIndex(worktree, snapshot) {
     failures.push(`docs/documentation-index.json: future_full_manifest_fields must be exactly ${fullManifestFields.join(", ")}`);
   }
   if (index.coverage === "complete") {
-    failures.push("docs/documentation-index.json: coverage complete is not accepted without a signed-archive validation contract");
+    failures.push("docs/documentation-index.json: coverage complete is not admitted by Phase-A archive validation");
   } else if (index.coverage !== "authority-slice" && index.coverage !== "first-party-manifest") {
     failures.push("docs/documentation-index.json: coverage must be authority-slice or first-party-manifest");
   }
@@ -418,9 +420,6 @@ function validateDocumentationIndex(worktree, snapshot) {
     if (record.status === "redirect" && (typeof record.replacement !== "string" || !record.replacement.trim())) {
       failures.push(`docs/documentation-index.json: ${record.path} redirect record requires a replacement`);
     }
-    if (record.archive_tag !== null) {
-      failures.push(`docs/documentation-index.json: ${record.path} archive_tag must be null until signed-archive validation exists`);
-    }
   }
 
   const projections = [
@@ -456,6 +455,16 @@ function validateDocumentationIndex(worktree, snapshot) {
         failures.push(`docs/documentation-index.json: document path is outside first-party manifest coverage: ${path}`);
       }
     }
+  }
+
+  if (failures.length === 0) {
+    const archiveValidation = validateDocumentationArchives({
+      root,
+      index,
+      tracked,
+      treeOid: snapshot.treeOid,
+    });
+    failures.push(...archiveValidation.failures);
   }
 
 }

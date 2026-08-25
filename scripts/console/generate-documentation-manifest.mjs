@@ -2,6 +2,10 @@
 import { lstatSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { execFileSync } from "node:child_process";
+import {
+  documentationArchiveAdmissionFailures,
+  validateDocumentationArchives,
+} from "./validate-documentation-archive.mjs";
 
 const root = realpathSync(process.cwd());
 const defaultManifest = "docs/documentation-manifest.seed.json";
@@ -114,6 +118,7 @@ const gitEnvironment = Object.fromEntries(
   Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
 );
 gitEnvironment.LC_ALL = "C";
+gitEnvironment.GIT_NO_REPLACE_OBJECTS = "1";
 
 function git(args) {
   return execFileSync("git", ["-C", root, ...args], {
@@ -144,7 +149,7 @@ function exactGitIndexTree() {
     }
     tracked.set(path, { mode, type, oid });
   }
-  return tracked;
+  return { treeOid, tracked };
 }
 
 function readTrackedBlob(entry) {
@@ -262,7 +267,11 @@ function validate(records, tracked, targets, manifest) {
     if (record.status === "redirect" && (typeof record.replacement !== "string" || !record.replacement.trim())) {
       failures.push(`${manifest}: ${path} redirect record requires a replacement`);
     }
-    if (record.archive_tag !== null) failures.push(`${manifest}: ${path} archive_tag must be null`);
+    failures.push(...documentationArchiveAdmissionFailures(
+      record,
+      trackedEntry,
+      `${manifest}: ${path}`,
+    ));
   }
 
   for (const path of recordsByPath.keys()) {
@@ -343,7 +352,8 @@ if (!options) {
   try {
     const manifestPath = safeExistingPath(options.manifest, "manifest");
     const records = readManifest(options.manifest, manifestPath);
-    const tracked = exactGitIndexTree();
+    const snapshot = exactGitIndexTree();
+    const { tracked } = snapshot;
     const targets = targetPaths(records, tracked, options.scope === "pilot");
     const index = options.scope === "pilot" ? null : readCustodiedIndex(tracked);
     if (options.mode === "write") {
@@ -358,6 +368,15 @@ if (!options) {
       if (index) {
         const expectedBytes = jsonBytes(generatedIndex(index, records));
         failures.push(...validateGeneratedIndex(index, expectedBytes));
+      }
+      if (failures.length === 0) {
+        const archiveValidation = validateDocumentationArchives({
+          root,
+          index: index ?? { documents: records },
+          tracked,
+          treeOid: snapshot.treeOid,
+        });
+        failures.push(...archiveValidation.failures);
       }
       if (failures.length) {
         console.error([
