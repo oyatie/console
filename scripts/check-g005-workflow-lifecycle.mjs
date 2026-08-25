@@ -9,7 +9,6 @@ beginGate({
   gate: "check:g005-workflow-lifecycle",
   script: "scripts/check-g005-workflow-lifecycle.mjs",
   documentInputs: [
-    "docs/specs/backlog-clearance-ledger.md",
     "docs/specs/foundation-gates.md",
   ],
 });
@@ -171,7 +170,6 @@ if (matrix) {
 
   for (const test of matrix.requiredBackendTests ?? []) requireFile(test, `G005 backend test ${test}`);
 
-  requireIncludes("docs/specs/backlog-clearance-ledger.md", goalId, "backlog ledger records current G005 goal id");
   requireIncludes("docs/specs/foundation-gates.md", "workflow/approval/action lifecycle", "foundation gate mentions workflow/approval/action lifecycle");
   requireIncludes("docs/specs/foundation-gates.md", "Work Hub", "foundation gate mentions Work Hub server feed contract");
 

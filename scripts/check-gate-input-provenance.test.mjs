@@ -212,6 +212,77 @@ test("live instrument passes on the current tree", () => {
   );
 });
 
+test("G005 goal identity is controlled by the matrix, not the historical ledger", () => {
+  const goalId = "G005-workflow-builder-approvals-work-hub";
+  const ledgerPath = join(root, "docs/specs/backlog-clearance-ledger.md");
+  const matrixPath = join(
+    root,
+    "docs/benchmarks/g005-workflow-lifecycle-matrix.json",
+  );
+  const originalLedger = readFileSync(ledgerPath);
+  const originalMatrix = readFileSync(matrixPath);
+  const runG005 = () =>
+    spawnSync(process.execPath, ["scripts/check-g005-workflow-lifecycle.mjs"], {
+      cwd: root,
+      encoding: "utf8",
+      maxBuffer: 32 * 1024 * 1024,
+    });
+  let testFailure;
+
+  try {
+    const ledgerText = originalLedger.toString("utf8");
+    assert.equal(
+      ledgerText.split(goalId).length - 1,
+      1,
+      "fixture must mutate exactly one historical-ledger goal id",
+    );
+    writeFileSync(
+      ledgerPath,
+      ledgerText.replace(goalId, "G005-hostile-historical-ledger-goal"),
+    );
+    const ledgerMutation = runG005();
+    assert.equal(
+      ledgerMutation.status,
+      0,
+      ledgerMutation.stderr || ledgerMutation.stdout,
+    );
+
+    writeFileSync(ledgerPath, originalLedger);
+    const matrixText = originalMatrix.toString("utf8");
+    const matrixGoal = `"goalId": "${goalId}"`;
+    assert.equal(
+      matrixText.split(matrixGoal).length - 1,
+      1,
+      "fixture must mutate exactly one machine-readable goal id",
+    );
+    writeFileSync(
+      matrixPath,
+      matrixText.replace(
+        matrixGoal,
+        '"goalId": "G005-hostile-matrix-goal"',
+      ),
+    );
+    const matrixMutation = runG005();
+    const matrixOutput = `${matrixMutation.stdout}\n${matrixMutation.stderr}`;
+    assert.equal(matrixMutation.status, 1, matrixOutput);
+    assert.ok(
+      matrixOutput.includes(
+        "docs/benchmarks/g005-workflow-lifecycle-matrix.json: goalId must be G005-workflow-builder-approvals-work-hub",
+      ),
+      matrixOutput,
+    );
+  } catch (error) {
+    testFailure = error;
+  } finally {
+    writeFileSync(ledgerPath, originalLedger);
+    writeFileSync(matrixPath, originalMatrix);
+  }
+
+  assert.deepEqual(readFileSync(ledgerPath), originalLedger);
+  assert.deepEqual(readFileSync(matrixPath), originalMatrix);
+  if (testFailure) throw testFailure;
+});
+
 test("G004 machine-readable passkey and policy controls fail under hostile matrix mutations", async () => {
   const { hasPasskeyContract, hasPolicyContract } = await import(
     "./check-g004-identity-foundation.mjs"
