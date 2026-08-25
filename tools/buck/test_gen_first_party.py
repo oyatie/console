@@ -330,7 +330,7 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
         )
         self.assertEqual(164, len(ordinary_tests))
         self.assertEqual(len(ordinary_tests), len(ordinary_gates))
-        self.assertEqual(22, len(sqlx_tests))
+        self.assertEqual(23, len(sqlx_tests))
         self.assertEqual(len(sqlx_tests), len(sqlx_gates))
         self.assertEqual(
             ("dev-auth",),
