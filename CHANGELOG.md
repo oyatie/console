@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.12](https://github.com/oyatie/console/compare/v0.3.11...v0.3.12) (2026-08-25)
+
+
+### Bug Fixes
+
+* **identity:** govern region and branch mutations ([#872](https://github.com/oyatie/console/issues/872)) ([10f5ab0](https://github.com/oyatie/console/commit/10f5ab0d580f693ca3aad6e2c2f640960006d44e)), closes [#707](https://github.com/oyatie/console/issues/707)
+
 ## [0.3.11](https://github.com/oyatie/console/compare/v0.3.10...v0.3.11) (2026-08-24)
 
 
