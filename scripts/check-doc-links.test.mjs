@@ -216,6 +216,7 @@ async function makeArchiveFixture(options = {}) {
   const ref = documentationArchiveRef(record);
   const internalRef = options.internalRef ?? ref;
   const message = options.message ?? documentationArchiveMessage(record);
+  const archiveEntryType = options.archiveEntryType ?? "blob";
 
   const archiveSource = join(directory, "archive-source");
   await mkdir(archiveSource);
@@ -223,10 +224,25 @@ async function makeArchiveFixture(options = {}) {
   await run("git", ["config", "user.name", "Archive Test"], { cwd: archiveSource });
   await run("git", ["config", "user.email", principal], { cwd: archiveSource });
   await mkdir(join(archiveSource, archivePath, ".."), { recursive: true });
-  await writeFile(join(archiveSource, archivePath), archiveContents);
-  await run("git", ["--literal-pathspecs", "add", "--", archivePath], { cwd: archiveSource });
-  if (options.archiveMode === "100755") {
-    await run("git", ["update-index", "--chmod=+x", "--", archivePath], { cwd: archiveSource });
+  if (archiveEntryType === "gitlink") {
+    await run("git", ["commit", "--allow-empty", "-q", "-m", "gitlink fixture target"], { cwd: archiveSource });
+    const { stdout: gitlinkTargetOutput } = await run("git", ["rev-parse", "HEAD"], { cwd: archiveSource });
+    await run(
+      "git",
+      ["update-index", "--add", "--cacheinfo", `160000,${gitlinkTargetOutput.trim()},${archivePath}`],
+      { cwd: archiveSource },
+    );
+  } else {
+    if (archiveEntryType === "symlink") {
+      await symlink("archive-symlink-target.md", join(archiveSource, archivePath));
+    } else {
+      assert.equal(archiveEntryType, "blob");
+      await writeFile(join(archiveSource, archivePath), archiveContents);
+    }
+    await run("git", ["--literal-pathspecs", "add", "--", archivePath], { cwd: archiveSource });
+    if (options.archiveMode === "100755") {
+      await run("git", ["update-index", "--chmod=+x", "--", archivePath], { cwd: archiveSource });
+    }
   }
   await run("git", ["commit", "-q", "-m", "archive fixture"], { cwd: archiveSource });
   const { stdout: commitOutput } = await run("git", ["rev-parse", "HEAD"], { cwd: archiveSource });
@@ -311,6 +327,26 @@ function validateArchiveFixture(fixture) {
     testOnlyAuthority: fixture.authority,
     testOnlyRemoteUrl: fixture.remote,
   });
+}
+
+async function assertArchiveFixtureModes(fixture, archiveMode, archiveType) {
+  const { stdout: liveEntryOutput } = await run(
+    "git",
+    ["ls-files", "--stage", "--", fixture.path],
+    { cwd: fixture.root },
+  );
+  assert.equal(
+    liveEntryOutput.trim(),
+    `100644 ${fixture.record.blob_sha} 0\t${fixture.path}`,
+  );
+  const { stdout: archiveEntryOutput } = await run(
+    "git",
+    ["--literal-pathspecs", "ls-tree", fixture.commit, "--", fixture.path],
+    { cwd: fixture.archiveSource },
+  );
+  const [metadata, path] = archiveEntryOutput.trim().split("\t");
+  assert.equal(path, fixture.path);
+  assert.match(metadata, new RegExp(`^${archiveMode} ${archiveType} [0-9a-f]{40}$`));
 }
 
 test("accepts local links and ignores external/anchor links", async () => {
@@ -1068,4 +1104,20 @@ test("A16 rejects indexed trust drift, replacement objects, and stale local arch
     replacementValidation.failures.join("\n"),
     /archive_tag must be null or an exact pinned object/,
   );
+});
+
+test("A17 rejects an archive-tree symlink while the live manifest path remains 100644", async () => {
+  const fixture = await makeArchiveFixture({ archiveEntryType: "symlink" });
+  await assertArchiveFixtureModes(fixture, "120000", "blob");
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /must be the exact 100644 document blob/);
+});
+
+test("A18 rejects an archive-tree gitlink while the live manifest path remains 100644", async () => {
+  const fixture = await makeArchiveFixture({ archiveEntryType: "gitlink" });
+  await assertArchiveFixtureModes(fixture, "160000", "commit");
+  const validation = validateArchiveFixture(fixture);
+  assert.equal(validation.telemetry.validated_count, 0);
+  assert.match(validation.failures.join("\n"), /must be the exact 100644 document blob/);
 });
