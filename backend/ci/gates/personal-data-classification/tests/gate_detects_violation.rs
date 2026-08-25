@@ -728,6 +728,587 @@ fn gate_rejects_a_body_that_adds_a_column() -> Result<(), Box<dyn std::error::Er
     Ok(())
 }
 
+/// Every comma-separated action in an opaque `ALTER TABLE` must be proven
+/// column-neutral. A neutral first action cannot buy a pass for a later column
+/// mutation, while a body made entirely of the existing neutral vocabulary
+/// must remain accepted.
+#[test]
+fn gate_rejects_any_non_neutral_action_in_an_opaque_multi_action_alter()
+-> Result<(), Box<dyn std::error::Error>> {
+    let hostile_actions = [
+        (
+            "later-add-column",
+            "ENABLE ROW LEVEL SECURITY, ADD COLUMN medical_certificate_no TEXT",
+        ),
+        (
+            "later-drop-column",
+            "ENABLE ROW LEVEL SECURITY, DROP COLUMN id",
+        ),
+        (
+            "later-implicit-add",
+            "ENABLE ROW LEVEL SECURITY, ADD medical_certificate_no TEXT",
+        ),
+        (
+            "later-rename",
+            "ENABLE ROW LEVEL SECURITY, RENAME COLUMN id TO staff_id",
+        ),
+        (
+            "later-unknown",
+            "ENABLE ROW LEVEL SECURITY, ATTACH PARTITION staff_archive",
+        ),
+        (
+            "later-malformed",
+            "ENABLE ROW LEVEL SECURITY, , FORCE ROW LEVEL SECURITY",
+        ),
+    ];
+
+    for (name, actions) in hostile_actions {
+        let dir = tree(
+            name,
+            &format!(
+                "CREATE TABLE staff(id UUID PRIMARY KEY);
+                 COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+                 DO $$ BEGIN
+                     EXECUTE format('ALTER TABLE %I {actions}', 'staff');
+                 END $$;"
+            ),
+        )?;
+        let result = check_tree(&dir, &empty_baseline())?;
+        assert!(
+            !result.passed(),
+            "opaque multi-action ALTER '{name}' must fail when any action can change columns; \
+             got a pass"
+        );
+        assert!(
+            result
+                .violations
+                .iter()
+                .any(|v| v.kind == ViolationKind::UnsupportedDdl
+                    && v.detail.contains("dollar-quoted body builds `alter table`")),
+            "'{name}' must be UnsupportedDdl naming the opaque ALTER, got {:#?}",
+            result.violations
+        );
+    }
+
+    let nested_dollar_hostile_actions = [
+        (
+            "nested-dollar-later-add-column",
+            "ENABLE ROW LEVEL SECURITY, ADD COLUMN medical_certificate_no TEXT",
+        ),
+        (
+            "nested-dollar-later-drop-column",
+            "ENABLE ROW LEVEL SECURITY, DROP COLUMN id",
+        ),
+        (
+            "nested-dollar-later-implicit-add",
+            "ENABLE ROW LEVEL SECURITY, ADD medical_certificate_no TEXT",
+        ),
+        (
+            "nested-dollar-later-rename",
+            "ENABLE ROW LEVEL SECURITY, RENAME COLUMN id TO staff_id",
+        ),
+        (
+            "nested-dollar-later-unknown",
+            "ENABLE ROW LEVEL SECURITY, ATTACH PARTITION staff_archive",
+        ),
+        (
+            "nested-dollar-later-malformed",
+            "ENABLE ROW LEVEL SECURITY, , FORCE ROW LEVEL SECURITY",
+        ),
+    ];
+    for (name, actions) in nested_dollar_hostile_actions {
+        let dir = tree(
+            name,
+            &format!(
+                "CREATE TABLE staff(id UUID PRIMARY KEY);
+                 COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+                 DO $outer$ BEGIN
+                     EXECUTE $ddl$ALTER TABLE staff {actions}$ddl$;
+                 END $outer$;"
+            ),
+        )?;
+        let result = check_tree(&dir, &empty_baseline())?;
+        assert!(
+            !result.passed(),
+            "opaque nested-dollar ALTER '{name}' must fail when any action can change columns; \
+             got a pass"
+        );
+        assert!(
+            result
+                .violations
+                .iter()
+                .any(|v| v.kind == ViolationKind::UnsupportedDdl
+                    && v.detail.contains("dollar-quoted body builds `alter table`")),
+            "'{name}' must be UnsupportedDdl naming the nested opaque ALTER, got {:#?}",
+            result.violations
+        );
+    }
+
+    // Signal admission and classification must project the same lexer tokens.
+    // The discarded contents of a quoted token cannot spend the modifier
+    // window for one while being absent from the other.
+    let shared_token_projection_hostiles = [
+        (
+            "opaque-dollar-token-cannot-spend-alter-window",
+            "ALTER $noise$one two three$noise$ TABLE staff ENABLE ROW LEVEL SECURITY, ADD COLUMN \
+             medical_certificate_no TEXT",
+            "alter table",
+        ),
+        (
+            "opaque-string-token-cannot-spend-alter-window",
+            "ALTER 'one two three' TABLE staff ENABLE ROW LEVEL SECURITY, ADD COLUMN \
+             medical_certificate_no TEXT",
+            "alter table",
+        ),
+        (
+            "opaque-dollar-token-cannot-spend-create-window",
+            "CREATE $noise$one two three$noise$ TABLE shadow_staff (medical_certificate_no TEXT)",
+            "create table",
+        ),
+        (
+            "opaque-comments-do-not-spend-modifier-window",
+            "CREATE GLOBAL /* one two three four */ TEMPORARY TABLE shadow_staff \
+             (medical_certificate_no TEXT)",
+            "create global temporary table",
+        ),
+    ];
+    for (name, command, construct) in shared_token_projection_hostiles {
+        let dir = tree(
+            name,
+            &format!(
+                "CREATE TABLE staff(id UUID PRIMARY KEY);
+                 COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+                 DO $outer$ BEGIN
+                     EXECUTE $ddl${command}$ddl$;
+                 END $outer$;"
+            ),
+        )?;
+        let result = check_tree(&dir, &empty_baseline())?;
+        assert!(
+            !result.passed(),
+            "quoted/comment tokens must not make the admission signal narrower than the DDL \
+             classifier for '{name}'"
+        );
+        assert!(
+            result
+                .violations
+                .iter()
+                .any(|v| v.kind == ViolationKind::UnsupportedDdl
+                    && v.detail.contains(&format!("body builds `{construct}`"))),
+            "'{name}' must be UnsupportedDdl naming the shared token projection, got {:#?}",
+            result.violations
+        );
+    }
+
+    // One semicolon-delimited command slice may carry at most one table-DDL
+    // location. Otherwise the action tail of one phrase can swallow a later
+    // phrase and make a neutral head buy a pass for unparsed trailing SQL.
+    let ambiguous_same_statement_commands = [
+        (
+            "opaque-repeated-neutral-alter-without-semicolon",
+            "ALTER TABLE staff ENABLE ROW LEVEL SECURITY ALTER TABLE staff FORCE ROW LEVEL \
+             SECURITY",
+        ),
+        (
+            "opaque-first-neutral-later-hostile-without-semicolon",
+            "ALTER TABLE staff ENABLE ROW LEVEL SECURITY ALTER TABLE staff ADD COLUMN secret \
+             TEXT",
+        ),
+        (
+            "opaque-overlapping-alter-create-table-locations",
+            "ALTER CREATE TABLE shadow_staff (secret TEXT)",
+        ),
+    ];
+    for (name, command) in ambiguous_same_statement_commands {
+        let dir = tree(
+            name,
+            &format!(
+                "CREATE TABLE staff(id UUID PRIMARY KEY);
+                 COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+                 DO $outer$ BEGIN
+                     EXECUTE $ddl${command}$ddl$;
+                 END $outer$;"
+            ),
+        )?;
+        let result = check_tree(&dir, &empty_baseline())?;
+        assert!(
+            !result.passed(),
+            "multiple local table-DDL locations in one statement must fail closed for '{name}'"
+        );
+        assert!(
+            result
+                .violations
+                .iter()
+                .any(|v| v.kind == ViolationKind::UnsupportedDdl
+                    && v.detail.contains("cannot be inspected safely")),
+            "'{name}' must be reported as ambiguous opaque DDL before action classification, got \
+             {:#?}",
+            result.violations
+        );
+    }
+
+    let repeated_neutral = (0..8192)
+        .map(|_| "ALTER TABLE staff ENABLE ROW LEVEL SECURITY")
+        .collect::<Vec<_>>()
+        .join(" ");
+    let large_repeated_locations = tree(
+        "opaque-8192-repeated-table-ddl-locations",
+        &format!(
+            "CREATE TABLE staff(id UUID PRIMARY KEY);
+             COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+             DO $outer$ BEGIN
+                 EXECUTE $ddl${repeated_neutral}$ddl$;
+             END $outer$;"
+        ),
+    )?;
+    let result = check_tree(&large_repeated_locations, &empty_baseline())?;
+    assert!(
+        !result.passed(),
+        "8192 repeated locations must be rejected without classifying 8192 overlapping tails"
+    );
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::UnsupportedDdl
+                && v.detail.contains("cannot be inspected safely")),
+        "large repeated locations must report bounded ambiguity, got {:#?}",
+        result.violations
+    );
+
+    let semicolon_separated_neutral = tree(
+        "opaque-semicolon-separated-neutral-table-ddl",
+        "CREATE TABLE staff(id UUID PRIMARY KEY);
+         COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+         DO $outer$ BEGIN
+             EXECUTE $ddl$ALTER TABLE staff ENABLE ROW LEVEL SECURITY;
+                 ALTER TABLE staff FORCE ROW LEVEL SECURITY$ddl$;
+         END $outer$;",
+    )?;
+    let result = check_tree(&semicolon_separated_neutral, &empty_baseline())?;
+    assert!(
+        result.passed(),
+        "separate neutral statements must each retain their one-location classification, got \
+         {:#?}",
+        result.violations
+    );
+
+    let quoted_window_malformed_hostiles = [
+        (
+            "opaque-dollar-window-signaled-incomplete-comment",
+            "ALTER $noise$one two three$noise$ TABLE staff ADD COLUMN secret TEXT /* \
+             unterminated",
+        ),
+        (
+            "opaque-string-window-signaled-incomplete-quote",
+            "ALTER 'one two three' TABLE staff ADD COLUMN secret TEXT 'unterminated",
+        ),
+    ];
+    for (name, command) in quoted_window_malformed_hostiles {
+        let dir = tree(
+            name,
+            &format!(
+                "CREATE TABLE staff(id UUID PRIMARY KEY);
+                 COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+                 DO $outer$ BEGIN
+                     EXECUTE $ddl${command}$ddl$;
+                 END $outer$;"
+            ),
+        )?;
+        let result = check_tree(&dir, &empty_baseline())?;
+        assert!(
+            !result.passed(),
+            "quoted-window DDL with an incomplete child construct must fail closed for '{name}'"
+        );
+        assert!(
+            result
+                .violations
+                .iter()
+                .any(|v| v.kind == ViolationKind::UnsupportedDdl
+                    && v.detail.contains("cannot be inspected safely")),
+            "'{name}' must report unreadable opaque DDL, got {:#?}",
+            result.violations
+        );
+    }
+
+    let comment_separated_signals = [
+        (
+            "nested-dollar-comment-separated-alter",
+            "ALTER /* signal words inside this comment do not count */ TABLE staff ENABLE ROW \
+             LEVEL SECURITY, ADD COLUMN medical_certificate_no TEXT",
+            "alter table",
+        ),
+        (
+            "nested-dollar-comment-separated-create",
+            "CREATE /* signal words inside this comment do not count */ TABLE shadow_staff \
+             (medical_certificate_no TEXT)",
+            "create table",
+        ),
+    ];
+    for (name, command, construct) in comment_separated_signals {
+        let dir = tree(
+            name,
+            &format!(
+                "CREATE TABLE staff(id UUID PRIMARY KEY);
+                 COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+                 DO $outer$ BEGIN
+                     EXECUTE $ddl${command}$ddl$;
+                 END $outer$;"
+            ),
+        )?;
+        let result = check_tree(&dir, &empty_baseline())?;
+        assert!(
+            !result.passed(),
+            "comment-separated nested-dollar DDL '{name}' must remain visible to the signal and \
+             classifier"
+        );
+        assert!(
+            result
+                .violations
+                .iter()
+                .any(|v| v.kind == ViolationKind::UnsupportedDdl
+                    && v.detail.contains(&format!("body builds `{construct}`"))),
+            "'{name}' must be UnsupportedDdl naming the nested command, got {:#?}",
+            result.violations
+        );
+    }
+
+    let multiply_nested = tree(
+        "opaque-multiple-complete-dollar-tags",
+        "CREATE TABLE staff(id UUID PRIMARY KEY);
+         COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+         DO $outer$ BEGIN
+             EXECUTE $command$DO $middle$ BEGIN
+                 EXECUTE $ddl$ALTER TABLE staff ENABLE ROW LEVEL SECURITY,
+                     ADD COLUMN medical_certificate_no TEXT$ddl$;
+             END $middle$;$command$;
+         END $outer$;",
+    )?;
+    let result = check_tree(&multiply_nested, &empty_baseline())?;
+    assert!(
+        !result.passed(),
+        "complete multiply nested dollar tags must not hide their inner DDL"
+    );
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::UnsupportedDdl
+                && v.detail.contains("body builds `alter table`")),
+        "multiply nested DDL must retain the every-action classifier, got {:#?}",
+        result.violations
+    );
+
+    let neutral_actions = [
+        "ENABLE ROW LEVEL SECURITY, FORCE ROW LEVEL SECURITY",
+        "ADD CONSTRAINT staff_id_check CHECK (id IS NOT NULL), \
+         VALIDATE CONSTRAINT staff_id_check, DROP CONSTRAINT staff_id_check",
+        "ALTER COLUMN id SET NOT NULL, OWNER TO console_app",
+    ];
+    for (index, actions) in neutral_actions.into_iter().enumerate() {
+        let dir = tree(
+            &format!("opaque-neutral-multi-action-{index}"),
+            &format!(
+                "CREATE TABLE staff(id UUID PRIMARY KEY);
+                 COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+                 DO $$ BEGIN
+                     EXECUTE format('ALTER TABLE %I {actions}', 'staff');
+                 END $$;"
+            ),
+        )?;
+        let result = check_tree(&dir, &empty_baseline())?;
+        assert!(
+            result.passed(),
+            "opaque ALTER containing only existing neutral actions must pass, got {:#?}",
+            result.violations
+        );
+    }
+
+    let nested_dollar_neutral = tree(
+        "opaque-nested-dollar-neutral-multi-action",
+        "CREATE TABLE staff(id UUID PRIMARY KEY);
+         COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+         DO $outer$ BEGIN
+             EXECUTE $ddl$ALTER TABLE staff ENABLE ROW LEVEL SECURITY, FORCE ROW LEVEL SECURITY$ddl$;
+         END $outer$;",
+    )?;
+    let result = check_tree(&nested_dollar_neutral, &empty_baseline())?;
+    assert!(
+        result.passed(),
+        "nested-dollar opaque ALTER containing only existing neutral actions must pass, got \
+         {:#?}",
+        result.violations
+    );
+
+    let nested_dollar_neutral_literal_data = [
+        (
+            "opaque-nested-dollar-neutral-escaped-quote-data",
+            "ADD CONSTRAINT staff_quote_check CHECK ('O''Reilly' = 'O''Reilly'), DROP \
+             CONSTRAINT staff_quote_check",
+        ),
+        (
+            "opaque-nested-dollar-neutral-comment-looking-data",
+            "ADD CONSTRAINT staff_comment_check CHECK ('/* not a comment' = '/* not a comment'), \
+             DROP CONSTRAINT staff_comment_check",
+        ),
+        (
+            "opaque-nested-dollar-neutral-tag-looking-data",
+            "ADD CONSTRAINT staff_tag_check CHECK ('$dangling$' = '$dangling$'), DROP CONSTRAINT \
+             staff_tag_check",
+        ),
+    ];
+    for (name, actions) in nested_dollar_neutral_literal_data {
+        let dir = tree(
+            name,
+            &format!(
+                "CREATE TABLE staff(id UUID PRIMARY KEY);
+                 COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+                 DO $outer$ BEGIN
+                     EXECUTE $ddl$ALTER TABLE staff {actions}$ddl$;
+                 END $outer$;"
+            ),
+        )?;
+        let result = check_tree(&dir, &empty_baseline())?;
+        assert!(
+            result.passed(),
+            "neutral literal data in nested-dollar ALTER '{name}' must not be recursively \
+             reinterpreted as malformed SQL, got {:#?}",
+            result.violations
+        );
+    }
+
+    let signaled_incomplete_fragments = [
+        (
+            "opaque-signaled-incomplete-quote",
+            "ALTER TABLE staff ADD CONSTRAINT staff_bad_check CHECK ('unterminated)",
+        ),
+        (
+            "opaque-signaled-incomplete-comment",
+            "ALTER TABLE staff ENABLE ROW LEVEL SECURITY /* unterminated",
+        ),
+    ];
+    for (name, command) in signaled_incomplete_fragments {
+        let dir = tree(
+            name,
+            &format!(
+                "CREATE TABLE staff(id UUID PRIMARY KEY);
+                 COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+                 DO $outer$ BEGIN
+                     EXECUTE $ddl${command}$ddl$;
+                 END $outer$;"
+            ),
+        )?;
+        let result = check_tree(&dir, &empty_baseline())?;
+        assert!(
+            !result.passed(),
+            "a DDL-signaled fragment with incomplete quoting must fail closed"
+        );
+        assert!(
+            result
+                .violations
+                .iter()
+                .any(|v| v.kind == ViolationKind::UnsupportedDdl
+                    && v.detail.contains("cannot be inspected safely")),
+            "'{name}' must be reported as unreadable opaque DDL, got {:#?}",
+            result.violations
+        );
+    }
+
+    // The scanner is iterative and bounded even when hostile input is nested
+    // far beyond the process stack. Exercise both a signal-free leaf and DDL at
+    // depth so skipping the outer fragments cannot hide the inner command.
+    let nest_fragment = |leaf: &str| {
+        let mut fragment = leaf.to_owned();
+        for depth in 0..4096 {
+            fragment = format!("$deep_{depth}${fragment}$deep_{depth}$");
+        }
+        fragment
+    };
+    let deeply_nested_neutral = tree(
+        "opaque-4096-level-neutral-fragments",
+        &format!(
+            "CREATE TABLE staff(id UUID PRIMARY KEY);
+             COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+             DO $outer$ BEGIN
+                 PERFORM {};
+             END $outer$;",
+            nest_fragment("literal data")
+        ),
+    )?;
+    let result = check_tree(&deeply_nested_neutral, &empty_baseline())?;
+    assert!(
+        result.passed(),
+        "4096 complete signal-free nested fragments must remain bounded and neutral, got {:#?}",
+        result.violations
+    );
+
+    let deeply_nested_hostile = tree(
+        "opaque-4096-level-hostile-fragments",
+        &format!(
+            "CREATE TABLE staff(id UUID PRIMARY KEY);
+             COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+             DO $outer$ BEGIN
+                 EXECUTE {};
+             END $outer$;",
+            nest_fragment("ALTER TABLE staff ENABLE ROW LEVEL SECURITY, ADD COLUMN secret TEXT")
+        ),
+    )?;
+    let result = check_tree(&deeply_nested_hostile, &empty_baseline())?;
+    assert!(
+        !result.passed(),
+        "4096 complete nested fragments must not hide their hostile DDL leaf"
+    );
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::UnsupportedDdl
+                && v.detail.contains("body builds `alter table`")),
+        "deep hostile DDL must retain the shared classifier, got {:#?}",
+        result.violations
+    );
+
+    let adjacent_split = tree(
+        "opaque-adjacent-split-remains-registered",
+        "CREATE TABLE staff(id UUID PRIMARY KEY);
+         COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+         DO $$ BEGIN
+             EXECUTE 'ALTER TA' || 'BLE staff ENABLE ROW LEVEL SECURITY, ADD COLUMN secret TEXT';
+         END $$;",
+    )?;
+    let result = check_tree(&adjacent_split, &empty_baseline())?;
+    assert!(
+        result.passed(),
+        "independently inspected adjacent fragments must not be joined into a claimed fix, got \
+         {:#?}",
+        result.violations
+    );
+
+    let malformed_nested_dollar = tree(
+        "opaque-malformed-nested-dollar",
+        "CREATE TABLE staff(id UUID PRIMARY KEY);
+         COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+         DO $outer$ BEGIN
+             EXECUTE $ddl$ALTER TABLE staff ENABLE ROW LEVEL SECURITY;
+         END $outer$;",
+    )?;
+    let result = check_tree(&malformed_nested_dollar, &empty_baseline())?;
+    assert!(
+        !result.passed(),
+        "an incomplete nested dollar quote must fail closed instead of ending work early"
+    );
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::UnsupportedDdl
+                && v.detail.contains("cannot be inspected safely")),
+        "the malformed nested quote must be reported as unreadable opaque input, got {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
 /// THE INVERSION ITSELF.
 ///
 /// Round 2 made unparseable mean FAIL by enumerating the constructs known to
