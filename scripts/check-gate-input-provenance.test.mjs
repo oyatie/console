@@ -397,6 +397,81 @@ test("G006 goal identity is controlled by the matrix, not the historical ledger"
   if (testFailure) throw testFailure;
 });
 
+test("G007 goal identity is controlled by the matrix, not the historical ledger", () => {
+  const goalId = "G007-collaboration-mail-calendar-poll-mob";
+  const ledgerPath = join(root, "docs/specs/backlog-clearance-ledger.md");
+  const matrixPath = join(
+    root,
+    "docs/benchmarks/g007-collaboration-mobile-lifecycle-matrix.json",
+  );
+  const originalLedger = readFileSync(ledgerPath);
+  const originalMatrix = readFileSync(matrixPath);
+  const runG007 = () =>
+    spawnSync(
+      process.execPath,
+      ["scripts/check-g007-collaboration-mobile-lifecycle.mjs"],
+      {
+        cwd: root,
+        encoding: "utf8",
+        maxBuffer: 32 * 1024 * 1024,
+      },
+    );
+  let testFailure;
+
+  try {
+    const ledgerText = originalLedger.toString("utf8");
+    assert.equal(
+      ledgerText.split(goalId).length - 1,
+      1,
+      "fixture must mutate exactly one historical-ledger G007 goal id",
+    );
+    writeFileSync(
+      ledgerPath,
+      ledgerText.replace(goalId, "G007-hostile-historical-ledger-goal"),
+    );
+    const ledgerMutation = runG007();
+    assert.equal(
+      ledgerMutation.status,
+      0,
+      ledgerMutation.stderr || ledgerMutation.stdout,
+    );
+
+    writeFileSync(ledgerPath, originalLedger);
+    const matrixText = originalMatrix.toString("utf8");
+    const matrixGoal = `"goalId": "${goalId}"`;
+    assert.equal(
+      matrixText.split(matrixGoal).length - 1,
+      1,
+      "fixture must mutate exactly one machine-readable G007 goal id",
+    );
+    writeFileSync(
+      matrixPath,
+      matrixText.replace(
+        matrixGoal,
+        '"goalId": "G007-hostile-matrix-goal"',
+      ),
+    );
+    const matrixMutation = runG007();
+    const matrixOutput = `${matrixMutation.stdout}\n${matrixMutation.stderr}`;
+    assert.equal(matrixMutation.status, 1, matrixOutput);
+    assert.ok(
+      matrixOutput.includes(
+        "docs/benchmarks/g007-collaboration-mobile-lifecycle-matrix.json: goalId must be G007-collaboration-mail-calendar-poll-mob",
+      ),
+      matrixOutput,
+    );
+  } catch (error) {
+    testFailure = error;
+  } finally {
+    writeFileSync(ledgerPath, originalLedger);
+    writeFileSync(matrixPath, originalMatrix);
+  }
+
+  assert.deepEqual(readFileSync(ledgerPath), originalLedger);
+  assert.deepEqual(readFileSync(matrixPath), originalMatrix);
+  if (testFailure) throw testFailure;
+});
+
 test("G005 workflow and scoped approval-feed controls come from executable source, not foundation prose", () => {
   const foundationPath = join(root, "docs/specs/foundation-gates.md");
   const workflowPath = join(

@@ -8,10 +8,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 beginGate({
   gate: "check:g007-collaboration-mobile-lifecycle",
   script: "scripts/check-g007-collaboration-mobile-lifecycle.mjs",
-  documentInputs: [
-    "docs/specs/backlog-clearance-ledger.md",
-    "docs/specs/foundation-gates.md",
-  ],
+  documentInputs: ["docs/specs/foundation-gates.md"],
 });
 
 const matrixPath = "docs/benchmarks/g007-collaboration-mobile-lifecycle-matrix.json";
@@ -178,7 +175,6 @@ if (matrix) {
 
   for (const test of matrix.requiredBackendTests ?? []) requireFile(test, `G007 backend test ${test}`);
 
-  requireIncludes("docs/specs/backlog-clearance-ledger.md", goalId, "backlog ledger records current G007 goal id");
   requireIncludes("docs/specs/foundation-gates.md", "notification rules", "foundation gate mentions notification contract");
   requireIncludes("docs/specs/foundation-gates.md", "passkey step-up", "foundation gate mentions passkey step-up contract");
 
