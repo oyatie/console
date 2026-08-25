@@ -16,6 +16,35 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 PLAN = ROOT / "tools/buck/impact/plan.py"
 
+GIT_FIXTURE_DEFAULTS = {
+    "GIT_ASKPASS": "/bin/false",
+    "GIT_CONFIG_COUNT": "0",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_SYSTEM": "/dev/null",
+    "GIT_NO_REPLACE_OBJECTS": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "LC_ALL": "C",
+}
+
+
+def git_fixture_environment(source_environment=None, overrides=None):
+    source = os.environ if source_environment is None else source_environment
+    environment = {
+        name: value for name, value in source.items() if not name.startswith("GIT_")
+    }
+    environment.update(GIT_FIXTURE_DEFAULTS)
+    environment.update(overrides or {})
+    return environment
+
+
+def fixture_run(args, *, env=None, git_overrides=None, **kwargs):
+    return subprocess.run(
+        args,
+        env=git_fixture_environment(env, git_overrides),
+        **kwargs,
+    )
+
 
 def load_plan_module():
     spec = importlib.util.spec_from_file_location("impact_plan", PLAN)
@@ -134,13 +163,13 @@ class ImpactPlannerTests(unittest.TestCase):
                 ["git", "-C", str(repo), "add", "."],
                 ["git", "-C", str(repo), "commit", "-qm", "fixture"],
             ):
-                subprocess.run(command, check=True)
-            sha = subprocess.run(
+                fixture_run(command, check=True)
+            sha = fixture_run(
                 ["git", "-C", str(repo), "rev-parse", "HEAD"], text=True, capture_output=True, check=True
             ).stdout.strip()
             first, second = Path(directory) / "first.json", Path(directory) / "second.json"
             for output in (first, second):
-                subprocess.run(
+                fixture_run(
                     ["python3", str(PLAN), "--repo", str(repo), "--base", sha, "--candidate", sha, "--output", str(output)],
                     text=True,
                     capture_output=True,
@@ -197,28 +226,28 @@ class ImpactPlannerTests(unittest.TestCase):
                 ["git", "-C", str(repo), "add", "."],
                 ["git", "-C", str(repo), "commit", "-qm", "base"],
             ):
-                subprocess.run(command, check=True)
-            base = subprocess.run(
+                fixture_run(command, check=True)
+            base = fixture_run(
                 ["git", "-C", str(repo), "rev-parse", "HEAD"], text=True, capture_output=True, check=True
             ).stdout.strip()
             (repo / "changed.txt").write_text("candidate\n", encoding="utf-8")
-            subprocess.run(["git", "-C", str(repo), "add", "changed.txt"], check=True)
-            subprocess.run(["git", "-C", str(repo), "commit", "-qm", "candidate"], check=True)
-            candidate = subprocess.run(
+            fixture_run(["git", "-C", str(repo), "add", "changed.txt"], check=True)
+            fixture_run(["git", "-C", str(repo), "commit", "-qm", "candidate"], check=True)
+            candidate = fixture_run(
                 ["git", "-C", str(repo), "rev-parse", "HEAD"], text=True, capture_output=True, check=True
             ).stdout.strip()
-            before = subprocess.run(
+            before = fixture_run(
                 ["git", "-C", str(repo), "worktree", "list", "--porcelain"], text=True, capture_output=True, check=True
             ).stdout
             log = Path(directory) / "buck.log"
-            completed = subprocess.run(
+            completed = fixture_run(
                 ["python3", str(PLAN), "--repo", str(repo), "--base", base, "--candidate", candidate],
                 text=True,
                 capture_output=True,
                 env={**os.environ, "BUCK_IMPACT_TEST_LOG": str(log)},
                 check=True,
             )
-            after = subprocess.run(
+            after = fixture_run(
                 ["git", "-C", str(repo), "worktree", "list", "--porcelain"], text=True, capture_output=True, check=True
             ).stdout
             manifest = json.loads(completed.stdout)
@@ -269,18 +298,18 @@ class ImpactPlannerTests(unittest.TestCase):
                 ["git", "-C", str(repo), "add", "."],
                 ["git", "-C", str(repo), "commit", "-qm", "base"],
             ):
-                subprocess.run(command, check=True)
-            base = subprocess.run(
+                fixture_run(command, check=True)
+            base = fixture_run(
                 ["git", "-C", str(repo), "rev-parse", "HEAD"], text=True, capture_output=True, check=True
             ).stdout.strip()
             (repo / ".buckconfig").write_text("[cells]\n  root = alternate\n", encoding="utf-8")
-            subprocess.run(["git", "-C", str(repo), "add", ".buckconfig"], check=True)
-            subprocess.run(["git", "-C", str(repo), "commit", "-qm", "candidate"], check=True)
-            candidate = subprocess.run(
+            fixture_run(["git", "-C", str(repo), "add", ".buckconfig"], check=True)
+            fixture_run(["git", "-C", str(repo), "commit", "-qm", "candidate"], check=True)
+            candidate = fixture_run(
                 ["git", "-C", str(repo), "rev-parse", "HEAD"], text=True, capture_output=True, check=True
             ).stdout.strip()
             log = Path(directory) / "buck.log"
-            completed = subprocess.run(
+            completed = fixture_run(
                 ["python3", str(PLAN), "--repo", str(repo), "--base", base, "--candidate", candidate],
                 text=True,
                 capture_output=True,
@@ -309,18 +338,18 @@ class ImpactPlannerTests(unittest.TestCase):
                 ["git", "-C", str(repo), "add", "."],
                 ["git", "-C", str(repo), "commit", "-qm", "base"],
             ):
-                subprocess.run(command, check=True)
-            base = subprocess.run(
+                fixture_run(command, check=True)
+            base = fixture_run(
                 ["git", "-C", str(repo), "rev-parse", "HEAD"], text=True, capture_output=True, check=True
             ).stdout.strip()
             (repo / "none").mkdir()
             (repo / "none" / "BUCK").write_text("filegroup(name = 'new-cell')\n", encoding="utf-8")
-            subprocess.run(["git", "-C", str(repo), "add", "none/BUCK"], check=True)
-            subprocess.run(["git", "-C", str(repo), "commit", "-qm", "declare cell build file"], check=True)
-            candidate = subprocess.run(
+            fixture_run(["git", "-C", str(repo), "add", "none/BUCK"], check=True)
+            fixture_run(["git", "-C", str(repo), "commit", "-qm", "declare cell build file"], check=True)
+            candidate = fixture_run(
                 ["git", "-C", str(repo), "rev-parse", "HEAD"], text=True, capture_output=True, check=True
             ).stdout.strip()
-            completed = subprocess.run(
+            completed = fixture_run(
                 ["python3", str(PLAN), "--repo", str(repo), "--base", base, "--candidate", candidate],
                 text=True,
                 capture_output=True,
@@ -348,12 +377,12 @@ class ImpactPlannerTests(unittest.TestCase):
                 ["git", "-C", str(repo), "add", "."],
                 ["git", "-C", str(repo), "commit", "-qm", "fixture"],
             ):
-                subprocess.run(command, check=True)
-            sha = subprocess.run(
+                fixture_run(command, check=True)
+            sha = fixture_run(
                 ["git", "-C", str(repo), "rev-parse", "HEAD"], text=True, capture_output=True, check=True
             ).stdout.strip()
             output = Path(directory) / "failure.json"
-            completed = subprocess.run(
+            completed = fixture_run(
                 ["python3", str(PLAN), "--repo", str(repo), "--base", sha, "--candidate", sha, "--output", str(output)],
                 text=True,
                 capture_output=True,

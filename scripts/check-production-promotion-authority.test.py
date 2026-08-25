@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import tempfile
 import unittest
@@ -16,6 +17,26 @@ AUTH_PATH = "docs/release/PR-473-PRODUCTION-PROMOTION.authorization.json"
 EVIDENCE_PATH = "docs/release/PR-473-PRODUCTION-CARDINALITY.evidence.json"
 OVERLAY_PATH = "deploy/apps/console/overlays/prod/kustomization.yaml"
 
+GIT_FIXTURE_DEFAULTS = {
+    "GIT_ASKPASS": "/bin/false",
+    "GIT_CONFIG_COUNT": "0",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_SYSTEM": "/dev/null",
+    "GIT_NO_REPLACE_OBJECTS": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "LC_ALL": "C",
+}
+
+
+def git_fixture_environment(overrides: dict[str, str] | None = None) -> dict[str, str]:
+    environment = {
+        name: value for name, value in os.environ.items() if not name.startswith("GIT_")
+    }
+    environment.update(GIT_FIXTURE_DEFAULTS)
+    environment.update(overrides or {})
+    return environment
+
 
 class PromotionAuthorityTest(unittest.TestCase):
     def setUp(self) -> None:
@@ -24,12 +45,16 @@ class PromotionAuthorityTest(unittest.TestCase):
         self.remote = self.root / "remote.git"
         self.repo = self.root / "repo"
         subprocess.run(
-            ["git", "init", "--bare", str(self.remote)], check=True, capture_output=True
+            ["git", "init", "--bare", str(self.remote)],
+            check=True,
+            capture_output=True,
+            env=git_fixture_environment(),
         )
         subprocess.run(
             ["git", "init", "-b", "main", str(self.repo)],
             check=True,
             capture_output=True,
+            env=git_fixture_environment(),
         )
         self.git("config", "user.name", "Test")
         self.git("config", "user.email", "test@example.invalid")
@@ -82,6 +107,7 @@ class PromotionAuthorityTest(unittest.TestCase):
             check=check,
             capture_output=True,
             text=True,
+            env=git_fixture_environment(),
         ).stdout.strip()
 
     def write(self, path: str, value: str) -> None:
@@ -183,6 +209,7 @@ class PromotionAuthorityTest(unittest.TestCase):
             cwd=self.repo,
             capture_output=True,
             text=True,
+            env=git_fixture_environment(),
         )
 
     def initial(self, sha: str | None = None) -> subprocess.CompletedProcess[str]:

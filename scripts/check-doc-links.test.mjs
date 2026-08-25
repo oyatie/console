@@ -12,6 +12,10 @@ import {
   documentationArchiveRef,
   validateDocumentationArchives,
 } from "./console/validate-documentation-archive.mjs";
+import { installGitFixtureEnvironment } from "./lib/git-fixture-environment.mjs";
+
+installGitFixtureEnvironment();
+
 const run = promisify(execFile);
 const script = join(process.cwd(), "scripts/check-doc-links.mjs");
 const generator = join(process.cwd(), "scripts/console/generate-documentation-manifest.mjs");

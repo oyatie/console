@@ -10,6 +10,9 @@ import test from 'node:test';
 import { createConsoleBuckTargetResolver, createConsoleCandidateSourceResolver, promotionAuthorityDigests, validateConsoleTruthLedger } from './validate-console-truth-ledger.mjs';
 import { verifyCommitWithCandidateSshPolicy } from './ssh-signature-policy.mjs';
 import { ABSENT_CONSOLE_ROUTE_FACTS, extractConsoleRouteFactsFromTexts } from './route-inventory.mjs';
+import { installGitFixtureEnvironment } from '../lib/git-fixture-environment.mjs';
+
+installGitFixtureEnvironment();
 
 const registry = JSON.parse(readFileSync(new URL('../../docs/program/console-capability-registry.json', import.meta.url)));
 const jurisdiction = JSON.parse(readFileSync(new URL('../../docs/program/console-jurisdiction-register.json', import.meta.url)));

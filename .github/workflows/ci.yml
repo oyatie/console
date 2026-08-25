@@ -146,6 +146,11 @@ jobs:
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node --test scripts/check-ci-preflight.test.mjs
 
+      - name: Buck impact planner regression
+        id: buck-impact-planner
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
+        run: python3 -m unittest -v tools.buck.impact.test_plan
+
       - name: Console route inventory regression
         id: route-inventory
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}

@@ -5,6 +5,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import {
   PINNED_RELEASE_REPOSITORY,
@@ -20,6 +21,9 @@ import {
   RELEASE_PLEASE_TRANSPORT_ID,
   RELEASE_PLEASE_TRANSPORT_NAME,
 } from './release-please-bot-candidate.mjs';
+import { installGitFixtureEnvironment } from '../lib/git-fixture-environment.mjs';
+
+installGitFixtureEnvironment();
 
 const B = 'd'.repeat(40);
 const H = 'a'.repeat(40);
@@ -476,19 +480,43 @@ test('fetches an exact non-reachable PR head without requiring a synthetic merge
 });
 
 test('candidate compatibility fixture executes the actual planner CLI flag contract', () => {
-  const candidate = spawnSync('git', ['rev-parse', 'HEAD^{commit}'], { encoding: 'utf8' }).stdout.trim();
+  const sourceRepository = fileURLToPath(new URL('../../', import.meta.url));
+  const sourceWorktrees = spawnSync(
+    'git',
+    ['-C', sourceRepository, 'worktree', 'list', '--porcelain'],
+    { encoding: 'utf8' },
+  ).stdout;
+  const candidate = spawnSync(
+    'git',
+    ['-C', sourceRepository, 'rev-parse', 'HEAD^{commit}'],
+    { encoding: 'utf8' },
+  ).stdout.trim();
   assert.match(candidate, /^[0-9a-f]{40}$/);
-  const directory = mkdtempSync(path.join(tmpdir(), 'console-candidate-planner-'));
+  const scratch = mkdtempSync(path.join(tmpdir(), 'console-candidate-planner-'));
+  const repository = path.join(scratch, 'repository');
+  const directory = path.join(scratch, 'worktree');
   try {
-    assert.equal(spawnSync('git', ['worktree', 'add', '--detach', '--no-checkout', directory], { encoding: 'utf8' }).status, 0);
+    const cloned = spawnSync(
+      'git',
+      ['clone', '--no-local', '--no-checkout', '--', sourceRepository, repository],
+      { encoding: 'utf8' },
+    );
+    assert.equal(cloned.status, 0, cloned.stderr);
+    assert.equal(spawnSync('git', ['-C', repository, 'cat-file', '-e', `${candidate}^{commit}`], { encoding: 'utf8' }).status, 0);
+    assert.equal(spawnSync('git', ['-C', repository, 'worktree', 'add', '--detach', '--no-checkout', directory], { encoding: 'utf8' }).status, 0);
     assert.equal(spawnSync('git', ['-C', directory, 'checkout', '--detach', candidate], { encoding: 'utf8' }).status, 0);
-    const accepted = spawnSync('node', ['scripts/console/plan-fanout.mjs', '--candidate', candidate, '--authority-tip', H, '--synthetic-merge', M], { cwd: directory, encoding: 'utf8' });
+    const accepted = spawnSync(process.execPath, ['scripts/console/plan-fanout.mjs', '--candidate', candidate, '--authority-tip', H, '--synthetic-merge', M], { cwd: directory, encoding: 'utf8' });
     assert.doesNotMatch(`${accepted.stdout}${accepted.stderr}`, /unknown argument/);
-    const rejected = spawnSync('node', ['scripts/console/plan-fanout.mjs', '--candidate-sha', candidate, '--authority-tip-sha', H, '--synthetic-merge-sha', M], { cwd: directory, encoding: 'utf8' });
+    const rejected = spawnSync(process.execPath, ['scripts/console/plan-fanout.mjs', '--candidate-sha', candidate, '--authority-tip-sha', H, '--synthetic-merge-sha', M], { cwd: directory, encoding: 'utf8' });
     assert.notEqual(rejected.status, 0);
     assert.match(`${rejected.stdout}${rejected.stderr}`, /unknown argument: --candidate-sha/);
+    assert.equal(
+      spawnSync('git', ['-C', sourceRepository, 'worktree', 'list', '--porcelain'], { encoding: 'utf8' }).stdout,
+      sourceWorktrees,
+      'the standalone fixture must not register a worktree in the caller repository',
+    );
   } finally {
-    spawnSync('git', ['worktree', 'remove', '--force', directory], { encoding: 'utf8' });
-    rmSync(directory, { recursive: true, force: true });
+    spawnSync('git', ['-C', repository, 'worktree', 'remove', '--force', directory], { encoding: 'utf8' });
+    rmSync(scratch, { recursive: true, force: true });
   }
 });

@@ -26,6 +26,9 @@ import {
   RELEASE_PLEASE_TRANSPORT_ID,
   RELEASE_PLEASE_TRANSPORT_NAME,
 } from './release-please-bot-candidate.mjs';
+import { installGitFixtureEnvironment } from '../lib/git-fixture-environment.mjs';
+
+installGitFixtureEnvironment();
 
 const C = 'c'.repeat(40);
 const T = 'a'.repeat(40);

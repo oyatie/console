@@ -7,6 +7,9 @@ import test from 'node:test';
 import { verifyConsoleAuthorityTrain } from './verify-console-authority-train.mjs';
 import { createConsoleCandidateSourceResolver } from './validate-console-truth-ledger.mjs';
 import { rawDiff } from './verify-console-pr-authority-bootstrap.mjs';
+import { installGitFixtureEnvironment } from '../lib/git-fixture-environment.mjs';
+
+installGitFixtureEnvironment();
 
 const AUTHORITY_FILES = ['console-capability-registry.json', 'console-jurisdiction-register.json', 'console-program-ledger.md'];
 

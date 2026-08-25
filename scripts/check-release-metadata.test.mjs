@@ -10,6 +10,9 @@ import {
   validateReleaseMetadataBytes,
   verifyReleaseMetadataRange,
 } from "./check-release-metadata.mjs";
+import { installGitFixtureEnvironment } from "./lib/git-fixture-environment.mjs";
+
+installGitFixtureEnvironment();
 
 const manifest = (version) => Buffer.from(`${JSON.stringify({ ".": version }, null, 2)}\n`);
 const changelog = (previous, version) => Buffer.from(

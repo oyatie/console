@@ -94,6 +94,7 @@ const PLAN = new Map([
   ["Reasoning lens manifest regression", { tier: "fast" }],
   ["Reasoning lens manifest drift", { tier: "fast" }],
   ["CI preflight contract tests", { tier: "fast" }],
+  ["Buck impact planner regression", { tier: "fast" }],
   ["Console route inventory regression", { tier: "fast" }],
   ["Console authority-train regression", { tier: "fast" }],
   ["Console lane-receipt validator regression", { tier: "fast" }],

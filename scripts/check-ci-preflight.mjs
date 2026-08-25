@@ -7,6 +7,8 @@ import { isDeepStrictEqual } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import yaml from "js-yaml";
 
+import { gitFixtureEnvironment } from "./lib/git-fixture-environment.mjs";
+
 const dotSlashBootstrap = "tools/buck/install_dotslash.sh";
 const reindeerToolchainLock = "third-party/rust/reindeer/upstream.lock";
 const reindeerToolchainSource = `source ${reindeerToolchainLock}`;
@@ -14,6 +16,7 @@ const reindeerToolchainInstall = 'rustup toolchain install "$REINDEER_TOOLCHAIN"
 const strictShellMode = "set -euo pipefail";
 const reindeerToolchainOverride = /^(?:export\s+)?REINDEER_TOOLCHAIN\s*=/;
 const ciPreflightTestCommand = "node --test scripts/check-ci-preflight.test.mjs";
+const buckImpactPlannerTestCommand = "python3 -m unittest -v tools.buck.impact.test_plan";
 const reasoningLensManifestCommand = "node scripts/check-reasoning-lens-manifest.mjs";
 const reasoningLensManifestName = "Reasoning lens manifest drift";
 const reasoningLensRegressionCommand = "node --test scripts/check-reasoning-lens-manifest.test.mjs";
@@ -826,6 +829,7 @@ const requiredAlwaysPreflightCommands = [
   releaseMetadataRegressionCommand,
   "npm run check:foundation-gates",
   ciPreflightTestCommand,
+  buckImpactPlannerTestCommand,
   consoleRouteInventoryTestCommand,
   "npm run check:ci-preflight",
   "npm run check:package-lock",
@@ -919,6 +923,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun(reasoningLensRegressionName, reasoningLensRegressionCommand, { if: preflightNpmCiDependentCondition }),
     proofRun(reasoningLensManifestName, reasoningLensManifestCommand, { if: preflightNpmCiDependentCondition }),
     proofRun("CI preflight contract tests", "node --test scripts/check-ci-preflight.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Buck impact planner regression", buckImpactPlannerTestCommand, { if: preflightNpmCiDependentCondition }),
     proofRun("Console route inventory regression", "node --test scripts/console/route-inventory.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console authority-train regression", "node --test scripts/console/verify-console-authority-train.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Console lane-receipt validator regression", "npm run test:lane-receipt", { if: preflightNpmCiDependentCondition }),
@@ -1558,11 +1563,7 @@ function parseDomainUnitIntegrationInvocations(commands) {
 
 const cargoPackageNameCache = new Map();
 let regularGitIndexSourcesCache;
-const gitEnvironment = Object.fromEntries(
-  Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
-);
-gitEnvironment.LC_ALL = "C";
-gitEnvironment.GIT_NO_REPLACE_OBJECTS = "1";
+const gitEnvironment = gitFixtureEnvironment();
 
 function regularGitIndexSources() {
   if (regularGitIndexSourcesCache !== undefined) return regularGitIndexSourcesCache;

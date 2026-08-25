@@ -14,6 +14,9 @@ import {
   isLiteralKeyExpr,
   listSubjectFiles,
 } from "./check-prototype-chain-lookups.mjs";
+import { installGitFixtureEnvironment } from "./lib/git-fixture-environment.mjs";
+
+installGitFixtureEnvironment();
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const cli = fileURLToPath(new URL("./check-prototype-chain-lookups.mjs", import.meta.url));

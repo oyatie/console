@@ -17,6 +17,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, it } from "node:test";
 import { evaluate } from "./check-production-authority-blocked.mjs";
+import { installGitFixtureEnvironment } from "./lib/git-fixture-environment.mjs";
+
+installGitFixtureEnvironment();
 
 const script = join(
   dirname(fileURLToPath(import.meta.url)),

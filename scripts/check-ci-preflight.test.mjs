@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import {
   copyFileSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
+  readlinkSync,
   rmSync,
   unlinkSync,
   writeFileSync,
@@ -16,6 +20,11 @@ import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 
 import {
+  gitFixtureEnvironment,
+  installGitFixtureEnvironment,
+} from "./lib/git-fixture-environment.mjs";
+
+import {
   classifyChangedPaths,
   evaluateCiPreflight,
   emitPathClassGithubOutput,
@@ -23,6 +32,8 @@ import {
   parseNulDelimitedChangedPaths,
   resolvePathClassFromEnv,
 } from "./check-ci-preflight.mjs";
+
+installGitFixtureEnvironment();
 
 const workflow = readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
 const postgresWrapperBuildFile = readFileSync(new URL("../tools/buck/BUCK", import.meta.url), "utf8");
@@ -193,10 +204,7 @@ describe("CI preflight contract", () => {
     const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
     const temporaryRoot = mkdtempSync(join(tmpdir(), "ci-preflight-alternate-index-"));
     const alternateIndex = join(temporaryRoot, "index");
-    const cleanGitEnvironment = Object.fromEntries(
-      Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
-    );
-    cleanGitEnvironment.LC_ALL = "C";
+    const cleanGitEnvironment = gitFixtureEnvironment();
     const runGit = (args, env = cleanGitEnvironment) => {
       const result = spawnSync("git", ["-C", repositoryRoot, ...args], {
         encoding: "utf8",
@@ -221,8 +229,13 @@ describe("CI preflight contract", () => {
       );
       assert.match(
         preflightSource,
-        /gitEnvironment\.GIT_NO_REPLACE_OBJECTS = "1";/,
-        "the sealed Git environment must disable replacement objects",
+        /const gitEnvironment = gitFixtureEnvironment\(\);/,
+        "the index-tree reads must use the shared sealed Git environment",
+      );
+      assert.match(
+        readFileSync(new URL("./lib/git-fixture-environment.mjs", import.meta.url), "utf8"),
+        /GIT_NO_REPLACE_OBJECTS: "1"/,
+        "the shared sealed Git environment must disable replacement objects",
       );
 
       copyFileSync(
@@ -274,6 +287,136 @@ describe("CI preflight contract", () => {
         },
       );
       assert.equal(child.status, 0, `${child.stdout}\n${child.stderr}`);
+    } finally {
+      rmSync(temporaryRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("isolates fixture Git from hostile external repository controls", () => {
+    const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
+    const temporaryRoot = mkdtempSync(join(tmpdir(), "ci-preflight-git-sentinel-"));
+    const sentinel = join(temporaryRoot, "sentinel");
+    const foreignWorktree = join(temporaryRoot, "foreign-worktree");
+    const hostileGlobalConfig = join(temporaryRoot, "hostile-global-config");
+    const hostileSystemConfig = join(temporaryRoot, "hostile-system-config");
+    const hostileTrace = join(temporaryRoot, "hostile-trace.json");
+    const safeEnvironment = gitFixtureEnvironment();
+    const runGit = (args) => {
+      const result = spawnSync("git", args, {
+        encoding: "utf8",
+        env: safeEnvironment,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      assert.equal(result.status, 0, result.stderr);
+      return result.stdout;
+    };
+    const worktreeSnapshot = (root) => {
+      const entries = [];
+      const visit = (relative = "") => {
+        const absolute = join(root, relative);
+        for (const name of readdirSync(absolute).sort()) {
+          if (relative === "" && name === ".git") continue;
+          const childRelative = relative === "" ? name : `${relative}/${name}`;
+          const child = join(root, childRelative);
+          const metadata = lstatSync(child);
+          const mode = (metadata.mode & 0o777).toString(8);
+          if (metadata.isSymbolicLink()) {
+            entries.push(["symlink", childRelative, mode, readlinkSync(child)]);
+          } else if (metadata.isDirectory()) {
+            entries.push(["directory", childRelative, mode]);
+            visit(childRelative);
+          } else {
+            entries.push([
+              "file",
+              childRelative,
+              mode,
+              createHash("sha256").update(readFileSync(child)).digest("hex"),
+            ]);
+          }
+        }
+      };
+      visit();
+      return entries;
+    };
+    const snapshot = () => ({
+      config: readFileSync(join(sentinel, ".git/config")),
+      globalConfig: readFileSync(hostileGlobalConfig),
+      systemConfig: readFileSync(hostileSystemConfig),
+      head: readFileSync(join(sentinel, ".git/HEAD")),
+      resolvedHead: runGit(["-C", sentinel, "rev-parse", "HEAD"]),
+      index: readFileSync(join(sentinel, ".git/index")),
+      status: runGit(["-C", sentinel, "status", "--porcelain=v1", "--untracked-files=all"]),
+      worktree: worktreeSnapshot(sentinel),
+      foreignWorktree: worktreeSnapshot(foreignWorktree),
+      worktreeList: runGit(["-C", sentinel, "worktree", "list", "--porcelain"]),
+    });
+
+    try {
+      mkdirSync(sentinel);
+      mkdirSync(foreignWorktree);
+      mkdirSync(join(temporaryRoot, "hostile-hooks"));
+      writeFileSync(hostileGlobalConfig, "[core]\n\thooksPath = /hostile/global/hooks\n");
+      writeFileSync(hostileSystemConfig, "[core]\n\thooksPath = /hostile/system/hooks\n");
+      runGit(["init", "--initial-branch=main", "--quiet", sentinel]);
+      runGit(["-C", sentinel, "config", "user.name", "Issue 881 Sentinel"]);
+      runGit(["-C", sentinel, "config", "user.email", "sentinel@example.invalid"]);
+      writeFileSync(join(sentinel, "sentinel.txt"), "external sentinel bytes\n");
+      runGit(["-C", sentinel, "add", "--", "sentinel.txt"]);
+      runGit(["-C", sentinel, "commit", "--quiet", "-m", "external sentinel"]);
+      const before = snapshot();
+
+      const deliberate = gitFixtureEnvironment(
+        {
+          HOME: process.env.HOME,
+          XDG_CONFIG_HOME: process.env.XDG_CONFIG_HOME,
+          GIT_DIR: "/hostile/repository",
+        },
+        {
+          GIT_ASKPASS: "/fixture/askpass",
+          GIT_AUTHOR_NAME: "Fixture Author",
+        },
+      );
+      assert.equal(deliberate.GIT_DIR, undefined);
+      assert.equal(deliberate.GIT_ASKPASS, "/fixture/askpass");
+      assert.equal(deliberate.GIT_AUTHOR_NAME, "Fixture Author");
+      assert.equal(deliberate.HOME, process.env.HOME);
+      assert.equal(deliberate.XDG_CONFIG_HOME, process.env.XDG_CONFIG_HOME);
+
+      const child = spawnSync(
+        process.execPath,
+        ["--test", "scripts/check-prototype-chain-lookups.test.mjs"],
+        {
+          cwd: repositoryRoot,
+          encoding: "utf8",
+          env: {
+            ...process.env,
+            GIT_ALTERNATE_OBJECT_DIRECTORIES: join(sentinel, ".git/objects"),
+            GIT_ASKPASS: join(temporaryRoot, "hostile-askpass"),
+            GIT_CEILING_DIRECTORIES: temporaryRoot,
+            GIT_COMMON_DIR: join(sentinel, ".git"),
+            GIT_CONFIG_COUNT: "2",
+            GIT_CONFIG_GLOBAL: hostileGlobalConfig,
+            GIT_CONFIG_KEY_0: "core.hooksPath",
+            GIT_CONFIG_KEY_1: "commit.gpgsign",
+            GIT_CONFIG_NOSYSTEM: "0",
+            GIT_CONFIG_SYSTEM: hostileSystemConfig,
+            GIT_CONFIG_VALUE_0: join(temporaryRoot, "hostile-hooks"),
+            GIT_CONFIG_VALUE_1: "true",
+            GIT_DIR: join(sentinel, ".git"),
+            GIT_DISCOVERY_ACROSS_FILESYSTEM: "1",
+            GIT_INDEX_FILE: join(sentinel, ".git/index"),
+            GIT_NAMESPACE: "hostile-namespace",
+            GIT_OBJECT_DIRECTORY: join(sentinel, ".git/objects"),
+            GIT_SSH_COMMAND: "/bin/false",
+            GIT_TRACE2_EVENT: hostileTrace,
+            GIT_WORK_TREE: foreignWorktree,
+          },
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      );
+      assert.equal(child.status, 0, `${child.stdout}\n${child.stderr}`);
+      assert.deepEqual(snapshot(), before);
+      assert.equal(lstatSync(hostileTrace, { throwIfNoEntry: false }), undefined);
     } finally {
       rmSync(temporaryRoot, { recursive: true, force: true });
     }
@@ -742,7 +885,7 @@ describe("CI preflight contract", () => {
 
   it("rejects every run-step condition, soft-failure, and retained-text early-exit bypass", () => {
     const requiredRunStepCounts = {
-      preflight: 32,
+      preflight: 33,
       "domain-unit": 2,
       // -1: the expand/contract rehearsal moved to its own job.
       backend: 25,
@@ -814,9 +957,11 @@ describe("CI preflight contract", () => {
     // Coverage GREW; each new install step goes through the same three bypass
     // mutations as every other run step. Coverage GREW: the new
     // step goes through the same three bypass mutations as every other one.
-    assert.equal(runStepCount, 130, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 130*3 = 390.
-    assert.equal(mutationCount, 390, "exhaustive bypass matrix must not shrink");
+    // 2026-08-25: +1 always-on Buck impact planner regression. This closes the
+    // previously dark 13-test suite and subjects the new step to all bypasses.
+    assert.equal(runStepCount, 131, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 131*3 = 393.
+    assert.equal(mutationCount, 393, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {

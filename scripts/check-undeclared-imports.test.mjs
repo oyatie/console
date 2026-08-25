@@ -7,6 +7,9 @@ import { after, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { SCANNED_FLOOR, evaluateUndeclaredImports } from "./check-undeclared-imports.mjs";
+import { installGitFixtureEnvironment } from "./lib/git-fixture-environment.mjs";
+
+installGitFixtureEnvironment();
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const cli = fileURLToPath(new URL("./check-undeclared-imports.mjs", import.meta.url));

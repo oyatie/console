@@ -204,9 +204,8 @@ fn binary_exits_non_zero_on_registry_violation() -> Result<(), Box<dyn std::erro
         ],
     )?;
 
-    let output = Command::new(env!("CARGO_BIN_EXE_console-gate-vendor-lockin"))
-        .current_dir(&repo)
-        .output()?;
+    let mut command = git_fixture_command(env!("CARGO_BIN_EXE_console-gate-vendor-lockin"));
+    let output = command.current_dir(&repo).output()?;
 
     assert!(
         !output.status.success(),
@@ -238,8 +237,30 @@ fn write_file(path: &Path, content: &str) -> Result<(), Box<dyn std::error::Erro
     Ok(())
 }
 
+fn git_fixture_command(program: &str) -> Command {
+    let mut command = Command::new(program);
+    for (name, _) in std::env::vars_os() {
+        if name.to_string_lossy().starts_with("GIT_") {
+            command.env_remove(name);
+        }
+    }
+    command
+        .env("GIT_ASKPASS", "/bin/false")
+        .env("GIT_CONFIG_COUNT", "0")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CONFIG_NOSYSTEM", "1")
+        .env("GIT_CONFIG_SYSTEM", "/dev/null")
+        .env("GIT_NO_REPLACE_OBJECTS", "1")
+        .env("GIT_TERMINAL_PROMPT", "0")
+        .env("LC_ALL", "C");
+    command
+}
+
 fn run(dir: &Path, program: &str, args: &[&str]) -> Result<(), Box<dyn std::error::Error>> {
-    let output = Command::new(program).args(args).current_dir(dir).output()?;
+    let output = git_fixture_command(program)
+        .args(args)
+        .current_dir(dir)
+        .output()?;
     if output.status.success() {
         return Ok(());
     }
