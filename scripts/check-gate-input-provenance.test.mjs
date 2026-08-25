@@ -199,6 +199,34 @@ test("live instrument passes on the current tree", () => {
   );
   assert.doesNotMatch(g004, /docs\/specs\/foundation-gates\.md/);
 
+  assert.ok(
+    !report.rows.some(
+      (r) =>
+        r.gate === "check:g006-asset-dispatch-lifecycle" &&
+        r.input_path === "docs/specs/backlog-clearance-ledger.md",
+    ),
+  );
+  const g006FoundationRow = report.counted_rows.find(
+    (r) =>
+      r.gate === "check:g006-asset-dispatch-lifecycle" &&
+      r.input_path === "docs/specs/foundation-gates.md",
+  );
+  assert.equal(g006FoundationRow?.assertion_count, 2);
+  const g006 = readFileSync(
+    join(root, "scripts/check-g006-asset-dispatch-lifecycle.mjs"),
+    "utf8",
+  );
+  assert.match(g006, /matrix\.goalId === goalId/);
+  assert.doesNotMatch(g006, /docs\/specs\/backlog-clearance-ledger\.md/);
+  assert.match(
+    g006,
+    /requireIncludes\("docs\/specs\/foundation-gates\.md", "ownership transfers"/,
+  );
+  assert.match(
+    g006,
+    /requireIncludes\("docs\/specs\/foundation-gates\.md", "assets only to equipment\/inventory schemas"/,
+  );
+
   const exceptions = JSON.parse(
     readFileSync(join(root, "docs/program/gate-input-exceptions.json"), "utf8"),
   );
@@ -209,6 +237,21 @@ test("live instrument passes on the current tree", () => {
         entry.gate === "check:g004-identity-foundation" &&
         entry.input_path === "docs/specs/foundation-gates.md",
     ),
+  );
+  assert.ok(
+    !exceptions.exceptions.some(
+      (entry) =>
+        entry.gate === "check:g006-asset-dispatch-lifecycle" &&
+        entry.input_path === "docs/specs/backlog-clearance-ledger.md",
+    ),
+  );
+  assert.equal(
+    exceptions.exceptions.filter(
+      (entry) =>
+        entry.gate === "check:g006-asset-dispatch-lifecycle" &&
+        entry.input_path === "docs/specs/foundation-gates.md",
+    ).length,
+    1,
   );
 });
 
@@ -268,6 +311,77 @@ test("G005 goal identity is controlled by the matrix, not the historical ledger"
     assert.ok(
       matrixOutput.includes(
         "docs/benchmarks/g005-workflow-lifecycle-matrix.json: goalId must be G005-workflow-builder-approvals-work-hub",
+      ),
+      matrixOutput,
+    );
+  } catch (error) {
+    testFailure = error;
+  } finally {
+    writeFileSync(ledgerPath, originalLedger);
+    writeFileSync(matrixPath, originalMatrix);
+  }
+
+  assert.deepEqual(readFileSync(ledgerPath), originalLedger);
+  assert.deepEqual(readFileSync(matrixPath), originalMatrix);
+  if (testFailure) throw testFailure;
+});
+
+test("G006 goal identity is controlled by the matrix, not the historical ledger", () => {
+  const goalId = "G006-assets-equipment-inventory-dispatch";
+  const ledgerPath = join(root, "docs/specs/backlog-clearance-ledger.md");
+  const matrixPath = join(
+    root,
+    "docs/benchmarks/g006-asset-dispatch-lifecycle-matrix.json",
+  );
+  const originalLedger = readFileSync(ledgerPath);
+  const originalMatrix = readFileSync(matrixPath);
+  const runG006 = () =>
+    spawnSync(process.execPath, ["scripts/check-g006-asset-dispatch-lifecycle.mjs"], {
+      cwd: root,
+      encoding: "utf8",
+      maxBuffer: 32 * 1024 * 1024,
+    });
+  let testFailure;
+
+  try {
+    const ledgerText = originalLedger.toString("utf8");
+    assert.equal(
+      ledgerText.split(goalId).length - 1,
+      1,
+      "fixture must mutate exactly one historical-ledger G006 goal id",
+    );
+    writeFileSync(
+      ledgerPath,
+      ledgerText.replace(goalId, "G006-hostile-historical-ledger-goal"),
+    );
+    const ledgerMutation = runG006();
+    assert.equal(
+      ledgerMutation.status,
+      0,
+      ledgerMutation.stderr || ledgerMutation.stdout,
+    );
+
+    writeFileSync(ledgerPath, originalLedger);
+    const matrixText = originalMatrix.toString("utf8");
+    const matrixGoal = `"goalId": "${goalId}"`;
+    assert.equal(
+      matrixText.split(matrixGoal).length - 1,
+      1,
+      "fixture must mutate exactly one machine-readable G006 goal id",
+    );
+    writeFileSync(
+      matrixPath,
+      matrixText.replace(
+        matrixGoal,
+        '"goalId": "G006-hostile-matrix-goal"',
+      ),
+    );
+    const matrixMutation = runG006();
+    const matrixOutput = `${matrixMutation.stdout}\n${matrixMutation.stderr}`;
+    assert.equal(matrixMutation.status, 1, matrixOutput);
+    assert.ok(
+      matrixOutput.includes(
+        "docs/benchmarks/g006-asset-dispatch-lifecycle-matrix.json: goalId must be G006-assets-equipment-inventory-dispatch",
       ),
       matrixOutput,
     );

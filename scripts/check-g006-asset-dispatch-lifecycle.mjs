@@ -9,7 +9,6 @@ beginGate({
   gate: "check:g006-asset-dispatch-lifecycle",
   script: "scripts/check-g006-asset-dispatch-lifecycle.mjs",
   documentInputs: [
-    "docs/specs/backlog-clearance-ledger.md",
     "docs/specs/foundation-gates.md",
   ],
 });
@@ -170,7 +169,6 @@ if (matrix) {
 
   for (const test of matrix.requiredBackendTests ?? []) requireFile(test, `G006 backend test ${test}`);
 
-  requireIncludes("docs/specs/backlog-clearance-ledger.md", goalId, "backlog ledger records current G006 goal id");
   requireIncludes("docs/specs/foundation-gates.md", "ownership transfers", "foundation gate mentions legal ownership transfer contract");
   requireIncludes("docs/specs/foundation-gates.md", "assets only to equipment/inventory schemas", "foundation gate mentions asset/inventory mapping contract");
 
