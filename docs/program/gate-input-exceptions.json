@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "baseline_count": 16,
+  "baseline_count": 15,
   "notes": "S2 exception register. Growth beyond baseline_count fails. Expired remove_by fails. Decoration (unobserved pairs) fail.",
   "exceptions": [
     {
@@ -62,14 +62,6 @@
     {
       "gate": "check:foundation-gates",
       "input_path": "docs/specs/review-fix-merge-governance.md",
-      "owner": "executable-contract-lane",
-      "reason": "tranche-1 residual \u2014 prose-dependent assertion retained pending later conversion",
-      "first_seen": "2026-08-05",
-      "remove_by": "2026-11-05"
-    },
-    {
-      "gate": "check:g005-workflow-lifecycle",
-      "input_path": "docs/specs/foundation-gates.md",
       "owner": "executable-contract-lane",
       "reason": "tranche-1 residual \u2014 prose-dependent assertion retained pending later conversion",
       "first_seen": "2026-08-05",

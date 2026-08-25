@@ -283,6 +283,332 @@ test("G005 goal identity is controlled by the matrix, not the historical ledger"
   if (testFailure) throw testFailure;
 });
 
+test("G005 workflow and scoped approval-feed controls come from executable source, not foundation prose", () => {
+  const foundationPath = join(root, "docs/specs/foundation-gates.md");
+  const workflowPath = join(
+    root,
+    "backend/crates/workorder/domain/src/lib.rs",
+  );
+  const approvalFeedPath = join(
+    root,
+    "backend/crates/workorder/rest/src/lib.rs",
+  );
+  const originalFoundation = readFileSync(foundationPath);
+  const originalWorkflow = readFileSync(workflowPath);
+  const originalApprovalFeed = readFileSync(approvalFeedPath);
+  const runG005 = () =>
+    spawnSync(process.execPath, ["scripts/check-g005-workflow-lifecycle.mjs"], {
+      cwd: root,
+      encoding: "utf8",
+      maxBuffer: 32 * 1024 * 1024,
+    });
+  let testFailure;
+
+  try {
+    const foundationText = originalFoundation.toString("utf8");
+    const historicalPhrases = [
+      "workflow/approval/action lifecycle",
+      "Work Hub",
+    ];
+    for (const phrase of historicalPhrases) {
+      assert.equal(
+        foundationText.split(phrase).length - 1,
+        1,
+        `fixture must mutate exactly one historical phrase: ${phrase}`,
+      );
+    }
+    writeFileSync(
+      foundationPath,
+      foundationText
+        .replace(
+          historicalPhrases[0],
+          "hostile historical workflow prose",
+        )
+        .replace(historicalPhrases[1], "Hostile Historical Hub"),
+    );
+    const historicalMutation = runG005();
+    assert.equal(
+      historicalMutation.status,
+      0,
+      historicalMutation.stderr || historicalMutation.stdout,
+    );
+
+    const workflowText = originalWorkflow.toString("utf8");
+    const workflowAnchor =
+      "        let transition = self.apply_transition(to, at, context)?;";
+    assert.equal(
+      workflowText.split(workflowAnchor).length - 1,
+      1,
+      "fixture must mutate exactly one guarded workflow transition",
+    );
+    writeFileSync(
+      workflowPath,
+      workflowText.replace(
+        workflowAnchor,
+        [
+          '        let _workflow_gate_string_decoy = "let transition = self.apply_transition(to, at, context)?;";',
+          "        // let transition = self.apply_transition(to, at, context)?;",
+          "        let transition =",
+          "            self.apply_transition(to, at, TransitionGuardContext::admin())?;",
+        ].join("\n"),
+      ),
+    );
+    const workflowMutation = runG005();
+    const workflowOutput = `${workflowMutation.stdout}\n${workflowMutation.stderr}`;
+    assert.equal(workflowMutation.status, 1, workflowOutput);
+    assert.ok(
+      workflowOutput.includes(
+        "G005 executable workflow/approval lifecycle must preserve ordered approval and guarded transition application",
+      ),
+      workflowOutput,
+    );
+    writeFileSync(workflowPath, originalWorkflow);
+
+    const workflowOrderAnchor = [
+      "        let transition = self.apply_transition(to, at, context)?;",
+      "        self.approval_line = next_line;",
+    ].join("\n");
+    assert.equal(
+      workflowText.split(workflowOrderAnchor).length - 1,
+      1,
+      "G005-ADV-01 fixture must mutate exactly one transition/approval-line ordering boundary",
+    );
+    writeFileSync(
+      workflowPath,
+      workflowText.replace(
+        workflowOrderAnchor,
+        [
+          "        self.approval_line = next_line;",
+          "        let transition = self.apply_transition(to, at, context)?;",
+        ].join("\n"),
+      ),
+    );
+    const workflowOrderMutation = runG005();
+    const workflowOrderOutput = `${workflowOrderMutation.stdout}\n${workflowOrderMutation.stderr}`;
+    assert.equal(
+      workflowOrderMutation.status,
+      1,
+      `G005-ADV-01 must reject committing the approval line before the guarded transition\n${workflowOrderOutput}`,
+    );
+    assert.ok(
+      workflowOrderOutput.includes(
+        "G005 executable workflow/approval lifecycle must preserve ordered approval and guarded transition application",
+      ),
+      workflowOrderOutput,
+    );
+    writeFileSync(workflowPath, originalWorkflow);
+
+    const workflowCfgDecoyText = workflowText.replace(
+      workflowOrderAnchor,
+      [
+        "        #[cfg(any())]",
+        "        {",
+        "            let transition = self.apply_transition(to, at, context)?;",
+        "        }",
+        "        self.approval_line = next_line;",
+        "        let transition = self.apply_transition(to, at, context)?;",
+      ].join("\n"),
+    );
+    assert.equal(
+      workflowCfgDecoyText.split(workflowAnchor).length - 1,
+      2,
+      "G005-ADV-02 fixture must retain the real guarded apply and add exactly one cfg-disabled decoy",
+    );
+    writeFileSync(workflowPath, workflowCfgDecoyText);
+    const workflowCfgDecoyMutation = runG005();
+    const workflowCfgDecoyOutput = `${workflowCfgDecoyMutation.stdout}\n${workflowCfgDecoyMutation.stderr}`;
+    assert.equal(
+      workflowCfgDecoyMutation.status,
+      1,
+      `G005-ADV-02 must reject cfg-disabled ordering evidence while the compiled approval commit precedes the real guarded transition\n${workflowCfgDecoyOutput}`,
+    );
+    assert.ok(
+      workflowCfgDecoyOutput.includes(
+        "G005 executable workflow/approval lifecycle must preserve ordered approval and guarded transition application",
+      ),
+      workflowCfgDecoyOutput,
+    );
+    writeFileSync(workflowPath, originalWorkflow);
+
+    const workflowCfgAttrAnchor =
+      "            approval_line_complete: next_line.is_complete(),";
+    assert.equal(
+      workflowText.split(workflowCfgAttrAnchor).length - 1,
+      1,
+      "G005-ADV-03 fixture must annotate exactly one bounded lifecycle statement with cfg_attr",
+    );
+    writeFileSync(
+      workflowPath,
+      workflowText.replace(
+        workflowCfgAttrAnchor,
+        [
+          "            #[cfg_attr(any(), cfg(any()))]",
+          workflowCfgAttrAnchor,
+        ].join("\n"),
+      ),
+    );
+    const workflowCfgAttrMutation = runG005();
+    const workflowCfgAttrOutput = `${workflowCfgAttrMutation.stdout}\n${workflowCfgAttrMutation.stderr}`;
+    assert.equal(
+      workflowCfgAttrMutation.status,
+      1,
+      `G005-ADV-03 must reject cfg_attr presence control within bounded lifecycle evidence\n${workflowCfgAttrOutput}`,
+    );
+    assert.ok(
+      workflowCfgAttrOutput.includes(
+        "G005 executable workflow/approval lifecycle must preserve ordered approval and guarded transition application",
+      ),
+      workflowCfgAttrOutput,
+    );
+    writeFileSync(workflowPath, originalWorkflow);
+
+    const workflowDuplicateDecoyText = workflowText.replace(
+      workflowOrderAnchor,
+      [
+        "        if false {",
+        "            let transition = self.apply_transition(to, at, context)?;",
+        "        }",
+        "        let transition = self.apply_transition(to, at, context)?;",
+        "        self.approval_line = next_line;",
+      ].join("\n"),
+    );
+    assert.equal(
+      workflowDuplicateDecoyText.split(workflowAnchor).length - 1,
+      2,
+      "G005-ADV-04 fixture must retain the real guarded apply and add exactly one unreachable duplicate",
+    );
+    writeFileSync(workflowPath, workflowDuplicateDecoyText);
+    const workflowDuplicateDecoyMutation = runG005();
+    const workflowDuplicateDecoyOutput = `${workflowDuplicateDecoyMutation.stdout}\n${workflowDuplicateDecoyMutation.stderr}`;
+    assert.equal(
+      workflowDuplicateDecoyMutation.status,
+      1,
+      `G005-ADV-04 must reject duplicate critical ordering evidence even when one copy is unreachable\n${workflowDuplicateDecoyOutput}`,
+    );
+    assert.ok(
+      workflowDuplicateDecoyOutput.includes(
+        "G005 executable workflow/approval lifecycle must preserve ordered approval and guarded transition application",
+      ),
+      workflowDuplicateDecoyOutput,
+    );
+    writeFileSync(workflowPath, originalWorkflow);
+
+    const workflowRawCfgDecoyText = workflowText.replace(
+      workflowOrderAnchor,
+      [
+        "        #[r#cfg(any())]",
+        "        let transition = self.apply_transition(to, at, context)?;",
+        "        self.approval_line = next_line;",
+        "        let transition: Transition<WorkOrderStatus> =",
+        "            self.apply_transition(to, at, context)?;",
+      ].join("\n"),
+    );
+    const workflowTypedApplyAnchor = [
+      "        let transition: Transition<WorkOrderStatus> =",
+      "            self.apply_transition(to, at, context)?;",
+    ].join("\n");
+    assert.equal(
+      workflowRawCfgDecoyText.split("        #[r#cfg(any())]").length - 1,
+      1,
+      "G005-ADV-05 fixture must carry exactly one raw cfg attribute on the canonical guarded apply",
+    );
+    assert.equal(
+      workflowRawCfgDecoyText.split(workflowAnchor).length - 1,
+      1,
+      "G005-ADV-05 fixture must retain exactly one canonical guarded-apply token sequence",
+    );
+    assert.equal(
+      workflowRawCfgDecoyText.split(workflowTypedApplyAnchor).length - 1,
+      1,
+      "G005-ADV-05 fixture must retain exactly one real compiled type-annotated guarded apply",
+    );
+    writeFileSync(workflowPath, workflowRawCfgDecoyText);
+    const workflowRawCfgDecoyMutation = runG005();
+    const workflowRawCfgDecoyOutput = `${workflowRawCfgDecoyMutation.stdout}\n${workflowRawCfgDecoyMutation.stderr}`;
+    assert.equal(
+      workflowRawCfgDecoyMutation.status,
+      1,
+      `G005-ADV-05 must normalize and reject raw cfg evidence while the compiled approval commit precedes the real guarded transition\n${workflowRawCfgDecoyOutput}`,
+    );
+    assert.ok(
+      workflowRawCfgDecoyOutput.includes(
+        "G005 executable workflow/approval lifecycle must preserve ordered approval and guarded transition application",
+      ),
+      workflowRawCfgDecoyOutput,
+    );
+    writeFileSync(workflowPath, originalWorkflow);
+
+    writeFileSync(
+      workflowPath,
+      workflowText.replace(
+        workflowCfgAttrAnchor,
+        [
+          "            #[r#cfg_attr(any(), cfg(any()))]",
+          workflowCfgAttrAnchor,
+        ].join("\n"),
+      ),
+    );
+    const workflowRawCfgAttrMutation = runG005();
+    const workflowRawCfgAttrOutput = `${workflowRawCfgAttrMutation.stdout}\n${workflowRawCfgAttrMutation.stderr}`;
+    assert.equal(
+      workflowRawCfgAttrMutation.status,
+      1,
+      `G005-ADV-06 must normalize and reject raw cfg_attr presence control within bounded lifecycle evidence\n${workflowRawCfgAttrOutput}`,
+    );
+    assert.ok(
+      workflowRawCfgAttrOutput.includes(
+        "G005 executable workflow/approval lifecycle must preserve ordered approval and guarded transition application",
+      ),
+      workflowRawCfgAttrOutput,
+    );
+    writeFileSync(workflowPath, originalWorkflow);
+
+    const approvalFeedText = originalApprovalFeed.toString("utf8");
+    const approvalFeedAnchor =
+      "    let visibility = approval_source_visibility(&principal)?;";
+    assert.equal(
+      approvalFeedText.split(approvalFeedAnchor).length - 1,
+      1,
+      "fixture must mutate exactly one principal-derived approval visibility binding",
+    );
+    writeFileSync(
+      approvalFeedPath,
+      approvalFeedText.replace(
+        approvalFeedAnchor,
+        [
+          '    let _approval_feed_string_decoy = "let visibility = approval_source_visibility(&principal)?;";',
+          "    // let visibility = approval_source_visibility(&principal)?;",
+          "    let visibility = ApprovalSourceVisibility {",
+          "        work_orders: true,",
+          "        daily_plans: true,",
+          "        target_changes: true,",
+          "    };",
+        ].join("\n"),
+      ),
+    );
+    const approvalFeedMutation = runG005();
+    const approvalFeedOutput = `${approvalFeedMutation.stdout}\n${approvalFeedMutation.stderr}`;
+    assert.equal(approvalFeedMutation.status, 1, approvalFeedOutput);
+    assert.ok(
+      approvalFeedOutput.includes(
+        "G005 server-owned approval feed must derive visibility from the principal and preserve branch-scoped queries",
+      ),
+      approvalFeedOutput,
+    );
+  } catch (error) {
+    testFailure = error;
+  } finally {
+    writeFileSync(foundationPath, originalFoundation);
+    writeFileSync(workflowPath, originalWorkflow);
+    writeFileSync(approvalFeedPath, originalApprovalFeed);
+  }
+
+  assert.deepEqual(readFileSync(foundationPath), originalFoundation);
+  assert.deepEqual(readFileSync(workflowPath), originalWorkflow);
+  assert.deepEqual(readFileSync(approvalFeedPath), originalApprovalFeed);
+  if (testFailure) throw testFailure;
+});
+
 test("G004 machine-readable passkey and policy controls fail under hostile matrix mutations", async () => {
   const { hasPasskeyContract, hasPolicyContract } = await import(
     "./check-g004-identity-foundation.mjs"

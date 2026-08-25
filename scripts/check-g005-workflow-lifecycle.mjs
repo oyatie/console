@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync } from "node:fs";
 import { beginGate, emitProvenanceIfRequested, noteAssertion, noteRead } from "./lib/gate-inputs.mjs";
+import { stripRustCommentsAndStringLiterals } from "./check-executed-tests-cfg.mjs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -8,9 +9,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 beginGate({
   gate: "check:g005-workflow-lifecycle",
   script: "scripts/check-g005-workflow-lifecycle.mjs",
-  documentInputs: [
-    "docs/specs/foundation-gates.md",
-  ],
+  documentInputs: [],
 });
 
 const matrixPath = "docs/benchmarks/g005-workflow-lifecycle-matrix.json";
@@ -75,6 +74,99 @@ function requireArrayOfStrings(value, path, label) {
     label,
     `${path}: ${label} must be a non-empty string array`,
   );
+}
+
+function compactRustFunction(source, name) {
+  const stripped = stripRustCommentsAndStringLiterals(source);
+  const signature = new RegExp(`\\b(?:pub\\s+)?(?:async\\s+)?fn\\s+${name}\\s*\\(`).exec(stripped);
+  if (!signature) return "";
+  const openBrace = stripped.indexOf("{", signature.index + signature[0].length);
+  if (openBrace === -1) return "";
+  let depth = 1;
+  for (let index = openBrace + 1; index < stripped.length; index += 1) {
+    if (stripped[index] === "{") depth += 1;
+    else if (stripped[index] === "}") depth -= 1;
+    if (depth === 0) return stripped.slice(openBrace + 1, index).replace(/\s+/g, "");
+  }
+  return "";
+}
+
+function normalizeRustRawIdentifiers(source) {
+  return source.replace(/\br#([A-Za-z_][A-Za-z0-9_]*)\b/g, "$1");
+}
+
+function hasWorkflowApprovalLifecycle(source) {
+  const body = compactRustFunction(source, "approve_next");
+  const normalizedBody = normalizeRustRawIdentifiers(body);
+  const roleSelection = "letrole=self.approval_line.next_pending_non_mechanic_role()";
+  const approvalClone = "letmutnext_line=self.approval_line.clone();";
+  const approval = "next_line.approve(role,actor_id,at)?;";
+  const context = "letcontext=TransitionGuardContext{actor:TransitionActor::Admin,approval_line_complete:next_line.is_complete(),completion_evidence_verified,};";
+  const guardedTransition = "lettransition=self.apply_transition(to,at,context)?;";
+  const approvalCommit = "self.approval_line=next_line;";
+  const requiredPredicates = [
+    roleSelection,
+    approvalClone,
+    approval,
+    "ApprovalRole::Admin=>WorkOrderStatus::AdminReview",
+    "ApprovalRole::Executiveifself.result_type==WorkResultType::Completed=>{WorkOrderStatus::FinalCompleted}",
+    "letcompletion_evidence_verified=ifto==WorkOrderStatus::FinalCompleted{evidence.final_completion_evidence_verified(self.id)?}else{true};",
+    "approval_line_complete:next_line.is_complete(),completion_evidence_verified,",
+    guardedTransition,
+    approvalCommit,
+  ];
+  const orderedPredicates = [
+    roleSelection,
+    approvalClone,
+    approval,
+    context,
+    guardedTransition,
+    approvalCommit,
+  ];
+  const hasPresenceAffectingCfg = /#!?\[cfg(?:_attr)?\(/.test(normalizedBody);
+  const criticalAnchorsAreUnique = orderedPredicates.every(
+    (predicate) => body.split(predicate).length === 2,
+  );
+  let cursor = 0;
+  const lifecycleIsOrdered = orderedPredicates.every((predicate) => {
+    const index = body.indexOf(predicate, cursor);
+    if (index === -1) return false;
+    cursor = index + predicate.length;
+    return true;
+  });
+  return (
+    !hasPresenceAffectingCfg &&
+    requiredPredicates.every((predicate) => body.includes(predicate)) &&
+    criticalAnchorsAreUnique &&
+    lifecycleIsOrdered
+  );
+}
+
+function hasServerOwnedScopedApprovalFeed(source) {
+  const router = compactRustFunction(source, "router");
+  const endpoint = compactRustFunction(source, "list_approval_items");
+  const visibility = compactRustFunction(source, "approval_source_visibility");
+  const counts = compactRustFunction(source, "fetch_approval_source_counts");
+  const rows = compactRustFunction(source, "fetch_approval_rows");
+  const union = compactRustFunction(source, "push_approval_federation_union");
+  return [
+    router.includes(".route(APPROVAL_ITEMS_PATH,get(list_approval_items))"),
+    endpoint.includes("letprincipal=principal_from_headers(&state,&headers).await?;"),
+    endpoint.includes("letvisibility=approval_source_visibility(&principal)?;"),
+    endpoint.includes("letbranch_scope=work_order_list_scope(&principal);"),
+    endpoint.includes("fetch_approval_source_counts(pool,&branch_scope,visibility,principal.user_id).await?;"),
+    endpoint.includes("fetch_approval_rows(pool,&branch_scope,visibility,principal.user_id,&query).await?;"),
+    visibility.includes("work_orders:org_wide||feature_allowed_in_scope(principal,Feature::CompletionReview)"),
+    visibility.includes("daily_plans:org_wide||feature_allowed_in_scope(principal,Feature::DailyPlanReview)"),
+    visibility.includes("target_changes:org_wide||feature_allowed_in_scope(principal,Feature::TargetManage)"),
+    counts.includes("letorg=current_org().map_err(KernelError::from).map_err(RestError::from_kernel)?;"),
+    counts.includes("push_approval_federation_union(&mutbuilder,branch_scope,visibility,actor)?;"),
+    counts.includes("with_org_conn::<_,_,RestError>(pool,org,"),
+    rows.includes("letorg=current_org().map_err(KernelError::from).map_err(RestError::from_kernel)?;"),
+    rows.includes("push_approval_federation_union(&mutbuilder,branch_scope,visibility,actor)?;"),
+    rows.includes("with_org_conn::<_,_,RestError>(pool,org,"),
+    (union.match(/push_branch_scope_filter\(builder,branch_scope,/g) ?? []).length === 3,
+  ].every(Boolean);
 }
 
 const matrix = parseJson(matrixPath);
@@ -170,8 +262,16 @@ if (matrix) {
 
   for (const test of matrix.requiredBackendTests ?? []) requireFile(test, `G005 backend test ${test}`);
 
-  requireIncludes("docs/specs/foundation-gates.md", "workflow/approval/action lifecycle", "foundation gate mentions workflow/approval/action lifecycle");
-  requireIncludes("docs/specs/foundation-gates.md", "Work Hub", "foundation gate mentions Work Hub server feed contract");
+  assert(
+    hasWorkflowApprovalLifecycle(read("backend/crates/workorder/domain/src/lib.rs")),
+    "G005 executable workflow/approval lifecycle",
+    "G005 executable workflow/approval lifecycle must preserve ordered approval and guarded transition application",
+  );
+  assert(
+    hasServerOwnedScopedApprovalFeed(read("backend/crates/workorder/rest/src/lib.rs")),
+    "G005 server-owned scoped approval feed",
+    "G005 server-owned approval feed must derive visibility from the principal and preserve branch-scoped queries",
+  );
 
 }
 
