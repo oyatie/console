@@ -13,7 +13,6 @@ beginGate({
   script: "scripts/check-foundation-gates.mjs",
   documentInputs: [
     "docs/CI-GATES.md",
-    "docs/GO-LIVE-CHECKLIST.md",
     "docs/benchmarks/enterprise-parity-matrix.md",
     "docs/specs/backlog-clearance-ledger.md",
     "docs/specs/foundation-gates.md",
@@ -126,6 +125,14 @@ function requireNoMissingPackageScripts(label, scripts, packageJson, packagePath
   }
 }
 
+function requireNoOwnPackageScript(packageJson, packagePath, script) {
+  if (Object.hasOwn(packageJson.scripts ?? {}, script)) {
+    failures.push(`${packagePath}: scripts must not define retired ${script}`);
+  } else {
+    passes.push(`${packagePath}: scripts omit retired ${script}`);
+  }
+}
+
 function requireCiGateDocsDriftInventory() {
   const docsPath = "docs/CI-GATES.md";
   const ciPath = ".github/workflows/ci.yml";
@@ -135,6 +142,8 @@ function requireCiGateDocsDriftInventory() {
   const ci = read(ciPath);
   const rootPackage = JSON.parse(read(rootPackagePath));
   const npmInvocations = extractCiNpmRunInvocations(ci);
+
+  requireNoOwnPackageScript(rootPackage, rootPackagePath, "check:openapi-app");
 
   const backendGatePackages = extractCiBackendGatePackages(ci);
   const rootScripts = uniqueSorted(npmInvocations.map(({ script }) => script));
@@ -237,7 +246,6 @@ requireCiGateDocsDriftInventory();
 requireNotIncludes("docs/CI-GATES.md", "test:contract", "live CI gate docs exclude retired generated-client round-trip");
 requireNotIncludes("docs/CI-GATES.md", "check:openapi-app", "live CI gate docs exclude retired app-served OpenAPI gate");
 requireNotIncludes("docs/CI-GATES.md", "CONTRACT_DATABASE_URL", "live CI gate docs exclude retired contract database handoff");
-requireNotIncludes("docs/GO-LIVE-CHECKLIST.md", "check:openapi-app", "go-live status excludes retired app-served OpenAPI command");
 for (const ciNeedle of [
   "cargo fmt --all -- --check",
   "cargo clippy --all-targets -- -D warnings",

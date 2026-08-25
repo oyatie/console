@@ -90,7 +90,6 @@ test("foundation gate rejects retired API-contract citations in live CI docs", (
     ["docs/CI-GATES.md", "npm run test:contract"],
     ["docs/CI-GATES.md", "npm run check:openapi-app"],
     ["docs/CI-GATES.md", "CONTRACT_DATABASE_URL=postgres://example.invalid/contract"],
-    ["docs/GO-LIVE-CHECKLIST.md", "`check:openapi-app`"],
   ]) {
     withInjectedContractText(path, retiredCitation, () => {
       const result = runChecker();
@@ -98,6 +97,30 @@ test("foundation gate rejects retired API-contract citations in live CI docs", (
       assert.match(result.stderr, /retired (?:generated-client round-trip|app-served OpenAPI|contract database handoff)/i);
     });
   }
+});
+
+test("foundation gate rejects a reintroduced retired OpenAPI package script", () => {
+  withInjectedTextBefore(
+    "package.json",
+    '    "check:platform-contract-drift":',
+    '    "check:openapi-app": "node scripts/check-openapi-app.mjs",',
+    () => {
+      const result = runChecker();
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /package\.json: scripts must not define retired check:openapi-app/i);
+    },
+  );
+});
+
+test("historical GO-LIVE prose no longer controls the foundation gate", () => {
+  withInjectedContractText(
+    "docs/GO-LIVE-CHECKLIST.md",
+    "Historical note: the retired `check:openapi-app` command was once required.",
+    () => {
+      const result = runChecker();
+      assert.equal(result.status, 0, result.stderr);
+    },
+  );
 });
 
 test("foundation gate rejects a nonexistent package command in the live CI runbook", () => {
