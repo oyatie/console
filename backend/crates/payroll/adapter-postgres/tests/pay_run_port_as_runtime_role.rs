@@ -33,6 +33,7 @@ use console_kernel_core::{OrgId, UserId};
 use console_ontology_canonical_domain::{
     CanonicalPort, CommandId, CommandReceipt, DispatchTarget, ObjectKey, PayRunPort, ReceiptOwner,
 };
+use console_payroll_adapter_postgres::lifecycle::LifecycleError;
 use console_payroll_adapter_postgres::pay_run::{
     PayRunCommand, PayRunError, PayRunQuery, PgPayRunPort, StageDraftError, stage_draft_run_in_tx,
 };
@@ -591,6 +592,47 @@ async fn a_decider_who_submitted_the_run_is_refused(owner_pool: PgPool) {
     .await
     .unwrap();
 
+    // Coworker won amounts that genuinely exist on this run, so a refuse that
+    // echoed line calculations would be observable. Distinct from the 3_000_000
+    // golden-case figures used elsewhere in this crate.
+    const COWORKER_GROSS_WON: i64 = 4_192_837;
+    const COWORKER_NET_WON: i64 = 3_508_126;
+    let coworker_line: Uuid = sqlx::query_scalar(
+        "INSERT INTO payroll_draft_lines \
+             (org_id, run_id, employee_source_key, employee_display_name, employee_company) \
+         VALUES ($1, $2, 'coworker-src', 'Coworker Kim', 'KNL') RETURNING id",
+    )
+    .bind(ORG)
+    .bind(id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO payroll_line_calculations \
+             (org_id, run_id, line_id, version, gross_won, deductions, \
+              total_deductions_won, net_won, tax_table_version) \
+         VALUES ($1, $2, $3, 1, $4, '[]'::jsonb, $5, $6, 'v1')",
+    )
+    .bind(ORG)
+    .bind(id)
+    .bind(coworker_line)
+    .bind(COWORKER_GROSS_WON)
+    .bind(COWORKER_GROSS_WON - COWORKER_NET_WON)
+    .bind(COWORKER_NET_WON)
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+    let stored_net: i64 =
+        sqlx::query_scalar("SELECT net_won FROM payroll_line_calculations WHERE line_id = $1")
+            .bind(coworker_line)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        stored_net, COWORKER_NET_WON,
+        "the coworker won amounts must exist before the refuse is rendered"
+    );
+
     // The pre-existing segregation-of-duties check, reached THROUGH the port.
     let error = execute(
         &port,
@@ -606,16 +648,37 @@ async fn a_decider_who_submitted_the_run_is_refused(owner_pool: PgPool) {
     )
     .await
     .unwrap_err();
-    assert!(matches!(error, PayRunError::Lifecycle(_)), "{error:?}");
+    assert!(
+        matches!(error, PayRunError::Lifecycle(LifecycleError::SodViolation)),
+        "{error:?}"
+    );
 
-    let status: String = sqlx::query_scalar("SELECT status FROM payroll_draft_runs WHERE id = $1")
+    let shown = format!("{error} {error:?}");
+    for (amount, grouped) in [
+        (COWORKER_GROSS_WON, "4,192,837"),
+        (COWORKER_NET_WON, "3,508,126"),
+    ] {
+        let digits = amount.to_string();
+        assert!(
+            !shown.contains(&digits) && !shown.contains(grouped),
+            "a SoD refuse must not carry coworker payroll won amounts, found {amount} in {shown}"
+        );
+    }
+
+    let row = sqlx::query("SELECT status, decided_by FROM payroll_draft_runs WHERE id = $1")
         .bind(id)
         .fetch_one(&owner_pool)
         .await
         .unwrap();
     assert_eq!(
-        status, "SUBMITTED",
+        row.get::<String, _>("status"),
+        "SUBMITTED",
         "a refused decision must not move the run"
+    );
+    assert_eq!(
+        row.get::<Option<Uuid>, _>("decided_by"),
+        None,
+        "a refused decision must not stamp decided_by"
     );
 
     // A failed command mints no receipt, so the client may retry the same id.
@@ -916,18 +979,19 @@ async fn an_existing_draft_is_acknowledged_after_the_period_is_locked(owner_pool
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_pool: PgPool) {
     let (org, actor, _, port) = fixture(&owner_pool).await;
-    seed_org_and_user(&owner_pool, FOREIGN_ORG, "foreign").await;
+    let foreign_actor = seed_org_and_user(&owner_pool, FOREIGN_ORG, "foreign").await;
 
     // Seed the FOREIGN tenant's run through the BYPASSRLS owner pool.
     let foreign_run = Uuid::new_v4();
-    sqlx::query(
+    let foreign_id: Uuid = sqlx::query_scalar(
         "INSERT INTO payroll_draft_runs \
              (org_id, period_start, period_end, source_label, status) \
-         VALUES ($1, DATE '2026-06-01', DATE '2026-06-30', $2, 'BLOCKED_LEGAL_GATE')",
+         VALUES ($1, DATE '2026-06-01', DATE '2026-06-30', $2, 'BLOCKED_LEGAL_GATE') \
+         RETURNING id",
     )
     .bind(FOREIGN_ORG)
     .bind(format!("workflow_runtime_m2:run:{foreign_run}"))
-    .execute(&owner_pool)
+    .fetch_one(&owner_pool)
     .await
     .unwrap();
 
@@ -989,6 +1053,97 @@ async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_
         1,
         "the foreign tenant's row count must be untouched by this org's port"
     );
+
+    // Submit/decide on the foreign PRIMARY KEY must omit (NotFound), not write.
+    // CALCULATED / SUBMITTED are the states those targets WOULD advance if the
+    // port could see the row — InvalidState on BLOCKED_LEGAL_GATE would also
+    // "not write" while proving the foreign id was visible.
+    mark_calculated(&owner_pool, foreign_id).await;
+    let submit_err = execute(
+        &port,
+        command(org, actor, PayRunQuery::SubmitRun { run_id: foreign_id }),
+    )
+    .await
+    .unwrap_err();
+    assert!(
+        matches!(submit_err, PayRunError::Lifecycle(LifecycleError::NotFound)),
+        "submit of a foreign run must omit, got {submit_err:?}"
+    );
+    let row = sqlx::query(
+        "SELECT status, submitted_by, decided_by FROM payroll_draft_runs WHERE id = $1",
+    )
+    .bind(foreign_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(row.get::<String, _>("status"), "CALCULATED");
+    assert_eq!(row.get::<Option<Uuid>, _>("submitted_by"), None);
+    assert_eq!(row.get::<Option<Uuid>, _>("decided_by"), None);
+
+    sqlx::query(
+        "UPDATE payroll_draft_runs \
+         SET status = 'SUBMITTED', submitted_by = $2, submitted_at = now() \
+         WHERE id = $1",
+    )
+    .bind(foreign_id)
+    .bind(*foreign_actor.as_uuid())
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+    let decide_err = execute(
+        &port,
+        command(
+            org,
+            actor,
+            PayRunQuery::DecideRun {
+                run_id: foreign_id,
+                decision: "APPROVE".to_owned(),
+                reason: None,
+            },
+        ),
+    )
+    .await
+    .unwrap_err();
+    assert!(
+        matches!(decide_err, PayRunError::Lifecycle(LifecycleError::NotFound)),
+        "decide of a foreign run must omit, got {decide_err:?}"
+    );
+    let row = sqlx::query(
+        "SELECT status, submitted_by, decided_by FROM payroll_draft_runs WHERE id = $1",
+    )
+    .bind(foreign_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(row.get::<String, _>("status"), "SUBMITTED");
+    assert_eq!(
+        row.get::<Option<Uuid>, _>("submitted_by"),
+        Some(*foreign_actor.as_uuid())
+    );
+    assert_eq!(
+        row.get::<Option<Uuid>, _>("decided_by"),
+        None,
+        "a foreign decide omit must not stamp decided_by"
+    );
+    let receipts: i64 = sqlx::query_scalar(
+        "SELECT count(*)::bigint FROM ont_action_command_receipts WHERE org_id = $1",
+    )
+    .bind(ORG)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        receipts, 1,
+        "a foreign omit must mint no receipt in this org"
+    );
+    let foreign_receipts: i64 = sqlx::query_scalar(
+        "SELECT count(*)::bigint FROM ont_action_command_receipts WHERE org_id = $1",
+    )
+    .bind(FOREIGN_ORG)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(foreign_receipts, 0, "a foreign omit must mint no receipt");
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
