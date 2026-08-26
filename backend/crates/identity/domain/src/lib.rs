@@ -168,9 +168,16 @@ mod tests {
     #[test]
     fn optional_phone_normalizes_blank_to_none() {
         assert_eq!(normalize_optional_phone(Some("   ")).unwrap(), None);
+        assert_eq!(normalize_optional_phone(Some("")).unwrap(), None);
+        assert_eq!(normalize_optional_phone(Some("\t")).unwrap(), None);
+        assert_eq!(normalize_optional_phone(Some("\n")).unwrap(), None);
         assert_eq!(normalize_optional_phone(None).unwrap(), None);
         assert_eq!(
             normalize_optional_phone(Some(" 010-1234-5678 ")).unwrap(),
+            Some("010-1234-5678".to_owned())
+        );
+        assert_eq!(
+            normalize_optional_phone(Some("\t010-1234-5678\n")).unwrap(),
             Some("010-1234-5678".to_owned())
         );
     }
@@ -178,7 +185,13 @@ mod tests {
     #[test]
     fn optional_phone_length_is_bounded() {
         let too_long = "0".repeat(MAX_PHONE_CHARS + 1);
-        assert!(normalize_optional_phone(Some(&too_long)).is_err());
+        let err = normalize_optional_phone(Some(&too_long)).unwrap_err();
+        assert!(err.message.contains("phone"), "{}", err.message);
+        let just_under = "0".repeat(MAX_PHONE_CHARS - 1);
+        assert_eq!(
+            normalize_optional_phone(Some(&just_under)).unwrap(),
+            Some(just_under)
+        );
     }
 
     #[test]
