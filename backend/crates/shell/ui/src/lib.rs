@@ -82,10 +82,17 @@ mod tests {
         assert_eq!(name, "content-security-policy");
         assert_eq!(value, CONTENT_SECURITY_POLICY);
         assert!(csp::csp_allows_wasm_eval_not_js_eval());
+        assert!(csp::csp_allows_hashed_style_not_unsafe_inline());
         assert!(value.contains("default-src 'self'"));
+        assert!(value.contains("style-src 'self'"));
+        assert!(value.contains(csp::STYLE_SRC_SHA256));
         assert!(value.contains("frame-ancestors 'none'"));
         assert!(value.contains("object-src 'none'"));
         assert!(!value.contains("unsafe-inline"));
+        // Bind the hashed bytes to this CSS: length drift means recompute sha256.
+        assert_eq!(crate::style::CSS.len(), 841);
+        assert!(!crate::style::CSS.contains("prefers-color-scheme"));
+        assert!(!crate::style::CSS.contains("unsafe-inline"));
     }
 
     #[test]
@@ -227,10 +234,20 @@ mod tests {
         #[test]
         fn csp_applied_to_rendered_page() {
             let page = render_path("/", &ShellData::default());
-            let (status, [name, value], _html) = apply_csp_to_page(page);
+            let (status, [name, value], html) = apply_csp_to_page(page);
             assert_eq!(status, 200);
             assert_eq!(name, "content-security-policy");
             assert!(value.contains("'wasm-unsafe-eval'"));
+            assert!(value.contains("style-src 'self'"));
+            assert!(value.contains(csp::STYLE_SRC_SHA256));
+            assert!(!value.contains("unsafe-inline"));
+            let style_tag = format!("<style>{}</style>", crate::style::CSS);
+            assert!(
+                html.contains(&style_tag),
+                "inline CSS must match the hashed style-src bytes"
+            );
+            assert!(!html.contains("prefers-color-scheme"));
+            assert!(!html.contains("/_ui"));
         }
     }
 }

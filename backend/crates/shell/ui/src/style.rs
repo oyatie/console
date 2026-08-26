@@ -1,3 +1,7 @@
+/// Light-only sheet inlined as `<style>{CSS}</style>`.
+///
+/// If this text changes, recompute `STYLE_SRC_SHA256` / `style-src` in `csp.rs`
+/// (SHA-256 of these bytes, base64). Do not add `prefers-color-scheme`.
 pub const CSS: &str = r#"
 :root { font-family: "Pretendard", "Apple SD Gothic Neo", sans-serif; color: #111; }
 body { margin: 0; }
