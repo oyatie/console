@@ -487,6 +487,12 @@ const domainUnitPackages = [
   // o498 BranchScope rewrite pins (ensure_branch_rewrite_in_scope). Pure #[test],
   // no database; lib binary darkened until wired into domain-unit --lib.
   "console-identity-adapter-postgres",
+  // Payroll-vertical Layer::Ui crates. Pure #[test] on the default --lib binary;
+  // ssr/hydrate feature suites stay unwired until the shell is mounted. App
+  // composition remains HOLD; this does not serve /_ui.
+  "console-ontology-ui",
+  "console-payroll-ui",
+  "console-shell-ui",
 ]
 // Integration invocations have one authority: the protected workflow. The old array here
 // was a hand-transcribed second copy and twice drifted behind ci.yml. Read the exact ordered

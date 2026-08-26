@@ -1,0 +1,50 @@
+[package]
+name = "console-shell-ui"
+version = "0.1.0"
+description = "Leptos SSR shell, deny-by-omission nav, work hub, CSP, and hydrate entry for the payroll execution vertical."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+# Must be "lib", not "rlib": cargo metadata reports kind=lib only then, and that is
+# the executed-tests --lib binary.
+crate-type = ["lib"]
+
+[[bin]]
+name = "console-shell-hydrate"
+path = "src/bin/hydrate.rs"
+required-features = ["hydrate"]
+
+[features]
+default = []
+ssr = [
+    "leptos/ssr",
+    "leptos/islands",
+    "leptos_meta/ssr",
+    "dep:axum",
+    "dep:http",
+    "dep:leptos_axum",
+    "console-ontology-ui/ssr",
+    "console-payroll-ui/ssr",
+]
+hydrate = [
+    "leptos/hydrate",
+    "leptos/islands",
+    "console-ontology-ui/hydrate",
+    "console-payroll-ui/hydrate",
+]
+
+[dependencies]
+axum = { workspace = true, optional = true }
+console-ontology-ui = { workspace = true }
+console-payroll-ui = { workspace = true }
+http = { workspace = true, optional = true }
+leptos = { workspace = true, features = ["islands"] }
+leptos_axum = { workspace = true, optional = true }
+leptos_meta = { workspace = true }
+serde = { workspace = true }
+
+[lints]
+workspace = true

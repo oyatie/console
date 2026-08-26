@@ -1,7 +1,8 @@
 [workspace]
 resolver = "3"
 # Member globs are added as their first crate lands (an unmatched glob fails the build):
-#   "crates/<domain>/*"  console-<domain>-{domain,application,adapter-postgres,rest,worker}
+#   "crates/<domain>/*"  console-<domain>-{domain,application,adapter-postgres,rest,worker,ui}
+#   "crates/shell/*"     console-shell-ui
 #   "crates/platform/*"  console-platform-{auth,authz,storage,push,email,realtime,excel}
 #   "ci/gates/*"         CI gate binaries (layer-boundary, audit-coverage, ...)
 #   "app"                console-app composition root
@@ -46,6 +47,7 @@ members = [
   "crates/erp/*",
   "crates/platform/*",
   "crates/analytics-quant/*",
+  "crates/shell/*",
   "ci/gates/*",
 ]
 
@@ -180,6 +182,15 @@ tokio-rustls = { version = "0.26.4", default-features = false, features = ["ring
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 webpki-roots = "1.0.8"
 futures = { version = "0.3.32", default-features = false, features = ["std"] }
+
+# Leptos 0.9.0-beta family verified live against crates.io 2026-08-25
+# (leptos, leptos_axum, leptos_meta, leptos_router newest_version 0.9.0-beta;
+# leptos_router also publishes 0.9.0-beta1 — this workspace pins the matching
+# 0.9.0-beta family, not 0.8.x and not the unmatched beta1 patch).
+leptos = { version = "0.9.0-beta", default-features = false }
+leptos_axum = { version = "0.9.0-beta", default-features = false }
+leptos_meta = { version = "0.9.0-beta", default-features = false }
+leptos_router = { version = "0.9.0-beta", default-features = false }
 
 console-kernel-core = { path = "crates/kernel/core" }
 console-action-inbox-application = { path = "crates/action-inbox/application" }
@@ -332,6 +343,9 @@ console-platform-jobs = { path = "crates/platform/jobs" }
 console-platform-push = { path = "crates/platform/push" }
 console-platform-email = { path = "crates/platform/email" }
 console-platform-test-support = { path = "crates/platform/test-support" }
+console-shell-ui = { path = "crates/shell/ui" }
+console-ontology-ui = { path = "crates/ontology/ui" }
+console-payroll-ui = { path = "crates/payroll/ui" }
 
 # Version taken from the already-resolved backend/Cargo.lock (syn 2.0.117), not
 # from training data: syn is long-standing transitive graph via the derive

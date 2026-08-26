@@ -1,0 +1,25 @@
+[package]
+name = "console-payroll-ui"
+version = "0.1.0"
+description = "SSR pages and island editors for payroll execution: attendance handoff, PayRun lifecycle, ESS, and decide inbox."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+# Must be "lib", not "rlib": cargo metadata reports kind=lib only then, and that is
+# the executed-tests --lib binary.
+crate-type = ["lib"]
+
+[features]
+default = []
+ssr = ["leptos/ssr", "leptos/islands"]
+hydrate = ["leptos/hydrate", "leptos/islands"]
+
+[dependencies]
+leptos = { workspace = true, features = ["islands"] }
+serde = { workspace = true }
+
+[lints]
+workspace = true

@@ -397,7 +397,8 @@ jobs:
             -p console-platform-auth -p console-platform-authz-rest -p console-workflow-runtime \
             -p console-logistics-rest -p console-ontology-canonical-domain \
             -p console-ontology-canonical-adapter-postgres -p console-orgchange-adapter-postgres \
-            -p console-gate-writer-ownership -p console-identity-adapter-postgres
+            -p console-gate-writer-ownership -p console-identity-adapter-postgres \
+            -p console-ontology-ui -p console-payroll-ui -p console-shell-ui
           check_status "domain --lib sweep"
           # Doc tests, same step so no new step name has to be declared anywhere.
           # `compile_fail` doctests are the only artifact that can hold a NEGATIVE
