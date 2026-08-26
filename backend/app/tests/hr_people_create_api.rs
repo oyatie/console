@@ -140,6 +140,7 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
     };
     let employee_id = created["employee"]["id"].as_str().unwrap();
     assert_eq!(created["employment"]["phone_e164"], "+821012345678");
+    assert_employee_create_omits_compensation_pii(created);
     let signoffs: Value = sqlx::query_scalar(
         "SELECT signoffs FROM employee_lifecycle_events WHERE org_id = $1 AND employee_id = $2",
     )
@@ -450,10 +451,15 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
     seed_org(&pool, other_org).await;
     let other_user = UserId::new();
     seed_user(&pool, other_org, other_user).await;
+    let other_branch = seed_branch(&pool, other_org, "People other-org branch").await;
+    let other_token = bearer(&keys, other_org, other_user, &["SUPER_ADMIN"]);
+
+    // Cross-tenant read is 404 (detail) or empty omit (directory), never a
+    // count or object-existence leak of org A's employee.
     let denied = get(
-        service,
+        service.clone(),
         &format!("{EMPLOYEES_PATH}/{employee_id}"),
-        &bearer(&keys, other_org, other_user, &["SUPER_ADMIN"]),
+        &other_token,
     )
     .await;
     assert_eq!(
@@ -461,6 +467,115 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
         StatusCode::NOT_FOUND,
         "cross-org detail must not be visible: {:?}",
         denied.json
+    );
+    assert!(
+        denied.json.get("employee").is_none(),
+        "cross-org 404 must omit the employee object: {:?}",
+        denied.json
+    );
+    let omitted = get(service.clone(), EMPLOYEES_PATH, &other_token).await;
+    assert_eq!(omitted.status, StatusCode::OK, "{:?}", omitted.json);
+    assert_eq!(
+        omitted.json["total"], 0,
+        "cross-org directory must omit the other tenant: {:?}",
+        omitted.json
+    );
+    assert_eq!(omitted.json["items"], json!([]));
+
+    let org_a_before_foreign_create = people_write_counts(&pool, org).await;
+    let foreign_create = post(
+        service.clone(),
+        EMPLOYEES_PATH,
+        &other_token,
+        create_body(
+            other_branch,
+            "PEOPLE-001",
+            "same-key",
+            "010-1234-5678",
+            "Other tenant",
+        ),
+    )
+    .await;
+    assert_eq!(
+        foreign_create.status,
+        StatusCode::CREATED,
+        "{:?}",
+        foreign_create.json
+    );
+    assert_employee_create_omits_compensation_pii(&foreign_create.json);
+    let foreign_employee_id = foreign_create.json["employee"]["id"].as_str().unwrap();
+    assert_ne!(
+        foreign_employee_id, employee_id,
+        "same idempotency key in another org must not collide into org A's employee"
+    );
+    assert_eq!(
+        people_write_counts(&pool, org).await,
+        org_a_before_foreign_create,
+        "another org's same-key create must not write org A's employee tables"
+    );
+    assert_eq!(people_write_counts(&pool, other_org).await, (1, 1, 1, 1, 1));
+    let org_a_same_key: Uuid = sqlx::query_scalar(
+        "SELECT employee_id FROM employee_create_idempotency \
+         WHERE org_id = $1 AND idempotency_key = $2",
+    )
+    .bind(*org.as_uuid())
+    .bind("same-key")
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        org_a_same_key.to_string(),
+        employee_id,
+        "org B reusing same-key must not retarget org A's idempotency row"
+    );
+
+    let still_denied = get(
+        service.clone(),
+        &format!("{EMPLOYEES_PATH}/{employee_id}"),
+        &other_token,
+    )
+    .await;
+    assert_eq!(
+        still_denied.status,
+        StatusCode::NOT_FOUND,
+        "cross-org detail must stay omitted after the other tenant creates: {:?}",
+        still_denied.json
+    );
+    let foreign_list = get(service.clone(), EMPLOYEES_PATH, &other_token).await;
+    assert_eq!(
+        foreign_list.status,
+        StatusCode::OK,
+        "{:?}",
+        foreign_list.json
+    );
+    let listed_ids: Vec<&str> = foreign_list.json["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|item| item["id"].as_str())
+        .collect();
+    assert!(
+        !listed_ids.contains(&employee_id),
+        "cross-org directory must omit org A's employee: {:?}",
+        foreign_list.json
+    );
+    assert!(
+        listed_ids.contains(&foreign_employee_id),
+        "org B directory must contain only org B's employee: {:?}",
+        foreign_list.json
+    );
+
+    let other_way = get(
+        service,
+        &format!("{EMPLOYEES_PATH}/{foreign_employee_id}"),
+        &token,
+    )
+    .await;
+    assert_eq!(
+        other_way.status,
+        StatusCode::NOT_FOUND,
+        "org A must not read org B's employee: {:?}",
+        other_way.json
     );
 }
 
@@ -608,6 +723,23 @@ async fn revoked_grant_executive_cannot_create_employee(pool: PgPool) {
          lifecycle event, idempotency reservation, or employee.create audit"
     );
     assert_no_employee_writes(&pool, org, "PEOPLE-GRANT-REVOKED", "grant-revoked-key").await;
+}
+
+fn assert_employee_create_omits_compensation_pii(body: &Value) {
+    // Canonical import is the 13-field set (name, employee_number, org_unit,
+    // job, position, worksite_name, worksite_address, hire_date, exit_date,
+    // leave_accrued, leave_used, leave_remaining, company). Compensation /
+    // unique-id keys that are not in that set must not appear on employee.
+    // Production employment returns phone_e164 / base_pay — do not treat those
+    // as leaks.
+    if let Some(employee) = body.get("employee") {
+        for key in ["bank_account", "rrn", "salary"] {
+            assert!(
+                employee.get(key).is_none(),
+                "create employee must not leak {key}: {employee:?}"
+            );
+        }
+    }
 }
 
 fn create_body(branch: Uuid, employee_number: &str, key: &str, phone: &str, name: &str) -> Value {
