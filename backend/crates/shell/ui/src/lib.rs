@@ -160,6 +160,15 @@ mod tests {
             assert_eq!(denied.html, unknown.html);
             assert!(!denied.html.contains("403"));
             assert!(!denied.html.contains("급여 실행"));
+
+            let authorized = ShellData {
+                session: Some(admin_session()),
+                ..ShellData::default()
+            };
+            let missing = render_path("/payroll/runs/missing", &authorized);
+            assert_eq!(missing.status, 404);
+            assert_eq!(missing.html, unknown.html);
+            assert!(!missing.html.contains("급여 실행"));
         }
 
         #[test]

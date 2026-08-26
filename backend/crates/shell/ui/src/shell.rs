@@ -65,11 +65,15 @@ pub fn render_path(path: &str, data: &ShellData) -> RenderedPage {
                     html: not_found_html(),
                 };
             }
-            let title = title_for(path);
-            let body = authed_body(path, session, data);
+            let Some(body) = authed_body(path, session, data) else {
+                return RenderedPage {
+                    status: 404,
+                    html: not_found_html(),
+                };
+            };
             RenderedPage {
                 status: 200,
-                html: wrap_document(title, Some(session), path, body),
+                html: wrap_document(title_for(path), Some(session), path, body),
             }
         }
     }
@@ -101,49 +105,57 @@ fn title_for(path: &str) -> &'static str {
     }
 }
 
-fn authed_body(path: &str, session: &Session, data: &ShellData) -> impl IntoView {
+fn authed_body(path: &str, session: &Session, data: &ShellData) -> Option<impl IntoView> {
     if path == "/" {
-        return view! {
-            <WorkHubPage
-                caps=session.caps.clone()
-                org=data.org.clone()
-                payroll=data.payroll.clone()
-            />
-        }
-        .into_any();
+        return Some(
+            view! {
+                <WorkHubPage
+                    caps=session.caps.clone()
+                    org=data.org.clone()
+                    payroll=data.payroll.clone()
+                />
+            }
+            .into_any(),
+        );
     }
     if path == "/company" {
-        return view! { <CompanyPage head=data.org.company.clone() /> }.into_any();
+        return Some(view! { <CompanyPage head=data.org.company.clone() /> }.into_any());
     }
     if path == "/org" {
-        return view! {
-            <OrgPage
-                units=data.org.org_units.clone()
-                jobs=data.org.job_positions.clone()
-            />
-        }
-        .into_any();
+        return Some(
+            view! {
+                <OrgPage
+                    units=data.org.org_units.clone()
+                    jobs=data.org.job_positions.clone()
+                />
+            }
+            .into_any(),
+        );
     }
     if path == "/people" {
-        return view! {
-            <PeoplePage
-                people=data.org.people.clone()
-                employments=data.org.employments.clone()
-            />
-        }
-        .into_any();
+        return Some(
+            view! {
+                <PeoplePage
+                    people=data.org.people.clone()
+                    employments=data.org.employments.clone()
+                />
+            }
+            .into_any(),
+        );
     }
     if path == "/policy" {
-        return view! { <PolicyFoldPage grants=data.grants.clone() /> }.into_any();
+        return Some(view! { <PolicyFoldPage grants=data.grants.clone() /> }.into_any());
     }
     if path == "/attendance" {
-        return view! {
-            <AttendanceHandoffPage period=data.payroll.attendance.clone() />
-        }
-        .into_any();
+        return Some(
+            view! {
+                <AttendanceHandoffPage period=data.payroll.attendance.clone() />
+            }
+            .into_any(),
+        );
     }
     if path == "/payroll/runs" {
-        return view! { <RunsPage runs=data.payroll.runs.clone() /> }.into_any();
+        return Some(view! { <RunsPage runs=data.payroll.runs.clone() /> }.into_any());
     }
     if let Some(run_id) = path.strip_prefix("/payroll/runs/") {
         let detail = data
@@ -165,9 +177,9 @@ fn authed_body(path: &str, session: &Session, data: &ShellData) -> impl IntoView
                         exceptions: Vec::new(),
                         payable: false,
                     })
-            });
-        return match detail {
-            Some(detail) => view! {
+            })?;
+        return Some(
+            view! {
                 <RunDetailPage
                     detail=detail
                     actor_id=session.user_id.clone()
@@ -175,22 +187,23 @@ fn authed_body(path: &str, session: &Session, data: &ShellData) -> impl IntoView
                 />
             }
             .into_any(),
-            None => view! { <NotFoundPage /> }.into_any(),
-        };
+        );
     }
     if path == "/payroll/me" {
-        return view! { <EssPage payslip=data.payroll.my_payslip.clone() /> }.into_any();
+        return Some(view! { <EssPage payslip=data.payroll.my_payslip.clone() /> }.into_any());
     }
     if path == "/approvals" {
-        return view! {
-            <ApprovalsPage
-                items=data.payroll.inbox.clone()
-                actor_id=session.user_id.clone()
-            />
-        }
-        .into_any();
+        return Some(
+            view! {
+                <ApprovalsPage
+                    items=data.payroll.inbox.clone()
+                    actor_id=session.user_id.clone()
+                />
+            }
+            .into_any(),
+        );
     }
-    view! { <NotFoundPage /> }.into_any()
+    None
 }
 
 fn wrap_document(
