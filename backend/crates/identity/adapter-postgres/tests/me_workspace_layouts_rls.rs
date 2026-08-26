@@ -8,9 +8,11 @@
 //! policy:
 //!   1. Round-trip: `put_workspace_layout` upserts the caller's opaque layout and
 //!      `get_workspace_layout` reads it back verbatim; a second put overwrites.
-//!   2. Tenant isolation: under org A's armed GUC, a caller cannot read org B's
-//!      workspace row — neither via the store (empty `{}` default) nor a direct
-//!      by-user query (invisible).
+//!   2. Isolation: same-org peer omit is a stronger omit than cross-tenant — B's
+//!      `get_workspace_layout` must not return A's layout (empty-default `{}`;
+//!      the store API is `Value`, not `Option`). Direct SQL as `console_rt` for
+//!      B's user_id must not see A's row under FORCE RLS. Cross-tenant: under
+//!      org A's armed GUC, org B's workspace row is invisible the same way.
 //!   3. Governance: `console_rt` may NEVER DELETE a workspace row (REVOKE DELETE).
 
 use console_identity_adapter_postgres::PgOrgStore;
@@ -198,6 +200,9 @@ async fn isolate_tenants_and_deny_delete_as_runtime_role(owner_pool: PgPool) {
     seed_org(&owner_pool, org_a, "A").await;
     seed_org(&owner_pool, org_b, "B").await;
     let user_a = seed_active_user(&owner_pool, org_a).await;
+    // Same-org peer B: no saved layout. Org GUC alone would still expose A's row;
+    // the store binds B's user_id, which is the stronger omit.
+    let peer_b = seed_active_user(&owner_pool, org_a).await;
     let user_b = seed_active_user(&owner_pool, org_b).await;
     seed_layout_row(
         &owner_pool,
@@ -225,6 +230,34 @@ async fn isolate_tenants_and_deny_delete_as_runtime_role(owner_pool: PgPool) {
         serde_json::json!({ "v": 1, "who": "A" }),
         "org A reads its own workspace layout"
     );
+
+    // (1b) Same-org peer omit (stronger than cross-tenant): B's get is bound to
+    //      B's user_id and must return the empty-default `{}`, never A's stored
+    //      object. Direct SQL as console_rt for B must not see A's row (RLS).
+    assert_eq!(
+        CURRENT_ORG
+            .scope(OrgId::knl(), store.get_workspace_layout(peer_b))
+            .await
+            .unwrap(),
+        serde_json::json!({}),
+        "same-org peer must not receive A's workspace layout (empty default)"
+    );
+    {
+        let mut tx = rt_pool.begin().await.unwrap();
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(org_a.to_string())
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        let visible: i64 =
+            sqlx::query_scalar("SELECT count(*) FROM me_workspace_layouts WHERE user_id = $1")
+                .bind(*peer_b.as_uuid())
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+        tx.commit().await.unwrap();
+        assert_eq!(visible, 0, "same-org peer must not see A's workspace row");
+    }
 
     // (2) Cross-tenant: under org A's GUC, B's row is invisible. The store returns
     //     the empty default and a direct by-user query counts zero.
