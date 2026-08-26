@@ -3,10 +3,15 @@
 //! genuine non-owner `console_rt` pool (RLS actually enforced).
 //!
 //! Proves:
-//!  * `GET /api/v1/payroll/payslips/me` is self-scoped, not role-gated,
-//!    mirroring `GET /api/v1/hr/attendance-records/me`: an account with no
-//!    linked employee reads an empty page (200), never a 403; a linked
-//!    employee reads ONLY their own draft lines, never a coworker's;
+//!  * `GET /api/v1/payroll/payslips/me` is draft READINESS, not issued
+//!    명세서: no vault document fields (`kind`, `legal_basis`,
+//!    `confirmed_at`, inbox doc id) and no won amounts;
+//!  * it is self-scoped, not `PayrollRunRead`-gated, mirroring
+//!    `GET /api/v1/hr/attendance-records/me`: MEMBER without that capability
+//!    still reads own draft lines (200); an account with no linked employee
+//!    reads an empty page (200), never a 403; a linked employee reads ONLY
+//!    their own draft lines, never a coworker's, including when a foreign
+//!    `employee_id` query param is supplied;
 //!  * `GET /api/v1/payroll/runs` / `/runs/{id}` are EXECUTIVE/SUPER_ADMIN-only
 //!    admin reads — MEMBER and a branch-scoped ADMIN are 403;
 //!  * another org's runs are invisible to a SUPER_ADMIN of THIS org (RLS).
@@ -24,6 +29,7 @@ use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use serde_json::{Value, json};
 use sqlx::PgPool;
+use std::collections::BTreeSet;
 use time::macros::date;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
@@ -279,6 +285,127 @@ async fn seed_line(owner_pool: &PgPool, org: Uuid, run_id: Uuid, employee: Uuid,
     .unwrap();
 }
 
+/// OpenAPI `MyPayrollLine` — hours/source-present booleans, never vault docs
+/// and never a computed won amount.
+const MY_PAYSLIP_READINESS_ITEM_KEYS: &[&str] = &[
+    "calculation_status",
+    "gross_pay_source_present",
+    "holiday_hours",
+    "leave_remaining",
+    "leave_used",
+    "net_pay_source_present",
+    "night_hours",
+    "overtime_hours",
+    "period_end",
+    "period_start",
+    "regular_hours",
+    "run_id",
+    "run_status",
+    "work_days",
+];
+
+const VAULT_OR_ISSUED_PAYSLIP_KEYS: &[&str] = &[
+    "kind",
+    "legal_basis",
+    "confirmed_at",
+    "confirmed_by",
+    "inbox_doc_id",
+    "payload",
+    "recipient_user_id",
+];
+
+const WON_AMOUNT_KEYS: &[&str] = &[
+    "amount_won",
+    "deductions",
+    "earnings",
+    "gross_pay_won",
+    "gross_won",
+    "net_pay_won",
+    "net_won",
+    "total_deductions_won",
+];
+
+fn object_keys(value: &Value) -> BTreeSet<&str> {
+    value
+        .as_object()
+        .map(|map| map.keys().map(String::as_str).collect())
+        .unwrap_or_default()
+}
+
+fn collect_keys<'a>(value: &'a Value, keys: &mut BTreeSet<&'a str>) {
+    match value {
+        Value::Object(map) => {
+            for (key, nested) in map {
+                keys.insert(key.as_str());
+                collect_keys(nested, keys);
+            }
+        }
+        Value::Array(items) => {
+            for nested in items {
+                collect_keys(nested, keys);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn assert_payslips_me_is_own_readiness(body: &Value, expected_run: Uuid, forbidden_ids: &[Uuid]) {
+    assert_eq!(
+        object_keys(body),
+        BTreeSet::from(["items", "limit", "offset", "total"]),
+        "page envelope must stay a readiness page, not a vault list: {body:?}"
+    );
+    assert_eq!(body["total"], 1, "{body:?}");
+    let items = body["items"].as_array().expect("items array");
+    assert_eq!(items.len(), 1, "{body:?}");
+    assert_eq!(
+        object_keys(&items[0]),
+        MY_PAYSLIP_READINESS_ITEM_KEYS.iter().copied().collect(),
+        "item keys must stay the readiness allow-list: {}",
+        items[0]
+    );
+    assert_eq!(items[0]["run_id"], expected_run.to_string());
+    assert!(
+        !items[0]["period_start"].is_null() && !items[0]["period_end"].is_null(),
+        "readiness row must carry the run period: {}",
+        items[0]
+    );
+
+    let mut keys = BTreeSet::new();
+    collect_keys(body, &mut keys);
+    for forbidden in VAULT_OR_ISSUED_PAYSLIP_KEYS
+        .iter()
+        .chain(WON_AMOUNT_KEYS.iter())
+    {
+        assert!(
+            !keys.contains(forbidden),
+            "{forbidden} must not appear on /payslips/me (issued 명세서 is inbox-docs): {body:?}"
+        );
+    }
+    for key in &keys {
+        assert!(
+            !key.ends_with("_won"),
+            "{key} looks like a won amount on /payslips/me: {body:?}"
+        );
+    }
+
+    let rendered = body.to_string();
+    for id in forbidden_ids {
+        assert!(
+            !rendered.contains(&id.to_string()),
+            "must not leak another person's id {id} via /payslips/me: {rendered}"
+        );
+    }
+    assert!(
+        !rendered.contains("Alice"),
+        "must not leak employee_display_name via /payslips/me: {rendered}"
+    );
+    assert!(
+        !rendered.contains("Bob"),
+        "must not leak employee_display_name via /payslips/me: {rendered}"
+    );
+}
+
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn payslips_me_is_self_scoped_never_a_coworkers(pool: PgPool) {
     let keys = keys();
@@ -292,27 +419,55 @@ async fn payslips_me_is_self_scoped_never_a_coworkers(pool: PgPool) {
 
     let alice_user = UserId::new();
     seed_user_linked_to_employee(&pool, alice_user, *org.as_uuid(), alice_employee).await;
+    let bob_user = UserId::new();
+    seed_user_linked_to_employee(&pool, bob_user, *org.as_uuid(), bob_employee).await;
     let admin_no_link = UserId::new();
     seed_user(&pool, admin_no_link, *org.as_uuid(), "ADMIN").await;
 
     let service = app(runtime_role_pool(&pool).await, &keys);
+    let alice_token = bearer(&keys, alice_user, org, "MEMBER");
+    let bob_token = bearer(&keys, bob_user, org, "MEMBER");
 
-    // Alice reads exactly her own line.
-    let alice_read = get(
+    // MEMBER JWT carries empty feature_grants — no PayrollRunRead. Admin
+    // listing must stay 403; own readiness must stay 200.
+    let member_runs = get(service.clone(), PAYROLL_RUNS_PATH, &alice_token).await;
+    assert_eq!(
+        member_runs.status,
+        StatusCode::FORBIDDEN,
+        "MEMBER without PayrollRunRead must not list runs: {:?}",
+        member_runs.json
+    );
+    assert_eq!(member_runs.json["error"]["code"], "forbidden");
+
+    let alice_read = get(service.clone(), PAYROLL_MY_PAYSLIPS_PATH, &alice_token).await;
+    assert_eq!(alice_read.status, StatusCode::OK, "{:?}", alice_read.json);
+    assert_payslips_me_is_own_readiness(
+        &alice_read.json,
+        run,
+        &[bob_employee, *bob_user.as_uuid()],
+    );
+
+    // A foreign employee_id query param is ignored, not an IDOR.
+    let alice_idor = get(
         service.clone(),
-        PAYROLL_MY_PAYSLIPS_PATH,
-        &bearer(&keys, alice_user, org, "MEMBER"),
+        &format!("{PAYROLL_MY_PAYSLIPS_PATH}?employee_id={bob_employee}"),
+        &alice_token,
     )
     .await;
-    assert_eq!(alice_read.status, StatusCode::OK, "{:?}", alice_read.json);
-    assert_eq!(alice_read.json["total"], 1);
-    let items = alice_read.json["items"].as_array().unwrap();
-    assert_eq!(items.len(), 1);
-    // Only readiness/draft fields are present — no gross/net pay amount field
-    // exists anywhere in the response (see module docs: the crate stores no
-    // won amount).
-    assert!(items[0].get("gross_pay_won").is_none());
-    assert!(items[0].get("net_pay_won").is_none());
+    assert_eq!(alice_idor.status, StatusCode::OK, "{:?}", alice_idor.json);
+    assert_payslips_me_is_own_readiness(
+        &alice_idor.json,
+        run,
+        &[bob_employee, *bob_user.as_uuid()],
+    );
+
+    let bob_read = get(service.clone(), PAYROLL_MY_PAYSLIPS_PATH, &bob_token).await;
+    assert_eq!(bob_read.status, StatusCode::OK, "{:?}", bob_read.json);
+    assert_payslips_me_is_own_readiness(
+        &bob_read.json,
+        run,
+        &[alice_employee, *alice_user.as_uuid()],
+    );
 
     // An ADMIN with no employee link reads an empty page, not a 403, and
     // never leaks Alice's or Bob's rows.
@@ -329,6 +484,21 @@ async fn payslips_me_is_self_scoped_never_a_coworkers(pool: PgPool) {
         admin_read.json
     );
     assert_eq!(admin_read.json["total"], 0);
+    assert_eq!(
+        admin_read.json["items"],
+        json!([]),
+        "unlinked account must not see anyone's draft lines: {:?}",
+        admin_read.json
+    );
+    let mut admin_keys = BTreeSet::new();
+    collect_keys(&admin_read.json, &mut admin_keys);
+    for forbidden in VAULT_OR_ISSUED_PAYSLIP_KEYS {
+        assert!(
+            !admin_keys.contains(forbidden),
+            "{forbidden} must not appear on the empty /payslips/me page: {:?}",
+            admin_read.json
+        );
+    }
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]

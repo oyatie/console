@@ -8,11 +8,11 @@
 //! `BLOCKED_LEGAL_GATE` by default. They store **no won amount** — the real
 //! per-employee deduction math (`console_payroll_domain::build_employee_payroll_draft`)
 //! is a pure in-memory function with no persistence anywhere in this schema.
-//! `/me/lines` below is therefore a self-service view of draft READINESS
-//! data, not an issued payslip. The self-service surface that already
-//! delivers a real payslip document is the statutory-notice vault
-//! (`GET /api/v1/me/inbox-docs?filter=kind:payslip`, `console-inbox-rest`) — see
-//! HANDOFF for the gap this leaves.
+//! `/payslips/me` (`/me/lines` below) is therefore a self-service view of
+//! draft READINESS data, not an issued payslip: it must not return vault
+//! document fields (`kind`, `legal_basis`, `confirmed_at`, inbox doc id) or
+//! won amounts. Issued 명세서 live in the statutory-notice vault
+//! (`GET /api/v1/me/inbox-docs?filter=kind:payslip`, `console-inbox-rest`).
 //!
 //! # Branch scoping
 //!
@@ -278,10 +278,11 @@ async fn list_my_lines(
     Query(params): Query<PageParams>,
 ) -> Result<Response, RestError> {
     let principal = principal_from_headers(&state, &headers).await?;
-    // Self-scoped read, no role gate — mirrors
-    // `GET /api/v1/hr/attendance-records/me`: an account with no linked
-    // employee (ADMIN/system) reads an empty page, never a 403, and this read
-    // is never audited (own-data self-service, not a read of "others'" data).
+    // Self-scoped readiness, not issued 명세서. Do not attach
+    // `require_run_read`: MEMBER has no PayrollRunRead and must still read
+    // own draft lines. Mirrors `GET /api/v1/hr/attendance-records/me`: an
+    // account with no linked employee (ADMIN/system) reads an empty page,
+    // never a 403, and this read is never audited (own-data self-service).
     let page = match state
         .store
         .linked_employee_id(principal.user_id)
