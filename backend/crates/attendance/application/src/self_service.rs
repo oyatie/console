@@ -111,7 +111,17 @@ pub type OwnAttendanceExceptionPage = AttendancePage<OwnAttendanceExceptionRead>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use time::{Date, Month};
+    use std::collections::BTreeSet;
+    use time::{Date, Month, OffsetDateTime};
+
+    fn json_keys(value: &serde_json::Value) -> BTreeSet<&str> {
+        value
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect()
+    }
 
     #[test]
     fn own_exception_query_accepts_only_date_status_and_pagination() {
@@ -125,6 +135,64 @@ mod tests {
         assert_eq!(query.status.as_deref(), Some("OPEN"));
         assert_eq!(query.limit, 200);
         assert_eq!(query.offset, 0);
+
+        let at = OffsetDateTime::from_unix_timestamp(0).unwrap();
+        let resolution = OwnExceptionResolutionRead {
+            action: ResolutionAction::Confirm,
+            reason: "confirmed".to_owned(),
+            ot_hours: Some("1.50".to_owned()),
+            resolved_at: at,
+        };
+        let own = OwnAttendanceExceptionRead {
+            id: Uuid::nil(),
+            code: "EX-1".to_owned(),
+            kind: ExceptionKind::Late,
+            status: "RESOLVED".to_owned(),
+            work_date: Date::from_calendar_date(2026, Month::July, 1).unwrap(),
+            occurred_at: at,
+            detail: "late clock-in".to_owned(),
+            evidence: Vec::new(),
+            resolution: Some(resolution),
+            created_at: at,
+        };
+        let own_json = serde_json::to_value(&own).unwrap();
+        let own_keys = json_keys(&own_json);
+        assert_eq!(
+            own_keys,
+            BTreeSet::from([
+                "code",
+                "created_at",
+                "detail",
+                "evidence",
+                "id",
+                "kind",
+                "occurred_at",
+                "resolution",
+                "status",
+                "work_date",
+            ])
+        );
+        for leaked in [
+            "employee_id",
+            "employee_name",
+            "team",
+            "branch_id",
+            "links",
+            "resolver_id",
+            "phone",
+        ] {
+            assert!(!own_keys.contains(leaked), "{leaked}");
+        }
+
+        let resolution_json = serde_json::to_value(own.resolution.as_ref().unwrap()).unwrap();
+        let resolution_keys = json_keys(&resolution_json);
+        assert_eq!(
+            resolution_keys,
+            BTreeSet::from(["action", "ot_hours", "reason", "resolved_at"])
+        );
+        for leaked in ["actor", "resolver_id", "resolver_name", "employee_id"] {
+            assert!(!resolution_keys.contains(leaked), "{leaked}");
+        }
     }
 
     #[test]
