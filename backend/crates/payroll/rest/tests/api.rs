@@ -120,6 +120,15 @@ async fn get(service: axum::Router, uri: &str, token: &str) -> JsonResponse {
     JsonResponse { status, json }
 }
 
+async fn get_unauthenticated(service: axum::Router, uri: &str) -> StatusCode {
+    let request = Request::builder()
+        .uri(uri)
+        .method("GET")
+        .body(Body::empty())
+        .unwrap();
+    service.oneshot(request).await.unwrap().status()
+}
+
 fn test_audit_event(
     action: &str,
     target_type: &str,
@@ -304,6 +313,18 @@ const MY_PAYSLIP_READINESS_ITEM_KEYS: &[&str] = &[
     "work_days",
 ];
 
+/// Hour/leave counts the DTO may serialize (often JSON null). The seeded
+/// INSERT does not populate them, so their absence is allowed.
+const MY_PAYSLIP_OPTIONAL_HOUR_KEYS: &[&str] = &[
+    "holiday_hours",
+    "leave_remaining",
+    "leave_used",
+    "night_hours",
+    "overtime_hours",
+    "regular_hours",
+    "work_days",
+];
+
 const VAULT_OR_ISSUED_PAYSLIP_KEYS: &[&str] = &[
     "kind",
     "legal_basis",
@@ -332,6 +353,31 @@ fn object_keys(value: &Value) -> BTreeSet<&str> {
         .unwrap_or_default()
 }
 
+/// Item keys plus one nested object (or array-of-object) level.
+fn object_keys_one_level(value: &Value) -> BTreeSet<&str> {
+    let mut keys = BTreeSet::new();
+    let Some(map) = value.as_object() else {
+        return keys;
+    };
+    for (key, nested) in map {
+        keys.insert(key.as_str());
+        match nested {
+            Value::Object(inner) => {
+                keys.extend(inner.keys().map(String::as_str));
+            }
+            Value::Array(items) => {
+                for nested in items {
+                    if let Some(inner) = nested.as_object() {
+                        keys.extend(inner.keys().map(String::as_str));
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    keys
+}
+
 fn collect_keys<'a>(value: &'a Value, keys: &mut BTreeSet<&'a str>) {
     match value {
         Value::Object(map) => {
@@ -358,18 +404,53 @@ fn assert_payslips_me_is_own_readiness(body: &Value, expected_run: Uuid, forbidd
     assert_eq!(body["total"], 1, "{body:?}");
     let items = body["items"].as_array().expect("items array");
     assert_eq!(items.len(), 1, "{body:?}");
-    assert_eq!(
-        object_keys(&items[0]),
-        MY_PAYSLIP_READINESS_ITEM_KEYS.iter().copied().collect(),
-        "item keys must stay the readiness allow-list: {}",
-        items[0]
-    );
-    assert_eq!(items[0]["run_id"], expected_run.to_string());
+    let item = &items[0];
+    let item_keys = object_keys(item);
+    let allowed: BTreeSet<&str> = MY_PAYSLIP_READINESS_ITEM_KEYS.iter().copied().collect();
+    let unexpected: Vec<&str> = item_keys.difference(&allowed).copied().collect();
     assert!(
-        !items[0]["period_start"].is_null() && !items[0]["period_end"].is_null(),
-        "readiness row must carry the run period: {}",
-        items[0]
+        unexpected.is_empty(),
+        "unexpected keys on /payslips/me item {unexpected:?}: {item}"
     );
+    for key in MY_PAYSLIP_READINESS_ITEM_KEYS {
+        if MY_PAYSLIP_OPTIONAL_HOUR_KEYS.contains(key) {
+            continue;
+        }
+        assert!(
+            item_keys.contains(key),
+            "readiness field {key} must be present on /payslips/me: {item}"
+        );
+    }
+    // Required DTO booleans stay present even when the seeded line has no
+    // pay source. Hour keys are optional: the INSERT omits hour columns.
+    assert!(
+        item.get("gross_pay_source_present")
+            .and_then(Value::as_bool)
+            .is_some(),
+        "gross_pay_source_present must be a boolean: {item}"
+    );
+    assert!(
+        item.get("net_pay_source_present")
+            .and_then(Value::as_bool)
+            .is_some(),
+        "net_pay_source_present must be a boolean: {item}"
+    );
+    assert_eq!(item["run_id"], expected_run.to_string());
+    assert!(
+        !item["period_start"].is_null() && !item["period_end"].is_null(),
+        "readiness row must carry the run period: {item}"
+    );
+
+    // Item keys plus one nested object level: none may contain "won"
+    // (`gross_won`, `net_won`, `amount_won`, `total_deductions_won`,
+    // `monthly_remuneration_won`, …). This is not the issued 명세서
+    // (`GET /api/v1/me/inbox-docs?filter=payslip`).
+    for key in object_keys_one_level(item) {
+        assert!(
+            !key.contains("won"),
+            "{key} contains 'won' on /payslips/me item (issued 명세서 is GET /api/v1/me/inbox-docs?filter=payslip): {item}"
+        );
+    }
 
     let mut keys = BTreeSet::new();
     collect_keys(body, &mut keys);
@@ -379,13 +460,13 @@ fn assert_payslips_me_is_own_readiness(body: &Value, expected_run: Uuid, forbidd
     {
         assert!(
             !keys.contains(forbidden),
-            "{forbidden} must not appear on /payslips/me (issued 명세서 is inbox-docs): {body:?}"
+            "{forbidden} must not appear on /payslips/me (issued 명세서 is GET /api/v1/me/inbox-docs?filter=payslip): {body:?}"
         );
     }
     for key in &keys {
         assert!(
-            !key.ends_with("_won"),
-            "{key} looks like a won amount on /payslips/me: {body:?}"
+            !key.contains("won"),
+            "{key} contains 'won' on /payslips/me (issued 명세서 is GET /api/v1/me/inbox-docs?filter=payslip): {body:?}"
         );
     }
 
@@ -428,8 +509,13 @@ async fn payslips_me_is_self_scoped_never_a_coworkers(pool: PgPool) {
     let alice_token = bearer(&keys, alice_user, org, "MEMBER");
     let bob_token = bearer(&keys, bob_user, org, "MEMBER");
 
-    // MEMBER JWT carries empty feature_grants — no PayrollRunRead. Admin
-    // listing must stay 403; own readiness must stay 200.
+    let anon = get_unauthenticated(service.clone(), PAYROLL_MY_PAYSLIPS_PATH).await;
+    assert_eq!(anon, StatusCode::UNAUTHORIZED);
+
+    // MEMBER JWT carries empty feature_grants — no PayrollRunRead — and is
+    // still 200 on /payslips/me. This is NOT the issued 명세서
+    // (`GET /api/v1/me/inbox-docs?filter=payslip`); that vault is a
+    // different crate. Admin listing must stay 403; own readiness 200.
     let member_runs = get(service.clone(), PAYROLL_RUNS_PATH, &alice_token).await;
     assert_eq!(
         member_runs.status,
