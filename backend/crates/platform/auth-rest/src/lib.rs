@@ -2332,19 +2332,25 @@ async fn logout(
     Json(body): Json<LogoutRequest>,
 ) -> Result<Response, RestError> {
     let services = state.services()?;
-    // Read the token from the cookie (web) or the body (mobile). A logout with no
-    // token is a no-op success: the session is already gone client-side. A present
-    // console_refresh always clears both cookies — the JS-settable transport
-    // header must not leave HttpOnly cookies in the jar after revoke.
+    // Cookie (web) or body (mobile). No token is a no-op success. A present
+    // `console_refresh` always clears both cookies, including when revoke
+    // reports InvalidToken or FamilyRevoked; storage failures still fail closed.
     let from_cookie = refresh_cookie_value(&headers);
-    let cookie_output = from_cookie.is_some() || wants_cookie_transport(&headers);
+    let cookie_present = from_cookie.is_some();
+    let cookie_output = cookie_present || wants_cookie_transport(&headers);
     let refresh = from_cookie.or(body.refresh_token);
     if let Some(refresh) = refresh.as_deref() {
-        services
+        if let Err(error) = services
             .refresh_tokens
             .revoke_family_for_logout(&state.pool, refresh, OffsetDateTime::now_utc())
             .await
-            .map_err(RestError::from_refresh)?;
+        {
+            match error {
+                RefreshTokenUseError::InvalidToken | RefreshTokenUseError::FamilyRevoked
+                    if cookie_present => {}
+                other => return Err(RestError::from_refresh(other)),
+            }
+        }
     }
     if cookie_output {
         Ok(cookie_clear_response(

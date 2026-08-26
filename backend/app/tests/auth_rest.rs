@@ -2247,6 +2247,36 @@ async fn cookie_sourced_refresh_never_returns_refresh_token_in_json(pool: PgPool
         .expect("logout with console_refresh must clear the access cookie");
     assert!(clear_access.contains("Max-Age=0"), "{clear_access}");
 
+    // Same cookie is now FamilyRevoked; unknown cookie is InvalidToken. Both
+    // must still emit Max-Age=0 instead of 401 that leaves the jar in place.
+    let revoked_logout = post_logout_cookie_without_transport(
+        service.clone(),
+        &rotated_value,
+        Some(("https://auth.example.com", "auth.example.com")),
+    )
+    .await;
+    assert_eq!(revoked_logout.status(), StatusCode::NO_CONTENT);
+    let revoked_refresh = console_refresh_set_cookie(&revoked_logout)
+        .expect("logout with revoked console_refresh must still clear the refresh cookie");
+    assert!(revoked_refresh.contains("Max-Age=0"), "{revoked_refresh}");
+    let revoked_access = console_access_set_cookie(&revoked_logout)
+        .expect("logout with revoked console_refresh must still clear the access cookie");
+    assert!(revoked_access.contains("Max-Age=0"), "{revoked_access}");
+
+    let unknown_logout = post_logout_cookie_without_transport(
+        service.clone(),
+        "unknown-refresh-token",
+        Some(("https://auth.example.com", "auth.example.com")),
+    )
+    .await;
+    assert_eq!(unknown_logout.status(), StatusCode::NO_CONTENT);
+    let unknown_refresh = console_refresh_set_cookie(&unknown_logout)
+        .expect("logout with unknown console_refresh must still clear the refresh cookie");
+    assert!(unknown_refresh.contains("Max-Age=0"), "{unknown_refresh}");
+    let unknown_access = console_access_set_cookie(&unknown_logout)
+        .expect("logout with unknown console_refresh must still clear the access cookie");
+    assert!(unknown_access.contains("Max-Age=0"), "{unknown_access}");
+
     let after_logout = post_refresh_cookie_without_transport(
         service,
         &rotated_value,
