@@ -11,12 +11,16 @@
 //!  * the org-isolation policies' WITH CHECK rejects writing another org's
 //!    row outright;
 //!  * a lifecycle mutation (`close_attendance_in_tx`) against another org's
-//!    run id is a NotFound, not a cross-org write.
+//!    run id is a NotFound, not a cross-org write;
+//!  * `load_payslip_issuance_in_tx` on a non-PAID run is invalid_state and
+//!    writes no recipient inbox_docs; a cross-org run id is NotFound omit
+//!    (RLS), not InvalidState (which would distinguish a foreign run from a
+//!    missing one).
 
-use console_kernel_core::OrgId;
+use console_kernel_core::{OrgId, UserId};
 use console_payroll_adapter_postgres::lifecycle::{
     LifecycleError, close_attendance_in_tx, close_preflight_in_tx, get_disbursement_in_tx,
-    list_exceptions_in_tx, payslip_delivery_in_tx,
+    list_exceptions_in_tx, load_payslip_issuance_in_tx, payslip_delivery_in_tx,
 };
 use console_platform_db::with_org_conn;
 use console_platform_test_support::runtime_role_pool;
@@ -64,6 +68,40 @@ async fn seed_line(owner_pool: &PgPool, org: Uuid, run_id: Uuid) -> Uuid {
     .unwrap()
 }
 
+async fn seed_employee(owner_pool: &PgPool, org: Uuid, name: &str) -> Uuid {
+    let id = Uuid::new_v4();
+    sqlx::query(
+        "INSERT INTO employees \
+         (id, org_id, company, name, source_filename, source_sheet, source_row, source_key) \
+         VALUES ($1, $2, 'KNL', $3, 'roster.xlsx', 'Sheet1', 1, $4)",
+    )
+    .bind(id)
+    .bind(org)
+    .bind(name)
+    .bind(format!("emp-{id}"))
+    .execute(owner_pool)
+    .await
+    .unwrap();
+    id
+}
+
+async fn seed_user_linked_to_employee(owner_pool: &PgPool, org: Uuid, employee: Uuid) -> UserId {
+    let user_id = UserId::new();
+    sqlx::query(
+        "INSERT INTO users (id, display_name, roles, org_id, employee_id) \
+         VALUES ($1, $2, $3, $4, $5)",
+    )
+    .bind(*user_id.as_uuid())
+    .bind(format!("User {}", user_id.as_uuid()))
+    .bind(vec!["MEMBER".to_string()])
+    .bind(org)
+    .bind(employee)
+    .execute(owner_pool)
+    .await
+    .unwrap();
+    user_id
+}
+
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn lifecycle_tables_are_org_isolated_and_write_checked(pool: PgPool) {
     let org_a = Uuid::new_v4();
@@ -73,6 +111,14 @@ async fn lifecycle_tables_are_org_isolated_and_write_checked(pool: PgPool) {
 
     let run_a = seed_run(&pool, org_a).await;
     let line_a = seed_line(&pool, org_a, run_a).await;
+    let emp_a = seed_employee(&pool, org_a, "Alice").await;
+    let recipient = seed_user_linked_to_employee(&pool, org_a, emp_a).await;
+    sqlx::query("UPDATE payroll_draft_lines SET employee_id = $1 WHERE id = $2")
+        .bind(emp_a)
+        .bind(line_a)
+        .execute(&pool)
+        .await
+        .unwrap();
 
     // Seed one row into each lifecycle table for org A (owner pool).
     sqlx::query(
@@ -164,6 +210,17 @@ async fn lifecycle_tables_are_org_isolated_and_write_checked(pool: PgPool) {
         "cross-org close must be NotFound, got {cross_close:?}"
     );
 
+    // If RLS leaked the row, this would be InvalidState (status is not PAID),
+    // which is a distinct wrong-tenant error rather than omit.
+    let cross_issue = with_org_conn::<_, _, LifecycleError>(&rt_pool, b, move |tx| {
+        Box::pin(async move { load_payslip_issuance_in_tx(tx, run_a).await })
+    })
+    .await;
+    assert!(
+        matches!(cross_issue, Err(LifecycleError::NotFound)),
+        "cross-org issue load must be NotFound omit (RLS), not a distinct wrong-tenant error, got {cross_issue:?}"
+    );
+
     // WITH CHECK: writing an org-A row while armed as org B is rejected.
     let smuggle = with_org_conn::<_, _, LifecycleError>(&rt_pool, b, move |tx| {
         Box::pin(async move {
@@ -197,6 +254,50 @@ async fn lifecycle_tables_are_org_isolated_and_write_checked(pool: PgPool) {
     assert_eq!(own.total, 1);
     assert_eq!(own.open, 1);
     assert_eq!(own.items[0].kind, "OVERTIME_ALLOWANCE");
+
+    // Seeded runs default to BLOCKED_LEGAL_GATE, which is not PAID. The
+    // adapter load is the PAID gate; this crate does not emit vault docs, so
+    // the inbox count is the side-effect floor it can observe.
+    let own_issue = with_org_conn::<_, _, LifecycleError>(&rt_pool, a, move |tx| {
+        Box::pin(async move { load_payslip_issuance_in_tx(tx, run_a).await })
+    })
+    .await;
+    match own_issue {
+        Err(LifecycleError::InvalidState(message)) => assert_eq!(
+            message,
+            "cannot issue payslips for a run in status BLOCKED_LEGAL_GATE"
+        ),
+        other => panic!("issue on a non-PAID run must be invalid_state, got {other:?}"),
+    }
+    let recipient_id = *recipient.as_uuid();
+    let leaked_rt = with_org_conn::<_, _, LifecycleError>(&rt_pool, a, move |tx| {
+        Box::pin(async move {
+            let count: i64 = sqlx::query_scalar(
+                "SELECT COUNT(*) FROM inbox_docs WHERE recipient_user_id = $1 AND kind = 'payslip'",
+            )
+            .bind(recipient_id)
+            .fetch_one(tx.as_mut())
+            .await?;
+            Ok(count)
+        })
+    })
+    .await
+    .unwrap();
+    assert_eq!(
+        leaked_rt, 0,
+        "runtime org A must see no payslip inbox_docs for the recipient after a refused issue"
+    );
+    let leaked: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM inbox_docs WHERE recipient_user_id = $1 AND kind = 'payslip'",
+    )
+    .bind(recipient_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        leaked, 0,
+        "a refused non-PAID issue must leave the recipient's payslip inbox empty"
+    );
 }
 
 /// REG-P4: `payroll_line_calculations` must be append-only in the database,
