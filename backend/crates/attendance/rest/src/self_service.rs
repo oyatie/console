@@ -61,6 +61,7 @@ struct OwnExceptionDto {
     work_date: String,
     occurred_at: String,
     detail: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     evidence: Vec<OwnEvidenceDto>,
     #[serde(skip_serializing_if = "Option::is_none")]
     resolution: Option<OwnExceptionResolutionDto>,
