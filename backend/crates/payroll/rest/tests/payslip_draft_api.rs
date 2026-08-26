@@ -292,6 +292,33 @@ fn deduction<'a>(body: &'a Value, code: &str) -> &'a Value {
         .unwrap_or_else(|| panic!("no {code} deduction line in {body}"))
 }
 
+/// A 403/404 must not carry compensation fields or the target's name.
+/// A richer error body than a missing id would be an existence oracle.
+fn assert_no_compensation_payload(body: &Value, employee_name: &str) {
+    let text = body.to_string();
+    assert!(
+        !text.contains(employee_name),
+        "response leaked employee identity: {body}"
+    );
+    for key in [
+        "gross_won",
+        "deductions",
+        "contract",
+        "net_pay_won",
+        "earnings",
+        "remainder_after_insurance_won",
+        "total_employee_insurance_won",
+        "employee_name",
+        "issuable",
+        "blockers",
+    ] {
+        assert!(
+            body.get(key).is_none(),
+            "denied/omitted body must not carry compensation field {key}: {body}"
+        );
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
@@ -708,16 +735,37 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
 
     let member = UserId::new();
     seed_user(&owner_pool, member, *org.as_uuid(), "MEMBER").await;
+    let member_token = bearer(&keys, member, org, "MEMBER");
     let denied = get(
         app(pool.clone(), &keys),
         &format!("/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07"),
-        &bearer(&keys, member, org, "MEMBER"),
+        &member_token,
     )
     .await;
     assert_eq!(
         denied.status,
         StatusCode::FORBIDDEN,
         "compensation-adjacent reads of another person's data are org-wide gated"
+    );
+    assert_eq!(denied.json["error"]["code"], "forbidden");
+    assert_no_compensation_payload(&denied.json, "김근로");
+
+    // Same 403 for a UUID that does not exist — MEMBER must not get a 404
+    // that would distinguish "coworker" from "never heard of".
+    let denied_missing = get(
+        app(pool.clone(), &keys),
+        &format!(
+            "/api/v1/payroll/employees/{}/payslip-draft?period=2026-07",
+            Uuid::new_v4()
+        ),
+        &member_token,
+    )
+    .await;
+    assert_eq!(denied_missing.status, StatusCode::FORBIDDEN);
+    assert_eq!(denied_missing.json["error"]["code"], "forbidden");
+    assert_eq!(
+        denied.json["error"]["code"],
+        denied_missing.json["error"]["code"]
     );
 
     // No contract wage in force: a BLOCKER, not a zero payslip and not a 404.
@@ -734,6 +782,16 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
     assert_eq!(body.json["issuable"], false);
     assert_eq!(body.json["blockers"][0], "CONTRACT_WAGE_NOT_IN_FORCE");
     assert!(body.json["contract"].is_null());
+    assert!(
+        body.json.get("gross_won").is_none() || body.json["gross_won"].is_null(),
+        "blocked draft must not invent a wage: {}",
+        body.json
+    );
+    assert!(
+        body.json.get("deductions").is_none() || body.json["deductions"].is_null(),
+        "blocked draft must not invent deductions: {}",
+        body.json
+    );
 
     // A future-dated contract stays invisible until its own effective date —
     // which is why history is stored rather than overwritten.
@@ -758,6 +816,139 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
     )
     .await;
     assert_eq!(body.json["blockers"][0], "CONTRACT_WAGE_NOT_IN_FORCE");
+    assert_eq!(body.json["issuable"], false);
+
+    // An in-force wage is still not issuable: withholding is named, never a
+    // silent zero, and never client-side tax math.
+    let created = post(
+        app(pool.clone(), &keys),
+        &format!("/api/v1/payroll/employees/{employee}/contract-wages"),
+        &token,
+        json!({
+            "effective_from": "2025-03-02",
+            "wage_kind": "MONTHLY",
+            "amount_won": 3_000_000,
+            "monthly_standard_hours": 209
+        }),
+    )
+    .await;
+    assert_eq!(created.status, StatusCode::CREATED, "{}", created.json);
+    let body = get(
+        app(pool.clone(), &keys),
+        &format!(
+            "/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07&pay_date=2026-08-10"
+        ),
+        &token,
+    )
+    .await;
+    assert_eq!(body.status, StatusCode::OK, "{}", body.json);
+    assert_eq!(body.json["issuable"], false);
+    assert!(body.json["net_pay_won"].is_null());
+    let blockers: Vec<&str> = body.json["blockers"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|blocker| blocker.as_str().unwrap())
+        .collect();
+    assert!(
+        blockers.contains(&"WITHHOLDING_NOT_COMPUTED"),
+        "withholding must stay an explicit blocker, never a silent zero: {blockers:?}"
+    );
+    assert!(
+        !body.json["deductions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|line| line["label_ko"].as_str().unwrap().contains("소득세")),
+        "no client-side tax line: {}",
+        body.json
+    );
+
+    // MEMBER still 403 once figures exist — the 403 body must not leak them.
+    let denied_after_wage = get(
+        app(pool.clone(), &keys),
+        &format!(
+            "/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07&pay_date=2026-08-10"
+        ),
+        &member_token,
+    )
+    .await;
+    assert_eq!(denied_after_wage.status, StatusCode::FORBIDDEN);
+    assert_eq!(denied_after_wage.json["error"]["code"], "forbidden");
+    assert_no_compensation_payload(&denied_after_wage.json, "김근로");
+    let denied_text = denied_after_wage.json.to_string();
+    assert!(
+        !denied_text.contains("3000000"),
+        "403 leaked a wage figure: {denied_text}"
+    );
+    assert!(
+        !denied_text.contains("3,000,000"),
+        "403 leaked a formatted wage: {denied_text}"
+    );
+
+    // Cross-tenant: an employee that exists only in another org is 404-omit,
+    // the same envelope as a missing id — never 403, which would prove the
+    // id exists somewhere. Matches payroll run GET 404-omit.
+    let other_org = Uuid::new_v4();
+    with_audit(
+        &owner_pool,
+        seed_event("test.seed_org", "organization", other_org, other_org),
+        |tx| {
+            Box::pin(async move {
+                sqlx::query(
+                    "INSERT INTO organizations (id, slug, name) VALUES ($1, 'org-foreign', 'Org Foreign')",
+                )
+                .bind(other_org)
+                .execute(tx.as_mut())
+                .await
+                .map_err(DbError::Sqlx)?;
+                Ok::<(), DbError>(())
+            })
+        },
+    )
+    .await
+    .unwrap();
+    let foreign = seed_employee(&owner_pool, other_org, "박타사").await;
+    let foreign_draft = get(
+        app(pool.clone(), &keys),
+        &format!(
+            "/api/v1/payroll/employees/{foreign}/payslip-draft?period=2026-07&pay_date=2026-08-10"
+        ),
+        &token,
+    )
+    .await;
+    let missing_id = Uuid::new_v4();
+    let missing_draft = get(
+        app(pool.clone(), &keys),
+        &format!(
+            "/api/v1/payroll/employees/{missing_id}/payslip-draft?period=2026-07&pay_date=2026-08-10"
+        ),
+        &token,
+    )
+    .await;
+    assert_eq!(
+        foreign_draft.status,
+        StatusCode::NOT_FOUND,
+        "another org's employee must 404-omit, not 403: {}",
+        foreign_draft.json
+    );
+    assert_eq!(
+        missing_draft.status,
+        StatusCode::NOT_FOUND,
+        "{}",
+        missing_draft.json
+    );
+    assert_eq!(foreign_draft.json["error"]["code"], "not_found");
+    assert_eq!(
+        foreign_draft.json["error"]["code"],
+        missing_draft.json["error"]["code"]
+    );
+    assert_eq!(
+        foreign_draft.json["error"]["message"],
+        missing_draft.json["error"]["message"]
+    );
+    assert_no_compensation_payload(&foreign_draft.json, "박타사");
+    assert_no_compensation_payload(&missing_draft.json, "박타사");
 }
 
 /// F4 — the timesheet is load-bearing or it is not claimed.
