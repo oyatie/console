@@ -33,7 +33,7 @@ const TEST_AUDIENCE: &str = "console-api";
 
 #[derive(Debug, Deserialize)]
 struct SessionResponse {
-    access_token: String,
+    access_token: Option<String>,
     refresh_token: Option<String>,
     requires_passkey_setup: bool,
 }
@@ -164,10 +164,11 @@ async fn post_cookie_refresh(app: axum::Router, cookie: &str) -> http::Response<
 fn refresh_cookie(response: &http::Response<Body>) -> String {
     response
         .headers()
-        .get(header::SET_COOKIE)
+        .get_all(header::SET_COOKIE)
+        .iter()
+        .map(|value| value.to_str().unwrap())
+        .find(|value| value.starts_with("console_refresh="))
         .expect("cookie transport must set a refresh cookie")
-        .to_str()
-        .unwrap()
         .split(';')
         .next()
         .unwrap()
@@ -196,7 +197,13 @@ async fn mints_a_real_session_and_backs_it_with_a_real_user(pool: PgPool) {
     assert_eq!(response.status(), StatusCode::OK);
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let session: SessionResponse = serde_json::from_slice(&bytes).unwrap();
-    assert!(!session.access_token.is_empty());
+    assert!(
+        !session
+            .access_token
+            .as_deref()
+            .unwrap_or_default()
+            .is_empty()
+    );
     assert!(!session.requires_passkey_setup);
     assert!(
         session.refresh_token.is_some(),
@@ -274,6 +281,10 @@ async fn cookie_refresh_keeps_synthetic_dev_persona_out_of_passkey_onboarding(po
     let minted_body: SessionResponse =
         serde_json::from_slice(&to_bytes(minted.into_body(), usize::MAX).await.unwrap()).unwrap();
     assert!(!minted_body.requires_passkey_setup);
+    assert!(
+        minted_body.access_token.is_none(),
+        "cookie transport must not expose the access token in JSON"
+    );
     assert!(
         minted_body.refresh_token.is_none(),
         "cookie transport must not expose the refresh token in JSON"

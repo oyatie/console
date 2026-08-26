@@ -34,7 +34,9 @@ use console_platform_db::{
 use console_platform_email::{DisabledEmailSender, EmailSender};
 use console_platform_group::GroupMemberOrg;
 use console_platform_provisioning::{BootstrapCredentialStore, ProvisioningError};
-use console_platform_request_context::TrustedClientIp;
+use console_platform_request_context::{
+    ACCESS_COOKIE_NAME, TrustedClientIp, access_token_from_headers, enforce_cookie_csrf,
+};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
@@ -48,8 +50,8 @@ const GROUP_ADMIN_GROUP_ROLE: &str = "GROUP_ADMIN";
 const GROUP_ADMIN_TENANT_ACTING_ROLE: &str = "GROUP_ADMIN_DELEGATED_ADMIN";
 
 /// Request header a WEB client sets to opt into the cookie transport for the
-/// refresh token. Mobile (iOS/Android) clients never send it and keep the
-/// body-based refresh token. The value must equal [`AUTH_TRANSPORT_COOKIE`].
+/// access and refresh tokens. Mobile (iOS/Android) clients never send it and
+/// keep both tokens in the JSON body. The value must equal [`AUTH_TRANSPORT_COOKIE`].
 const AUTH_TRANSPORT_HEADER: &str = "x-auth-transport";
 /// The single recognized value of [`AUTH_TRANSPORT_HEADER`].
 const AUTH_TRANSPORT_COOKIE: &str = "cookie";
@@ -59,6 +61,9 @@ const REFRESH_COOKIE_NAME: &str = "console_refresh";
 /// the browser never attaches the refresh token to ordinary API calls — only to
 /// the refresh/logout endpoints that need it.
 const REFRESH_COOKIE_PATH: &str = "/api/v1/auth";
+/// Access-cookie Max-Age matches the access JWT TTL so the browser drops it
+/// when the token would already be unusable. Refresh stays on its own TTL.
+const ACCESS_COOKIE_MAX_AGE_SECS: i64 = DEFAULT_ACCESS_TOKEN_TTL.whole_seconds();
 
 pub const SIGNUP_PATH: &str = "/api/v1/auth/signup";
 pub const PASSKEY_REGISTER_START_PATH: &str = "/api/v1/auth/passkey/register/start";
@@ -323,7 +328,23 @@ pub fn router(state: AuthRestState) -> Router {
         );
     #[cfg(feature = "dev-auth")]
     let router = router.route(DEV_AUTH_SESSION_PATH, post(dev_auth_session));
-    router.with_state(state)
+    router
+        .layer(axum::middleware::from_fn(cookie_csrf_layer))
+        .with_state(state)
+}
+
+/// Origin/Host check for cookie-authenticated mutations on auth routes that
+/// are not behind `with_request_context` (passkey enroll, privacy consent,
+/// admin OTP, group-admin tenant context). Safe methods, Bearer clients, and
+/// cookieless login/refresh skip the check.
+async fn cookie_csrf_layer(
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> Response {
+    if let Err(message) = enforce_cookie_csrf(request.headers(), request.method()) {
+        return RestError::forbidden(message).into_response();
+    }
+    next.run(request).await
 }
 
 #[derive(Debug, Deserialize)]
@@ -425,12 +446,12 @@ struct OtpRedeemRequest {
 /// OTP first sign-in result: a normal session token pair plus a flag telling the
 /// frontend to force passkey enrollment in initial settings.
 ///
-/// `refresh_token` is `null` in the cookie transport (web): the token is set as
-/// an HttpOnly cookie instead and must never reach web JS. It is `Some` in the
-/// body transport (mobile).
+/// `access_token` and `refresh_token` are `null` in the cookie transport (web):
+/// both ride in HttpOnly cookies and must never reach web JS. They are `Some`
+/// in the body transport (mobile).
 #[derive(Debug, Serialize)]
 struct OtpRedeemResponse {
-    access_token: String,
+    access_token: Option<String>,
     refresh_token: Option<String>,
     token_type: &'static str,
     #[serde(with = "time::serde::rfc3339")]
@@ -574,17 +595,17 @@ struct PrivacyConsentStatusResponse {
     accepted_at: Option<OffsetDateTime>,
 }
 
-/// A minted access/refresh pair. `refresh_token` is `null` in the cookie
-/// transport (web) — the refresh token rides in the HttpOnly `console_refresh`
-/// cookie instead — and `Some` in the body transport (mobile). The access token
-/// is ALWAYS in the body: it stays a short-lived in-memory bearer token, never a
-/// cookie. `requires_passkey_setup` is true only for an ordinary session whose
-/// user still has zero passkeys, so a refresh cannot bypass initial enrollment.
-/// A `dev-auth` build exempts only its authenticated synthetic role-switch
+/// A minted access/refresh pair. In the cookie transport (web) both
+/// `access_token` and `refresh_token` are `null`: they ride in HttpOnly cookies
+/// (`console_access` path `/`, `console_refresh` path `/api/v1/auth`) and must
+/// never reach web JS. In the body transport (mobile) both are `Some`.
+/// `requires_passkey_setup` is true only for an ordinary session whose user
+/// still has zero passkeys, so a refresh cannot bypass initial enrollment. A
+/// `dev-auth` build exempts only its authenticated synthetic role-switch
 /// personas; ordinary users keep this production behavior in the same binary.
 #[derive(Debug, Serialize)]
 struct TokenPairResponse {
-    access_token: String,
+    access_token: Option<String>,
     refresh_token: Option<String>,
     token_type: &'static str,
     #[serde(with = "time::serde::rfc3339")]
@@ -1183,24 +1204,29 @@ async fn redeem_otp(
     )
     .await?;
 
-    // Dual transport: web (cookie) gets an HttpOnly Set-Cookie and a null body
-    // refresh token; mobile (body) gets the refresh token in the JSON body. The
-    // access token and passkey-setup flag are always in the body.
+    // Dual transport: web (cookie) gets HttpOnly Set-Cookie headers and null
+    // body tokens; mobile (body) gets both tokens in the JSON body. The
+    // passkey-setup flag stays in the body in both cases.
     if wants_cookie_transport(&headers) {
         let max_age = (tokens.refresh_expires_at - now).whole_seconds();
-        let cookie = refresh_set_cookie(&tokens.refresh_token, max_age, services.cookie_secure);
         let response = Json(OtpRedeemResponse {
-            access_token: tokens.access_token,
+            access_token: None,
             refresh_token: None,
             token_type: "Bearer",
             refresh_expires_at: tokens.refresh_expires_at,
             requires_passkey_setup: redemption.requires_passkey_setup,
         })
         .into_response();
-        Ok(with_refresh_cookie(response, cookie))
+        Ok(cookie_session_response(
+            response,
+            &tokens.refresh_token,
+            max_age,
+            &tokens.access_token,
+            services.cookie_secure,
+        ))
     } else {
         Ok(Json(OtpRedeemResponse {
-            access_token: tokens.access_token,
+            access_token: Some(tokens.access_token),
             refresh_token: Some(tokens.refresh_token),
             token_type: "Bearer",
             refresh_expires_at: tokens.refresh_expires_at,
@@ -2172,19 +2198,24 @@ async fn refresh_token(
     let access_token = issue_access_token(services, &user)?;
     if cookie_mode {
         let max_age = (issue.expires_at - now).whole_seconds();
-        let cookie = refresh_set_cookie(issue.token.as_str(), max_age, services.cookie_secure);
         let response = Json(TokenPairResponse {
-            access_token,
+            access_token: None,
             refresh_token: None,
             token_type: "Bearer",
             refresh_expires_at: issue.expires_at,
             requires_passkey_setup,
         })
         .into_response();
-        Ok(with_refresh_cookie(response, cookie))
+        Ok(cookie_session_response(
+            response,
+            issue.token.as_str(),
+            max_age,
+            &access_token,
+            services.cookie_secure,
+        ))
     } else {
         Ok(Json(TokenPairResponse {
-            access_token,
+            access_token: Some(access_token),
             refresh_token: Some(issue.token.as_str().to_owned()),
             token_type: "Bearer",
             refresh_expires_at: issue.expires_at,
@@ -2228,13 +2259,12 @@ async fn logout(
             .await
             .map_err(RestError::from_refresh)?;
     }
-    // Always clear the cookie for the web transport so a stale token cannot linger
-    // in the browser after the family is revoked.
+    // Always clear both cookies for the web transport so a stale access or
+    // refresh token cannot linger in the browser after the family is revoked.
     if cookie_mode {
-        let response = StatusCode::NO_CONTENT.into_response();
-        Ok(with_refresh_cookie(
-            response,
-            refresh_clear_cookie(services.cookie_secure),
+        Ok(cookie_clear_response(
+            StatusCode::NO_CONTENT.into_response(),
+            services.cookie_secure,
         ))
     } else {
         Ok(StatusCode::NO_CONTENT.into_response())
@@ -2593,7 +2623,7 @@ impl IssuedTokenPair {
     /// Body-transport (mobile) response: the refresh token rides in the JSON body.
     fn into_response(self) -> TokenPairResponse {
         TokenPairResponse {
-            access_token: self.access_token,
+            access_token: Some(self.access_token),
             refresh_token: Some(self.refresh_token),
             token_type: "Bearer",
             refresh_expires_at: self.refresh_expires_at,
@@ -2941,7 +2971,7 @@ fn authenticated_user_context(
     services: &AuthServices,
     headers: &HeaderMap,
 ) -> Result<(Uuid, OrgId), RestError> {
-    let token = bearer_token(headers)?;
+    let token = access_token_from_headers(headers).map_err(rest_error_from_request_context)?;
     let claims = services
         .jwt_verifier
         .verify_access_token(token)
@@ -3022,18 +3052,6 @@ async fn latest_user_passkey_id(
         })
     })
     .await
-}
-
-fn bearer_token(headers: &HeaderMap) -> Result<&str, RestError> {
-    let header_value = headers
-        .get(header::AUTHORIZATION)
-        .ok_or_else(|| RestError::unauthorized("missing bearer token"))?
-        .to_str()
-        .map_err(|_| RestError::unauthorized("invalid authorization header"))?;
-    header_value
-        .strip_prefix("Bearer ")
-        .filter(|token| !token.trim().is_empty())
-        .ok_or_else(|| RestError::unauthorized("authorization header must use Bearer scheme"))
 }
 
 async fn record_auth_audit(
@@ -3158,7 +3176,7 @@ fn authenticated_group_actor(
     services: &AuthServices,
     headers: &HeaderMap,
 ) -> Result<AuthenticatedGroupAdminActor, RestError> {
-    let token = bearer_token(headers)?;
+    let token = access_token_from_headers(headers).map_err(rest_error_from_request_context)?;
     let claims = services
         .jwt_verifier
         .verify_access_token(token)
@@ -3520,14 +3538,12 @@ fn refresh_cookie_value(headers: &HeaderMap) -> Option<String> {
 /// Build a `Set-Cookie` header that stores the refresh token for the web
 /// transport.
 ///
-/// CSRF safety (confirmed): `SameSite=Strict` stops the browser from attaching
-/// this cookie to any cross-site request, so a forged request from another origin
-/// carries no refresh token. The `Path=/api/v1/auth` scope keeps it off every
-/// other API call, and the access token travels in the `Authorization` header
-/// (NOT a cookie), so a state-changing API call can never be driven by an
-/// ambient cookie alone. `HttpOnly` keeps the token out of JS (XSS exfiltration),
-/// and `Secure` (prod) forbids plaintext transmission. Together these make the
-/// cookie transport CSRF-safe without a separate CSRF token.
+/// `SameSite=Strict` stops the browser from attaching this cookie to any
+/// cross-site request. `Path=/api/v1/auth` keeps it off ordinary API/document
+/// calls. `HttpOnly` keeps it out of JS; `Secure` (prod) forbids plaintext.
+/// The access cookie is separate (`SameSite=Lax`, `Path=/`) so SSR document
+/// GETs can authenticate; mutating cookie-auth requests also pass an Origin/Host
+/// check (see [`enforce_cookie_csrf`]).
 fn refresh_set_cookie(token: &str, max_age_secs: i64, secure: bool) -> Option<HeaderValue> {
     let max_age = max_age_secs.max(0);
     let mut cookie = format!(
@@ -3545,12 +3561,31 @@ fn refresh_clear_cookie(secure: bool) -> Option<HeaderValue> {
     refresh_set_cookie("", 0, secure)
 }
 
+/// HttpOnly access cookie for SSR page GETs and same-origin server functions.
+///
+/// `SameSite=Lax` (not `None`) so top-level navigations and same-site POSTs
+/// send it; `Path=/` so document GETs attach it. Not `__Host-`: the sibling
+/// refresh cookie cannot be `__Host-` (its Path is not `/`), and mixing
+/// prefixes would split jar behavior. `Secure` follows `cookie_secure`.
+fn access_set_cookie(token: &str, max_age_secs: i64, secure: bool) -> Option<HeaderValue> {
+    let max_age = max_age_secs.max(0);
+    let mut cookie =
+        format!("{ACCESS_COOKIE_NAME}={token}; HttpOnly; SameSite=Lax; Path=/; Max-Age={max_age}");
+    if secure {
+        cookie.push_str("; Secure");
+    }
+    HeaderValue::from_str(&cookie).ok()
+}
+
+fn access_clear_cookie(secure: bool) -> Option<HeaderValue> {
+    access_set_cookie("", 0, secure)
+}
+
 /// Turn a minted token pair into a transport-appropriate response.
 ///
-/// Cookie transport (web): emit the refresh token as an HttpOnly `Set-Cookie`
-/// and NULL the body `refresh_token` so it never reaches web JS. Body transport
-/// (mobile): leave the refresh token in the JSON body and set no cookie. The
-/// access token stays in the body in both cases.
+/// Cookie transport (web): emit both tokens as HttpOnly `Set-Cookie` headers
+/// and NULL the JSON body tokens so they never reach web JS. Body transport
+/// (mobile): leave both tokens in the JSON body and set no cookie.
 fn token_pair_response(
     tokens: IssuedTokenPair,
     headers: &HeaderMap,
@@ -3559,15 +3594,18 @@ fn token_pair_response(
     if wants_cookie_transport(headers) {
         let max_age = (tokens.refresh_expires_at - OffsetDateTime::now_utc()).whole_seconds();
         let body = TokenPairResponse {
-            access_token: tokens.access_token,
+            access_token: None,
             refresh_token: None,
             token_type: "Bearer",
             refresh_expires_at: tokens.refresh_expires_at,
             requires_passkey_setup: false,
         };
-        with_refresh_cookie(
+        cookie_session_response(
             Json(body).into_response(),
-            refresh_set_cookie(&tokens.refresh_token, max_age, cookie_secure),
+            &tokens.refresh_token,
+            max_age,
+            &tokens.access_token,
+            cookie_secure,
         )
     } else {
         Json(tokens.into_response()).into_response()
@@ -3594,15 +3632,18 @@ fn device_login_token_response(
         let max_age = (tokens.refresh_expires_at - OffsetDateTime::now_utc()).whole_seconds();
         let body = DeviceLoginPollResponse {
             status: "approved",
-            access_token: Some(tokens.access_token),
+            access_token: None,
             refresh_token: None,
             token_type: Some("Bearer"),
             refresh_expires_at: Some(tokens.refresh_expires_at),
             requires_passkey_setup: Some(false),
         };
-        with_refresh_cookie(
+        cookie_session_response(
             Json(body).into_response(),
-            refresh_set_cookie(&tokens.refresh_token, max_age, cookie_secure),
+            &tokens.refresh_token,
+            max_age,
+            &tokens.access_token,
+            cookie_secure,
         )
     } else {
         let body = DeviceLoginPollResponse {
@@ -3649,9 +3690,38 @@ fn hex_encode(bytes: &[u8]) -> String {
     out
 }
 
-/// Append a `Set-Cookie` header to a response when one was built.
-fn with_refresh_cookie(mut response: Response, cookie: Option<HeaderValue>) -> Response {
-    if let Some(cookie) = cookie {
+fn cookie_session_response(
+    response: Response,
+    refresh_token: &str,
+    refresh_max_age: i64,
+    access_token: &str,
+    cookie_secure: bool,
+) -> Response {
+    with_set_cookies(
+        response,
+        [
+            refresh_set_cookie(refresh_token, refresh_max_age, cookie_secure),
+            access_set_cookie(access_token, ACCESS_COOKIE_MAX_AGE_SECS, cookie_secure),
+        ],
+    )
+}
+
+fn cookie_clear_response(response: Response, cookie_secure: bool) -> Response {
+    with_set_cookies(
+        response,
+        [
+            refresh_clear_cookie(cookie_secure),
+            access_clear_cookie(cookie_secure),
+        ],
+    )
+}
+
+/// Append `Set-Cookie` headers that were successfully built.
+fn with_set_cookies(
+    mut response: Response,
+    cookies: impl IntoIterator<Item = Option<HeaderValue>>,
+) -> Response {
+    for cookie in cookies.into_iter().flatten() {
         response.headers_mut().append(header::SET_COOKIE, cookie);
     }
     response
@@ -3660,13 +3730,15 @@ fn with_refresh_cookie(mut response: Response, cookie: Option<HeaderValue>) -> R
 #[cfg(test)]
 mod tests {
     use super::{
-        RATE_LIMIT_PER_IP, RATE_LIMIT_WINDOW, RateLimitEndpoint, authorizable_target_branches,
-        build_enroll_url, has_group_admin_role_hint, load_group_admin_groups, rate_limit,
+        ACCESS_COOKIE_MAX_AGE_SECS, RATE_LIMIT_PER_IP, RATE_LIMIT_WINDOW, RateLimitEndpoint,
+        access_clear_cookie, access_set_cookie, authorizable_target_branches, build_enroll_url,
+        has_group_admin_role_hint, load_group_admin_groups, rate_limit, refresh_clear_cookie,
         resolve_group_admin_target_org,
     };
     use axum::http::HeaderMap;
     use axum::http::StatusCode;
     use console_kernel_core::{BranchId, BranchScope, OrgId, UserId};
+    use console_platform_request_context::ACCESS_COOKIE_NAME;
     use console_platform_request_context::TrustedClientIp;
     use sqlx::PgPool;
     use sqlx::postgres::PgPoolOptions;
@@ -3674,6 +3746,48 @@ mod tests {
     use time::OffsetDateTime;
     use url::{Url, form_urlencoded};
     use uuid::Uuid;
+
+    #[test]
+    fn access_cookie_is_httponly_lax_root_path_and_not_host_prefixed() {
+        let cookie = access_set_cookie("jwt.token", ACCESS_COOKIE_MAX_AGE_SECS, true)
+            .expect("access cookie header")
+            .to_str()
+            .unwrap()
+            .to_owned();
+        assert!(cookie.starts_with(&format!("{ACCESS_COOKIE_NAME}=jwt.token;")));
+        assert!(cookie.contains("HttpOnly"), "{cookie}");
+        assert!(cookie.contains("SameSite=Lax"), "{cookie}");
+        assert!(cookie.contains("Path=/;"), "{cookie}");
+        assert!(
+            cookie.contains(&format!("Max-Age={ACCESS_COOKIE_MAX_AGE_SECS}")),
+            "{cookie}"
+        );
+        assert!(cookie.contains("Secure"), "{cookie}");
+        assert!(!cookie.contains("__Host-"), "{cookie}");
+        assert!(!cookie.contains("SameSite=None"), "{cookie}");
+        assert!(!cookie.contains("Domain="), "{cookie}");
+    }
+
+    #[test]
+    fn logout_clear_cookies_keep_access_and_refresh_paths_distinct() {
+        let access = access_clear_cookie(true)
+            .expect("clear access cookie")
+            .to_str()
+            .unwrap()
+            .to_owned();
+        let refresh = refresh_clear_cookie(true)
+            .expect("clear refresh cookie")
+            .to_str()
+            .unwrap()
+            .to_owned();
+        assert!(access.starts_with(&format!("{ACCESS_COOKIE_NAME}=")));
+        assert!(access.contains("Max-Age=0"), "{access}");
+        assert!(access.contains("Path=/;"), "{access}");
+        assert!(access.contains("SameSite=Lax"), "{access}");
+        assert!(refresh.starts_with("console_refresh="));
+        assert!(refresh.contains("Max-Age=0"), "{refresh}");
+        assert!(refresh.contains("Path=/api/v1/auth"), "{refresh}");
+    }
 
     #[test]
     fn build_enroll_url_keeps_otp_out_of_query_string() -> Result<(), url::ParseError> {

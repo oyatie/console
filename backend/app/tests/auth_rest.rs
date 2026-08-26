@@ -1638,9 +1638,8 @@ async fn otp_redeem_rate_limit_wires_up_on_real_clock_path(pool: PgPool) {
 }
 
 /// WEB dual-transport: when `X-Auth-Transport: cookie` is present, an OTP redeem
-/// sets the refresh token as an HttpOnly `console_refresh` cookie and OMITS it from
-/// the JSON body, while the access token stays in the body. The cookie carries
-/// the CSRF-safe attributes (HttpOnly, SameSite=Strict, Path=/api/v1/auth).
+/// sets HttpOnly `console_refresh` (path `/api/v1/auth`) and `console_access`
+/// (path `/`) cookies and OMITS both tokens from the JSON body.
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
 async fn cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh(pool: PgPool) {
     let signing_key = SigningKey::random(&mut OsRng);
@@ -1695,10 +1694,24 @@ async fn cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh(pool: Pg
         "cookie must carry the refresh token value"
     );
 
+    let access_cookie = console_access_set_cookie(&response)
+        .expect("cookie-mode redeem must set a console_access cookie");
+    assert!(access_cookie.contains("HttpOnly"), "{access_cookie}");
+    assert!(access_cookie.contains("SameSite=Lax"), "{access_cookie}");
+    assert!(access_cookie.contains("Path=/;"), "{access_cookie}");
+    assert!(access_cookie.contains("Max-Age=900"), "{access_cookie}");
+    assert!(access_cookie.contains("Secure"), "{access_cookie}");
+    assert!(!access_cookie.contains("__Host-"), "{access_cookie}");
+    assert!(!access_cookie.contains("SameSite=None"), "{access_cookie}");
+    assert!(
+        !cookie_named_value(&access_cookie, "console_access").is_empty(),
+        "access cookie must carry the access token value"
+    );
+
     let body = body_json(response).await;
     assert!(
-        !body["access_token"].as_str().unwrap().is_empty(),
-        "access token must always be in the body"
+        body["access_token"].is_null(),
+        "cookie mode must NOT leak the access token into the JSON body, got {body}"
     );
     assert!(
         body["refresh_token"].is_null(),
@@ -1749,19 +1762,26 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
     )
     .await;
     assert_eq!(redeem.status(), StatusCode::OK);
-    let access_token = body_json(redeem).await["access_token"]
-        .as_str()
-        .unwrap()
-        .to_owned();
+    let access_token = cookie_named_value(
+        &console_access_set_cookie(&redeem).expect("cookie-mode redeem must set console_access"),
+        "console_access",
+    )
+    .to_owned();
+    let _ = body_json(redeem).await;
     let mut authenticator = WebauthnAuthenticator::new(SoftPasskey::new(true));
     let credential_id = enroll_passkey(&service, &mut authenticator, &access_token).await;
 
-    // Cookie-mode usernameless passkey login -> cookie set, body refresh null.
+    // Cookie-mode usernameless passkey login -> cookies set, body tokens null.
     let login = cookie_mode_usernameless_login(&service, &mut authenticator, &credential_id).await;
     let login_cookie = console_refresh_set_cookie(&login)
         .expect("cookie-mode login must set an console_refresh cookie");
     let cookie_value = cookie_token(&login_cookie).to_owned();
+    assert!(
+        console_access_set_cookie(&login).is_some(),
+        "cookie-mode login must also set console_access"
+    );
     let login_body = body_json(login).await;
+    assert!(login_body["access_token"].is_null());
     assert!(login_body["refresh_token"].is_null());
 
     // Refresh reading the token from the cookie (NO body token) rotates and sets
@@ -1799,6 +1819,10 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
         .expect("logout must emit a clearing console_refresh cookie");
     assert!(clear_cookie.contains("Max-Age=0"), "{clear_cookie}");
     assert!(clear_cookie.contains("Path=/api/v1/auth"), "{clear_cookie}");
+    let clear_access = console_access_set_cookie(&logout)
+        .expect("logout must emit a clearing console_access cookie");
+    assert!(clear_access.contains("Max-Age=0"), "{clear_access}");
+    assert!(clear_access.contains("Path=/;"), "{clear_access}");
 
     let after_logout = post_cookie_mode(
         service,
@@ -1858,10 +1882,12 @@ async fn cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id(pool: 
     )
     .await;
     assert_eq!(redeem.status(), StatusCode::OK);
-    let access_token = body_json(redeem).await["access_token"]
-        .as_str()
-        .unwrap()
-        .to_owned();
+    let access_token = cookie_named_value(
+        &console_access_set_cookie(&redeem).expect("cookie-mode redeem must set console_access"),
+        "console_access",
+    )
+    .to_owned();
+    let _ = body_json(redeem).await;
     let mut authenticator = WebauthnAuthenticator::new(SoftPasskey::new(true));
     let credential_id = enroll_passkey(&service, &mut authenticator, &access_token).await;
 
@@ -1887,8 +1913,127 @@ async fn cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id(pool: 
         let rotated_cookie = console_refresh_set_cookie(&refreshed)
             .expect("cookie-mode refresh must rotate the console_refresh cookie");
         cookie_value = cookie_token(&rotated_cookie).to_owned();
-        assert!(body_json(refreshed).await["refresh_token"].is_null());
+        let refreshed_body = body_json(refreshed).await;
+        assert!(refreshed_body["access_token"].is_null());
+        assert!(refreshed_body["refresh_token"].is_null());
     }
+}
+
+/// Cookie principal resolution: SSR can authenticate with `console_access` and
+/// no Authorization header. Bearer still wins; a malformed Authorization header
+/// fails closed and does not fall back to the cookie.
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn cookie_access_authenticates_without_authorization_header(pool: PgPool) {
+    let signing_key = SigningKey::random(&mut OsRng);
+    let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
+    let public_key_pem = signing_key
+        .verifying_key()
+        .to_public_key_pem(LineEnding::LF)
+        .unwrap();
+    let branch_id = seed_branch(&pool, "Access Cookie Region", "Access Cookie Branch").await;
+    let user_id = seed_user_with_branch(
+        &pool,
+        "Access Cookie User",
+        "010-7600-0000",
+        "SUPER_ADMIN",
+        branch_id,
+    )
+    .await;
+    let service = build_router(
+        app_state(
+            pool.clone(),
+            private_key_pem.to_string(),
+            public_key_pem.clone(),
+        )
+        .unwrap(),
+    );
+
+    let issue = BootstrapCredentialStore
+        .issue_for_zero_credential_user(
+            &pool,
+            *user_id.as_uuid(),
+            OrgId::knl(),
+            OffsetDateTime::now_utc(),
+            Duration::hours(24),
+        )
+        .await
+        .unwrap();
+    let redeem = post_cookie_mode(
+        service.clone(),
+        "/api/v1/auth/otp/redeem",
+        None,
+        json!({ "otp": issue.token.as_str() }),
+    )
+    .await;
+    assert_eq!(redeem.status(), StatusCode::OK);
+    let access_token = cookie_named_value(
+        &console_access_set_cookie(&redeem).expect("redeem must set console_access"),
+        "console_access",
+    )
+    .to_owned();
+    let _ = body_json(redeem).await;
+
+    let listed =
+        get_with_access_cookie(service.clone(), "/api/v1/auth/passkeys", &access_token).await;
+    assert_eq!(
+        listed.status(),
+        StatusCode::OK,
+        "SSR GET must authenticate from the access cookie alone"
+    );
+
+    let consent = post_with_access_cookie(
+        service.clone(),
+        "/api/v1/auth/privacy-consent/status",
+        &access_token,
+        Some(("https://auth.example.com", "auth.example.com")),
+        json!({}),
+    )
+    .await;
+    assert_eq!(
+        consent.status(),
+        StatusCode::OK,
+        "same-origin cookie POST must pass the Origin/Host CSRF check"
+    );
+
+    let cross_origin = post_with_access_cookie(
+        service.clone(),
+        "/api/v1/auth/privacy-consent/status",
+        &access_token,
+        Some(("https://evil.example.com", "auth.example.com")),
+        json!({}),
+    )
+    .await;
+    assert_eq!(
+        cross_origin.status(),
+        StatusCode::FORBIDDEN,
+        "cross-origin cookie POST must be rejected"
+    );
+
+    let malformed = get_with_cookie_and_authorization(
+        service.clone(),
+        "/api/v1/auth/passkeys",
+        &access_token,
+        "Basic not-a-bearer",
+    )
+    .await;
+    assert_eq!(
+        malformed.status(),
+        StatusCode::UNAUTHORIZED,
+        "malformed Authorization must fail closed and not use the access cookie"
+    );
+
+    let bearer_wins = get_with_cookie_and_authorization(
+        service,
+        "/api/v1/auth/passkeys",
+        "not-a-jwt",
+        &format!("Bearer {access_token}"),
+    )
+    .await;
+    assert_eq!(
+        bearer_wins.status(),
+        StatusCode::OK,
+        "a valid Bearer token must win over a garbage access cookie"
+    );
 }
 
 /// MOBILE (no transport header) is unchanged: refresh and logout read the token
@@ -1981,8 +2126,8 @@ async fn body_mode_without_header_is_unchanged_and_sets_no_cookie(pool: PgPool) 
 // --- helpers ---------------------------------------------------------------
 
 /// Cookie-mode usernameless passkey login: mirrors `usernameless_login` but sends
-/// the `X-Auth-Transport: cookie` header so the response carries a Set-Cookie and
-/// a null body refresh token. Returns the raw response for header + body asserts.
+/// the `X-Auth-Transport: cookie` header so the response carries Set-Cookie
+/// headers and null body tokens. Returns the raw response for header + body asserts.
 async fn cookie_mode_usernameless_login(
     service: &axum::Router,
     authenticator: &mut WebauthnAuthenticator<SoftPasskey>,
@@ -2718,7 +2863,9 @@ async fn post_cookie_mode(
         .uri(uri)
         .method("POST")
         .header(header::CONTENT_TYPE, "application/json")
-        .header("x-auth-transport", "cookie");
+        .header("x-auth-transport", "cookie")
+        .header(header::ORIGIN, TEST_ORIGIN)
+        .header(header::HOST, "auth.example.com");
     if let Some(cookie) = cookie {
         builder = builder.header(header::COOKIE, format!("console_refresh={cookie}"));
     }
@@ -2743,7 +2890,9 @@ async fn post_cookie_mode_with_device_id(
         .method("POST")
         .header(header::CONTENT_TYPE, "application/json")
         .header("x-auth-transport", "cookie")
-        .header("x-device-id", device_id);
+        .header("x-device-id", device_id)
+        .header(header::ORIGIN, TEST_ORIGIN)
+        .header(header::HOST, "auth.example.com");
     if let Some(cookie) = cookie {
         builder = builder.header(header::COOKIE, format!("console_refresh={cookie}"));
     }
@@ -2766,16 +2915,91 @@ fn set_cookie_values(response: &http::Response<Body>) -> Vec<String> {
 /// Find the `console_refresh` Set-Cookie attribute string, returning its full
 /// directive (e.g. `console_refresh=abc; HttpOnly; SameSite=Strict; ...`).
 fn console_refresh_set_cookie(response: &http::Response<Body>) -> Option<String> {
+    set_cookie_named(response, "console_refresh")
+}
+
+fn console_access_set_cookie(response: &http::Response<Body>) -> Option<String> {
+    set_cookie_named(response, "console_access")
+}
+
+fn set_cookie_named(response: &http::Response<Body>, name: &str) -> Option<String> {
+    let prefix = format!("{name}=");
     set_cookie_values(response)
         .into_iter()
-        .find(|value| value.starts_with("console_refresh="))
+        .find(|value| value.starts_with(&prefix))
+}
+
+/// Pull the cookie's value (the substring between `name=` and the first `;`).
+fn cookie_named_value<'a>(set_cookie: &'a str, name: &str) -> &'a str {
+    set_cookie
+        .strip_prefix(&format!("{name}="))
+        .and_then(|rest| rest.split(';').next())
+        .unwrap()
 }
 
 /// Pull the cookie's value (the substring between `console_refresh=` and the first `;`).
 fn cookie_token(set_cookie: &str) -> &str {
-    set_cookie
-        .strip_prefix("console_refresh=")
-        .and_then(|rest| rest.split(';').next())
+    cookie_named_value(set_cookie, "console_refresh")
+}
+
+async fn get_with_access_cookie(
+    service: axum::Router,
+    uri: &str,
+    access: &str,
+) -> http::Response<Body> {
+    service
+        .oneshot(
+            Request::builder()
+                .uri(uri)
+                .method("GET")
+                .header(header::COOKIE, format!("console_access={access}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap()
+}
+
+async fn get_with_cookie_and_authorization(
+    service: axum::Router,
+    uri: &str,
+    access_cookie: &str,
+    authorization: &str,
+) -> http::Response<Body> {
+    service
+        .oneshot(
+            Request::builder()
+                .uri(uri)
+                .method("GET")
+                .header(header::AUTHORIZATION, authorization)
+                .header(header::COOKIE, format!("console_access={access_cookie}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap()
+}
+
+async fn post_with_access_cookie(
+    service: axum::Router,
+    uri: &str,
+    access: &str,
+    origin_host: Option<(&str, &str)>,
+    body: Value,
+) -> http::Response<Body> {
+    let mut builder = Request::builder()
+        .uri(uri)
+        .method("POST")
+        .header(header::CONTENT_TYPE, "application/json")
+        .header(header::COOKIE, format!("console_access={access}"));
+    if let Some((origin, host)) = origin_host {
+        builder = builder
+            .header(header::ORIGIN, origin)
+            .header(header::HOST, host);
+    }
+    service
+        .oneshot(builder.body(Body::from(body.to_string())).unwrap())
+        .await
         .unwrap()
 }
 
