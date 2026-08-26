@@ -2,7 +2,10 @@
 //! PostgreSQL/RLS regressions for linked-employee attendance self-service.
 
 use console_attendance_adapter_postgres::PgAttendanceStore;
-use console_attendance_application::{ListOwnExceptions, ReadOwnWeek52, SelfAttendanceScope};
+use console_attendance_application::{
+    ListOwnExceptions, OwnAttendanceExceptionPage, OwnWeek52Read, ReadOwnWeek52,
+    SelfAttendanceScope,
+};
 use console_attendance_domain::AttendanceDateRange;
 use console_kernel_core::{OrgId, UserId};
 use console_platform_request_context::scope_org;
@@ -94,7 +97,7 @@ async fn self_service_reads_only_the_linked_employee_and_ignores_other_malformed
             user_id: *linked_user.as_uuid(),
         };
         let range = AttendanceDateRange::new(monday, monday + time::Duration::days(7)).unwrap();
-        let exceptions = store
+        let exceptions: OwnAttendanceExceptionPage = store
             .list_own_exceptions(
                 scope,
                 ListOwnExceptions::new(range, None, None, None).unwrap(),
@@ -104,20 +107,27 @@ async fn self_service_reads_only_the_linked_employee_and_ignores_other_malformed
         assert_eq!(exceptions.total, 1);
         assert_eq!(exceptions.items.len(), 1);
         assert_eq!(exceptions.items[0].code, "AT-OWN");
+        assert_ne!(exceptions.items[0].code, "AT-OTHER");
+        assert_self_service_json_omits_directory_fields(
+            &serde_json::to_value(&exceptions.items[0]).expect("own exception DTO serializes"),
+        );
 
-        let week = store
+        let week: OwnWeek52Read = store
             .read_own_week52(scope, ReadOwnWeek52::new(monday).unwrap())
             .await
             .unwrap()
             .expect("linked employee has a 200-compatible Week52 projection");
         assert_eq!(week.current_hours, 8.0);
         assert_eq!(week.projected_hours, 8.0);
+        assert_self_service_json_omits_directory_fields(
+            &serde_json::to_value(&week).expect("own week52 DTO serializes"),
+        );
 
         let unlinked_scope = SelfAttendanceScope {
             org_id: *OrgId::knl().as_uuid(),
             user_id: *unlinked_user.as_uuid(),
         };
-        let unlinked = store
+        let unlinked: OwnAttendanceExceptionPage = store
             .list_own_exceptions(
                 unlinked_scope,
                 ListOwnExceptions::new(
@@ -132,15 +142,33 @@ async fn self_service_reads_only_the_linked_employee_and_ignores_other_malformed
             .unwrap();
         assert!(unlinked.items.is_empty());
         assert_eq!(unlinked.total, 0);
-        assert!(
-            store
-                .read_own_week52(unlinked_scope, ReadOwnWeek52::new(monday).unwrap())
-                .await
-                .unwrap()
-                .is_none()
-        );
+        // Adapter not-available is Option::None (REST maps this to status=not_available).
+        let unlinked_week: Option<OwnWeek52Read> = store
+            .read_own_week52(unlinked_scope, ReadOwnWeek52::new(monday).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(unlinked_week, None);
     })
     .await;
+}
+
+fn assert_self_service_json_omits_directory_fields(value: &serde_json::Value) {
+    let object = value
+        .as_object()
+        .expect("self-service read DTO serializes as a JSON object");
+    for leaked in [
+        "employee_id",
+        "employee_name",
+        "name",
+        "team",
+        "branch_id",
+        "links",
+    ] {
+        assert!(
+            !object.contains_key(leaked),
+            "self-service JSON must not include {leaked}: {value}"
+        );
+    }
 }
 
 async fn seed_employee(
