@@ -84,14 +84,40 @@ mod tests {
             "org_unit_id": org_unit_id.to_string(),
             "version": 2,
             "target": "organization.revise_job_position",
+            "title": "백엔드 엔지니어",
+            "phone": "+82-10-0000-0000",
+            "salary": 90_000_000,
         });
+        let identity = identity_from_receipt_result(&result).unwrap();
         assert_eq!(
-            identity_from_receipt_result(&result).unwrap(),
+            identity,
             JobPositionIdentity {
                 job_position_id,
                 org_unit_id,
                 version: 2,
             }
+        );
+        let wire = serde_json::to_value(&identity).unwrap();
+        assert!(wire.get("phone").is_none());
+        assert!(wire.get("salary").is_none());
+        assert!(wire.get("title").is_none());
+
+        let missing_org_unit = json!({
+            "job_position_id": job_position_id.to_string(),
+            "version": 2,
+        });
+        assert_eq!(
+            identity_from_receipt_result(&missing_org_unit),
+            Err(JobPositionProjectionError::MissingField("org_unit_id"))
+        );
+        let non_uuid_org_unit = json!({
+            "job_position_id": job_position_id.to_string(),
+            "org_unit_id": "not-a-uuid",
+            "version": 2,
+        });
+        assert_eq!(
+            identity_from_receipt_result(&non_uuid_org_unit),
+            Err(JobPositionProjectionError::InvalidUuid("org_unit_id"))
         );
     }
 
@@ -102,6 +128,11 @@ mod tests {
             identity_from_receipt_result(&forged),
             Err(JobPositionProjectionError::MissingField("job_position_id"))
         );
+        let posting = json!({
+            "title": "백엔드 엔지니어",
+            "department": "engineering",
+        });
+        assert!(identity_from_receipt_result(&posting).is_err());
     }
 
     #[test]
