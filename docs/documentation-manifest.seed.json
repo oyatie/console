@@ -6,7 +6,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "7c4cc13adee9ff99d06e52bb3dd52821288ffb96",
+    "blob_sha": "57a99196332fac51e75acf1b57570549abf729b3",
     "archive_tag": null
   },
   {
@@ -586,7 +586,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "6e09df8496afd6178790b2becb4250e13f570b02",
+    "blob_sha": "be19848b64e62ff9f359598b3a4120dd664160ef",
     "archive_tag": null
   },
   {

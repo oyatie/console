@@ -4,7 +4,7 @@ Status: active delivery authority. Product and roadmap decisions remain in [`PRO
 
 ## Admission and ownership
 
-Start from an exact immutable base in a clean bounded worktree. Record the outcome and non-goals, owner, allowed and forbidden paths, source-of-truth writer, shared-resource leases, pre-mortem, detection, rollback and stop conditions, verification baseline, reviewers, evidence, candidate SHA, result, and remaining HOLDs. Serialize migrations, lockfiles, generated contracts, CI, and authority records.
+Start from an exact immutable base in a clean bounded worktree. A lane is a named command that is currently red on that base; occupancy of a path, a merge-tree-clean slice, or a worktree is not a lane. Start implementers only through `tools/lanes/fanout.py`: missing, green, or non-executable probe is stop, and the same probe must be green before the lane is success. Record the outcome and non-goals, owner, allowed and forbidden paths, source-of-truth writer, shared-resource leases, pre-mortem, detection, rollback and stop conditions, verification baseline, reviewers, evidence, candidate SHA, result, and remaining HOLDs. Serialize migrations, lockfiles, generated contracts, CI, and authority records.
 
 Never import ignored or untracked artifacts, local runtime state, workbooks, secrets, or custody material merely because they exist on a developer machine. Establish custody from the exact candidate Git tree and regular-blob identities; path membership alone is insufficient.
 

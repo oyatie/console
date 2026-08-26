@@ -2,6 +2,7 @@
 
 - `README.md` is the sole entry point. Current product, roadmap, and delivery authority lives only in `docs/current/PRODUCT.md`, `docs/current/ROADMAP.md`, and `docs/current/DELIVERY.md`; proposed or conflicting plans are HOLD, not permission to expand scope.
 - Keep one writer per root. Declare ownership, exact base SHA, immutable target, and mechanical guide before fan-out; serialize migrations, lockfiles, generated files, OpenAPI, CI, and authority records.
+- A lane is a named command that is currently red on the clean tree. Path occupancy is not a lane. Start implementers only through `tools/lanes/fanout.py admit` / `run`; do not spawn around it. Missing, green, or non-executable probe means stop. The same probe must be green before the lane is success.
 - Never use destructive shared-workspace Git operations or overwrite another lane's work. Preserve historical evidence.
 - Do not skip, delete, quarantine, or weaken tests without an approved receipt and independent review. Record exact invocations and discovered/executed counts.
 - Keep facts, inferences, hypotheses, and legal conclusions distinct. Production exposure and legal/compliance claims require separate authority and evidence.

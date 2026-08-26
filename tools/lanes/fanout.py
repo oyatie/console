@@ -23,9 +23,18 @@ second tooling language (`check-production-promotion-authority.py`,
 `gen_first_party.py`).
 
 Usage:
+    python3 tools/lanes/fanout.py admit   --spec lanes.json
+    python3 tools/lanes/fanout.py admit   --probe 'cmd that must already be red'
     python3 tools/lanes/fanout.py run     --spec lanes.json
     python3 tools/lanes/fanout.py challenge --question "..." [--file path]
     python3 tools/lanes/fanout.py verify  --probe cmd --bad-input cmd
+
+A lane is a named command that is currently red on the clean tree. Path
+occupancy, a merge-tree-clean slice, and a worktree are not lanes. `run`
+admits every lane before any agent starts: missing probe, already-GREEN
+probe, or a probe that is not an executable command (exit 126/127) is
+refused, and `_codex` is not started. After the implementer, the same
+probe must be green — isolation without that flip is not success.
 """
 
 from __future__ import annotations
@@ -170,31 +179,109 @@ def _changed(worktree: Path) -> list[str]:
     return [ln[3:].strip() for ln in out.splitlines() if ln.strip()]
 
 
-def run_lanes(spec_path: Path, model: str, sandbox: str) -> int:
+def admit_lane(item: dict, *, cwd: Path, runner=subprocess.run) -> str | None:
+    """Refuse a lane that has no currently-failing probe on `cwd`.
+
+    Green-on-base is the class: vacuous assertions, already-locked behaviour,
+    and tests of functions nothing calls. A missing probe is the same class —
+    there is no named command that could have been red. Exit 126/127 is a
+    missing binary, not a hole. Returns an error string, or None when the
+    lane is admitted.
+    """
+    lane = str(item.get("lane", "?"))
+    probe = item.get("probe")
+    if not isinstance(probe, str) or not probe.strip():
+        return (
+            f"lane {lane}: missing probe — a lane with no currently-failing "
+            "command is not admitted"
+        )
+    proc = runner(probe, shell=True, cwd=str(cwd), capture_output=True)
+    if proc.returncode == 0:
+        return (
+            f"lane {lane}: probe GREEN on the clean tree (exit 0). "
+            "The lock already holds or the probe cannot fail. Do not start."
+        )
+    if proc.returncode in (126, 127):
+        return (
+            f"lane {lane}: probe is not an executable command on this tree "
+            f"(exit {proc.returncode}). A missing binary is not a hole."
+        )
+    return None
+
+
+def admit_spec(spec: list, *, cwd: Path, runner=subprocess.run) -> list[str]:
+    """Admit every lane before any implementer starts. Failures are collected;
+    one green probe refuses the whole fan-out so occupancy cannot substitute
+    for a hole.
+    """
+    refused: list[str] = []
+    for item in spec:
+        err = admit_lane(item, cwd=cwd, runner=runner)
+        if err:
+            refused.append(err)
+    return refused
+
+
+def run_lanes(spec_path: Path, model: str, sandbox: str, *,
+              runner=subprocess.run) -> int:
     """Fan out one task per lane; measure isolation instead of trusting it.
 
-    Spec: [{"lane": "1", "prompt": "...", "allow": ["path/it/may/touch"]}, ...]
+    Spec: [{"lane": "1", "probe": "cmd-that-is-red-on-base",
+            "prompt": "...", "allow": ["path/it/may/touch"]}, ...]
+
+    Admission runs first, in-process, with no agent. A refused spec never
+    starts `_codex`. After the implementer the same probe must be green:
+    isolation without that flip is occupancy, not success.
     """
     spec = json.loads(spec_path.read_text())
     logs = REPO / ".lane-logs"
     logs.mkdir(exist_ok=True)
 
-    def one(item: dict) -> LaneResult:
+    pre: list[str] = []
+    # Admit on the integration tree first. A worktree left behind trunk can
+    # still look red after the lock already holds on this repo — that is the
+    # same class as a GREEN probe, not a different one.
+    for err in admit_spec(spec, cwd=REPO, runner=runner):
+        pre.append(f"integration tree: {err}")
+    for item in spec:
         lane = str(item["lane"])
         wt = LANES_ROOT / f"lane-{lane}"
         if not wt.is_dir():
-            return LaneResult(lane, False, 0.0, error=f"missing worktree {wt}")
-        # A lane must start clean or its isolation measurement is meaningless.
+            pre.append(f"lane {lane}: missing worktree {wt}")
+            continue
         if _changed(wt):
-            return LaneResult(lane, False, 0.0, error="worktree dirty before start")
+            pre.append(f"lane {lane}: worktree dirty before start")
+            continue
+        err = admit_lane(item, cwd=wt, runner=runner)
+        if err:
+            pre.append(err)
+    if pre:
+        print("ADMIT REFUSED — no implementer started:")
+        for err in pre:
+            print(f"  {err}")
+        return 1
+
+    def one(item: dict) -> LaneResult:
+        lane = str(item["lane"])
+        wt = LANES_ROOT / f"lane-{lane}"
         start = time.time()
         ok, answer, err = _codex(item["prompt"], wt, sandbox, model,
                                  logs / f"lane-{lane}.jsonl")
         elapsed = time.time() - start
         changed = _changed(wt)
         out_of_slice = [f for f in changed if not _in_slice(f, item.get("allow", []))]
-        return LaneResult(lane, ok and not out_of_slice, round(elapsed, 1),
-                          changed, out_of_slice, answer[:4000], err if not ok else "")
+        after = runner(item["probe"], shell=True, cwd=str(wt), capture_output=True)
+        still_red = after.returncode != 0
+        if still_red:
+            closed_err = (
+                f"lane {lane}: probe still RED after the implementer "
+                f"(exit {after.returncode}). The named hole did not close."
+            )
+            err = f"{err}\n{closed_err}" if err else closed_err
+        return LaneResult(lane, ok and not out_of_slice and not still_red,
+                          round(elapsed, 1),
+                          changed, out_of_slice, answer[:4000],
+                          err if (not ok or still_red) else "")
 
     with ThreadPoolExecutor(max_workers=len(spec)) as pool:
         results = list(pool.map(one, spec))
@@ -203,6 +290,7 @@ def run_lanes(spec_path: Path, model: str, sandbox: str) -> int:
     report.write_text(json.dumps([asdict(r) for r in results], indent=2))
 
     breaches = [r for r in results if r.out_of_slice]
+    failed = [r for r in results if not r.ok]
     print(f"\n{'lane':<6}{'ok':<5}{'secs':>7}  changed / OUT-OF-SLICE")
     print("-" * 62)
     for r in sorted(results, key=lambda x: x.lane):
@@ -217,7 +305,14 @@ def run_lanes(spec_path: Path, model: str, sandbox: str) -> int:
         for r in breaches:
             print(f"  lane-{r.lane}: {r.out_of_slice}")
         return 1
-    print("Isolation held: every lane touched only its declared slice.")
+    if failed:
+        print(f"Named probe did not close in {len(failed)} lane(s) — "
+              "occupancy is not success.")
+        for r in failed:
+            if r.error:
+                print(f"  lane-{r.lane}: {r.error[:200]}")
+        return 1
+    print("Isolation held and every named probe is now green.")
     return 0
 
 
@@ -286,11 +381,34 @@ def main() -> int:
     v.add_argument("--probe", required=True)
     v.add_argument("--bad-input", required=True)
 
+    d = sub.add_parser(
+        "admit",
+        help="refuse to start if the named probe is already GREEN on this tree",
+    )
+    d.add_argument("--spec", type=Path, default=None)
+    d.add_argument("--probe", default=None)
+
     a = ap.parse_args()
     if a.cmd == "run":
         return run_lanes(a.spec, a.model, a.sandbox)
     if a.cmd == "challenge":
         return challenge(a.question, a.file, a.model)
+    if a.cmd == "admit":
+        if a.spec is None and not a.probe:
+            print("admit requires --spec or --probe")
+            return 1
+        if a.spec is not None:
+            spec = json.loads(a.spec.read_text())
+        else:
+            spec = [{"lane": "1", "probe": a.probe}]
+        refused = admit_spec(spec, cwd=Path.cwd())
+        if refused:
+            print("ADMIT REFUSED — no implementer starts:")
+            for err in refused:
+                print(f"  {err}")
+            return 1
+        print("admitted: every named probe is red on this tree")
+        return 0
     return verify_probe(a.probe, a.bad_input)
 
 
