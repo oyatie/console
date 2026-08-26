@@ -35,7 +35,8 @@ use console_platform_email::{DisabledEmailSender, EmailSender};
 use console_platform_group::GroupMemberOrg;
 use console_platform_provisioning::{BootstrapCredentialStore, ProvisioningError};
 use console_platform_request_context::{
-    ACCESS_COOKIE_NAME, TrustedClientIp, access_token_from_headers, enforce_cookie_csrf,
+    ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME, TrustedClientIp, access_token_from_headers,
+    enforce_cookie_csrf,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -55,8 +56,6 @@ const GROUP_ADMIN_TENANT_ACTING_ROLE: &str = "GROUP_ADMIN_DELEGATED_ADMIN";
 const AUTH_TRANSPORT_HEADER: &str = "x-auth-transport";
 /// The single recognized value of [`AUTH_TRANSPORT_HEADER`].
 const AUTH_TRANSPORT_COOKIE: &str = "cookie";
-/// Name of the HttpOnly refresh-token cookie used by the web transport.
-const REFRESH_COOKIE_NAME: &str = "console_refresh";
 /// Path scope of the refresh cookie. Restricting it to the auth namespace means
 /// the browser never attaches the refresh token to ordinary API calls — only to
 /// the refresh/logout endpoints that need it.
@@ -335,8 +334,9 @@ pub fn router(state: AuthRestState) -> Router {
 
 /// Origin/Host check for cookie-authenticated mutations on auth routes that
 /// are not behind `with_request_context` (passkey enroll, privacy consent,
-/// admin OTP, group-admin tenant context). Safe methods, Bearer clients, and
-/// cookieless login/refresh skip the check.
+/// admin OTP, group-admin tenant context, cookie refresh/logout). Safe methods,
+/// Bearer clients, and cookieless login/OTP skip the check. A present
+/// `console_refresh` cookie on POST refresh is fail-closed without Origin/Host.
 async fn cookie_csrf_layer(
     request: axum::extract::Request,
     next: axum::middleware::Next,
@@ -3542,8 +3542,9 @@ fn refresh_cookie_value(headers: &HeaderMap) -> Option<String> {
 /// cross-site request. `Path=/api/v1/auth` keeps it off ordinary API/document
 /// calls. `HttpOnly` keeps it out of JS; `Secure` (prod) forbids plaintext.
 /// The access cookie is separate (`SameSite=Lax`, `Path=/`) so SSR document
-/// GETs can authenticate; mutating cookie-auth requests also pass an Origin/Host
-/// check (see [`enforce_cookie_csrf`]).
+/// GETs can authenticate. Cookie-authenticated mutations, including refresh
+/// driven by this cookie, also pass an Origin/Host check (see
+/// [`enforce_cookie_csrf`]).
 fn refresh_set_cookie(token: &str, max_age_secs: i64, secure: bool) -> Option<HeaderValue> {
     let max_age = max_age_secs.max(0);
     let mut cookie = format!(

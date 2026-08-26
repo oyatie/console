@@ -154,6 +154,8 @@ async fn post_cookie_refresh(app: axum::Router, cookie: &str) -> http::Response<
             .header(header::CONTENT_TYPE, "application/json")
             .header("x-auth-transport", "cookie")
             .header(header::COOKIE, cookie)
+            .header(header::ORIGIN, "https://auth.example.com")
+            .header(header::HOST, "auth.example.com")
             .body(Body::from("{}"))
             .unwrap(),
     )

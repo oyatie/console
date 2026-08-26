@@ -2036,6 +2036,91 @@ async fn cookie_access_authenticates_without_authorization_header(pool: PgPool) 
     );
 }
 
+/// Cookie-mode refresh is driven by `console_refresh`. Same-origin Origin/Host
+/// is required; missing or cross-origin Origin is fail-closed so refresh cannot
+/// be a CSRF hole even when the access cookie is absent.
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn cookie_mode_refresh_requires_same_origin(pool: PgPool) {
+    let signing_key = SigningKey::random(&mut OsRng);
+    let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
+    let public_key_pem = signing_key
+        .verifying_key()
+        .to_public_key_pem(LineEnding::LF)
+        .unwrap();
+    let branch_id = seed_branch(&pool, "Refresh Csrf Region", "Refresh Csrf Branch").await;
+    let user_id = seed_user_with_branch(
+        &pool,
+        "Refresh Csrf User",
+        "010-7700-0000",
+        "MECHANIC",
+        branch_id,
+    )
+    .await;
+    let service = build_router(
+        app_state(
+            pool.clone(),
+            private_key_pem.to_string(),
+            public_key_pem.clone(),
+        )
+        .unwrap(),
+    );
+
+    let issue = BootstrapCredentialStore
+        .issue_for_zero_credential_user(
+            &pool,
+            *user_id.as_uuid(),
+            OrgId::knl(),
+            OffsetDateTime::now_utc(),
+            Duration::hours(24),
+        )
+        .await
+        .unwrap();
+    let redeem = post_cookie_mode(
+        service.clone(),
+        "/api/v1/auth/otp/redeem",
+        None,
+        json!({ "otp": issue.token.as_str() }),
+    )
+    .await;
+    assert_eq!(redeem.status(), StatusCode::OK);
+    let refresh = cookie_token(
+        &console_refresh_set_cookie(&redeem).expect("redeem must set console_refresh"),
+    )
+    .to_owned();
+    let _ = body_json(redeem).await;
+
+    let missing_origin = post_refresh_cookie(service.clone(), &refresh, None).await;
+    assert_eq!(
+        missing_origin.status(),
+        StatusCode::FORBIDDEN,
+        "refresh with only console_refresh and no Origin must fail closed"
+    );
+
+    let cross_origin = post_refresh_cookie(
+        service.clone(),
+        &refresh,
+        Some(("https://evil.example.com", "auth.example.com")),
+    )
+    .await;
+    assert_eq!(
+        cross_origin.status(),
+        StatusCode::FORBIDDEN,
+        "cross-origin refresh cookie POST must be rejected"
+    );
+
+    let same_origin = post_refresh_cookie(
+        service,
+        &refresh,
+        Some(("https://auth.example.com", "auth.example.com")),
+    )
+    .await;
+    assert_eq!(
+        same_origin.status(),
+        StatusCode::OK,
+        "same-origin refresh cookie POST must still rotate"
+    );
+}
+
 /// MOBILE (no transport header) is unchanged: refresh and logout read the token
 /// from the request BODY, the response carries the refresh token in the body, and
 /// NO Set-Cookie header is emitted.
@@ -2871,6 +2956,28 @@ async fn post_cookie_mode(
     }
     service
         .oneshot(builder.body(Body::from(body.to_string())).unwrap())
+        .await
+        .unwrap()
+}
+
+async fn post_refresh_cookie(
+    service: axum::Router,
+    refresh: &str,
+    origin_host: Option<(&str, &str)>,
+) -> http::Response<Body> {
+    let mut builder = Request::builder()
+        .uri("/api/v1/auth/token/refresh")
+        .method("POST")
+        .header(header::CONTENT_TYPE, "application/json")
+        .header("x-auth-transport", "cookie")
+        .header(header::COOKIE, format!("console_refresh={refresh}"));
+    if let Some((origin, host)) = origin_host {
+        builder = builder
+            .header(header::ORIGIN, origin)
+            .header(header::HOST, host);
+    }
+    service
+        .oneshot(builder.body(Body::from("{}")).unwrap())
         .await
         .unwrap()
 }

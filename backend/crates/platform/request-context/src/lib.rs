@@ -283,6 +283,10 @@ pub fn current_audit_context() -> Option<RequestAuditContext> {
 /// jar behavior, so both stay unprefixed.
 pub const ACCESS_COOKIE_NAME: &str = "console_access";
 
+/// HttpOnly refresh-token cookie. Path-scoped to `/api/v1/auth` so browsers
+/// attach it only to refresh/logout, never to ordinary `/api/v1/*` calls.
+pub const REFRESH_COOKIE_NAME: &str = "console_refresh";
+
 /// Message returned by [`enforce_cookie_csrf`] when a cookie-authenticated
 /// mutation is not same-origin. Middleware maps this to HTTP 403.
 pub const COOKIE_CSRF_REJECTED: &str = "cross-origin cookie request rejected";
@@ -339,16 +343,20 @@ fn is_safe_method(method: &Method) -> bool {
 
 /// Reject cookie-authenticated mutating requests that are not same-origin.
 ///
-/// SameSite=Lax is the browser bar (full-nav SSR GET + same-site POST). This
-/// Origin/Host check is defense-in-depth against same-site cross-origin
-/// (subdomain) CSRF. Safe methods skip it so SSR document loads work without
-/// Origin. Authorization Bearer skips it so API clients are unchanged. A
-/// missing access cookie skips it (login/refresh).
+/// SameSite=Lax (access) / Strict (refresh) is the browser bar. This Origin/Host
+/// check is defense-in-depth against same-site cross-origin (subdomain) CSRF,
+/// including `POST /api/v1/auth/token/refresh` driven by `console_refresh`.
+/// Safe methods skip it so SSR document loads work without Origin.
+/// Authorization Bearer skips it so API clients are unchanged. Cookieless
+/// login/OTP still skip it. A present access *or* refresh cookie on a mutation
+/// is fail-closed without a matching Origin/Host.
 pub fn enforce_cookie_csrf(headers: &HeaderMap, method: &Method) -> Result<(), &'static str> {
     if headers.contains_key(http::header::AUTHORIZATION) || is_safe_method(method) {
         return Ok(());
     }
-    if cookie_named(headers, ACCESS_COOKIE_NAME).is_none() {
+    if cookie_named(headers, ACCESS_COOKIE_NAME).is_none()
+        && cookie_named(headers, REFRESH_COOKIE_NAME).is_none()
+    {
         return Ok(());
     }
     if origin_matches_host(headers) {
@@ -388,15 +396,54 @@ fn origin_authority_matches_host(origin: &str, host: &str) -> bool {
     {
         return false;
     }
-    strip_default_port(authority, default_port)
-        .eq_ignore_ascii_case(strip_default_port(host, default_port))
+    let Some((origin_host, origin_port)) = split_host_port(authority) else {
+        return false;
+    };
+    let Some((host_host, host_port)) = split_host_port(host) else {
+        return false;
+    };
+    origin_host.eq_ignore_ascii_case(host_host)
+        && origin_port.unwrap_or(default_port) == host_port.unwrap_or(default_port)
 }
 
-fn strip_default_port<'a>(hostport: &'a str, default_port: &str) -> &'a str {
-    match hostport.rsplit_once(':') {
-        Some((left, port)) if port == default_port && !left.is_empty() => left,
-        _ => hostport,
+/// Split `host`, `host:port`, `[ipv6]`, or `[ipv6]:port`. Unbracketed IPv6
+/// (more than one colon, no brackets) is rejected: Origin and Host must use
+/// RFC 3986 / RFC 9110 brackets, so a naive last-colon port split cannot
+/// false-allow or false-deny compressed addresses.
+fn split_host_port(value: &str) -> Option<(&str, Option<&str>)> {
+    if value.is_empty() {
+        return None;
     }
+    if let Some(rest) = value.strip_prefix('[') {
+        let (addr, after) = rest.split_once(']')?;
+        if addr.is_empty() || !addr.contains(':') || addr.contains('%') {
+            return None;
+        }
+        let port = if after.is_empty() {
+            None
+        } else {
+            let port = after.strip_prefix(':')?;
+            if !is_ascii_port(port) {
+                return None;
+            }
+            Some(port)
+        };
+        Some((addr, port))
+    } else {
+        match value.split_once(':') {
+            None => Some((value, None)),
+            Some((host, port))
+                if !host.is_empty() && !host.contains(':') && is_ascii_port(port) =>
+            {
+                Some((host, Some(port)))
+            }
+            _ => None,
+        }
+    }
+}
+
+fn is_ascii_port(port: &str) -> bool {
+    !port.is_empty() && port.bytes().all(|byte| byte.is_ascii_digit())
 }
 
 /// Resolve the authenticated [`Principal`] for a request from its headers.
@@ -1148,8 +1195,35 @@ mod tests {
         let bearer = headers_with(&[("authorization", "Bearer tok")]);
         assert!(enforce_cookie_csrf(&bearer, &Method::POST).is_ok());
         assert!(enforce_cookie_csrf(&HeaderMap::new(), &Method::POST).is_ok());
-        let refresh_only = headers_with(&[("cookie", "console_refresh=refresh")]);
-        assert!(enforce_cookie_csrf(&refresh_only, &Method::POST).is_ok());
+        let bearer_and_refresh = headers_with(&[
+            ("authorization", "Bearer tok"),
+            ("cookie", "console_refresh=refresh"),
+        ]);
+        assert!(enforce_cookie_csrf(&bearer_and_refresh, &Method::POST).is_ok());
+    }
+
+    #[test]
+    fn cookie_csrf_requires_origin_for_refresh_cookie_mutations() {
+        let missing_origin = headers_with(&[("cookie", "console_refresh=refresh")]);
+        let cross_origin = headers_with(&[
+            ("cookie", "console_refresh=refresh"),
+            ("origin", "https://evil.example.com"),
+            ("host", "auth.example.com"),
+        ]);
+        let same_origin = headers_with(&[
+            ("cookie", "console_refresh=refresh"),
+            ("origin", "https://auth.example.com"),
+            ("host", "auth.example.com"),
+        ]);
+        assert_eq!(
+            enforce_cookie_csrf(&missing_origin, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED)
+        );
+        assert_eq!(
+            enforce_cookie_csrf(&cross_origin, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED)
+        );
+        assert!(enforce_cookie_csrf(&same_origin, &Method::POST).is_ok());
     }
 
     #[test]
@@ -1204,6 +1278,83 @@ mod tests {
         );
         assert_eq!(
             enforce_cookie_csrf(&null_origin, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED)
+        );
+    }
+
+    #[test]
+    fn cookie_csrf_normalizes_ipv6_brackets_and_default_ports() {
+        let origin_no_port = headers_with(&[
+            ("cookie", "console_access=tok"),
+            ("origin", "https://[::1]"),
+            ("host", "[::1]:443"),
+        ]);
+        let host_no_port = headers_with(&[
+            ("cookie", "console_access=tok"),
+            ("origin", "https://[::1]:443"),
+            ("host", "[::1]"),
+        ]);
+        let http_default = headers_with(&[
+            ("cookie", "console_refresh=refresh"),
+            ("origin", "http://[2001:db8::1]:80"),
+            ("host", "[2001:db8::1]"),
+        ]);
+        let mixed_case = headers_with(&[
+            ("cookie", "console_access=tok"),
+            ("origin", "https://[2001:DB8::1]"),
+            ("host", "[2001:db8::1]"),
+        ]);
+        assert!(enforce_cookie_csrf(&origin_no_port, &Method::POST).is_ok());
+        assert!(enforce_cookie_csrf(&host_no_port, &Method::POST).is_ok());
+        assert!(enforce_cookie_csrf(&http_default, &Method::POST).is_ok());
+        assert!(enforce_cookie_csrf(&mixed_case, &Method::POST).is_ok());
+    }
+
+    #[test]
+    fn cookie_csrf_rejects_ipv6_false_peers_and_unbracketed_literals() {
+        let different_addr = headers_with(&[
+            ("cookie", "console_access=tok"),
+            ("origin", "https://[::1]"),
+            ("host", "[2001:db8::1]"),
+        ]);
+        let mapped_vs_v4 = headers_with(&[
+            ("cookie", "console_access=tok"),
+            ("origin", "https://[::ffff:127.0.0.1]"),
+            ("host", "127.0.0.1"),
+        ]);
+        let unbracketed_origin = headers_with(&[
+            ("cookie", "console_access=tok"),
+            ("origin", "https://::1"),
+            ("host", "[::1]"),
+        ]);
+        let unbracketed_host = headers_with(&[
+            ("cookie", "console_access=tok"),
+            ("origin", "https://[::1]"),
+            ("host", "::1"),
+        ]);
+        let non_default_port = headers_with(&[
+            ("cookie", "console_access=tok"),
+            ("origin", "https://[::1]:8443"),
+            ("host", "[::1]"),
+        ]);
+        assert_eq!(
+            enforce_cookie_csrf(&different_addr, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED)
+        );
+        assert_eq!(
+            enforce_cookie_csrf(&mapped_vs_v4, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED)
+        );
+        assert_eq!(
+            enforce_cookie_csrf(&unbracketed_origin, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED)
+        );
+        assert_eq!(
+            enforce_cookie_csrf(&unbracketed_host, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED)
+        );
+        assert_eq!(
+            enforce_cookie_csrf(&non_default_port, &Method::POST),
             Err(COOKIE_CSRF_REJECTED)
         );
     }
