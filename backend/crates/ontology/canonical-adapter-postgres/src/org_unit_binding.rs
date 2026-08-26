@@ -253,6 +253,20 @@ mod binding_seam_tests {
             unambiguous_legacy_source_id(SOURCE_KIND_BRANCH, &id).unwrap(),
             id
         );
+
+        // Uuid::parse_str accepts mixed-case hyphenated UUIDs.
+        let upper = id.to_uppercase();
+        assert_eq!(
+            unambiguous_legacy_source_id(SOURCE_KIND_REGION, &upper).unwrap(),
+            upper
+        );
+
+        // The seam trims before parse_str; the accepted id is the trimmed whole string.
+        let padded = format!("  {id}\t");
+        assert_eq!(
+            unambiguous_legacy_source_id(SOURCE_KIND_BRANCH, &padded).unwrap(),
+            id
+        );
     }
 
     #[test]
@@ -262,5 +276,24 @@ mod binding_seam_tests {
         assert_eq!(err.text, "영업본부");
         let err = unambiguous_legacy_source_id(SOURCE_KIND_BRANCH, " team-a ").unwrap_err();
         assert_eq!(err.text, "team-a");
+
+        let err = unambiguous_legacy_source_id(SOURCE_KIND_REGION, "").unwrap_err();
+        assert_eq!(err.source_kind, SOURCE_KIND_REGION);
+        assert_eq!(err.text, "");
+
+        let mixed = "영업HQ";
+        let err = unambiguous_legacy_source_id(SOURCE_KIND_BRANCH, mixed).unwrap_err();
+        assert_eq!(err.source_kind, SOURCE_KIND_BRANCH);
+        assert_eq!(err.text, mixed);
+
+        // UUID-shaped but too short: parse_str of the whole string fails.
+        let too_short = "123e4567-e89b-12d3-a456-42661417400";
+        let err = unambiguous_legacy_source_id(SOURCE_KIND_REGION, too_short).unwrap_err();
+        assert_eq!(err.text, too_short);
+
+        // Substring UUID is still a label; only the trimmed whole string is parsed.
+        let embedded = format!("team-{}-west", Uuid::new_v4());
+        let err = unambiguous_legacy_source_id(SOURCE_KIND_BRANCH, &embedded).unwrap_err();
+        assert_eq!(err.text, embedded);
     }
 }
