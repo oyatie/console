@@ -31,17 +31,18 @@ use axum::routing::{delete, get, patch, post, put};
 use axum::{Json, Router};
 use console_identity_adapter_postgres::{PgOrgError, PgOrgStore};
 use console_identity_application::{
-    ActivateUserCommand, CreatePolicyAssignmentPreviewReceiptCommand, CreatePolicyRoleCommand,
-    CreateUserCommand, DeactivateUserCommand, DirectoryListQuery, MAX_DIRECTORY_PAGE_LIMIT,
-    PolicyAuditEventSummary, PolicyRoleAssignmentSummary, PolicyRoleCondition,
-    PolicyRolePermission, PolicyRoleSummary, PolicyVersionSummary,
-    ReplacePolicyRoleAssignmentsCommand, UpdatePolicyRoleCommand, UpdatePolicyRoleStatusCommand,
-    UpdateSelfProfileCommand, UpdateUserCommand, UserListQuery, UserSummary,
+    AccountStatus, ActivateUserCommand, CreatePolicyAssignmentPreviewReceiptCommand,
+    CreatePolicyRoleCommand, CreateUserCommand, DeactivateUserCommand, DirectoryListQuery,
+    EmployeeLinkStatus, MAX_DIRECTORY_PAGE_LIMIT, PolicyAuditEventSummary,
+    PolicyRoleAssignmentSummary, PolicyRoleCondition, PolicyRolePermission, PolicyRoleSummary,
+    PolicyVersionSummary, ReplacePolicyRoleAssignmentsCommand, UpdatePolicyRoleCommand,
+    UpdatePolicyRoleStatusCommand, UpdateSelfProfileCommand, UpdateUserCommand, UserListQuery,
+    UserPage, UserSummary,
 };
 use console_identity_domain::{Team, normalize_directory_search};
 use console_kernel_core::{
-    AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
-    UserId,
+    AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, Timestamp,
+    TraceContext, UserId,
 };
 use console_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
 use console_platform_authz::cedar_pbac::{engine, map::canonical_coexistence_map};
@@ -409,6 +410,101 @@ impl DirectoryListRequest {
             limit: self.limit,
             offset: self.offset,
         })
+    }
+}
+
+/// Directory-only person row: `UserSummary` fields except `phone`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+struct DirectoryPerson {
+    id: UserId,
+    display_name: String,
+    employee_id: Option<uuid::Uuid>,
+    employee_name: Option<String>,
+    employee_number: Option<String>,
+    employee_company: Option<String>,
+    employee_org_unit: Option<String>,
+    employee_position: Option<String>,
+    employee_identity_review_required: Option<bool>,
+    employee_identity_resolution_confidence: Option<String>,
+    employee_link_status: EmployeeLinkStatus,
+    team: Option<Team>,
+    roles: Vec<String>,
+    branch_ids: Vec<BranchId>,
+    is_active: bool,
+    has_passkey: bool,
+    account_status: AccountStatus,
+    created_at: Timestamp,
+}
+
+impl From<UserSummary> for DirectoryPerson {
+    fn from(user: UserSummary) -> Self {
+        let UserSummary {
+            id,
+            display_name,
+            employee_id,
+            employee_name,
+            employee_number,
+            employee_company,
+            employee_org_unit,
+            employee_position,
+            employee_identity_review_required,
+            employee_identity_resolution_confidence,
+            employee_link_status,
+            phone: _,
+            team,
+            roles,
+            branch_ids,
+            is_active,
+            has_passkey,
+            account_status,
+            created_at,
+        } = user;
+        Self {
+            id,
+            display_name,
+            employee_id,
+            employee_name,
+            employee_number,
+            employee_company,
+            employee_org_unit,
+            employee_position,
+            employee_identity_review_required,
+            employee_identity_resolution_confidence,
+            employee_link_status,
+            team,
+            roles,
+            branch_ids,
+            is_active,
+            has_passkey,
+            account_status,
+            created_at,
+        }
+    }
+}
+
+/// Directory-only page. Items never include a `phone` key.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+struct DirectoryPage {
+    items: Vec<DirectoryPerson>,
+    limit: i64,
+    offset: i64,
+    total: i64,
+}
+
+impl From<UserPage> for DirectoryPage {
+    fn from(page: UserPage) -> Self {
+        let UserPage {
+            items,
+            limit,
+            offset,
+            total,
+        } = page;
+        Self {
+            items: items.into_iter().map(DirectoryPerson::from).collect(),
+            limit,
+            offset,
+            total,
+        }
     }
 }
 
@@ -2866,7 +2962,7 @@ async fn list_directory_people(
         .list_directory_people(&scope, request.into_query()?)
         .await
         .map_err(RestError::from_store)?;
-    Ok(Json(page))
+    Ok(Json(DirectoryPage::from(page)))
 }
 
 async fn get_user(
@@ -4051,6 +4147,117 @@ mod directory_query_tests {
             oversized_limit.into_query().unwrap_err().status,
             StatusCode::UNPROCESSABLE_ENTITY
         );
+    }
+
+    #[test]
+    fn directory_person_json_omits_phone_while_user_summary_keeps_it() {
+        let stored_phone = "010-1234-5678";
+        let user = UserSummary {
+            id: UserId::new(),
+            display_name: "directory subject".to_owned(),
+            employee_id: None,
+            employee_name: None,
+            employee_number: None,
+            employee_company: None,
+            employee_org_unit: None,
+            employee_position: None,
+            employee_identity_review_required: None,
+            employee_identity_resolution_confidence: None,
+            employee_link_status: EmployeeLinkStatus::Unlinked,
+            phone: Some(stored_phone.to_owned()),
+            team: Some(Team::Maintenance),
+            roles: vec!["MECHANIC".to_owned()],
+            branch_ids: vec![BranchId::new()],
+            is_active: true,
+            has_passkey: true,
+            account_status: AccountStatus::Active,
+            created_at: OffsetDateTime::now_utc(),
+        };
+        let user_json = serde_json::to_value(&user).expect("user summary json");
+        assert_eq!(user_json["phone"], stored_phone);
+
+        let directory_json = serde_json::to_value(DirectoryPage::from(UserPage {
+            items: vec![user],
+            limit: 50,
+            offset: 0,
+            total: 1,
+        }))
+        .expect("directory page json");
+        let item = &directory_json["items"][0];
+        let keys = item
+            .as_object()
+            .expect("directory item must be an object")
+            .keys()
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>();
+        let allowed = [
+            "id",
+            "display_name",
+            "employee_id",
+            "employee_name",
+            "employee_number",
+            "employee_company",
+            "employee_org_unit",
+            "employee_position",
+            "employee_identity_review_required",
+            "employee_identity_resolution_confidence",
+            "employee_link_status",
+            "team",
+            "roles",
+            "branch_ids",
+            "is_active",
+            "has_passkey",
+            "account_status",
+            "created_at",
+        ]
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+        assert_eq!(
+            keys, allowed,
+            "directory item JSON keys must match the DirectoryPerson allowlist"
+        );
+        for forbidden in ["phone", "salary", "bank_account", "rrn", "won"] {
+            assert!(
+                item.get(forbidden).is_none(),
+                "directory item must omit {forbidden}; keys={keys:?}"
+            );
+        }
+        assert_eq!(item["display_name"], "directory subject");
+    }
+
+    #[test]
+    fn identity_face_composes_directory_schemas() {
+        let composed = console_contracts::compose(&[&OPENAPI_FRAGMENT]).expect("identity fragment");
+        assert!(
+            composed.contains("    DirectoryPerson:\n"),
+            "composed fragment missing DirectoryPerson"
+        );
+        assert!(
+            composed.contains("    DirectoryPage:\n"),
+            "composed fragment missing DirectoryPage"
+        );
+
+        let directory_person = include_str!("../openapi/schemas/DirectoryPerson.yaml");
+        let property_names = yaml_map_keys(directory_person, "properties:");
+        assert!(
+            !property_names.contains(&"phone"),
+            "DirectoryPerson OpenAPI must not include phone; properties={property_names:?}"
+        );
+    }
+
+    fn yaml_map_keys<'a>(schema: &'a str, header: &str) -> Vec<&'a str> {
+        let Some((_, body)) = schema.split_once(header) else {
+            return Vec::new();
+        };
+        body.lines()
+            .filter_map(|line| {
+                let name = line.strip_prefix("  ")?;
+                if name.starts_with(' ') || name.starts_with('#') {
+                    return None;
+                }
+                name.strip_suffix(':')
+            })
+            .collect()
     }
 }
 

@@ -4319,6 +4319,14 @@ const IDENTITY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../identity/rest/openapi/schemas/DeviceLoginStartResponse.yaml"),
     },
     NamedYaml {
+        name: "DirectoryPage",
+        body: include_str!("../../identity/rest/openapi/schemas/DirectoryPage.yaml"),
+    },
+    NamedYaml {
+        name: "DirectoryPerson",
+        body: include_str!("../../identity/rest/openapi/schemas/DirectoryPerson.yaml"),
+    },
+    NamedYaml {
         name: "EnrollHandoffRequest",
         body: include_str!("../../identity/rest/openapi/schemas/EnrollHandoffRequest.yaml"),
     },

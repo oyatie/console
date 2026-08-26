@@ -292,6 +292,8 @@
     "DeviceLoginPollRequest",
     "DeviceLoginPollResponse",
     "DeviceLoginStartResponse",
+    "DirectoryPage",
+    "DirectoryPerson",
     "EnrollHandoffRequest",
     "EnrollHandoffResponse",
     "LogoutRequest",

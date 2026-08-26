@@ -7,6 +7,7 @@ description: >-
   membership with EmployeeDirectoryRead grants. A requested branch_id
   narrows that effective scope; it never widens it. Results are ordered by
   display_name then id, and branch_ids are redacted to the resulting scope.
+  Items are DirectoryPerson records (UserSummary fields except phone).
 security:
 - bearerAuth: []
 parameters:
@@ -59,7 +60,7 @@ responses:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/UserPage'
+          $ref: '#/components/schemas/DirectoryPage'
   '400':
     description: Malformed query string (for example an unparsable boolean or repeated scalar parameter); no directory query ran.
   '401':

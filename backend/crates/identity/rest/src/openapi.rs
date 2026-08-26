@@ -845,6 +845,14 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/DeviceLoginStartResponse.yaml"),
     },
     NamedYaml {
+        name: "DirectoryPage",
+        body: include_str!("../openapi/schemas/DirectoryPage.yaml"),
+    },
+    NamedYaml {
+        name: "DirectoryPerson",
+        body: include_str!("../openapi/schemas/DirectoryPerson.yaml"),
+    },
+    NamedYaml {
         name: "EnrollHandoffRequest",
         body: include_str!("../openapi/schemas/EnrollHandoffRequest.yaml"),
     },
