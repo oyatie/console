@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.14](https://github.com/oyatie/console/compare/v0.3.13...v0.3.14) (2026-08-26)
+
+
+### Bug Fixes
+
+* **identity:** grow DirectoryPerson/DirectoryPage without phone ([#909](https://github.com/oyatie/console/issues/909)) ([88d73bc](https://github.com/oyatie/console/commit/88d73bc41f5804eb59f7f1829b0180a20cf4a557))
+* **identity:** omit users.phone from directory list SQL ([#908](https://github.com/oyatie/console/issues/908)) ([6ede402](https://github.com/oyatie/console/commit/6ede40239938d7c0efea2fb191113634b95dc155))
+* **lanes:** refuse implementers unless a named probe is red ([#928](https://github.com/oyatie/console/issues/928)) ([db9a690](https://github.com/oyatie/console/commit/db9a690564addaa004fdaf232a66f4aa2be6b476))
+
 ## [0.3.13](https://github.com/oyatie/console/compare/v0.3.12...v0.3.13) (2026-08-26)
 
 
