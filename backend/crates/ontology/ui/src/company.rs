@@ -11,12 +11,6 @@ pub fn CompanyPage(head: Option<CompanyHead>) -> impl IntoView {
             {match head {
                 None => view! {
                     <p class="empty">"등록된 회사가 없습니다."</p>
-                    <ReviseCompanyForm
-                        org_id=String::new()
-                        legal_name=String::new()
-                        reg_no=String::new()
-                        version=0
-                    />
                 }.into_any(),
                 Some(company) => view! {
                     <dl>

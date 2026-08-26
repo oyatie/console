@@ -51,6 +51,22 @@ mod tests {
         assert!(!src.contains("엑셀"));
         assert!(!lower.contains("storeexport"));
         assert!(!FailClosedOrg.head().is_some());
+        let company = include_str!("company.rs");
+        let empty_arm = company
+            .split("None =>")
+            .nth(1)
+            .expect("empty company None arm")
+            .split("Some(company)")
+            .next()
+            .expect("empty company arm precedes Some");
+        assert!(empty_arm.contains("등록된 회사가 없습니다."));
+        assert!(
+            !empty_arm.contains("ReviseCompanyForm"),
+            "empty company must omit revise; no org_id=\"\" version=0 write"
+        );
+        assert!(!company.contains("org_id=String::new()"));
+        assert!(!company.contains("version=0"));
+        assert!(company.contains("ReviseCompanyForm"));
     }
 
     #[test]
