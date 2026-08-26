@@ -2216,16 +2216,17 @@ async fn refresh_token_json(
     trusted_client_ip: Option<Extension<TrustedClientIp>>,
     body: RefreshTokenRequest,
 ) -> Result<Response, RestError> {
-    // Dual transport: web reads the rotating token from the `console_refresh` cookie;
-    // mobile sends it in the JSON body. The cookie takes precedence so a web
-    // client never has to (and never should) echo the token in the body.
-    let cookie_mode = wants_cookie_transport(headers);
-    let refresh = refresh_cookie_value(headers)
+    // Cookie transport is decided by where the secret came from, not by the
+    // JS-settable X-Auth-Transport header. A present console_refresh must
+    // rotate into Set-Cookie and must never put the new refresh secret in JSON.
+    let from_cookie = refresh_cookie_value(headers);
+    let cookie_output = from_cookie.is_some() || wants_cookie_transport(headers);
+    let refresh = from_cookie
         .or(body.refresh_token)
         .ok_or_else(|| RestError::unauthorized("missing refresh token"))?;
     let (access_token, refresh_token, refresh_expires_at, requires_passkey_setup) =
         rotate_refresh_session(state, headers, trusted_client_ip, refresh).await?;
-    if cookie_mode {
+    if cookie_output {
         let now = OffsetDateTime::now_utc();
         let max_age = (refresh_expires_at - now).whole_seconds();
         let response = Json(TokenPairResponse {
@@ -2331,11 +2332,13 @@ async fn logout(
     Json(body): Json<LogoutRequest>,
 ) -> Result<Response, RestError> {
     let services = state.services()?;
-    let cookie_mode = wants_cookie_transport(&headers);
     // Read the token from the cookie (web) or the body (mobile). A logout with no
-    // token is a no-op success: the session is already gone client-side, and we
-    // still clear the cookie for the web client below.
-    let refresh = refresh_cookie_value(&headers).or(body.refresh_token);
+    // token is a no-op success: the session is already gone client-side. A present
+    // console_refresh always clears both cookies — the JS-settable transport
+    // header must not leave HttpOnly cookies in the jar after revoke.
+    let from_cookie = refresh_cookie_value(&headers);
+    let cookie_output = from_cookie.is_some() || wants_cookie_transport(&headers);
+    let refresh = from_cookie.or(body.refresh_token);
     if let Some(refresh) = refresh.as_deref() {
         services
             .refresh_tokens
@@ -2343,9 +2346,7 @@ async fn logout(
             .await
             .map_err(RestError::from_refresh)?;
     }
-    // Always clear both cookies for the web transport so a stale access or
-    // refresh token cannot linger in the browser after the family is revoked.
-    if cookie_mode {
+    if cookie_output {
         Ok(cookie_clear_response(
             StatusCode::NO_CONTENT.into_response(),
             services.cookie_secure,
@@ -3672,14 +3673,15 @@ fn relative_html_next(next: Option<&str>) -> Result<String, RestError> {
 /// Build a `Set-Cookie` header that stores the refresh token for the web
 /// transport.
 ///
-/// CSRF safety (confirmed): `SameSite=Strict` stops the browser from attaching
-/// this cookie to any cross-site request, so a forged request from another origin
-/// carries no refresh token. The `Path=/api/v1/auth` scope keeps it off every
-/// other API call, and the access token travels in the `Authorization` header
-/// (NOT a cookie), so a state-changing API call can never be driven by an
-/// ambient cookie alone. `HttpOnly` keeps the token out of JS (XSS exfiltration),
-/// and `Secure` (prod) forbids plaintext transmission. Together these make the
-/// cookie transport CSRF-safe without a separate CSRF token.
+/// CSRF safety: `SameSite=Strict` stops the browser from attaching this cookie
+/// to any cross-site request, so a forged request from another origin carries
+/// no refresh token. `Path=/api/v1/auth` keeps it off ordinary API/document
+/// calls. The access cookie (`SameSite=Lax`, `Path=/`) authenticates HTML
+/// document GETs and `/_ui` only; `/api/v1/*` ignores it and stays Bearer-only,
+/// so a state-changing API call cannot be driven by an ambient access cookie.
+/// Cookie-driven refresh and HTML mutations also require Origin/Host (see
+/// [`enforce_cookie_csrf`]). `HttpOnly` keeps both tokens out of JS (XSS
+/// exfiltration), and `Secure` (prod) forbids plaintext transmission.
 fn refresh_set_cookie(token: &str, max_age_secs: i64, secure: bool) -> Option<HeaderValue> {
     let max_age = max_age_secs.max(0);
     let mut cookie = format!(

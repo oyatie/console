@@ -351,9 +351,13 @@ fn is_safe_method(method: &Method) -> bool {
 /// check is defense-in-depth against same-site cross-origin (subdomain) CSRF,
 /// including form `POST /api/v1/auth/token/refresh` driven by `console_refresh`.
 /// Safe methods skip it so SSR document loads work without Origin.
-/// Authorization Bearer skips it so API clients are unchanged. Cookieless
-/// login/OTP still skip it. A present access *or* refresh cookie on a mutation
-/// is fail-closed without a matching Origin/Host.
+/// Cookieless login/OTP skip it. A present access *or* refresh cookie on a
+/// mutation is fail-closed without a matching Origin/Host.
+///
+/// A JS-settable `Authorization` header does **not** skip the check. Skip CSRF
+/// only when the request will authenticate as Bearer *and* will not consult
+/// cookies (no `console_access` / `console_refresh`). `Basic` / empty /
+/// `Bearer ` plus a cookie stays CSRF-bound.
 ///
 /// Host's default port is taken from the request URI scheme, not Origin's
 /// scheme, so `Origin: http://host` cannot match `Host: host` on HTTPS.
@@ -362,7 +366,7 @@ pub fn enforce_cookie_csrf(
     method: &Method,
     request_uri: &http::Uri,
 ) -> Result<(), &'static str> {
-    if headers.contains_key(http::header::AUTHORIZATION) || is_safe_method(method) {
+    if is_safe_method(method) {
         return Ok(());
     }
     if cookie_named(headers, ACCESS_COOKIE_NAME).is_none()
@@ -1319,8 +1323,46 @@ mod tests {
         let bearer_and_refresh = headers_with(&[
             ("authorization", "Bearer tok"),
             ("cookie", "console_refresh=refresh"),
+            ("origin", "https://auth.example.com"),
+            ("host", "auth.example.com"),
         ]);
         assert!(csrf(&bearer_and_refresh, &Method::POST).is_ok());
+    }
+
+    #[test]
+    fn cookie_csrf_does_not_skip_on_malformed_authorization() {
+        let basic_evil = headers_with(&[
+            ("authorization", "Basic x"),
+            ("cookie", "console_refresh=refresh"),
+            ("origin", "https://evil.example.com"),
+            ("host", "auth.example.com"),
+        ]);
+        let empty_bearer_evil = headers_with(&[
+            ("authorization", "Bearer "),
+            ("cookie", "console_refresh=refresh"),
+            ("origin", "https://evil.example.com"),
+            ("host", "auth.example.com"),
+        ]);
+        let well_formed_bearer_evil = headers_with(&[
+            ("authorization", "Bearer tok"),
+            ("cookie", "console_refresh=refresh"),
+            ("origin", "https://evil.example.com"),
+            ("host", "auth.example.com"),
+        ]);
+        assert_eq!(
+            csrf(&basic_evil, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED),
+            "Basic plus refresh cookie must stay Origin-bound"
+        );
+        assert_eq!(
+            csrf(&empty_bearer_evil, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED)
+        );
+        assert_eq!(
+            csrf(&well_formed_bearer_evil, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED),
+            "a JS-settable Bearer header must not disable cookie CSRF"
+        );
     }
 
     #[test]

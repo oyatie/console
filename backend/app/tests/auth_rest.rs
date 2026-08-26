@@ -2140,6 +2140,122 @@ async fn cookie_mode_refresh_requires_same_origin(pool: PgPool) {
     assert!(same_origin_body["refresh_token"].is_null());
 }
 
+/// A present `console_refresh` cookie binds output to cookie transport even
+/// without `X-Auth-Transport`. Same-origin JSON must rotate Set-Cookie and
+/// must not put the new refresh secret in the body. A JS-settable
+/// `Authorization: Basic` must not skip Origin/Host CSRF.
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn cookie_sourced_refresh_never_returns_refresh_token_in_json(pool: PgPool) {
+    let signing_key = SigningKey::random(&mut OsRng);
+    let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
+    let public_key_pem = signing_key
+        .verifying_key()
+        .to_public_key_pem(LineEnding::LF)
+        .unwrap();
+    let branch_id = seed_branch(&pool, "Cookie Bind Region", "Cookie Bind Branch").await;
+    let user_id = seed_user_with_branch(
+        &pool,
+        "Cookie Bind User",
+        "010-7900-0000",
+        "MECHANIC",
+        branch_id,
+    )
+    .await;
+    let service = build_router(
+        app_state(
+            pool.clone(),
+            private_key_pem.to_string(),
+            public_key_pem.clone(),
+        )
+        .unwrap(),
+    );
+
+    let issue = BootstrapCredentialStore
+        .issue_for_zero_credential_user(
+            &pool,
+            *user_id.as_uuid(),
+            OrgId::knl(),
+            OffsetDateTime::now_utc(),
+            Duration::hours(24),
+        )
+        .await
+        .unwrap();
+    let redeem = post_cookie_mode(
+        service.clone(),
+        "/api/v1/auth/otp/redeem",
+        None,
+        json!({ "otp": issue.token.as_str() }),
+    )
+    .await;
+    assert_eq!(redeem.status(), StatusCode::OK);
+    let refresh = cookie_token(
+        &console_refresh_set_cookie(&redeem).expect("redeem must set console_refresh"),
+    )
+    .to_owned();
+    let _ = body_json(redeem).await;
+
+    let basic_csrf = post_refresh_cookie_with_authorization(
+        service.clone(),
+        &refresh,
+        Some(("https://evil.example.com", "auth.example.com")),
+        "Basic x",
+    )
+    .await;
+    assert_eq!(
+        basic_csrf.status(),
+        StatusCode::FORBIDDEN,
+        "Authorization: Basic plus refresh cookie and evil Origin must 403"
+    );
+
+    let no_header = post_refresh_cookie_without_transport(
+        service.clone(),
+        &refresh,
+        Some(("https://auth.example.com", "auth.example.com")),
+    )
+    .await;
+    assert_eq!(no_header.status(), StatusCode::OK);
+    let rotated = console_refresh_set_cookie(&no_header)
+        .expect("cookie-sourced refresh must rotate Set-Cookie");
+    let rotated_value = cookie_token(&rotated).to_owned();
+    assert_ne!(rotated_value, refresh);
+    assert!(
+        console_access_set_cookie(&no_header).is_some(),
+        "cookie-sourced refresh must also rotate console_access"
+    );
+    let no_header_body = body_json(no_header).await;
+    assert!(
+        no_header_body["refresh_token"].is_null(),
+        "cookie-sourced refresh must not leak refresh_token into JSON, got {no_header_body}"
+    );
+    assert!(
+        no_header_body["access_token"]
+            .as_str()
+            .is_some_and(|token| !token.is_empty())
+    );
+
+    let logout = post_logout_cookie_without_transport(
+        service.clone(),
+        &rotated_value,
+        Some(("https://auth.example.com", "auth.example.com")),
+    )
+    .await;
+    assert_eq!(logout.status(), StatusCode::NO_CONTENT);
+    let clear_refresh = console_refresh_set_cookie(&logout)
+        .expect("logout with console_refresh must clear the refresh cookie");
+    assert!(clear_refresh.contains("Max-Age=0"), "{clear_refresh}");
+    let clear_access = console_access_set_cookie(&logout)
+        .expect("logout with console_refresh must clear the access cookie");
+    assert!(clear_access.contains("Max-Age=0"), "{clear_access}");
+
+    let after_logout = post_refresh_cookie_without_transport(
+        service,
+        &rotated_value,
+        Some(("https://auth.example.com", "auth.example.com")),
+    )
+    .await;
+    assert_eq!(after_logout.status(), StatusCode::UNAUTHORIZED);
+}
+
 /// HTML bounce: form-urlencoded + Origin + `console_refresh` → 302 relative
 /// `next`. Missing Origin fails closed. JSON clients keep the JSON 200 path.
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
@@ -3105,6 +3221,60 @@ async fn post_refresh_cookie(
         .method("POST")
         .header(header::CONTENT_TYPE, "application/json")
         .header("x-auth-transport", "cookie")
+        .header(header::COOKIE, format!("console_refresh={refresh}"));
+    if let Some((origin, host)) = origin_host {
+        builder = builder
+            .header(header::ORIGIN, origin)
+            .header(header::HOST, host);
+    }
+    service
+        .oneshot(builder.body(Body::from("{}")).unwrap())
+        .await
+        .unwrap()
+}
+
+async fn post_refresh_cookie_without_transport(
+    service: axum::Router,
+    refresh: &str,
+    origin_host: Option<(&str, &str)>,
+) -> http::Response<Body> {
+    post_refresh_cookie_with_authorization(service, refresh, origin_host, "").await
+}
+
+async fn post_refresh_cookie_with_authorization(
+    service: axum::Router,
+    refresh: &str,
+    origin_host: Option<(&str, &str)>,
+    authorization: &str,
+) -> http::Response<Body> {
+    let mut builder = Request::builder()
+        .uri("/api/v1/auth/token/refresh")
+        .method("POST")
+        .header(header::CONTENT_TYPE, "application/json")
+        .header(header::COOKIE, format!("console_refresh={refresh}"));
+    if !authorization.is_empty() {
+        builder = builder.header(header::AUTHORIZATION, authorization);
+    }
+    if let Some((origin, host)) = origin_host {
+        builder = builder
+            .header(header::ORIGIN, origin)
+            .header(header::HOST, host);
+    }
+    service
+        .oneshot(builder.body(Body::from("{}")).unwrap())
+        .await
+        .unwrap()
+}
+
+async fn post_logout_cookie_without_transport(
+    service: axum::Router,
+    refresh: &str,
+    origin_host: Option<(&str, &str)>,
+) -> http::Response<Body> {
+    let mut builder = Request::builder()
+        .uri("/api/v1/auth/logout")
+        .method("POST")
+        .header(header::CONTENT_TYPE, "application/json")
         .header(header::COOKIE, format!("console_refresh={refresh}"));
     if let Some((origin, host)) = origin_host {
         builder = builder
