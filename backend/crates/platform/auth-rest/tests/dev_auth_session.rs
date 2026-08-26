@@ -284,8 +284,11 @@ async fn cookie_refresh_keeps_synthetic_dev_persona_out_of_passkey_onboarding(po
         serde_json::from_slice(&to_bytes(minted.into_body(), usize::MAX).await.unwrap()).unwrap();
     assert!(!minted_body.requires_passkey_setup);
     assert!(
-        minted_body.access_token.is_none(),
-        "cookie transport must not expose the access token in JSON"
+        minted_body
+            .access_token
+            .as_deref()
+            .is_some_and(|token| !token.is_empty()),
+        "cookie transport keeps access_token in JSON until HTML /login exists"
     );
     assert!(
         minted_body.refresh_token.is_none(),

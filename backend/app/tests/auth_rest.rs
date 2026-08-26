@@ -1639,7 +1639,7 @@ async fn otp_redeem_rate_limit_wires_up_on_real_clock_path(pool: PgPool) {
 
 /// WEB dual-transport: when `X-Auth-Transport: cookie` is present, an OTP redeem
 /// sets HttpOnly `console_refresh` (path `/api/v1/auth`) and `console_access`
-/// (path `/`) cookies and OMITS both tokens from the JSON body.
+/// (path `/`) cookies, keeps `access_token` in JSON, and omits `refresh_token`.
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
 async fn cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh(pool: PgPool) {
     let signing_key = SigningKey::random(&mut OsRng);
@@ -1710,8 +1710,10 @@ async fn cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh(pool: Pg
 
     let body = body_json(response).await;
     assert!(
-        body["access_token"].is_null(),
-        "cookie mode must NOT leak the access token into the JSON body, got {body}"
+        body["access_token"]
+            .as_str()
+            .is_some_and(|token| !token.is_empty()),
+        "cookie mode keeps access_token in JSON until HTML /login exists, got {body}"
     );
     assert!(
         body["refresh_token"].is_null(),
@@ -1771,7 +1773,7 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
     let mut authenticator = WebauthnAuthenticator::new(SoftPasskey::new(true));
     let credential_id = enroll_passkey(&service, &mut authenticator, &access_token).await;
 
-    // Cookie-mode usernameless passkey login -> cookies set, body tokens null.
+    // Cookie-mode usernameless passkey login -> cookies set, refresh omitted from JSON.
     let login = cookie_mode_usernameless_login(&service, &mut authenticator, &credential_id).await;
     let login_cookie = console_refresh_set_cookie(&login)
         .expect("cookie-mode login must set an console_refresh cookie");
@@ -1781,7 +1783,11 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
         "cookie-mode login must also set console_access"
     );
     let login_body = body_json(login).await;
-    assert!(login_body["access_token"].is_null());
+    assert!(
+        login_body["access_token"]
+            .as_str()
+            .is_some_and(|token| !token.is_empty())
+    );
     assert!(login_body["refresh_token"].is_null());
 
     // Refresh reading the token from the cookie (NO body token) rotates and sets
@@ -1914,16 +1920,20 @@ async fn cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id(pool: 
             .expect("cookie-mode refresh must rotate the console_refresh cookie");
         cookie_value = cookie_token(&rotated_cookie).to_owned();
         let refreshed_body = body_json(refreshed).await;
-        assert!(refreshed_body["access_token"].is_null());
+        assert!(
+            refreshed_body["access_token"]
+                .as_str()
+                .is_some_and(|token| !token.is_empty())
+        );
         assert!(refreshed_body["refresh_token"].is_null());
     }
 }
 
-/// Cookie principal resolution: SSR can authenticate with `console_access` and
-/// no Authorization header. Bearer still wins; a malformed Authorization header
-/// fails closed and does not fall back to the cookie.
+/// `/api/v1/*` is Bearer-only. A valid `console_access` cookie must not
+/// authenticate payroll or other REST mutations; HTML/`/_ui` use a separate
+/// extractor that is not mounted on these routes.
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
-async fn cookie_access_authenticates_without_authorization_header(pool: PgPool) {
+async fn api_v1_stays_bearer_only_when_console_access_cookie_is_present(pool: PgPool) {
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1977,36 +1987,37 @@ async fn cookie_access_authenticates_without_authorization_header(pool: PgPool) 
         get_with_access_cookie(service.clone(), "/api/v1/auth/passkeys", &access_token).await;
     assert_eq!(
         listed.status(),
-        StatusCode::OK,
-        "SSR GET must authenticate from the access cookie alone"
+        StatusCode::UNAUTHORIZED,
+        "API GET must not authenticate from the access cookie alone"
     );
 
-    let consent = post_with_access_cookie(
+    let run_id = Uuid::new_v4();
+    let payroll_cookie_only = post_with_access_cookie(
         service.clone(),
-        "/api/v1/auth/privacy-consent/status",
+        &format!("/api/v1/payroll/runs/{run_id}/submit"),
         &access_token,
         Some(("https://auth.example.com", "auth.example.com")),
         json!({}),
     )
     .await;
     assert_eq!(
-        consent.status(),
-        StatusCode::OK,
-        "same-origin cookie POST must pass the Origin/Host CSRF check"
+        payroll_cookie_only.status(),
+        StatusCode::UNAUTHORIZED,
+        "cookie-only payroll POST must 401; /api/v1 stays Bearer-only"
     );
 
-    let cross_origin = post_with_access_cookie(
+    let payroll_no_origin = post_with_access_cookie(
         service.clone(),
-        "/api/v1/auth/privacy-consent/status",
+        &format!("/api/v1/payroll/runs/{run_id}/submit"),
         &access_token,
-        Some(("https://evil.example.com", "auth.example.com")),
+        None,
         json!({}),
     )
     .await;
     assert_eq!(
-        cross_origin.status(),
-        StatusCode::FORBIDDEN,
-        "cross-origin cookie POST must be rejected"
+        payroll_no_origin.status(),
+        StatusCode::UNAUTHORIZED,
+        "payroll must 401 on missing bearer, not CSRF-403 from an access cookie"
     );
 
     let malformed = get_with_cookie_and_authorization(
@@ -2118,6 +2129,130 @@ async fn cookie_mode_refresh_requires_same_origin(pool: PgPool) {
         same_origin.status(),
         StatusCode::OK,
         "same-origin refresh cookie POST must still rotate"
+    );
+    let same_origin_body = body_json(same_origin).await;
+    assert!(
+        same_origin_body["access_token"]
+            .as_str()
+            .is_some_and(|token| !token.is_empty()),
+        "JSON cookie refresh must remain JSON with access_token, got {same_origin_body}"
+    );
+    assert!(same_origin_body["refresh_token"].is_null());
+}
+
+/// HTML bounce: form-urlencoded + Origin + `console_refresh` → 302 relative
+/// `next`. Missing Origin fails closed. JSON clients keep the JSON 200 path.
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn form_refresh_requires_origin_and_redirects_relative_next(pool: PgPool) {
+    let signing_key = SigningKey::random(&mut OsRng);
+    let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
+    let public_key_pem = signing_key
+        .verifying_key()
+        .to_public_key_pem(LineEnding::LF)
+        .unwrap();
+    let branch_id = seed_branch(&pool, "Form Refresh Region", "Form Refresh Branch").await;
+    let user_id = seed_user_with_branch(
+        &pool,
+        "Form Refresh User",
+        "010-7800-0000",
+        "MECHANIC",
+        branch_id,
+    )
+    .await;
+    let service = build_router(
+        app_state(
+            pool.clone(),
+            private_key_pem.to_string(),
+            public_key_pem.clone(),
+        )
+        .unwrap(),
+    );
+
+    let issue = BootstrapCredentialStore
+        .issue_for_zero_credential_user(
+            &pool,
+            *user_id.as_uuid(),
+            OrgId::knl(),
+            OffsetDateTime::now_utc(),
+            Duration::hours(24),
+        )
+        .await
+        .unwrap();
+    let redeem = post_cookie_mode(
+        service.clone(),
+        "/api/v1/auth/otp/redeem",
+        None,
+        json!({ "otp": issue.token.as_str() }),
+    )
+    .await;
+    assert_eq!(redeem.status(), StatusCode::OK);
+    let refresh = cookie_token(
+        &console_refresh_set_cookie(&redeem).expect("redeem must set console_refresh"),
+    )
+    .to_owned();
+    let _ = body_json(redeem).await;
+
+    let missing_origin = post_refresh_form(service.clone(), &refresh, None, "next=/overview").await;
+    assert_eq!(
+        missing_origin.status(),
+        StatusCode::FORBIDDEN,
+        "form refresh without Origin must fail closed"
+    );
+
+    let redirected = post_refresh_form(
+        service.clone(),
+        &refresh,
+        Some(("https://auth.example.com", "auth.example.com")),
+        "next=/overview",
+    )
+    .await;
+    assert_eq!(
+        redirected.status(),
+        StatusCode::FOUND,
+        "form refresh with Origin must 302"
+    );
+    assert_eq!(
+        redirected
+            .headers()
+            .get(header::LOCATION)
+            .and_then(|value| value.to_str().ok()),
+        Some("/overview")
+    );
+    assert!(
+        console_refresh_set_cookie(&redirected).is_some(),
+        "form refresh must rotate console_refresh"
+    );
+    assert!(
+        console_access_set_cookie(&redirected).is_some(),
+        "form refresh must set console_access"
+    );
+    let rotated =
+        cookie_token(&console_refresh_set_cookie(&redirected).expect("rotated refresh cookie"))
+            .to_owned();
+    assert_ne!(rotated, refresh);
+
+    let json_client = post_raw(
+        service.clone(),
+        "/api/v1/auth/token/refresh",
+        None,
+        json!({ "refresh_token": rotated }),
+    )
+    .await;
+    assert_eq!(
+        json_client.status(),
+        StatusCode::OK,
+        "JSON refresh clients must still get JSON"
+    );
+    let json_body = body_json(json_client).await;
+    assert!(
+        json_body["access_token"]
+            .as_str()
+            .is_some_and(|token| !token.is_empty())
+    );
+    assert!(
+        json_body["refresh_token"]
+            .as_str()
+            .is_some_and(|token| !token.is_empty())
     );
 }
 
@@ -2978,6 +3113,28 @@ async fn post_refresh_cookie(
     }
     service
         .oneshot(builder.body(Body::from("{}")).unwrap())
+        .await
+        .unwrap()
+}
+
+async fn post_refresh_form(
+    service: axum::Router,
+    refresh: &str,
+    origin_host: Option<(&str, &str)>,
+    body: &str,
+) -> http::Response<Body> {
+    let mut builder = Request::builder()
+        .uri("/api/v1/auth/token/refresh")
+        .method("POST")
+        .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+        .header(header::COOKIE, format!("console_refresh={refresh}"));
+    if let Some((origin, host)) = origin_host {
+        builder = builder
+            .header(header::ORIGIN, origin)
+            .header(header::HOST, host);
+    }
+    service
+        .oneshot(builder.body(Body::from(body.to_owned())).unwrap())
         .await
         .unwrap()
 }

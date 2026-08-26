@@ -12,12 +12,12 @@
 //! * [`current_org`] reads it and FAILS CLOSED when unset — it never defaults to
 //!   a tenant. Adapter read paths call `with_org_conn(pool, current_org()?, ..)`.
 //! * [`resolve_principal`] is the one merged copy of the per-crate
-//!   `principal_from_headers` extractors: Authorization Bearer (API clients) or,
-//!   if that header is absent, the HttpOnly `console_access` cookie (SSR) →
-//!   verify → claims → org from the verified `org` claim → branch scope
-//!   re-resolved from the DB (the safer policy: a membership revocation takes
-//!   effect immediately). A malformed Authorization header fails closed and
-//!   never falls back to the cookie.
+//!   `principal_from_headers` extractors: bearer → verify → claims → org from the
+//!   verified `org` claim → branch scope re-resolved from the DB (the safer
+//!   policy: a membership revocation takes effect immediately). `/api/v1/*`
+//!   stays Bearer-only; it does not read `console_access`.
+//! * [`resolve_principal_from_access_cookie`] is the HTML / `/_ui` extractor
+//!   (HttpOnly `console_access` only). Do not call it from REST routers.
 //!
 //! Note on `tokio::spawn`: a freshly spawned task does NOT inherit the
 //! task-local. A handler that spawns work which itself touches tenant-scoped
@@ -202,8 +202,8 @@ pub enum RequestContextError {
     #[error("no tenant context is bound to the current request")]
     MissingOrg,
 
-    /// The Authorization header was absent or malformed, and no access cookie
-    /// was presented either.
+    /// The Authorization header (or, for the HTML extractor, the access cookie)
+    /// was absent or malformed.
     #[error("missing or malformed bearer token")]
     MissingBearer,
 
@@ -291,18 +291,22 @@ pub const REFRESH_COOKIE_NAME: &str = "console_refresh";
 /// mutation is not same-origin. Middleware maps this to HTTP 403.
 pub const COOKIE_CSRF_REJECTED: &str = "cross-origin cookie request rejected";
 
-/// Extract the access token for principal resolution.
+/// Extract the access token for `/api/v1/*` principal resolution.
 ///
-/// Authorization Bearer wins (API clients). If that header is absent, the
-/// `console_access` cookie is used (SSR). If Authorization is present but
-/// malformed, this fails closed and does **not** fall back to the cookie.
+/// Authorization Bearer only. The HttpOnly `console_access` cookie is ignored
+/// here so a state-changing API call cannot be driven by an ambient cookie.
 pub fn access_token_from_headers(headers: &HeaderMap) -> Result<&str, RequestContextError> {
-    match headers.get(http::header::AUTHORIZATION) {
-        Some(value) => bearer_token_value(value),
-        None => cookie_named(headers, ACCESS_COOKIE_NAME)
-            .filter(|token| !token.is_empty())
-            .ok_or(RequestContextError::MissingBearer),
-    }
+    bearer_token(headers)
+}
+
+/// Extract the access token from the HttpOnly `console_access` cookie.
+///
+/// HTML document GETs and `/_ui` POSTs only. REST handlers must keep using
+/// [`access_token_from_headers`].
+pub fn access_token_from_access_cookie(headers: &HeaderMap) -> Result<&str, RequestContextError> {
+    cookie_named(headers, ACCESS_COOKIE_NAME)
+        .filter(|token| !token.is_empty())
+        .ok_or(RequestContextError::MissingBearer)
 }
 
 fn bearer_token(headers: &HeaderMap) -> Result<&str, RequestContextError> {
@@ -345,12 +349,19 @@ fn is_safe_method(method: &Method) -> bool {
 ///
 /// SameSite=Lax (access) / Strict (refresh) is the browser bar. This Origin/Host
 /// check is defense-in-depth against same-site cross-origin (subdomain) CSRF,
-/// including `POST /api/v1/auth/token/refresh` driven by `console_refresh`.
+/// including form `POST /api/v1/auth/token/refresh` driven by `console_refresh`.
 /// Safe methods skip it so SSR document loads work without Origin.
 /// Authorization Bearer skips it so API clients are unchanged. Cookieless
 /// login/OTP still skip it. A present access *or* refresh cookie on a mutation
 /// is fail-closed without a matching Origin/Host.
-pub fn enforce_cookie_csrf(headers: &HeaderMap, method: &Method) -> Result<(), &'static str> {
+///
+/// Host's default port is taken from the request URI scheme, not Origin's
+/// scheme, so `Origin: http://host` cannot match `Host: host` on HTTPS.
+pub fn enforce_cookie_csrf(
+    headers: &HeaderMap,
+    method: &Method,
+    request_uri: &http::Uri,
+) -> Result<(), &'static str> {
     if headers.contains_key(http::header::AUTHORIZATION) || is_safe_method(method) {
         return Ok(());
     }
@@ -359,32 +370,39 @@ pub fn enforce_cookie_csrf(headers: &HeaderMap, method: &Method) -> Result<(), &
     {
         return Ok(());
     }
-    if origin_matches_host(headers) {
+    if origin_matches_host(headers, request_uri.scheme_str()) {
         Ok(())
     } else {
         Err(COOKIE_CSRF_REJECTED)
     }
 }
 
-fn origin_matches_host(headers: &HeaderMap) -> bool {
+fn origin_matches_host(headers: &HeaderMap, request_scheme: Option<&str>) -> bool {
     let Some(origin) = header_text(headers, http::header::ORIGIN.as_str()) else {
         return false;
     };
     let Some(host) = header_text(headers, http::header::HOST.as_str()) else {
         return false;
     };
-    origin_authority_matches_host(origin, host)
+    origin_authority_matches_host(origin, host, request_scheme)
 }
 
-fn origin_authority_matches_host(origin: &str, host: &str) -> bool {
+fn origin_scheme_and_authority(origin: &str) -> Option<(&'static str, &'static str, &str)> {
+    if origin.len() >= 8 && origin[..8].eq_ignore_ascii_case("https://") {
+        Some(("https", "443", &origin[8..]))
+    } else if origin.len() >= 7 && origin[..7].eq_ignore_ascii_case("http://") {
+        Some(("http", "80", &origin[7..]))
+    } else {
+        None
+    }
+}
+
+fn origin_authority_matches_host(origin: &str, host: &str, request_scheme: Option<&str>) -> bool {
     if origin.eq_ignore_ascii_case("null") {
         return false;
     }
-    let (default_port, authority) = if let Some(rest) = origin.strip_prefix("https://") {
-        ("443", rest)
-    } else if let Some(rest) = origin.strip_prefix("http://") {
-        ("80", rest)
-    } else {
+    let Some((origin_scheme, origin_default_port, authority)) = origin_scheme_and_authority(origin)
+    else {
         return false;
     };
     if authority.is_empty()
@@ -402,8 +420,29 @@ fn origin_authority_matches_host(origin: &str, host: &str) -> bool {
     let Some((host_host, host_port)) = split_host_port(host) else {
         return false;
     };
+    if let Some(request_scheme) = request_scheme {
+        if !origin_scheme.eq_ignore_ascii_case(request_scheme) {
+            return false;
+        }
+    } else if origin_scheme.eq_ignore_ascii_case("http") && !is_loopback_host(origin_host) {
+        // Origin-form requests have no URI scheme. Do not treat Origin http as
+        // Host's port 80 — that is the HTTPS `Host: host` false-allow.
+        return false;
+    }
+    let host_default_port = match request_scheme {
+        Some(scheme) if scheme.eq_ignore_ascii_case("https") => "443",
+        Some(scheme) if scheme.eq_ignore_ascii_case("http") => "80",
+        Some(_) => return false,
+        None if origin_scheme.eq_ignore_ascii_case("http") && is_loopback_host(origin_host) => "80",
+        None => "443",
+    };
     origin_host.eq_ignore_ascii_case(host_host)
-        && origin_port.unwrap_or(default_port) == host_port.unwrap_or(default_port)
+        && origin_port.unwrap_or(origin_default_port) == host_port.unwrap_or(host_default_port)
+}
+
+fn is_loopback_host(host: &str) -> bool {
+    host.eq_ignore_ascii_case("localhost")
+        || host.parse::<IpAddr>().is_ok_and(|ip| ip.is_loopback())
 }
 
 /// Split `host`, `host:port`, `[ipv6]`, or `[ipv6]:port`. Unbracketed IPv6
@@ -450,8 +489,8 @@ fn is_ascii_port(port: &str) -> bool {
 ///
 /// This is the single merged copy of the formerly-duplicated
 /// `principal_from_headers` extractors:
-/// 1. parse Authorization Bearer, or the `console_access` cookie if that header
-///    is absent (a malformed Authorization never falls back to the cookie),
+/// 1. parse Authorization Bearer (`console_access` is ignored — `/api/v1/*` is
+///    Bearer-only),
 /// 2. verify it (the verifier already rejects a token whose `org` claim is not a
 ///    valid UUID),
 /// 3. parse subject and roles,
@@ -464,6 +503,19 @@ pub async fn resolve_principal(
     headers: &HeaderMap,
 ) -> Result<Principal, RequestContextError> {
     let token = access_token_from_headers(headers)?;
+    resolve_principal_from_bearer_token(verifier, pool, token).await
+}
+
+/// Resolve a tenant [`Principal`] from the HttpOnly `console_access` cookie.
+///
+/// HTML document GETs, `/_ui` POSTs, and `/login/resume` only. REST routers
+/// must keep calling [`resolve_principal`].
+pub async fn resolve_principal_from_access_cookie(
+    verifier: &JwtVerifier,
+    pool: &PgPool,
+    headers: &HeaderMap,
+) -> Result<Principal, RequestContextError> {
+    let token = access_token_from_access_cookie(headers)?;
     resolve_principal_from_bearer_token(verifier, pool, token).await
 }
 
@@ -636,13 +688,59 @@ where
                         "JWT verification is not configured",
                     );
                 };
-                if let Err(message) = enforce_cookie_csrf(request.headers(), request.method()) {
-                    return error_response(StatusCode::FORBIDDEN, message);
-                }
                 let principal = match resolve_principal(verifier, &pool, request.headers()).await {
                     Ok(principal) => principal,
                     Err(err) => return error_response_for(&err),
                 };
+                let org = principal.org_id;
+                let audit_context = request_audit_context(&request);
+                request.extensions_mut().insert(principal);
+                CURRENT_ORG
+                    .scope(
+                        org,
+                        CURRENT_AUDIT_CONTEXT.scope(audit_context, next.run(request)),
+                    )
+                    .await
+            }
+        },
+    ))
+}
+
+/// Apply cookie-authenticated tenant context for HTML / `/_ui` routers.
+///
+/// Origin/Host CSRF runs on mutations. Principal comes from `console_access`,
+/// never from Authorization. Do not wrap `/api/v1/*` with this layer.
+pub fn with_access_cookie_context<S>(
+    router: axum::Router<S>,
+    verifier: Option<JwtVerifier>,
+    pool: PgPool,
+) -> axum::Router<S>
+where
+    S: Clone + Send + Sync + 'static,
+{
+    router.layer(axum::middleware::from_fn(
+        move |mut request: Request, next: Next| {
+            let verifier = verifier.clone();
+            let pool = pool.clone();
+            async move {
+                let Some(verifier) = verifier.as_ref() else {
+                    return error_response(
+                        StatusCode::SERVICE_UNAVAILABLE,
+                        "JWT verification is not configured",
+                    );
+                };
+                if let Err(message) =
+                    enforce_cookie_csrf(request.headers(), request.method(), request.uri())
+                {
+                    return error_response(StatusCode::FORBIDDEN, message);
+                }
+                let principal =
+                    match resolve_principal_from_access_cookie(verifier, &pool, request.headers())
+                        .await
+                    {
+                        Ok(principal) => principal,
+                        Err(err) => return error_response_for(&err),
+                    };
                 let org = principal.org_id;
                 let audit_context = request_audit_context(&request);
                 request.extensions_mut().insert(principal);
@@ -1126,6 +1224,14 @@ mod tests {
         headers
     }
 
+    fn csrf(headers: &HeaderMap, method: &Method) -> Result<(), &'static str> {
+        csrf_at(headers, method, "/")
+    }
+
+    fn csrf_at(headers: &HeaderMap, method: &Method, uri: &str) -> Result<(), &'static str> {
+        enforce_cookie_csrf(headers, method, &uri.parse().unwrap())
+    }
+
     #[test]
     fn access_token_prefers_authorization_bearer_over_access_cookie() {
         let headers = headers_with(&[
@@ -1136,15 +1242,26 @@ mod tests {
             ),
         ]);
         assert_eq!(access_token_from_headers(&headers).unwrap(), "from-header");
+        assert_eq!(
+            access_token_from_access_cookie(&headers).unwrap(),
+            "from-cookie"
+        );
     }
 
     #[test]
-    fn access_token_reads_console_access_cookie_when_authorization_is_absent() {
+    fn access_token_from_headers_ignores_console_access_cookie() {
         let headers = headers_with(&[(
             "cookie",
             "console_refresh=refresh; console_access=from-cookie",
         )]);
-        assert_eq!(access_token_from_headers(&headers).unwrap(), "from-cookie");
+        assert!(matches!(
+            access_token_from_headers(&headers),
+            Err(RequestContextError::MissingBearer)
+        ));
+        assert_eq!(
+            access_token_from_access_cookie(&headers).unwrap(),
+            "from-cookie"
+        );
     }
 
     #[test]
@@ -1152,6 +1269,10 @@ mod tests {
         let headers = headers_with(&[("cookie", "console_refresh=only-refresh")]);
         assert!(matches!(
             access_token_from_headers(&headers),
+            Err(RequestContextError::MissingBearer)
+        ));
+        assert!(matches!(
+            access_token_from_access_cookie(&headers),
             Err(RequestContextError::MissingBearer)
         ));
         assert!(matches!(
@@ -1185,21 +1306,21 @@ mod tests {
     #[test]
     fn cookie_csrf_allows_safe_methods_without_origin() {
         let headers = headers_with(&[("cookie", "console_access=tok")]);
-        assert!(enforce_cookie_csrf(&headers, &Method::GET).is_ok());
-        assert!(enforce_cookie_csrf(&headers, &Method::HEAD).is_ok());
-        assert!(enforce_cookie_csrf(&headers, &Method::OPTIONS).is_ok());
+        assert!(csrf(&headers, &Method::GET).is_ok());
+        assert!(csrf(&headers, &Method::HEAD).is_ok());
+        assert!(csrf(&headers, &Method::OPTIONS).is_ok());
     }
 
     #[test]
     fn cookie_csrf_skips_bearer_and_cookieless_mutations() {
         let bearer = headers_with(&[("authorization", "Bearer tok")]);
-        assert!(enforce_cookie_csrf(&bearer, &Method::POST).is_ok());
-        assert!(enforce_cookie_csrf(&HeaderMap::new(), &Method::POST).is_ok());
+        assert!(csrf(&bearer, &Method::POST).is_ok());
+        assert!(csrf(&HeaderMap::new(), &Method::POST).is_ok());
         let bearer_and_refresh = headers_with(&[
             ("authorization", "Bearer tok"),
             ("cookie", "console_refresh=refresh"),
         ]);
-        assert!(enforce_cookie_csrf(&bearer_and_refresh, &Method::POST).is_ok());
+        assert!(csrf(&bearer_and_refresh, &Method::POST).is_ok());
     }
 
     #[test]
@@ -1216,14 +1337,14 @@ mod tests {
             ("host", "auth.example.com"),
         ]);
         assert_eq!(
-            enforce_cookie_csrf(&missing_origin, &Method::POST),
+            csrf(&missing_origin, &Method::POST),
             Err(COOKIE_CSRF_REJECTED)
         );
         assert_eq!(
-            enforce_cookie_csrf(&cross_origin, &Method::POST),
+            csrf(&cross_origin, &Method::POST),
             Err(COOKIE_CSRF_REJECTED)
         );
-        assert!(enforce_cookie_csrf(&same_origin, &Method::POST).is_ok());
+        assert!(csrf(&same_origin, &Method::POST).is_ok());
     }
 
     #[test]
@@ -1233,7 +1354,7 @@ mod tests {
             ("origin", "https://auth.example.com"),
             ("host", "auth.example.com"),
         ]);
-        assert!(enforce_cookie_csrf(&headers, &Method::POST).is_ok());
+        assert!(csrf(&headers, &Method::POST).is_ok());
     }
 
     #[test]
@@ -1248,8 +1369,41 @@ mod tests {
             ("origin", "https://auth.example.com"),
             ("host", "auth.example.com:443"),
         ]);
-        assert!(enforce_cookie_csrf(&origin_with_port, &Method::DELETE).is_ok());
-        assert!(enforce_cookie_csrf(&host_with_port, &Method::PATCH).is_ok());
+        assert!(csrf(&origin_with_port, &Method::DELETE).is_ok());
+        assert!(csrf(&host_with_port, &Method::PATCH).is_ok());
+    }
+
+    #[test]
+    fn cookie_csrf_rejects_http_origin_when_request_is_https() {
+        let headers = headers_with(&[
+            ("cookie", "console_access=tok"),
+            ("origin", "http://auth.example.com"),
+            ("host", "auth.example.com"),
+        ]);
+        assert_eq!(
+            csrf_at(
+                &headers,
+                &Method::POST,
+                "https://auth.example.com/api/v1/auth/token/refresh"
+            ),
+            Err(COOKIE_CSRF_REJECTED),
+            "Origin http://host must not match Host host on an HTTPS request URI"
+        );
+        assert_eq!(
+            csrf(&headers, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED),
+            "without a request URI scheme, Host host defaults to 443 not Origin http/80"
+        );
+    }
+
+    #[test]
+    fn cookie_csrf_allows_http_loopback_without_request_scheme() {
+        let headers = headers_with(&[
+            ("cookie", "console_access=tok"),
+            ("origin", "http://localhost"),
+            ("host", "localhost"),
+        ]);
+        assert!(csrf(&headers, &Method::POST).is_ok());
     }
 
     #[test]
@@ -1269,17 +1423,14 @@ mod tests {
             ("host", "auth.example.com"),
         ]);
         assert_eq!(
-            enforce_cookie_csrf(&cross_origin, &Method::POST),
+            csrf(&cross_origin, &Method::POST),
             Err(COOKIE_CSRF_REJECTED)
         );
         assert_eq!(
-            enforce_cookie_csrf(&missing_origin, &Method::PUT),
+            csrf(&missing_origin, &Method::PUT),
             Err(COOKIE_CSRF_REJECTED)
         );
-        assert_eq!(
-            enforce_cookie_csrf(&null_origin, &Method::POST),
-            Err(COOKIE_CSRF_REJECTED)
-        );
+        assert_eq!(csrf(&null_origin, &Method::POST), Err(COOKIE_CSRF_REJECTED));
     }
 
     #[test]
@@ -1304,10 +1455,15 @@ mod tests {
             ("origin", "https://[2001:DB8::1]"),
             ("host", "[2001:db8::1]"),
         ]);
-        assert!(enforce_cookie_csrf(&origin_no_port, &Method::POST).is_ok());
-        assert!(enforce_cookie_csrf(&host_no_port, &Method::POST).is_ok());
-        assert!(enforce_cookie_csrf(&http_default, &Method::POST).is_ok());
-        assert!(enforce_cookie_csrf(&mixed_case, &Method::POST).is_ok());
+        assert!(csrf(&origin_no_port, &Method::POST).is_ok());
+        assert!(csrf(&host_no_port, &Method::POST).is_ok());
+        assert!(csrf_at(&http_default, &Method::POST, "http://[2001:db8::1]/").is_ok());
+        assert_eq!(
+            csrf(&http_default, &Method::POST),
+            Err(COOKIE_CSRF_REJECTED),
+            "http Origin on a documentation IPv6 literal is not loopback"
+        );
+        assert!(csrf(&mixed_case, &Method::POST).is_ok());
     }
 
     #[test]
@@ -1338,23 +1494,23 @@ mod tests {
             ("host", "[::1]"),
         ]);
         assert_eq!(
-            enforce_cookie_csrf(&different_addr, &Method::POST),
+            csrf(&different_addr, &Method::POST),
             Err(COOKIE_CSRF_REJECTED)
         );
         assert_eq!(
-            enforce_cookie_csrf(&mapped_vs_v4, &Method::POST),
+            csrf(&mapped_vs_v4, &Method::POST),
             Err(COOKIE_CSRF_REJECTED)
         );
         assert_eq!(
-            enforce_cookie_csrf(&unbracketed_origin, &Method::POST),
+            csrf(&unbracketed_origin, &Method::POST),
             Err(COOKIE_CSRF_REJECTED)
         );
         assert_eq!(
-            enforce_cookie_csrf(&unbracketed_host, &Method::POST),
+            csrf(&unbracketed_host, &Method::POST),
             Err(COOKIE_CSRF_REJECTED)
         );
         assert_eq!(
-            enforce_cookie_csrf(&non_default_port, &Method::POST),
+            csrf(&non_default_port, &Method::POST),
             Err(COOKIE_CSRF_REJECTED)
         );
     }

@@ -42,7 +42,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
-use url::Url;
+use url::{Url, form_urlencoded};
 use uuid::Uuid;
 
 const DEFAULT_ACCESS_TOKEN_TTL: Duration = Duration::minutes(15);
@@ -333,15 +333,14 @@ pub fn router(state: AuthRestState) -> Router {
 }
 
 /// Origin/Host check for cookie-authenticated mutations on auth routes that
-/// are not behind `with_request_context` (passkey enroll, privacy consent,
-/// admin OTP, group-admin tenant context, cookie refresh/logout). Safe methods,
-/// Bearer clients, and cookieless login/OTP skip the check. A present
-/// `console_refresh` cookie on POST refresh is fail-closed without Origin/Host.
+/// are not behind `with_request_context` (cookie refresh/logout, leftover
+/// access cookie on auth POSTs). `/api/v1/payroll*` is not in this router.
+/// Safe methods, Bearer clients, and cookieless login/OTP skip the check.
 async fn cookie_csrf_layer(
     request: axum::extract::Request,
     next: axum::middleware::Next,
 ) -> Response {
-    if let Err(message) = enforce_cookie_csrf(request.headers(), request.method()) {
+    if let Err(message) = enforce_cookie_csrf(request.headers(), request.method(), request.uri()) {
         return RestError::forbidden(message).into_response();
     }
     next.run(request).await
@@ -446,9 +445,9 @@ struct OtpRedeemRequest {
 /// OTP first sign-in result: a normal session token pair plus a flag telling the
 /// frontend to force passkey enrollment in initial settings.
 ///
-/// `access_token` and `refresh_token` are `null` in the cookie transport (web):
-/// both ride in HttpOnly cookies and must never reach web JS. They are `Some`
-/// in the body transport (mobile).
+/// Cookie transport (web): `refresh_token` is `null` (HttpOnly cookie).
+/// `access_token` stays in JSON until HTML `/login` exists. Body transport
+/// (mobile) returns both tokens.
 #[derive(Debug, Serialize)]
 struct OtpRedeemResponse {
     access_token: Option<String>,
@@ -595,10 +594,10 @@ struct PrivacyConsentStatusResponse {
     accepted_at: Option<OffsetDateTime>,
 }
 
-/// A minted access/refresh pair. In the cookie transport (web) both
-/// `access_token` and `refresh_token` are `null`: they ride in HttpOnly cookies
-/// (`console_access` path `/`, `console_refresh` path `/api/v1/auth`) and must
-/// never reach web JS. In the body transport (mobile) both are `Some`.
+/// A minted access/refresh pair. Cookie transport (web): `refresh_token` is
+/// `null` (HttpOnly `console_refresh`); `access_token` stays in JSON until
+/// HTML `/login` exists, and is also set as HttpOnly `console_access` for
+/// document GETs / `/_ui`. Body transport (mobile): both tokens are `Some`.
 /// `requires_passkey_setup` is true only for an ordinary session whose user
 /// still has zero passkeys, so a refresh cannot bypass initial enrollment. A
 /// `dev-auth` build exempts only its authenticated synthetic role-switch
@@ -755,6 +754,14 @@ impl RestError {
             status: StatusCode::FORBIDDEN,
             code: "forbidden",
             message: message.into(),
+        }
+    }
+
+    fn unsupported_media_type() -> Self {
+        Self {
+            status: StatusCode::UNSUPPORTED_MEDIA_TYPE,
+            code: "unsupported_media_type",
+            message: "unsupported media type".to_owned(),
         }
     }
 
@@ -1204,13 +1211,13 @@ async fn redeem_otp(
     )
     .await?;
 
-    // Dual transport: web (cookie) gets HttpOnly Set-Cookie headers and null
-    // body tokens; mobile (body) gets both tokens in the JSON body. The
-    // passkey-setup flag stays in the body in both cases.
+    // Dual transport: web (cookie) sets HttpOnly cookies and keeps access_token
+    // in JSON until HTML /login exists; refresh_token stays cookie-only. Mobile
+    // (body) gets both tokens in JSON. The passkey-setup flag stays in both.
     if wants_cookie_transport(&headers) {
         let max_age = (tokens.refresh_expires_at - now).whole_seconds();
         let response = Json(OtpRedeemResponse {
-            access_token: None,
+            access_token: Some(tokens.access_token.clone()),
             refresh_token: None,
             token_type: "Bearer",
             refresh_expires_at: tokens.refresh_expires_at,
@@ -2143,29 +2150,127 @@ fn parse_roles(roles: &[String]) -> Result<Vec<Role>, RestError> {
         .collect()
 }
 
+const REFRESH_BODY_LIMIT: usize = 16 * 1024;
+
 async fn refresh_token(
     State(state): State<AuthRestState>,
-    headers: HeaderMap,
     trusted_client_ip: Option<Extension<TrustedClientIp>>,
-    Json(body): Json<RefreshTokenRequest>,
+    request: axum::extract::Request,
 ) -> Result<Response, RestError> {
+    let headers = request.headers().clone();
+    let form = content_type_is(&headers, "application/x-www-form-urlencoded");
+    let json = content_type_is(&headers, "application/json");
+    if !form && !json {
+        return Err(RestError::unsupported_media_type());
+    }
+    let bytes = axum::body::to_bytes(request.into_body(), REFRESH_BODY_LIMIT)
+        .await
+        .map_err(|_| RestError::bad_request("invalid refresh body"))?;
+    if form {
+        refresh_token_form(&state, &headers, trusted_client_ip, &bytes).await
+    } else {
+        refresh_token_json(
+            &state,
+            &headers,
+            trusted_client_ip,
+            parse_refresh_json(&bytes)?,
+        )
+        .await
+    }
+}
+
+/// HTML expiry bounce: form + Origin (middleware) + `console_refresh` → cookies
+/// and a 302 to a relative `next`. JSON clients must not take this path.
+async fn refresh_token_form(
+    state: &AuthRestState,
+    headers: &HeaderMap,
+    trusted_client_ip: Option<Extension<TrustedClientIp>>,
+    body: &[u8],
+) -> Result<Response, RestError> {
+    let next = relative_html_next(form_field(body, "next").as_deref())?;
+    let (access_token, refresh_token, refresh_expires_at, _) = rotate_refresh_session(
+        state,
+        headers,
+        trusted_client_ip,
+        refresh_cookie_only(headers)?,
+    )
+    .await?;
+    let now = OffsetDateTime::now_utc();
+    let max_age = (refresh_expires_at - now).whole_seconds();
+    let mut response = StatusCode::FOUND.into_response();
+    let location = HeaderValue::from_str(&next)
+        .map_err(|_| RestError::bad_request("next must be a relative path"))?;
+    response.headers_mut().insert(header::LOCATION, location);
+    Ok(cookie_session_response(
+        response,
+        &refresh_token,
+        max_age,
+        &access_token,
+        state.services()?.cookie_secure,
+    ))
+}
+
+async fn refresh_token_json(
+    state: &AuthRestState,
+    headers: &HeaderMap,
+    trusted_client_ip: Option<Extension<TrustedClientIp>>,
+    body: RefreshTokenRequest,
+) -> Result<Response, RestError> {
+    // Dual transport: web reads the rotating token from the `console_refresh` cookie;
+    // mobile sends it in the JSON body. The cookie takes precedence so a web
+    // client never has to (and never should) echo the token in the body.
+    let cookie_mode = wants_cookie_transport(headers);
+    let refresh = refresh_cookie_value(headers)
+        .or(body.refresh_token)
+        .ok_or_else(|| RestError::unauthorized("missing refresh token"))?;
+    let (access_token, refresh_token, refresh_expires_at, requires_passkey_setup) =
+        rotate_refresh_session(state, headers, trusted_client_ip, refresh).await?;
+    if cookie_mode {
+        let now = OffsetDateTime::now_utc();
+        let max_age = (refresh_expires_at - now).whole_seconds();
+        let response = Json(TokenPairResponse {
+            access_token: Some(access_token.clone()),
+            refresh_token: None,
+            token_type: "Bearer",
+            refresh_expires_at,
+            requires_passkey_setup,
+        })
+        .into_response();
+        Ok(cookie_session_response(
+            response,
+            &refresh_token,
+            max_age,
+            &access_token,
+            state.services()?.cookie_secure,
+        ))
+    } else {
+        Ok(Json(TokenPairResponse {
+            access_token: Some(access_token),
+            refresh_token: Some(refresh_token),
+            token_type: "Bearer",
+            refresh_expires_at,
+            requires_passkey_setup,
+        })
+        .into_response())
+    }
+}
+
+async fn rotate_refresh_session(
+    state: &AuthRestState,
+    headers: &HeaderMap,
+    trusted_client_ip: Option<Extension<TrustedClientIp>>,
+    refresh: String,
+) -> Result<(String, String, OffsetDateTime, bool), RestError> {
     let services = state.services()?;
     let now = OffsetDateTime::now_utc();
     rate_limit(
         &state.pool,
-        &headers,
+        headers,
         trusted_client_ip.map(|Extension(ip)| ip),
         RateLimitEndpoint::Refresh,
         now,
     )
     .await?;
-    // Dual transport: web reads the rotating token from the `console_refresh` cookie;
-    // mobile sends it in the JSON body. The cookie takes precedence so a web
-    // client never has to (and never should) echo the token in the body.
-    let cookie_mode = wants_cookie_transport(&headers);
-    let refresh = refresh_cookie_value(&headers)
-        .or(body.refresh_token)
-        .ok_or_else(|| RestError::unauthorized("missing refresh token"))?;
     let issue = services
         .refresh_tokens
         .rotate(
@@ -2196,33 +2301,12 @@ async fn refresh_token(
     #[cfg(not(feature = "dev-auth"))]
     let requires_passkey_setup = has_no_passkeys;
     let access_token = issue_access_token(services, &user)?;
-    if cookie_mode {
-        let max_age = (issue.expires_at - now).whole_seconds();
-        let response = Json(TokenPairResponse {
-            access_token: None,
-            refresh_token: None,
-            token_type: "Bearer",
-            refresh_expires_at: issue.expires_at,
-            requires_passkey_setup,
-        })
-        .into_response();
-        Ok(cookie_session_response(
-            response,
-            issue.token.as_str(),
-            max_age,
-            &access_token,
-            services.cookie_secure,
-        ))
-    } else {
-        Ok(Json(TokenPairResponse {
-            access_token: Some(access_token),
-            refresh_token: Some(issue.token.as_str().to_owned()),
-            token_type: "Bearer",
-            refresh_expires_at: issue.expires_at,
-            requires_passkey_setup,
-        })
-        .into_response())
-    }
+    Ok((
+        access_token,
+        issue.token.as_str().to_owned(),
+        issue.expires_at,
+        requires_passkey_setup,
+    ))
 }
 
 /// Return whether this authenticated database user is the one synthetic
@@ -3535,16 +3619,67 @@ fn refresh_cookie_value(headers: &HeaderMap) -> Option<String> {
         .filter(|value| !value.is_empty())
 }
 
+fn refresh_cookie_only(headers: &HeaderMap) -> Result<String, RestError> {
+    refresh_cookie_value(headers).ok_or_else(|| RestError::unauthorized("missing refresh token"))
+}
+
+fn content_type_is(headers: &HeaderMap, expected: &str) -> bool {
+    headers
+        .get(header::CONTENT_TYPE)
+        .and_then(|value| value.to_str().ok())
+        .map(str::trim)
+        .is_some_and(|value| {
+            value
+                .split(';')
+                .next()
+                .map(str::trim)
+                .is_some_and(|mime| mime.eq_ignore_ascii_case(expected))
+        })
+}
+
+fn parse_refresh_json(bytes: &[u8]) -> Result<RefreshTokenRequest, RestError> {
+    if bytes.is_empty() {
+        return Ok(RefreshTokenRequest::default());
+    }
+    serde_json::from_slice(bytes).map_err(|_| RestError::validation("invalid refresh body"))
+}
+
+fn form_field(body: &[u8], name: &str) -> Option<String> {
+    form_urlencoded::parse(body)
+        .find(|(key, _)| key == name)
+        .map(|(_, value)| value.into_owned())
+}
+
+/// HTML bounce `next` must be a same-origin relative path. Reject `//`, `\`,
+/// and scheme-bearing values so a 302 cannot leave the console origin.
+fn relative_html_next(next: Option<&str>) -> Result<String, RestError> {
+    let next = next
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .unwrap_or("/overview");
+    if !next.starts_with('/') || next.starts_with("//") {
+        return Err(RestError::bad_request("next must be a relative path"));
+    }
+    if next.contains('\\')
+        || next.contains("://")
+        || next.as_bytes().iter().any(|byte| *byte < 0x20)
+    {
+        return Err(RestError::bad_request("next must be a relative path"));
+    }
+    Ok(next.to_owned())
+}
+
 /// Build a `Set-Cookie` header that stores the refresh token for the web
 /// transport.
 ///
-/// `SameSite=Strict` stops the browser from attaching this cookie to any
-/// cross-site request. `Path=/api/v1/auth` keeps it off ordinary API/document
-/// calls. `HttpOnly` keeps it out of JS; `Secure` (prod) forbids plaintext.
-/// The access cookie is separate (`SameSite=Lax`, `Path=/`) so SSR document
-/// GETs can authenticate. Cookie-authenticated mutations, including refresh
-/// driven by this cookie, also pass an Origin/Host check (see
-/// [`enforce_cookie_csrf`]).
+/// CSRF safety (confirmed): `SameSite=Strict` stops the browser from attaching
+/// this cookie to any cross-site request, so a forged request from another origin
+/// carries no refresh token. The `Path=/api/v1/auth` scope keeps it off every
+/// other API call, and the access token travels in the `Authorization` header
+/// (NOT a cookie), so a state-changing API call can never be driven by an
+/// ambient cookie alone. `HttpOnly` keeps the token out of JS (XSS exfiltration),
+/// and `Secure` (prod) forbids plaintext transmission. Together these make the
+/// cookie transport CSRF-safe without a separate CSRF token.
 fn refresh_set_cookie(token: &str, max_age_secs: i64, secure: bool) -> Option<HeaderValue> {
     let max_age = max_age_secs.max(0);
     let mut cookie = format!(
@@ -3584,8 +3719,9 @@ fn access_clear_cookie(secure: bool) -> Option<HeaderValue> {
 
 /// Turn a minted token pair into a transport-appropriate response.
 ///
-/// Cookie transport (web): emit both tokens as HttpOnly `Set-Cookie` headers
-/// and NULL the JSON body tokens so they never reach web JS. Body transport
+/// Cookie transport (web): emit both tokens as HttpOnly `Set-Cookie` headers,
+/// keep `access_token` in JSON until HTML `/login` exists, and null
+/// `refresh_token` so the refresh secret never reaches JS. Body transport
 /// (mobile): leave both tokens in the JSON body and set no cookie.
 fn token_pair_response(
     tokens: IssuedTokenPair,
@@ -3595,7 +3731,7 @@ fn token_pair_response(
     if wants_cookie_transport(headers) {
         let max_age = (tokens.refresh_expires_at - OffsetDateTime::now_utc()).whole_seconds();
         let body = TokenPairResponse {
-            access_token: None,
+            access_token: Some(tokens.access_token.clone()),
             refresh_token: None,
             token_type: "Bearer",
             refresh_expires_at: tokens.refresh_expires_at,
@@ -3633,7 +3769,7 @@ fn device_login_token_response(
         let max_age = (tokens.refresh_expires_at - OffsetDateTime::now_utc()).whole_seconds();
         let body = DeviceLoginPollResponse {
             status: "approved",
-            access_token: None,
+            access_token: Some(tokens.access_token.clone()),
             refresh_token: None,
             token_type: Some("Bearer"),
             refresh_expires_at: Some(tokens.refresh_expires_at),
@@ -3747,6 +3883,29 @@ mod tests {
     use time::OffsetDateTime;
     use url::{Url, form_urlencoded};
     use uuid::Uuid;
+
+    #[test]
+    fn relative_html_next_rejects_open_redirects_and_defaults_overview() {
+        assert_eq!(super::relative_html_next(None).unwrap(), "/overview");
+        assert_eq!(super::relative_html_next(Some("")).unwrap(), "/overview");
+        assert_eq!(
+            super::relative_html_next(Some("/overview?from=resume")).unwrap(),
+            "/overview?from=resume"
+        );
+        for next in [
+            "//evil.example",
+            "/\\evil",
+            "https://evil.example/p",
+            "http://evil.example/p",
+            "overview",
+            "/foo\nbar",
+        ] {
+            assert!(
+                super::relative_html_next(Some(next)).is_err(),
+                "next {next:?} must be rejected"
+            );
+        }
+    }
 
     #[test]
     fn access_cookie_is_httponly_lax_root_path_and_not_host_prefixed() {
