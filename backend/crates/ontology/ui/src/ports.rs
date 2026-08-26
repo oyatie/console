@@ -1,13 +1,15 @@
 //! UI-owned ports. App composition wires real readers; this crate never
 //! depends on domain/application/adapter/rest.
+//!
+//! HTML form actions are `/_ui/*` constants only; this crate does not mount routes.
 
 use serde::{Deserialize, Serialize};
 
-pub const POST_COMPANY_REVISE: &str = "/ui/company/revise";
-pub const POST_ORG_UNIT_CREATE: &str = "/ui/org-units";
-pub const POST_JOB_POSITION_CREATE: &str = "/ui/job-positions";
-pub const POST_PERSON_CREATE: &str = "/ui/people";
-pub const POST_EMPLOYMENT_APPOINT: &str = "/ui/employments/appoint";
+pub const POST_COMPANY_REVISE: &str = "/_ui/company/revise";
+pub const POST_ORG_UNIT_CREATE: &str = "/_ui/org-units";
+pub const POST_JOB_POSITION_CREATE: &str = "/_ui/job-positions";
+pub const POST_PERSON_CREATE: &str = "/_ui/people";
+pub const POST_EMPLOYMENT_APPOINT: &str = "/_ui/employments/appoint";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CompanyHead {

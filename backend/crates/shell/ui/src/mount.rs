@@ -13,7 +13,7 @@ use crate::shell::{render_path, ShellData};
 /// 3. Implement `CompanyReadPort` / `PayrollReadPort` over existing postgres
 ///    adapters inside app (ui crates must not take that dependency).
 /// 4. Serve `/ui/pkg/*.wasm` same-origin; session stays on cookies/headers.
-/// 5. Re-authorize every `/ui/**` POST; `payroll.decide_run` SoD: decider ≠ submitter.
+/// 5. Re-authorize every `/_ui/**` POST; `payroll.decide_run` SoD: decider ≠ submitter.
 /// 6. Unauthenticated HTML fails closed to login — never embed JWTs in JS.
 #[must_use]
 pub fn composition_holds() -> &'static [&'static str] {

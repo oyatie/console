@@ -18,11 +18,11 @@ pub mod session;
 pub mod shell;
 pub mod style;
 
-pub use caps::{nav_items, path_allowed, SurfaceCaps};
-pub use csp::{csp_header, CONTENT_SECURITY_POLICY};
+pub use caps::{SurfaceCaps, nav_items, path_allowed};
+pub use csp::{CONTENT_SECURITY_POLICY, csp_header};
 pub use mount::{apply_csp_to_page, composition_holds};
 pub use session::Session;
-pub use shell::{render_path, RenderedPage, ShellData};
+pub use shell::{RenderedPage, ShellData, render_path};
 
 pub fn link_islands() {
     islands::link_islands();
@@ -74,6 +74,9 @@ mod tests {
             assert!(src.contains(name), "missing island {name}");
         }
         link_islands();
+        assert_eq!(islands::POST_LOGIN, "/_ui/login");
+        assert!(islands::POST_LOGIN.starts_with("/_ui/"));
+        assert!(!islands::POST_LOGIN.starts_with("/ui/"));
     }
 
     #[test]
@@ -113,6 +116,8 @@ mod tests {
         let payroll = FailClosedPayroll.snapshot();
         assert!(org.company.is_none());
         assert!(payroll.runs.is_empty());
+        assert!(payroll.my_payslip.is_none());
+        assert!(payroll.inbox.is_empty());
         let src = include_str!("islands.rs");
         let lower = src.to_ascii_lowercase();
         assert!(src.contains("로그인"));
@@ -125,7 +130,10 @@ mod tests {
         let org = console_ontology_ui::OrgSnapshot::default();
         let payroll = console_payroll_ui::PayrollSnapshot::default();
         let ess = blockers(&SurfaceCaps::ess_only(), &org, &payroll);
-        assert!(ess.is_empty(), "ESS must not see admin missing-company chips");
+        assert!(
+            ess.is_empty(),
+            "ESS must not see admin missing-company chips"
+        );
         let admin = blockers(&SurfaceCaps::payroll_admin(), &org, &payroll);
         let chips: Vec<_> = admin.iter().map(|b| b.chip).collect();
         assert!(chips.contains(&"회사 없음"));
@@ -135,31 +143,109 @@ mod tests {
 
     #[cfg(feature = "ssr")]
     mod ssr {
+        use console_payroll_ui::{DecideInboxItem, Lineage, MoneyLine, MyPayslip};
+
         use super::*;
 
         #[test]
         fn denied_nav_omitted_from_ssr_html() {
-            let data = ShellData {
+            let mut data = ShellData {
                 session: Some(ess_session()),
                 ..ShellData::default()
             };
+            data.payroll.runs.push(PayRunSummary {
+                id: "run-secret".into(),
+                period_start: "2026-08-01".into(),
+                period_end: "2026-08-31".into(),
+                status: "SUBMITTED".into(),
+                submitted_by: Some("other".into()),
+                decided_by: None,
+                exceptions_open: 0,
+            });
+            data.payroll.inbox.push(DecideInboxItem {
+                run_id: "run-secret".into(),
+                period_start: "2026-08-01".into(),
+                period_end: "2026-08-31".into(),
+                submitted_by: "other".into(),
+                submitted_at: "2026-08-20T00:00:00Z".into(),
+            });
             let page = render_path("/", &data);
             assert_eq!(page.status, 200);
             assert!(page.html.contains("내 급여"));
             assert!(!page.html.contains("href=\"/payroll/runs\""));
             assert!(!page.html.contains("급여 실행"));
             assert!(!page.html.contains("결재 수신함"));
+            assert!(!page.html.contains("run-secret"));
+            assert!(!page.html.contains("/_ui/approvals/decide"));
+            assert!(!page.html.contains("/_ui/payroll/runs"));
             assert!(!page.html.contains("window.__TEST__"));
             assert!(!page.html.contains("Bearer "));
             assert!(!page.html.to_ascii_lowercase().contains("jwt"));
+
+            let ess = render_path("/payroll/me", &data);
+            assert_eq!(ess.status, 200);
+            assert!(ess.html.contains("열람할 명세서가 없습니다."));
+            assert!(ess.html.contains("미발행"));
+            assert!(!ess.html.contains("0원"));
+            assert!(!ess.html.contains("run-secret"));
+            assert!(!ess.html.contains("결재 수신함"));
+            assert!(!ess.html.contains("/_ui/approvals/decide"));
+            assert!(!ess.html.contains("/_ui/payroll/runs"));
+
+            data.payroll.my_payslip = Some(MyPayslip {
+                period_start: "2026-08-01".into(),
+                period_end: "2026-08-31".into(),
+                employee_name: "직원".into(),
+                base_pay_won: None,
+                earnings: vec![MoneyLine {
+                    code: "OT".into(),
+                    label_ko: "연장수당".into(),
+                    amount_won: None,
+                    lineage: Lineage {
+                        label_ko: "연장".into(),
+                        source_ko: "서버".into(),
+                    },
+                    overridable: false,
+                }],
+                deductions: Vec::new(),
+                net_pay_won: None,
+                net_pay_unavailable_reason_ko: None,
+                citations: Vec::new(),
+            });
+            let slip = render_path("/payroll/me", &data);
+            assert_eq!(slip.status, 200);
+            assert!(slip.html.contains("기본급"));
+            assert!(slip.html.contains("계산 불가 / 미발행"));
+            assert!(!slip.html.contains("0원"));
+            assert!(!slip.html.contains("run-secret"));
         }
 
         #[test]
         fn unauthorized_path_is_404_omit_not_403() {
-            let data = ShellData {
+            let mut data = ShellData {
                 session: Some(ess_session()),
                 ..ShellData::default()
             };
+            data.payroll.runs.push(PayRunSummary {
+                id: "run-hidden".into(),
+                period_start: "2026-08-01".into(),
+                period_end: "2026-08-31".into(),
+                status: "SUBMITTED".into(),
+                submitted_by: Some("other".into()),
+                decided_by: None,
+                exceptions_open: 0,
+            });
+            data.payroll.my_payslip = Some(MyPayslip {
+                period_start: "2026-08-01".into(),
+                period_end: "2026-08-31".into(),
+                employee_name: "숨긴직원".into(),
+                base_pay_won: Some(1),
+                earnings: Vec::new(),
+                deductions: Vec::new(),
+                net_pay_won: Some(1),
+                net_pay_unavailable_reason_ko: None,
+                citations: Vec::new(),
+            });
             let denied = render_path("/payroll/runs", &data);
             let unknown = render_path("/erp/maintenance", &data);
             assert_eq!(denied.status, 404);
@@ -167,6 +253,9 @@ mod tests {
             assert_eq!(denied.html, unknown.html);
             assert!(!denied.html.contains("403"));
             assert!(!denied.html.contains("급여 실행"));
+            assert!(!denied.html.contains("run-hidden"));
+            assert!(!denied.html.contains("숨긴직원"));
+            assert!(!denied.html.contains("1원"));
 
             let authorized = ShellData {
                 session: Some(admin_session()),
@@ -187,6 +276,7 @@ mod tests {
             assert_eq!(login.status, 200);
             assert!(login.html.contains("로그인"));
             assert!(!login.html.contains("급여 실행"));
+            assert!(login.html.contains("/_ui/login"));
         }
 
         #[test]
@@ -208,6 +298,8 @@ mod tests {
             assert!(!lower.contains("import"));
             assert!(!page.html.contains("가져오기"));
             assert!(!page.html.contains("엑셀"));
+            assert!(page.html.contains("/_ui/payroll/runs"));
+            assert!(!page.html.contains("action=\"/ui/payroll/runs\""));
         }
 
         #[test]
@@ -229,6 +321,8 @@ mod tests {
             assert_eq!(page.status, 200);
             assert!(page.html.contains("결재는 수신함에서"));
             assert!(!page.html.contains("/ui/approvals/decide"));
+            assert!(!page.html.contains("/_ui/approvals/decide"));
+            assert!(!page.html.contains("action=\"/_ui/approvals/decide\""));
         }
 
         #[test]
@@ -247,7 +341,9 @@ mod tests {
                 "inline CSS must match the hashed style-src bytes"
             );
             assert!(!html.contains("prefers-color-scheme"));
-            assert!(!html.contains("/_ui"));
+            assert!(html.contains("/_ui/login"));
+            assert!(!html.contains("action=\"/ui/login\""));
+            assert!(html.contains("/ui/pkg/console_shell_hydrate.js"));
         }
     }
 }

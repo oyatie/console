@@ -1,6 +1,7 @@
 use leptos::prelude::*;
 
-pub const POST_LOGIN: &str = "/ui/login";
+/// Form action only. App composition still HOLD; this crate does not mount `/_ui`.
+pub const POST_LOGIN: &str = "/_ui/login";
 
 #[island]
 pub fn LoginForm() -> impl IntoView {

@@ -33,6 +33,19 @@ mod tests {
             assert!(src.contains(name), "missing island {name}");
         }
         link_islands();
+        for path in [
+            ports::POST_COMPANY_REVISE,
+            ports::POST_ORG_UNIT_CREATE,
+            ports::POST_JOB_POSITION_CREATE,
+            ports::POST_PERSON_CREATE,
+            ports::POST_EMPLOYMENT_APPOINT,
+        ] {
+            assert!(
+                path.starts_with("/_ui/"),
+                "form POST must target /_ui/*, got {path}"
+            );
+            assert!(!path.starts_with("/ui/"), "stale /ui form path: {path}");
+        }
     }
 
     #[test]

@@ -37,6 +37,22 @@ mod tests {
             assert!(src.contains(name), "missing island {name}");
         }
         link_islands();
+        for path in [
+            ports::POST_RUN_CREATE,
+            ports::POST_ATTENDANCE_HANDOFF,
+            ports::POST_CLOSE_ATTENDANCE,
+            ports::POST_CALCULATE,
+            ports::POST_RESOLVE_EXCEPTION,
+            ports::POST_SUBMIT,
+            ports::POST_ISSUE,
+            ports::POST_DECIDE,
+        ] {
+            assert!(
+                path.starts_with("/_ui/"),
+                "form POST must target /_ui/*, got {path}"
+            );
+            assert!(!path.starts_with("/ui/"), "stale /ui form path: {path}");
+        }
     }
 
     #[test]
@@ -48,6 +64,11 @@ mod tests {
         assert!(!src.contains("가져오기"));
         assert!(!src.contains("엑셀"));
         assert!(!lower.contains("storeexport"));
+        let closed = FailClosedPayroll.snapshot();
+        assert!(closed.runs.is_empty());
+        assert!(closed.my_payslip.is_none());
+        assert!(closed.inbox.is_empty());
+        assert!(closed.selected.is_none());
     }
 
     #[test]
@@ -76,5 +97,11 @@ mod tests {
         assert!(ess.contains("수정 불가") || ess.contains("기본급"));
         assert!(!ess.contains("name=\"base_pay\""));
         assert!(!ess.contains("name=\"national_pension\""));
+        assert!(ess.contains("계산 불가 / 미발행"));
+        assert!(!ess.contains("0원"));
+        assert!(!ess.contains("unwrap_or(0)"));
+        assert_eq!(ess::format_issued_won(None), ess::UNAVAILABLE_WON_KO);
+        assert_eq!(ess::format_issued_won(Some(2_950_000)), "2950000원");
+        assert_ne!(ess::format_issued_won(None), "0원");
     }
 }

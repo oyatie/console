@@ -1,15 +1,17 @@
 //! UI-owned payroll ports. The client never computes won amounts.
+//!
+//! HTML form actions are `/_ui/*` constants only; this crate does not mount routes.
 
 use serde::{Deserialize, Serialize};
 
-pub const POST_RUN_CREATE: &str = "/ui/payroll/runs";
-pub const POST_ATTENDANCE_HANDOFF: &str = "/ui/attendance/handoff";
-pub const POST_CLOSE_ATTENDANCE: &str = "/ui/payroll/runs/close-attendance";
-pub const POST_CALCULATE: &str = "/ui/payroll/runs/calculate";
-pub const POST_RESOLVE_EXCEPTION: &str = "/ui/payroll/runs/exceptions/resolve";
-pub const POST_SUBMIT: &str = "/ui/payroll/runs/submit";
-pub const POST_ISSUE: &str = "/ui/payroll/runs/issue-payslips";
-pub const POST_DECIDE: &str = "/ui/approvals/decide";
+pub const POST_RUN_CREATE: &str = "/_ui/payroll/runs";
+pub const POST_ATTENDANCE_HANDOFF: &str = "/_ui/attendance/handoff";
+pub const POST_CLOSE_ATTENDANCE: &str = "/_ui/payroll/runs/close-attendance";
+pub const POST_CALCULATE: &str = "/_ui/payroll/runs/calculate";
+pub const POST_RESOLVE_EXCEPTION: &str = "/_ui/payroll/runs/exceptions/resolve";
+pub const POST_SUBMIT: &str = "/_ui/payroll/runs/submit";
+pub const POST_ISSUE: &str = "/_ui/payroll/runs/issue-payslips";
+pub const POST_DECIDE: &str = "/_ui/approvals/decide";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PayRunSummary {
@@ -95,6 +97,7 @@ pub struct PayrollSnapshot {
     pub selected: Option<PayRunDetail>,
     pub attendance: Option<AttendancePeriod>,
     pub rates_present: bool,
+    /// Issued 명세서 only. Readiness `/payslips/me` must not populate this.
     pub my_payslip: Option<MyPayslip>,
     pub inbox: Vec<DecideInboxItem>,
 }
@@ -129,7 +132,14 @@ pub struct FailClosedPayroll;
 
 impl PayrollReadPort for FailClosedPayroll {
     fn snapshot(&self) -> PayrollSnapshot {
-        PayrollSnapshot::default()
+        PayrollSnapshot {
+            runs: Vec::new(),
+            selected: None,
+            attendance: None,
+            rates_present: false,
+            my_payslip: None,
+            inbox: Vec::new(),
+        }
     }
 }
 
