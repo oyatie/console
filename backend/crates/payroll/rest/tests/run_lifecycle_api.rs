@@ -48,7 +48,7 @@ async fn executive_drives_full_lifecycle_with_audit_readback(pool: PgPool) {
     let decider_token = keys.token(decider, org, "EXECUTIVE");
 
     let employee = seed_employee(&pool, org, "Alice").await;
-    let _recipient = seed_user(&pool, org, "MEMBER", Some(employee)).await;
+    let recipient = seed_user(&pool, org, "MEMBER", Some(employee)).await;
     let run = seed_run(&pool, org).await;
     let import_row = seed_verified_import_row(&pool, org).await;
     seed_calculable_line(&pool, org, run, employee, import_row).await;
@@ -334,6 +334,40 @@ async fn executive_drives_full_lifecycle_with_audit_readback(pool: PgPool) {
         "a run at APPROVED must issue no payslip; the caller's 409 does not undo a document \
          already emitted outside the refusing transaction"
     );
+    let recipient_inbox: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM inbox_docs WHERE kind = 'payslip' AND recipient_user_id = $1",
+    )
+    .bind(*recipient.as_uuid())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        recipient_inbox, 0,
+        "the employee recipient's inbox must stay empty after a refused issuance"
+    );
+
+    // An org-B EXECUTIVE: this run is indistinguishable from a missing one
+    // on the issue-payslips write path (RLS deny-by-omission). 404 omit, not 403.
+    let org_b = OrgId::from_uuid(Uuid::new_v4());
+    sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, 'org-b', 'Org B')")
+        .bind(*org_b.as_uuid())
+        .execute(&pool)
+        .await
+        .unwrap();
+    let outsider = seed_user(&pool, org_b, "EXECUTIVE", None).await;
+    let outsider_token = keys.token(outsider, org_b, "EXECUTIVE");
+    let (status, omitted) = send(
+        &rt,
+        &keys,
+        "POST",
+        &format!("/api/v1/payroll/runs/{run}/issue-payslips"),
+        &outsider_token,
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_FOUND, "{omitted}");
+    assert_eq!(omitted["error"]["code"], "not_found");
+
     sqlx::query(
         "UPDATE payroll_draft_runs SET legal_basis = legal_basis - 'release_gate' WHERE id = $1",
     )
