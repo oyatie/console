@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.13](https://github.com/oyatie/console/compare/v0.3.12...v0.3.13) (2026-08-26)
+
+
+### Features
+
+* **ui-gate:** Layer::Ui edges; keep frontend HOLD ([#901](https://github.com/oyatie/console/issues/901)) ([2f99f9e](https://github.com/oyatie/console/commit/2f99f9ea26b0813e8962c22a2e74f6376530e69b))
+
 ## [0.3.12](https://github.com/oyatie/console/compare/v0.3.11...v0.3.12) (2026-08-25)
 
 
