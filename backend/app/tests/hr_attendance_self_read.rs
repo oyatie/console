@@ -13,7 +13,8 @@
 use axum::body::{Body, to_bytes};
 use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
 use console_kernel_core::{OrgId, UserId};
-use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_authz::Feature;
 use http::{Request, StatusCode, header};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
@@ -141,6 +142,38 @@ async fn linked_member_reads_only_own_attendance_console_data(pool: PgPool) {
         build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
     let alice_token = bearer(&keys, alice, "MEMBER");
     let unlinked_token = bearer(&keys, unlinked, "MEMBER");
+    let alice_claims = JwtVerifier::from_es256_public_pem(
+        JwtSettings {
+            issuer: TEST_ISSUER.to_owned(),
+            audience: TEST_AUDIENCE.to_owned(),
+            access_token_ttl: Duration::minutes(15),
+        },
+        keys.public_pem.as_bytes(),
+    )
+    .unwrap()
+    .verify_access_token(&alice_token)
+    .expect("MEMBER JWT");
+    assert_eq!(alice_claims.roles, ["MEMBER"]);
+    assert!(
+        alice_claims.feature_grants.is_empty(),
+        "Login-only MEMBER JWT must carry empty feature_grants (no {}, no {}): {:?}",
+        Feature::PayrollRunRead.as_str(),
+        Feature::AttendanceExceptionManage.as_str(),
+        alice_claims.feature_grants
+    );
+    for forbidden in [
+        Feature::PayrollRunRead.as_str(),
+        Feature::AttendanceExceptionManage.as_str(),
+    ] {
+        assert!(
+            !alice_claims
+                .feature_grants
+                .iter()
+                .any(|grant| grant == forbidden),
+            "MEMBER ESS JWT must not carry {forbidden}: {:?}",
+            alice_claims.feature_grants
+        );
+    }
 
     let own = get(
         service.clone(),
@@ -155,6 +188,21 @@ async fn linked_member_reads_only_own_attendance_console_data(pool: PgPool) {
     for forbidden in ["employee_id", "employee_name", "team", "branch_id", "links"] {
         assert!(item.get(forbidden).is_none(), "self DTO leaked {forbidden}");
     }
+
+    let exception_id = item["id"].as_str().expect("self exception id");
+    let resolve = post(
+        service.clone(),
+        &format!("/api/v1/attendance/exceptions/{exception_id}/resolve"),
+        &alice_token,
+        json!({ "action": "CONFIRM", "reason": "member-self-resolve" }),
+    )
+    .await;
+    assert!(
+        resolve.status == StatusCode::FORBIDDEN || resolve.status == StatusCode::NOT_FOUND,
+        "MEMBER resolve must be 403 or 404-omit, got {}: {:?}",
+        resolve.status,
+        resolve.json
+    );
 
     let empty = get(
         service.clone(),
