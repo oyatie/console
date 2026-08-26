@@ -1230,15 +1230,36 @@ def test_labels(package, test_type, uses_postgres):
     return labels
 
 
-def find_members():
-    dirs = []
+def skip_workspace_member(manifest):
+    """Skip `-ui` packages: Leptos is not in the vendored third-party graph."""
+    package = manifest.get("package")
+    if not isinstance(package, dict):
+        return False
+    name = package.get("name")
+    return isinstance(name, str) and name.endswith("-ui")
+
+
+def package_manifests():
     for root in MEMBER_ROOTS:
         for dirpath, _, files in os.walk(os.path.join(REPO, root)):
             if "Cargo.toml" in files and os.path.basename(dirpath) != "rust":
                 with open(os.path.join(dirpath, "Cargo.toml"), "rb") as f:
-                    if "package" in tomllib.load(f):
-                        dirs.append(dirpath)
-    return sorted(dirs)
+                    manifest = tomllib.load(f)
+                if "package" in manifest:
+                    yield dirpath, manifest
+
+
+def find_members():
+    return sorted(dirpath for dirpath, manifest in package_manifests() if not skip_workspace_member(manifest))
+
+
+def skipped_ui_package_names():
+    """Package names omitted from first-party BUCK because Leptos is unvendored."""
+    return {
+        manifest["package"]["name"]
+        for _, manifest in package_manifests()
+        if skip_workspace_member(manifest)
+    }
 
 
 def load(dirpath):
@@ -1326,14 +1347,22 @@ def openapi_dotfile_srcs(package_dir):
     return sorted(found)
 
 
-def map_deps(dep_table, first_party):
-    """Map a [dependencies]/[dev-dependencies] table to (deps_list, named_dict)."""
+def map_deps(dep_table, first_party, skipped_ui_packages=None):
+    """Map a [dependencies]/[dev-dependencies] table to (deps_list, named_dict).
+
+    Skipped `-ui` workspace members are omitted, not rewritten as
+    ``//third-party/rust:<name>``. App does not gain Ui edges unless its
+    Cargo.toml actually declares them and the ui member is first-party.
+    """
+    skipped = skipped_ui_packages or frozenset()
     deps, named = [], {}
     for key, spec in (dep_table or {}).items():
         pkg = spec.get("package", key) if isinstance(spec, dict) else key
         version = spec.get("version", "") if isinstance(spec, dict) else spec
         if pkg in first_party:
             target = first_party[pkg]
+        elif pkg in skipped:
+            continue
         elif pkg == "sqlx" and str(version).lstrip("=").startswith("0.8"):
             target = "//third-party/rust:sqlx-0_8"  # buckify.sh renames the 0.8 alias
         else:
@@ -1503,11 +1532,12 @@ def main():
         discovered.update(discovered_test_resource_keys(d, name))
     validate_resource_metadata(discovered)
 
+    skipped_ui = skipped_ui_package_names()
     generated = 0
     for d in members:
         name, m = meta[d]
-        deps, named = map_deps(m.get("dependencies"), first_party)
-        dev_deps, dev_named = map_deps(m.get("dev-dependencies"), first_party)
+        deps, named = map_deps(m.get("dependencies"), first_party, skipped_ui)
+        dev_deps, dev_named = map_deps(m.get("dev-dependencies"), first_party, skipped_ui)
         emit(d, name, sorted(deps), named, sorted(dev_deps), dev_named)
         generated += 1
     print("generated {} first-party BUCK files".format(generated))

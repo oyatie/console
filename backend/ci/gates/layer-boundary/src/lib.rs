@@ -8,12 +8,13 @@
 //!   contracts → kernel
 //!   adapter/platform → application, contracts, domain, kernel
 //!   rest/worker → adapter, contracts, platform, application, domain, kernel
-//!   app → everything
+//!   ui → contracts, ui
+//!   app → everything including ui
 //!   gate → (exempt from layer checks)
-//!   ui → (classified, but ADR-0030 §8 planning-only forbids any ui member until
-//!        §7 is green and ADR-0001 accepts the layer; see [`ui_surface`])
 //!
 //! Purity rule: domain and application crates may NOT depend on sqlx, axum, or tokio.
+//! Ui may not depend on sqlx (no database authority). tokio/axum stay allowed
+//! for SSR; an empty Ui forbidden list would fail-open sqlx.
 //!
 //! Manifest hygiene:
 //!   - Every workspace crate name starts with `console-`
@@ -22,10 +23,10 @@
 //!     (inheriting workspace `publish = false`) or direct `publish = false`
 //!   - [lints] workspace = true present in each Cargo.toml
 //!
-//! ADR-0030 §8 residual (console-cvh): hand-rolled HTML / Leptos view markers
-//! inside a non-`ui` crate are sighted by [`ui_surface::check_ui_surfaces`]. The
-//! three-tier build-graph gate in `scripts/console/route-inventory.mjs` cannot
-//! see that class; this gate must not weaken that inventory.
+//! ADR-0041: hand-rolled HTML / Leptos view markers inside a non-`ui` crate are
+//! sighted by [`ui_surface::check_ui_surfaces`]. Route-inventory forbids a
+//! non-ui member from declaring a Leptos-family dependency; this gate must not
+//! weaken that inventory.
 
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
@@ -82,10 +83,9 @@ pub enum Layer {
     Worker,
     App,
     Gate, // exempt from layer checks
-    /// Chartered by ADR-0030 §6 as `console-<domain>-ui`, but ADR-0001 has not
-    /// yet accepted the layer's legal edges. Classification exists so members
-    /// cannot fall through to [`Layer::Adapter`]; [`ui_surface`] forbids any
-    /// such member while ADR-0030 §8 planning-only holds.
+    /// `console-<domain>-ui`. Accepted by ADR-0041: edges `[Contracts, Ui]`;
+    /// the `-ui` suffix is classified before `crates/platform/` so a future
+    /// `console-platform-ui` is Ui, not Platform.
     Ui,
 }
 
@@ -143,19 +143,22 @@ impl Layer {
                 Layer::Worker,
                 Layer::App,
                 Layer::Gate,
+                Layer::Ui,
             ],
             Layer::Gate => &[], // gates are exempt — no layer restriction
-            // Edges are declared in ADR-0030 §6 but not accepted into ADR-0001
-            // yet. Existence is rejected by ui_surface; keep deps empty so a
-            // future accidental edge check stays fail-closed.
-            Layer::Ui => &[],
+            // ADR-0041 / ADR-0030 §6: ui may reach contracts and other ui crates.
+            Layer::Ui => &[Layer::Contracts, Layer::Ui],
         }
     }
 
-    /// External crates that domain/application may not depend on (purity rule).
+    /// External crates this layer may not depend on (purity rule).
+    ///
+    /// Ui forbids `sqlx` so a `-ui` crate cannot take a database client.
+    /// `tokio`/`axum` stay allowed: SSR islands run on the server runtime.
     pub fn forbidden_external_deps(&self) -> &'static [&'static str] {
         match self {
             Layer::Domain | Layer::Application => &["sqlx", "axum", "tokio"],
+            Layer::Ui => &["sqlx"],
             _ => &[],
         }
     }
@@ -183,6 +186,12 @@ pub fn classify_crate(name: &str, manifest_path: &str, workspace_root: &str) -> 
     // crates/kernel/* → Kernel
     if rel.starts_with("crates/kernel/") {
         return Layer::Kernel;
+    }
+
+    // console-*-ui BEFORE crates/platform/* so console-platform-ui is Ui, not
+    // Platform (ADR-0041). Gate/App/Kernel path classification stays above.
+    if name.ends_with("-ui") {
+        return Layer::Ui;
     }
 
     // crates/platform/* → Platform
@@ -217,11 +226,6 @@ pub fn classify_crate(name: &str, manifest_path: &str, workspace_root: &str) -> 
     if name.ends_with("-worker") {
         return Layer::Worker;
     }
-    // console-*-ui — ADR-0030 §6 chartered surface name. Must NOT fall through
-    // to Adapter: silent Adapter classification was the residual 9ze leased here.
-    if name.ends_with("-ui") {
-        return Layer::Ui;
-    }
 
     // Fallback: if path starts with crates/ and none of the above matched,
     // it's a generic platform/utility — treat as Adapter layer (conservative).
@@ -248,8 +252,6 @@ pub enum ViolationKind {
     MissingPublishFalse,
     MissingLintsWorkspace,
     ConflictMarker,
-    /// A workspace member classified as [`Layer::Ui`] while ADR-0030 §8 holds.
-    PlanningOnlyUiCrate,
     /// Rust source in a non-ui crate carries a browser UI surface marker.
     SmuggledUiSurface,
 }
@@ -264,7 +266,6 @@ impl std::fmt::Display for Violation {
             ViolationKind::MissingPublishFalse => "MISSING_PUBLISH_FALSE",
             ViolationKind::MissingLintsWorkspace => "MISSING_LINTS_WORKSPACE",
             ViolationKind::ConflictMarker => "CONFLICT_MARKER",
-            ViolationKind::PlanningOnlyUiCrate => "PLANNING_ONLY_UI_CRATE",
             ViolationKind::SmuggledUiSurface => "SMUGGLED_UI_SURFACE",
         };
         write!(f, "[{}] {}: {}", kind, self.crate_name, self.detail)
@@ -430,8 +431,8 @@ pub fn check(metadata: &Metadata, workspace_edition: &str) -> GateResult {
             });
         }
 
-        // --- Layer checks (gates are exempt; ui existence is ui_surface's job) ---
-        if layer == Layer::Gate || layer == Layer::Ui {
+        // --- Layer checks (gates are exempt; Ui edges are enforced) ---
+        if layer == Layer::Gate {
             continue;
         }
 
@@ -742,6 +743,32 @@ mod tests {
     }
 
     #[test]
+    fn classify_ui_suffix_before_platform_path() {
+        assert_eq!(
+            classify_crate(
+                "console-platform-ui",
+                "/ws/crates/platform/ui/Cargo.toml",
+                "/ws"
+            ),
+            Layer::Ui,
+            "console-platform-ui must be Ui, not Platform"
+        );
+    }
+
+    #[test]
+    fn allowed_deps_ui_is_contracts_and_ui() {
+        assert_eq!(Layer::Ui.allowed_deps(), &[Layer::Contracts, Layer::Ui]);
+    }
+
+    #[test]
+    fn allowed_deps_app_includes_ui() {
+        assert!(
+            Layer::App.allowed_deps().contains(&Layer::Ui),
+            "App must be allowed to depend on Ui"
+        );
+    }
+
+    #[test]
     fn classify_app() {
         assert_eq!(
             classify_crate("console-app", "/ws/app/Cargo.toml", "/ws"),
@@ -765,6 +792,23 @@ mod tests {
         assert!(forbidden.contains(&"sqlx"));
         assert!(forbidden.contains(&"axum"));
         assert!(forbidden.contains(&"tokio"));
+    }
+
+    #[test]
+    fn ui_forbids_sqlx_and_allows_tokio_axum() {
+        let forbidden = Layer::Ui.forbidden_external_deps();
+        assert!(
+            forbidden.contains(&"sqlx"),
+            "empty Ui forbidden list would fail-open sqlx; got {forbidden:?}"
+        );
+        assert!(
+            !forbidden.contains(&"tokio"),
+            "SSR islands need the server runtime; tokio must stay allowed"
+        );
+        assert!(
+            !forbidden.contains(&"axum"),
+            "SSR composition may touch axum; axum must stay allowed"
+        );
     }
 
     #[test]

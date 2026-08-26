@@ -19,6 +19,57 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_ui_package_members_are_skipped_because_leptos_is_not_vendored(self) -> None:
+        self.assertTrue(
+            GENERATOR.skip_workspace_member({"package": {"name": "console-payroll-ui"}})
+        )
+        self.assertTrue(
+            GENERATOR.skip_workspace_member({"package": {"name": "console-platform-ui"}})
+        )
+        self.assertFalse(
+            GENERATOR.skip_workspace_member({"package": {"name": "console-payroll-rest"}})
+        )
+        self.assertFalse(
+            GENERATOR.skip_workspace_member({"package": {"name": "console-platform-auth"}})
+        )
+        self.assertFalse(GENERATOR.skip_workspace_member({"package": {"name": "ui"}}))
+        self.assertFalse(GENERATOR.skip_workspace_member({}))
+        self.assertFalse(GENERATOR.skip_workspace_member({"package": {}}))
+
+    def test_skipped_ui_dependency_is_omitted_not_rewritten_as_third_party(self) -> None:
+        first_party = {"console-app": "//backend/app:console-app"}
+        skipped = frozenset({"console-payroll-ui"})
+        deps, named = GENERATOR.map_deps(
+            {"console-payroll-ui": {"path": "crates/payroll/ui"}},
+            first_party,
+            skipped,
+        )
+        self.assertEqual([], deps)
+        self.assertEqual({}, named)
+        self.assertNotIn("//third-party/rust:console-payroll-ui", deps)
+
+    def test_app_without_ui_dep_does_not_gain_a_ui_edge(self) -> None:
+        app_dir = Path(GENERATOR.REPO) / "backend" / "app"
+        manifest = GENERATOR.load(app_dir)
+        first_party = {}
+        for directory in GENERATOR.find_members():
+            name = GENERATOR.load(directory)["package"]["name"]
+            rel = str(Path(directory).relative_to(GENERATOR.REPO))
+            first_party[name] = "//{}:{}".format(rel, name)
+        deps, named = GENERATOR.map_deps(
+            manifest.get("dependencies"),
+            first_party,
+            GENERATOR.skipped_ui_package_names(),
+        )
+        self.assertFalse(
+            any("-ui" in target for target in deps),
+            "App must not invent a Ui edge; got {}".format(deps),
+        )
+        self.assertFalse(
+            any("-ui" in target for target in named.values()),
+            "App must not invent a named Ui edge; got {}".format(named),
+        )
+
     def test_repo_source_layout_uses_mapped_sources_and_explicit_crate_root(self) -> None:
         block = "\n".join(
             GENERATOR._block(

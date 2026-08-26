@@ -41,7 +41,7 @@ fn run_gate(workspace_dir: &Path) {
         }
     }
 
-    // ADR-0030 §8 residual: Ui classification + source-level smuggled UI surfaces.
+    // ADR-0041: source-level smuggled UI surfaces in non-ui crates.
     // Examined-zero / unreadable sources fail closed (Err → exit 1).
     match console_gate_layer_boundary::check_ui_surfaces(&metadata) {
         Ok(ui_violations) => result.violations.extend(ui_violations),

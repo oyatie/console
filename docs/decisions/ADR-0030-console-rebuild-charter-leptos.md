@@ -6,7 +6,8 @@ date: 2026-07-30
 owner: jasonlee
 decision: console-rebuild-chartered-on-leptos-planning-only
 amends: [ADR-0025]
-related: [ADR-0001, ADR-0009, ADR-0012, ADR-0018, ADR-0021, ADR-0022, ADR-0023, ADR-0025]
+amended_by: [ADR-0041]
+related: [ADR-0001, ADR-0009, ADR-0012, ADR-0018, ADR-0021, ADR-0022, ADR-0023, ADR-0025, ADR-0041]
 ---
 
 # ADR-0030: Console rebuild chartered on Leptos; planning authorized, implementation gated
@@ -25,6 +26,18 @@ everything §3 does not name.
 > changed to `Console API`; no contracts-crate emitter or schema-to-wire fidelity
 > proof exists. These observations do not rewrite the Decision or open its frontend
 > implementation gate.
+
+> **Current observation (2026-08-25):** The accepted text below is still preserved
+> as written. ADR-0041 accepts `Layer::Ui` so `console-<domain>-ui` members may
+> exist — the ADR-0001 amendment §6 named. ADR-0041 does not resume frontend
+> implementation or authorize shipping screens. This observation does not rewrite the
+> Decision and does **not** retire §8's planning-only CI assertion. Inventory may
+> allow `-ui` members and lockfile Leptos. Absence of a mounted shell remains
+> green: `scripts/console/route-inventory.test.mjs` still asserts HEAD tracks
+> neither React route source, and that absence-as-green assertion is retired only
+> by the change that mounts a shell. The first full-depth vertical is payroll
+> execution; a machine-readable Leptos route-facts file remains a frontend-lane
+> follow-up.
 
 ## Context
 

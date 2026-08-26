@@ -1,10 +1,12 @@
-//! ADR-0030 §8 planning-only: sight browser UI surfaces that the build-graph
-//! gate (`scripts/console/route-inventory.mjs`) cannot see.
+//! ADR-0041: sight browser UI surfaces smuggled into non-ui crates — the
+//! class the build-graph gate (`scripts/console/route-inventory.mjs`) cannot
+//! see from source text.
 //!
-//! Two residual classes after console-9ze:
+//! Residual after Layer::Ui is accepted:
 //! 1. A workspace member named `console-<domain>-ui` must classify as
 //!    [`Layer::Ui`](crate::Layer::Ui), not silent [`Layer::Adapter`](crate::Layer::Adapter)
-//!    fallback — and while §7 is closed, any such member is forbidden.
+//!    or [`Layer::Platform`](crate::Layer::Platform). Existence is legal.
+//!    Needle scan is skipped for Ui members; their views are the chartered surface.
 //! 2. Hand-rolled HTML / Leptos view macros smuggled inside an existing
 //!    conforming crate (e.g. `-rest`) never touch Cargo.toml / Cargo.lock;
 //!    this module walks that crate's Rust sources for high-signal markers.
@@ -46,9 +48,9 @@ fn ui_surface_needles() -> Vec<(&'static str, String)> {
     ]
 }
 
-/// Classify `-ui` members as forbidden under planning-only, and scan non-gate
-/// crate sources for smuggled UI markers.
+/// Scan non-gate, non-ui crate sources for smuggled UI markers.
 ///
+/// [`Layer::Ui`] members are legal (ADR-0041) and are not needle-scanned.
 /// Returns `Err` when the scan examined zero Rust files across a non-empty
 /// set of scannable packages (examined-zero must not pass).
 pub fn check_ui_surfaces(metadata: &Metadata) -> Result<Vec<Violation>, String> {
@@ -72,20 +74,9 @@ pub fn check_ui_surfaces(metadata: &Metadata) -> Result<Vec<Violation>, String> 
     for pkg in &workspace_pkgs {
         let layer = classify_crate(&pkg.name, &pkg.manifest_path, &metadata.workspace_root);
 
-        if layer == Layer::Ui {
-            violations.push(Violation {
-                kind: ViolationKind::PlanningOnlyUiCrate,
-                crate_name: pkg.name.clone(),
-                detail: format!(
-                    "ADR-0030 §8 planning-only: workspace member '{}' is classified as layer ui (console-<domain>-ui); no ui crate may exist until §7 is measured green and ADR-0001 accepts Layer::Ui",
-                    pkg.name
-                ),
-            });
-            // Still scan its sources — a -ui crate is already fatal; source
-            // hits are redundant but cheap and keep the scanner total.
-        }
-
-        if layer == Layer::Gate {
+        // Gate is exempt. Ui is the chartered surface: skip needles so a
+        // legal `view!` in console-<domain>-ui is not SmuggledUiSurface.
+        if layer == Layer::Gate || layer == Layer::Ui {
             continue;
         }
 
@@ -122,7 +113,7 @@ pub fn check_ui_surfaces(metadata: &Metadata) -> Result<Vec<Violation>, String> 
                         kind: ViolationKind::SmuggledUiSurface,
                         crate_name: pkg.name.clone(),
                         detail: format!(
-                            "ADR-0030 §8 planning-only: {} contains UI surface marker '{}' ({}); browser-visible markup/views belong in a chartered ui crate only after the §7 gate opens — not inside {}",
+                            "ADR-0041: {} contains UI surface marker '{}' ({}); browser-visible markup/views belong in a Layer::Ui crate (console-<domain>-ui), not inside {}",
                             rel.display(),
                             needle,
                             label,

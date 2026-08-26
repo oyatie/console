@@ -694,16 +694,182 @@ workspace = true
         "violation must name the smuggling crate, got: {detail}"
     );
     assert!(
-        detail.contains("ADR-0030 §8"),
-        "violation must cite ADR-0030 §8, got: {detail}"
+        detail.contains("ADR-0041"),
+        "violation must cite ADR-0041, got: {detail}"
     );
     Ok(())
 }
 
 #[test]
-fn gate_detects_planning_only_ui_crate_not_adapter_fallback()
--> Result<(), Box<dyn std::error::Error>> {
-    let ws = temp_workspace("planning-ui")?;
+fn gate_allows_ui_crate_and_skips_ui_needles() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("allow-ui")?;
+
+    write_file(
+        &ws.join("Cargo.toml"),
+        r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/ui", "crates/platform/ui"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+    )?;
+
+    let ui_dir = ws.join("crates/demo/ui");
+    write_file(
+        &ui_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-ui"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+    )?;
+    // Chartered surface: the view! needle is legal here and must not be
+    // SmuggledUiSurface (needle scan is skipped for Layer::Ui).
+    write_file(
+        &ui_dir.join("src/lib.rs"),
+        &format!("pub fn shell() {{}}\n{}{}\n", "view", "!"),
+    )?;
+
+    let platform_ui_dir = ws.join("crates/platform/ui");
+    write_file(
+        &platform_ui_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-platform-ui"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(
+        &platform_ui_dir.join("src/lib.rs"),
+        "// platform ui shell\n",
+    )?;
+
+    assert_eq!(
+        classify_crate(
+            "console-demo-ui",
+            &ui_dir.join("Cargo.toml").to_string_lossy(),
+            &ws.to_string_lossy()
+        ),
+        Layer::Ui
+    );
+    assert_eq!(
+        classify_crate(
+            "console-platform-ui",
+            &platform_ui_dir.join("Cargo.toml").to_string_lossy(),
+            &ws.to_string_lossy()
+        ),
+        Layer::Ui,
+        "console-platform-ui must classify as Ui, not Platform"
+    );
+
+    let (metadata, edition) = load_metadata(&ws)?;
+    let layer_result = check(&metadata, &edition);
+    assert!(
+        layer_result.passed(),
+        "a legal ui crate must pass layer checks, got: {:#?}",
+        layer_result.violations
+    );
+
+    let ui_violations = check_ui_surfaces(&metadata)?;
+    assert!(
+        ui_violations.is_empty(),
+        "Ui members must not fail existence or needle scan, got: {ui_violations:#?}"
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_detects_illegal_ui_to_domain_edge() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("ui-domain")?;
+
+    write_file(
+        &ws.join("Cargo.toml"),
+        r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/domain", "crates/demo/ui"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+    )?;
+
+    let domain_dir = ws.join("crates/demo/domain");
+    write_file(
+        &domain_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-domain"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(&domain_dir.join("src/lib.rs"), "// domain\n")?;
+
+    let ui_dir = ws.join("crates/demo/ui");
+    write_file(
+        &ui_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-ui"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+console-demo-domain = { path = "../domain" }
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(
+        &ui_dir.join("src/lib.rs"),
+        "// ui illegally depending on domain\n",
+    )?;
+
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    let edge = result
+        .violations
+        .iter()
+        .find(|v| v.kind == ViolationKind::IllegalLayerEdge);
+    assert!(
+        edge.is_some(),
+        "expected IllegalLayerEdge for ui → domain, got: {:#?}",
+        result.violations
+    );
+    assert_eq!(edge.map(|v| v.crate_name.as_str()), Some("console-demo-ui"));
+    Ok(())
+}
+
+#[test]
+fn gate_detects_ui_depending_on_sqlx() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("ui-sqlx")?;
 
     write_file(
         &ws.join("Cargo.toml"),
@@ -731,33 +897,118 @@ version = "0.1.0"
 edition.workspace = true
 publish.workspace = true
 
+[dependencies]
+sqlx = "0.8"
+
 [lints]
 workspace = true
 "#,
     )?;
-    write_file(&ui_dir.join("src/lib.rs"), "// empty ui shell\n")?;
+    write_file(&ui_dir.join("src/lib.rs"), "// ui must not take sqlx\n")?;
 
-    assert_eq!(
-        classify_crate(
-            "console-demo-ui",
-            &ui_dir.join("Cargo.toml").to_string_lossy(),
-            &ws.to_string_lossy()
-        ),
-        Layer::Ui
-    );
-
-    let (metadata, _edition) = load_metadata(&ws)?;
-    let ui_violations = check_ui_surfaces(&metadata)?;
-    let planning = ui_violations
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    let forbidden = result
+        .violations
         .iter()
-        .find(|v| v.kind == ViolationKind::PlanningOnlyUiCrate);
+        .find(|v| v.kind == ViolationKind::ForbiddenExternalDep);
     assert!(
-        planning.is_some(),
-        "expected PlanningOnlyUiCrate, got: {ui_violations:#?}"
+        forbidden.is_some(),
+        "expected ForbiddenExternalDep for ui → sqlx, got: {:#?}",
+        result.violations
     );
     assert_eq!(
-        planning.map(|v| v.crate_name.as_str()),
+        forbidden.map(|v| v.crate_name.as_str()),
         Some("console-demo-ui")
+    );
+    let detail = forbidden.map(|v| v.detail.clone()).unwrap_or_default();
+    assert!(
+        detail.contains("sqlx"),
+        "violation must name sqlx, got: {detail}"
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_allows_ui_to_contracts_and_app_to_ui() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("ui-legal")?;
+
+    write_file(
+        &ws.join("Cargo.toml"),
+        r#"
+[workspace]
+resolver = "3"
+members = ["crates/contracts/api", "crates/demo/ui", "app"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+    )?;
+
+    let contracts_dir = ws.join("crates/contracts/api");
+    write_file(
+        &contracts_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-contracts"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(&contracts_dir.join("src/lib.rs"), "// contracts\n")?;
+
+    let ui_dir = ws.join("crates/demo/ui");
+    write_file(
+        &ui_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-ui"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+console-contracts = { path = "../../contracts/api" }
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(&ui_dir.join("src/lib.rs"), "// ui → contracts\n")?;
+
+    let app_dir = ws.join("app");
+    write_file(
+        &app_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-app"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+console-demo-ui = { path = "../crates/demo/ui" }
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(&app_dir.join("src/lib.rs"), "// app → ui\n")?;
+
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    assert!(
+        result.passed(),
+        "ui → contracts and app → ui must be legal, got: {:#?}",
+        result.violations
     );
     Ok(())
 }
