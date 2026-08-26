@@ -875,7 +875,8 @@ impl PgOrgStore {
 
         let mut items = Vec::with_capacity(ids.len());
         for id in ids {
-            let mut user = fetch_user(&self.pool, UserId::from_uuid(id)).await?;
+            // fetch_user SELECTs users.phone; directory pages must not.
+            let mut user = fetch_directory_user(&self.pool, UserId::from_uuid(id)).await?;
             user.branch_ids
                 .retain(|branch| result_scope.allows(*branch));
             items.push(user);
@@ -1856,11 +1857,13 @@ async fn user_in_scope(
     }
 }
 
-/// The `users` projection shared by every fetch path. The `has_passkey` flag is
-/// computed inline via an EXISTS over the FORCE-RLS `auth_webauthn_credentials`
-/// table; both call sites run inside an org-armed scope (`with_org_conn` or the
-/// audited tx), so the subquery only ever sees THIS tenant's credentials and the
-/// account-setup state (활성 vs 설정 대기) is derived correctly.
+/// The `users` projection for `get_user` / `list_users` and mutation returns.
+/// The `has_passkey` flag is computed inline via an EXISTS over the FORCE-RLS
+/// `auth_webauthn_credentials` table; those call sites run inside an org-armed
+/// scope (`with_org_conn` or the audited tx), so the subquery only ever sees
+/// THIS tenant's credentials and the account-setup state (활성 vs 설정 대기) is
+/// derived correctly. Directory list uses `USER_SELECT_DIRECTORY` instead so it
+/// never reads `users.phone`.
 const USER_SELECT_WITH_PASSKEY: &str = r#"
     SELECT
            u.id,
@@ -1874,6 +1877,37 @@ const USER_SELECT_WITH_PASSKEY: &str = r#"
            e.identity_review_required AS employee_identity_review_required,
            e.identity_resolution_confidence AS employee_identity_resolution_confidence,
            u.phone,
+           u.roles,
+           u.team,
+           u.is_active,
+           u.created_at,
+           EXISTS (
+               SELECT 1 FROM auth_webauthn_credentials c WHERE c.user_id = u.id
+           ) AS has_passkey
+    FROM users u
+    LEFT JOIN employees e
+      ON e.id = u.employee_id
+     AND e.org_id = u.org_id
+    WHERE u.id = $1
+"#;
+
+/// Directory page projection. Keep the column list aligned with
+/// `USER_SELECT_WITH_PASSKEY` except `users.phone`, which must not be selected
+/// into a directory page. The SELECT text must not mention phone, salary, bank,
+/// or rrn. `user_from_directory_row` maps `phone: None` without reading a phone
+/// column.
+const USER_SELECT_DIRECTORY: &str = r#"
+    SELECT
+           u.id,
+           u.display_name,
+           u.employee_id,
+           e.name AS employee_name,
+           e.employee_number AS employee_number,
+           e.company AS employee_company,
+           e.org_unit AS employee_org_unit,
+           e.position AS employee_position,
+           e.identity_review_required AS employee_identity_review_required,
+           e.identity_resolution_confidence AS employee_identity_resolution_confidence,
            u.roles,
            u.team,
            u.is_active,
@@ -2425,6 +2459,21 @@ async fn fetch_user(pool: &PgPool, user_id: UserId) -> Result<UserSummary, PgOrg
     user_from_row(&row, branch_ids)
 }
 
+async fn fetch_directory_user(pool: &PgPool, user_id: UserId) -> Result<UserSummary, PgOrgError> {
+    let org = current_org().map_err(KernelError::from)?;
+    let row = with_org_conn::<_, _, PgOrgError>(pool, org, move |tx| {
+        Box::pin(async move {
+            Ok(sqlx::query(USER_SELECT_DIRECTORY)
+                .bind(*user_id.as_uuid())
+                .fetch_one(tx.as_mut())
+                .await?)
+        })
+    })
+    .await?;
+    let branch_ids = fetch_user_branch_ids(pool, user_id).await?;
+    user_from_directory_row(&row, branch_ids)
+}
+
 async fn fetch_user_tx(
     tx: &mut Transaction<'_, Postgres>,
     user_id: UserId,
@@ -2479,6 +2528,21 @@ fn user_from_row(
     row: &sqlx::postgres::PgRow,
     branch_ids: Vec<BranchId>,
 ) -> Result<UserSummary, PgOrgError> {
+    user_from_row_with_phone(row, branch_ids, row.try_get("phone")?)
+}
+
+fn user_from_directory_row(
+    row: &sqlx::postgres::PgRow,
+    branch_ids: Vec<BranchId>,
+) -> Result<UserSummary, PgOrgError> {
+    user_from_row_with_phone(row, branch_ids, None)
+}
+
+fn user_from_row_with_phone(
+    row: &sqlx::postgres::PgRow,
+    branch_ids: Vec<BranchId>,
+    phone: Option<String>,
+) -> Result<UserSummary, PgOrgError> {
     let team: Option<String> = row.try_get("team")?;
     let team = team.as_deref().map(Team::from_db_str).transpose()?;
     let is_active: bool = row.try_get("is_active")?;
@@ -2501,7 +2565,7 @@ fn user_from_row(
         } else {
             EmployeeLinkStatus::Unlinked
         },
-        phone: row.try_get("phone")?,
+        phone,
         team,
         roles: row.try_get("roles")?,
         branch_ids,
@@ -2578,5 +2642,16 @@ mod ensure_branch_rewrite_in_scope_tests {
         let requested = vec![*branch_a.as_uuid()];
         ensure_branch_rewrite_in_scope(&BranchScope::All, &current, &requested)
             .expect("BranchScope::All must not gate membership rewrites");
+        let directory_sql = USER_SELECT_DIRECTORY.to_ascii_lowercase();
+        for fragment in ["phone", "salary", "bank", "rrn"] {
+            assert!(
+                !directory_sql.contains(fragment),
+                "directory hydration must not mention {fragment}"
+            );
+        }
+        assert!(
+            USER_SELECT_WITH_PASSKEY.contains("u.phone"),
+            "get_user / list_users must keep reading users.phone"
+        );
     }
 }
