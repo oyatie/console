@@ -12,18 +12,18 @@
 #![cfg(feature = "dev-auth")]
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use axum::body::{Body, to_bytes};
-use axum::http::{Request, StatusCode, header};
+use axum::body::{to_bytes, Body};
+use axum::http::{header, Request, StatusCode};
 use console_kernel_core::OrgId;
 use console_platform_auth::RefreshTokenStore;
-use console_platform_auth_rest::{AuthRestConfig, AuthRestState, router};
+use console_platform_auth_rest::{router, AuthRestConfig, AuthRestState};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use serde::Deserialize;
 use serde_json::json;
-use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
+use sqlx::PgPool;
 use time::Duration;
 use tower::ServiceExt;
 use uuid::Uuid;
@@ -163,14 +163,20 @@ async fn post_cookie_refresh(app: axum::Router, cookie: &str) -> http::Response<
     .unwrap()
 }
 
-fn refresh_cookie(response: &http::Response<Body>) -> String {
+fn set_cookie_named(response: &http::Response<Body>, name: &str) -> String {
+    let prefix = format!("{name}=");
     response
         .headers()
         .get_all(header::SET_COOKIE)
         .iter()
         .map(|value| value.to_str().unwrap())
-        .find(|value| value.starts_with("console_refresh="))
-        .expect("cookie transport must set a refresh cookie")
+        .find(|value| value.starts_with(&prefix))
+        .unwrap_or_else(|| panic!("cookie transport must set a {name} cookie"))
+        .to_owned()
+}
+
+fn refresh_cookie(response: &http::Response<Body>) -> String {
+    set_cookie_named(response, "console_refresh")
         .split(';')
         .next()
         .unwrap()
@@ -199,13 +205,11 @@ async fn mints_a_real_session_and_backs_it_with_a_real_user(pool: PgPool) {
     assert_eq!(response.status(), StatusCode::OK);
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let session: SessionResponse = serde_json::from_slice(&bytes).unwrap();
-    assert!(
-        !session
-            .access_token
-            .as_deref()
-            .unwrap_or_default()
-            .is_empty()
-    );
+    assert!(!session
+        .access_token
+        .as_deref()
+        .unwrap_or_default()
+        .is_empty());
     assert!(!session.requires_passkey_setup);
     assert!(
         session.refresh_token.is_some(),
@@ -279,6 +283,10 @@ async fn cookie_refresh_keeps_synthetic_dev_persona_out_of_passkey_onboarding(po
     )
     .await;
     assert_eq!(minted.status(), StatusCode::OK);
+    let minted_refresh = set_cookie_named(&minted, "console_refresh");
+    let minted_access = set_cookie_named(&minted, "console_access");
+    assert!(minted_refresh.contains("HttpOnly"), "{minted_refresh}");
+    assert!(minted_access.contains("HttpOnly"), "{minted_access}");
     let minted_cookie = refresh_cookie(&minted);
     let minted_body: SessionResponse =
         serde_json::from_slice(&to_bytes(minted.into_body(), usize::MAX).await.unwrap()).unwrap();

@@ -1,8 +1,8 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use axum::body::{Body, to_bytes};
+use axum::body::{to_bytes, Body};
 use axum::extract::ConnectInfo;
-use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_app::{build_router, AppConfig, AppRole, AppState, DatabaseDependency};
 use console_financial_adapter_postgres::PgFinancialStore;
 use console_financial_application::{
     CreatePurchaseRequestCommand, FinancialConfigSnapshot, PrepareExpenditureCommand,
@@ -13,12 +13,12 @@ use console_kernel_core::{
     BranchId, EquipmentId, EvidenceId, OrgId, PurchaseRequestId, TraceContext, UserId, WorkOrderId,
 };
 use console_platform_provisioning::BootstrapCredentialStore;
-use http::{Request, StatusCode, header};
+use http::{header, Request, StatusCode};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use serde::Deserialize;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sqlx::PgPool;
 use std::net::SocketAddr;
 use time::{Duration, OffsetDateTime};
@@ -1777,18 +1777,62 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
     let login = cookie_mode_usernameless_login(&service, &mut authenticator, &credential_id).await;
     let login_cookie = console_refresh_set_cookie(&login)
         .expect("cookie-mode login must set an console_refresh cookie");
+    assert!(login_cookie.contains("HttpOnly"), "{login_cookie}");
     let cookie_value = cookie_token(&login_cookie).to_owned();
+    let login_access_cookie =
+        console_access_set_cookie(&login).expect("cookie-mode login must also set console_access");
     assert!(
-        console_access_set_cookie(&login).is_some(),
-        "cookie-mode login must also set console_access"
+        login_access_cookie.contains("HttpOnly"),
+        "{login_access_cookie}"
     );
+    let login_access_cookie_value =
+        cookie_named_value(&login_access_cookie, "console_access").to_owned();
     let login_body = body_json(login).await;
-    assert!(
-        login_body["access_token"]
-            .as_str()
-            .is_some_and(|token| !token.is_empty())
-    );
+    let login_access_token = login_body["access_token"]
+        .as_str()
+        .expect("cookie mode keeps access_token in JSON until HTML /login exists")
+        .to_owned();
+    assert!(!login_access_token.is_empty());
     assert!(login_body["refresh_token"].is_null());
+
+    // `/api/v1/*` (not refresh) stays Bearer-only: ambient console_access is
+    // ignored. The same JWT succeeds when presented as Authorization Bearer.
+    let cookie_only_passkeys = get_with_access_cookie(
+        service.clone(),
+        "/api/v1/auth/passkeys",
+        &login_access_cookie_value,
+    )
+    .await;
+    assert_eq!(
+        cookie_only_passkeys.status(),
+        StatusCode::UNAUTHORIZED,
+        "API GET must not authenticate from the access cookie alone"
+    );
+    let cookie_only_payroll = post_with_access_cookie(
+        service.clone(),
+        &format!("/api/v1/payroll/runs/{}/submit", Uuid::new_v4()),
+        &login_access_cookie_value,
+        Some(("https://auth.example.com", "auth.example.com")),
+        json!({}),
+    )
+    .await;
+    assert_eq!(
+        cookie_only_payroll.status(),
+        StatusCode::UNAUTHORIZED,
+        "cookie-only payroll POST must 401; /api/v1 stays Bearer-only"
+    );
+    let bearer_passkeys = get_with_cookie_and_authorization(
+        service.clone(),
+        "/api/v1/auth/passkeys",
+        &login_access_cookie_value,
+        &format!("Bearer {login_access_token}"),
+    )
+    .await;
+    assert_eq!(
+        bearer_passkeys.status(),
+        StatusCode::OK,
+        "the same access JWT must succeed as Authorization Bearer"
+    );
 
     // Refresh reading the token from the cookie (NO body token) rotates and sets
     // a fresh cookie whose value differs from the one presented.
@@ -1920,11 +1964,9 @@ async fn cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id(pool: 
             .expect("cookie-mode refresh must rotate the console_refresh cookie");
         cookie_value = cookie_token(&rotated_cookie).to_owned();
         let refreshed_body = body_json(refreshed).await;
-        assert!(
-            refreshed_body["access_token"]
-                .as_str()
-                .is_some_and(|token| !token.is_empty())
-        );
+        assert!(refreshed_body["access_token"]
+            .as_str()
+            .is_some_and(|token| !token.is_empty()));
         assert!(refreshed_body["refresh_token"].is_null());
     }
 }
@@ -2227,11 +2269,9 @@ async fn cookie_sourced_refresh_never_returns_refresh_token_in_json(pool: PgPool
         no_header_body["refresh_token"].is_null(),
         "cookie-sourced refresh must not leak refresh_token into JSON, got {no_header_body}"
     );
-    assert!(
-        no_header_body["access_token"]
-            .as_str()
-            .is_some_and(|token| !token.is_empty())
-    );
+    assert!(no_header_body["access_token"]
+        .as_str()
+        .is_some_and(|token| !token.is_empty()));
 
     let logout = post_logout_cookie_without_transport(
         service.clone(),
@@ -2390,16 +2430,12 @@ async fn form_refresh_requires_origin_and_redirects_relative_next(pool: PgPool) 
         "JSON refresh clients must still get JSON"
     );
     let json_body = body_json(json_client).await;
-    assert!(
-        json_body["access_token"]
-            .as_str()
-            .is_some_and(|token| !token.is_empty())
-    );
-    assert!(
-        json_body["refresh_token"]
-            .as_str()
-            .is_some_and(|token| !token.is_empty())
-    );
+    assert!(json_body["access_token"]
+        .as_str()
+        .is_some_and(|token| !token.is_empty()));
+    assert!(json_body["refresh_token"]
+        .as_str()
+        .is_some_and(|token| !token.is_empty()));
 }
 
 /// MOBILE (no transport header) is unchanged: refresh and logout read the token

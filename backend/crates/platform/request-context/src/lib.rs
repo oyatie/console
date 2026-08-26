@@ -37,8 +37,8 @@ use console_kernel_core::{
 };
 use console_platform_auth::{JwtVerifier, TenantAccessContext};
 use console_platform_authz::{
-    PlatformPrincipal, Principal, Role, SubjectFreshness, effective_branch_scope_for_tenant,
-    resolve_branch_scope_in_org, resolve_effective_feature_grants_in_org,
+    effective_branch_scope_for_tenant, resolve_branch_scope_in_org,
+    resolve_effective_feature_grants_in_org, PlatformPrincipal, Principal, Role, SubjectFreshness,
 };
 use console_platform_group::group_admin_member_orgs;
 use http::{HeaderMap, Method, StatusCode};
@@ -513,7 +513,10 @@ pub async fn resolve_principal(
 /// Resolve a tenant [`Principal`] from the HttpOnly `console_access` cookie.
 ///
 /// HTML document GETs, `/_ui` POSTs, and `/login/resume` only. REST routers
-/// must keep calling [`resolve_principal`].
+/// must not call this (and must not wrap `/api/v1/*` with
+/// [`with_access_cookie_context`]). They keep using [`resolve_principal`] /
+/// [`with_request_context`], which ignore `console_access` and return
+/// [`RequestContextError::MissingBearer`] without `Authorization: Bearer`.
 pub async fn resolve_principal_from_access_cookie(
     verifier: &JwtVerifier,
     pool: &PgPool,
@@ -659,20 +662,24 @@ async fn resolve_group_admin_tenant_context_principal(
 // Axum middleware
 // ---------------------------------------------------------------------------
 
-/// Apply the per-request tenant-context middleware to one authenticated router.
+/// Apply the per-request tenant-context middleware to one authenticated REST router.
 ///
 /// Called by each domain `router()` (so the behavior is testable per crate and
 /// composes in the app). For every route on `router` it resolves the
-/// [`Principal`], stores it in the request extensions (handlers can read
-/// `Extension<Principal>`), and runs the downstream handler inside the
-/// [`CURRENT_ORG`] scope — arming the request's tenant for every adapter
-/// read/write.
+/// [`Principal`] via [`resolve_principal`] (Authorization Bearer only), stores
+/// it in the request extensions (handlers can read `Extension<Principal>`), and
+/// runs the downstream handler inside the [`CURRENT_ORG`] scope — arming the
+/// request's tenant for every adapter read/write.
 ///
 /// Fail-closed: a request that cannot be resolved to a principal is rejected
 /// before any handler runs, so no tenant-scoped query can execute without an org.
+/// A Cookie `console_access` without `Authorization: Bearer` is
+/// [`RequestContextError::MissingBearer`] / 401 — this layer never falls back
+/// to the HTML cookie extractor.
 ///
 /// Pass the router's own `jwt_verifier` and a clone of its `pool`. Do NOT apply
-/// it to pre-auth routes (login/refresh) or the realtime WS upgrade.
+/// it to pre-auth routes (login/refresh), HTML/`/_ui` (use
+/// [`with_access_cookie_context`]), or the realtime WS upgrade.
 pub fn with_request_context<S>(
     router: axum::Router<S>,
     verifier: Option<JwtVerifier>,
@@ -692,6 +699,9 @@ where
                         "JWT verification is not configured",
                     );
                 };
+                // REST `/api/v1/*` invariant: Bearer-only. Do not call
+                // `resolve_principal_from_access_cookie` here — that extractor
+                // is HTML/`/_ui` only. Cookie-without-Bearer is MissingBearer.
                 let principal = match resolve_principal(verifier, &pool, request.headers()).await {
                     Ok(principal) => principal,
                     Err(err) => return error_response_for(&err),
@@ -945,7 +955,7 @@ mod tests {
     use axum::body::Body;
     use axum::extract::Extension;
     use axum::routing::get;
-    use console_platform_authz::{Action, Feature, authorize_org_wide};
+    use console_platform_authz::{authorize_org_wide, Action, Feature};
     use tower::Service;
 
     fn forwarded_headers(value: &'static str) -> HeaderMap {
@@ -1254,17 +1264,25 @@ mod tests {
 
     #[test]
     fn access_token_from_headers_ignores_console_access_cookie() {
+        // REST `with_request_context` / `resolve_principal` use
+        // `access_token_from_headers`. REST routers must not call
+        // `resolve_principal_from_access_cookie` (HTML/`/_ui` only), which
+        // would accept this cookie and skip MissingBearer.
         let headers = headers_with(&[(
             "cookie",
             "console_refresh=refresh; console_access=from-cookie",
         )]);
-        assert!(matches!(
-            access_token_from_headers(&headers),
-            Err(RequestContextError::MissingBearer)
-        ));
+        assert!(
+            matches!(
+                access_token_from_headers(&headers),
+                Err(RequestContextError::MissingBearer)
+            ),
+            "REST principal resolution must 401 without Authorization: Bearer"
+        );
         assert_eq!(
             access_token_from_access_cookie(&headers).unwrap(),
-            "from-cookie"
+            "from-cookie",
+            "the HTML extractor is a separate function REST routers must not call"
         );
     }
 

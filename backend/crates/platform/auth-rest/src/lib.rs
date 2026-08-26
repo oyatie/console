@@ -10,7 +10,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use axum::extract::{Extension, Path, State};
-use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
+use axum::http::{header, HeaderMap, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post};
 use axum::{Json, Router};
@@ -25,24 +25,24 @@ use console_platform_auth::{
     WebauthnSettings,
 };
 use console_platform_authz::{
-    Action, Feature, Principal, Role, authorize, resolve_branch_scope_in_org,
-    resolve_effective_feature_grants_in_org,
+    authorize, resolve_branch_scope_in_org, resolve_effective_feature_grants_in_org, Action,
+    Feature, Principal, Role,
 };
 use console_platform_db::{
-    DbError, read_subject_authz_freshness, with_audit, with_audits, with_org_conn,
+    read_subject_authz_freshness, with_audit, with_audits, with_org_conn, DbError,
 };
 use console_platform_email::{DisabledEmailSender, EmailSender};
 use console_platform_group::GroupMemberOrg;
 use console_platform_provisioning::{BootstrapCredentialStore, ProvisioningError};
 use console_platform_request_context::{
-    ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME, TrustedClientIp, access_token_from_headers,
-    enforce_cookie_csrf,
+    access_token_from_headers, enforce_cookie_csrf, TrustedClientIp, ACCESS_COOKIE_NAME,
+    REFRESH_COOKIE_NAME,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
-use url::{Url, form_urlencoded};
+use url::{form_urlencoded, Url};
 use uuid::Uuid;
 
 const DEFAULT_ACCESS_TOKEN_TTL: Duration = Duration::minutes(15);
@@ -3053,6 +3053,10 @@ async fn ensure_registration_ceremony_owner(
 /// Verify the bearer token and return BOTH the authenticated user id AND the
 /// tenant from the verified `org` claim.
 ///
+/// Bearer-only: [`access_token_from_headers`] ignores `console_access`, matching
+/// REST `with_request_context`. Cookie without `Authorization: Bearer` is
+/// unauthorized.
+///
 /// The passkey registration/start paths are pre-auth-middleware (no
 /// `app.current_org` is armed by the router), but the caller IS authenticated:
 /// the verified token carries the tenant. Using the JWT's org — never a `users`
@@ -3875,21 +3879,21 @@ fn with_set_cookies(
 #[cfg(test)]
 mod tests {
     use super::{
-        ACCESS_COOKIE_MAX_AGE_SECS, RATE_LIMIT_PER_IP, RATE_LIMIT_WINDOW, RateLimitEndpoint,
         access_clear_cookie, access_set_cookie, authorizable_target_branches, build_enroll_url,
         has_group_admin_role_hint, load_group_admin_groups, rate_limit, refresh_clear_cookie,
-        resolve_group_admin_target_org,
+        resolve_group_admin_target_org, RateLimitEndpoint, ACCESS_COOKIE_MAX_AGE_SECS,
+        RATE_LIMIT_PER_IP, RATE_LIMIT_WINDOW,
     };
     use axum::http::HeaderMap;
     use axum::http::StatusCode;
     use console_kernel_core::{BranchId, BranchScope, OrgId, UserId};
-    use console_platform_request_context::ACCESS_COOKIE_NAME;
     use console_platform_request_context::TrustedClientIp;
-    use sqlx::PgPool;
+    use console_platform_request_context::ACCESS_COOKIE_NAME;
     use sqlx::postgres::PgPoolOptions;
+    use sqlx::PgPool;
     use std::collections::BTreeSet;
     use time::OffsetDateTime;
-    use url::{Url, form_urlencoded};
+    use url::{form_urlencoded, Url};
     use uuid::Uuid;
 
     #[test]
@@ -4184,7 +4188,7 @@ mod tests {
 
 #[cfg(all(test, feature = "dev-auth"))]
 mod dev_auth_persona_tests {
-    use super::{Role, dev_persona_display_name};
+    use super::{dev_persona_display_name, Role};
     use std::str::FromStr;
 
     #[test]
