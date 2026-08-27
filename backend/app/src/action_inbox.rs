@@ -17,9 +17,11 @@ use console_action_inbox_application::{
     canonical_action_link_kind, list_action_inbox as run_action_inbox, list_complete_action_inbox,
 };
 use console_dispatch_adapter_postgres::PgDispatchStore;
+use console_governance_adapter_postgres::PgGovernanceStore;
 use console_kernel_core::{ErrorKind, KernelError};
+use console_payroll_adapter_postgres::PgPayrollStore;
 use console_platform_auth::JwtVerifier;
-use console_platform_authz::Principal;
+use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_support_adapter_postgres::PgSupportStore;
 use console_workorder_adapter_postgres::PgWorkOrderStore;
 use console_workorder_application::{
@@ -221,6 +223,8 @@ impl ActionInboxSourcePort for PgActionInboxSources {
                 ActionInboxSource::Dispatch => self.dispatch_page(query).await,
                 ActionInboxSource::Support => self.support_page(query).await,
                 ActionInboxSource::WorkOrder => self.work_order_page(query).await,
+                ActionInboxSource::Payroll => self.payroll_page(query).await,
+                ActionInboxSource::Governance => self.governance_page(query).await,
             }
         })
     }
@@ -428,6 +432,113 @@ impl PgActionInboxSources {
             total_is_exact: true,
             has_more: page.has_more,
         })
+    }
+
+    async fn payroll_page(
+        &self,
+        query: ActionInboxSourceQuery,
+    ) -> Result<ActionInboxSourcePage, KernelError> {
+        // Inbox is a merged read: callers without org-wide PayrollRunManage
+        // (built-in EXECUTIVE/SUPER_ADMIN) get an empty source, not 403.
+        if authorize_org_wide(&self.principal, Action::new(Feature::PayrollRunManage)).is_err() {
+            return Ok(empty_source_page());
+        }
+        let after = query
+            .after
+            .map(|position| (position.created_at, position.id));
+        let source_limit = i64::try_from(query.limit).unwrap_or(200);
+        let (runs, total, has_more) = PgPayrollStore::new(self.pool.clone())
+            .list_submitted_action_inbox_page(
+                self.principal.user_id,
+                query.as_of,
+                after,
+                source_limit,
+            )
+            .await
+            .map_err(|error| source_failure("payroll", error))?;
+        let items = runs
+            .into_iter()
+            .map(|run| ActionInboxSourceItem {
+                id: format!("payroll:{}", run.id),
+                kind: "payroll".to_owned(),
+                ref_code: run.source_label.clone(),
+                title: run.source_label,
+                site: None,
+                who: None,
+                due: None,
+                submitted: Some(run.submitted_at),
+                links: vec![ActionInboxLink {
+                    kind: "pay_run".to_owned(),
+                    id: run.id.to_string(),
+                    label: None,
+                }],
+                created_at: run.submitted_at,
+            })
+            .collect();
+        Ok(ActionInboxSourcePage {
+            items,
+            total: usize::try_from(total).unwrap_or(0),
+            total_is_exact: true,
+            has_more,
+        })
+    }
+
+    async fn governance_page(
+        &self,
+        query: ActionInboxSourceQuery,
+    ) -> Result<ActionInboxSourcePage, KernelError> {
+        // Match the decide REST gate so pending four-eyes do not leak to
+        // callers who cannot act.
+        if authorize_org_wide(&self.principal, Action::new(Feature::RoleManage)).is_err() {
+            return Ok(empty_source_page());
+        }
+        let after = query
+            .after
+            .map(|position| (position.created_at, position.id));
+        let source_limit = i64::try_from(query.limit).unwrap_or(200);
+        let (requests, total, has_more) = PgGovernanceStore::new(self.pool.clone())
+            .list_pending_action_inbox_page(
+                self.principal.user_id,
+                query.as_of,
+                after,
+                source_limit,
+            )
+            .await
+            .map_err(|error| source_failure("governance", error))?;
+        let items = requests
+            .into_iter()
+            .map(|request| ActionInboxSourceItem {
+                id: format!("governance:{}", request.id),
+                kind: "governance".to_owned(),
+                ref_code: request.request_ref.to_string(),
+                title: request.kind,
+                site: None,
+                who: None,
+                due: None,
+                submitted: Some(request.created_at),
+                links: vec![ActionInboxLink {
+                    kind: "approval_request".to_owned(),
+                    id: request.request_ref.to_string(),
+                    label: None,
+                }],
+                created_at: request.created_at,
+            })
+            .collect();
+        Ok(ActionInboxSourcePage {
+            items,
+            total: usize::try_from(total).unwrap_or(0),
+            total_is_exact: true,
+            has_more,
+        })
+    }
+}
+
+fn empty_source_page() -> ActionInboxSourcePage {
+    ActionInboxSourcePage {
+        items: Vec::new(),
+        total: 0,
+        total_is_exact: true,
+        has_more: false,
     }
 }
 

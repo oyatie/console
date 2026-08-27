@@ -145,7 +145,8 @@ pub struct PayrollLineSummary {
     pub blockers: serde_json::Value,
 }
 
-/// A caller's own draft-line rows across runs (self-service). Trimmed of the
+/// A caller's own draft-line rows across runs (self-service). Readiness only:
+/// hours and `*_source_present`. Never a `*_won` amount. Trimmed of the
 /// admin-only source-import bookkeeping columns.
 #[derive(Debug, Clone, Serialize)]
 pub struct MyPayrollLine {
@@ -171,6 +172,14 @@ pub struct MyPayrollLinePage {
     pub total: i64,
     pub limit: i64,
     pub offset: i64,
+}
+
+/// One SUBMITTED run visible to a distinct org-wide manager (inbox list only).
+#[derive(Debug, Clone)]
+pub struct PayrollActionInboxItem {
+    pub id: Uuid,
+    pub source_label: String,
+    pub submitted_at: OffsetDateTime,
 }
 
 #[derive(Clone)]
@@ -276,6 +285,7 @@ impl PgPayrollStore {
                 .fetch_one(tx.as_mut())
                 .await?;
 
+                // Readiness projection: hours + *_source_present. Never SELECT *_won.
                 let rows = sqlx::query(
                     r#"
                     SELECT r.id AS run_id, r.period_start, r.period_end, r.status AS run_status,
@@ -315,6 +325,75 @@ impl PgPayrollStore {
             limit,
             offset,
         })
+    }
+
+    /// Keyset page of SUBMITTED runs the caller did not submit.
+    ///
+    /// Capability (`PayrollRunManage` org-wide) is enforced by the inbox
+    /// composition root; this query only applies the SoD and as-of predicates.
+    pub async fn list_submitted_action_inbox_page(
+        &self,
+        caller: UserId,
+        as_of: OffsetDateTime,
+        after: Option<(OffsetDateTime, String)>,
+        limit: i64,
+    ) -> Result<(Vec<PayrollActionInboxItem>, i64, bool), PgPayrollError> {
+        let limit = limit.clamp(1, 200);
+        let org = current_org().map_err(KernelError::from)?;
+        let caller_id = *caller.as_uuid();
+        let (after_created_at, after_id) = after.map_or((None, None), |(created_at, id)| {
+            (Some(created_at), Some(id))
+        });
+        with_org_conn::<_, _, PgPayrollError>(&self.pool, org, move |tx| {
+            Box::pin(async move {
+                let total: i64 = sqlx::query_scalar(
+                    "SELECT COUNT(*) FROM payroll_draft_runs \
+                     WHERE status = 'SUBMITTED' \
+                       AND submitted_by IS NOT NULL \
+                       AND submitted_by <> $1 \
+                       AND submitted_at IS NOT NULL \
+                       AND submitted_at <= $2",
+                )
+                .bind(caller_id)
+                .bind(as_of)
+                .fetch_one(tx.as_mut())
+                .await?;
+                let rows = sqlx::query(
+                    "SELECT id, source_label, submitted_at \
+                     FROM payroll_draft_runs \
+                     WHERE status = 'SUBMITTED' \
+                       AND submitted_by IS NOT NULL \
+                       AND submitted_by <> $1 \
+                       AND submitted_at IS NOT NULL \
+                       AND submitted_at <= $2 \
+                       AND ($4::text IS NULL OR submitted_at > $3 \
+                         OR (submitted_at = $3 AND ('payroll:' || id::text) > $4)) \
+                     ORDER BY submitted_at ASC, ('payroll:' || id::text) ASC \
+                     LIMIT $5",
+                )
+                .bind(caller_id)
+                .bind(as_of)
+                .bind(after_created_at)
+                .bind(after_id.as_deref())
+                .bind(limit + 1)
+                .fetch_all(tx.as_mut())
+                .await?;
+                let has_more = i64::try_from(rows.len()).unwrap_or(0) > limit;
+                let items = rows
+                    .iter()
+                    .take(usize::try_from(limit).unwrap_or(rows.len()))
+                    .map(|row| {
+                        Ok(PayrollActionInboxItem {
+                            id: row.try_get("id")?,
+                            source_label: row.try_get("source_label")?,
+                            submitted_at: row.try_get("submitted_at")?,
+                        })
+                    })
+                    .collect::<Result<Vec<_>, PgPayrollError>>()?;
+                Ok((items, total, has_more))
+            })
+        })
+        .await
     }
 
     /// Verify that an approver identity is visible in the current tenant.

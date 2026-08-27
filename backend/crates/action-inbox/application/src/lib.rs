@@ -23,14 +23,18 @@ pub enum ActionInboxSource {
     Dispatch,
     Support,
     WorkOrder,
+    Payroll,
+    Governance,
 }
 
 impl ActionInboxSource {
-    pub const ALL: [Self; 4] = [
+    pub const ALL: [Self; 6] = [
         Self::Workflow,
         Self::Dispatch,
         Self::Support,
         Self::WorkOrder,
+        Self::Payroll,
+        Self::Governance,
     ];
 }
 
@@ -381,8 +385,10 @@ fn valid_namespaced_id(value: &str) -> bool {
     let Some((kind, id)) = value.split_once(':') else {
         return false;
     };
-    matches!(kind, "approval" | "dispatch" | "support" | "work")
-        && uuid::Uuid::parse_str(id).is_ok()
+    matches!(
+        kind,
+        "approval" | "dispatch" | "support" | "work" | "payroll" | "governance"
+    ) && uuid::Uuid::parse_str(id).is_ok()
 }
 
 fn compare_items(a: &ActionInboxItem, b: &ActionInboxItem) -> std::cmp::Ordering {
@@ -417,6 +423,38 @@ mod tests {
     use uuid::Uuid;
 
     use super::*;
+
+    #[test]
+    fn all_sources_are_payroll_and_governance_inclusive() {
+        assert_eq!(
+            ActionInboxSource::ALL,
+            [
+                ActionInboxSource::Workflow,
+                ActionInboxSource::Dispatch,
+                ActionInboxSource::Support,
+                ActionInboxSource::WorkOrder,
+                ActionInboxSource::Payroll,
+                ActionInboxSource::Governance,
+            ]
+        );
+        for source in ActionInboxSource::ALL {
+            let encoded = encode_cursor(
+                OffsetDateTime::from_unix_timestamp(1_800_000_000).unwrap(),
+                &ActionInboxPosition {
+                    created_at: OffsetDateTime::from_unix_timestamp(1_800_000_000).unwrap(),
+                    id: format!("{}:{}", namespaced_kind(source), Uuid::from_u128(1)),
+                },
+            );
+            assert!(
+                parse_cursor(
+                    &encoded,
+                    OffsetDateTime::from_unix_timestamp(1_800_000_000).unwrap()
+                )
+                .is_ok(),
+                "{source:?} cursor must round-trip"
+            );
+        }
+    }
 
     #[test]
     fn cursor_round_trips_and_rejects_invalid_or_future_boundaries() {
@@ -565,16 +603,10 @@ mod tests {
             (1..=ITEM_COUNT)
                 .map(|index| {
                     let source = ActionInboxSource::ALL[(index - 1) % ActionInboxSource::ALL.len()];
-                    let kind = match source {
-                        ActionInboxSource::Workflow => "approval",
-                        ActionInboxSource::Dispatch => "dispatch",
-                        ActionInboxSource::Support => "support",
-                        ActionInboxSource::WorkOrder => "work",
-                    };
                     (
                         source,
                         item(
-                            kind,
+                            namespaced_kind(source),
                             index as u128,
                             as_of - Duration::seconds((ITEM_COUNT - index + 1) as i64),
                         ),
@@ -731,16 +763,10 @@ mod tests {
             (1..=ITEM_COUNT)
                 .map(|index| {
                     let source = ActionInboxSource::ALL[(index - 1) % ActionInboxSource::ALL.len()];
-                    let kind = match source {
-                        ActionInboxSource::Workflow => "approval",
-                        ActionInboxSource::Dispatch => "dispatch",
-                        ActionInboxSource::Support => "support",
-                        ActionInboxSource::WorkOrder => "work",
-                    };
                     (
                         source,
                         item(
-                            kind,
+                            namespaced_kind(source),
                             index as u128,
                             as_of - Duration::seconds((ITEM_COUNT - index + 1) as i64),
                         ),
@@ -933,6 +959,17 @@ mod tests {
             total,
             total_is_exact: exact,
             has_more,
+        }
+    }
+
+    fn namespaced_kind(source: ActionInboxSource) -> &'static str {
+        match source {
+            ActionInboxSource::Workflow => "approval",
+            ActionInboxSource::Dispatch => "dispatch",
+            ActionInboxSource::Support => "support",
+            ActionInboxSource::WorkOrder => "work",
+            ActionInboxSource::Payroll => "payroll",
+            ActionInboxSource::Governance => "governance",
         }
     }
 

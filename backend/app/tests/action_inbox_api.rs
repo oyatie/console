@@ -24,6 +24,7 @@ use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
+use std::collections::BTreeSet;
 use std::sync::atomic::{AtomicU16, Ordering};
 
 const TEST_ISSUER: &str = "console-platform-auth";
@@ -492,6 +493,325 @@ async fn rejects_forged_and_future_cursors(pool: PgPool) {
     assert_eq!(future_resp.status, StatusCode::UNPROCESSABLE_ENTITY);
 }
 
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn action_inbox_payroll_source_enforces_sod_and_org_wide_manage(pool: PgPool) {
+    let keys = keys();
+    let branch = seed_branch(&pool, OrgId::knl(), "급여 리전", "급여 지사").await;
+    let submitter = UserId::new();
+    seed_user(&pool, OrgId::knl(), submitter, "EXECUTIVE", branch).await;
+    let approver = UserId::new();
+    seed_user(&pool, OrgId::knl(), approver, "EXECUTIVE", branch).await;
+    let admin = UserId::new();
+    seed_user(&pool, OrgId::knl(), admin, "ADMIN", branch).await;
+
+    let submitted_at = OffsetDateTime::now_utc() - Duration::minutes(1);
+    let run = seed_submitted_payroll_run(
+        &pool,
+        OrgId::knl(),
+        submitter,
+        "inbox-sod-run",
+        submitted_at,
+    )
+    .await;
+    let _calculated = seed_payroll_run(
+        &pool,
+        OrgId::knl(),
+        "inbox-calc-run",
+        "CALCULATED",
+        None,
+        None,
+    )
+    .await;
+
+    let service =
+        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+
+    let submitter_resp = get(
+        service.clone(),
+        PATH,
+        &bearer(&keys, OrgId::knl(), submitter, "EXECUTIVE", branch),
+    )
+    .await;
+    assert_eq!(
+        submitter_resp.status,
+        StatusCode::OK,
+        "{:?}",
+        submitter_resp.json
+    );
+    assert_eq!(
+        payroll_ids(&submitter_resp.json),
+        Vec::<String>::new(),
+        "submitter must not see their own SUBMITTED run: {:?}",
+        submitter_resp.json
+    );
+    assert_eq!(submitter_resp.json["total"], 0);
+
+    // Workbench reuses PgActionInboxSources via list_complete_action_inbox.
+    let submitter_workbench = get(
+        service.clone(),
+        "/api/v1/me/workbench",
+        &bearer(&keys, OrgId::knl(), submitter, "EXECUTIVE", branch),
+    )
+    .await;
+    assert_eq!(
+        submitter_workbench.status,
+        StatusCode::OK,
+        "{:?}",
+        submitter_workbench.json
+    );
+    assert_eq!(
+        submitter_workbench.json["action_inbox"]["status"], "ok",
+        "{:?}",
+        submitter_workbench.json
+    );
+    assert_eq!(
+        payroll_ids(&submitter_workbench.json["action_inbox"]),
+        Vec::<String>::new(),
+        "submitter must not see their own SUBMITTED run through workbench list_source_page: {:?}",
+        submitter_workbench.json
+    );
+    assert_eq!(submitter_workbench.json["action_inbox"]["total"], 0);
+
+    let approver_resp = get(
+        service.clone(),
+        PATH,
+        &bearer(&keys, OrgId::knl(), approver, "EXECUTIVE", branch),
+    )
+    .await;
+    assert_eq!(
+        approver_resp.status,
+        StatusCode::OK,
+        "{:?}",
+        approver_resp.json
+    );
+    assert_eq!(
+        payroll_ids(&approver_resp.json),
+        vec![format!("payroll:{run}")],
+        "{:?}",
+        approver_resp.json
+    );
+    assert_eq!(approver_resp.json["items"][0]["kind"], "payroll");
+    assert_eq!(approver_resp.json["items"][0]["ref"], "inbox-sod-run");
+    assert_eq!(approver_resp.json["total"], 1);
+
+    let approver_workbench = get(
+        service.clone(),
+        "/api/v1/me/workbench",
+        &bearer(&keys, OrgId::knl(), approver, "EXECUTIVE", branch),
+    )
+    .await;
+    assert_eq!(
+        approver_workbench.status,
+        StatusCode::OK,
+        "{:?}",
+        approver_workbench.json
+    );
+    assert_eq!(
+        approver_workbench.json["action_inbox"]["status"], "ok",
+        "{:?}",
+        approver_workbench.json
+    );
+    assert_eq!(
+        payroll_ids(&approver_workbench.json["action_inbox"]),
+        vec![format!("payroll:{run}")],
+        "{:?}",
+        approver_workbench.json
+    );
+    assert_eq!(approver_workbench.json["action_inbox"]["total"], 1);
+
+    let admin_resp = get(
+        service,
+        PATH,
+        &bearer(&keys, OrgId::knl(), admin, "ADMIN", branch),
+    )
+    .await;
+    assert_eq!(admin_resp.status, StatusCode::OK, "{:?}", admin_resp.json);
+    assert_eq!(
+        payroll_ids(&admin_resp.json),
+        Vec::<String>::new(),
+        "branch-scoped ADMIN must see zero payroll inbox items: {:?}",
+        admin_resp.json
+    );
+    assert_eq!(admin_resp.json["total"], 0);
+}
+
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn action_inbox_governance_source_enforces_requester_sod(pool: PgPool) {
+    let keys = keys();
+    let branch = seed_branch(&pool, OrgId::knl(), "결재 리전", "결재 지사").await;
+    let requester = UserId::new();
+    seed_user(&pool, OrgId::knl(), requester, "SUPER_ADMIN", branch).await;
+    let approver = UserId::new();
+    seed_user(&pool, OrgId::knl(), approver, "SUPER_ADMIN", branch).await;
+    let member = UserId::new();
+    seed_user(&pool, OrgId::knl(), member, "MEMBER", branch).await;
+    // company.*/hr.*/payroll.* four-eyes is a distinct-natural-person bar.
+    bind_user_to_new_person(&pool, OrgId::knl(), requester, "gov-inbox-req", member).await;
+    bind_user_to_new_person(&pool, OrgId::knl(), approver, "gov-inbox-app", member).await;
+
+    let created_at = OffsetDateTime::now_utc() - Duration::minutes(1);
+    let company =
+        seed_pending_approval(&pool, OrgId::knl(), requester, "company.revise", created_at).await;
+    let hr = seed_pending_approval(
+        &pool,
+        OrgId::knl(),
+        requester,
+        "hr.appoint",
+        created_at + Duration::seconds(1),
+    )
+    .await;
+    let payroll = seed_pending_approval(
+        &pool,
+        OrgId::knl(),
+        requester,
+        "payroll.create_run",
+        created_at + Duration::seconds(2),
+    )
+    .await;
+    let decided = seed_pending_approval(
+        &pool,
+        OrgId::knl(),
+        requester,
+        "override",
+        created_at - Duration::seconds(1),
+    )
+    .await;
+    seed_approval_decision(
+        &pool,
+        OrgId::knl(),
+        decided.request_ref,
+        requester,
+        approver,
+    )
+    .await;
+    let expected_governance = vec![
+        format!("governance:{}", company.id),
+        format!("governance:{}", hr.id),
+        format!("governance:{}", payroll.id),
+    ];
+
+    let service =
+        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+
+    let requester_resp = get(
+        service.clone(),
+        PATH,
+        &bearer(&keys, OrgId::knl(), requester, "SUPER_ADMIN", branch),
+    )
+    .await;
+    assert_eq!(
+        requester_resp.status,
+        StatusCode::OK,
+        "{:?}",
+        requester_resp.json
+    );
+    assert_eq!(
+        governance_ids(&requester_resp.json),
+        Vec::<String>::new(),
+        "requester must not see their own pending company.*/hr.*/payroll.* items: {:?}",
+        requester_resp.json
+    );
+    assert_eq!(requester_resp.json["total"], 0);
+
+    // Workbench reuses PgActionInboxSources via list_complete_action_inbox.
+    let requester_workbench = get(
+        service.clone(),
+        "/api/v1/me/workbench",
+        &bearer(&keys, OrgId::knl(), requester, "SUPER_ADMIN", branch),
+    )
+    .await;
+    assert_eq!(
+        requester_workbench.status,
+        StatusCode::OK,
+        "{:?}",
+        requester_workbench.json
+    );
+    assert_eq!(
+        requester_workbench.json["action_inbox"]["status"], "ok",
+        "{:?}",
+        requester_workbench.json
+    );
+    assert_eq!(
+        governance_ids(&requester_workbench.json["action_inbox"]),
+        Vec::<String>::new(),
+        "requester must not see their own pending four-eyes item through workbench list_source_page: {:?}",
+        requester_workbench.json
+    );
+    assert_eq!(requester_workbench.json["action_inbox"]["total"], 0);
+
+    let approver_resp = get(
+        service.clone(),
+        PATH,
+        &bearer(&keys, OrgId::knl(), approver, "SUPER_ADMIN", branch),
+    )
+    .await;
+    assert_eq!(
+        approver_resp.status,
+        StatusCode::OK,
+        "{:?}",
+        approver_resp.json
+    );
+    assert_eq!(
+        governance_ids(&approver_resp.json),
+        expected_governance,
+        "{:?}",
+        approver_resp.json
+    );
+    assert_eq!(approver_resp.json["items"][0]["kind"], "governance");
+    assert_eq!(approver_resp.json["items"][0]["title"], "company.revise");
+    assert_eq!(approver_resp.json["items"][1]["title"], "hr.appoint");
+    assert_eq!(
+        approver_resp.json["items"][2]["title"],
+        "payroll.create_run"
+    );
+    assert_eq!(
+        approver_resp.json["items"][0]["ref"],
+        company.request_ref.to_string()
+    );
+    assert_eq!(approver_resp.json["total"], 3);
+
+    let approver_workbench = get(
+        service.clone(),
+        "/api/v1/me/workbench",
+        &bearer(&keys, OrgId::knl(), approver, "SUPER_ADMIN", branch),
+    )
+    .await;
+    assert_eq!(
+        approver_workbench.status,
+        StatusCode::OK,
+        "{:?}",
+        approver_workbench.json
+    );
+    assert_eq!(
+        approver_workbench.json["action_inbox"]["status"], "ok",
+        "{:?}",
+        approver_workbench.json
+    );
+    // Workbench merges sources; membership is the SoD lock, not inter-source
+    // sort order. `/action-inbox` above already pins created_at order.
+    let workbench_ids: BTreeSet<String> = governance_ids(&approver_workbench.json["action_inbox"])
+        .into_iter()
+        .collect();
+    let expected_ids: BTreeSet<String> = expected_governance.iter().cloned().collect();
+    assert_eq!(workbench_ids, expected_ids, "{:?}", approver_workbench.json);
+    assert_eq!(approver_workbench.json["action_inbox"]["total"], 3);
+
+    let member_resp = get(
+        service,
+        PATH,
+        &bearer(&keys, OrgId::knl(), member, "MEMBER", branch),
+    )
+    .await;
+    assert_eq!(member_resp.status, StatusCode::OK, "{:?}", member_resp.json);
+    assert_eq!(
+        governance_ids(&member_resp.json),
+        Vec::<String>::new(),
+        "a caller who cannot decide must not see pending four-eyes: {:?}",
+        member_resp.json
+    );
+    assert_eq!(member_resp.json["total"], 0);
+}
+
 // ===========================================================================
 // Helpers.
 // ===========================================================================
@@ -746,6 +1066,178 @@ async fn seed_assigned_workflow_task(
     .await
     .unwrap();
     task_id
+}
+
+struct PendingApproval {
+    id: uuid::Uuid,
+    request_ref: uuid::Uuid,
+}
+
+fn payroll_ids(json: &Value) -> Vec<String> {
+    json["items"]
+        .as_array()
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| {
+                    item["id"]
+                        .as_str()
+                        .filter(|id| id.starts_with("payroll:"))
+                        .map(str::to_owned)
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn governance_ids(json: &Value) -> Vec<String> {
+    json["items"]
+        .as_array()
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| {
+                    item["id"]
+                        .as_str()
+                        .filter(|id| id.starts_with("governance:"))
+                        .map(str::to_owned)
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+async fn seed_submitted_payroll_run(
+    pool: &PgPool,
+    org: OrgId,
+    submitter: UserId,
+    source_label: &str,
+    submitted_at: OffsetDateTime,
+) -> uuid::Uuid {
+    seed_payroll_run(
+        pool,
+        org,
+        source_label,
+        "SUBMITTED",
+        Some(submitter),
+        Some(submitted_at),
+    )
+    .await
+}
+
+async fn seed_payroll_run(
+    pool: &PgPool,
+    org: OrgId,
+    source_label: &str,
+    status: &str,
+    submitter: Option<UserId>,
+    submitted_at: Option<OffsetDateTime>,
+) -> uuid::Uuid {
+    sqlx::query_scalar(
+        "INSERT INTO payroll_draft_runs \
+         (org_id, period_start, period_end, source_label, status, submitted_by, submitted_at) \
+         VALUES ($1, DATE '2026-07-01', DATE '2026-07-31', $2, $3, $4, $5) \
+         RETURNING id",
+    )
+    .bind(*org.as_uuid())
+    .bind(source_label)
+    .bind(status)
+    .bind(submitter.map(|user| *user.as_uuid()))
+    .bind(submitted_at)
+    .fetch_one(pool)
+    .await
+    .unwrap()
+}
+
+async fn bind_user_to_new_person(
+    pool: &PgPool,
+    org: OrgId,
+    user: UserId,
+    source_key: &str,
+    binder: UserId,
+) {
+    let employee_id: uuid::Uuid = sqlx::query_scalar(
+        "INSERT INTO employees \
+         (org_id, company, name, source_filename, source_sheet, source_row, source_key) \
+         VALUES ($1, 'KNL', $2, 'inbox.xlsx', 'Sheet1', 1, $2) RETURNING id",
+    )
+    .bind(*org.as_uuid())
+    .bind(source_key)
+    .fetch_one(pool)
+    .await
+    .unwrap();
+    let person_id: uuid::Uuid =
+        sqlx::query_scalar("INSERT INTO persons (org_id) VALUES ($1) RETURNING id")
+            .bind(*org.as_uuid())
+            .fetch_one(pool)
+            .await
+            .unwrap();
+    sqlx::query("UPDATE users SET employee_id = $1 WHERE id = $2 AND org_id = $3")
+        .bind(employee_id)
+        .bind(*user.as_uuid())
+        .bind(*org.as_uuid())
+        .execute(pool)
+        .await
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO employee_person_bindings \
+         (org_id, employee_id, person_id, actor_id, payload_digest) \
+         VALUES ($1, $2, $3, $4, $5)",
+    )
+    .bind(*org.as_uuid())
+    .bind(employee_id)
+    .bind(person_id)
+    .bind(*binder.as_uuid())
+    .bind([7_u8; 32].as_slice())
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+async fn seed_pending_approval(
+    pool: &PgPool,
+    org: OrgId,
+    requester: UserId,
+    kind: &str,
+    created_at: OffsetDateTime,
+) -> PendingApproval {
+    let request_ref = uuid::Uuid::new_v4();
+    let id = sqlx::query_scalar(
+        "INSERT INTO gov_approval_requests \
+         (org_id, request_ref, kind, requested_by, payload_summary, created_at) \
+         VALUES ($1, $2, $3, $4, '{}'::jsonb, $5) \
+         RETURNING id",
+    )
+    .bind(*org.as_uuid())
+    .bind(request_ref)
+    .bind(kind)
+    .bind(*requester.as_uuid())
+    .bind(created_at)
+    .fetch_one(pool)
+    .await
+    .unwrap();
+    PendingApproval { id, request_ref }
+}
+
+async fn seed_approval_decision(
+    pool: &PgPool,
+    org: OrgId,
+    request_ref: uuid::Uuid,
+    requester: UserId,
+    approver: UserId,
+) {
+    sqlx::query(
+        "INSERT INTO gov_approvals \
+         (org_id, request_ref, kind, requested_by, approver_id, decision, decided_at) \
+         VALUES ($1, $2, 'override', $3, $4, 'approved', now())",
+    )
+    .bind(*org.as_uuid())
+    .bind(request_ref)
+    .bind(*requester.as_uuid())
+    .bind(*approver.as_uuid())
+    .execute(pool)
+    .await
+    .unwrap();
 }
 
 async fn seed_dispatch_offer(
