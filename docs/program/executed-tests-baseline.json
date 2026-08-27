@@ -186,7 +186,7 @@
     "backend/crates/inbox/adapter-postgres/tests/inbox_docs_rls_surfaces_as_runtime_role.rs": 3,
     "backend/crates/inbox/application/src/lib.rs": 1,
     "backend/crates/inbox/domain/src/lib.rs": 5,
-    "backend/crates/inbox/rest/tests/api.rs": 1,
+    "backend/crates/inbox/rest/tests/api.rs": 2,
     "backend/crates/inspection/adapter-postgres/tests/lifecycle.rs": 2,
     "backend/crates/inspection/adapter-postgres/tests/schedule_window_rls_surfaces_as_runtime_role.rs": 2,
     "backend/crates/inspection/domain/src/lib.rs": 3,
