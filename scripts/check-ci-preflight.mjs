@@ -612,6 +612,7 @@ const postgresWrapperContracts = [
 
   // The remaining 167, 2026-07-31.
   ["app-action-inbox-api-pg", "//backend/app:console-app-itest-action_inbox_api"],
+  ["app-attendance-persona-api-pg", "//backend/app:console-app-itest-attendance_persona_api"],
   ["app-audit-api-pg", "//backend/app:console-app-itest-audit_api"],
   ["app-auth-rest-pg", "//backend/app:console-app-itest-auth_rest"],
   ["app-board-ack-api-pg", "//backend/app:console-app-itest-board_ack_api"],

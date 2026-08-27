@@ -2,10 +2,10 @@
   "schema_version": 1,
   "description": "Buck sh_test postgres wrappers → cargo test argv for tools/ci/cargo_needs_postgres.sh",
   "counts": {
-    "mapped": 229,
+    "mapped": 230,
     "unmapped": 3,
-    "workflow_targets": 214,
-    "workflow_mapped": 214,
+    "workflow_targets": 215,
+    "workflow_mapped": 215,
     "workflow_missing": 0
   },
   "entries": [
@@ -32,6 +32,30 @@
       ],
       "in_workflow_postgres_job": true,
       "measured_seconds": 21.4
+    },
+    {
+      "buck_wrapper": "//tools/buck:app-attendance-persona-api-pg",
+      "name": "app-attendance-persona-api-pg",
+      "buck_inner": "//backend/app:console-app-itest-attendance_persona_api",
+      "package": "console-app",
+      "crate_dir": "backend/app",
+      "kind": "test",
+      "test": "attendance_persona_api",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "attendance_persona_api",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true,
+      "measured_seconds": 15.0
     },
     {
       "buck_wrapper": "//tools/buck:app-audit-api-pg",

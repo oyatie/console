@@ -25,6 +25,7 @@
   "test_attribute_baseline": {
     "backend/app/src/lib.rs": 187,
     "backend/app/tests/action_inbox_api.rs": 10,
+    "backend/app/tests/attendance_persona_api.rs": 2,
     "backend/app/tests/audit_api.rs": 5,
     "backend/app/tests/auth_rest.rs": 17,
     "backend/app/tests/benefit_catalog_api.rs": 1,

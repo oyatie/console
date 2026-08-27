@@ -206,6 +206,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
         'integration': {
             'tests/action_inbox_api.rs': 'postgres',
+            'tests/attendance_persona_api.rs': 'postgres',
             'tests/audit_api.rs': 'postgres',
             'tests/auth_rest.rs': 'postgres',
             'tests/benefit_catalog_api.rs': 'postgres',
