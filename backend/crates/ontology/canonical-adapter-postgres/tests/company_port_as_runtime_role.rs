@@ -30,7 +30,7 @@
 
 use console_kernel_core::{OrgId, UserId};
 use console_ontology_canonical_adapter_postgres::company::{
-    CompanyCommand, CompanyError, CompanyQuery, PgCompanyPort,
+    CompanyCommand, CompanyError, CompanyHead, CompanyQuery, PgCompanyPort,
 };
 use console_ontology_canonical_domain::{
     CanonicalPort, CommandId, CommandReceipt, CompanyPort, DispatchTarget, ObjectKey, ReceiptOwner,
@@ -108,6 +108,20 @@ async fn execute(
 ) -> Result<CommandReceipt, CompanyError> {
     let port = port.clone();
     tokio::task::spawn_blocking(move || port.execute(&command))
+        .await
+        .unwrap()
+}
+
+async fn get(port: &PgCompanyPort, org: OrgId) -> Result<Option<CompanyHead>, CompanyError> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.get(org))
+        .await
+        .unwrap()
+}
+
+async fn list(port: &PgCompanyPort, org: OrgId) -> Result<Vec<CompanyHead>, CompanyError> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.list(org))
         .await
         .unwrap()
 }
@@ -217,6 +231,12 @@ fn preflight_is_pure_and_blocks_a_non_object_attribute_payload() {
 async fn a_company_revision_is_created_and_read_back(owner_pool: PgPool) {
     let (org, actor, port) = fixture(&owner_pool).await;
 
+    assert!(
+        get(&port, org).await.unwrap().is_none(),
+        "no revision is not a fabricated head from organizations.name"
+    );
+    assert!(list(&port, org).await.unwrap().is_empty());
+
     let receipt = execute(&port, command(org, actor, revise("주식회사 아크메")))
         .await
         .unwrap();
@@ -260,6 +280,19 @@ async fn a_company_revision_is_created_and_read_back(owner_pool: PgPool) {
         "Org company",
         "the port must leave the provisioning-owned `organizations` head alone"
     );
+
+    let head = get(&port, org)
+        .await
+        .unwrap()
+        .expect("created company revision must be queryable");
+    assert_eq!(head.org_id, ORG);
+    assert_eq!(head.legal_name.as_deref(), Some("주식회사 아크메"));
+    assert_eq!(
+        head.reg_no, None,
+        "a field absent from stored attributes must be omitted, not invented"
+    );
+    assert_eq!(head.version, 1);
+    assert_eq!(list(&port, org).await.unwrap(), vec![head]);
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
@@ -275,6 +308,10 @@ async fn a_revision_is_appended_and_the_prior_revision_is_unchanged(owner_pool: 
         .unwrap();
     assert_eq!(revised.target(), DispatchTarget::CompanyRevise);
     assert_eq!(revised.result()["version"].as_i64(), Some(2));
+
+    let head = get(&port, org).await.unwrap().expect("latest head");
+    assert_eq!(head.version, 2);
+    assert_eq!(head.legal_name.as_deref(), Some("아크메 주식회사"));
 
     let after = revision_snapshot(&owner_pool, 1).await;
     assert_eq!(before, after, "appending a revision rewrote revision 1");
@@ -431,7 +468,7 @@ async fn the_runtime_role_may_not_write_the_organizations_head(owner_pool: PgPoo
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_pool: PgPool) {
-    let (_org, _actor, _port) = fixture(&owner_pool).await;
+    let (org, _actor, port) = fixture(&owner_pool).await;
     let foreign_actor = seed_org_and_super_admin(&owner_pool, FOREIGN_ORG, "foreign").await;
 
     // A revision that genuinely exists — under the OTHER tenant. Seeded through
@@ -517,6 +554,22 @@ async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_
     assert_eq!(
         error.message(),
         "new row violates row-level security policy for table \"company_revisions\""
+    );
+    drop(tx);
+
+    // Armed for ORG: the foreign revision is not a fabricated local head.
+    // Deny-by-omission: a missing or other-tenant company is Ok(None) on the
+    // runtime-role pool, never a distinct "wrong tenant" error.
+    let foreign_as_local = get(&port, org).await;
+    assert!(
+        matches!(foreign_as_local, Ok(None)),
+        "foreign Company is Ok(None) when armed for this org; got {foreign_as_local:?}"
+    );
+    assert!(list(&port, org).await.unwrap().is_empty());
+    let unknown = get(&port, OrgId::from_uuid(Uuid::new_v4())).await;
+    assert!(
+        matches!(unknown, Ok(None)),
+        "unknown org id is Ok(None) on the runtime-role pool, never a distinct error; got {unknown:?}"
     );
 }
 

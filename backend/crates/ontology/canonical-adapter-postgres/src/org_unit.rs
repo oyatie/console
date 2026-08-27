@@ -180,6 +180,16 @@ impl CanonicalPortError for OrgUnitError {
     }
 }
 
+/// Current canonical OrgUnit head. `name` / `parent_id` are parsed from the
+/// latest revision's attributes; neither is a column on `org_units`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OrgUnitHead {
+    pub id: Uuid,
+    pub name: Option<String>,
+    pub parent_id: Option<Uuid>,
+    pub version: i64,
+}
+
 /// The one permitted holder of production DML against `org_units`,
 /// `org_unit_revisions` and `org_unit_source_bindings`.
 #[derive(Debug, Clone)]
@@ -192,6 +202,73 @@ impl PgOrgUnitPort {
     #[must_use]
     pub const fn new(pool: PgPool, runtime: tokio::runtime::Handle) -> Self {
         Self { pool, runtime }
+    }
+
+    /// Current head of one OrgUnit. A foreign tenant's id is omit-by-RLS
+    /// (`None`), never a fabricated row.
+    pub fn get(
+        &self,
+        org_id: OrgId,
+        org_unit_id: Uuid,
+    ) -> Result<Option<OrgUnitHead>, OrgUnitError> {
+        self.runtime
+            .block_on(self.read_heads(*org_id.as_uuid(), Some(org_unit_id)))
+            .map(|heads| heads.into_iter().next())
+    }
+
+    /// Current heads in the armed tenant. Empty when none are visible.
+    pub fn list(&self, org_id: OrgId) -> Result<Vec<OrgUnitHead>, OrgUnitError> {
+        self.runtime
+            .block_on(self.read_heads(*org_id.as_uuid(), None))
+    }
+
+    async fn arm_org<'e, E>(&self, executor: E, org: Uuid) -> Result<(), OrgUnitError>
+    where
+        E: sqlx::Executor<'e, Database = sqlx::Postgres>,
+    {
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(org.to_string())
+            .execute(executor)
+            .await?;
+        Ok(())
+    }
+
+    async fn read_heads(
+        &self,
+        org: Uuid,
+        org_unit_id: Option<Uuid>,
+    ) -> Result<Vec<OrgUnitHead>, OrgUnitError> {
+        let mut tx = self.pool.begin().await?;
+        self.arm_org(&mut *tx, org).await?;
+        let rows = sqlx::query(
+            "SELECT u.id, r.version, r.attributes \
+             FROM org_units u \
+             JOIN org_unit_revisions r \
+               ON r.org_id = u.org_id AND r.org_unit_id = u.id \
+             WHERE u.org_id = $1 AND ($2::uuid IS NULL OR u.id = $2) \
+               AND r.version = ( \
+                 SELECT MAX(version) FROM org_unit_revisions \
+                 WHERE org_id = u.org_id AND org_unit_id = u.id \
+               ) \
+             ORDER BY u.id",
+        )
+        .bind(org)
+        .bind(org_unit_id)
+        .fetch_all(&mut *tx)
+        .await?;
+        tx.commit().await?;
+        Ok(rows
+            .into_iter()
+            .map(|row| {
+                let attributes: serde_json::Value = row.get("attributes");
+                OrgUnitHead {
+                    id: row.get("id"),
+                    name: attr_string(&attributes, "name"),
+                    parent_id: attr_uuid(&attributes, "parent_id"),
+                    version: row.get("version"),
+                }
+            })
+            .collect())
     }
 
     async fn write(&self, command: &OrgUnitCommand) -> Result<CommandReceipt, OrgUnitError> {
@@ -509,6 +586,21 @@ fn canonical_json(value: &serde_json::Value) -> serde_json::Value {
         }
         primitive => primitive.clone(),
     }
+}
+
+fn attr_string(attributes: &serde_json::Value, key: &str) -> Option<String> {
+    attributes
+        .get(key)
+        .and_then(serde_json::Value::as_str)
+        .filter(|value| !value.is_empty())
+        .map(str::to_owned)
+}
+
+fn attr_uuid(attributes: &serde_json::Value, key: &str) -> Option<Uuid> {
+    attributes
+        .get(key)
+        .and_then(serde_json::Value::as_str)
+        .and_then(|value| Uuid::parse_str(value).ok())
 }
 
 // ---------------------------------------------------------------------------

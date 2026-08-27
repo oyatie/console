@@ -24,7 +24,7 @@
 
 use console_kernel_core::{OrgId, UserId};
 use console_ontology_canonical_adapter_postgres::org_unit::{
-    OrgUnitCommand, OrgUnitError, OrgUnitQuery, PgOrgUnitPort, SourceBinding,
+    OrgUnitCommand, OrgUnitError, OrgUnitHead, OrgUnitQuery, PgOrgUnitPort, SourceBinding,
 };
 use console_ontology_canonical_domain::{
     CanonicalPort, CommandId, CommandReceipt, DispatchTarget, ObjectKey, OrgUnitPort, ReceiptOwner,
@@ -102,6 +102,24 @@ async fn execute(
 ) -> Result<CommandReceipt, OrgUnitError> {
     let port = port.clone();
     tokio::task::spawn_blocking(move || port.execute(&command))
+        .await
+        .unwrap()
+}
+
+async fn get(
+    port: &PgOrgUnitPort,
+    org: OrgId,
+    org_unit_id: Uuid,
+) -> Result<Option<OrgUnitHead>, OrgUnitError> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.get(org, org_unit_id))
+        .await
+        .unwrap()
+}
+
+async fn list(port: &PgOrgUnitPort, org: OrgId) -> Result<Vec<OrgUnitHead>, OrgUnitError> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.list(org))
         .await
         .unwrap()
 }
@@ -328,6 +346,24 @@ async fn an_org_unit_is_created_and_read_back(owner_pool: PgPool) {
     .await
     .unwrap();
     assert_eq!(bound, unit);
+
+    let head = get(&port, org, unit)
+        .await
+        .unwrap()
+        .expect("created OrgUnit must be queryable");
+    assert_eq!(head.id, unit);
+    assert_eq!(head.name.as_deref(), Some("영업본부"));
+    assert_eq!(
+        head.parent_id, None,
+        "parent_id is not a column and was not stored in attributes"
+    );
+    assert_eq!(head.version, 1);
+    assert_eq!(list(&port, org).await.unwrap(), vec![head]);
+    let unknown = get(&port, org, Uuid::new_v4()).await;
+    assert!(
+        matches!(unknown, Ok(None)),
+        "an unknown id must be Ok(None) on the runtime-role pool, never a distinct error; got {unknown:?}"
+    );
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
@@ -345,6 +381,10 @@ async fn a_revision_is_appended_and_the_prior_revision_is_unchanged(owner_pool: 
         .unwrap();
     assert_eq!(revised.target(), DispatchTarget::OrganizationReviseOrgUnit);
     assert_eq!(revised.result()["version"].as_i64(), Some(2));
+
+    let head = get(&port, org, unit).await.unwrap().expect("latest head");
+    assert_eq!(head.version, 2);
+    assert_eq!(head.name.as_deref(), Some("영업1본부"));
 
     let after = revision_snapshot(&owner_pool, unit, 1).await;
     assert_eq!(before, after, "appending a revision rewrote revision 1");
@@ -459,7 +499,7 @@ async fn an_update_of_a_revision_row_is_refused_by_the_trigger(owner_pool: PgPoo
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_pool: PgPool) {
-    let (_org, _actor, _port) = fixture(&owner_pool).await;
+    let (org, _actor, port) = fixture(&owner_pool).await;
     let foreign_actor = seed_org_and_super_admin(&owner_pool, FOREIGN_ORG, "foreign").await;
 
     // A unit, a revision and a binding that genuinely exist — under the OTHER
@@ -533,6 +573,19 @@ async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_
     assert_eq!(
         error.message(),
         "new row violates row-level security policy for table \"org_units\""
+    );
+    drop(tx);
+
+    assert!(list(&port, org).await.unwrap().is_empty());
+    let foreign_head = get(&port, org, foreign_unit).await;
+    assert!(
+        matches!(foreign_head, Ok(None)),
+        "foreign OrgUnit id is Ok(None) on the runtime-role pool, never a wrong-tenant error; got {foreign_head:?}"
+    );
+    let unknown = get(&port, org, Uuid::new_v4()).await;
+    assert!(
+        matches!(unknown, Ok(None)),
+        "unknown OrgUnit id is indistinguishable from a foreign tenant: Ok(None); got {unknown:?}"
     );
 }
 

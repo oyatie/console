@@ -147,6 +147,16 @@ async fn list_for_org_unit(
         .unwrap()
 }
 
+async fn list(
+    port: &PgJobPositionPort,
+    org: OrgId,
+) -> Result<Vec<JobPositionView>, JobPositionError> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.list(org))
+        .await
+        .unwrap()
+}
+
 const COUNT_POSITIONS: &str = "SELECT count(*)::bigint FROM job_positions";
 const COUNT_REVISIONS: &str = "SELECT count(*)::bigint FROM job_position_revisions";
 const COUNT_RECEIPTS: &str = "SELECT count(*)::bigint FROM ont_action_command_receipts";
@@ -369,8 +379,15 @@ async fn a_job_position_is_created_and_read_back(owner_pool: PgPool) {
     assert_eq!(viewed.org_unit_id, unit);
     assert_eq!(viewed.version, 1);
     assert_eq!(viewed.attributes, json!({ "title": "백엔드 엔지니어" }));
-    let listed = list_for_org_unit(&port, org, unit).await.unwrap();
+    let listed_unit = list_for_org_unit(&port, org, unit).await.unwrap();
+    assert_eq!(listed_unit, vec![viewed.clone()]);
+    let listed = list(&port, org).await.unwrap();
     assert_eq!(listed, vec![viewed]);
+    let unknown = get(&port, org, Uuid::new_v4()).await;
+    assert!(
+        matches!(unknown, Ok(None)),
+        "unknown JobPosition id is Ok(None) on the runtime-role pool, never a distinct error; got {unknown:?}"
+    );
 }
 
 /// Free-text `employees.position` and `recruit_postings` are excluded by the
@@ -413,9 +430,10 @@ async fn free_text_and_recruiting_are_never_inferred_as_job_positions(owner_pool
         0,
         "legacy free-text / recruiting must not materialize job_positions"
     );
+    let unknown = get(&port, org, Uuid::new_v4()).await;
     assert!(
-        get(&port, org, Uuid::new_v4()).await.unwrap().is_none(),
-        "querying an unknown id must not invent a JobPosition"
+        matches!(unknown, Ok(None)),
+        "querying an unknown id must be Ok(None) on the runtime-role pool, never a distinct error; got {unknown:?}"
     );
 
     let created = execute(&port, command(org, actor, create(unit, "정규 직위")))
@@ -517,6 +535,25 @@ async fn a_reorganisation_moves_the_head_and_the_history_survives_it(owner_pool:
     .await
     .unwrap();
     assert_eq!(versions, vec![1, 2]);
+
+    let viewed = get(&port, org, position_id)
+        .await
+        .unwrap()
+        .expect("moved JobPosition must remain queryable");
+    assert_eq!(viewed.org_unit_id, other_unit);
+    assert_eq!(viewed.version, 2);
+    assert!(
+        list_for_org_unit(&port, org, unit)
+            .await
+            .unwrap()
+            .is_empty(),
+        "the old unit must no longer list the moved position"
+    );
+    assert_eq!(
+        list_for_org_unit(&port, org, other_unit).await.unwrap(),
+        vec![viewed.clone()]
+    );
+    assert_eq!(list(&port, org).await.unwrap(), vec![viewed]);
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
@@ -601,7 +638,7 @@ async fn an_update_of_a_revision_row_is_refused_by_the_trigger(owner_pool: PgPoo
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_pool: PgPool) {
-    let (_org, _actor, _unit, _port) = fixture(&owner_pool).await;
+    let (org, _actor, _unit, port) = fixture(&owner_pool).await;
     let foreign_actor = seed_org_and_super_admin(&owner_pool, FOREIGN_ORG, "foreign").await;
     let foreign_unit = seed_org_unit(&owner_pool, FOREIGN_ORG).await;
 
@@ -668,6 +705,26 @@ async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_
     assert_eq!(
         error.message(),
         "new row violates row-level security policy for table \"job_positions\""
+    );
+    drop(tx);
+
+    assert!(list(&port, org).await.unwrap().is_empty());
+    let foreign_head = get(&port, org, foreign_position).await;
+    assert!(
+        matches!(foreign_head, Ok(None)),
+        "foreign JobPosition id is Ok(None) on the runtime-role pool, never a wrong-tenant error; got {foreign_head:?}"
+    );
+    let unknown = get(&port, org, Uuid::new_v4()).await;
+    assert!(
+        matches!(unknown, Ok(None)),
+        "unknown JobPosition id is indistinguishable from a foreign tenant: Ok(None); got {unknown:?}"
+    );
+    assert!(
+        list_for_org_unit(&port, org, foreign_unit)
+            .await
+            .unwrap()
+            .is_empty(),
+        "list_for_org_unit of a foreign unit is empty, not a wrong-tenant error"
     );
 }
 

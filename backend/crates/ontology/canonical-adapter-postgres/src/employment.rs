@@ -454,6 +454,25 @@ impl CanonicalPortError for EmploymentError {
     }
 }
 
+/// Current canonical Employment head — an *open* head (`valid_to IS NULL`).
+///
+/// Closed (EXITED) windows are omitted by list/get: `valid_to` is the half-open
+/// bound that exists so a temporal reader does not treat an exited assignment
+/// as current. `org_unit_id` / `job_position_id` come from the latest
+/// *effective* revision (`MAX(valid_from)` — a backdated history insert is a
+/// later version with an earlier effect). `person_id` is the unique
+/// source-binding → person-binding path; ambiguous or unbound identities are
+/// omitted, never invented from `employee_id`. `appointed_on` is the head's
+/// opening `valid_from`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EmploymentHead {
+    pub id: Uuid,
+    pub person_id: Option<Uuid>,
+    pub org_unit_id: Option<Uuid>,
+    pub job_position_id: Option<Uuid>,
+    pub appointed_on: OffsetDateTime,
+}
+
 /// The one permitted holder of production DML against `employees`,
 /// `employment_heads`, `employment_revisions` and
 /// `employment_source_bindings`.
@@ -467,6 +486,83 @@ impl PgEmploymentPort {
     #[must_use]
     pub const fn new(pool: PgPool, runtime: tokio::runtime::Handle) -> Self {
         Self { pool, runtime }
+    }
+
+    /// Current *open* head of one Employment. A closed window (`valid_to` set),
+    /// a foreign tenant's id, or unset RLS is `None` — never a fabricated row.
+    pub fn get(
+        &self,
+        org_id: OrgId,
+        employment_id: Uuid,
+    ) -> Result<Option<EmploymentHead>, EmploymentError> {
+        self.runtime
+            .block_on(self.read_heads(*org_id.as_uuid(), Some(employment_id)))
+            .map(|heads| heads.into_iter().next())
+    }
+
+    /// Current open heads in the armed tenant. Empty when none are visible.
+    pub fn list(&self, org_id: OrgId) -> Result<Vec<EmploymentHead>, EmploymentError> {
+        self.runtime
+            .block_on(self.read_heads(*org_id.as_uuid(), None))
+    }
+
+    async fn arm_org<'e, E>(&self, executor: E, org: Uuid) -> Result<(), EmploymentError>
+    where
+        E: sqlx::Executor<'e, Database = sqlx::Postgres>,
+    {
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(org.to_string())
+            .execute(executor)
+            .await?;
+        Ok(())
+    }
+
+    async fn read_heads(
+        &self,
+        org: Uuid,
+        employment_id: Option<Uuid>,
+    ) -> Result<Vec<EmploymentHead>, EmploymentError> {
+        let mut tx = self.pool.begin().await?;
+        self.arm_org(&mut *tx, org).await?;
+        let rows = sqlx::query(
+            "SELECT h.id, h.valid_from AS appointed_on, r.attributes, \
+                    CASE WHEN bind.n = 1 THEN bind.person_id END AS person_id \
+             FROM employment_heads h \
+             JOIN employment_revisions r \
+               ON r.org_id = h.org_id AND r.employment_id = h.id \
+              AND r.valid_from = ( \
+                SELECT MAX(valid_from) FROM employment_revisions \
+                WHERE org_id = h.org_id AND employment_id = h.id \
+              ) \
+             LEFT JOIN LATERAL ( \
+               SELECT COUNT(*)::bigint AS n, (ARRAY_AGG(p.person_id))[1] AS person_id \
+               FROM employment_source_bindings b \
+               LEFT JOIN employee_person_bindings p \
+                 ON p.org_id = b.org_id AND p.employee_id = b.employee_id \
+               WHERE b.org_id = h.org_id AND b.employment_id = h.id \
+             ) bind ON true \
+             WHERE h.org_id = $1 AND ($2::uuid IS NULL OR h.id = $2) \
+               AND h.valid_to IS NULL \
+             ORDER BY h.id",
+        )
+        .bind(org)
+        .bind(employment_id)
+        .fetch_all(&mut *tx)
+        .await?;
+        tx.commit().await?;
+        Ok(rows
+            .into_iter()
+            .map(|row| {
+                let attributes: serde_json::Value = row.get("attributes");
+                EmploymentHead {
+                    id: row.get("id"),
+                    person_id: row.get("person_id"),
+                    org_unit_id: attr_uuid(&attributes, "org_unit_id"),
+                    job_position_id: attr_uuid(&attributes, "job_position_id"),
+                    appointed_on: row.get("appointed_on"),
+                }
+            })
+            .collect())
     }
 
     async fn write(&self, command: &EmploymentCommand) -> Result<CommandReceipt, EmploymentError> {
@@ -1084,6 +1180,13 @@ fn payload_digest(command: &EmploymentCommand) -> [u8; 32] {
     }
     hasher.update(attributes.employment_status.as_bytes());
     hasher.finalize().into()
+}
+
+fn attr_uuid(attributes: &serde_json::Value, key: &str) -> Option<Uuid> {
+    attributes
+        .get(key)
+        .and_then(serde_json::Value::as_str)
+        .and_then(|value| Uuid::parse_str(value).ok())
 }
 
 #[cfg(test)]

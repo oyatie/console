@@ -150,6 +150,19 @@ impl CanonicalPortError for CompanyError {
     }
 }
 
+/// Current canonical company head for one tenant.
+///
+/// `legal_name` / `reg_no` come from the latest revision's attributes. They are
+/// never copied from `organizations` — the runtime role is SELECT-only there,
+/// and the provisioning-owned `name` is not the canonical company state.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CompanyHead {
+    pub org_id: Uuid,
+    pub legal_name: Option<String>,
+    pub reg_no: Option<String>,
+    pub version: i64,
+}
+
 /// The one permitted holder of production DML against `company_revisions`, and
 /// the declared owner of `organizations` — which no runtime identity may write.
 #[derive(Debug, Clone)]
@@ -162,6 +175,57 @@ impl PgCompanyPort {
     #[must_use]
     pub const fn new(pool: PgPool, runtime: tokio::runtime::Handle) -> Self {
         Self { pool, runtime }
+    }
+
+    /// Latest `company_revisions` row for the armed tenant. No revision, an
+    /// invisible org, or unset RLS is `None` — never a fabricated head.
+    pub fn get(&self, org_id: OrgId) -> Result<Option<CompanyHead>, CompanyError> {
+        self.runtime.block_on(self.read_head(*org_id.as_uuid()))
+    }
+
+    /// Zero or one current company head for the armed tenant.
+    pub fn list(&self, org_id: OrgId) -> Result<Vec<CompanyHead>, CompanyError> {
+        self.runtime
+            .block_on(self.read_head(*org_id.as_uuid()))
+            .map(|head| head.into_iter().collect())
+    }
+
+    async fn arm_org<'e, E>(&self, executor: E, org: Uuid) -> Result<(), CompanyError>
+    where
+        E: sqlx::Executor<'e, Database = sqlx::Postgres>,
+    {
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(org.to_string())
+            .execute(executor)
+            .await?;
+        Ok(())
+    }
+
+    async fn read_head(&self, org: Uuid) -> Result<Option<CompanyHead>, CompanyError> {
+        let mut tx = self.pool.begin().await?;
+        self.arm_org(&mut *tx, org).await?;
+        let row = sqlx::query(
+            "SELECT r.org_id, r.version, r.attributes \
+             FROM organizations o \
+             JOIN company_revisions r ON r.org_id = o.id \
+             WHERE o.id = $1 \
+               AND r.version = ( \
+                 SELECT MAX(version) FROM company_revisions WHERE org_id = o.id \
+               )",
+        )
+        .bind(org)
+        .fetch_optional(&mut *tx)
+        .await?;
+        tx.commit().await?;
+        Ok(row.map(|row| {
+            let attributes: serde_json::Value = row.get("attributes");
+            CompanyHead {
+                org_id: row.get("org_id"),
+                legal_name: attr_string(&attributes, "legal_name"),
+                reg_no: attr_string(&attributes, "reg_no"),
+                version: row.get("version"),
+            }
+        }))
     }
 
     async fn write(&self, command: &CompanyCommand) -> Result<CommandReceipt, CompanyError> {
@@ -406,6 +470,14 @@ fn canonical_json(value: &serde_json::Value) -> serde_json::Value {
         }
         primitive => primitive.clone(),
     }
+}
+
+fn attr_string(attributes: &serde_json::Value, key: &str) -> Option<String> {
+    attributes
+        .get(key)
+        .and_then(serde_json::Value::as_str)
+        .filter(|value| !value.is_empty())
+        .map(str::to_owned)
 }
 
 /// Whether `company_revisions` has any row for the tenant (CompanyPort has run).

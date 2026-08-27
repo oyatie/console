@@ -6,7 +6,8 @@
 //! `employees.position`, never invents a row from free text, and carries no
 //! legacy `SourceBinding` (unlike `OrgUnitPort`). Authority for position
 //! identity is the UUID returned on create/revise and readable via
-//! [`PgJobPositionPort::get`] / [`PgJobPositionPort::list_for_org_unit`].
+//! [`PgJobPositionPort::get`] / [`PgJobPositionPort::list`] /
+//! [`PgJobPositionPort::list_for_org_unit`].
 //!
 //! # The one asymmetry that is not copied from `PersonPort`
 //!
@@ -224,6 +225,12 @@ impl PgJobPositionPort {
             .block_on(self.read_for_unit(*org_id.as_uuid(), org_unit_id))
     }
 
+    /// Current heads in the armed tenant. Empty when none are visible — never
+    /// invents rows from free-text employee/recruiting data.
+    pub fn list(&self, org_id: OrgId) -> Result<Vec<JobPositionView>, JobPositionError> {
+        self.runtime.block_on(self.read_all(*org_id.as_uuid()))
+    }
+
     async fn arm_org<'e, E>(&self, executor: E, org: Uuid) -> Result<(), JobPositionError>
     where
         E: sqlx::Executor<'e, Database = sqlx::Postgres>,
@@ -287,6 +294,36 @@ impl PgJobPositionPort {
         )
         .bind(org)
         .bind(org_unit_id)
+        .fetch_all(&mut *tx)
+        .await?;
+        tx.commit().await?;
+        Ok(rows
+            .into_iter()
+            .map(|row| JobPositionView {
+                job_position_id: row.get("job_position_id"),
+                org_unit_id: row.get("org_unit_id"),
+                version: row.get("version"),
+                attributes: row.get("attributes"),
+            })
+            .collect())
+    }
+
+    async fn read_all(&self, org: Uuid) -> Result<Vec<JobPositionView>, JobPositionError> {
+        let mut tx = self.pool.begin().await?;
+        self.arm_org(&mut *tx, org).await?;
+        let rows = sqlx::query(
+            "SELECT p.id AS job_position_id, p.org_unit_id, r.version, r.attributes \
+             FROM job_positions p \
+             JOIN job_position_revisions r \
+               ON r.org_id = p.org_id AND r.job_position_id = p.id \
+             WHERE p.org_id = $1 \
+               AND r.version = ( \
+                 SELECT MAX(version) FROM job_position_revisions \
+                 WHERE org_id = p.org_id AND job_position_id = p.id \
+               ) \
+             ORDER BY p.id",
+        )
+        .bind(org)
         .fetch_all(&mut *tx)
         .await?;
         tx.commit().await?;
