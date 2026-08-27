@@ -67,6 +67,7 @@
     "backend/app/tests/openapi_drift.rs": 11,
     "backend/app/tests/openslo_files.rs": 1,
     "backend/app/tests/org_change_api.rs": 4,
+    "backend/app/tests/persona_ess_http.rs": 1,
     "backend/app/tests/platform_onboarding_e2e.rs": 1,
     "backend/app/tests/purchase_request_collection_api.rs": 1,
     "backend/app/tests/realtime_ws.rs": 1,

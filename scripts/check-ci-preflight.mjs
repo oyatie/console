@@ -644,6 +644,7 @@ const postgresWrapperContracts = [
   ["app-object-resolve-api-pg", "//backend/app:console-app-itest-object_resolve_api"],
   ["app-office-versions-pg", "//backend/app:console-app-itest-office_versions"],
   ["app-org-change-api-pg", "//backend/app:console-app-itest-org_change_api"],
+  ["app-persona-ess-http-pg", "//backend/app:console-app-itest-persona_ess_http"],
   ["app-platform-onboarding-e2e-pg", "//backend/app:console-app-itest-platform_onboarding_e2e"],
   ["app-purchase-request-collection-api-pg", "//backend/app:console-app-itest-purchase_request_collection_api"],
   ["app-realtime-ws-pg", "//backend/app:console-app-itest-realtime_ws"],
