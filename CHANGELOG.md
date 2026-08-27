@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.16](https://github.com/oyatie/console/compare/v0.3.15...v0.3.16) (2026-08-27)
+
+
+### Features
+
+* **ontology:** owner-adapter list/get for canonical heads ([#898](https://github.com/oyatie/console/issues/898)) ([dd33389](https://github.com/oyatie/console/commit/dd333898b78c599ad5cad3653302ef8880055465))
+
 ## [0.3.15](https://github.com/oyatie/console/compare/v0.3.14...v0.3.15) (2026-08-27)
 
 
