@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.15](https://github.com/oyatie/console/compare/v0.3.14...v0.3.15) (2026-08-27)
+
+
+### Features
+
+* **inbox:** ActionInboxSource::{Payroll, Governance} with SoD ([#899](https://github.com/oyatie/console/issues/899)) ([2916a4a](https://github.com/oyatie/console/commit/2916a4a6a14177c9832d64c9e2e6af01e54e17c0))
+
 ## [0.3.14](https://github.com/oyatie/console/compare/v0.3.13...v0.3.14) (2026-08-26)
 
 
