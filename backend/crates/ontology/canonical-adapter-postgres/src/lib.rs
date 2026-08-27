@@ -40,6 +40,9 @@
 //! below are pre-declared. Filling them is each lane's work.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+/// Closed property catalog the Company / OrgUnit / JobPosition ports enforce
+/// in PURE preflight. Not `ont_object_types` — see the module doc.
+pub mod catalog;
 pub mod company;
 pub mod employment;
 pub mod job_position;

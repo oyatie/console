@@ -309,6 +309,22 @@ fn preflight_is_pure_and_blocks_a_non_object_payload_a_nil_position_and_a_nil_un
         nil_unit.blockers(),
         ["org_unit_id must not be nil".to_owned()]
     );
+
+    let missing_title = JobPositionQuery::Create {
+        org_unit_id: Uuid::new_v4(),
+        attributes: json!({}),
+    };
+    let missing = <PgJobPositionPort as CanonicalPort>::preflight(&missing_title);
+    assert!(!missing.is_ok());
+    assert_eq!(missing.blockers(), ["title is required".to_owned()]);
+
+    let blank_title = JobPositionQuery::Create {
+        org_unit_id: Uuid::new_v4(),
+        attributes: json!({ "title": " " }),
+    };
+    let blank = <PgJobPositionPort as CanonicalPort>::preflight(&blank_title);
+    assert!(!blank.is_ok());
+    assert_eq!(blank.blockers(), ["title must not be empty".to_owned()]);
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]

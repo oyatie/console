@@ -91,7 +91,8 @@ use uuid::Uuid;
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct CompanyQuery {
     /// The company's canonical state at the new version. The attribute schema
-    /// belongs to this port, and 0215 constrains it only to be a JSON object.
+    /// belongs to this port: [`crate::catalog::COMPANY_LEGAL_NAME`] is required
+    /// (PURE preflight). 0215 constrains the column only to be a JSON object.
     pub attributes: serde_json::Value,
 }
 
@@ -363,10 +364,14 @@ impl CanonicalPort for PgCompanyPort {
     /// PURE: no `&self`, no IO, no persistence. A blocked preflight has written
     /// nothing, so it can never spend an approval.
     fn preflight(query: &Self::Query) -> Preflight {
-        if query.attributes.is_object() {
+        let blockers = crate::catalog::require_text_property(
+            &query.attributes,
+            crate::catalog::COMPANY_LEGAL_NAME,
+        );
+        if blockers.is_empty() {
             Preflight::ok()
         } else {
-            Preflight::blocked(vec!["attributes must be a JSON object".to_owned()])
+            Preflight::blocked(blockers)
         }
     }
 

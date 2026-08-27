@@ -534,10 +534,10 @@ impl CanonicalPort for PgJobPositionPort {
     /// PURE: no `&self`, no IO, no persistence. A blocked preflight has written
     /// nothing, so it can never spend an approval.
     fn preflight(query: &Self::Query) -> Preflight {
-        let mut blockers = Vec::new();
-        if !query.attributes().is_object() {
-            blockers.push("attributes must be a JSON object".to_owned());
-        }
+        let mut blockers = crate::catalog::require_text_property(
+            query.attributes(),
+            crate::catalog::JOB_POSITION_TITLE,
+        );
         if let JobPositionQuery::Revise {
             job_position_id, ..
         } = query

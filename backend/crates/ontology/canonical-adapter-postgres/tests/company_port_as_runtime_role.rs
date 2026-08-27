@@ -225,6 +225,26 @@ fn preflight_is_pure_and_blocks_a_non_object_attribute_payload() {
     );
 
     assert!(<PgCompanyPort as CanonicalPort>::preflight(&revise("주식회사 아크메")).is_ok());
+
+    let missing = CompanyQuery {
+        attributes: json!({}),
+    };
+    let missing_preflight = <PgCompanyPort as CanonicalPort>::preflight(&missing);
+    assert!(!missing_preflight.is_ok());
+    assert_eq!(
+        missing_preflight.blockers(),
+        ["legal_name is required".to_owned()]
+    );
+
+    let blank = CompanyQuery {
+        attributes: json!({ "legal_name": "   " }),
+    };
+    let blank_preflight = <PgCompanyPort as CanonicalPort>::preflight(&blank);
+    assert!(!blank_preflight.is_ok());
+    assert_eq!(
+        blank_preflight.blockers(),
+        ["legal_name must not be empty".to_owned()]
+    );
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]

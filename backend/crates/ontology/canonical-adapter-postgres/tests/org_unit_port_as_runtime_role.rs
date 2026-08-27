@@ -23,6 +23,12 @@
 //! to a unit is a ROW HERE, never a write there.
 
 use console_kernel_core::{OrgId, UserId};
+use console_ontology_canonical_adapter_postgres::company::{
+    CompanyCommand, CompanyHead, CompanyQuery, PgCompanyPort,
+};
+use console_ontology_canonical_adapter_postgres::job_position::{
+    JobPositionCommand, JobPositionQuery, JobPositionView, PgJobPositionPort,
+};
 use console_ontology_canonical_adapter_postgres::org_unit::{
     OrgUnitCommand, OrgUnitError, OrgUnitHead, OrgUnitQuery, PgOrgUnitPort, SourceBinding,
 };
@@ -276,6 +282,22 @@ fn preflight_is_pure_and_blocks_what_the_database_would_only_catch_later() {
 
     // The CHECKs `source_kind <> ''` and `source_id <> ''` restated purely, so a
     // caller learns both at once instead of one round trip at a time.
+    let missing_name = OrgUnitQuery::Create {
+        source: None,
+        attributes: json!({}),
+    };
+    let missing = <PgOrgUnitPort as CanonicalPort>::preflight(&missing_name);
+    assert!(!missing.is_ok());
+    assert_eq!(missing.blockers(), ["name is required".to_owned()]);
+
+    let blank_name = OrgUnitQuery::Create {
+        source: None,
+        attributes: json!({ "name": "  " }),
+    };
+    let blank = <PgOrgUnitPort as CanonicalPort>::preflight(&blank_name);
+    assert!(!blank.is_ok());
+    assert_eq!(blank.blockers(), ["name must not be empty".to_owned()]);
+
     let empty_source =
         <PgOrgUnitPort as CanonicalPort>::preflight(&create(Some(source("", "")), "영업본부"));
     assert!(!empty_source.is_ok());
@@ -986,4 +1008,170 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
         matches!(refused, OrgUnitError::UnreadableReceipt(id, _) if id == *command_id.as_uuid()),
         "a receipt the roster cannot read must be refused, never replayed; got {refused:?}"
     );
+}
+
+/// The Company/OrgUnit reference ROADMAP item 5 names: from a provisioned
+/// empty tenant, as `console_rt`, produce the OrgUnit and JobPosition UUIDs
+/// `hr.appoint` already consumes — without a developer INSERT into `org_units`.
+///
+/// Not a tree: 0215 refuses `parent_id` on the identity anchor. Not Group /
+/// 다법인: PRODUCT is one Company per tenant. Frontend stays HOLD.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn empty_tenant_company_org_unit_and_job_position_round_trip(owner_pool: PgPool) {
+    let actor = seed_org_and_super_admin(&owner_pool, ORG, "org-unit").await;
+    let runtime_pool = runtime_role_pool(&owner_pool).await;
+    let handle = tokio::runtime::Handle::current();
+    let company = PgCompanyPort::new(runtime_pool.clone(), handle.clone());
+    let units = PgOrgUnitPort::new(runtime_pool.clone(), handle.clone());
+    let positions = PgJobPositionPort::new(runtime_pool, handle);
+    let org = OrgId::from_uuid(ORG);
+
+    let no_company = spawn_get_company(&company, org).await.unwrap();
+    assert!(
+        no_company.is_none(),
+        "provisioning an organizations row must not fabricate a company head; got {no_company:?}"
+    );
+    assert!(
+        list(&units, org).await.unwrap().is_empty(),
+        "a provisioned tenant has no OrgUnits until organization.create_org_unit"
+    );
+
+    execute_company(
+        &company,
+        CompanyCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: CompanyQuery {
+                attributes: json!({ "legal_name": "주식회사 아크메" }),
+            },
+            action_key: "company.revise".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    let head = spawn_get_company(&company, org)
+        .await
+        .unwrap()
+        .expect("company.revise must produce a queryable head");
+    assert_eq!(head.legal_name.as_deref(), Some("주식회사 아크메"));
+    assert_eq!(head.version, 1);
+
+    let created = execute(
+        &units,
+        OrgUnitCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: create(None, "영업본부"),
+            action_key: "create_org_unit".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    let unit = unit_of(&created);
+    let unit_head = get(&units, org, unit)
+        .await
+        .unwrap()
+        .expect("organization.create_org_unit must produce a queryable head");
+    assert_eq!(unit_head.name.as_deref(), Some("영업본부"));
+    assert_eq!(
+        unit_head.parent_id, None,
+        "0215: hierarchy is not a column; this command stored none in attributes"
+    );
+    assert_eq!(list(&units, org).await.unwrap(), vec![unit_head]);
+
+    let position_receipt = execute_position(
+        &positions,
+        JobPositionCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: JobPositionQuery::Create {
+                org_unit_id: unit,
+                attributes: json!({ "title": "백엔드 엔지니어" }),
+            },
+            action_key: "organization.create_job_position".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    let position_id = position_receipt.result()["job_position_id"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+    let viewed = spawn_get_position(&positions, org, position_id)
+        .await
+        .unwrap()
+        .expect("organization.create_job_position must produce a queryable head");
+    assert_eq!(viewed.org_unit_id, unit);
+    assert_eq!(viewed.attributes, json!({ "title": "백엔드 엔지니어" }));
+    let listed = spawn_list_positions(&positions, org, unit).await.unwrap();
+    assert_eq!(listed, vec![viewed]);
+}
+
+async fn execute_company(
+    port: &PgCompanyPort,
+    command: CompanyCommand,
+) -> Result<CommandReceipt, console_ontology_canonical_adapter_postgres::company::CompanyError> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.execute(&command))
+        .await
+        .unwrap()
+}
+
+async fn spawn_get_company(
+    port: &PgCompanyPort,
+    org: OrgId,
+) -> Result<Option<CompanyHead>, console_ontology_canonical_adapter_postgres::company::CompanyError>
+{
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.get(org))
+        .await
+        .unwrap()
+}
+
+async fn execute_position(
+    port: &PgJobPositionPort,
+    command: JobPositionCommand,
+) -> Result<
+    CommandReceipt,
+    console_ontology_canonical_adapter_postgres::job_position::JobPositionError,
+> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.execute(&command))
+        .await
+        .unwrap()
+}
+
+async fn spawn_get_position(
+    port: &PgJobPositionPort,
+    org: OrgId,
+    job_position_id: Uuid,
+) -> Result<
+    Option<JobPositionView>,
+    console_ontology_canonical_adapter_postgres::job_position::JobPositionError,
+> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.get(org, job_position_id))
+        .await
+        .unwrap()
+}
+
+async fn spawn_list_positions(
+    port: &PgJobPositionPort,
+    org: OrgId,
+    org_unit_id: Uuid,
+) -> Result<
+    Vec<JobPositionView>,
+    console_ontology_canonical_adapter_postgres::job_position::JobPositionError,
+> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.list_for_org_unit(org, org_unit_id))
+        .await
+        .unwrap()
 }

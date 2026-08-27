@@ -439,10 +439,10 @@ impl CanonicalPort for PgOrgUnitPort {
     /// PURE: no `&self`, no IO, no persistence. A blocked preflight has written
     /// nothing, so it can never spend an approval.
     fn preflight(query: &Self::Query) -> Preflight {
-        let mut blockers = Vec::new();
-        if !query.attributes().is_object() {
-            blockers.push("attributes must be a JSON object".to_owned());
-        }
+        let mut blockers = crate::catalog::require_text_property(
+            query.attributes(),
+            crate::catalog::ORG_UNIT_NAME,
+        );
         if let OrgUnitQuery::Revise { org_unit_id, .. } = query
             && org_unit_id.is_nil()
         {

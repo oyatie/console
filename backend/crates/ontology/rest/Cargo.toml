@@ -55,6 +55,7 @@ tower = { workspace = true, features = ["util"] }
 # handlers are wired in the App tier (console-app); the ontology REST tier itself must
 # NOT depend on a domain ADAPTER (layer boundary), so these are dev-only. The
 # layer-boundary gate exempts dev-deps (kind = "dev").
+console-ontology-canonical-adapter-postgres = { path = "../canonical-adapter-postgres" }
 console-registry-adapter-postgres = { workspace = true }
 console-registry-application = { workspace = true }
 console-registry-domain = { workspace = true }

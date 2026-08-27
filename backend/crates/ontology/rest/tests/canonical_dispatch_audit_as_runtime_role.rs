@@ -12,7 +12,13 @@ use std::sync::{Arc, Mutex};
 use console_governance_adapter_postgres::PgGovernanceStore;
 use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
 use console_ontology_adapter_postgres::instances::PgInstanceStore;
-use console_ontology_adapter_postgres::{ActionTypeInput, CreateObjectTypeDraft, PgOntologyStore};
+use console_ontology_adapter_postgres::{
+    ActionTypeInput, CreateObjectTypeDraft, PgOntologyStore, PropertyDefInput,
+};
+use console_ontology_canonical_adapter_postgres::catalog;
+use console_ontology_canonical_adapter_postgres::company::PgCompanyPort;
+use console_ontology_canonical_adapter_postgres::job_position::PgJobPositionPort;
+use console_ontology_canonical_adapter_postgres::org_unit::PgOrgUnitPort;
 use console_ontology_canonical_domain::{
     CanonicalObject, CanonicalPort, CanonicalQuery, CommandId, CommandReceipt as CanonicalReceipt,
     Company, DispatchTarget, Preflight, ReceiptOwner,
@@ -346,4 +352,268 @@ async fn canonical_projected_success_emits_ontology_canonical_execute_audit(owne
         command_id.to_string(),
         "audit target_id must be the tenant-global command_id"
     );
+}
+
+/// Foundry action types for the canonical org objects: catalog properties on
+/// the published type, `projected_usecase` dispatch to the owning port, and a
+/// real `console_rt` write. Stable keys are prefixed so they do not collide
+/// with the instance-backed `company_conformance` fixtures.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let cmd = command_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let org_uuid = *org.as_uuid();
+    seed_org(&owner_pool, org_uuid, "foundry-org").await;
+    let actor = seed_user(&owner_pool, org_uuid, "foundry-org").await;
+
+    let company_type = seed_canonical_org_action(
+        &owner_pool,
+        org,
+        actor,
+        "canonical.company",
+        "회사",
+        "company_revisions",
+        "org_id",
+        catalog::COMPANY_LEGAL_NAME,
+        "법인명",
+        "revise",
+        DispatchTarget::CompanyRevise.as_str(),
+    )
+    .await;
+    let unit_type = seed_canonical_org_action(
+        &owner_pool,
+        org,
+        actor,
+        "canonical.org_unit",
+        "조직",
+        "org_units",
+        "id",
+        catalog::ORG_UNIT_NAME,
+        "조직명",
+        "create_org_unit",
+        DispatchTarget::OrganizationCreateOrgUnit.as_str(),
+    )
+    .await;
+    let position_type = seed_canonical_org_action(
+        &owner_pool,
+        org,
+        actor,
+        "canonical.job_position",
+        "직위",
+        "job_positions",
+        "id",
+        catalog::JOB_POSITION_TITLE,
+        "직위명",
+        "create_job_position",
+        DispatchTarget::OrganizationCreateJobPosition.as_str(),
+    )
+    .await;
+
+    let handle = tokio::runtime::Handle::current();
+    let registry = ProjectedDispatchRegistry::new()
+        .register_port(PgCompanyPort::new(rt.clone(), handle.clone()))
+        .register_port(PgOrgUnitPort::new(rt.clone(), handle.clone()))
+        .register_port(PgJobPositionPort::new(rt.clone(), handle));
+    let state = OntologyRestState::new(
+        PgOntologyStore::new(rt.clone()).with_command_pool(cmd),
+        PgInstanceStore::new(rt.clone()),
+        PgGovernanceStore::new(rt.clone()),
+        None,
+    )
+    .with_projected_dispatch(registry);
+    let principal = super_admin(actor, org);
+
+    let company_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "revise",
+                ActionCommand {
+                    object_type_id: company_type,
+                    instance_id: None,
+                    title: None,
+                    params: json!({ "attributes": { "legal_name": "주식회사 아크메" } }),
+                    reason: Some("foundry org setup".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("company.revise through the seeded action must succeed");
+    assert_eq!(
+        company_outcome
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::CompanyRevise.as_str().to_owned()
+        ))
+    );
+
+    let unit_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "create_org_unit",
+                ActionCommand {
+                    object_type_id: unit_type,
+                    instance_id: None,
+                    title: None,
+                    params: json!({ "attributes": { "name": "영업본부" } }),
+                    reason: Some("foundry org setup".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("organization.create_org_unit through the seeded action must succeed");
+    let org_unit_id = unit_outcome.projected.as_ref().and_then(|value| {
+        value
+            .get("result")
+            .and_then(|result| result.get("org_unit_id"))
+            .and_then(Value::as_str)
+            .and_then(|raw| Uuid::parse_str(raw).ok())
+    });
+    let org_unit_id = org_unit_id.expect("create_org_unit receipt must name org_unit_id");
+
+    let position_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "create_job_position",
+                ActionCommand {
+                    object_type_id: position_type,
+                    instance_id: None,
+                    title: None,
+                    params: json!({
+                        "org_unit_id": org_unit_id,
+                        "attributes": { "title": "백엔드 엔지니어" }
+                    }),
+                    reason: Some("foundry org setup".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("organization.create_job_position through the seeded action must succeed");
+    assert_eq!(
+        position_outcome.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("org_unit_id"))
+        }),
+        Some(&Value::String(org_unit_id.to_string()))
+    );
+
+    let legal_name: serde_json::Value = sqlx::query_scalar(
+        "SELECT attributes FROM company_revisions \
+         WHERE org_id = $1 AND version = (SELECT MAX(version) FROM company_revisions WHERE org_id = $1)",
+    )
+    .bind(org_uuid)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(legal_name, json!({ "legal_name": "주식회사 아크메" }));
+
+    let unit_name: serde_json::Value = sqlx::query_scalar(
+        "SELECT attributes FROM org_unit_revisions WHERE org_id = $1 AND org_unit_id = $2",
+    )
+    .bind(org_uuid)
+    .bind(org_unit_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(unit_name, json!({ "name": "영업본부" }));
+
+    let instances: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM ont_instances WHERE org_id = $1")
+        .bind(org_uuid)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        instances, 0,
+        "canonical org writes must not create ont_instances rows (arch §9.3)"
+    );
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn seed_canonical_org_action(
+    owner_pool: &PgPool,
+    org: OrgId,
+    actor: UserId,
+    type_key: &str,
+    type_title: &str,
+    backing_table: &str,
+    primary_key_property: &str,
+    property_key: &str,
+    property_title: &str,
+    action_key: &str,
+    dispatch_target: &str,
+) -> ObjectTypeId {
+    let type_key = type_key.to_owned();
+    let type_title = type_title.to_owned();
+    let backing_table = backing_table.to_owned();
+    let primary_key_property = primary_key_property.to_owned();
+    let property_key = property_key.to_owned();
+    let property_title = property_title.to_owned();
+    let action_key = action_key.to_owned();
+    let dispatch_target = dispatch_target.to_owned();
+    console_platform_request_context::scope_org(org, async {
+        let store = PgOntologyStore::new(owner_pool.clone())
+            .with_command_pool(command_role_pool(owner_pool).await);
+        let draft = CreateObjectTypeDraft {
+            stable_key: type_key,
+            title: type_title,
+            title_property_key: Some(property_key.clone()),
+            backing_kind: BackingKind::Projected,
+            backing_table: Some(backing_table),
+            primary_key_property: Some(primary_key_property),
+            properties: vec![PropertyDefInput {
+                key: property_key.clone(),
+                title: property_title,
+                field_type: "text".to_owned(),
+                config: json!({}),
+                backing_column: None,
+                required: true,
+                in_property_policy: false,
+            }],
+            links: Vec::new(),
+            actions: vec![ActionTypeInput {
+                stable_key: action_key,
+                title: "저장".to_owned(),
+                // Port query shape (`attributes: { legal_name | name | title }`),
+                // not flattened instance edits. Required-ness is the port catalog.
+                params_schema: json!({}),
+                edits: json!([]),
+                submission_criteria: json!([]),
+                side_effects: json!([]),
+                dispatch: ActionDispatch::ProjectedUsecase,
+                dispatch_target: Some(dispatch_target),
+                control_points: json!(["authority"]),
+            }],
+            analytics: Vec::new(),
+        };
+        store
+            .create_object_type(actor, draft, TraceContext::generate(), AT)
+            .await
+            .expect("canonical org object type must be created")
+            .id
+    })
+    .await
 }
