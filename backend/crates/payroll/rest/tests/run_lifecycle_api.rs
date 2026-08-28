@@ -11,6 +11,9 @@
 //! `console-app` does not compile on this branch (facilities/production rest
 //! lanes are mid-refactor), so the identical proof runs here against the
 //! crate router the app mounts verbatim.
+//!
+//! Draft-run fixtures mint via `payroll.create_run` as `console_rt` (no owner
+//! INSERT of draft runs). Lines still INSERT (calculate HOLD).
 
 use axum::body::{Body, to_bytes};
 use console_kernel_core::{OrgId, UserId};
@@ -68,7 +71,7 @@ async fn executive_drives_full_lifecycle_with_audit_readback(pool: PgPool) {
 
     let employee = seed_employee(&pool, org, "Alice").await;
     let recipient = seed_user(&pool, org, "MEMBER", Some(employee)).await;
-    let run = seed_run(&pool, org).await;
+    let run = seed_run(&pool, org, submitter).await;
     let import_row = seed_verified_import_row(&pool, org).await;
     seed_calculable_line(&pool, org, run, employee, import_row).await;
 
@@ -579,7 +582,8 @@ async fn lifecycle_writes_deny_without_leakage_and_cross_tenant_is_invisible(poo
         .await
         .unwrap();
 
-    let run = seed_run(&pool, org_a).await;
+    let stager = seed_user(&pool, org_a, "EXECUTIVE", None).await;
+    let run = seed_run(&pool, org_a, stager).await;
 
     // MEMBER and built-in ADMIN (the write tier is EXECUTIVE/SUPER_ADMIN or a
     // custom org-wide PBAC grant): 403, and the same 403 whether or not the
@@ -624,7 +628,10 @@ async fn lifecycle_writes_deny_without_leakage_and_cross_tenant_is_invisible(poo
         .fetch_one(&pool)
         .await
         .unwrap();
-    assert_eq!(status, "STAGED");
+    assert_eq!(
+        status, "BLOCKED_LEGAL_GATE",
+        "denied probes must not advance the create_run status"
+    );
     let probe_audits: i64 = sqlx::query_scalar(
         "SELECT COUNT(*) FROM audit_events WHERE action LIKE 'payroll_run.%' AND target_id = $1",
     )
@@ -661,7 +668,7 @@ async fn close_preflight_persists_no_verdict_only_its_read_audit(pool: PgPool) {
     let executive = seed_user(&pool, org, "EXECUTIVE", None).await;
     let token = keys.token(executive, org, "EXECUTIVE");
     let employee = seed_employee(&pool, org, "Alice").await;
-    let run = seed_run(&pool, org).await;
+    let run = seed_run(&pool, org, executive).await;
     let import_row = seed_verified_import_row(&pool, org).await;
     seed_calculable_line(&pool, org, run, employee, import_row).await;
     seed_period_lock(&pool, org).await;
@@ -843,7 +850,7 @@ async fn close_recomputes_the_preflight_after_the_read_verdict_goes_stale(pool: 
     let executive = seed_user(&pool, org, "EXECUTIVE", None).await;
     let token = keys.token(executive, org, "EXECUTIVE");
     let employee = seed_employee(&pool, org, "Alice").await;
-    let run = seed_run(&pool, org).await;
+    let run = seed_run(&pool, org, executive).await;
     let import_row = seed_verified_import_row(&pool, org).await;
     seed_calculable_line(&pool, org, run, employee, import_row).await;
     seed_period_lock(&pool, org).await;
@@ -892,7 +899,10 @@ async fn close_recomputes_the_preflight_after_the_read_verdict_goes_stale(pool: 
         .fetch_one(&pool)
         .await
         .unwrap();
-    assert_eq!(status, "STAGED", "the refused close must not have advanced");
+    assert_eq!(
+        status, "BLOCKED_LEGAL_GATE",
+        "the refused close must not have advanced the create_run status"
+    );
 }
 
 /// HTTP close-preflight against a draft minted by `payroll.create_run` after
@@ -1208,17 +1218,34 @@ async fn seed_employee(pool: &PgPool, org: OrgId, name: &str) -> Uuid {
     id
 }
 
-async fn seed_run(pool: &PgPool, org: OrgId) -> Uuid {
-    sqlx::query_scalar(
-        "INSERT INTO payroll_draft_runs (org_id, period_start, period_end, source_label, status) \
-         VALUES ($1, $2, $3, '2026-06 정기급여', 'STAGED') RETURNING id",
+async fn seed_run(pool: &PgPool, org: OrgId, actor: UserId) -> Uuid {
+    let runtime_pool = runtime_role_pool(pool).await;
+    let pay_run = PgPayRunPort::new(runtime_pool, tokio::runtime::Handle::current());
+    let created = execute_sync(
+        &pay_run,
+        PayRunCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: PayRunQuery::CreateRun {
+                run_id: Uuid::new_v4(),
+                period_start: date!(2026 - 06 - 01),
+                period_end: date!(2026 - 06 - 30),
+                connector: Some("m2".to_owned()),
+                job: Some("payroll_draft".to_owned()),
+            },
+            action_key: "create_run".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
     )
-    .bind(*org.as_uuid())
-    .bind(date!(2026 - 06 - 01))
-    .bind(date!(2026 - 06 - 30))
-    .fetch_one(pool)
     .await
-    .unwrap()
+    .expect("payroll.create_run as console_rt");
+    assert_eq!(created.target(), DispatchTarget::PayrollCreateRun);
+    created.result()["draft_run_id"]
+        .as_str()
+        .expect("CreateRun must name draft_run_id")
+        .parse()
+        .unwrap()
 }
 
 /// One DRY_RUN import run + row whose `canonical_row.payroll` carries the
