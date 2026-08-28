@@ -25,7 +25,7 @@ Status: active roadmap authority. Product scope comes from [`PRODUCT.md`](PRODUC
    - Project the existing payroll writer without a second write path; preserve deterministic rounding, golden cases, immutable receipts, and payslip drafts.
 7. **Leptos acceptance surface**
    - `Layer::Ui` is accepted (ADR-0041); first full-depth vertical is payroll execution.
-   - GET `/_ui` is mounted (#952). Contracts-backed authorized reads (#959): empty shell without `PayrollRunRead`; `data-run-*` from `PayrollRunSummary` required fields with it. Those runs are a Leptos `#[island]` (#962). Remaining: WASM hydration of that island, persona E2E.
+   - GET `/_ui` is mounted (#952). Contracts-backed authorized reads (#959): empty shell without `PayrollRunRead`; `data-run-*` from `PayrollRunSummary` required fields with it. Those runs are a Leptos `#[island]` (#962) hydrated by committed release WASM (#964). Empty shell still omits `/_ui/pkg/`. Remaining: persona E2E.
    - Shipping screens and production exposure stay **HOLD** until persona-based real-backend E2E evidence (ADR-0025 §4). Import/export is not the data-entry base except 자료실; the comms rail is out of this slice.
 8. **Palantir AIP / Intelligence**
    - Palantir AIP is the target intelligence layer. It is built in the separate Intelligence repository until that repository names a SHA-bound stable base; cloning it into Console is a later lane. Not current Console tenant-app work.
@@ -33,7 +33,7 @@ Status: active roadmap authority. Product scope comes from [`PRODUCT.md`](PRODUC
 ## Explicit HOLDs
 
 - Bulk documentation moves, deletion, or graveyard copies are **HOLD** until custody and recoverability are proven with the full manifest and signed archive references.
-- Leptos **shipping** remains **HOLD** until persona-based real-backend E2E evidence. GET `/_ui` being mounted, #959 authorized reads, and the #962 island do not authorize shipping screens or live exposure.
+- Leptos **shipping** remains **HOLD** until persona-based real-backend E2E evidence. GET `/_ui` being mounted, #959 authorized reads, the #962 island, and #964 WASM hydrate do not authorize shipping screens or live exposure.
 - Live or production promotion, DNS, TLS, secrets, exposure, payment, credential-reset, and compliance claims are **HOLD** absent separate authority. A source release follows repository release authority and evidence; it does not authorize live promotion or exposure.
 - Destruction, termination, resize, or reprovisioning of the grandfathered OCI Ampere A1 instance (4 OCPU / 24 GB) is permanently **HOLD** because the reserved capacity cannot be recreated.
 - Workstation full-disk erase **already occurred** (post-wipe, owner fact 2026-08-28). Remaining local P0 work is re-issue or off-device confirmation, not a future erase. Do not erase again as a program action.
