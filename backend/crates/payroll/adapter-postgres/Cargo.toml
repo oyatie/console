@@ -36,6 +36,10 @@ uuid = { workspace = true }
 
 [dev-dependencies]
 console-platform-test-support = { workspace = true }
+# Dev-only: the empty-tenant PayRun lifecycle sits on Company/OrgUnit/JobPosition/
+# Person/hr.appoint. Adapter → adapter is forbidden as a production edge; the
+# layer-boundary gate exempts kind = "dev".
+console-ontology-canonical-adapter-postgres = { path = "../../ontology/canonical-adapter-postgres" }
 
 [lints]
 workspace = true

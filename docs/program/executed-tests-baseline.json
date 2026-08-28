@@ -262,7 +262,7 @@
     "backend/crates/orgchange/adapter-postgres/tests/preflight_persists_nothing.rs": 5,
     "backend/crates/orgchange/domain/src/lib.rs": 8,
     "backend/crates/payroll/adapter-postgres/src/lib.rs": 15,
-    "backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs": 15,
+    "backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs": 16,
     "backend/crates/payroll/adapter-postgres/tests/payroll_lifecycle_rls_as_runtime_role.rs": 4,
     "backend/crates/payroll/adapter-postgres/tests/payroll_rls_surfaces_as_runtime_role.rs": 5,
     "backend/crates/payroll/adapter-postgres/tests/roster_materialisation.rs": 7,

@@ -45,6 +45,7 @@ rust_test(
     labels = ["owner.backend.crates.payroll.adapter-postgres", "domain.payroll", "test.unit", "resource.none"],
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres",
         "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
         "//backend/crates/payroll/domain:console-payroll-domain",
         "//backend/crates/platform/db:console-platform-db",
@@ -75,6 +76,7 @@ rust_test(
     labels = ["owner.backend.crates.payroll.adapter-postgres", "domain.payroll", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres",
         "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
         "//backend/crates/payroll/domain:console-payroll-domain",
         "//backend/crates/platform/db:console-platform-db",
@@ -106,6 +108,7 @@ rust_test(
     labels = ["owner.backend.crates.payroll.adapter-postgres", "domain.payroll", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres",
         "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
         "//backend/crates/payroll/domain:console-payroll-domain",
         "//backend/crates/platform/db:console-platform-db",
@@ -137,6 +140,7 @@ rust_test(
     labels = ["owner.backend.crates.payroll.adapter-postgres", "domain.payroll", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres",
         "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
         "//backend/crates/payroll/domain:console-payroll-domain",
         "//backend/crates/platform/db:console-platform-db",
@@ -168,6 +172,7 @@ rust_test(
     labels = ["owner.backend.crates.payroll.adapter-postgres", "domain.payroll", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres",
         "//backend/crates/ontology/canonical-domain:console-ontology-canonical-domain",
         "//backend/crates/payroll/domain:console-payroll-domain",
         "//backend/crates/platform/db:console-platform-db",
