@@ -20,6 +20,13 @@ ignore = [
   # paste: unmaintained (not a vulnerability). Build-time proc-macro pulled
   # transitively by umya-spreadsheet (Excel export); no runtime attack surface.
   "RUSTSEC-2024-0436",
+  # proc-macro-error2: unmaintained (not a vulnerability). Build-time proc-macro.
+  # Lockfile direct reverse deps are leptos_macro, reactive_stores_macro, and
+  # syn_derive (rstml → syn_derive). Still leptos-tree / compile-time only; no
+  # runtime attack surface. No safe upgrade exists; 0.8.20 is the recorded
+  # rollback if this pin is withdrawn. Revisit when leptos drops the crate.
+  "RUSTSEC-2026-0173",
+
 ]
 
 [licenses]

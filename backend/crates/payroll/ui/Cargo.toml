@@ -7,5 +7,11 @@ rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 
+[dependencies]
+# Version verified live against crates.io 2026-08-28: leptos 0.9.0-beta
+# (newest, not yanked, MIT). ADR-0041: 0.8.x is the rollback if beta blocks.
+# Not a [workspace.dependencies] pin — HEAD inventory forbids workspace leptos.
+leptos = { version = "0.9.0-beta", features = ["ssr", "islands"] }
+
 [lints]
 workspace = true
