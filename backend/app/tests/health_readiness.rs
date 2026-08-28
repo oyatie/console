@@ -103,6 +103,35 @@ async fn metrics_endpoint_exposes_the_slo_http_duration_histogram()
     Ok(())
 }
 
+#[tokio::test]
+async fn ui_shell_serves_empty_ssr_html() -> Result<(), Box<dyn std::error::Error>> {
+    let config = app_config(AppRole::Api)?;
+    let state = AppState::new(config, DatabaseDependency::NotConfigured)?;
+    let app = build_router(state);
+    let mut last = String::new();
+    let slash_ui = concat!("/", "_ui");
+    let slash_ui_slash = concat!("/", "_ui/");
+    for uri in [slash_ui, slash_ui_slash] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(uri).body(Body::empty())?)
+            .await?;
+        if response.status() != StatusCode::OK {
+            last = format!("{uri} {}", response.status());
+            continue;
+        }
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
+        let text = String::from_utf8(body.to_vec())?;
+        assert_eq!(text, console_payroll_ui::render_shell());
+        assert!(
+            !text.contains("291_520") && !text.to_ascii_lowercase().contains("payslip"),
+            "{uri} leaked payroll: {text}"
+        );
+        return Ok(());
+    }
+    Err(format!("/_ui did not return 200 ({last})").into())
+}
+
 fn app_config(role: AppRole) -> Result<AppConfig, console_app::AppError> {
     AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", role.to_string()),

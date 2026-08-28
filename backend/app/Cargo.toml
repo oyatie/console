@@ -99,6 +99,7 @@ console-todos-rest = { workspace = true }
 console-payroll-domain = { workspace = true }
 console-payroll-adapter-postgres = { workspace = true }
 console-payroll-rest = { workspace = true }
+console-payroll-ui = { path = "../crates/payroll/ui" }
 console-notices-adapter-postgres = { workspace = true }
 console-notices-rest = { workspace = true }
 console-finance-gl-adapter-postgres = { workspace = true }

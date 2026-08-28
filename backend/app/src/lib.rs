@@ -3527,6 +3527,7 @@ pub fn build_router(state: AppState) -> Router {
         }
         DatabaseDependency::NotConfigured => router,
     };
+    let router = router.nest("/_ui", console_payroll_ui::router());
     // Cross-cutting layers on the FULLY-merged router (base + every domain +
     // platform + realtime + auth), so they actually cover the merged routes:
     //   * DefaultBodyLimit (2 MiB) â bounds every request body. Applied here

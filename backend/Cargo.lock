@@ -972,6 +972,7 @@ dependencies = [
  "console-payroll-adapter-postgres",
  "console-payroll-domain",
  "console-payroll-rest",
+ "console-payroll-ui",
  "console-platform-audit-chain",
  "console-platform-auth",
  "console-platform-auth-rest",
@@ -2775,6 +2776,7 @@ dependencies = [
 name = "console-payroll-ui"
 version = "0.1.0"
 dependencies = [
+ "axum",
  "leptos",
 ]
 
