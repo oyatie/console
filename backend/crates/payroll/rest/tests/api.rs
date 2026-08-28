@@ -17,6 +17,8 @@
 //!  * another org's runs are invisible to a SUPER_ADMIN of THIS org (RLS).
 //!  * empty-tenant admin listing sits on a run minted by `payroll.create_run`
 //!    after Company → OrgUnit → JobPosition → Person → hr.appoint.
+//!  * admin listing / isolation / /payslips/me shared-run fixtures also mint
+//!    via `payroll.create_run` as `console_rt` (no owner INSERT of draft runs).
 
 use axum::body::{Body, to_bytes};
 use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
@@ -263,30 +265,34 @@ async fn seed_user_linked_to_employee(
     .unwrap();
 }
 
-async fn seed_run(owner_pool: &PgPool, org: Uuid, source_label: &str) -> Uuid {
-    let run_id = Uuid::new_v4();
-    let event = test_audit_event("test.seed_run", "payroll_draft_run", run_id, org);
-    let source_label = source_label.to_owned();
-    with_audit(owner_pool, event, |tx| {
-        Box::pin(async move {
-            sqlx::query(
-                "INSERT INTO payroll_draft_runs (id, org_id, period_start, period_end, source_label) \
-                 VALUES ($1, $2, $3, $4, $5)",
-            )
-            .bind(run_id)
-            .bind(org)
-            .bind(date!(2026 - 06 - 01))
-            .bind(date!(2026 - 06 - 30))
-            .bind(source_label)
-            .execute(tx.as_mut())
-            .await
-            .map_err(DbError::Sqlx)?;
-            Ok::<(), DbError>(())
-        })
-    })
+async fn seed_run(owner_pool: &PgPool, org: Uuid, actor: UserId) -> Uuid {
+    let runtime_pool = runtime_role_pool(owner_pool).await;
+    let pay_run = PgPayRunPort::new(runtime_pool, tokio::runtime::Handle::current());
+    let created = execute_sync(
+        &pay_run,
+        PayRunCommand {
+            org_id: OrgId::from_uuid(org),
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: PayRunQuery::CreateRun {
+                run_id: Uuid::new_v4(),
+                period_start: date!(2026 - 06 - 01),
+                period_end: date!(2026 - 06 - 30),
+                connector: Some("m2".to_owned()),
+                job: Some("payroll_draft".to_owned()),
+            },
+            action_key: "create_run".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
     .await
-    .unwrap();
-    run_id
+    .expect("payroll.create_run as console_rt");
+    assert_eq!(created.target(), DispatchTarget::PayrollCreateRun);
+    created.result()["draft_run_id"]
+        .as_str()
+        .expect("CreateRun must name draft_run_id")
+        .parse()
+        .unwrap()
 }
 
 async fn seed_line(owner_pool: &PgPool, org: Uuid, run_id: Uuid, employee: Uuid, name: &str) {
@@ -512,7 +518,9 @@ async fn payslips_me_is_self_scoped_never_a_coworkers(pool: PgPool) {
     let keys = keys();
     let org = OrgId::knl();
 
-    let run = seed_run(&pool, *org.as_uuid(), "shared-run").await;
+    let stager = UserId::new();
+    seed_user(&pool, stager, *org.as_uuid(), "SUPER_ADMIN").await;
+    let run = seed_run(&pool, *org.as_uuid(), stager).await;
     let alice_employee = seed_employee(&pool, *org.as_uuid(), "Alice").await;
     let bob_employee = seed_employee(&pool, *org.as_uuid(), "Bob").await;
     seed_line(&pool, *org.as_uuid(), run, alice_employee, "Alice").await;
@@ -611,14 +619,14 @@ async fn payslips_me_is_self_scoped_never_a_coworkers(pool: PgPool) {
 async fn runs_admin_read_is_executive_and_super_admin_only(pool: PgPool) {
     let keys = keys();
     let org = OrgId::knl();
-    seed_run(&pool, *org.as_uuid(), "run-1").await;
+    let super_admin = UserId::new();
+    seed_user(&pool, super_admin, *org.as_uuid(), "SUPER_ADMIN").await;
+    seed_run(&pool, *org.as_uuid(), super_admin).await;
 
     let member = UserId::new();
     seed_user(&pool, member, *org.as_uuid(), "MEMBER").await;
     let admin = UserId::new();
     seed_user(&pool, admin, *org.as_uuid(), "ADMIN").await;
-    let super_admin = UserId::new();
-    seed_user(&pool, super_admin, *org.as_uuid(), "SUPER_ADMIN").await;
 
     let service = app(runtime_role_pool(&pool).await, &keys);
 
@@ -663,11 +671,12 @@ async fn runs_are_org_isolated_over_http(pool: PgPool) {
     let other_org = Uuid::from_u128(0x5ea5_5ea5_5ea5_5ea5_5ea5_5ea5_5ea5_5ea5);
     seed_org(&pool, other_org, "OTHER").await;
 
-    seed_run(&pool, *org.as_uuid(), "org-run").await;
-    seed_run(&pool, other_org, "other-org-run").await;
-
     let super_admin = UserId::new();
     seed_user(&pool, super_admin, *org.as_uuid(), "SUPER_ADMIN").await;
+    seed_run(&pool, *org.as_uuid(), super_admin).await;
+    let other_actor = UserId::new();
+    seed_user(&pool, other_actor, other_org, "SUPER_ADMIN").await;
+    seed_run(&pool, other_org, other_actor).await;
 
     let service = app(runtime_role_pool(&pool).await, &keys);
     let read = get(
