@@ -365,7 +365,8 @@ async fn canonical_projected_success_emits_ontology_canonical_execute_audit(owne
 /// published type, `projected_usecase` dispatch to the owning port, and a real
 /// `console_rt` write. Stable keys are prefixed so they do not collide with
 /// the instance-backed `company_conformance` fixtures. Person is registered
-/// with the other five ports (the composition root already does).
+/// with the other five ports (the composition root already does) and both
+/// `people.create_person` and `people.revise_person` are seeded.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_pool: PgPool) {
     let rt = runtime_role_pool(&owner_pool).await;
@@ -418,7 +419,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         DispatchTarget::OrganizationCreateJobPosition.as_str(),
     )
     .await;
-    let person_type = seed_canonical_org_action(
+    let person_type = seed_canonical_org_actions(
         &owner_pool,
         org,
         actor,
@@ -428,8 +429,10 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         "id",
         "legal_name",
         "성명",
-        "create_person",
-        DispatchTarget::PeopleCreatePerson.as_str(),
+        &[
+            ("create_person", DispatchTarget::PeopleCreatePerson.as_str()),
+            ("revise_person", DispatchTarget::PeopleRevisePerson.as_str()),
+        ],
     )
     .await;
     let employment_type = seed_canonical_org_actions(
@@ -698,6 +701,93 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         person_id, employee_id,
         "a uniquely-resolved person is bound with person_id = employee_id"
     );
+
+    let version_one = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM person_revisions \
+         WHERE org_id = $1 AND person_id = $2 AND version = 1",
+    )
+    .bind(org_uuid)
+    .bind(person_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(version_one, json!({ "legal_name": "김직원" }));
+
+    let revise_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "revise_person",
+                ActionCommand {
+                    object_type_id: person_type,
+                    instance_id: Some(InstanceId::from_uuid(person_id)),
+                    title: None,
+                    params: json!({
+                        "person_id": person_id,
+                        "attributes": { "legal_name": "김직원(개명)" }
+                    }),
+                    reason: Some("foundry person revise".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("people.revise_person through the seeded action must succeed");
+    assert_eq!(
+        revise_outcome
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::PeopleRevisePerson.as_str().to_owned()
+        ))
+    );
+    assert_eq!(
+        revise_outcome.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("person_id"))
+        }),
+        Some(&Value::String(person_id.to_string()))
+    );
+    assert_eq!(
+        revise_outcome.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("version"))
+                .and_then(Value::as_i64)
+        }),
+        Some(2)
+    );
+
+    let version_one_after = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM person_revisions \
+         WHERE org_id = $1 AND person_id = $2 AND version = 1",
+    )
+    .bind(org_uuid)
+    .bind(person_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        version_one_after, version_one,
+        "appending a revision must not rewrite revision 1"
+    );
+    let version_two = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM person_revisions \
+         WHERE org_id = $1 AND person_id = $2 AND version = 2",
+    )
+    .bind(org_uuid)
+    .bind(person_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(version_two, json!({ "legal_name": "김직원(개명)" }));
 
     let appoint_outcome = console_platform_request_context::scope_org(org, async {
         state
