@@ -427,6 +427,7 @@ describe("CI preflight contract", () => {
       pathClass: "docs-only",
       docsOnly: true,
       runHeavy: false,
+      runLivePostgres: false,
       reason: "docs-allowlist",
     });
     assert.equal(classifyChangedPaths(["README.md"]).docsOnly, true);
@@ -439,6 +440,51 @@ describe("CI preflight contract", () => {
       resolvePathClassFromEnv({ PATH_CLASS_EVENT_NAME: "workflow_dispatch" }).runHeavy,
       true,
     );
+    assert.equal(
+      resolvePathClassFromEnv({ PATH_CLASS_EVENT_NAME: "workflow_dispatch" }).runLivePostgres,
+      true,
+    );
+  });
+
+  it("path-gates live Postgres like oyatie pg-gate", () => {
+    assert.equal(classifyChangedPaths(["backend/app/src/lib.rs"]).runLivePostgres, false);
+    assert.equal(classifyChangedPaths(["backend/app/src/lib.rs"]).runHeavy, true);
+    assert.equal(
+      classifyChangedPaths([
+        "backend/crates/ontology/canonical-adapter-postgres/src/org_unit.rs",
+      ]).runLivePostgres,
+      true,
+    );
+    assert.equal(
+      classifyChangedPaths(["backend/crates/platform/db/migrations/0215_org_units.sql"]).runLivePostgres,
+      true,
+    );
+    assert.equal(classifyChangedPaths(["tools/ci/cargo_needs_postgres.sh"]).runLivePostgres, true);
+    assert.equal(classifyChangedPaths([".github/workflows/ci.yml"]).runLivePostgres, true);
+    assert.equal(classifyChangedPaths(["docs/program/foo.md"]).runLivePostgres, false);
+    assert.equal(classifyChangedPaths(["ops/postgres-reconcile-topology.sh"]).runLivePostgres, true);
+    assert.equal(classifyChangedPaths(["ops/postgres-topology.integration.test.sh"]).runLivePostgres, true);
+    assert.equal(classifyChangedPaths(["backend/crates/platform/db/src/lib.rs"]).runLivePostgres, true);
+    assert.equal(
+      classifyChangedPaths(["backend/crates/platform/realtime/tests/postgres_bridge.rs"]).runLivePostgres,
+      true,
+    );
+    assert.equal(classifyChangedPaths(["backend/.sqlx/query-0000.json"]).runLivePostgres, true);
+    assert.equal(
+      classifyChangedPaths(["backend/ci/gates/writer-ownership/canonical-enforce.sh"]).runLivePostgres,
+      true,
+    );
+    assert.equal(classifyChangedPaths(["backend/ci/gates/rls-arming/src/main.rs"]).runLivePostgres, true);
+    assert.equal(classifyChangedPaths(["backend/ci/gates/layer-boundary/src/lib.rs"]).runLivePostgres, false);
+
+    const backendPr = resolvePathClassFromEnv({
+      PATH_CLASS_EVENT_NAME: "pull_request",
+      PATH_CLASS_PR_BASE_SHA: "b".repeat(40),
+      PATH_CLASS_PR_HEAD_SHA: "h".repeat(40),
+    });
+    // Missing git range fails closed for live postgres as well as run_heavy.
+    assert.equal(backendPr.runHeavy, true);
+    assert.equal(backendPr.runLivePostgres, true);
   });
 
   it("resolves a merge group's diff range, and fails closed without its SHAs", () => {
@@ -485,6 +531,7 @@ describe("CI preflight contract", () => {
       pathClass: "release-metadata-only",
       docsOnly: false,
       runHeavy: false,
+      runLivePostgres: false,
       reason: "release-metadata-allowlist",
     };
 
@@ -750,26 +797,22 @@ describe("CI preflight contract", () => {
     assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
   });
 
-  it("locks Required / CI to the exact ten existing CI proofs", () => {
+  it("locks Required / CI to the oyatie-style presubmit proofs", () => {
     const requiredDependencies = [
       "preflight",
-      "domain-unit",
+      "rust-fmt",
       "postgres-domain-reachability",
-      "company-conformance",
-      "generated-face-authority",
-      "backend",
-      "migration-expand-contract",
       "repo-gates",
       "api-contract",
       "kubernetes-manifests",
     ];
     const model = yaml.load(workflow);
-    // 11 protected proofs + 5 PostgreSQL facets (S2 splits domain).
-    // dev-up-smoke moved to Nightly: it proves developer bring-up, not product
-    // correctness, so it no longer blocks a merge.
-    // migration-expand-contract split out of `backend` 2026-08-18: one 445s step
-    // of a 1176s job, and `backend` was the critical path.
-    assert.equal(Object.keys(model.jobs).length, 16);
+    // Presubmit fan-in (2026-08-28): Required / CI no longer waits on domain-unit,
+    // backend, generated-faces, company-conformance, or migration expand/contract.
+    // Those remain in ci.yml as push/workflow_dispatch postsubmit. rust-fmt is the
+    // oyatie lint analog. postgres-domain-reachability stays, skip-proof when
+    // run_live_postgres is false. 16 jobs + rust-fmt = 17.
+    assert.equal(Object.keys(model.jobs).length, 17);
     assert.equal(model.jobs["required-ci"].name, "Required / CI");
     assert.deepEqual(model.jobs["required-ci"].needs, requiredDependencies);
     assert.equal(model.jobs["required-ci"]["timeout-minutes"], 5);
@@ -809,15 +852,15 @@ describe("CI preflight contract", () => {
       [
         "cancelled accepted",
         workflow.replace(
-          '          test "${{ needs.domain-unit.result }}" = success',
-          '          test "${{ needs.domain-unit.result }}" != cancelled',
+          '          test "${{ needs.rust-fmt.result }}" = success',
+          '          test "${{ needs.rust-fmt.result }}" != cancelled',
         ),
       ],
       [
         "failure accepted",
         workflow.replace(
-          '          test "${{ needs.backend.result }}" = success',
-          '          test "${{ needs.backend.result }}" != skipped',
+          '          test "${{ needs.repo-gates.result }}" = success',
+          '          test "${{ needs.repo-gates.result }}" != skipped',
         ),
       ],
       [
@@ -858,11 +901,11 @@ describe("CI preflight contract", () => {
         },
         {
           name: "Path-class skip proof",
-          if: "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy != 'true' }}",
+          if: "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}",
         },
         {
           name: "Require all PostgreSQL reachability facets",
-          if: "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' }}",
+          if: "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}",
         },
       ],
     );
@@ -873,8 +916,8 @@ describe("CI preflight contract", () => {
 
     for (const condition of [
       "${{ needs.preflight.result != 'success' }}",
-      "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy != 'true' }}",
-      "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' }}",
+      "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}",
+      "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}",
     ]) {
       expectFailure(
         workflow.replace(`        if: ${condition}\n`, "        if: ${{ always() }}\n"),
@@ -905,6 +948,7 @@ describe("CI preflight contract", () => {
       "postgres-reachability-domain-b": 3,
       "postgres-domain-reachability": 3,
       "required-ci": 1,
+      "rust-fmt": 1,
     };
     const workflowModel = yaml.load(workflow);
     const bypasses = [
@@ -959,9 +1003,10 @@ describe("CI preflight contract", () => {
     // step goes through the same three bypass mutations as every other one.
     // 2026-08-25: +1 always-on Buck impact planner regression. This closes the
     // previously dark 13-test suite and subjects the new step to all bypasses.
-    assert.equal(runStepCount, 131, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 131*3 = 393.
-    assert.equal(mutationCount, 393, "exhaustive bypass matrix must not shrink");
+    // 2026-08-28: +1 rust-fmt presubmit run step (oyatie lint analog).
+    assert.equal(runStepCount, 132, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 132*3 = 396.
+    assert.equal(mutationCount, 396, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -984,6 +1029,7 @@ describe("CI preflight contract", () => {
       "postgres-reachability-ontology": 3,
       "postgres-reachability-domain-a": 3,
       "postgres-reachability-domain-b": 3,
+      "rust-fmt": 2,
     };
     const workflowModel = yaml.load(workflow);
     const bypasses = [
@@ -1016,9 +1062,10 @@ describe("CI preflight contract", () => {
     // shrink that does NOT match a job leaving ci.yml is still a regression.
     // 2026-08-18: -7, exactly the Free runner disk steps removed from ci.yml
     // (5 postgres shards + backend + company-conformance) and no more.
-    assert.equal(actionStepCount, 38, "required and planned job setup-action coverage must not shrink");
-    // 2026-08-18: -14 = 7 removed setup actions x 2 bypass mutations each.
-    assert.equal(mutationCount, 76, "setup-action bypass matrix must not shrink");
+    // 2026-08-28: +2 rust-fmt setup actions (checkout + rust-toolchain).
+    assert.equal(actionStepCount, 40, "required and planned job setup-action coverage must not shrink");
+    // 40 actions x 2 bypass mutations = 80.
+    assert.equal(mutationCount, 80, "setup-action bypass matrix must not shrink");
   });
 
   it("locks every setup action's identity, inputs, totality, and interleaving", () => {
@@ -1036,6 +1083,7 @@ describe("CI preflight contract", () => {
       "postgres-reachability-ontology",
       "postgres-reachability-domain-a",
       "postgres-reachability-domain-b",
+      "rust-fmt",
     ];
     const workflowModel = yaml.load(workflow);
     let mutationCount = 0;
@@ -1093,7 +1141,8 @@ describe("CI preflight contract", () => {
       }
     }
 
-    assert.equal(mutationCount, 249, "setup-action identity/input/interleaving matrix must not shrink");
+    // 2026-08-28: +13 from rust-fmt checkout+toolchain identity/input/order mutations.
+    assert.equal(mutationCount, 262, "setup-action identity/input/interleaving matrix must not shrink");
   });
 
   it("locks the candidate-controlled local free-runner-disk action body", () => {
@@ -1122,6 +1171,7 @@ describe("CI preflight contract", () => {
       "generated-face-authority",
       "company-conformance",
       "postgres-domain-reachability",
+      "rust-fmt",
     ]) {
       expectFailure(
         replaceJob(workflow, job, (block) => block.replace(
@@ -1710,18 +1760,38 @@ describe("CI preflight contract", () => {
   });
 
   it("rejects failure-insensitive job-level conditions on protected jobs", () => {
-    expectFailure(workflow.replace("  backend:\n", "  backend:\n    if: always()\n"), "backend must not define job-level if");
+    const postsubmitIf =
+      "    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}\n";
+    expectFailure(
+      replaceJob(workflow, "backend", (block) => block.replace(postsubmitIf, "    if: always()\n")),
+      "backend must run only on push/workflow_dispatch when run_heavy",
+    );
     expectFailure(workflow.replace("  repo-gates:\n", "  repo-gates:\n    if: ${{ !cancelled() }}\n"), "repo-gates must not define job-level if");
     expectFailure(
-      workflow.replace("  company-conformance:\n", "  company-conformance:\n    if: false\n"),
-      "company-conformance must not define job-level if",
+      replaceJob(workflow, "company-conformance", (block) => block.replace(postsubmitIf, "    if: false\n")),
+      "company-conformance must run only on push/workflow_dispatch when run_heavy",
     );
-    for (const job of ["backend", "api-contract", "company-conformance"]) {
+    expectFailure(
+      replaceJob(workflow, "migration-expand-contract", (block) => block.replace(postsubmitIf, "    if: false\n")),
+      "migration-expand-contract must run only on push/workflow_dispatch when run_heavy",
+    );
+    for (const job of ["backend", "api-contract", "company-conformance", "migration-expand-contract", "rust-fmt"]) {
       expectFailure(
         workflow.replace(`  ${job}:\n`, `  ${job}:\n    continue-on-error: true\n`),
         `${job} must not define job-level continue-on-error`,
       );
     }
+    expectFailure(
+      workflow.replace("  rust-fmt:\n", "  rust-fmt:\n    if: always()\n"),
+      "rust-fmt must not define job-level if",
+    );
+    expectFailure(
+      replaceJob(workflow, "rust-fmt", (block) => block.replace(
+        "    runs-on: ubuntu-latest\n",
+        "    runs-on: ubuntu-latest\n    needs: preflight\n",
+      )),
+      "rust-fmt must not need preflight",
+    );
   });
 
   it("rejects job-level preflight failure bypasses", () => {

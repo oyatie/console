@@ -36,6 +36,7 @@ jobs:
       path_class: ${{ steps.path_class.outputs.path_class }}
       docs_only: ${{ steps.path_class.outputs.docs_only }}
       run_heavy: ${{ steps.path_class.outputs.run_heavy }}
+      run_live_postgres: ${{ steps.path_class.outputs.run_live_postgres }}
 
     steps:
       - name: Checkout
@@ -252,6 +253,7 @@ jobs:
     name: Domain crates — unit tests
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 20
     env:
       # MUST match the cache writer (`backend`'s cargo leg). rust-cache folds every
@@ -519,23 +521,23 @@ jobs:
       CARGO_PROFILE_TEST_DEBUG: "0"
     steps:
       - name: Path-class skip proof
-        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
       - name: Cache Rust dependencies + build artifacts
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
@@ -543,12 +545,12 @@ jobs:
           cache-all-crates: "true"
           save-if: false
       - name: Install pinned cargo-nextest
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"
           echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"
       - name: Run disposable PostgreSQL integration targets
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id app --num-threads=1 --runner nextest
 
@@ -579,23 +581,23 @@ jobs:
       CARGO_PROFILE_TEST_DEBUG: "0"
     steps:
       - name: Path-class skip proof
-        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
       - name: Cache Rust dependencies + build artifacts
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
@@ -603,12 +605,12 @@ jobs:
           cache-all-crates: "true"
           save-if: false
       - name: Install pinned cargo-nextest
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"
           echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"
       - name: Run disposable PostgreSQL integration targets
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id platform --num-threads=1 --runner nextest
 
@@ -639,23 +641,23 @@ jobs:
       CARGO_PROFILE_TEST_DEBUG: "0"
     steps:
       - name: Path-class skip proof
-        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
       - name: Cache Rust dependencies + build artifacts
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
@@ -663,12 +665,12 @@ jobs:
           cache-all-crates: "true"
           save-if: false
       - name: Install pinned cargo-nextest
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"
           echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"
       - name: Run disposable PostgreSQL integration targets
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id ontology --num-threads=1 --runner nextest
 
@@ -699,23 +701,23 @@ jobs:
       CARGO_PROFILE_TEST_DEBUG: "0"
     steps:
       - name: Path-class skip proof
-        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
       - name: Cache Rust dependencies + build artifacts
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
@@ -723,12 +725,12 @@ jobs:
           cache-all-crates: "true"
           save-if: false
       - name: Install pinned cargo-nextest
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"
           echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"
       - name: Run disposable PostgreSQL integration targets
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-a --num-threads=1 --runner nextest
 
@@ -759,23 +761,23 @@ jobs:
       CARGO_PROFILE_TEST_DEBUG: "0"
     steps:
       - name: Path-class skip proof
-        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Checkout
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - name: Install Rust toolchain (pinned via rust-toolchain.toml)
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: "1.97.1"
       - name: Cache Rust dependencies + build artifacts
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: backend
@@ -783,19 +785,20 @@ jobs:
           cache-all-crates: "true"
           save-if: false
       - name: Install pinned cargo-nextest
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           tools/ci/install_nextest.sh "${RUNNER_TEMP}/nextest-bin"
           echo "${RUNNER_TEMP}/nextest-bin" >> "${GITHUB_PATH}"
       - name: Run disposable PostgreSQL integration targets
-        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-b --num-threads=1 --runner nextest
 
   postgres-domain-reachability:
-    # REQUIRED as of 2026-07-29: a red here blocks the merge. It was promoted
-    # once it had reported green on main at least once — a required context that
-    # has never reported blocks every merge, so the order matters.
+    # Presubmit-gated live Postgres (oyatie pg-gate). A red here still blocks
+    # the merge when run_live_postgres is true; otherwise the skip-proof step
+    # succeeds and Required / CI does not wait on the 10–17m facets. Always
+    # evaluated on push/workflow_dispatch when run_heavy is true.
     #
     # The display name below is now LOAD-BEARING: branch protection matches the
     # required context on that literal string, so renaming this job without
@@ -823,13 +826,13 @@ jobs:
           set -euo pipefail
           printf 'PostgreSQL reachability not evaluated because preflight result=%s\n' "${{ needs.preflight.result }}"
       - name: Path-class skip proof
-        if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy != 'true' }}
+        if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Require all PostgreSQL reachability facets
-        if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' }}
+        if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           test "${{ needs.postgres-reachability-app.result }}" = success &&
           test "${{ needs.postgres-reachability-platform.result }}" = success &&
@@ -838,9 +841,9 @@ jobs:
           test "${{ needs.postgres-reachability-domain-b.result }}" = success
 
   company-conformance:
-    # Required generic ontology instance-engine regression. Its twelve scenario
-    # ids and five controls exercise useful engine behavior through both REST and
-    # in-process drivers, so the suite remains blocking.
+    # Generic ontology instance-engine regression. Twelve scenario ids and five
+    # controls. Postsubmit: runs on push/workflow_dispatch when run_heavy, not
+    # on the merge-blocking Required / CI fan-in (4–6m suite).
     #
     # This is not the current Company/HR product target: all five fixtures are
     # instance-backed, Person is absent, and the suite proves no projected owning
@@ -850,6 +853,7 @@ jobs:
     name: Company conformance — generic-engine regression
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 35
 
     steps:
@@ -889,6 +893,7 @@ jobs:
     name: Generated faces — full required drift authority
     runs-on: macos-latest
     needs: preflight
+    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 35
 
     steps:
@@ -949,6 +954,7 @@ jobs:
     name: Backend — ${{ matrix.leg }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs: preflight
+    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     # Three legs run in PARALLEL. Measured on merge_group run 32402124838 this
     # job was the 17m critical path of a 19m CI run, and three steps were 757s
     # of its ~1,070s of work: the dev-auth PostgreSQL suites (355s), clippy
@@ -957,8 +963,10 @@ jobs:
     # pinned contract and creates two false-green surfaces (a job not wired
     # into required-ci's needs runs and gates nothing; a `steps.topology`
     # condition carried into a job with no topology step skips forever, green).
-    # A matrix keeps the job id, its membership in required-ci, and every step's
-    # place in the bypass-mutation matrix exactly as they were.
+    # A matrix keeps the job id and every step's place in the bypass-mutation
+    # matrix. Membership in Required / CI was removed 2026-08-28: this job is
+    # postsubmit (push/workflow_dispatch) so the merge wall stays under 5m.
+    # Image-release still waits for the completed CI workflow on main.
     #
     # Each leg pays its own ~55s setup (containers, cache restore, toolchain,
     # checkout). fail-fast is off so one red leg never hides the others'
@@ -1426,6 +1434,7 @@ jobs:
     name: Migration expand/contract rehearsal — 0165 ontology key-revision, 0166 leave
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     # Serial integration execution avoids cluster-global role mutation races.
     #
     # NOTE: the "full workspace" this number was originally sized for no longer
@@ -1851,16 +1860,44 @@ jobs:
         if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm run test:production-hardening
 
+  rust-fmt:
+    # Oyatie presubmit analog of `lint (format)`: cheap, parallel with preflight,
+    # merge-blocking. clippy/--all-targets stays on the backend postsubmit leg.
+    name: Rust format
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+      - name: Install Rust toolchain (pinned via rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: "1.97.1"
+          components: rustfmt
+      - name: rustfmt check
+        run: cargo fmt --all -- --check
+
   required-ci:
+    # Presubmit fan-in (oyatie TAP). Merge-blocking wall is this aggregator, not
+    # the full matrix. Measured 2026-08-28 on merge_group 33137386975: PostgreSQL
+    # platform 16.9m + preflight 2.0m = 19.2m because Required / CI waited on
+    # every heavy proof. Fast leaves (preflight ~2.1m, kubernetes ~2.5m after
+    # preflight, repo-gates ~1.2m, api-contract ~0.2m, rust-fmt parallel) fit
+    # under 5m. Live Postgres is path-gated like oyatie pg-gate; domain-unit,
+    # backend, generated-faces, company-conformance, and migration expand/contract
+    # run on push/workflow_dispatch only (postsubmit). Image-release still waits
+    # for the whole CI workflow on main, so those proofs remain release evidence.
+    # Display name is load-bearing for branch protection — do not rename.
     name: Required / CI
     needs:
       - preflight
-      - domain-unit
+      - rust-fmt
       - postgres-domain-reachability
-      - company-conformance
-      - generated-face-authority
-      - backend
-      - migration-expand-contract
       - repo-gates
       - api-contract
       - kubernetes-manifests
@@ -1871,12 +1908,8 @@ jobs:
       - name: Require every CI proof to succeed
         run: |
           test "${{ needs.preflight.result }}" = success &&
-            test "${{ needs.domain-unit.result }}" = success &&
+            test "${{ needs.rust-fmt.result }}" = success &&
             test "${{ needs.postgres-domain-reachability.result }}" = success &&
-            test "${{ needs.company-conformance.result }}" = success &&
-            test "${{ needs.generated-face-authority.result }}" = success &&
-            test "${{ needs.backend.result }}" = success &&
-            test "${{ needs.migration-expand-contract.result }}" = success &&
             test "${{ needs.repo-gates.result }}" = success &&
             test "${{ needs.api-contract.result }}" = success &&
             test "${{ needs.kubernetes-manifests.result }}" = success

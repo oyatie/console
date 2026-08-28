@@ -49,6 +49,7 @@ const JOBS = new Map([
   ["generated-face-authority", "needs pinned Java + Reindeer toolchains to rebuild the full generated-face closure"],
   ["api-contract", true],
   ["company-conformance", true],
+  ["rust-fmt", true],
   ["required-ci", "terminal status aggregate; its exact needs/result contract is enforced by check-ci-preflight"],
 ]);
 const MIRRORED_JOBS = [...JOBS].filter(([, v]) => v === true).map(([name]) => name);
