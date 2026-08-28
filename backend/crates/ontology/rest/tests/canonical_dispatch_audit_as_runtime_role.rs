@@ -365,8 +365,8 @@ async fn canonical_projected_success_emits_ontology_canonical_execute_audit(owne
 /// published type, `projected_usecase` dispatch to the owning port, and a real
 /// `console_rt` write. Stable keys are prefixed so they do not collide with
 /// the instance-backed `company_conformance` fixtures. Person is registered
-/// with the other five ports (the composition root already does) and both
-/// `people.create_person` and `people.revise_person` are seeded.
+/// with the other five ports (the composition root already does). OrgUnit
+/// seeds `create_org_unit` and `revise_org_unit`; Person seeds create and revise.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_pool: PgPool) {
     let rt = runtime_role_pool(&owner_pool).await;
@@ -391,7 +391,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         DispatchTarget::CompanyRevise.as_str(),
     )
     .await;
-    let unit_type = seed_canonical_org_action(
+    let unit_type = seed_canonical_org_actions(
         &owner_pool,
         org,
         actor,
@@ -401,8 +401,16 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         "id",
         catalog::ORG_UNIT_NAME,
         "조직명",
-        "create_org_unit",
-        DispatchTarget::OrganizationCreateOrgUnit.as_str(),
+        &[
+            (
+                "create_org_unit",
+                DispatchTarget::OrganizationCreateOrgUnit.as_str(),
+            ),
+            (
+                "revise_org_unit",
+                DispatchTarget::OrganizationReviseOrgUnit.as_str(),
+            ),
+        ],
     )
     .await;
     let position_type = seed_canonical_org_action(
@@ -551,6 +559,94 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     });
     let org_unit_id = org_unit_id.expect("create_org_unit receipt must name org_unit_id");
 
+    let version_one = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM org_unit_revisions \
+         WHERE org_id = $1 AND org_unit_id = $2 AND version = 1",
+    )
+    .bind(org_uuid)
+    .bind(org_unit_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(version_one, json!({ "name": "영업본부" }));
+
+    let revise_unit = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "revise_org_unit",
+                ActionCommand {
+                    object_type_id: unit_type,
+                    instance_id: Some(InstanceId::from_uuid(org_unit_id)),
+                    title: None,
+                    params: json!({
+                        "org_unit_id": org_unit_id,
+                        "attributes": { "name": "영업1본부" }
+                    }),
+                    reason: Some("foundry org unit revise".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("organization.revise_org_unit through the seeded action must succeed");
+    assert_eq!(
+        revise_unit
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::OrganizationReviseOrgUnit
+                .as_str()
+                .to_owned()
+        ))
+    );
+    assert_eq!(
+        revise_unit.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("org_unit_id"))
+        }),
+        Some(&Value::String(org_unit_id.to_string()))
+    );
+    assert_eq!(
+        revise_unit.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("version"))
+                .and_then(Value::as_i64)
+        }),
+        Some(2)
+    );
+    let version_one_after = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM org_unit_revisions \
+         WHERE org_id = $1 AND org_unit_id = $2 AND version = 1",
+    )
+    .bind(org_uuid)
+    .bind(org_unit_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        version_one_after, version_one,
+        "appending a revision must not rewrite revision 1"
+    );
+    let version_two = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM org_unit_revisions \
+         WHERE org_id = $1 AND org_unit_id = $2 AND version = 2",
+    )
+    .bind(org_uuid)
+    .bind(org_unit_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(version_two, json!({ "name": "영업1본부" }));
+
     let position_outcome = console_platform_request_context::scope_org(org, async {
         state
             .execute_action(
@@ -606,15 +702,18 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     .unwrap();
     assert_eq!(legal_name, json!({ "legal_name": "주식회사 아크메" }));
 
-    let unit_name: serde_json::Value = sqlx::query_scalar(
-        "SELECT attributes FROM org_unit_revisions WHERE org_id = $1 AND org_unit_id = $2",
+    let unit_head: serde_json::Value = sqlx::query_scalar(
+        "SELECT attributes FROM org_unit_revisions \
+         WHERE org_id = $1 AND org_unit_id = $2 \
+           AND version = (SELECT MAX(version) FROM org_unit_revisions \
+                          WHERE org_id = $1 AND org_unit_id = $2)",
     )
     .bind(org_uuid)
     .bind(org_unit_id)
     .fetch_one(&owner_pool)
     .await
     .unwrap();
-    assert_eq!(unit_name, json!({ "name": "영업본부" }));
+    assert_eq!(unit_head, json!({ "name": "영업1본부" }));
 
     let instances: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM ont_instances WHERE org_id = $1")
         .bind(org_uuid)
