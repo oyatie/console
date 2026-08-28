@@ -3531,6 +3531,7 @@ pub fn build_router(state: AppState) -> Router {
         "/_ui",
         Router::new()
             .route("/", get(ui_shell))
+            .merge(console_payroll_ui::pkg_router())
             .with_state(state.clone()),
     );
     // Cross-cutting layers on the FULLY-merged router (base + every domain +

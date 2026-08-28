@@ -13,6 +13,7 @@ import {
   hasLiveCfgTestAttribute,
   unitTestedCrateSrcRoots,
 } from "./check-executed-tests-cfg.mjs";
+import { cargoTestKind } from "./lib/cargo-test-kind.mjs";
 
 const gateSource = readFileSync(
   fileURLToPath(new URL("./check-executed-tests.mjs", import.meta.url)),
@@ -112,10 +113,27 @@ describe("unitTestedCrateSrcRoots — inventory + examined-zero", () => {
   });
 });
 
+describe("cargoTestKind — cargo metadata lib aliases", () => {
+  it("maps default lib and explicit rlib/cdylib to cargo test --lib", () => {
+    assert.equal(cargoTestKind(["lib"]), "lib");
+    assert.equal(cargoTestKind(["rlib"]), "lib");
+    assert.equal(cargoTestKind(["rlib", "cdylib"]), "lib");
+    assert.equal(cargoTestKind(["cdylib"]), "lib");
+    assert.equal(cargoTestKind(["proc-macro"]), "lib");
+  });
+
+  it("keeps integration tests and drops bins", () => {
+    assert.equal(cargoTestKind(["test"]), "test");
+    assert.equal(cargoTestKind(["bin"]), null);
+    assert.equal(cargoTestKind(["custom-build"]), null);
+  });
+});
+
 describe("gate wiring", () => {
   it("routes definedBinaries through the comment-aware helper, not raw includes", () => {
     assert.match(gateSource, /unitTestedCrateSrcRoots\(files\)/);
     assert.match(gateSource, /from "\.\/check-executed-tests-cfg\.mjs"/);
+    assert.match(gateSource, /cargoTestKind\(target\.kind\)/);
     // Live predicate must not be a raw file-text includes call (comment prose may still
     // describe that historical defect without reintroducing it as code).
     const codeLines = gateSource

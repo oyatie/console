@@ -75,6 +75,7 @@ import {
 } from "./lib/executed-tests-baseline.mjs";
 import { directExecutable, executableWorkflowCommands } from "./lib/ci-workflow-executables.mjs";
 import { unitTestedCrateSrcRoots } from "./check-executed-tests-cfg.mjs";
+import { cargoTestKind } from "./lib/cargo-test-kind.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CI = join(ROOT, ".github/workflows/ci.yml");
@@ -157,8 +158,8 @@ function cargoGraph() {
     const targets = [];
     for (const target of pkg.targets) {
       if (!target.test) continue; // `test = false` in Cargo.toml means no test binary
-      const kind = target.kind[0];
-      if (kind !== "lib" && kind !== "test") continue;
+      const kind = cargoTestKind(target.kind);
+      if (!kind) continue;
       const entry = { pkg: pkg.name, kind, name: target.name, src: relative(ROOT, target.src_path) };
       bySrc.set(entry.src, entry);
       targets.push(entry);

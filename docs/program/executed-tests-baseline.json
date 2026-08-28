@@ -48,7 +48,7 @@
     "backend/app/tests/facilities_pilot_story.rs": 6,
     "backend/app/tests/field_visit_api.rs": 3,
     "backend/app/tests/finance_gl_voucher_sod.rs": 2,
-    "backend/app/tests/health_readiness.rs": 6,
+    "backend/app/tests/health_readiness.rs": 7,
     "backend/app/tests/hr_attendance_manager_scope.rs": 1,
     "backend/app/tests/hr_attendance_self_read.rs": 3,
     "backend/app/tests/hr_ingest_checklist_gate.rs": 2,
