@@ -2538,6 +2538,7 @@ dependencies = [
  "console-ontology-canonical-adapter-postgres",
  "console-ontology-canonical-domain",
  "console-ontology-domain",
+ "console-payroll-adapter-postgres",
  "console-platform-auth",
  "console-platform-authz",
  "console-platform-authz-rest",

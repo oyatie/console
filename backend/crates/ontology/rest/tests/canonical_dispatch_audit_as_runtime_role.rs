@@ -28,12 +28,13 @@ use console_ontology_canonical_domain::{
 };
 use console_ontology_domain::{ActionDispatch, BackingKind, InstanceId, ObjectTypeId};
 use console_ontology_rest::{ActionCommand, OntologyRestState, ProjectedDispatchRegistry};
+use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
 use console_platform_authz::{Principal, Role};
 use console_platform_db::{DbError, with_audit};
 use serde::Deserialize;
 use serde_json::{Value, json};
-use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
+use sqlx::{PgPool, Row};
 use time::OffsetDateTime;
 use time::macros::datetime;
 use uuid::Uuid;
@@ -431,6 +432,20 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         ],
     )
     .await;
+    let pay_run_type = seed_canonical_org_action(
+        &owner_pool,
+        org,
+        actor,
+        "canonical.pay_run",
+        "급여",
+        "payroll_draft_runs",
+        "id",
+        "label",
+        "라벨",
+        "create_run",
+        DispatchTarget::PayrollCreateRun.as_str(),
+    )
+    .await;
 
     let handle = tokio::runtime::Handle::current();
     let employment_port = PgEmploymentPort::new(rt.clone(), handle.clone());
@@ -438,7 +453,8 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         .register_port(PgCompanyPort::new(rt.clone(), handle.clone()))
         .register_port(PgOrgUnitPort::new(rt.clone(), handle.clone()))
         .register_port(PgJobPositionPort::new(rt.clone(), handle.clone()))
-        .register_port(employment_port.clone());
+        .register_port(employment_port.clone())
+        .register_port(PgPayRunPort::new(rt.clone(), handle.clone()));
     let state = OntologyRestState::new(
         PgOntologyStore::new(rt.clone()).with_command_pool(cmd),
         PgInstanceStore::new(rt.clone()),
@@ -884,6 +900,74 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     assert_eq!(after_transfer.org_unit_id, Some(tech_id));
     assert_eq!(after_transfer.job_position_id, Some(lead_id));
 
+    let run_id = Uuid::new_v4();
+    let payroll_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "create_run",
+                ActionCommand {
+                    object_type_id: pay_run_type,
+                    instance_id: Some(InstanceId::from_uuid(run_id)),
+                    title: None,
+                    params: json!({
+                        "run_id": run_id,
+                        // `time::Date`'s serde is (year, ordinal), not ISO-8601.
+                        "period_start": [2026, 152],
+                        "period_end": [2026, 181],
+                        "connector": "m2",
+                        "job": "payroll_draft"
+                    }),
+                    reason: Some("foundry payroll create_run".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("payroll.create_run through the seeded action must succeed");
+    assert_eq!(
+        payroll_outcome
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::PayrollCreateRun.as_str().to_owned()
+        ))
+    );
+    let draft_run_id = payroll_outcome
+        .projected
+        .as_ref()
+        .and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("draft_run_id"))
+                .and_then(Value::as_str)
+                .and_then(|raw| Uuid::parse_str(raw).ok())
+        })
+        .expect("payroll.create_run receipt must name draft_run_id");
+    let (status, calculation_enabled): (String, bool) = {
+        let row = sqlx::query(
+            "SELECT status, calculation_enabled FROM payroll_draft_runs \
+             WHERE org_id = $1 AND id = $2",
+        )
+        .bind(org_uuid)
+        .bind(draft_run_id)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+        (row.get("status"), row.get("calculation_enabled"))
+    };
+    assert_eq!(status, "BLOCKED_LEGAL_GATE");
+    assert!(
+        !calculation_enabled,
+        "a staged run must not be calculation-enabled — this path must not compute won"
+    );
+
     let after_assign: i64 =
         sqlx::query_scalar("SELECT COUNT(*) FROM ont_instances WHERE org_id = $1")
             .bind(org_uuid)
@@ -892,7 +976,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
             .unwrap();
     assert_eq!(
         after_assign, 0,
-        "hr.appoint/promote/transfer must not write ont_instances"
+        "canonical org/hr/payroll writes must not write ont_instances"
     );
 }
 

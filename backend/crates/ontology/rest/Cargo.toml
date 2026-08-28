@@ -56,6 +56,10 @@ tower = { workspace = true, features = ["util"] }
 # NOT depend on a domain ADAPTER (layer boundary), so these are dev-only. The
 # layer-boundary gate exempts dev-deps (kind = "dev").
 console-ontology-canonical-adapter-postgres = { path = "../canonical-adapter-postgres" }
+# Dev-only: Foundry `payroll.create_run` is a projected_usecase into the
+# existing PayRun writer. The REST crate must not take a production adapter
+# edge on payroll (layer boundary); the gate exempts kind = "dev".
+console-payroll-adapter-postgres = { path = "../../payroll/adapter-postgres" }
 console-registry-adapter-postgres = { workspace = true }
 console-registry-application = { workspace = true }
 console-registry-domain = { workspace = true }
