@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.17](https://github.com/oyatie/console/compare/v0.3.16...v0.3.17) (2026-08-28)
+
+
+### Features
+
+* **ontology:** catalog-required org properties and empty-tenant action path ([#931](https://github.com/oyatie/console/issues/931)) ([b1ba519](https://github.com/oyatie/console/commit/b1ba5195be9c859ac42ead37cd9c6b160eea0ae1))
+
 ## [0.3.16](https://github.com/oyatie/console/compare/v0.3.15...v0.3.16) (2026-08-27)
 
 
