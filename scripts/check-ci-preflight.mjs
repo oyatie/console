@@ -514,6 +514,7 @@ const domainUnitPackages = [
   "console-ontology-adapter-postgres",
   "console-ontology-rest",
   "console-payroll-rest",
+  "console-payroll-ui",
   "console-platform-email",
   "console-platform-jobs",
   "console-platform-push",
@@ -1019,7 +1020,7 @@ const requiredJobRunContracts = Object.freeze({
   ],
   "domain-unit": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Domain crate unit tests", "3fb8655b1970c16da3809f3c41c151c215fce2ade26293651798aab4da2756ed", { if: runHeavyCondition }),
+    proofDigest("Domain crate unit tests", "826a7cf674b38f671cf42ded2a8d30fc08f8faf593b6cf20d347f195352a4644", { if: runHeavyCondition }),
   ],
   "backend": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),

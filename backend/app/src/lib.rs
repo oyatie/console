@@ -3527,7 +3527,12 @@ pub fn build_router(state: AppState) -> Router {
         }
         DatabaseDependency::NotConfigured => router,
     };
-    let router = router.nest("/_ui", console_payroll_ui::router());
+    let router = router.nest(
+        "/_ui",
+        Router::new()
+            .route("/", get(ui_shell))
+            .with_state(state.clone()),
+    );
     // Cross-cutting layers on the FULLY-merged router (base + every domain +
     // platform + realtime + auth), so they actually cover the merged routes:
     //   * DefaultBodyLimit (2 MiB) â bounds every request body. Applied here
@@ -3549,6 +3554,41 @@ pub fn build_router(state: AppState) -> Router {
         state.config.trusted_proxy_cidrs.clone(),
     );
     with_metrics(router, &state)
+}
+
+async fn ui_shell(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
+    let runs = match (&state.database, &state.jwt_verifier) {
+        (DatabaseDependency::Postgres(pool), Some(verifier)) => {
+            let rest =
+                PayrollRestState::new(PgPayrollStore::new(pool.clone()), Some(verifier.clone()));
+            rest.visible_run_summaries(&headers).await
+        }
+        _ => Vec::new(),
+    };
+    let views: Vec<console_payroll_ui::RunSummary> = runs.iter().map(ui_run_summary).collect();
+    console_payroll_ui::html_shell_with(&views)
+}
+
+fn ui_run_summary(
+    run: &console_payroll_adapter_postgres::PayrollRunSummary,
+) -> console_payroll_ui::RunSummary {
+    use time::format_description::well_known::Rfc3339;
+    console_payroll_ui::RunSummary {
+        id: run.id.to_string(),
+        period_start: run.period_start.to_string(),
+        period_end: run.period_end.to_string(),
+        source_label: run.source_label.clone(),
+        status: run.status.clone(),
+        calculation_enabled: run.calculation_enabled,
+        created_at: run
+            .created_at
+            .format(&Rfc3339)
+            .unwrap_or_else(|_| String::new()),
+        updated_at: run
+            .updated_at
+            .format(&Rfc3339)
+            .unwrap_or_else(|_| String::new()),
+    }
 }
 
 async fn healthz(State(state): State<AppState>) -> impl IntoResponse {

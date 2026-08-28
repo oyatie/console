@@ -138,3 +138,207 @@ fn app_config(role: AppRole) -> Result<AppConfig, console_app::AppError> {
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
     ])
 }
+
+mod authorized {
+    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+
+    use super::*;
+    use axum::body::to_bytes;
+    use console_kernel_core::{OrgId, UserId};
+    use console_ontology_canonical_domain::{CanonicalPort, CommandId, DispatchTarget};
+    use console_payroll_adapter_postgres::pay_run::{PayRunCommand, PayRunQuery, PgPayRunPort};
+    use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+    use http::header;
+    use p256::ecdsa::SigningKey;
+    use p256::elliptic_curve::rand_core::OsRng;
+    use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
+    use sqlx::PgPool;
+    use time::OffsetDateTime;
+    use time::macros::date;
+    use uuid::Uuid;
+
+    const TEST_ISSUER: &str = "console-platform-auth";
+    const TEST_AUDIENCE: &str = "console-api";
+
+    struct Keys {
+        private_pem: String,
+        public_pem: String,
+    }
+
+    fn keys() -> Keys {
+        let signing_key = SigningKey::random(&mut OsRng);
+        Keys {
+            private_pem: signing_key
+                .to_pkcs8_pem(LineEnding::LF)
+                .unwrap()
+                .to_string(),
+            public_pem: signing_key
+                .verifying_key()
+                .to_public_key_pem(LineEnding::LF)
+                .unwrap(),
+        }
+    }
+
+    fn bearer(keys: &Keys, org: OrgId, user: UserId, role: &str) -> String {
+        let issuer = JwtIssuer::from_es256_pem(
+            JwtSettings {
+                issuer: TEST_ISSUER.to_owned(),
+                audience: TEST_AUDIENCE.to_owned(),
+                access_token_ttl: time::Duration::minutes(15),
+            },
+            keys.private_pem.as_bytes(),
+            keys.public_pem.as_bytes(),
+        )
+        .unwrap();
+        issuer
+            .issue_access_token(AccessTokenInput {
+                subject: user,
+                org_id: org,
+                roles: vec![role.to_owned()],
+                branches: Vec::new(),
+                platform: false,
+                view_as: false,
+                read_only: false,
+                display_name: None,
+                feature_grants: Vec::new(),
+                authz_subject_version: 0,
+                authz_policy_version: 0,
+                session_generation: 0,
+                issued_at: OffsetDateTime::now_utc(),
+            })
+            .unwrap()
+    }
+
+    async fn runtime_role_pool(owner: &PgPool) -> PgPool {
+        PgPoolOptions::new()
+            .max_connections(4)
+            .after_connect(|conn, _| {
+                Box::pin(async move {
+                    sqlx::query("SET ROLE console_rt").execute(conn).await?;
+                    Ok(())
+                })
+            })
+            .connect_with(owner.connect_options().as_ref().clone())
+            .await
+            .unwrap()
+    }
+
+    fn jwt_app_state(runtime_pool: PgPool, public_key_pem: String) -> AppState {
+        let config = AppConfig::from_pairs([
+            ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+            ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+            ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+            ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+            ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ])
+        .unwrap();
+        AppState::new(config, DatabaseDependency::Postgres(runtime_pool)).unwrap()
+    }
+
+    async fn seed_user(pool: &PgPool, org: OrgId, user: UserId, role: &str) {
+        sqlx::query("INSERT INTO users (id, display_name, roles, org_id) VALUES ($1, $2, $3, $4)")
+            .bind(*user.as_uuid())
+            .bind(format!("ui-{role}"))
+            .bind(vec![role.to_owned()])
+            .bind(*org.as_uuid())
+            .execute(pool)
+            .await
+            .unwrap();
+    }
+
+    async fn seed_run(pool: &PgPool, org: OrgId, actor: UserId) -> Uuid {
+        let pay_run = PgPayRunPort::new(
+            runtime_role_pool(pool).await,
+            tokio::runtime::Handle::current(),
+        );
+        let created = {
+            let port = pay_run.clone();
+            let command = PayRunCommand {
+                org_id: org,
+                command_id: CommandId::from_uuid(Uuid::new_v4()),
+                actor_id: actor,
+                query: PayRunQuery::CreateRun {
+                    run_id: Uuid::new_v4(),
+                    period_start: date!(2026 - 06 - 01),
+                    period_end: date!(2026 - 06 - 30),
+                    connector: Some("m2".to_owned()),
+                    job: Some("payroll_draft".to_owned()),
+                },
+                action_key: "create_run".to_owned(),
+                object_type_id: Uuid::nil(),
+            };
+            tokio::task::spawn_blocking(move || port.execute(&command))
+                .await
+                .unwrap()
+                .expect("payroll.create_run as console_rt")
+        };
+        assert_eq!(created.target(), DispatchTarget::PayrollCreateRun);
+        created.result()["draft_run_id"]
+            .as_str()
+            .expect("CreateRun must name draft_run_id")
+            .parse()
+            .unwrap()
+    }
+
+    async fn get_ui(app: axum::Router, token: Option<&str>) -> (StatusCode, String) {
+        let mut builder = Request::builder().uri("/_ui");
+        if let Some(token) = token {
+            builder = builder.header(header::AUTHORIZATION, format!("Bearer {token}"));
+        }
+        let response = app
+            .oneshot(builder.body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        let status = response.status();
+        let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        (status, String::from_utf8(bytes.to_vec()).unwrap())
+    }
+
+    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    async fn ui_shell_omits_runs_unless_payroll_run_read(pool: PgPool) {
+        let keys = keys();
+        let org = OrgId::knl();
+        let super_admin = UserId::new();
+        seed_user(&pool, org, super_admin, "SUPER_ADMIN").await;
+        let member = UserId::new();
+        seed_user(&pool, org, member, "MEMBER").await;
+        let run = seed_run(&pool, org, super_admin).await;
+
+        let service = build_router(jwt_app_state(
+            runtime_role_pool(&pool).await,
+            keys.public_pem.clone(),
+        ));
+
+        let (status, unauth) = get_ui(service.clone(), None).await;
+        assert_eq!(status, StatusCode::OK, "{unauth}");
+        assert_eq!(unauth, console_payroll_ui::render_shell());
+
+        let (status, member_html) =
+            get_ui(service.clone(), Some(&bearer(&keys, org, member, "MEMBER"))).await;
+        assert_eq!(status, StatusCode::OK, "{member_html}");
+        assert_eq!(member_html, console_payroll_ui::render_shell());
+        assert!(
+            !member_html.contains(&run.to_string()),
+            "MEMBER must not see the run id: {member_html}"
+        );
+
+        let (status, admin_html) = get_ui(
+            service,
+            Some(&bearer(&keys, org, super_admin, "SUPER_ADMIN")),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{admin_html}");
+        assert_ne!(admin_html, console_payroll_ui::render_shell());
+        assert!(
+            admin_html.contains(&format!("data-run-id=\"{run}\"")),
+            "SUPER_ADMIN must see the authorized run: {admin_html}"
+        );
+        let lowered = admin_html.to_ascii_lowercase();
+        assert!(!lowered.contains("won"), "won leaked: {admin_html}");
+        assert!(
+            !admin_html.contains("291_520"),
+            "golden won leaked: {admin_html}"
+        );
+        assert!(!lowered.contains("payslip"), "payslip leaked: {admin_html}");
+    }
+}

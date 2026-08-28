@@ -47,8 +47,8 @@ use axum::routing::{get, post};
 use axum::{Json, Router};
 use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
 use console_payroll_adapter_postgres::{
-    MyPayrollLinePage, PayrollRunDetail, PayrollRunPage, PgPayrollError, PgPayrollStore,
-    get_run_in_tx, list_runs_in_tx,
+    MyPayrollLinePage, PayrollRunDetail, PayrollRunPage, PayrollRunSummary, PgPayrollError,
+    PgPayrollStore, get_run_in_tx, list_runs_in_tx,
 };
 use console_platform_auth::JwtVerifier;
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
@@ -126,6 +126,25 @@ impl PayrollRestState {
             jwt_verifier,
         }
     }
+
+    /// SSR composition helper: the same `PayrollRunRead` listing as GET `/runs`,
+    /// or an empty vec (omit) when the caller is unauthenticated, unauthorized,
+    /// or the listing fails. Never a 401/403 on the HTML shell.
+    pub async fn visible_run_summaries(&self, headers: &HeaderMap) -> Vec<PayrollRunSummary> {
+        match list_runs_page(
+            self,
+            headers,
+            PageParams {
+                limit: Some(100),
+                offset: Some(0),
+            },
+        )
+        .await
+        {
+            Ok(page) => page.items,
+            Err(_) => Vec::new(),
+        }
+    }
 }
 
 pub fn router(state: PayrollRestState) -> Router {
@@ -194,18 +213,18 @@ pub(crate) struct PageParams {
     pub(crate) offset: Option<i64>,
 }
 
-async fn list_runs(
-    State(state): State<PayrollRestState>,
-    headers: HeaderMap,
-    Query(params): Query<PageParams>,
-) -> Result<Response, RestError> {
-    let principal = principal_from_headers(&state, &headers).await?;
+async fn list_runs_page(
+    state: &PayrollRestState,
+    headers: &HeaderMap,
+    params: PageParams,
+) -> Result<PayrollRunPage, RestError> {
+    let principal = principal_from_headers(state, headers).await?;
     require_run_read(&principal)?;
 
     let org = principal.org_id;
     let actor = principal.user_id;
     let pool = state.store.pool().clone();
-    let page = with_audits::<_, PayrollRunPage, RestError>(&pool, org, move |tx| {
+    with_audits::<_, PayrollRunPage, RestError>(&pool, org, move |tx| {
         Box::pin(async move {
             let page = list_runs_in_tx(tx, params.limit, params.offset)
                 .await
@@ -222,8 +241,15 @@ async fn list_runs(
             Ok((page, vec![event]))
         })
     })
-    .await?;
+    .await
+}
 
+async fn list_runs(
+    State(state): State<PayrollRestState>,
+    headers: HeaderMap,
+    Query(params): Query<PageParams>,
+) -> Result<Response, RestError> {
+    let page = list_runs_page(&state, &headers, params).await?;
     Ok(Json(page).into_response())
 }
 

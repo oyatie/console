@@ -4648,12 +4648,14 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-health_readiness",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/health_readiness.rs"]),
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/health_readiness.rs"], external = {
+        "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+    }),
     crate = "health_readiness",
     edition = "2024",
     crate_root = "backend/app/tests/health_readiness.rs",
     visibility = ["PUBLIC"],
-    env = {"CARGO_MANIFEST_DIR": "backend/app"},
+    env = {"CARGO_MANIFEST_DIR": "backend/app", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.app", "domain.app", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
         "//backend/crates/action-inbox/application:console-action-inbox-application",

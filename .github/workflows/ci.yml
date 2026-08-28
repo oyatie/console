@@ -390,7 +390,7 @@ jobs:
             -p console-gate-tenant-isolation -p console-gate-vendor-lockin -p console-identity-rest \
             -p console-inventory-adapter-postgres -p console-inventory-rest -p console-leave-adapter-postgres \
             -p console-leave-rest -p console-ontology-adapter-postgres -p console-ontology-rest \
-            -p console-payroll-rest -p console-platform-email -p console-platform-jobs \
+            -p console-payroll-rest -p console-payroll-ui -p console-platform-email -p console-platform-jobs \
             -p console-platform-push -p console-platform-realtime -p console-platform-request-context \
             -p console-production-rest -p console-reporting-adapter-postgres -p console-support-adapter-postgres \
             -p console-kernel-core -p console-registry-rest -p console-reporting-rest \
