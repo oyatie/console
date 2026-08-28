@@ -270,7 +270,7 @@
     "backend/crates/payroll/rest/src/lib.rs": 10,
     "backend/crates/payroll/rest/tests/api.rs": 3,
     "backend/crates/payroll/rest/tests/payslip_draft_api.rs": 9,
-    "backend/crates/payroll/rest/tests/run_lifecycle_api.rs": 4,
+    "backend/crates/payroll/rest/tests/run_lifecycle_api.rs": 5,
     "backend/crates/platform/audit-chain/src/lib.rs": 5,
     "backend/crates/platform/audit-chain/tests/audit_chain_rls.rs": 24,
     "backend/crates/platform/auth-rest/src/lib.rs": 7,
