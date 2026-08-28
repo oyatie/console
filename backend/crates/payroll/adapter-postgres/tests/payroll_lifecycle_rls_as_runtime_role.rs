@@ -16,12 +16,17 @@
 //!    writes no recipient inbox_docs; a cross-org run id is NotFound omit
 //!    (RLS), not InvalidState (which would distinguish a foreign run from a
 //!    missing one).
+//!
+//! Draft-run fixtures mint via `payroll.create_run` as `console_rt` (no owner
+//! INSERT of draft runs). Lines still INSERT (calculate HOLD).
 
 use console_kernel_core::{OrgId, UserId};
+use console_ontology_canonical_domain::{CanonicalPort, CommandId, CommandReceipt, DispatchTarget};
 use console_payroll_adapter_postgres::lifecycle::{
     LifecycleError, close_attendance_in_tx, close_preflight_in_tx, get_disbursement_in_tx,
     list_exceptions_in_tx, load_payslip_issuance_in_tx, payslip_delivery_in_tx,
 };
+use console_payroll_adapter_postgres::pay_run::{PayRunCommand, PayRunQuery, PgPayRunPort};
 use console_platform_db::with_org_conn;
 use console_platform_test_support::runtime_role_pool;
 use sqlx::PgPool;
@@ -41,17 +46,61 @@ async fn seed_org(owner_pool: &PgPool, org: Uuid, tag: &str) {
     .unwrap();
 }
 
-async fn seed_run(owner_pool: &PgPool, org: Uuid) -> Uuid {
-    sqlx::query_scalar(
-        "INSERT INTO payroll_draft_runs (org_id, period_start, period_end, source_label) \
-         VALUES ($1, $2, $3, 'rls-run') RETURNING id",
+async fn seed_actor(owner_pool: &PgPool, org: Uuid) -> UserId {
+    let user_id = UserId::new();
+    sqlx::query("INSERT INTO users (id, display_name, roles, org_id) VALUES ($1, $2, $3, $4)")
+        .bind(*user_id.as_uuid())
+        .bind(format!("stager-{}", user_id.as_uuid()))
+        .bind(["SUPER_ADMIN"].as_slice())
+        .bind(org)
+        .execute(owner_pool)
+        .await
+        .unwrap();
+    user_id
+}
+
+async fn seed_run(owner_pool: &PgPool, org: Uuid, actor: UserId) -> Uuid {
+    let runtime_pool = runtime_role_pool(owner_pool).await;
+    let pay_run = PgPayRunPort::new(runtime_pool, tokio::runtime::Handle::current());
+    let created = execute_sync(
+        &pay_run,
+        PayRunCommand {
+            org_id: OrgId::from_uuid(org),
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: PayRunQuery::CreateRun {
+                run_id: Uuid::new_v4(),
+                period_start: date!(2026 - 06 - 01),
+                period_end: date!(2026 - 06 - 30),
+                connector: Some("m2".to_owned()),
+                job: Some("payroll_draft".to_owned()),
+            },
+            action_key: "create_run".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
     )
-    .bind(org)
-    .bind(date!(2026 - 06 - 01))
-    .bind(date!(2026 - 06 - 30))
-    .fetch_one(owner_pool)
     .await
-    .unwrap()
+    .expect("payroll.create_run as console_rt");
+    assert_eq!(created.target(), DispatchTarget::PayrollCreateRun);
+    created.result()["draft_run_id"]
+        .as_str()
+        .expect("CreateRun must name draft_run_id")
+        .parse()
+        .unwrap()
+}
+
+async fn execute_sync<P: CanonicalPort + Clone + Send + 'static>(
+    port: &P,
+    command: P::Command,
+) -> Result<CommandReceipt, P::Error>
+where
+    P::Command: Send + 'static,
+    P::Error: Send + 'static,
+{
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.execute(&command))
+        .await
+        .unwrap()
 }
 
 async fn seed_line(owner_pool: &PgPool, org: Uuid, run_id: Uuid) -> Uuid {
@@ -109,7 +158,8 @@ async fn lifecycle_tables_are_org_isolated_and_write_checked(pool: PgPool) {
     seed_org(&pool, org_a, "A").await;
     seed_org(&pool, org_b, "B").await;
 
-    let run_a = seed_run(&pool, org_a).await;
+    let stager = seed_actor(&pool, org_a).await;
+    let run_a = seed_run(&pool, org_a, stager).await;
     let line_a = seed_line(&pool, org_a, run_a).await;
     let emp_a = seed_employee(&pool, org_a, "Alice").await;
     let recipient = seed_user_linked_to_employee(&pool, org_a, emp_a).await;
@@ -403,7 +453,8 @@ async fn seed_payroll_period_lock(owner_pool: &PgPool, org: Uuid) {
 async fn an_empty_roster_cannot_satisfy_the_attendance_gate(pool: PgPool) {
     let org = Uuid::new_v4();
     seed_org(&pool, org, "empty-roster").await;
-    let run = seed_run(&pool, org).await;
+    let stager = seed_actor(&pool, org).await;
+    let run = seed_run(&pool, org, stager).await;
     // The OTHER hard check passes, so the attendance check alone decides.
     seed_payroll_period_lock(&pool, org).await;
 
@@ -453,7 +504,8 @@ async fn an_empty_roster_cannot_satisfy_the_attendance_gate(pool: PgPool) {
 async fn a_roster_line_with_attendance_material_still_closes(pool: PgPool) {
     let org = Uuid::new_v4();
     seed_org(&pool, org, "material-present").await;
-    let run = seed_run(&pool, org).await;
+    let stager = seed_actor(&pool, org).await;
+    let run = seed_run(&pool, org, stager).await;
     let line = seed_line(&pool, org, run).await;
     seed_payroll_period_lock(&pool, org).await;
     sqlx::query("UPDATE payroll_draft_lines SET attendance_source_row_count = 3 WHERE id = $1")
