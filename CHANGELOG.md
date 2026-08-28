@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.19](https://github.com/oyatie/console/compare/v0.3.18...v0.3.19) (2026-08-28)
+
+
+### Features
+
+* **ui:** nest empty payroll SSR shell at /_ui ([#952](https://github.com/oyatie/console/issues/952)) ([7bf50ba](https://github.com/oyatie/console/commit/7bf50ba2074e3859b9acf5190aed750757e46a89))
+* **ui:** pin leptos 0.9.0-beta on console-payroll-ui ([#951](https://github.com/oyatie/console/issues/951)) ([b69b55c](https://github.com/oyatie/console/commit/b69b55c14e4cbf0cb2ae80089d76fda8b3fb7eca))
+
 ## [0.3.18](https://github.com/oyatie/console/compare/v0.3.17...v0.3.18) (2026-08-28)
 
 
