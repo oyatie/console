@@ -372,6 +372,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     let org_uuid = *org.as_uuid();
     seed_org(&owner_pool, org_uuid, "foundry-org").await;
     let actor = seed_user(&owner_pool, org_uuid, "foundry-org").await;
+    let decider = seed_user(&owner_pool, org_uuid, "foundry-payroll-decider").await;
 
     let company_type = seed_canonical_org_action(
         &owner_pool,
@@ -432,7 +433,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         ],
     )
     .await;
-    let pay_run_type = seed_canonical_org_action(
+    let pay_run_type = seed_canonical_org_actions(
         &owner_pool,
         org,
         actor,
@@ -442,8 +443,11 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         "id",
         "label",
         "라벨",
-        "create_run",
-        DispatchTarget::PayrollCreateRun.as_str(),
+        &[
+            ("create_run", DispatchTarget::PayrollCreateRun.as_str()),
+            ("submit_run", DispatchTarget::PayrollSubmitRun.as_str()),
+            ("decide_run", DispatchTarget::PayrollDecideRun.as_str()),
+        ],
     )
     .await;
 
@@ -966,6 +970,129 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     assert!(
         !calculation_enabled,
         "a staged run must not be calculation-enabled — this path must not compute won"
+    );
+
+    // The port has no calculate dispatch target. Submitting requires CALCULATED,
+    // so the table owner flips status only — no line math, calculation_enabled
+    // stays false.
+    sqlx::query("UPDATE payroll_draft_runs SET status = 'CALCULATED' WHERE id = $1")
+        .bind(draft_run_id)
+        .execute(&owner_pool)
+        .await
+        .unwrap();
+
+    let submit_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "submit_run",
+                ActionCommand {
+                    object_type_id: pay_run_type,
+                    instance_id: Some(InstanceId::from_uuid(draft_run_id)),
+                    title: None,
+                    params: json!({ "run_id": draft_run_id }),
+                    reason: Some("foundry payroll submit_run".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("payroll.submit_run through the seeded action must succeed");
+    assert_eq!(
+        submit_outcome
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::PayrollSubmitRun.as_str().to_owned()
+        ))
+    );
+    let submitted = sqlx::query(
+        "SELECT status, submitted_by, calculation_enabled FROM payroll_draft_runs \
+         WHERE org_id = $1 AND id = $2",
+    )
+    .bind(org_uuid)
+    .bind(draft_run_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(submitted.get::<String, _>("status"), "SUBMITTED");
+    assert_eq!(
+        submitted.get::<Option<Uuid>, _>("submitted_by"),
+        Some(*actor.as_uuid())
+    );
+    assert!(
+        !submitted.get::<bool, _>("calculation_enabled"),
+        "submit must not enable calculation"
+    );
+
+    let decide_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &super_admin(decider, org),
+                "decide_run",
+                ActionCommand {
+                    object_type_id: pay_run_type,
+                    instance_id: Some(InstanceId::from_uuid(draft_run_id)),
+                    title: None,
+                    params: json!({
+                        "run_id": draft_run_id,
+                        "decision": "APPROVE",
+                        "reason": "6월 급여 승인"
+                    }),
+                    reason: Some("foundry payroll decide_run".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("payroll.decide_run through the seeded action must succeed");
+    assert_eq!(
+        decide_outcome
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::PayrollDecideRun.as_str().to_owned()
+        ))
+    );
+    let decided = sqlx::query(
+        "SELECT status, decided_by, decision_reason, approved_by, calculation_enabled \
+         FROM payroll_draft_runs WHERE org_id = $1 AND id = $2",
+    )
+    .bind(org_uuid)
+    .bind(draft_run_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(decided.get::<String, _>("status"), "APPROVED");
+    assert_eq!(
+        decided.get::<Option<Uuid>, _>("decided_by"),
+        Some(*decider.as_uuid())
+    );
+    assert_eq!(
+        decided
+            .get::<Option<String>, _>("decision_reason")
+            .as_deref(),
+        Some("6월 급여 승인")
+    );
+    assert_eq!(
+        decided.get::<Option<Uuid>, _>("approved_by"),
+        Some(*decider.as_uuid())
+    );
+    assert!(
+        !decided.get::<bool, _>("calculation_enabled"),
+        "decide must not enable calculation or write won"
     );
 
     let after_assign: i64 =
