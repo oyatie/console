@@ -39,10 +39,19 @@
 //! the statement the port itself issues.
 
 use console_kernel_core::{ErrorKind, OrgId, UserId};
+use console_ontology_canonical_adapter_postgres::company::{
+    CompanyCommand, CompanyQuery, PgCompanyPort,
+};
 use console_ontology_canonical_adapter_postgres::employment::{
     EmploymentAttributes, EmploymentChange, EmploymentCommand, EmploymentError, EmploymentHead,
-    EmploymentQuery, PgEmploymentPort, apply_employment_change,
-    reassign_org_unit_via_transfers_in_tx,
+    EmploymentQuery, NewEmployeeRecord, PgEmploymentPort, apply_employment_change,
+    insert_employee_record, reassign_org_unit_via_transfers_in_tx,
+};
+use console_ontology_canonical_adapter_postgres::job_position::{
+    JobPositionCommand, JobPositionQuery, PgJobPositionPort,
+};
+use console_ontology_canonical_adapter_postgres::org_unit::{
+    OrgUnitCommand, OrgUnitQuery, PgOrgUnitPort,
 };
 use console_ontology_canonical_adapter_postgres::person::{
     PersonCommand, PersonQuery, PgPersonPort,
@@ -51,6 +60,7 @@ use console_ontology_canonical_domain::{
     CanonicalPort, CommandId, CommandReceipt, DispatchTarget, EmploymentPort, ObjectKey,
     ReceiptOwner,
 };
+use serde_json::json;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
 use time::{Date, OffsetDateTime, macros::offset};
@@ -2271,4 +2281,175 @@ async fn a_lock_on_the_kst_business_date_refuses_a_utc_instant(owner_pool: PgPoo
         matches!(&refused, EmploymentError::Frozen(error) if error.kind == ErrorKind::Conflict),
         "got {refused:?}"
     );
+}
+
+/// ROADMAP item 5's assignment writer on the org tree: a provisioned empty
+/// tenant, as `console_rt`, creates Company / OrgUnit / JobPosition through
+/// their owning ports, inserts the legacy employee row the Employment port
+/// owns, binds a Person, then `hr.appoint`s onto those UUIDs. Fixture
+/// `INSERT INTO org_units` is not this path.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn empty_tenant_hr_appoint_sits_on_canonical_org_tree(owner_pool: PgPool) {
+    let actor = seed_org_and_super_admin(&owner_pool, ORG, "employment").await;
+    let runtime_pool = runtime_role_pool(&owner_pool).await;
+    let handle = tokio::runtime::Handle::current();
+    let company = PgCompanyPort::new(runtime_pool.clone(), handle.clone());
+    let units = PgOrgUnitPort::new(runtime_pool.clone(), handle.clone());
+    let positions = PgJobPositionPort::new(runtime_pool.clone(), handle.clone());
+    let persons = PgPersonPort::new(runtime_pool.clone(), handle.clone());
+    let employment = PgEmploymentPort::new(runtime_pool.clone(), handle);
+    let org = OrgId::from_uuid(ORG);
+
+    execute_sync(
+        &company,
+        CompanyCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: CompanyQuery {
+                attributes: json!({ "legal_name": "주식회사 아크메" }),
+            },
+            action_key: "company.revise".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+
+    let unit_receipt = execute_sync(
+        &units,
+        OrgUnitCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: OrgUnitQuery::Create {
+                source: None,
+                attributes: json!({ "name": "영업본부" }),
+            },
+            action_key: "create_org_unit".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    let unit: Uuid = unit_receipt.result()["org_unit_id"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+
+    let position_receipt = execute_sync(
+        &positions,
+        JobPositionCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: JobPositionQuery::Create {
+                org_unit_id: unit,
+                attributes: json!({ "title": "백엔드 엔지니어" }),
+            },
+            action_key: "create_job_position".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    let position: Uuid = position_receipt.result()["job_position_id"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+
+    let employee_id = Uuid::new_v4();
+    let unit_text = unit.to_string();
+    let position_text = position.to_string();
+    let mut tx = runtime_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    insert_employee_record(
+        &mut tx,
+        ORG,
+        NewEmployeeRecord {
+            employee_id,
+            company: "ACME",
+            name: "김직원",
+            employee_number: "E-1001",
+            org_unit: &unit_text,
+            position: &position_text,
+            worksite_name: "서울",
+        },
+    )
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+
+    execute_sync(
+        &persons,
+        PersonCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: PersonQuery::Create {
+                employee_id: Some(employee_id),
+                attributes: json!({ "legal_name": "김직원" }),
+            },
+            action_key: "create_person".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+
+    let appointed = execute(
+        &employment,
+        EmploymentCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: EmploymentQuery::Appoint {
+                employee_id,
+                valid_from: at(0),
+                attributes: EmploymentAttributes {
+                    company: "ACME".to_owned(),
+                    org_unit_id: Some(unit),
+                    job_position_id: Some(position),
+                    employment_status: "ACTIVE".to_owned(),
+                },
+            },
+            action_key: "appoint".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(appointed.target(), DispatchTarget::HrAppoint);
+    let employment_id = employment_of(&appointed);
+    let head = get(&employment, org, employment_id)
+        .await
+        .unwrap()
+        .expect("hr.appoint must produce an open queryable head");
+    assert_eq!(head.org_unit_id, Some(unit));
+    assert_eq!(head.job_position_id, Some(position));
+    assert_eq!(
+        head.person_id,
+        Some(employee_id),
+        "a uniquely-resolved person is bound with person_id = employee_id"
+    );
+}
+
+async fn execute_sync<P: CanonicalPort + Clone + Send + 'static>(
+    port: &P,
+    command: P::Command,
+) -> Result<CommandReceipt, P::Error>
+where
+    P::Command: Send + 'static,
+    P::Error: Send + 'static,
+{
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.execute(&command))
+        .await
+        .unwrap()
 }
