@@ -268,7 +268,7 @@
     "backend/crates/payroll/adapter-postgres/tests/roster_materialisation.rs": 7,
     "backend/crates/payroll/domain/src/lib.rs": 49,
     "backend/crates/payroll/rest/src/lib.rs": 10,
-    "backend/crates/payroll/rest/tests/api.rs": 3,
+    "backend/crates/payroll/rest/tests/api.rs": 4,
     "backend/crates/payroll/rest/tests/payslip_draft_api.rs": 9,
     "backend/crates/payroll/rest/tests/run_lifecycle_api.rs": 5,
     "backend/crates/platform/audit-chain/src/lib.rs": 5,
