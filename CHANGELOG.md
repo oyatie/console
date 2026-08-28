@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.18](https://github.com/oyatie/console/compare/v0.3.17...v0.3.18) (2026-08-28)
+
+
+### Features
+
+* **ui:** admit console-payroll-ui as Layer::Ui with no mount ([#949](https://github.com/oyatie/console/issues/949)) ([26d9725](https://github.com/oyatie/console/commit/26d9725d1fb1c4b70cbe30a397438a2774ac9ffc))
+
 ## [0.3.17](https://github.com/oyatie/console/compare/v0.3.16...v0.3.17) (2026-08-28)
 
 
