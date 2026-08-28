@@ -20,19 +20,24 @@ Status: active roadmap authority. Product scope comes from [`PRODUCT.md`](PRODUC
    - Complete branchless capability and temporal-grant contracts, contracts-crate/OpenAPI composition, true preflight, and distinct-human approval rules.
 5. **Organization and HR**
    - Done: explicit owning ports and single-writer boundaries are mechanically proven for Company, OrgUnit, JobPosition, Person, Employment, and PayRun, releasing projection fan-out only.
-   - Next: build the Company/OrgUnit reference and canonical HR assignment writer without reopening or widening the released boundary.
+   - Group / multi-corporate is in scope as the existing platform overlay (migration 0060), not as `ObjectKey::Group`. Next: Company/OrgUnit reference and canonical HR assignment writer without reopening or widening the released boundary. Consolidated-read proofs over authorized member subsets are later overlay work, not a seventh object.
 6. **Payroll**
    - Project the existing payroll writer without a second write path; preserve deterministic rounding, golden cases, immutable receipts, and payslip drafts.
 7. **Leptos acceptance surface**
-   - `Layer::Ui` is accepted (ADR-0041); first full-depth vertical is payroll execution. This item stays gated on remaining PRODUCT frontend conditions — a mounted contracts-backed SSR shell and real E2E evidence — and does not start while item 2 is the first incomplete item. Import/export is not the data-entry base except 자료실; the comms rail is out of this slice.
+   - `Layer::Ui` is accepted (ADR-0041); first full-depth vertical is payroll execution.
+   - Owner decision (2026-08-28) **starts** the mounted contracts-backed SSR shell in parallel, including while item 2 remains incomplete. That start does not wait for executable-contract decoupling to finish.
+   - Shipping screens and production exposure stay **HOLD** until persona-based real-backend E2E evidence (ADR-0025 §4). Import/export is not the data-entry base except 자료실; the comms rail is out of this slice.
+8. **Palantir AIP / Intelligence**
+   - Palantir AIP is the target intelligence layer. It is built in the separate Intelligence repository until that repository names a SHA-bound stable base; cloning it into Console is a later lane. Not current Console tenant-app work.
 
 ## Explicit HOLDs
 
 - Bulk documentation moves, deletion, or graveyard copies are **HOLD** until custody and recoverability are proven with the full manifest and signed archive references.
-- Leptos and other frontend work remain **HOLD** until the PRODUCT frontend conditions are actually satisfied (a mounted contracts-backed SSR shell and persona-based real-backend E2E evidence). `Layer::Ui` being accepted does not clear this HOLD, does not resume frontend implementation, and does not authorize shipping screens.
+- Leptos **shipping** remains **HOLD** until persona-based real-backend E2E evidence. Owner decision (2026-08-28) starts the mounted SSR shell; that start does not authorize shipping screens or live exposure.
 - Live or production promotion, DNS, TLS, secrets, exposure, payment, credential-reset, and compliance claims are **HOLD** absent separate authority. A source release follows repository release authority and evidence; it does not authorize live promotion or exposure.
 - Destruction, termination, resize, or reprovisioning of the grandfathered OCI Ampere A1 instance (4 OCPU / 24 GB) is permanently **HOLD** because the reserved capacity cannot be recreated.
-- Workstation erase is **HOLD** until the reviewed Console candidate is on `main` and the PRODUCT custody gate has an itemized, read-back-verified preservation or explicit discard/reissue disposition for every local-only P0 item.
+- Workstation full-disk erase **already occurred** (post-wipe, owner fact 2026-08-28). Remaining local P0 work is re-issue or off-device confirmation, not a future erase. Do not erase again as a program action.
+- Cloning Intelligence into Console is **HOLD** until Intelligence names a SHA-bound stable base. Intelligence is not a tenant application and not autonomous merge authority.
 - Ambiguous roadmap prose, historical plans, and unpublished or partial work do not clear a HOLD and do not dispatch implementation.
 
 ## Exit rule
