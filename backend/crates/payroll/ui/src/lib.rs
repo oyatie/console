@@ -2,15 +2,17 @@
 //!
 //! Unauthenticated markup is empty deny-by-omission. Authorized run summaries
 //! are composed server-side from OpenAPI `PayrollRunSummary` required fields
-//! (no won amounts). Islands/WASM hydration is not this slice.
+//! (no won amounts). `AuthorizedRuns` is a Leptos island so WASM hydration can
+//! attach later; this slice does not serve WASM.
 use axum::Router;
 use axum::response::Html;
 use axum::routing::get;
 use leptos::prelude::*;
+use serde::{Deserialize, Serialize};
 
 /// Contract-shaped run summary for SSR composition. Field names match
 /// `PayrollRunSummary.yaml` required keys; values are already-authorized.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RunSummary {
     pub id: String,
     pub period_start: String,
@@ -34,6 +36,26 @@ pub fn Shell() -> impl IntoView {
     }
 }
 
+#[island]
+pub fn AuthorizedRuns(runs: Vec<RunSummary>) -> impl IntoView {
+    runs.into_iter()
+        .map(|run| {
+            view! {
+                <span
+                    data-run-id=run.id
+                    data-period-start=run.period_start
+                    data-period-end=run.period_end
+                    data-source-label=run.source_label
+                    data-status=run.status
+                    data-calculation-enabled=run.calculation_enabled.to_string()
+                    data-created-at=run.created_at
+                    data-updated-at=run.updated_at
+                ></span>
+            }
+        })
+        .collect_view()
+}
+
 #[component]
 pub fn AuthorizedShell(runs: Vec<RunSummary>) -> impl IntoView {
     view! {
@@ -42,23 +64,7 @@ pub fn AuthorizedShell(runs: Vec<RunSummary>) -> impl IntoView {
                 <meta charset="utf-8" />
             </head>
             <body>
-                {runs
-                    .into_iter()
-                    .map(|run| {
-                        view! {
-                            <span
-                                data-run-id=run.id
-                                data-period-start=run.period_start
-                                data-period-end=run.period_end
-                                data-source-label=run.source_label
-                                data-status=run.status
-                                data-calculation-enabled=run.calculation_enabled.to_string()
-                                data-created-at=run.created_at
-                                data-updated-at=run.updated_at
-                            ></span>
-                        }
-                    })
-                    .collect_view()}
+                <AuthorizedRuns runs=runs />
             </body>
         </html>
     }
@@ -172,5 +178,14 @@ mod tests {
         assert!(!lowered.contains("won"), "won leaked: {html}");
         assert!(!html.contains("291_520"), "golden won leaked: {html}");
         assert!(!lowered.contains("payslip"), "payslip leaked: {html}");
+        assert!(
+            html.contains("AuthorizedRuns"),
+            "authorized markup must name the island for later WASM hydrate: {html}"
+        );
+        assert!(
+            !render_shell().contains("AuthorizedRuns"),
+            "empty shell must not emit an island: {}",
+            render_shell()
+        );
     }
 }
