@@ -281,6 +281,148 @@ mod tests {
         );
     }
 
+    #[sqlx::test(migrations = "../db/migrations")]
+    async fn viewer_consolidated_read_fans_out_two_member_orgs_as_runtime_role(owner_pool: PgPool) {
+        let rt_pool = runtime_role_pool(&owner_pool).await;
+        let org_a = uuid::Uuid::from_u128(0xA068_A068_A068_A068_A068_A068_A068_A068);
+        let org_b = uuid::Uuid::from_u128(0xA069_A069_A069_A069_A069_A069_A069_A069);
+        let group_id = uuid::Uuid::from_u128(0xB068_B068_B068_B068_B068_B068_B068_B068);
+        let actor = UserId::from_uuid(uuid::Uuid::from_u128(
+            0xC068_C068_C068_C068_C068_C068_C068_C068,
+        ));
+
+        seed_group_with_two_orgs(&owner_pool, group_id, org_a, org_b, actor, "GROUP_VIEWER").await;
+
+        let members = group_member_orgs(&rt_pool, group_id, actor).await.unwrap();
+        assert_eq!(
+            members.len(),
+            2,
+            "GROUP_VIEWER must resolve both member 법인"
+        );
+
+        let rows = consolidated_read(&rt_pool, group_id, &members, |org_id, tx| {
+            Box::pin(async move {
+                let armed: String =
+                    sqlx::query_scalar("SELECT current_setting('app.current_org', true)")
+                        .fetch_one(tx.as_mut())
+                        .await
+                        .map_err(DbError::Sqlx)?;
+                assert_eq!(
+                    armed,
+                    org_id.as_uuid().to_string(),
+                    "consolidated_read must arm RLS with the member org, never the group id"
+                );
+                assert_ne!(armed, group_id.to_string());
+                let name: String =
+                    sqlx::query_scalar("SELECT name FROM organizations WHERE id = $1")
+                        .bind(*org_id.as_uuid())
+                        .fetch_one(tx.as_mut())
+                        .await
+                        .map_err(DbError::Sqlx)?;
+                Ok::<Vec<String>, DbError>(vec![name])
+            })
+        })
+        .await
+        .unwrap();
+
+        let names: Vec<_> = rows.iter().map(|row| row.value.as_str()).collect();
+        assert_eq!(rows.len(), 2);
+        assert!(names.contains(&"G068 A"), "{names:?}");
+        assert!(names.contains(&"G068 B"), "{names:?}");
+        assert!(
+            rows.iter().all(|row| row.group_id == group_id),
+            "overlay rows keep group_id as metadata, not as a tenant"
+        );
+    }
+
+    #[sqlx::test(migrations = "../db/migrations")]
+    async fn empty_group_grant_fails_closed_as_runtime_role(owner_pool: PgPool) {
+        let rt_pool = runtime_role_pool(&owner_pool).await;
+        let org_id = uuid::Uuid::from_u128(0xA070_A070_A070_A070_A070_A070_A070_A070);
+        let group_id = uuid::Uuid::from_u128(0xB070_B070_B070_B070_B070_B070_B070_B070);
+        let actor = UserId::from_uuid(uuid::Uuid::from_u128(
+            0xC070_C070_C070_C070_C070_C070_C070_C070,
+        ));
+        let stranger = UserId::from_uuid(uuid::Uuid::from_u128(
+            0xC071_C071_C071_C071_C071_C071_C071_C071,
+        ));
+
+        seed_group_with_two_orgs(&owner_pool, group_id, org_id, org_id, actor, "GROUP_VIEWER")
+            .await;
+
+        let members = group_member_orgs(&rt_pool, group_id, stranger)
+            .await
+            .unwrap();
+        assert!(members.is_empty(), "no grant must resolve no member orgs");
+
+        let rows = consolidated_read(&rt_pool, group_id, &members, |_org, _tx| {
+            Box::pin(async { Ok::<Vec<()>, DbError>(vec![()]) })
+        })
+        .await
+        .unwrap();
+        assert!(rows.is_empty(), "empty grant → empty consolidated view");
+    }
+
+    async fn seed_group_with_two_orgs(
+        owner_pool: &PgPool,
+        group_id: uuid::Uuid,
+        org_a: uuid::Uuid,
+        org_b: uuid::Uuid,
+        actor: UserId,
+        role: &str,
+    ) {
+        let mut tx = owner_pool.begin().await.unwrap();
+        sqlx::query("SET LOCAL row_security = off")
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, 'g068-a', 'G068 A') ON CONFLICT (id) DO NOTHING")
+            .bind(org_a)
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        if org_a != org_b {
+            sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, 'g068-b', 'G068 B') ON CONFLICT (id) DO NOTHING")
+                .bind(org_b)
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+        }
+        sqlx::query("INSERT INTO users (id, display_name, roles, org_id) VALUES ($1, 'Group Viewer', ARRAY['MEMBER'], $2) ON CONFLICT (id) DO NOTHING")
+            .bind(*actor.as_uuid())
+            .bind(org_a)
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        sqlx::query("INSERT INTO groups (id, slug, name) VALUES ($1, 'g068', 'G068') ON CONFLICT (id) DO NOTHING")
+            .bind(group_id)
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        sqlx::query("INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2) ON CONFLICT DO NOTHING")
+            .bind(group_id)
+            .bind(org_a)
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        if org_a != org_b {
+            sqlx::query("INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2) ON CONFLICT DO NOTHING")
+                .bind(group_id)
+                .bind(org_b)
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+        }
+        sqlx::query("INSERT INTO group_role_grants (group_id, user_id, group_role, granted_by) VALUES ($1, $2, $3, NULL) ON CONFLICT DO NOTHING")
+            .bind(group_id)
+            .bind(*actor.as_uuid())
+            .bind(role)
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        tx.commit().await.unwrap();
+    }
+
     async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         let options = owner_pool.connect_options().as_ref().clone();
         PgPoolOptions::new()

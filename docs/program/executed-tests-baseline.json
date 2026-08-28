@@ -309,7 +309,7 @@
     "backend/crates/platform/erasure-ledger/tests/erasure_ledger_as_runtime_role.rs": 21,
     "backend/crates/platform/excel/tests/template_fidelity.rs": 5,
     "backend/crates/platform/excel/tests/template_fill_engine.rs": 4,
-    "backend/crates/platform/group/src/lib.rs": 3,
+    "backend/crates/platform/group/src/lib.rs": 5,
     "backend/crates/platform/jobs/src/lib.rs": 8,
     "backend/crates/platform/jobs/tests/apalis_adapter.rs": 4,
     "backend/crates/platform/jobs/tests/apalis_schema_contract.rs": 1,
