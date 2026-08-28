@@ -2290,8 +2290,176 @@ async fn a_lock_on_the_kst_business_date_refuses_a_utc_instant(owner_pool: PgPoo
 /// `INSERT INTO org_units` is not this path.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn empty_tenant_hr_appoint_sits_on_canonical_org_tree(owner_pool: PgPool) {
-    let actor = seed_org_and_super_admin(&owner_pool, ORG, "employment").await;
-    let runtime_pool = runtime_role_pool(&owner_pool).await;
+    let tree = provision_empty_tenant_assignment(&owner_pool).await;
+    assert_eq!(tree.appointed.target(), DispatchTarget::HrAppoint);
+    let head = get(&tree.employment, tree.org, tree.employment_id)
+        .await
+        .unwrap()
+        .expect("hr.appoint must produce an open queryable head");
+    assert_eq!(head.org_unit_id, Some(tree.sales));
+    assert_eq!(head.job_position_id, Some(tree.engineer));
+    assert_eq!(
+        head.person_id,
+        Some(tree.employee_id),
+        "a uniquely-resolved person is bound with person_id = employee_id"
+    );
+}
+
+/// The same empty-tenant tree then `hr.promote`s (new JobPosition, same
+/// OrgUnit) and `hr.transfer`s (new OrgUnit + JobPosition) through the
+/// Employment port. Both verbs store their own action keys, not the shared
+/// helper's `revise`.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn empty_tenant_hr_promote_and_transfer_sit_on_canonical_org_tree(owner_pool: PgPool) {
+    let tree = provision_empty_tenant_assignment(&owner_pool).await;
+
+    let tech_receipt = execute_sync(
+        &tree.units,
+        OrgUnitCommand {
+            org_id: tree.org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: tree.actor,
+            query: OrgUnitQuery::Create {
+                source: None,
+                attributes: json!({ "name": "기술본부" }),
+            },
+            action_key: "create_org_unit".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    let tech: Uuid = tech_receipt.result()["org_unit_id"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+
+    let senior_receipt = execute_sync(
+        &tree.positions,
+        JobPositionCommand {
+            org_id: tree.org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: tree.actor,
+            query: JobPositionQuery::Create {
+                org_unit_id: tree.sales,
+                attributes: json!({ "title": "시니어 엔지니어" }),
+            },
+            action_key: "create_job_position".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    let senior: Uuid = senior_receipt.result()["job_position_id"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+
+    let lead_receipt = execute_sync(
+        &tree.positions,
+        JobPositionCommand {
+            org_id: tree.org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: tree.actor,
+            query: JobPositionQuery::Create {
+                org_unit_id: tech,
+                attributes: json!({ "title": "테크 리드" }),
+            },
+            action_key: "create_job_position".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    let lead: Uuid = lead_receipt.result()["job_position_id"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+
+    let promoted = execute(
+        &tree.employment,
+        EmploymentCommand {
+            org_id: tree.org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: tree.actor,
+            query: EmploymentQuery::Promote {
+                employment_id: tree.employment_id,
+                valid_from: at(86_400),
+                attributes: EmploymentAttributes {
+                    company: "ACME".to_owned(),
+                    org_unit_id: Some(tree.sales),
+                    job_position_id: Some(senior),
+                    employment_status: "ACTIVE".to_owned(),
+                },
+            },
+            action_key: "promote".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(promoted.target(), DispatchTarget::HrPromote);
+    assert_eq!(promoted.result()["version"].as_i64(), Some(2));
+    let after_promote = get(&tree.employment, tree.org, tree.employment_id)
+        .await
+        .unwrap()
+        .expect("hr.promote must leave an open queryable head");
+    assert_eq!(after_promote.org_unit_id, Some(tree.sales));
+    assert_eq!(after_promote.job_position_id, Some(senior));
+    assert_eq!(after_promote.person_id, Some(tree.employee_id));
+
+    let transferred = execute(
+        &tree.employment,
+        EmploymentCommand {
+            org_id: tree.org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: tree.actor,
+            query: EmploymentQuery::Transfer {
+                employment_id: tree.employment_id,
+                valid_from: at(172_800),
+                attributes: EmploymentAttributes {
+                    company: "ACME".to_owned(),
+                    org_unit_id: Some(tech),
+                    job_position_id: Some(lead),
+                    employment_status: "ACTIVE".to_owned(),
+                },
+            },
+            action_key: "transfer".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(transferred.target(), DispatchTarget::HrTransfer);
+    assert_eq!(transferred.result()["version"].as_i64(), Some(3));
+    let after_transfer = get(&tree.employment, tree.org, tree.employment_id)
+        .await
+        .unwrap()
+        .expect("hr.transfer must leave an open queryable head");
+    assert_eq!(after_transfer.org_unit_id, Some(tech));
+    assert_eq!(after_transfer.job_position_id, Some(lead));
+    assert_eq!(after_transfer.person_id, Some(tree.employee_id));
+}
+
+struct EmptyTenantAssignment {
+    org: OrgId,
+    actor: UserId,
+    units: PgOrgUnitPort,
+    positions: PgJobPositionPort,
+    employment: PgEmploymentPort,
+    sales: Uuid,
+    engineer: Uuid,
+    employee_id: Uuid,
+    employment_id: Uuid,
+    appointed: CommandReceipt,
+}
+
+async fn provision_empty_tenant_assignment(owner_pool: &PgPool) -> EmptyTenantAssignment {
+    let actor = seed_org_and_super_admin(owner_pool, ORG, "employment").await;
+    let runtime_pool = runtime_role_pool(owner_pool).await;
     let handle = tokio::runtime::Handle::current();
     let company = PgCompanyPort::new(runtime_pool.clone(), handle.clone());
     let units = PgOrgUnitPort::new(runtime_pool.clone(), handle.clone());
@@ -2332,7 +2500,7 @@ async fn empty_tenant_hr_appoint_sits_on_canonical_org_tree(owner_pool: PgPool) 
     )
     .await
     .unwrap();
-    let unit: Uuid = unit_receipt.result()["org_unit_id"]
+    let sales: Uuid = unit_receipt.result()["org_unit_id"]
         .as_str()
         .unwrap()
         .parse()
@@ -2345,7 +2513,7 @@ async fn empty_tenant_hr_appoint_sits_on_canonical_org_tree(owner_pool: PgPool) 
             command_id: CommandId::from_uuid(Uuid::new_v4()),
             actor_id: actor,
             query: JobPositionQuery::Create {
-                org_unit_id: unit,
+                org_unit_id: sales,
                 attributes: json!({ "title": "백엔드 엔지니어" }),
             },
             action_key: "create_job_position".to_owned(),
@@ -2354,15 +2522,15 @@ async fn empty_tenant_hr_appoint_sits_on_canonical_org_tree(owner_pool: PgPool) 
     )
     .await
     .unwrap();
-    let position: Uuid = position_receipt.result()["job_position_id"]
+    let engineer: Uuid = position_receipt.result()["job_position_id"]
         .as_str()
         .unwrap()
         .parse()
         .unwrap();
 
     let employee_id = Uuid::new_v4();
-    let unit_text = unit.to_string();
-    let position_text = position.to_string();
+    let sales_text = sales.to_string();
+    let engineer_text = engineer.to_string();
     let mut tx = runtime_pool.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
         .bind(ORG.to_string())
@@ -2377,8 +2545,8 @@ async fn empty_tenant_hr_appoint_sits_on_canonical_org_tree(owner_pool: PgPool) 
             company: "ACME",
             name: "김직원",
             employee_number: "E-1001",
-            org_unit: &unit_text,
-            position: &position_text,
+            org_unit: &sales_text,
+            position: &engineer_text,
             worksite_name: "서울",
         },
     )
@@ -2414,8 +2582,8 @@ async fn empty_tenant_hr_appoint_sits_on_canonical_org_tree(owner_pool: PgPool) 
                 valid_from: at(0),
                 attributes: EmploymentAttributes {
                     company: "ACME".to_owned(),
-                    org_unit_id: Some(unit),
-                    job_position_id: Some(position),
+                    org_unit_id: Some(sales),
+                    job_position_id: Some(engineer),
                     employment_status: "ACTIVE".to_owned(),
                 },
             },
@@ -2425,19 +2593,19 @@ async fn empty_tenant_hr_appoint_sits_on_canonical_org_tree(owner_pool: PgPool) 
     )
     .await
     .unwrap();
-    assert_eq!(appointed.target(), DispatchTarget::HrAppoint);
     let employment_id = employment_of(&appointed);
-    let head = get(&employment, org, employment_id)
-        .await
-        .unwrap()
-        .expect("hr.appoint must produce an open queryable head");
-    assert_eq!(head.org_unit_id, Some(unit));
-    assert_eq!(head.job_position_id, Some(position));
-    assert_eq!(
-        head.person_id,
-        Some(employee_id),
-        "a uniquely-resolved person is bound with person_id = employee_id"
-    );
+    EmptyTenantAssignment {
+        org,
+        actor,
+        units,
+        positions,
+        employment,
+        sales,
+        engineer,
+        employee_id,
+        employment_id,
+        appointed,
+    }
 }
 
 async fn execute_sync<P: CanonicalPort + Clone + Send + 'static>(

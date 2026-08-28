@@ -26,7 +26,7 @@ use console_ontology_canonical_domain::{
     CanonicalObject, CanonicalPort, CanonicalQuery, CommandId, CommandReceipt as CanonicalReceipt,
     Company, DispatchTarget, Preflight, ReceiptOwner,
 };
-use console_ontology_domain::{ActionDispatch, BackingKind, ObjectTypeId};
+use console_ontology_domain::{ActionDispatch, BackingKind, InstanceId, ObjectTypeId};
 use console_ontology_rest::{ActionCommand, OntologyRestState, ProjectedDispatchRegistry};
 use console_platform_authz::{Principal, Role};
 use console_platform_db::{DbError, with_audit};
@@ -39,6 +39,8 @@ use time::macros::datetime;
 use uuid::Uuid;
 
 const AT: OffsetDateTime = datetime!(2026-07-10 12:00 UTC);
+const PROMOTE_AT: OffsetDateTime = datetime!(2026-07-11 12:00 UTC);
+const TRANSFER_AT: OffsetDateTime = datetime!(2026-07-12 12:00 UTC);
 const DISPATCH_TARGET: &str = "company.revise";
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
@@ -412,7 +414,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         DispatchTarget::OrganizationCreateJobPosition.as_str(),
     )
     .await;
-    let employment_type = seed_canonical_org_action(
+    let employment_type = seed_canonical_org_actions(
         &owner_pool,
         org,
         actor,
@@ -422,8 +424,11 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         "id",
         "company",
         "회사",
-        "appoint",
-        DispatchTarget::HrAppoint.as_str(),
+        &[
+            ("appoint", DispatchTarget::HrAppoint.as_str()),
+            ("promote", DispatchTarget::HrPromote.as_str()),
+            ("transfer", DispatchTarget::HrTransfer.as_str()),
+        ],
     )
     .await;
 
@@ -669,13 +674,226 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     assert_eq!(head.org_unit_id, Some(org_unit_id));
     assert_eq!(head.job_position_id, Some(job_position_id));
 
-    let after_appoint: i64 =
+    let tech_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "create_org_unit",
+                ActionCommand {
+                    object_type_id: unit_type,
+                    instance_id: None,
+                    title: None,
+                    params: json!({ "attributes": { "name": "기술본부" } }),
+                    reason: Some("foundry hr promote-transfer".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("second create_org_unit through the seeded action must succeed");
+    let tech_id = tech_outcome
+        .projected
+        .as_ref()
+        .and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("org_unit_id"))
+                .and_then(Value::as_str)
+                .and_then(|raw| Uuid::parse_str(raw).ok())
+        })
+        .expect("create_org_unit receipt must name org_unit_id");
+
+    let senior_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "create_job_position",
+                ActionCommand {
+                    object_type_id: position_type,
+                    instance_id: None,
+                    title: None,
+                    params: json!({
+                        "org_unit_id": org_unit_id,
+                        "attributes": { "title": "시니어 엔지니어" }
+                    }),
+                    reason: Some("foundry hr promote-transfer".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("senior create_job_position through the seeded action must succeed");
+    let senior_id = senior_outcome
+        .projected
+        .as_ref()
+        .and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("job_position_id"))
+                .and_then(Value::as_str)
+                .and_then(|raw| Uuid::parse_str(raw).ok())
+        })
+        .expect("create_job_position receipt must name job_position_id");
+
+    let lead_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "create_job_position",
+                ActionCommand {
+                    object_type_id: position_type,
+                    instance_id: None,
+                    title: None,
+                    params: json!({
+                        "org_unit_id": tech_id,
+                        "attributes": { "title": "테크 리드" }
+                    }),
+                    reason: Some("foundry hr promote-transfer".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("lead create_job_position through the seeded action must succeed");
+    let lead_id = lead_outcome
+        .projected
+        .as_ref()
+        .and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("job_position_id"))
+                .and_then(Value::as_str)
+                .and_then(|raw| Uuid::parse_str(raw).ok())
+        })
+        .expect("create_job_position receipt must name job_position_id");
+
+    let promote_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "promote",
+                ActionCommand {
+                    object_type_id: employment_type,
+                    instance_id: Some(InstanceId::from_uuid(employment_id)),
+                    title: None,
+                    params: json!({
+                        "employment_id": employment_id,
+                        "valid_from": "2026-07-11T12:00:00Z",
+                        "attributes": {
+                            "company": "ACME",
+                            "org_unit_id": org_unit_id,
+                            "job_position_id": senior_id,
+                            "employment_status": "ACTIVE"
+                        }
+                    }),
+                    reason: Some("foundry hr promote".to_owned()),
+                    valid_from: Some(PROMOTE_AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("hr.promote through the seeded action must succeed");
+    assert_eq!(
+        promote_outcome
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::HrPromote.as_str().to_owned()
+        ))
+    );
+    let after_promote = {
+        let port = employment_port.clone();
+        tokio::task::spawn_blocking(move || port.get(org, employment_id))
+            .await
+            .unwrap()
+            .expect("employment get")
+            .expect("hr.promote must produce an open queryable head")
+    };
+    assert_eq!(after_promote.org_unit_id, Some(org_unit_id));
+    assert_eq!(after_promote.job_position_id, Some(senior_id));
+
+    let transfer_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "transfer",
+                ActionCommand {
+                    object_type_id: employment_type,
+                    instance_id: Some(InstanceId::from_uuid(employment_id)),
+                    title: None,
+                    params: json!({
+                        "employment_id": employment_id,
+                        "valid_from": "2026-07-12T12:00:00Z",
+                        "attributes": {
+                            "company": "ACME",
+                            "org_unit_id": tech_id,
+                            "job_position_id": lead_id,
+                            "employment_status": "ACTIVE"
+                        }
+                    }),
+                    reason: Some("foundry hr transfer".to_owned()),
+                    valid_from: Some(TRANSFER_AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("hr.transfer through the seeded action must succeed");
+    assert_eq!(
+        transfer_outcome
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::HrTransfer.as_str().to_owned()
+        ))
+    );
+    let after_transfer = {
+        let port = employment_port.clone();
+        tokio::task::spawn_blocking(move || port.get(org, employment_id))
+            .await
+            .unwrap()
+            .expect("employment get")
+            .expect("hr.transfer must produce an open queryable head")
+    };
+    assert_eq!(after_transfer.org_unit_id, Some(tech_id));
+    assert_eq!(after_transfer.job_position_id, Some(lead_id));
+
+    let after_assign: i64 =
         sqlx::query_scalar("SELECT COUNT(*) FROM ont_instances WHERE org_id = $1")
             .bind(org_uuid)
             .fetch_one(&owner_pool)
             .await
             .unwrap();
-    assert_eq!(after_appoint, 0, "hr.appoint must not write ont_instances");
+    assert_eq!(
+        after_assign, 0,
+        "hr.appoint/promote/transfer must not write ont_instances"
+    );
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -692,14 +910,44 @@ async fn seed_canonical_org_action(
     action_key: &str,
     dispatch_target: &str,
 ) -> ObjectTypeId {
+    seed_canonical_org_actions(
+        owner_pool,
+        org,
+        actor,
+        type_key,
+        type_title,
+        backing_table,
+        primary_key_property,
+        property_key,
+        property_title,
+        &[(action_key, dispatch_target)],
+    )
+    .await
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn seed_canonical_org_actions(
+    owner_pool: &PgPool,
+    org: OrgId,
+    actor: UserId,
+    type_key: &str,
+    type_title: &str,
+    backing_table: &str,
+    primary_key_property: &str,
+    property_key: &str,
+    property_title: &str,
+    actions: &[(&str, &str)],
+) -> ObjectTypeId {
     let type_key = type_key.to_owned();
     let type_title = type_title.to_owned();
     let backing_table = backing_table.to_owned();
     let primary_key_property = primary_key_property.to_owned();
     let property_key = property_key.to_owned();
     let property_title = property_title.to_owned();
-    let action_key = action_key.to_owned();
-    let dispatch_target = dispatch_target.to_owned();
+    let actions: Vec<(String, String)> = actions
+        .iter()
+        .map(|(key, target)| ((*key).to_owned(), (*target).to_owned()))
+        .collect();
     console_platform_request_context::scope_org(org, async {
         let store = PgOntologyStore::new(owner_pool.clone())
             .with_command_pool(command_role_pool(owner_pool).await);
@@ -720,19 +968,22 @@ async fn seed_canonical_org_action(
                 in_property_policy: false,
             }],
             links: Vec::new(),
-            actions: vec![ActionTypeInput {
-                stable_key: action_key,
-                title: "저장".to_owned(),
-                // Port query shape (`attributes: { legal_name | name | title }`),
-                // not flattened instance edits. Required-ness is the port catalog.
-                params_schema: json!({}),
-                edits: json!([]),
-                submission_criteria: json!([]),
-                side_effects: json!([]),
-                dispatch: ActionDispatch::ProjectedUsecase,
-                dispatch_target: Some(dispatch_target),
-                control_points: json!(["authority"]),
-            }],
+            actions: actions
+                .into_iter()
+                .map(|(action_key, dispatch_target)| ActionTypeInput {
+                    stable_key: action_key,
+                    title: "저장".to_owned(),
+                    // Port query shape (`attributes: { legal_name | name | title }`),
+                    // not flattened instance edits. Required-ness is the port catalog.
+                    params_schema: json!({}),
+                    edits: json!([]),
+                    submission_criteria: json!([]),
+                    side_effects: json!([]),
+                    dispatch: ActionDispatch::ProjectedUsecase,
+                    dispatch_target: Some(dispatch_target),
+                    control_points: json!(["authority"]),
+                })
+                .collect(),
             analytics: Vec::new(),
         };
         store

@@ -236,7 +236,7 @@
     "backend/crates/ontology/application/src/lib.rs": 17,
     "backend/crates/ontology/canonical-adapter-postgres/src/lib.rs": 8,
     "backend/crates/ontology/canonical-adapter-postgres/tests/company_port_as_runtime_role.rs": 14,
-    "backend/crates/ontology/canonical-adapter-postgres/tests/employment_port_as_runtime_role.rs": 33,
+    "backend/crates/ontology/canonical-adapter-postgres/tests/employment_port_as_runtime_role.rs": 34,
     "backend/crates/ontology/canonical-adapter-postgres/tests/employment_reassign_as_runtime_role.rs": 2,
     "backend/crates/ontology/canonical-adapter-postgres/tests/employment_reassign_identity_as_runtime_role.rs": 2,
     "backend/crates/ontology/canonical-adapter-postgres/tests/job_position_port_as_runtime_role.rs": 14,
