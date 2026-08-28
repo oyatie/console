@@ -22,6 +22,7 @@ use console_ontology_canonical_adapter_postgres::employment::{
 };
 use console_ontology_canonical_adapter_postgres::job_position::PgJobPositionPort;
 use console_ontology_canonical_adapter_postgres::org_unit::PgOrgUnitPort;
+use console_ontology_canonical_adapter_postgres::person::PgPersonPort;
 use console_ontology_canonical_domain::{
     CanonicalObject, CanonicalPort, CanonicalQuery, CommandId, CommandReceipt as CanonicalReceipt,
     Company, DispatchTarget, Preflight, ReceiptOwner,
@@ -360,10 +361,11 @@ async fn canonical_projected_success_emits_ontology_canonical_execute_audit(owne
     );
 }
 
-/// Foundry action types for the canonical org objects: catalog properties on
-/// the published type, `projected_usecase` dispatch to the owning port, and a
-/// real `console_rt` write. Stable keys are prefixed so they do not collide
-/// with the instance-backed `company_conformance` fixtures.
+/// Foundry action types for the canonical objects: catalog properties on the
+/// published type, `projected_usecase` dispatch to the owning port, and a real
+/// `console_rt` write. Stable keys are prefixed so they do not collide with
+/// the instance-backed `company_conformance` fixtures. Person is registered
+/// with the other five ports (the composition root already does).
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_pool: PgPool) {
     let rt = runtime_role_pool(&owner_pool).await;
@@ -416,6 +418,20 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         DispatchTarget::OrganizationCreateJobPosition.as_str(),
     )
     .await;
+    let person_type = seed_canonical_org_action(
+        &owner_pool,
+        org,
+        actor,
+        "canonical.person",
+        "사람",
+        "persons",
+        "id",
+        "legal_name",
+        "성명",
+        "create_person",
+        DispatchTarget::PeopleCreatePerson.as_str(),
+    )
+    .await;
     let employment_type = seed_canonical_org_actions(
         &owner_pool,
         org,
@@ -457,6 +473,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         .register_port(PgCompanyPort::new(rt.clone(), handle.clone()))
         .register_port(PgOrgUnitPort::new(rt.clone(), handle.clone()))
         .register_port(PgJobPositionPort::new(rt.clone(), handle.clone()))
+        .register_port(PgPersonPort::new(rt.clone(), handle.clone()))
         .register_port(employment_port.clone())
         .register_port(PgPayRunPort::new(rt.clone(), handle.clone()));
     let state = OntologyRestState::new(
@@ -632,6 +649,56 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     .expect("console_rt must insert the Employment-owned employee row");
     tx.commit().await.unwrap();
 
+    let person_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "create_person",
+                ActionCommand {
+                    object_type_id: person_type,
+                    instance_id: None,
+                    title: None,
+                    params: json!({
+                        "employee_id": employee_id,
+                        "attributes": { "legal_name": "김직원" }
+                    }),
+                    reason: Some("foundry person bind".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("people.create_person through the seeded action must succeed");
+    assert_eq!(
+        person_outcome
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::PeopleCreatePerson.as_str().to_owned()
+        ))
+    );
+    let person_id = person_outcome
+        .projected
+        .as_ref()
+        .and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("person_id"))
+                .and_then(Value::as_str)
+                .and_then(|raw| Uuid::parse_str(raw).ok())
+        })
+        .expect("create_person receipt must name person_id");
+    assert_eq!(
+        person_id, employee_id,
+        "a uniquely-resolved person is bound with person_id = employee_id"
+    );
+
     let appoint_outcome = console_platform_request_context::scope_org(org, async {
         state
             .execute_action(
@@ -693,6 +760,11 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     };
     assert_eq!(head.org_unit_id, Some(org_unit_id));
     assert_eq!(head.job_position_id, Some(job_position_id));
+    assert_eq!(
+        head.person_id,
+        Some(employee_id),
+        "hr.appoint on a bound person must expose person_id = employee_id"
+    );
 
     let tech_outcome = console_platform_request_context::scope_org(org, async {
         state
