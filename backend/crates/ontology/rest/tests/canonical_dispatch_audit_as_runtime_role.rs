@@ -366,7 +366,8 @@ async fn canonical_projected_success_emits_ontology_canonical_execute_audit(owne
 /// `console_rt` write. Stable keys are prefixed so they do not collide with
 /// the instance-backed `company_conformance` fixtures. Person is registered
 /// with the other five ports (the composition root already does). OrgUnit
-/// seeds `create_org_unit` and `revise_org_unit`; Person seeds create and revise.
+/// seeds `create_org_unit` and `revise_org_unit`; JobPosition and Person seed
+/// create and revise.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_pool: PgPool) {
     let rt = runtime_role_pool(&owner_pool).await;
@@ -413,7 +414,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         ],
     )
     .await;
-    let position_type = seed_canonical_org_action(
+    let position_type = seed_canonical_org_actions(
         &owner_pool,
         org,
         actor,
@@ -423,8 +424,16 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         "id",
         catalog::JOB_POSITION_TITLE,
         "직위명",
-        "create_job_position",
-        DispatchTarget::OrganizationCreateJobPosition.as_str(),
+        &[
+            (
+                "create_job_position",
+                DispatchTarget::OrganizationCreateJobPosition.as_str(),
+            ),
+            (
+                "revise_job_position",
+                DispatchTarget::OrganizationReviseJobPosition.as_str(),
+            ),
+        ],
     )
     .await;
     let person_type = seed_canonical_org_actions(
@@ -691,6 +700,111 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
                 .and_then(|raw| Uuid::parse_str(raw).ok())
         })
         .expect("create_job_position receipt must name job_position_id");
+
+    let position_v1 = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM job_position_revisions \
+         WHERE org_id = $1 AND job_position_id = $2 AND version = 1",
+    )
+    .bind(org_uuid)
+    .bind(job_position_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(position_v1, json!({ "title": "백엔드 엔지니어" }));
+
+    let revise_position = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "revise_job_position",
+                ActionCommand {
+                    object_type_id: position_type,
+                    instance_id: Some(InstanceId::from_uuid(job_position_id)),
+                    title: None,
+                    params: json!({
+                        "job_position_id": job_position_id,
+                        "attributes": { "title": "백엔드 엔지니어(개정)" }
+                    }),
+                    reason: Some("foundry job position revise".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("organization.revise_job_position through the seeded action must succeed");
+    assert_eq!(
+        revise_position
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::OrganizationReviseJobPosition
+                .as_str()
+                .to_owned()
+        ))
+    );
+    assert_eq!(
+        revise_position.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("job_position_id"))
+        }),
+        Some(&Value::String(job_position_id.to_string()))
+    );
+    assert_eq!(
+        revise_position.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("org_unit_id"))
+        }),
+        Some(&Value::String(org_unit_id.to_string())),
+        "a title-only revise must leave the position on its unit"
+    );
+    assert_eq!(
+        revise_position.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("version"))
+                .and_then(Value::as_i64)
+        }),
+        Some(2)
+    );
+    let position_v1_after = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM job_position_revisions \
+         WHERE org_id = $1 AND job_position_id = $2 AND version = 1",
+    )
+    .bind(org_uuid)
+    .bind(job_position_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        position_v1_after, position_v1,
+        "appending a revision must not rewrite revision 1"
+    );
+    let position_v2 = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM job_position_revisions \
+         WHERE org_id = $1 AND job_position_id = $2 AND version = 2",
+    )
+    .bind(org_uuid)
+    .bind(job_position_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(position_v2, json!({ "title": "백엔드 엔지니어(개정)" }));
+    let head_unit: Uuid =
+        sqlx::query_scalar("SELECT org_unit_id FROM job_positions WHERE org_id = $1 AND id = $2")
+            .bind(org_uuid)
+            .bind(job_position_id)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(head_unit, org_unit_id);
 
     let legal_name: serde_json::Value = sqlx::query_scalar(
         "SELECT attributes FROM company_revisions \
