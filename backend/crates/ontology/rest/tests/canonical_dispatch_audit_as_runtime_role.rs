@@ -367,7 +367,8 @@ async fn canonical_projected_success_emits_ontology_canonical_execute_audit(owne
 /// the instance-backed `company_conformance` fixtures. Person is registered
 /// with the other five ports (the composition root already does). OrgUnit
 /// seeds `create_org_unit` and `revise_org_unit`; JobPosition and Person seed
-/// create and revise.
+/// create and revise. JobPosition revise covers a title-only append and a
+/// reorganisation move of the mutable head.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_pool: PgPool) {
     let rt = runtime_role_pool(&owner_pool).await;
@@ -1102,6 +1103,149 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
                 .and_then(|raw| Uuid::parse_str(raw).ok())
         })
         .expect("create_org_unit receipt must name org_unit_id");
+
+    let staff_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "create_job_position",
+                ActionCommand {
+                    object_type_id: position_type,
+                    instance_id: None,
+                    title: None,
+                    params: json!({
+                        "org_unit_id": org_unit_id,
+                        "attributes": { "title": "인사팀장" }
+                    }),
+                    reason: Some("foundry job position move".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("staff create_job_position through the seeded action must succeed");
+    let staff_id = staff_outcome
+        .projected
+        .as_ref()
+        .and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("job_position_id"))
+                .and_then(Value::as_str)
+                .and_then(|raw| Uuid::parse_str(raw).ok())
+        })
+        .expect("create_job_position receipt must name job_position_id");
+    let staff_v1 = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM job_position_revisions \
+         WHERE org_id = $1 AND job_position_id = $2 AND version = 1",
+    )
+    .bind(org_uuid)
+    .bind(staff_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(staff_v1, json!({ "title": "인사팀장" }));
+    let staff_unit_before: Uuid =
+        sqlx::query_scalar("SELECT org_unit_id FROM job_positions WHERE org_id = $1 AND id = $2")
+            .bind(org_uuid)
+            .bind(staff_id)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(staff_unit_before, org_unit_id);
+
+    let move_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "revise_job_position",
+                ActionCommand {
+                    object_type_id: position_type,
+                    instance_id: Some(InstanceId::from_uuid(staff_id)),
+                    title: None,
+                    params: json!({
+                        "job_position_id": staff_id,
+                        "org_unit_id": tech_id,
+                        "attributes": { "title": "인사팀장" }
+                    }),
+                    reason: Some("foundry job position move".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("organization.revise_job_position move through the seeded action must succeed");
+    assert_eq!(
+        move_outcome
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::OrganizationReviseJobPosition
+                .as_str()
+                .to_owned()
+        ))
+    );
+    assert_eq!(
+        move_outcome.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("job_position_id"))
+        }),
+        Some(&Value::String(staff_id.to_string()))
+    );
+    assert_eq!(
+        move_outcome.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("org_unit_id"))
+        }),
+        Some(&Value::String(tech_id.to_string())),
+        "a reorganisation must name the destination unit on the receipt"
+    );
+    assert_eq!(
+        move_outcome.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("version"))
+                .and_then(Value::as_i64)
+        }),
+        Some(2)
+    );
+    let staff_v1_after = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM job_position_revisions \
+         WHERE org_id = $1 AND job_position_id = $2 AND version = 1",
+    )
+    .bind(org_uuid)
+    .bind(staff_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        staff_v1_after, staff_v1,
+        "moving the head must not rewrite revision 1"
+    );
+    let staff_unit_after: Uuid =
+        sqlx::query_scalar("SELECT org_unit_id FROM job_positions WHERE org_id = $1 AND id = $2")
+            .bind(org_uuid)
+            .bind(staff_id)
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        staff_unit_after, tech_id,
+        "a reorganisation must move the head"
+    );
 
     let senior_outcome = console_platform_request_context::scope_org(org, async {
         state
