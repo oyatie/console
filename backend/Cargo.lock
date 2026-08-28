@@ -2672,6 +2672,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "console-payroll-ui"
+version = "0.1.0"
+
+[[package]]
 name = "console-platform-audit-chain"
 version = "0.1.0"
 dependencies = [

@@ -1,0 +1,11 @@
+[package]
+name = "console-payroll-ui"
+version = "0.1.0"
+description = "Payroll Layer::Ui surface. No business authority. Mount and screens are later PRs."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
