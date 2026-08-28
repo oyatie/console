@@ -30,6 +30,11 @@ uuid = { workspace = true }
 [dev-dependencies]
 http = { workspace = true }
 console-platform-test-support = { workspace = true }
+# Dev-only: the empty-tenant payslip GET sits on Company/OrgUnit/JobPosition/
+# Person/hr.appoint. The REST crate must not take a production adapter edge on
+# the canonical ports (layer boundary); the gate exempts kind = "dev".
+console-ontology-canonical-adapter-postgres = { path = "../../ontology/canonical-adapter-postgres" }
+console-ontology-canonical-domain = { path = "../../ontology/canonical-domain" }
 p256 = { version = "0.13.2", features = ["ecdsa", "pkcs8", "pem"] }
 serde_json = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

@@ -12,6 +12,23 @@
 
 use axum::body::{Body, to_bytes};
 use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
+use console_ontology_canonical_adapter_postgres::company::{
+    CompanyCommand, CompanyQuery, PgCompanyPort,
+};
+use console_ontology_canonical_adapter_postgres::employment::{
+    EmploymentAttributes, EmploymentCommand, EmploymentQuery, NewEmployeeRecord, PgEmploymentPort,
+    insert_employee_record,
+};
+use console_ontology_canonical_adapter_postgres::job_position::{
+    JobPositionCommand, JobPositionQuery, PgJobPositionPort,
+};
+use console_ontology_canonical_adapter_postgres::org_unit::{
+    OrgUnitCommand, OrgUnitQuery, PgOrgUnitPort,
+};
+use console_ontology_canonical_adapter_postgres::person::{
+    PersonCommand, PersonQuery, PgPersonPort,
+};
+use console_ontology_canonical_domain::{CanonicalPort, CommandId, CommandReceipt, DispatchTarget};
 use console_payroll_adapter_postgres::PgPayrollStore;
 use console_payroll_domain::{
     ContributionCode, StatutoryInsuranceInput, build_statutory_insurance_draft,
@@ -20,7 +37,7 @@ use console_payroll_domain::{
 use console_payroll_rest::{PayrollRestState, router};
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
 use console_platform_db::{DbError, with_audit};
-use console_platform_test_support::runtime_role_pool;
+use console_platform_test_support::{runtime_role_pool, seed_org_and_super_admin};
 use http::{Request, StatusCode, header};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
@@ -28,7 +45,7 @@ use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use time::macros::date;
-use time::{Date, Duration, OffsetDateTime};
+use time::{Date, Duration, OffsetDateTime, Time};
 use tower::ServiceExt;
 use uuid::Uuid;
 
@@ -1215,6 +1232,272 @@ async fn a_rate_row_backdated_before_its_own_instrument_is_rejected(owner_pool: 
     plant("2027-01-01", "2026-12-30")
         .await
         .expect("a row whose instrument was already in force is storable");
+}
+
+/// Empty-tenant Company/OrgUnit/JobPosition/Person/`hr.appoint` then the same
+/// HTTP payslip GET. Fixture `INSERT INTO employees` is not this path: the
+/// employee id is the appointed person (`person_id = employee_id`). Does not
+/// re-assert GC-2026-07 won arithmetic — that lives in the golden above.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn empty_tenant_payslip_draft_sits_on_canonical_org_tree(owner_pool: PgPool) {
+    let tree = provision_empty_tenant_appointed_employee(&owner_pool).await;
+    let pool = runtime_role_pool(&owner_pool).await;
+    let keys = keys();
+    let token = bearer(&keys, tree.actor, tree.org, "SUPER_ADMIN");
+    let employee = tree.employee_id;
+
+    let created = post(
+        app(pool.clone(), &keys),
+        &format!("/api/v1/payroll/employees/{employee}/contract-wages"),
+        &token,
+        json!({
+            "effective_from": "2025-03-02",
+            "wage_kind": "MONTHLY",
+            "amount_won": 3_000_000,
+            "monthly_standard_hours": 209,
+            "source_note": "empty-tenant canonical tree"
+        }),
+    )
+    .await;
+    assert_eq!(created.status, StatusCode::CREATED, "{}", created.json);
+
+    let response = get(
+        app(pool, &keys),
+        &format!(
+            "/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07&pay_date=2026-08-10"
+        ),
+        &token,
+    )
+    .await;
+    assert_eq!(response.status, StatusCode::OK, "{}", response.json);
+    let body = response.json;
+    assert_eq!(body["contract"]["amount_won"], 3_000_000);
+    assert_eq!(body["contract"]["effective_from"], "2025-03-02");
+
+    let attributes: Value = sqlx::query_scalar(
+        "SELECT attributes FROM employment_revisions \
+         WHERE org_id = $1 AND employment_id = $2 AND version = 1",
+    )
+    .bind(*tree.org.as_uuid())
+    .bind(tree.employment_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        attributes["org_unit_id"].as_str().unwrap(),
+        tree.sales.to_string()
+    );
+    assert_eq!(
+        attributes["job_position_id"].as_str().unwrap(),
+        tree.engineer.to_string()
+    );
+    let bound_employee: Uuid = sqlx::query_scalar(
+        "SELECT employee_id FROM employment_source_bindings \
+         WHERE org_id = $1 AND employment_id = $2",
+    )
+    .bind(*tree.org.as_uuid())
+    .bind(tree.employment_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(bound_employee, tree.employee_id);
+    let person_id: Uuid = sqlx::query_scalar(
+        "SELECT person_id FROM employee_person_bindings \
+         WHERE org_id = $1 AND employee_id = $2",
+    )
+    .bind(*tree.org.as_uuid())
+    .bind(tree.employee_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        person_id, tree.employee_id,
+        "a uniquely-resolved person is bound with person_id = employee_id"
+    );
+    assert_eq!(
+        tree.appointed.target(),
+        DispatchTarget::HrAppoint,
+        "the employee the payslip named must have been minted by hr.appoint"
+    );
+}
+
+struct EmptyTenantAppointedEmployee {
+    org: OrgId,
+    actor: UserId,
+    sales: Uuid,
+    engineer: Uuid,
+    employee_id: Uuid,
+    employment_id: Uuid,
+    appointed: CommandReceipt,
+}
+
+async fn provision_empty_tenant_appointed_employee(
+    owner_pool: &PgPool,
+) -> EmptyTenantAppointedEmployee {
+    const ORG: Uuid = Uuid::from_u128(0xe3b0_0000_0000_0000_0000_0000_0000_00a1);
+    let actor = seed_org_and_super_admin(owner_pool, ORG, "payslip").await;
+    let runtime_pool = runtime_role_pool(owner_pool).await;
+    let handle = tokio::runtime::Handle::current();
+    let company = PgCompanyPort::new(runtime_pool.clone(), handle.clone());
+    let units = PgOrgUnitPort::new(runtime_pool.clone(), handle.clone());
+    let positions = PgJobPositionPort::new(runtime_pool.clone(), handle.clone());
+    let persons = PgPersonPort::new(runtime_pool.clone(), handle.clone());
+    let employment = PgEmploymentPort::new(runtime_pool.clone(), handle);
+    let org = OrgId::from_uuid(ORG);
+
+    execute_sync(
+        &company,
+        CompanyCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: CompanyQuery {
+                attributes: json!({ "legal_name": "주식회사 아크메" }),
+            },
+            action_key: "company.revise".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+
+    let unit_receipt = execute_sync(
+        &units,
+        OrgUnitCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: OrgUnitQuery::Create {
+                source: None,
+                attributes: json!({ "name": "영업본부" }),
+            },
+            action_key: "create_org_unit".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    let sales: Uuid = unit_receipt.result()["org_unit_id"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+
+    let position_receipt = execute_sync(
+        &positions,
+        JobPositionCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: JobPositionQuery::Create {
+                org_unit_id: sales,
+                attributes: json!({ "title": "백엔드 엔지니어" }),
+            },
+            action_key: "create_job_position".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    let engineer: Uuid = position_receipt.result()["job_position_id"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+
+    let employee_id = Uuid::new_v4();
+    let sales_text = sales.to_string();
+    let engineer_text = engineer.to_string();
+    let mut tx = runtime_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    insert_employee_record(
+        &mut tx,
+        ORG,
+        NewEmployeeRecord {
+            employee_id,
+            company: "ACME",
+            name: "김직원",
+            employee_number: "E-PAY-1",
+            org_unit: &sales_text,
+            position: &engineer_text,
+            worksite_name: "서울",
+        },
+    )
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+
+    execute_sync(
+        &persons,
+        PersonCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: PersonQuery::Create {
+                employee_id: Some(employee_id),
+                attributes: json!({ "legal_name": "김직원" }),
+            },
+            action_key: "create_person".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+
+    let appointed = execute_sync(
+        &employment,
+        EmploymentCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: EmploymentQuery::Appoint {
+                employee_id,
+                valid_from: OffsetDateTime::new_utc(date!(2026 - 01 - 01), Time::MIDNIGHT),
+                attributes: EmploymentAttributes {
+                    company: "ACME".to_owned(),
+                    org_unit_id: Some(sales),
+                    job_position_id: Some(engineer),
+                    employment_status: "ACTIVE".to_owned(),
+                },
+            },
+            action_key: "appoint".to_owned(),
+            object_type_id: Uuid::nil(),
+        },
+    )
+    .await
+    .unwrap();
+    let employment_id = appointed.result()["employment_id"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+    EmptyTenantAppointedEmployee {
+        org,
+        actor,
+        sales,
+        engineer,
+        employee_id,
+        employment_id,
+        appointed,
+    }
+}
+
+async fn execute_sync<P: CanonicalPort + Clone + Send + 'static>(
+    port: &P,
+    command: P::Command,
+) -> Result<CommandReceipt, P::Error>
+where
+    P::Command: Send + 'static,
+    P::Error: Send + 'static,
+{
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.execute(&command))
+        .await
+        .unwrap()
 }
 
 /// The migration comment names the test that guards it. That name went stale

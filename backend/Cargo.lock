@@ -2649,6 +2649,8 @@ dependencies = [
  "console-inbox-application",
  "console-inbox-domain",
  "console-kernel-core",
+ "console-ontology-canonical-adapter-postgres",
+ "console-ontology-canonical-domain",
  "console-payroll-adapter-postgres",
  "console-payroll-domain",
  "console-platform-auth",
