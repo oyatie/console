@@ -20,12 +20,12 @@ Status: active roadmap authority. Product scope comes from [`PRODUCT.md`](PRODUC
    - Complete branchless capability and temporal-grant contracts, contracts-crate/OpenAPI composition, true preflight, and distinct-human approval rules.
 5. **Organization and HR**
    - Done: explicit owning ports and single-writer boundaries are mechanically proven for Company, OrgUnit, JobPosition, Person, Employment, and PayRun, releasing projection fan-out only.
-   - Group / multi-corporate is in scope as the existing platform overlay (migration 0060), not as `ObjectKey::Group`. Next: Company/OrgUnit reference and canonical HR assignment writer without reopening or widening the released boundary. Consolidated-read proofs over authorized member subsets are later overlay work, not a seventh object.
+   - Group / multi-corporate is in scope as the existing platform overlay (migration 0060), not as `ObjectKey::Group`. Two-org `consolidated_read` as `console_rt` is proven (#954): RLS arms the member org, never the group id; empty grant → empty view. Next: Company/OrgUnit reference and canonical HR assignment writer without reopening or widening the released boundary. Group UI and a seventh object remain later, explicit PRODUCT changes.
 6. **Payroll**
    - Project the existing payroll writer without a second write path; preserve deterministic rounding, golden cases, immutable receipts, and payslip drafts.
 7. **Leptos acceptance surface**
    - `Layer::Ui` is accepted (ADR-0041); first full-depth vertical is payroll execution.
-   - Owner decision (2026-08-28) **starts** the mounted contracts-backed SSR shell in parallel, including while item 2 remains incomplete. That start does not wait for executable-contract decoupling to finish.
+   - Empty deny-by-omission SSR is mounted at GET `/_ui` (#952). Remaining: islands/WASM hydration, contracts-backed authorized reads, persona E2E.
    - Shipping screens and production exposure stay **HOLD** until persona-based real-backend E2E evidence (ADR-0025 §4). Import/export is not the data-entry base except 자료실; the comms rail is out of this slice.
 8. **Palantir AIP / Intelligence**
    - Palantir AIP is the target intelligence layer. It is built in the separate Intelligence repository until that repository names a SHA-bound stable base; cloning it into Console is a later lane. Not current Console tenant-app work.
@@ -33,7 +33,7 @@ Status: active roadmap authority. Product scope comes from [`PRODUCT.md`](PRODUC
 ## Explicit HOLDs
 
 - Bulk documentation moves, deletion, or graveyard copies are **HOLD** until custody and recoverability are proven with the full manifest and signed archive references.
-- Leptos **shipping** remains **HOLD** until persona-based real-backend E2E evidence. Owner decision (2026-08-28) starts the mounted SSR shell; that start does not authorize shipping screens or live exposure.
+- Leptos **shipping** remains **HOLD** until persona-based real-backend E2E evidence. GET `/_ui` being mounted does not authorize shipping screens or live exposure.
 - Live or production promotion, DNS, TLS, secrets, exposure, payment, credential-reset, and compliance claims are **HOLD** absent separate authority. A source release follows repository release authority and evidence; it does not authorize live promotion or exposure.
 - Destruction, termination, resize, or reprovisioning of the grandfathered OCI Ampere A1 instance (4 OCPU / 24 GB) is permanently **HOLD** because the reserved capacity cannot be recreated.
 - Workstation full-disk erase **already occurred** (post-wipe, owner fact 2026-08-28). Remaining local P0 work is re-issue or off-device confirmation, not a future erase. Do not erase again as a program action.
