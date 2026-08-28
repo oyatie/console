@@ -368,7 +368,8 @@ async fn canonical_projected_success_emits_ontology_canonical_execute_audit(owne
 /// with the other five ports (the composition root already does). OrgUnit
 /// seeds `create_org_unit` and `revise_org_unit`; JobPosition and Person seed
 /// create and revise. JobPosition revise covers a title-only append and a
-/// reorganisation move of the mutable head.
+/// reorganisation move of the mutable head. Person revise covers a name
+/// append and a further employee binding to the same natural person.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_pool: PgPool) {
     let rt = runtime_role_pool(&owner_pool).await;
@@ -1002,6 +1003,112 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     .await
     .unwrap();
     assert_eq!(version_two, json!({ "legal_name": "김직원(개명)" }));
+
+    let second_employee_id = Uuid::new_v4();
+    let mut second_tx = rt.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(org_uuid.to_string())
+        .execute(&mut *second_tx)
+        .await
+        .unwrap();
+    insert_employee_record(
+        &mut second_tx,
+        org_uuid,
+        NewEmployeeRecord {
+            employee_id: second_employee_id,
+            company: "ACME",
+            name: "김직원",
+            employee_number: "E-FOUNDARY-2",
+            org_unit: &unit_text,
+            position: &position_text,
+            worksite_name: "서울",
+        },
+    )
+    .await
+    .expect("console_rt must insert the further Employment-owned employee row");
+    second_tx.commit().await.unwrap();
+
+    let bind_outcome = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "revise_person",
+                ActionCommand {
+                    object_type_id: person_type,
+                    instance_id: Some(InstanceId::from_uuid(person_id)),
+                    title: None,
+                    params: json!({
+                        "person_id": person_id,
+                        "employee_id": second_employee_id,
+                        "attributes": { "legal_name": "김직원(개명)" }
+                    }),
+                    reason: Some("foundry person second bind".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("people.revise_person further bind through the seeded action must succeed");
+    assert_eq!(
+        bind_outcome
+            .projected
+            .as_ref()
+            .and_then(|value| value.get("target")),
+        Some(&Value::String(
+            DispatchTarget::PeopleRevisePerson.as_str().to_owned()
+        ))
+    );
+    assert_eq!(
+        bind_outcome.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("person_id"))
+        }),
+        Some(&Value::String(person_id.to_string()))
+    );
+    assert_eq!(
+        bind_outcome.projected.as_ref().and_then(|value| {
+            value
+                .get("result")
+                .and_then(|result| result.get("version"))
+                .and_then(Value::as_i64)
+        }),
+        Some(3)
+    );
+    assert_ne!(
+        second_employee_id, person_id,
+        "a further employment need not equal person_id"
+    );
+    let version_two_after = sqlx::query_scalar::<_, serde_json::Value>(
+        "SELECT attributes FROM person_revisions \
+         WHERE org_id = $1 AND person_id = $2 AND version = 2",
+    )
+    .bind(org_uuid)
+    .bind(person_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        version_two_after, version_two,
+        "binding a further employee must not rewrite revision 2"
+    );
+    let bound_employees: Vec<Uuid> = sqlx::query_scalar(
+        "SELECT employee_id FROM employee_person_bindings \
+         WHERE org_id = $1 AND person_id = $2 ORDER BY employee_id",
+    )
+    .bind(org_uuid)
+    .bind(person_id)
+    .fetch_all(&owner_pool)
+    .await
+    .unwrap();
+    let mut expected_employees = vec![employee_id, second_employee_id];
+    expected_employees.sort();
+    assert_eq!(bound_employees, expected_employees);
 
     let appoint_outcome = console_platform_request_context::scope_org(org, async {
         state
