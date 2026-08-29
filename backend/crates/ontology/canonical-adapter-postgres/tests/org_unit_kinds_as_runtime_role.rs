@@ -25,6 +25,7 @@ const DEPT_PARENT_SITE: &str = "department parent must be a site";
 const TEAM_PARENT_KIND: &str = "team parent must be a department or team";
 const PARENT_IN_ORG: &str = "parent_id must refer to an OrgUnit in this organization";
 const PARENT_NOT_SELF: &str = "parent_id must not be self";
+const PARENT_CYCLE: &str = "parent_id must not form a cycle";
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
     let options = owner_pool.connect_options().as_ref().clone();
@@ -357,4 +358,37 @@ async fn t17_department_parent_must_not_be_a_department(owner_pool: PgPool) {
     .await
     .unwrap_err();
     assert_blocked(err, &[DEPT_PARENT_SITE]);
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn t18_length_two_team_parent_cycle_on_revise_is_blocked(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let site_id = create_unit(&port, org, actor, site("본사")).await;
+    let dept_id = create_unit(&port, org, actor, department("영업", site_id)).await;
+    let team_a = create_unit(&port, org, actor, team("팀A", dept_id)).await;
+    let team_b = create_unit(&port, org, actor, team("팀B", team_a)).await;
+    let err = execute(
+        &port,
+        command(org, actor, revise(team_a, team("팀A", team_b))),
+    )
+    .await
+    .unwrap_err();
+    assert_blocked(err, &[PARENT_CYCLE]);
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn t19_length_three_team_parent_cycle_on_revise_is_blocked(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let site_id = create_unit(&port, org, actor, site("본사")).await;
+    let dept_id = create_unit(&port, org, actor, department("영업", site_id)).await;
+    let team_a = create_unit(&port, org, actor, team("팀A", dept_id)).await;
+    let team_b = create_unit(&port, org, actor, team("팀B", team_a)).await;
+    let team_c = create_unit(&port, org, actor, team("팀C", team_b)).await;
+    let err = execute(
+        &port,
+        command(org, actor, revise(team_a, team("팀A", team_c))),
+    )
+    .await
+    .unwrap_err();
+    assert_blocked(err, &[PARENT_CYCLE]);
 }

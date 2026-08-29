@@ -69,6 +69,7 @@ use console_ontology_canonical_domain::{
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
+use std::collections::HashSet;
 use std::str::FromStr;
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -465,7 +466,7 @@ impl PgOrgUnitPort {
             ]);
         };
         let parent_kind = attr_string(&parent_attrs, crate::catalog::ORG_UNIT_KIND);
-        Ok(match kind.as_str() {
+        let kind_blockers = match kind.as_str() {
             "department" if parent_kind.as_deref() != Some("site") => {
                 vec!["department parent must be a site".to_owned()]
             }
@@ -476,7 +477,30 @@ impl PgOrgUnitPort {
                 vec!["team parent must be a department or team".to_owned()]
             }
             _ => Vec::new(),
-        })
+        };
+        if !kind_blockers.is_empty() {
+            return Ok(kind_blockers);
+        }
+        // Self-parent is already refused above. Walk the proposed parent's
+        // ancestor chain so team→team (and any longer) cycles fail closed
+        // with no mutation, the same as length-1.
+        if let OrgUnitQuery::Revise { org_unit_id, .. } = query {
+            let mut cursor = Some(parent_id);
+            let mut seen = HashSet::new();
+            while let Some(id) = cursor {
+                if id == *org_unit_id {
+                    return Ok(vec!["parent_id must not form a cycle".to_owned()]);
+                }
+                if !seen.insert(id) {
+                    return Ok(vec!["parent_id must not form a cycle".to_owned()]);
+                }
+                cursor = match Self::head_attributes(tx, org, id).await? {
+                    Some(attrs) => attr_uuid(&attrs, "parent_id"),
+                    None => None,
+                };
+            }
+        }
+        Ok(Vec::new())
     }
 
     async fn head_attributes(
