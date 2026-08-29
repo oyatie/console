@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.21](https://github.com/oyatie/console/compare/v0.3.20...v0.3.21) (2026-08-29)
+
+
+### Features
+
+* **platform:** backfill Group-of-one and require organizations.group_id ([#971](https://github.com/oyatie/console/issues/971)) ([641b131](https://github.com/oyatie/console/commit/641b131729474fadb03907ee514286a38db23c7b))
+
 ## [0.3.20](https://github.com/oyatie/console/compare/v0.3.19...v0.3.20) (2026-08-29)
 
 
