@@ -1,0 +1,30 @@
+PROPRIETARY LICENSE
+
+Copyright © 2026 Oyatie. All rights reserved.
+
+This repository and all software, source code, documentation, and other
+materials contained in it (collectively, the "Software") are proprietary to
+Oyatie, except for Third-Party Materials described below.
+
+No license or other rights in the Software are granted by possession, access,
+disclosure, publication, or distribution of the Software. You may not use,
+copy, modify, reproduce, publish, distribute, sublicense, sell, reverse
+engineer, create derivative works from, or otherwise exploit the Software
+without a separate written agreement executed by Oyatie, except to the extent
+applicable law permits despite this restriction.
+
+To the extent of Oyatie's rights in the Software, these terms apply to every
+version and revision from and including the repository's initial commit,
+7dd0ce747e971e2c706298f5b8859470feaf6ca2, dated June 12, 2026.
+
+THIRD-PARTY MATERIALS
+
+Third-party and vendored materials that are expressly identified as such are
+governed by their applicable third-party license terms and notices. This
+license does not supersede those terms or notices.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. TO THE MAXIMUM EXTENT
+PERMITTED BY LAW, OYATIE SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR ITS USE.
