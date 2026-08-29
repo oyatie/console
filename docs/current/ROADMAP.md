@@ -20,7 +20,7 @@ Status: active roadmap authority. Product scope comes from [`PRODUCT.md`](PRODUC
    - Complete branchless capability and temporal-grant contracts, contracts-crate/OpenAPI composition, true preflight, and distinct-human approval rules.
 5. **Organization and HR**
    - Done: explicit owning ports and single-writer boundaries are mechanically proven for Company, OrgUnit, JobPosition, Person, Employment, and PayRun, releasing projection fan-out only.
-   - Group / multi-corporate is in scope as the existing platform overlay (migration 0060), not as `ObjectKey::Group`. Two-org `consolidated_read` as `console_rt` is proven (#954): RLS arms the member org, never the group id; empty grant → empty view. Next: Company/OrgUnit reference and canonical HR assignment writer without reopening or widening the released boundary. Group UI and a seventh object remain later, explicit PRODUCT changes.
+   - Group / multi-corporate is in scope as the existing platform overlay (migration 0060), not as `ObjectKey::Group`. Two-org `consolidated_read` as `console_rt` is proven (#954): RLS arms the member org, never the group id; empty grant → empty view. People create binds Person (#966). Next: OrgUnit/JobPosition reference when those fields are UUIDs; `hr.appoint` stays four-eyes, not directory create. Group UI and a seventh object remain later, explicit PRODUCT changes.
 6. **Payroll**
    - Project the existing payroll writer without a second write path; preserve deterministic rounding, golden cases, immutable receipts, and payslip drafts.
 7. **Leptos acceptance surface**

@@ -7,7 +7,7 @@ Status: active product authority.
 Console builds one governed company object system in this order:
 
 1. Ontology / Foundry-style object engine and deterministic policy.
-2. Company, OrgUnit, JobPosition, Person, and Employment.
+2. Company, OrgUnit, JobPosition, Person, and Employment. People/recruiting directory create mints Person in the same transaction as the employees row (#966; `person_id = employee_id`). `hr.appoint` remains a distinct four-eyes assignment.
 3. HR appointment, promotion, and transfer through one canonical assignment writer.
 4. Payroll projected from existing payroll truth as PayRun.
 5. A Leptos SSR frontend. ADR-0030 substrate gates are green and `Layer::Ui` is accepted (ADR-0041); first full-depth vertical is payroll execution. GET `/_ui` serves deny-by-omission SSR (`console-payroll-ui` nested by `console-app`; #952). Unauthenticated and MEMBER get the empty shell; `PayrollRunRead` gets OpenAPI `PayrollRunSummary` required fields as `data-run-*` attributes, no won (#959). Those authorized runs are a Leptos `#[island]` (`AuthorizedRuns`, #962) hydrated by committed release WASM at `/_ui/pkg` (#964). Remaining frontend work: persona E2E. Shipping screens, production exposure, and persona E2E remain **HOLD**.
