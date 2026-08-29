@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.20](https://github.com/oyatie/console/compare/v0.3.19...v0.3.20) (2026-08-29)
+
+
+### Features
+
+* **hr:** mint Person in the same transaction as employee create ([#966](https://github.com/oyatie/console/issues/966)) ([502a383](https://github.com/oyatie/console/commit/502a383cbc0ef80a32a4513b5ed164ad5420cf8d))
+* **hr:** refuse unknown OrgUnit/JobPosition UUIDs on create ([#968](https://github.com/oyatie/console/issues/968)) ([0e0f550](https://github.com/oyatie/console/commit/0e0f550e4cbef62edb33583ce0bd9f7a61ea88e9))
+* **ui:** compose authorized payroll-run summaries into /_ui SSR ([#959](https://github.com/oyatie/console/issues/959)) ([c69b608](https://github.com/oyatie/console/commit/c69b608d1eb732666d4022c2da8e7e184bfed6c5))
+* **ui:** emit a Leptos island around authorized payroll runs ([#962](https://github.com/oyatie/console/issues/962)) ([35c37c1](https://github.com/oyatie/console/commit/35c37c1015efd58e6ce129577a3b25637791df06))
+* **ui:** hydrate AuthorizedRuns island via committed WASM ([#964](https://github.com/oyatie/console/issues/964)) ([b602e1f](https://github.com/oyatie/console/commit/b602e1f4f0471dcad3c1987696a64945695811be))
+
 ## [0.3.19](https://github.com/oyatie/console/compare/v0.3.18...v0.3.19) (2026-08-28)
 
 
