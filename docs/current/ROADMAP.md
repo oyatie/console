@@ -20,24 +20,25 @@ Status: active roadmap authority. Product scope comes from [`PRODUCT.md`](PRODUC
    - Complete branchless capability and temporal-grant contracts, contracts-crate/OpenAPI composition, true preflight, and distinct-human approval rules.
 5. **Organization and HR**
    - Done: explicit owning ports and single-writer boundaries are mechanically proven for Company, OrgUnit, JobPosition, Person, Employment, and PayRun, releasing projection fan-out only.
-   - Group / multi-corporate is in scope as the existing platform overlay (migration 0060), not as `ObjectKey::Group`. Two-org `consolidated_read` as `console_rt` is proven (#954): RLS arms the member org, never the group id; empty grant → empty view. People create binds Person (#966). Next: OrgUnit/JobPosition reference when those fields are UUIDs; `hr.appoint` stays four-eyes, not directory create. Group UI and a seventh object remain later, explicit PRODUCT changes.
+   - Tenant is always a Group. Every Company mints a real Group row (standalone = Group of one). Company remains the legal entity and RLS cell; Group never arms `app.current_org`. Cross-entity HR/payroll is policy on member companies, still one `org_id` per write. Two-org `consolidated_read` as `console_rt` is proven (#954). People create binds Person (#966). UUID OrgUnit/JobPosition refs fail closed (#968). Next: mandatory `organizations.group_id` plus 1:1 mint for ungrouped companies (design, then tests-first); OrgUnit kinds Site/Department/Team under one Company; `hr.appoint` stays four-eyes, not directory create. `ObjectKey::Group` is not admitted by this record.
 6. **Payroll**
    - Project the existing payroll writer without a second write path; preserve deterministic rounding, golden cases, immutable receipts, and payslip drafts.
+   - Draft calculate is admitted. `payable`, Korea compliance conclusions, wage-statement legal sign-off, and payment execution remain **HOLD**.
 7. **Leptos acceptance surface**
    - `Layer::Ui` is accepted (ADR-0041); first full-depth vertical is payroll execution.
-   - GET `/_ui` is mounted (#952). Contracts-backed authorized reads (#959): empty shell without `PayrollRunRead`; `data-run-*` from `PayrollRunSummary` required fields with it. Those runs are a Leptos `#[island]` (#962) hydrated by committed release WASM (#964). Empty shell still omits `/_ui/pkg/`. Remaining: persona E2E.
-   - Shipping screens and production exposure stay **HOLD** until persona-based real-backend E2E evidence (ADR-0025 §4). Import/export is not the data-entry base except 자료실; the comms rail is out of this slice.
+   - GET `/_ui` is mounted (#952). Contracts-backed authorized reads (#959): empty shell without `PayrollRunRead`; `data-run-*` from `PayrollRunSummary` required fields with it. Those runs are a Leptos `#[island]` (#962) hydrated by committed release WASM (#964). Empty shell still omits `/_ui/pkg/`.
+   - Shipping screens are admitted. Persona-based real-backend E2E (ADR-0025 §4) remains the bar for calling a screen shipped. Production exposure stays **HOLD**. Import/export is not the data-entry base except 자료실; the comms rail is out of this slice.
 8. **Palantir AIP / Intelligence**
-   - Palantir AIP is the target intelligence layer. It is built in the separate Intelligence repository until that repository names a SHA-bound stable base; cloning it into Console is a later lane. Not current Console tenant-app work.
+   - Palantir AIP is the target intelligence layer. It is built in the separate Intelligence repository until that repository names a SHA-bound stable base; cloning it into Console is a later lane.
+   - Console-owned fail-closed seams are admitted now (same `Principal`, ontology actions, no second writer, no Palantir client, no Intelligence HTTP on Console). Not a tenant-app Intelligence product.
 
 ## Explicit HOLDs
 
 - Bulk documentation moves, deletion, or graveyard copies are **HOLD** until custody and recoverability are proven with the full manifest and signed archive references.
-- Leptos **shipping** remains **HOLD** until persona-based real-backend E2E evidence. GET `/_ui` being mounted, #959 authorized reads, the #962 island, and #964 WASM hydrate do not authorize shipping screens or live exposure.
 - Live or production promotion, DNS, TLS, secrets, exposure, payment, credential-reset, and compliance claims are **HOLD** absent separate authority. A source release follows repository release authority and evidence; it does not authorize live promotion or exposure.
-- Destruction, termination, resize, or reprovisioning of the grandfathered OCI Ampere A1 instance (4 OCPU / 24 GB) is permanently **HOLD** because the reserved capacity cannot be recreated.
+- The grandfathered OCI Ampere A1 instance (4 OCPU / 24 GB) is standing **off-limits**, not a program HOLD: never destroy, terminate, resize, or reprovision it; the reserved capacity cannot be recreated.
 - Workstation full-disk erase **already occurred** (post-wipe, owner fact 2026-08-28). Remaining local P0 work is re-issue or off-device confirmation, not a future erase. Do not erase again as a program action.
-- Cloning Intelligence into Console is **HOLD** until Intelligence names a SHA-bound stable base. Intelligence is not a tenant application and not autonomous merge authority.
+- Cloning Intelligence into Console is **HOLD** until Intelligence names a SHA-bound stable base. Intelligence is not a tenant application and not autonomous merge authority. Console-owned seams are admitted.
 - Ambiguous roadmap prose, historical plans, and unpublished or partial work do not clear a HOLD and do not dispatch implementation.
 
 ## Exit rule

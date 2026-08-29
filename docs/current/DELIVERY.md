@@ -18,6 +18,19 @@ A required status context must have an executable protected workflow producer fo
 
 Merge only the reviewed candidate through the protected `main` integration path. After merge, read back the hosted commit and required checks. A local commit, branch, pull request, or green local run is unpublished evidence and is not proof that work is merged or released.
 
+## High-risk program method
+
+Tenancy, authorization, migration, contract, HR, payroll, frontend shipping, and Intelligence-seam work uses this sequence. Authority and design records are orchestrator-owned; they are not `fanout.py` lanes.
+
+1. Four independent design-review rounds, consensus, and a revision-bound explicit approval (design SHA).
+2. Tests written first against that design SHA, independently reviewed, and explicitly approved (test SHA). Semantic test changes return to test review.
+3. Implementation only from the exact approved test commit. Material design change returns to design review.
+4. After implementation: coverage, security hardening, simplification and refactor, with review-fix until approve.
+5. A 16-lens audit (the task-selected reasoning lenses in [`AGENTS.md`](../../AGENTS.md)) before the merge verdict. High-risk authz, migration, HR, and payroll include Red Team, Operability / Day-2, Blast-radius / cell-based, and Zero-trust / defense-in-depth.
+6. Independent COMMENT on the candidate SHA, then merge only through the protected `main` path above. `fanout.py` still admits implementation lanes: a named command that is red on the clean tree.
+
+This method does not authorize live promotion, DNS, TLS, secrets, exposure, payment execution, or cloning Intelligence.
+
 ## PR #862 one-time containment
 
 PR #862 merged candidate `c61949c6c57d56755a49722d82f0cec2a471680f` as `ec866c1b0450829bc6b776be570e13f6a18edbd6` with tree `2b5c870eb9494def1d64f024f51c512cf694df0b` at 2026-08-24T08:46:05Z before any independent review; GitHub recorded zero submitted reviews. That merge violated the review-before-merge rule above. This record does not waive, excuse, or retroactively satisfy it.
