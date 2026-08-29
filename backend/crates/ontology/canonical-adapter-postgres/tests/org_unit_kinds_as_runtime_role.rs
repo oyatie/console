@@ -178,9 +178,10 @@ fn assert_blocked(err: OrgUnitError, expected: &[&str]) {
 
 #[test]
 fn t1_create_without_kind_is_blocked() {
-    assert_eq!(preflight_blockers(&create(json!({ "name": "본사" }))), [
-        KIND_REQUIRED.to_owned()
-    ]);
+    assert_eq!(
+        preflight_blockers(&create(json!({ "name": "본사" }))),
+        [KIND_REQUIRED.to_owned()]
+    );
 }
 
 #[test]
@@ -249,10 +250,10 @@ fn t8_parent_id_must_be_a_uuid() {
 
 #[test]
 fn t9_missing_name_and_kind_report_both() {
-    assert_eq!(preflight_blockers(&create(json!({}))), [
-        "name is required".to_owned(),
-        KIND_REQUIRED.to_owned()
-    ]);
+    assert_eq!(
+        preflight_blockers(&create(json!({}))),
+        ["name is required".to_owned(), KIND_REQUIRED.to_owned()]
+    );
 }
 
 #[test]
