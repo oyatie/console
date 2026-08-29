@@ -167,11 +167,15 @@ fn ShippingNav(has_org: bool, has_hr: bool, has_payroll: bool) -> impl IntoView 
 
 #[component]
 pub fn AuthorizedShell(runs: Vec<RunSummary>) -> impl IntoView {
+    let nav_payroll = !runs.is_empty();
     view! {
         <ShippingShell
             org=Vec::new()
             people=Vec::new()
             runs=runs
+            nav_org=false
+            nav_hr=false
+            nav_payroll=nav_payroll
         />
     }
 }
@@ -181,15 +185,18 @@ fn ShippingShell(
     org: Vec<OrgEntityView>,
     people: Vec<PersonView>,
     runs: Vec<RunSummary>,
+    nav_org: bool,
+    nav_hr: bool,
+    nav_payroll: bool,
 ) -> impl IntoView {
-    let has_org = !org.is_empty();
-    let has_hr = !people.is_empty();
-    let has_payroll = !runs.is_empty();
+    let show_org = !org.is_empty();
+    let show_hr = !people.is_empty();
+    let show_payroll = !runs.is_empty();
     view! {
         <html>
             <head>
                 <meta charset="utf-8" />
-                {has_payroll.then(|| {
+                {show_payroll.then(|| {
                     view! {
                         <link rel="modulepreload" href=PKG_JS />
                         <link rel="preload" href=PKG_WASM r#as="fetch" r#type="application/wasm" />
@@ -198,22 +205,22 @@ fn ShippingShell(
                 })}
             </head>
             <body>
-                <ShippingNav has_org=has_org has_hr=has_hr has_payroll=has_payroll />
-                {has_org.then(|| {
+                <ShippingNav has_org=nav_org has_hr=nav_hr has_payroll=nav_payroll />
+                {show_org.then(|| {
                     view! {
                         <section data-screen="organization">
                             <OrgEntities entities=org />
                         </section>
                     }
                 })}
-                {has_hr.then(|| {
+                {show_hr.then(|| {
                     view! {
                         <section data-screen="hr">
                             <DirectoryPeople people=people />
                         </section>
                     }
                 })}
-                {has_payroll.then(|| {
+                {show_payroll.then(|| {
                     view! {
                         <section data-screen="payroll">
                             <AuthorizedRuns runs=runs />
@@ -242,7 +249,11 @@ pub fn render_shell_with(runs: &[RunSummary]) -> String {
 }
 
 /// SSR compose org / HR / payroll. Empty authorized sets omit markup.
+/// Nav names every authorized non-empty screen; the body is the focused route.
 pub fn render_screens(screens: &ShippingScreens, focus: UiScreen) -> String {
+    let nav_org = !screens.org_entities.is_empty();
+    let nav_hr = !screens.people.is_empty();
+    let nav_payroll = !screens.runs.is_empty();
     let org = match focus {
         UiScreen::Home | UiScreen::Organization => screens.org_entities.clone(),
         UiScreen::Hr | UiScreen::Payroll => Vec::new(),
@@ -255,11 +266,29 @@ pub fn render_screens(screens: &ShippingScreens, focus: UiScreen) -> String {
         UiScreen::Home | UiScreen::Payroll => screens.runs.clone(),
         UiScreen::Organization | UiScreen::Hr => Vec::new(),
     };
-    if org.is_empty() && people.is_empty() && runs.is_empty() {
+    let focus_denied = match focus {
+        UiScreen::Home => !nav_org && !nav_hr && !nav_payroll,
+        UiScreen::Organization => !nav_org,
+        UiScreen::Hr => !nav_hr,
+        UiScreen::Payroll => !nav_payroll,
+    };
+    if focus_denied {
         return render_shell();
     }
     let mut html = String::from("<!DOCTYPE html>");
-    html.push_str(&view! { <ShippingShell org=org people=people runs=runs /> }.to_html());
+    html.push_str(
+        &view! {
+            <ShippingShell
+                org=org
+                people=people
+                runs=runs
+                nav_org=nav_org
+                nav_hr=nav_hr
+                nav_payroll=nav_payroll
+            />
+        }
+        .to_html(),
+    );
     html
 }
 
@@ -677,5 +706,71 @@ mod tests {
             "focused payroll must omit other bodies: {payroll_only}"
         );
         assert_shipping_invariants(&payroll_only);
+    }
+
+    #[test]
+    fn shipping_screens_focus_keeps_authorized_nav_and_omits_wasm_off_payroll() {
+        let screens = ShippingScreens {
+            org_entities: vec![sample_org()],
+            people: vec![sample_person()],
+            runs: vec![sample_run()],
+        };
+
+        let org_html = render_screens(&screens, UiScreen::Organization);
+        assert!(
+            org_html.contains("data-screen=\"organization\""),
+            "{org_html}"
+        );
+        assert!(
+            !org_html.contains("data-screen=\"hr\"")
+                && !org_html.contains("data-screen=\"payroll\""),
+            "focused org must omit other bodies: {org_html}"
+        );
+        assert!(
+            org_html.contains("href=\"/_ui/organization\""),
+            "{org_html}"
+        );
+        assert!(org_html.contains("href=\"/_ui/hr\""), "{org_html}");
+        assert!(org_html.contains("href=\"/_ui/payroll\""), "{org_html}");
+        assert!(
+            !org_html.contains("/_ui/pkg/"),
+            "org body must not hydrate WASM: {org_html}"
+        );
+        assert_shipping_invariants(&org_html);
+
+        let payroll_html = render_screens(&screens, UiScreen::Payroll);
+        assert!(
+            payroll_html.contains("data-screen=\"payroll\""),
+            "{payroll_html}"
+        );
+        assert!(
+            !payroll_html.contains("data-screen=\"organization\"")
+                && !payroll_html.contains("data-screen=\"hr\""),
+            "focused payroll must omit other bodies: {payroll_html}"
+        );
+        assert!(
+            payroll_html.contains("href=\"/_ui/organization\"")
+                && payroll_html.contains("href=\"/_ui/hr\"")
+                && payroll_html.contains("href=\"/_ui/payroll\""),
+            "authorized nav must stay reachable from a focused screen: {payroll_html}"
+        );
+        assert!(
+            payroll_html.contains("/_ui/pkg/console_payroll_ui.js"),
+            "{payroll_html}"
+        );
+        assert_shipping_invariants(&payroll_html);
+
+        let denied_payroll = render_screens(
+            &ShippingScreens {
+                org_entities: vec![sample_org()],
+                ..ShippingScreens::default()
+            },
+            UiScreen::Payroll,
+        );
+        assert_eq!(
+            denied_payroll,
+            render_shell(),
+            "unauthorized payroll route must omit, not leak sibling nav"
+        );
     }
 }

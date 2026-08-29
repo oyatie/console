@@ -494,4 +494,225 @@ mod authorized {
         assert!(!lowered.contains("group-switcher"), "{payroll_html}");
         assert!(!lowered.contains("comms-rail"), "{payroll_html}");
     }
+
+    async fn list_read_audits(pool: &PgPool, actor: UserId) -> i64 {
+        sqlx::query_scalar(
+            "SELECT COUNT(*) FROM audit_events \
+             WHERE action = 'payroll_run.list_read' AND actor = $1",
+        )
+        .bind(*actor.as_uuid())
+        .fetch_one(pool)
+        .await
+        .unwrap()
+    }
+
+    fn assert_ui_invariants(html: &str) {
+        let lowered = html.to_ascii_lowercase();
+        assert!(!lowered.contains("won"), "won leaked: {html}");
+        assert!(!html.contains("291_520"), "golden won leaked: {html}");
+        assert!(!lowered.contains("payslip"), "payslip leaked: {html}");
+        assert!(!lowered.contains("phone"), "directory phone leaked: {html}");
+        assert!(!lowered.contains("group-switcher"), "{html}");
+        assert!(!lowered.contains("comms-rail"), "{html}");
+        assert!(
+            !html.contains("type=\"file\"") && !html.contains("자료실"),
+            "import/export is not the data-entry base: {html}"
+        );
+        assert!(
+            !html.contains("webpack") && !html.contains("vite") && !html.contains("innerHTML"),
+            "must stay Rust-native Leptos SSR: {html}"
+        );
+    }
+
+    /// ADR-0025 §4 persona real-backend E2E on org/HR/payroll `/_ui`.
+    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    async fn ui_persona_e2e(pool: PgPool) {
+        let keys = keys();
+        let org = OrgId::knl();
+        let member = UserId::new();
+        let admin = UserId::new();
+        let executive = UserId::new();
+        let super_admin = UserId::new();
+        seed_user(&pool, org, member, "MEMBER").await;
+        seed_user(&pool, org, admin, "ADMIN").await;
+        seed_user(&pool, org, executive, "EXECUTIVE").await;
+        seed_user(&pool, org, super_admin, "SUPER_ADMIN").await;
+        grant_group_viewer(&pool, org, admin).await;
+        grant_group_viewer(&pool, org, executive).await;
+        grant_group_viewer(&pool, org, super_admin).await;
+        let run = seed_run(&pool, org, super_admin).await;
+
+        let other_org = OrgId::from_uuid(Uuid::from_u128(0xb2));
+        sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, $2, $3)")
+            .bind(*other_org.as_uuid())
+            .bind("persona-e2e-other")
+            .bind("Persona E2E other org")
+            .execute(&pool)
+            .await
+            .unwrap();
+        let foreign = UserId::new();
+        seed_user(&pool, other_org, foreign, "SUPER_ADMIN").await;
+        grant_group_viewer(&pool, other_org, foreign).await;
+
+        let service = build_router(jwt_app_state(
+            runtime_role_pool(&pool).await,
+            keys.public_pem.clone(),
+        ));
+        let member_tok = bearer(&keys, org, member, "MEMBER");
+        let admin_tok = bearer(&keys, org, admin, "ADMIN");
+        let exec_tok = bearer(&keys, org, executive, "EXECUTIVE");
+        let super_tok = bearer(&keys, org, super_admin, "SUPER_ADMIN");
+        let foreign_tok = bearer(&keys, other_org, foreign, "SUPER_ADMIN");
+        let routes = ["/_ui", "/_ui/organization", "/_ui/hr", "/_ui/payroll"];
+        let org_id = org.as_uuid().to_string();
+        let run_id = run.to_string();
+
+        for uri in routes {
+            let (status, html) = get_ui_path(service.clone(), uri, None).await;
+            assert_eq!(status, StatusCode::OK, "unauth {uri} {html}");
+            assert_eq!(html, console_payroll_ui::render_shell(), "{uri}");
+            assert_ui_invariants(&html);
+
+            let (status, html) = get_ui_path(service.clone(), uri, Some(&member_tok)).await;
+            assert_eq!(status, StatusCode::OK, "MEMBER {uri} {html}");
+            assert_eq!(html, console_payroll_ui::render_shell(), "{uri}");
+            assert!(!html.contains(&run_id), "MEMBER saw run at {uri}: {html}");
+            assert_ui_invariants(&html);
+        }
+
+        let (status, admin_org) =
+            get_ui_path(service.clone(), "/_ui/organization", Some(&admin_tok)).await;
+        assert_eq!(status, StatusCode::OK, "{admin_org}");
+        assert!(
+            admin_org.contains("data-screen=\"organization\"")
+                && admin_org.contains(&format!("data-org-id=\"{org_id}\""))
+                && admin_org.contains("data-slug="),
+            "ADMIN org screen must render authorized org identifiers: {admin_org}"
+        );
+        assert!(
+            admin_org.contains("<nav") && admin_org.contains("조직"),
+            "ADMIN org nav must be mounted: {admin_org}"
+        );
+        assert!(
+            !admin_org.contains("data-screen=\"hr\"")
+                && !admin_org.contains("data-screen=\"payroll\"")
+                && !admin_org.contains(&run_id)
+                && !admin_org.contains("/_ui/pkg/"),
+            "ADMIN without org-wide PayrollRunRead and without branch membership must omit HR/payroll: {admin_org}"
+        );
+        assert_ui_invariants(&admin_org);
+
+        let (status, admin_pay) =
+            get_ui_path(service.clone(), "/_ui/payroll", Some(&admin_tok)).await;
+        assert_eq!(status, StatusCode::OK, "{admin_pay}");
+        assert_eq!(
+            admin_pay,
+            console_payroll_ui::render_shell(),
+            "ADMIN payroll route must deny-by-omission: {admin_pay}"
+        );
+
+        let (status, exec_home) = get_ui_path(service.clone(), "/_ui", Some(&exec_tok)).await;
+        assert_eq!(status, StatusCode::OK, "{exec_home}");
+        assert!(
+            exec_home.contains("data-screen=\"organization\"")
+                && exec_home.contains("data-screen=\"hr\"")
+                && exec_home.contains("data-screen=\"payroll\""),
+            "EXECUTIVE home must mount every authorized body: {exec_home}"
+        );
+        assert!(
+            exec_home.contains("href=\"/_ui/organization\"")
+                && exec_home.contains("href=\"/_ui/hr\"")
+                && exec_home.contains("href=\"/_ui/payroll\"")
+                && exec_home.contains("조직")
+                && exec_home.contains("인사")
+                && exec_home.contains("급여"),
+            "EXECUTIVE nav must expose authorized screens: {exec_home}"
+        );
+        assert!(
+            exec_home.contains(&format!("data-org-id=\"{org_id}\""))
+                && exec_home.contains(&format!("data-person-id=\"{}\"", executive.as_uuid()))
+                && exec_home.contains(&format!("data-run-id=\"{run_id}\""))
+                && exec_home.contains("data-slug=")
+                && exec_home.contains("data-display-name="),
+            "EXECUTIVE markup must carry contract + human-safe identifiers: {exec_home}"
+        );
+        assert!(
+            exec_home.contains("/_ui/pkg/console_payroll_ui.js") && exec_home.contains("charset"),
+            "payroll island hydrates via committed WASM; charset stays SSR: {exec_home}"
+        );
+        assert_ui_invariants(&exec_home);
+
+        let (status, exec_org) =
+            get_ui_path(service.clone(), "/_ui/organization", Some(&exec_tok)).await;
+        assert_eq!(status, StatusCode::OK, "{exec_org}");
+        assert!(
+            exec_org.contains("data-screen=\"organization\"")
+                && !exec_org.contains("data-screen=\"payroll\"")
+                && !exec_org.contains("/_ui/pkg/")
+                && exec_org.contains("href=\"/_ui/hr\"")
+                && exec_org.contains("href=\"/_ui/payroll\""),
+            "focused org keeps authorized nav and omits payroll WASM: {exec_org}"
+        );
+        assert_ui_invariants(&exec_org);
+
+        let (status, exec_hr) = get_ui_path(service.clone(), "/_ui/hr", Some(&exec_tok)).await;
+        assert_eq!(status, StatusCode::OK, "{exec_hr}");
+        assert!(
+            exec_hr.contains("data-screen=\"hr\"")
+                && exec_hr.contains(&format!("data-person-id=\"{}\"", executive.as_uuid()))
+                && !exec_hr.contains("/_ui/pkg/"),
+            "EXECUTIVE HR is SSR contracts, not an island: {exec_hr}"
+        );
+        assert_ui_invariants(&exec_hr);
+
+        let (status, exec_pay) =
+            get_ui_path(service.clone(), "/_ui/payroll", Some(&exec_tok)).await;
+        assert_eq!(status, StatusCode::OK, "{exec_pay}");
+        assert!(
+            exec_pay.contains("data-screen=\"payroll\"")
+                && exec_pay.contains(&format!("data-run-id=\"{run_id}\""))
+                && exec_pay.contains("href=\"/_ui/organization\"")
+                && exec_pay.contains("href=\"/_ui/hr\""),
+            "focused payroll stays reachable from org/HR nav: {exec_pay}"
+        );
+        assert!(
+            !exec_pay.contains("method=\"post\""),
+            "shipping screens are read projections; UI mutations stay HOLD: {exec_pay}"
+        );
+        assert_ui_invariants(&exec_pay);
+
+        let exec_audits = list_read_audits(&pool, executive).await;
+        assert!(
+            exec_audits > 0,
+            "EXECUTIVE payroll listing must write payroll_run.list_read (got {exec_audits})"
+        );
+        assert_eq!(
+            list_read_audits(&pool, member).await,
+            0,
+            "MEMBER must not audit a payroll list read they cannot perform"
+        );
+        assert_eq!(
+            list_read_audits(&pool, admin).await,
+            0,
+            "ADMIN without org-wide PayrollRunRead must not audit payroll list reads"
+        );
+
+        let (status, foreign_html) = get_ui_path(service.clone(), "/_ui", Some(&foreign_tok)).await;
+        assert_eq!(status, StatusCode::OK, "{foreign_html}");
+        assert!(
+            !foreign_html.contains(&run_id) && !foreign_html.contains(&org_id),
+            "other-org SUPER_ADMIN must not see KNL identifiers: {foreign_html}"
+        );
+        assert_ui_invariants(&foreign_html);
+
+        let (status, super_html) = get_ui_path(service.clone(), "/_ui", Some(&super_tok)).await;
+        assert_eq!(status, StatusCode::OK, "{super_html}");
+        assert!(
+            super_html.contains(&format!("data-run-id=\"{run_id}\""))
+                && super_html.contains("data-screen=\"organization\"")
+                && super_html.contains("data-screen=\"hr\""),
+            "SUPER_ADMIN must see the same authorized contract rows: {super_html}"
+        );
+        assert_ui_invariants(&super_html);
+    }
 }
