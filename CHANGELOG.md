@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.24](https://github.com/oyatie/console/compare/v0.3.23...v0.3.24) (2026-08-29)
+
+
+### Features
+
+* **intelligence:** loopback-only bind HTTP + fail-closed AIP draft seam ([#972](https://github.com/oyatie/console/issues/972)) ([88e5b42](https://github.com/oyatie/console/commit/88e5b42cf059ae5df1af9e9315e48ea7184c0457))
+
 ## [0.3.23](https://github.com/oyatie/console/compare/v0.3.22...v0.3.23) (2026-08-29)
 
 
