@@ -1394,6 +1394,14 @@ sh_test(
 )
 
 sh_test(
+    name = "platform-db-group-of-one-invariant-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/db:console-platform-db-itest-group_of_one_invariant)"],
+    deps = ["//backend/crates/platform/db:console-platform-db-itest-group_of_one_invariant"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
     name = "platform-db-group-resolvers-pg",
     test = "run_test_with_postgres_env.sh",
     args = ["$(location //backend/crates/platform/db:console-platform-db-itest-group_resolvers)"],
@@ -1502,6 +1510,14 @@ sh_test(
     test = "run_test_with_postgres_env.sh",
     args = ["$(location //backend/crates/platform/provisioning:console-platform-provisioning-itest-bootstrap_passkey_replay)"],
     deps = ["//backend/crates/platform/provisioning:console-platform-provisioning-itest-bootstrap_passkey_replay"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-provisioning-onboard-mints-group-of-one-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/provisioning:console-platform-provisioning-itest-onboard_mints_group_of_one)"],
+    deps = ["//backend/crates/platform/provisioning:console-platform-provisioning-itest-onboard_mints_group_of_one"],
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
 
