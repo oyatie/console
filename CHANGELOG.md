@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.23](https://github.com/oyatie/console/compare/v0.3.22...v0.3.23) (2026-08-29)
+
+
+### Features
+
+* **ui:** payroll drill-through hrefs and empty vs denied SSR ([#982](https://github.com/oyatie/console/issues/982)) ([e8e1c75](https://github.com/oyatie/console/commit/e8e1c752d8270da5da2a9af7809410953ad62a91))
+
+
+### Bug Fixes
+
+* **ontology:** refuse OrgUnit parent cycles longer than 1 ([#981](https://github.com/oyatie/console/issues/981)) ([bd77d31](https://github.com/oyatie/console/commit/bd77d3197813bf6dcfb85947a9e5dba3eef146fb))
+
 ## [0.3.22](https://github.com/oyatie/console/compare/v0.3.21...v0.3.22) (2026-08-29)
 
 
