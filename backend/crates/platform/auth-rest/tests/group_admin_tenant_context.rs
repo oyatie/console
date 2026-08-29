@@ -133,7 +133,16 @@ async fn seed_group(owner_pool: &PgPool) -> Uuid {
 }
 
 async fn seed_group_membership(owner_pool: &PgPool, group: Uuid, org: Uuid) {
-    sqlx::query("INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2)")
+    sqlx::query(
+        "INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2)
+         ON CONFLICT (org_id) DO UPDATE SET group_id = EXCLUDED.group_id",
+    )
+    .bind(group)
+    .bind(org)
+    .execute(owner_pool)
+    .await
+    .unwrap();
+    sqlx::query("UPDATE organizations SET group_id = $1 WHERE id = $2")
         .bind(group)
         .bind(org)
         .execute(owner_pool)

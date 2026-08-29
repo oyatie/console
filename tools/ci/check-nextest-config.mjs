@@ -16,6 +16,7 @@ const REQUIRED_FILTERS = [
   "attendance_console_migration_contract",
   "apalis_adapter",
   "apalis_schema_contract",
+  "group_of_one_expand_contract",
 ];
 
 /**

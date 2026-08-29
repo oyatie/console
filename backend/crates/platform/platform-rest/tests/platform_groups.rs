@@ -315,7 +315,28 @@ async fn platform_group_crud_assigns_subsidiaries_and_audits(pool: PgPool) {
     )
     .await;
     assert_eq!(status, StatusCode::OK, "{removed:?}");
-    assert!(removed["group_id"].is_null());
+    let removed_group_id = Uuid::parse_str(
+        removed["group_id"]
+            .as_str()
+            .expect("remove must return a Group-of-one group_id"),
+    )
+    .unwrap();
+    assert_ne!(removed_group_id, tenant_a);
+    assert_ne!(removed_group_id, group_id);
+    let membership_count: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM group_memberships WHERE org_id = $1")
+            .bind(tenant_a)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(membership_count, 1);
+    let membership_group: Uuid =
+        sqlx::query_scalar("SELECT group_id FROM group_memberships WHERE org_id = $1")
+            .bind(tenant_a)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(membership_group, removed_group_id);
 
     let audit_count: i64 = sqlx::query_scalar(
         "SELECT COUNT(*) FROM audit_events WHERE actor = $1 AND action IN ('platform.group.create', 'platform.group.update', 'platform.group.assign_org', 'platform.group.accounts.list', 'platform.group.account.create', 'platform.group.account.revoke', 'platform.group.list', 'platform.group.remove_org')",

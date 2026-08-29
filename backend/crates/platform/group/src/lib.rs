@@ -231,7 +231,16 @@ mod tests {
             .execute(&mut *tx)
             .await
             .unwrap();
-        sqlx::query("INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2)")
+        sqlx::query(
+            "INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2)
+             ON CONFLICT (org_id) DO UPDATE SET group_id = EXCLUDED.group_id",
+        )
+        .bind(group_id)
+        .bind(org_id)
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+        sqlx::query("UPDATE organizations SET group_id = $1 WHERE id = $2")
             .bind(group_id)
             .bind(org_id)
             .execute(&mut *tx)
@@ -399,14 +408,32 @@ mod tests {
             .execute(&mut *tx)
             .await
             .unwrap();
-        sqlx::query("INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2) ON CONFLICT DO NOTHING")
+        sqlx::query(
+            "INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2)
+             ON CONFLICT (org_id) DO UPDATE SET group_id = EXCLUDED.group_id",
+        )
+        .bind(group_id)
+        .bind(org_a)
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+        sqlx::query("UPDATE organizations SET group_id = $1 WHERE id = $2")
             .bind(group_id)
             .bind(org_a)
             .execute(&mut *tx)
             .await
             .unwrap();
         if org_a != org_b {
-            sqlx::query("INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2) ON CONFLICT DO NOTHING")
+            sqlx::query(
+                "INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2)
+                 ON CONFLICT (org_id) DO UPDATE SET group_id = EXCLUDED.group_id",
+            )
+            .bind(group_id)
+            .bind(org_b)
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+            sqlx::query("UPDATE organizations SET group_id = $1 WHERE id = $2")
                 .bind(group_id)
                 .bind(org_b)
                 .execute(&mut *tx)

@@ -1534,7 +1534,16 @@ async fn authorization_denies_without_leakage_and_conceals_other_tenants(pool: P
     .fetch_one(&pool)
     .await
     .unwrap();
-    sqlx::query("INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2)")
+    sqlx::query(
+        "INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2)
+         ON CONFLICT (org_id) DO UPDATE SET group_id = EXCLUDED.group_id",
+    )
+    .bind(group_id)
+    .bind(*org.as_uuid())
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query("UPDATE organizations SET group_id = $1 WHERE id = $2")
         .bind(group_id)
         .bind(*org.as_uuid())
         .execute(&pool)

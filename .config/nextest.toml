@@ -21,6 +21,7 @@ filter = '''
   + binary(attendance_console_migration_contract)
   + binary(apalis_adapter)
   + binary(apalis_schema_contract)
+  + binary(group_of_one_expand_contract)
 '''
 test-group = 'cluster-global'
 

@@ -1091,6 +1091,7 @@ impl PlatformProvisioner {
                 "org_id": org_id,
                 "slug": slug,
                 "admin_user_id": admin_user_id,
+                "group_id": organization.group_id,
             })),
         );
         insert_audit_event(&mut tx, &event).await?;
@@ -1695,6 +1696,11 @@ impl PlatformProvisioner {
         now: OffsetDateTime,
     ) -> Result<OrganizationSummary, ProvisioningError> {
         let mut tx = pool.begin().await?;
+        let before_group_id: Option<Uuid> =
+            sqlx::query_scalar::<_, Uuid>("SELECT group_id FROM platform_get_organization($1)")
+                .bind(org_id)
+                .fetch_optional(tx.as_mut())
+                .await?;
         let removed_id: Option<Uuid> =
             sqlx::query_scalar("SELECT platform_remove_org_from_group($1, $2)")
                 .bind(group_id)
@@ -1715,6 +1721,13 @@ impl PlatformProvisioner {
             .execute(tx.as_mut())
             .await?;
 
+        let after_snap = match (before_group_id, organization.group_id) {
+            (Some(before), Some(after)) if after != before => Some(serde_json::json!({
+                "group_id": after,
+                "org_id": org_id,
+            })),
+            _ => None,
+        };
         let event = AuditEvent::new(
             actor,
             AuditAction::new("platform.group.remove_org")?,
@@ -1729,7 +1742,7 @@ impl PlatformProvisioner {
                 "group_id": group_id,
                 "org_id": org_id,
             })),
-            None,
+            after_snap,
         );
         insert_audit_event(&mut tx, &event).await?;
 

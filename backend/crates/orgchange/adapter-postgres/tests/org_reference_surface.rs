@@ -253,7 +253,16 @@ async fn seed_group_with_member(pool: &PgPool, org: OrgId, actor: UserId) -> Uui
         .execute(pool)
         .await
         .unwrap();
-    sqlx::query("INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2)")
+    sqlx::query(
+        "INSERT INTO group_memberships (group_id, org_id) VALUES ($1, $2)
+         ON CONFLICT (org_id) DO UPDATE SET group_id = EXCLUDED.group_id",
+    )
+    .bind(group)
+    .bind(*org.as_uuid())
+    .execute(pool)
+    .await
+    .unwrap();
+    sqlx::query("UPDATE organizations SET group_id = $1 WHERE id = $2")
         .bind(group)
         .bind(*org.as_uuid())
         .execute(pool)

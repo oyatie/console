@@ -2,10 +2,10 @@
   "schema_version": 1,
   "description": "Buck sh_test postgres wrappers → cargo test argv for tools/ci/cargo_needs_postgres.sh",
   "counts": {
-    "mapped": 231,
+    "mapped": 234,
     "unmapped": 3,
-    "workflow_targets": 216,
-    "workflow_mapped": 216,
+    "workflow_targets": 219,
+    "workflow_mapped": 219,
     "workflow_missing": 0
   },
   "entries": [
@@ -3600,6 +3600,54 @@
       "measured_seconds": 5.1
     },
     {
+      "buck_wrapper": "//tools/buck:platform-db-group-of-one-expand-contract-pg",
+      "name": "platform-db-group-of-one-expand-contract-pg",
+      "buck_inner": "//backend/crates/platform/db:console-platform-db-itest-group_of_one_expand_contract",
+      "package": "console-platform-db",
+      "crate_dir": "backend/crates/platform/db",
+      "kind": "test",
+      "test": "group_of_one_expand_contract",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-db",
+        "--test",
+        "group_of_one_expand_contract",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true,
+      "measured_seconds": 45.0
+    },
+    {
+      "buck_wrapper": "//tools/buck:platform-db-group-of-one-invariant-pg",
+      "name": "platform-db-group-of-one-invariant-pg",
+      "buck_inner": "//backend/crates/platform/db:console-platform-db-itest-group_of_one_invariant",
+      "package": "console-platform-db",
+      "crate_dir": "backend/crates/platform/db",
+      "kind": "test",
+      "test": "group_of_one_invariant",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-db",
+        "--test",
+        "group_of_one_invariant",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true,
+      "measured_seconds": 5.2
+    },
+    {
       "buck_wrapper": "//tools/buck:platform-db-group-resolvers-pg",
       "name": "platform-db-group-resolvers-pg",
       "buck_inner": "//backend/crates/platform/db:console-platform-db-itest-group_resolvers",
@@ -4005,6 +4053,30 @@
       ],
       "in_workflow_postgres_job": true,
       "measured_seconds": 3.4
+    },
+    {
+      "buck_wrapper": "//tools/buck:platform-provisioning-onboard-mints-group-of-one-pg",
+      "name": "platform-provisioning-onboard-mints-group-of-one-pg",
+      "buck_inner": "//backend/crates/platform/provisioning:console-platform-provisioning-itest-onboard_mints_group_of_one",
+      "package": "console-platform-provisioning",
+      "crate_dir": "backend/crates/platform/provisioning",
+      "kind": "test",
+      "test": "onboard_mints_group_of_one",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-provisioning",
+        "--test",
+        "onboard_mints_group_of_one",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true,
+      "measured_seconds": 17.1
     },
     {
       "buck_wrapper": "//tools/buck:platform-provisioning-rls-auth-chain",
