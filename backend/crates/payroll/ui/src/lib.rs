@@ -57,12 +57,46 @@ pub struct PersonView {
     pub created_at: String,
 }
 
-/// Server-composed shipping screens. Empty vecs are omit, not a client decision.
+/// One shipping-screen listing after server composition.
+///
+/// `Omitted` is deny-by-omission (unauth / forbidden). `Empty` is an authorized
+/// listing that returned zero rows. `Failure` is an authorized listing that
+/// failed. Unauthorized must never become `Empty` or `Failure`.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub enum ScreenSection<T> {
+    #[default]
+    Omitted,
+    Empty,
+    Failure,
+    Rows(Vec<T>),
+}
+
+impl<T> ScreenSection<T> {
+    /// Map an already-authorized listing. Non-empty rows always win; empty rows
+    /// are `Empty` only when the same listing floor would have allowed the GET.
+    #[must_use]
+    pub fn from_authorized_listing(rows: Vec<T>, listing_authorized: bool) -> Self {
+        if !rows.is_empty() {
+            Self::Rows(rows)
+        } else if listing_authorized {
+            Self::Empty
+        } else {
+            Self::Omitted
+        }
+    }
+
+    #[must_use]
+    pub const fn is_offered(&self) -> bool {
+        !matches!(self, Self::Omitted)
+    }
+}
+
+/// Server-composed shipping screens. `Omitted` is omit, not a client decision.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ShippingScreens {
-    pub org_entities: Vec<OrgEntityView>,
-    pub people: Vec<PersonView>,
-    pub runs: Vec<RunSummary>,
+    pub org_entities: ScreenSection<OrgEntityView>,
+    pub people: ScreenSection<PersonView>,
+    pub runs: ScreenSection<RunSummary>,
 }
 
 /// Which `/_ui` body to render. Nav still only names authorized non-empty screens.
@@ -90,17 +124,26 @@ pub fn Shell() -> impl IntoView {
 pub fn AuthorizedRuns(runs: Vec<RunSummary>) -> impl IntoView {
     runs.into_iter()
         .map(|run| {
+            let href = format!("/api/v1/payroll/runs/{}", run.id);
+            let label = format!(
+                "{}–{} {}",
+                run.period_start, run.period_end, run.source_label
+            );
             view! {
-                <span
-                    data-run-id=run.id
-                    data-period-start=run.period_start
-                    data-period-end=run.period_end
-                    data-source-label=run.source_label
-                    data-status=run.status
-                    data-calculation-enabled=run.calculation_enabled.to_string()
-                    data-created-at=run.created_at
-                    data-updated-at=run.updated_at
-                ></span>
+                <a href=href>
+                    <span
+                        data-run-id=run.id
+                        data-period-start=run.period_start
+                        data-period-end=run.period_end
+                        data-source-label=run.source_label
+                        data-status=run.status
+                        data-calculation-enabled=run.calculation_enabled.to_string()
+                        data-created-at=run.created_at
+                        data-updated-at=run.updated_at
+                    >
+                        {label}
+                    </span>
+                </a>
             }
         })
         .collect_view()
@@ -111,13 +154,16 @@ fn OrgEntities(entities: Vec<OrgEntityView>) -> impl IntoView {
     entities
         .into_iter()
         .map(|entity| {
+            let label = format!("{} ({})", entity.name, entity.slug);
             view! {
                 <span
                     data-org-id=entity.org_id
                     data-slug=entity.slug
                     data-name=entity.name
                     data-status=entity.status
-                ></span>
+                >
+                    {label}
+                </span>
             }
         })
         .collect_view()
@@ -128,6 +174,7 @@ fn DirectoryPeople(people: Vec<PersonView>) -> impl IntoView {
     people
         .into_iter()
         .map(|person| {
+            let label = person.display_name.clone();
             view! {
                 <span
                     data-person-id=person.id
@@ -148,7 +195,9 @@ fn DirectoryPeople(people: Vec<PersonView>) -> impl IntoView {
                     data-has-passkey=person.has_passkey
                     data-account-status=person.account_status
                     data-created-at=person.created_at
-                ></span>
+                >
+                    {label}
+                </span>
             }
         })
         .collect_view()
@@ -170,9 +219,9 @@ pub fn AuthorizedShell(runs: Vec<RunSummary>) -> impl IntoView {
     let nav_payroll = !runs.is_empty();
     view! {
         <ShippingShell
-            org=Vec::new()
-            people=Vec::new()
-            runs=runs
+            org=ScreenSection::Omitted
+            people=ScreenSection::Omitted
+            runs=ScreenSection::from_authorized_listing(runs, false)
             nav_org=false
             nav_hr=false
             nav_payroll=nav_payroll
@@ -180,23 +229,93 @@ pub fn AuthorizedShell(runs: Vec<RunSummary>) -> impl IntoView {
     }
 }
 
+fn org_body(org: ScreenSection<OrgEntityView>) -> impl IntoView {
+    match org {
+        ScreenSection::Omitted => ().into_any(),
+        ScreenSection::Empty => view! {
+            <section data-screen="organization" data-state="empty">
+                "표시할 조직이 없습니다"
+            </section>
+        }
+        .into_any(),
+        ScreenSection::Failure => view! {
+            <section data-screen="organization" data-state="failure">
+                "목록을 불러오지 못했습니다"
+            </section>
+        }
+        .into_any(),
+        ScreenSection::Rows(entities) => view! {
+            <section data-screen="organization">
+                <OrgEntities entities=entities />
+            </section>
+        }
+        .into_any(),
+    }
+}
+
+fn hr_body(people: ScreenSection<PersonView>) -> impl IntoView {
+    match people {
+        ScreenSection::Omitted => ().into_any(),
+        ScreenSection::Empty => view! {
+            <section data-screen="hr" data-state="empty">
+                "표시할 사람이 없습니다"
+            </section>
+        }
+        .into_any(),
+        ScreenSection::Failure => view! {
+            <section data-screen="hr" data-state="failure">
+                "목록을 불러오지 못했습니다"
+            </section>
+        }
+        .into_any(),
+        ScreenSection::Rows(people) => view! {
+            <section data-screen="hr">
+                <DirectoryPeople people=people />
+            </section>
+        }
+        .into_any(),
+    }
+}
+
+fn payroll_body(runs: ScreenSection<RunSummary>) -> impl IntoView {
+    match runs {
+        ScreenSection::Omitted => ().into_any(),
+        ScreenSection::Empty => view! {
+            <section data-screen="payroll" data-state="empty">
+                "표시할 급여 이력이 없습니다"
+            </section>
+        }
+        .into_any(),
+        ScreenSection::Failure => view! {
+            <section data-screen="payroll" data-state="failure">
+                "목록을 불러오지 못했습니다"
+            </section>
+        }
+        .into_any(),
+        ScreenSection::Rows(runs) => view! {
+            <section data-screen="payroll">
+                <AuthorizedRuns runs=runs />
+            </section>
+        }
+        .into_any(),
+    }
+}
+
 #[component]
 fn ShippingShell(
-    org: Vec<OrgEntityView>,
-    people: Vec<PersonView>,
-    runs: Vec<RunSummary>,
+    org: ScreenSection<OrgEntityView>,
+    people: ScreenSection<PersonView>,
+    runs: ScreenSection<RunSummary>,
     nav_org: bool,
     nav_hr: bool,
     nav_payroll: bool,
 ) -> impl IntoView {
-    let show_org = !org.is_empty();
-    let show_hr = !people.is_empty();
-    let show_payroll = !runs.is_empty();
+    let hydrate_payroll = matches!(&runs, ScreenSection::Rows(rows) if !rows.is_empty());
     view! {
         <html>
             <head>
                 <meta charset="utf-8" />
-                {show_payroll.then(|| {
+                {hydrate_payroll.then(|| {
                     view! {
                         <link rel="modulepreload" href=PKG_JS />
                         <link rel="preload" href=PKG_WASM r#as="fetch" r#type="application/wasm" />
@@ -206,27 +325,9 @@ fn ShippingShell(
             </head>
             <body>
                 <ShippingNav has_org=nav_org has_hr=nav_hr has_payroll=nav_payroll />
-                {show_org.then(|| {
-                    view! {
-                        <section data-screen="organization">
-                            <OrgEntities entities=org />
-                        </section>
-                    }
-                })}
-                {show_hr.then(|| {
-                    view! {
-                        <section data-screen="hr">
-                            <DirectoryPeople people=people />
-                        </section>
-                    }
-                })}
-                {show_payroll.then(|| {
-                    view! {
-                        <section data-screen="payroll">
-                            <AuthorizedRuns runs=runs />
-                        </section>
-                    }
-                })}
+                {org_body(org)}
+                {hr_body(people)}
+                {payroll_body(runs)}
             </body>
         </html>
     }
@@ -241,30 +342,30 @@ pub fn render_shell() -> String {
 pub fn render_shell_with(runs: &[RunSummary]) -> String {
     render_screens(
         &ShippingScreens {
-            runs: runs.to_vec(),
+            runs: ScreenSection::from_authorized_listing(runs.to_vec(), false),
             ..ShippingScreens::default()
         },
         UiScreen::Home,
     )
 }
 
-/// SSR compose org / HR / payroll. Empty authorized sets omit markup.
-/// Nav names every authorized non-empty screen; the body is the focused route.
+/// SSR compose org / HR / payroll. `Omitted` is deny-by-omission.
+/// Nav names every offered screen; the body is the focused route.
 pub fn render_screens(screens: &ShippingScreens, focus: UiScreen) -> String {
-    let nav_org = !screens.org_entities.is_empty();
-    let nav_hr = !screens.people.is_empty();
-    let nav_payroll = !screens.runs.is_empty();
+    let nav_org = screens.org_entities.is_offered();
+    let nav_hr = screens.people.is_offered();
+    let nav_payroll = screens.runs.is_offered();
     let org = match focus {
         UiScreen::Home | UiScreen::Organization => screens.org_entities.clone(),
-        UiScreen::Hr | UiScreen::Payroll => Vec::new(),
+        UiScreen::Hr | UiScreen::Payroll => ScreenSection::Omitted,
     };
     let people = match focus {
         UiScreen::Home | UiScreen::Hr => screens.people.clone(),
-        UiScreen::Organization | UiScreen::Payroll => Vec::new(),
+        UiScreen::Organization | UiScreen::Payroll => ScreenSection::Omitted,
     };
     let runs = match focus {
         UiScreen::Home | UiScreen::Payroll => screens.runs.clone(),
-        UiScreen::Organization | UiScreen::Hr => Vec::new(),
+        UiScreen::Organization | UiScreen::Hr => ScreenSection::Omitted,
     };
     let focus_denied = match focus {
         UiScreen::Home => !nav_org && !nav_hr && !nav_payroll,
@@ -451,6 +552,18 @@ mod tests {
             html.contains("(\"/_ui\", \"pkg\", \"console_payroll_ui\", \"console_payroll_ui_bg\")"),
             "authorized markup must invoke leptos island_script: {html}"
         );
+        assert!(
+            html.contains("href=\"/api/v1/payroll/runs/00000000-0000-0000-0000-000000000001\""),
+            "payroll drill-through must use the existing run GET: {html}"
+        );
+        assert!(
+            html.contains("2026-06-01–2026-06-30 workflow_runtime_m2:run:example"),
+            "payroll drill-through must show human-safe period and source_label: {html}"
+        );
+        assert!(
+            !html.contains("/api/v1/employees/") && !html.contains("/api/v1/users/"),
+            "must not drill through privileged employee/user GET: {html}"
+        );
         let component = island_component(&html).unwrap_or("");
         assert!(
             component.starts_with("AuthorizedRuns_"),
@@ -576,12 +689,67 @@ mod tests {
             render_shell()
         );
         assert_shipping_invariants(&render_shell());
+
+        let authorized_empty = ShippingScreens {
+            org_entities: ScreenSection::Empty,
+            people: ScreenSection::Empty,
+            runs: ScreenSection::Empty,
+        };
+        let empty_org = render_screens(&authorized_empty, UiScreen::Organization);
+        assert_ne!(
+            empty_org,
+            render_shell(),
+            "authorized-empty org must not reuse the silent deny shell"
+        );
+        assert!(
+            empty_org.contains("data-screen=\"organization\"")
+                && empty_org.contains("data-state=\"empty\"")
+                && empty_org.contains("표시할 조직이 없습니다"),
+            "authorized-empty org must mount Korean empty copy: {empty_org}"
+        );
+        assert!(
+            !empty_org.contains("data-org-id"),
+            "authorized-empty must not leak rows: {empty_org}"
+        );
+        assert_shipping_invariants(&empty_org);
+
+        let empty_pay = render_screens(&authorized_empty, UiScreen::Payroll);
+        assert_ne!(empty_pay, render_shell(), "{empty_pay}");
+        assert!(
+            empty_pay.contains("data-screen=\"payroll\"")
+                && empty_pay.contains("data-state=\"empty\"")
+                && empty_pay.contains("표시할 급여 이력이 없습니다")
+                && !empty_pay.contains("/_ui/pkg/")
+                && !empty_pay.contains("data-run-id"),
+            "authorized-empty payroll is SSR empty copy, not omit and not WASM: {empty_pay}"
+        );
+        assert_eq!(
+            render_screens(&ShippingScreens::default(), UiScreen::Payroll),
+            render_shell(),
+            "unauthorized payroll must stay deny-by-omission"
+        );
+
+        let failed = ShippingScreens {
+            org_entities: ScreenSection::Failure,
+            people: ScreenSection::Omitted,
+            runs: ScreenSection::Failure,
+        };
+        let fail_html = render_screens(&failed, UiScreen::Payroll);
+        assert!(
+            fail_html.contains("data-screen=\"payroll\"")
+                && fail_html.contains("data-state=\"failure\"")
+                && fail_html.contains("목록을 불러오지 못했습니다")
+                && !fail_html.contains("data-run-id")
+                && !fail_html.contains("/_ui/pkg/"),
+            "listing failure marks the section without object ids: {fail_html}"
+        );
+        assert_shipping_invariants(&fail_html);
     }
 
     #[test]
     fn shipping_screens_organization_is_ssr_contracts_and_omits_wasm() {
         let screens = ShippingScreens {
-            org_entities: vec![sample_org()],
+            org_entities: ScreenSection::Rows(vec![sample_org()]),
             ..ShippingScreens::default()
         };
         let html = render_screens(&screens, UiScreen::Organization);
@@ -600,6 +768,16 @@ mod tests {
         assert!(
             html.contains("data-org-id=\"00000000-0000-0000-0000-0000000000aa\""),
             "{html}"
+        );
+        assert!(
+            html.contains("KNL (knl)"),
+            "org row must show human-safe name/slug: {html}"
+        );
+        assert!(
+            !html.contains("/api/v1/org-entities/")
+                && !html.contains("/api/v1/employees/")
+                && !html.contains("/api/v1/users/"),
+            "org has no same-capability object GET; must not invent privileged hrefs: {html}"
         );
         assert!(
             html.contains("href=\"/_ui/organization\""),
@@ -623,7 +801,7 @@ mod tests {
     #[test]
     fn shipping_screens_hr_is_ssr_contracts_and_omits_phone() {
         let screens = ShippingScreens {
-            people: vec![sample_person()],
+            people: ScreenSection::Rows(vec![sample_person()]),
             ..ShippingScreens::default()
         };
         let html = render_screens(&screens, UiScreen::Hr);
@@ -642,6 +820,14 @@ mod tests {
         assert!(
             html.contains("data-person-id=\"00000000-0000-0000-0000-0000000000bb\""),
             "{html}"
+        );
+        assert!(
+            html.contains("홍길동"),
+            "HR row must show human-safe display_name: {html}"
+        );
+        assert!(
+            !html.contains("/api/v1/employees/") && !html.contains("/api/v1/users/"),
+            "HR must not drill through privileged employee/user GET: {html}"
         );
         assert!(
             html.contains("href=\"/_ui/hr\""),
@@ -663,9 +849,9 @@ mod tests {
     #[test]
     fn shipping_screens_home_composes_authorized_sections_only() {
         let screens = ShippingScreens {
-            org_entities: vec![sample_org()],
-            people: vec![sample_person()],
-            runs: vec![sample_run()],
+            org_entities: ScreenSection::Rows(vec![sample_org()]),
+            people: ScreenSection::Rows(vec![sample_person()]),
+            runs: ScreenSection::Rows(vec![sample_run()]),
         };
         let html = render_screens(&screens, UiScreen::Home);
         assert!(html.contains("data-screen=\"organization\""), "{html}");
@@ -691,7 +877,7 @@ mod tests {
 
         let payroll_only = render_screens(
             &ShippingScreens {
-                runs: vec![sample_run()],
+                runs: ScreenSection::Rows(vec![sample_run()]),
                 ..ShippingScreens::default()
             },
             UiScreen::Payroll,
@@ -711,9 +897,9 @@ mod tests {
     #[test]
     fn shipping_screens_focus_keeps_authorized_nav_and_omits_wasm_off_payroll() {
         let screens = ShippingScreens {
-            org_entities: vec![sample_org()],
-            people: vec![sample_person()],
-            runs: vec![sample_run()],
+            org_entities: ScreenSection::Rows(vec![sample_org()]),
+            people: ScreenSection::Rows(vec![sample_person()]),
+            runs: ScreenSection::Rows(vec![sample_run()]),
         };
 
         let org_html = render_screens(&screens, UiScreen::Organization);
@@ -762,7 +948,7 @@ mod tests {
 
         let denied_payroll = render_screens(
             &ShippingScreens {
-                org_entities: vec![sample_org()],
+                org_entities: ScreenSection::Rows(vec![sample_org()]),
                 ..ShippingScreens::default()
             },
             UiScreen::Payroll,

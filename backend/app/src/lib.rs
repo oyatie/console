@@ -99,7 +99,8 @@ use console_platform_auth::{
 };
 use console_platform_auth_rest::{AuthRestConfig, AuthRestState};
 use console_platform_authz::{
-    Action, Feature, Principal, Role, authorize_capability, authorize_org_wide,
+    Action, Feature, PermissionLevel, Principal, Role, authorize_capability, authorize_org_wide,
+    permission_for,
 };
 use console_platform_authz_rest::{CedarPolicyRestState, PgCedarPolicyStore};
 use console_platform_db::{DbError, with_audit};
@@ -3588,8 +3589,9 @@ async fn compose_ui_screens(
     state: &AppState,
     headers: &HeaderMap,
 ) -> console_payroll_ui::ShippingScreens {
-    let (org_entities, people, runs) = match (&state.database, &state.jwt_verifier) {
+    let (org_entities, people, runs, floors) = match (&state.database, &state.jwt_verifier) {
         (DatabaseDependency::Postgres(pool), Some(verifier)) => {
+            let floors = ui_listing_floors(verifier, pool, headers).await;
             let org = OrgChangeRestState::new(
                 PgOrgChangeStore::new(pool.clone()),
                 Some(verifier.clone()),
@@ -3604,14 +3606,98 @@ async fn compose_ui_screens(
                 PayrollRestState::new(PgPayrollStore::new(pool.clone()), Some(verifier.clone()))
                     .visible_run_summaries(headers)
                     .await;
-            (org, people, runs)
+            (org, people, runs, floors)
         }
-        _ => (Vec::new(), Vec::new(), Vec::new()),
+        _ => (
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            UiListingFloors::denied(),
+        ),
     };
     console_payroll_ui::ShippingScreens {
-        org_entities: org_entities.iter().map(ui_org_entity).collect(),
-        people: people.iter().map(ui_person).collect(),
-        runs: runs.iter().map(ui_run_summary).collect(),
+        org_entities: console_payroll_ui::ScreenSection::from_authorized_listing(
+            org_entities.iter().map(ui_org_entity).collect(),
+            floors.org,
+        ),
+        people: console_payroll_ui::ScreenSection::from_authorized_listing(
+            people.iter().map(ui_person).collect(),
+            floors.hr,
+        ),
+        runs: console_payroll_ui::ScreenSection::from_authorized_listing(
+            runs.iter().map(ui_run_summary).collect(),
+            floors.payroll,
+        ),
+    }
+}
+
+struct UiListingFloors {
+    org: bool,
+    hr: bool,
+    payroll: bool,
+}
+
+impl UiListingFloors {
+    const fn denied() -> Self {
+        Self {
+            org: false,
+            hr: false,
+            payroll: false,
+        }
+    }
+}
+
+/// Same listing floors as the existing GETs those screens already use.
+/// `visible_*` still collapse errors to `[]`; this only distinguishes authorized
+/// empty from omit. Listing failure stays collapsed until those helpers return
+/// a Result (rest crates are outside this lane).
+async fn ui_listing_floors(
+    verifier: &JwtVerifier,
+    pool: &PgPool,
+    headers: &HeaderMap,
+) -> UiListingFloors {
+    let principal =
+        match console_platform_request_context::resolve_principal(verifier, pool, headers).await {
+            Ok(principal) => principal,
+            Err(_) => return UiListingFloors::denied(),
+        };
+    UiListingFloors {
+        org: principal
+            .roles
+            .iter()
+            .any(|role| matches!(role, Role::Admin | Role::Executive | Role::SuperAdmin)),
+        hr: ui_directory_listing_ok(&principal),
+        payroll: authorize_org_wide(&principal, Action::new(Feature::PayrollRunRead)).is_ok(),
+    }
+}
+
+fn ui_directory_listing_ok(principal: &Principal) -> bool {
+    let mut effective = BranchScope::Branches(BTreeSet::new());
+    let role_allows = principal.roles.iter().any(|role| {
+        permission_for(*role, Feature::EmployeeDirectoryRead) == PermissionLevel::Allow
+    });
+    if role_allows {
+        effective = ui_branch_scope_union(&effective, &principal.branch_scope);
+    }
+    for grant in principal.effective_feature_grants.iter().filter(|grant| {
+        grant.feature == Feature::EmployeeDirectoryRead
+            && grant.permission == PermissionLevel::Allow
+    }) {
+        let grant_scope = principal.branch_scope.intersect(&grant.branch_scope);
+        effective = ui_branch_scope_union(&effective, &grant_scope);
+    }
+    match &effective {
+        BranchScope::All => true,
+        BranchScope::Branches(branches) => !branches.is_empty(),
+    }
+}
+
+fn ui_branch_scope_union(a: &BranchScope, b: &BranchScope) -> BranchScope {
+    match (a, b) {
+        (BranchScope::All, _) | (_, BranchScope::All) => BranchScope::All,
+        (BranchScope::Branches(left), BranchScope::Branches(right)) => {
+            BranchScope::Branches(left.union(right).copied().collect())
+        }
     }
 }
 
