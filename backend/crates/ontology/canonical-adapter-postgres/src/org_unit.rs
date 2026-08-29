@@ -180,6 +180,25 @@ impl CanonicalPortError for OrgUnitError {
     }
 }
 
+/// Exact blocker strings pinned by `org_unit_kinds_as_runtime_role`.
+const KIND_REQUIRED: &str = "kind is required";
+const KIND_CLOSED: &str = "kind must be site, department, or team";
+const SITE_NO_PARENT: &str = "site must not have parent_id";
+const DEPT_PARENT_REQUIRED: &str = "department parent_id is required";
+const TEAM_PARENT_REQUIRED: &str = "team parent_id is required";
+const PARENT_UUID: &str = "parent_id must be a uuid";
+const KIND_IMMUTABLE: &str = "kind is immutable";
+const DEPT_PARENT_SITE: &str = "department parent must be a site";
+const TEAM_PARENT_KIND: &str = "team parent must be a department or team";
+const PARENT_IN_ORG: &str = "parent_id must refer to an OrgUnit in this organization";
+const PARENT_NOT_SELF: &str = "parent_id must not be self";
+
+const KIND_SITE: &str = "site";
+const KIND_DEPARTMENT: &str = "department";
+const KIND_TEAM: &str = "team";
+const ATTR_KIND: &str = "kind";
+const ATTR_PARENT_ID: &str = "parent_id";
+
 /// Current canonical OrgUnit head. `name` / `parent_id` are parsed from the
 /// latest revision's attributes; neither is a column on `org_units`.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -318,6 +337,8 @@ impl PgOrgUnitPort {
             ));
         }
 
+        self.enforce_kind_rules(&mut tx, command).await?;
+
         let target = command.query.target();
         let (org_unit_id, version) = match &command.query {
             OrgUnitQuery::Create { .. } => {
@@ -428,6 +449,76 @@ impl PgOrgUnitPort {
             created_at,
         ))
     }
+
+    async fn enforce_kind_rules(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        command: &OrgUnitCommand,
+    ) -> Result<(), OrgUnitError> {
+        let org = *command.org_id.as_uuid();
+        let attributes = command.query.attributes();
+        let Some(bag_kind) = attributes
+            .get(ATTR_KIND)
+            .and_then(serde_json::Value::as_str)
+        else {
+            return Err(OrgUnitError::Blocked(vec![KIND_REQUIRED.to_owned()]));
+        };
+
+        if let OrgUnitQuery::Revise { org_unit_id, .. } = &command.query {
+            if let Some(stored) = self.latest_attributes(tx, org, *org_unit_id).await? {
+                let stored_kind = stored.get(ATTR_KIND).and_then(serde_json::Value::as_str);
+                if stored_kind != Some(bag_kind) {
+                    return Err(OrgUnitError::Blocked(vec![KIND_IMMUTABLE.to_owned()]));
+                }
+            }
+            if let Some(parent_id) = attr_uuid(attributes, ATTR_PARENT_ID)
+                && parent_id == *org_unit_id
+            {
+                return Err(OrgUnitError::Blocked(vec![PARENT_NOT_SELF.to_owned()]));
+            }
+        }
+
+        let Some(parent_id) = attr_uuid(attributes, ATTR_PARENT_ID) else {
+            return Ok(());
+        };
+        let Some(parent) = self.latest_attributes(tx, org, parent_id).await? else {
+            return Err(OrgUnitError::Blocked(vec![PARENT_IN_ORG.to_owned()]));
+        };
+        let parent_kind = parent.get(ATTR_KIND).and_then(serde_json::Value::as_str);
+        match bag_kind {
+            KIND_DEPARTMENT if parent_kind != Some(KIND_SITE) => {
+                Err(OrgUnitError::Blocked(vec![DEPT_PARENT_SITE.to_owned()]))
+            }
+            KIND_TEAM if parent_kind != Some(KIND_DEPARTMENT) && parent_kind != Some(KIND_TEAM) => {
+                Err(OrgUnitError::Blocked(vec![TEAM_PARENT_KIND.to_owned()]))
+            }
+            _ => Ok(()),
+        }
+    }
+
+    async fn latest_attributes(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        org: Uuid,
+        org_unit_id: Uuid,
+    ) -> Result<Option<serde_json::Value>, OrgUnitError> {
+        let row = sqlx::query(
+            "SELECT r.attributes \
+             FROM org_units u \
+             JOIN org_unit_revisions r \
+               ON r.org_id = u.org_id AND r.org_unit_id = u.id \
+             WHERE u.org_id = $1 AND u.id = $2 \
+               AND r.version = ( \
+                 SELECT MAX(version) FROM org_unit_revisions \
+                 WHERE org_id = u.org_id AND org_unit_id = u.id \
+               )",
+        )
+        .bind(org)
+        .bind(org_unit_id)
+        .fetch_optional(&mut **tx)
+        .await?;
+        Ok(row.map(|row| row.get("attributes")))
+    }
 }
 
 impl CanonicalPort for PgOrgUnitPort {
@@ -443,6 +534,9 @@ impl CanonicalPort for PgOrgUnitPort {
             query.attributes(),
             crate::catalog::ORG_UNIT_NAME,
         );
+        if query.attributes().as_object().is_some() {
+            blockers.extend(kind_parent_preflight(query.attributes()));
+        }
         if let OrgUnitQuery::Revise { org_unit_id, .. } = query
             && org_unit_id.is_nil()
         {
@@ -601,6 +695,46 @@ fn attr_uuid(attributes: &serde_json::Value, key: &str) -> Option<Uuid> {
         .get(key)
         .and_then(serde_json::Value::as_str)
         .and_then(|value| Uuid::parse_str(value).ok())
+}
+
+fn parent_slot(attributes: &serde_json::Value) -> Option<&serde_json::Value> {
+    match attributes.get(ATTR_PARENT_ID) {
+        None | Some(serde_json::Value::Null) => None,
+        Some(value) => Some(value),
+    }
+}
+
+fn kind_parent_preflight(attributes: &serde_json::Value) -> Vec<String> {
+    let mut blockers = crate::catalog::require_text_property(attributes, ATTR_KIND);
+    if !blockers.is_empty() {
+        return blockers;
+    }
+    let kind = attributes
+        .get(ATTR_KIND)
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default();
+    match kind {
+        KIND_SITE => {
+            if parent_slot(attributes).is_some() {
+                blockers.push(SITE_NO_PARENT.to_owned());
+            }
+        }
+        KIND_DEPARTMENT | KIND_TEAM => match parent_slot(attributes) {
+            None => blockers.push(if kind == KIND_DEPARTMENT {
+                DEPT_PARENT_REQUIRED.to_owned()
+            } else {
+                TEAM_PARENT_REQUIRED.to_owned()
+            }),
+            Some(value) => {
+                let parsed = value.as_str().and_then(|raw| Uuid::parse_str(raw).ok());
+                if parsed.is_none() {
+                    blockers.push(PARENT_UUID.to_owned());
+                }
+            }
+        },
+        _ => blockers.push(KIND_CLOSED.to_owned()),
+    }
+    blockers
 }
 
 // ---------------------------------------------------------------------------

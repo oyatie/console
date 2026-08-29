@@ -1327,7 +1327,7 @@ async fn empty_tenant_pay_run_fixture(
             actor_id: submitter,
             query: OrgUnitQuery::Create {
                 source: None,
-                attributes: json!({ "name": "영업본부" }),
+                attributes: json!({ "name": "영업본부", "kind": "site" }),
             },
             action_key: "create_org_unit".to_owned(),
             object_type_id: Uuid::nil(),

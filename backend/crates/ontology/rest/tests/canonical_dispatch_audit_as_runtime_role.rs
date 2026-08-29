@@ -548,7 +548,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
                     object_type_id: unit_type,
                     instance_id: None,
                     title: None,
-                    params: json!({ "attributes": { "name": "영업본부" } }),
+                    params: json!({ "attributes": { "name": "영업본부", "kind": "site" } }),
                     reason: Some("foundry org setup".to_owned()),
                     valid_from: Some(AT),
                     checklist_all_acknowledged: None,
@@ -579,7 +579,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     .fetch_one(&owner_pool)
     .await
     .unwrap();
-    assert_eq!(version_one, json!({ "name": "영업본부" }));
+    assert_eq!(version_one, json!({ "name": "영업본부", "kind": "site" }));
 
     let revise_unit = console_platform_request_context::scope_org(org, async {
         state
@@ -592,7 +592,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
                     title: None,
                     params: json!({
                         "org_unit_id": org_unit_id,
-                        "attributes": { "name": "영업1본부" }
+                        "attributes": { "name": "영업1본부", "kind": "site" }
                     }),
                     reason: Some("foundry org unit revise".to_owned()),
                     valid_from: Some(AT),
@@ -656,7 +656,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     .fetch_one(&owner_pool)
     .await
     .unwrap();
-    assert_eq!(version_two, json!({ "name": "영업1본부" }));
+    assert_eq!(version_two, json!({ "name": "영업1본부", "kind": "site" }));
 
     let position_outcome = console_platform_request_context::scope_org(org, async {
         state
@@ -829,7 +829,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     .fetch_one(&owner_pool)
     .await
     .unwrap();
-    assert_eq!(unit_head, json!({ "name": "영업1본부" }));
+    assert_eq!(unit_head, json!({ "name": "영업1본부", "kind": "site" }));
 
     let instances: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM ont_instances WHERE org_id = $1")
         .bind(org_uuid)
@@ -1186,7 +1186,7 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
                     object_type_id: unit_type,
                     instance_id: None,
                     title: None,
-                    params: json!({ "attributes": { "name": "기술본부" } }),
+                    params: json!({ "attributes": { "name": "기술본부", "kind": "site" } }),
                     reason: Some("foundry hr promote-transfer".to_owned()),
                     valid_from: Some(AT),
                     checklist_all_acknowledged: None,

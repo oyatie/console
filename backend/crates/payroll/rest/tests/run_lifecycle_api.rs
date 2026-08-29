@@ -1407,7 +1407,7 @@ async fn provision_empty_tenant_appointed_run(owner_pool: &PgPool) -> EmptyTenan
             actor_id: actor,
             query: OrgUnitQuery::Create {
                 source: None,
-                attributes: json!({ "name": "영업본부" }),
+                attributes: json!({ "name": "영업본부", "kind": "site" }),
             },
             action_key: "create_org_unit".to_owned(),
             object_type_id: Uuid::nil(),
