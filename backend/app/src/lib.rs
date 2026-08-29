@@ -182,6 +182,7 @@ pub mod workflow_schedules;
 mod workflow_studio;
 
 const DEFAULT_HTTP_ADDR: &str = "0.0.0.0:8080";
+const INTELLIGENCE_BIND_PATH: &str = "/internal/intelligence/bind";
 const DEFAULT_SERVICE_NAME: &str = "console-app";
 const DEFAULT_SHUTDOWN_TIMEOUT_SECS: u64 = 10;
 // Blue/green may temporarily run four API pods and the worker rolling update
@@ -3052,8 +3053,16 @@ pub fn build_router(state: AppState) -> Router {
         // dotted paths over the RP origin, so they live on the base router with
         // no auth and no tenant middleware (they carry no tenant data).
         .route(WELL_KNOWN_AASA_PATH, get(apple_app_site_association))
-        .route(WELL_KNOWN_ASSETLINKS_PATH, get(android_assetlinks))
-        .with_state(state.clone());
+        .route(WELL_KNOWN_ASSETLINKS_PATH, get(android_assetlinks));
+    // Bind-only Intelligence HTTP on this process's existing listener.
+    // Fail-closed for the route when listen addr is unset (DEFAULT_HTTP_ADDR
+    // is 0.0.0.0) or non-loopback. Do not change DEFAULT_HTTP_ADDR.
+    let router = if state.config.http_addr.ip().is_loopback() {
+        router.route(INTELLIGENCE_BIND_PATH, get(intelligence_bind))
+    } else {
+        router
+    };
+    let router = router.with_state(state.clone());
 
     let router = match &state.database {
         DatabaseDependency::Postgres(pool) => {
@@ -3759,6 +3768,10 @@ fn ui_run_summary(
             .format(&Rfc3339)
             .unwrap_or_else(|_| String::new()),
     }
+}
+
+async fn intelligence_bind() -> StatusCode {
+    StatusCode::NO_CONTENT
 }
 
 async fn healthz(State(state): State<AppState>) -> impl IntoResponse {

@@ -1,8 +1,10 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::str::FromStr;
 
 use console_app::{AUDIT_ROUTE_PATH, CONFIGURED_ROUTE_SURFACES};
+use console_ontology_canonical_domain::DispatchTarget;
 use console_platform_rest::PLATFORM_ROUTE_OPERATIONS;
 
 const OPENAPI_YAML: &str = include_str!("../../openapi/openapi.yaml");
@@ -266,6 +268,122 @@ const CONFIGURED_ROUTE_SOURCES: &[RouteSource] = &[
         ignored_route_refs: &[],
     },
 ];
+
+const APP_CARGO_TOML: &str = include_str!("../Cargo.toml");
+const APP_LIB_RS: &str = include_str!("../src/lib.rs");
+
+const APP_PRODUCTION_SOURCES: &[(&str, &str)] = &[
+    (
+        "app src/action_inbox.rs",
+        include_str!("../src/action_inbox.rs"),
+    ),
+    (
+        "app src/audit_chain_signer.rs",
+        include_str!("../src/audit_chain_signer.rs"),
+    ),
+    (
+        "app src/bin/console_cedar_parity_report.rs",
+        include_str!("../src/bin/console_cedar_parity_report.rs"),
+    ),
+    (
+        "app src/cedar_parity.rs",
+        include_str!("../src/cedar_parity.rs"),
+    ),
+    (
+        "app src/collaboration.rs",
+        include_str!("../src/collaboration.rs"),
+    ),
+    (
+        "app src/console_telemetry.rs",
+        include_str!("../src/console_telemetry.rs"),
+    ),
+    (
+        "app src/facilities_schedule.rs",
+        include_str!("../src/facilities_schedule.rs"),
+    ),
+    ("app src/hr.rs", include_str!("../src/hr.rs")),
+    ("app src/lib.rs", APP_LIB_RS),
+    ("app src/lifecycle.rs", include_str!("../src/lifecycle.rs")),
+    ("app src/mail_sync.rs", include_str!("../src/mail_sync.rs")),
+    ("app src/main.rs", include_str!("../src/main.rs")),
+    ("app src/objects.rs", include_str!("../src/objects.rs")),
+    ("app src/office.rs", include_str!("../src/office.rs")),
+    (
+        "app src/recruiting_hire.rs",
+        include_str!("../src/recruiting_hire.rs"),
+    ),
+    ("app src/workbench.rs", include_str!("../src/workbench.rs")),
+    (
+        "app src/workbench_native.rs",
+        include_str!("../src/workbench_native.rs"),
+    ),
+    (
+        "app src/workflow_drain.rs",
+        include_str!("../src/workflow_drain.rs"),
+    ),
+    (
+        "app src/workflow_object_context.rs",
+        include_str!("../src/workflow_object_context.rs"),
+    ),
+    (
+        "app src/workflow_schedules.rs",
+        include_str!("../src/workflow_schedules.rs"),
+    ),
+    (
+        "app src/workflow_studio.rs",
+        include_str!("../src/workflow_studio.rs"),
+    ),
+];
+
+const EXTRA_REST_SOURCES: &[(&str, &str)] = &[
+    (
+        "logistics REST",
+        include_str!("../../crates/logistics/rest/src/lib.rs"),
+    ),
+    (
+        "facilities REST",
+        include_str!("../../crates/facilities/rest/src/lib.rs"),
+    ),
+    (
+        "production REST",
+        include_str!("../../crates/production/rest/src/lib.rs"),
+    ),
+    (
+        "inbox REST",
+        include_str!("../../crates/inbox/rest/src/lib.rs"),
+    ),
+    (
+        "leave REST",
+        include_str!("../../crates/leave/rest/src/lib.rs"),
+    ),
+    (
+        "consulting REST",
+        include_str!("../../crates/consulting/rest/src/lib.rs"),
+    ),
+    (
+        "todos REST",
+        include_str!("../../crates/todos/rest/src/lib.rs"),
+    ),
+];
+
+const PAYROLL_REST_INNER_SOURCES: &[(&str, &str)] = &[
+    (
+        "payroll payslip_draft.rs",
+        include_str!("../../crates/payroll/rest/src/payslip_draft.rs"),
+    ),
+    (
+        "payroll lifecycle.rs",
+        include_str!("../../crates/payroll/rest/src/lifecycle.rs"),
+    ),
+];
+
+fn todos_rest_source() -> &'static str {
+    EXTRA_REST_SOURCES
+        .iter()
+        .find(|(name, _)| *name == "todos REST")
+        .map(|(_, source)| *source)
+        .expect("todos REST census source")
+}
 
 #[test]
 fn configured_route_inventory_includes_each_configured_surface() {
@@ -933,4 +1051,396 @@ fn bounded_generated_sections_reject_later_operation_or_enum_text() {
 #[should_panic(expected = "missing end absent")]
 fn bounded_generated_sections_reject_missing_end_boundary() {
     let _ = bounded_section("target only", "target", "absent");
+}
+
+struct CensusSource {
+    name: &'static str,
+    source: &'static str,
+    ignored_route_refs: &'static [&'static str],
+}
+
+fn landable_http_census_sources() -> Vec<CensusSource> {
+    let mut sources = Vec::new();
+    for source in CONFIGURED_ROUTE_SOURCES {
+        sources.push(CensusSource {
+            name: source.name,
+            source: source.source,
+            ignored_route_refs: source.ignored_route_refs,
+        });
+    }
+    for &(name, source) in APP_PRODUCTION_SOURCES
+        .iter()
+        .chain(EXTRA_REST_SOURCES)
+        .chain(PAYROLL_REST_INNER_SOURCES)
+    {
+        sources.push(CensusSource {
+            name,
+            source,
+            ignored_route_refs: &[],
+        });
+    }
+    sources
+}
+
+fn strip_cfg_test(source: &str) -> String {
+    let mut out = String::with_capacity(source.len());
+    let mut rest = source;
+    while let Some(idx) = rest.find("#[cfg(test)]") {
+        out.push_str(&rest[..idx]);
+        rest = skip_ws_and_attributes(&rest[idx + "#[cfg(test)]".len()..]);
+        rest = skip_item(rest);
+    }
+    out.push_str(rest);
+    out
+}
+
+fn skip_ws_and_attributes(source: &str) -> &str {
+    let mut s = source.trim_start();
+    while s.starts_with("#[") {
+        s = skip_delimited(&s[1..], '[', ']').unwrap_or("");
+        s = s.trim_start();
+    }
+    s
+}
+
+fn skip_item(source: &str) -> &str {
+    let mut in_string = false;
+    let mut escaped = false;
+    let mut depth = 0usize;
+    let mut started_block = false;
+    for (idx, ch) in source.char_indices() {
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+        match ch {
+            '"' => in_string = true,
+            '{' => {
+                depth += 1;
+                started_block = true;
+            }
+            '}' => {
+                depth = depth.saturating_sub(1);
+                if started_block && depth == 0 {
+                    return &source[idx + ch.len_utf8()..];
+                }
+            }
+            ';' if depth == 0 => return &source[idx + ch.len_utf8()..],
+            _ => {}
+        }
+    }
+    ""
+}
+
+fn skip_delimited<'a>(source: &'a str, open: char, close: char) -> Option<&'a str> {
+    if !source.starts_with(open) {
+        return None;
+    }
+    let mut in_string = false;
+    let mut escaped = false;
+    let mut depth = 0usize;
+    for (idx, ch) in source.char_indices() {
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+        if ch == '"' {
+            in_string = true;
+            continue;
+        }
+        if ch == open {
+            depth += 1;
+        } else if ch == close {
+            depth = depth.saturating_sub(1);
+            if depth == 0 {
+                return Some(&source[idx + ch.len_utf8()..]);
+            }
+        }
+    }
+    None
+}
+
+fn brace_matched_from(source: &str, open_idx: usize) -> Option<&str> {
+    let slice = &source[open_idx..];
+    if !slice.starts_with('{') && !slice.starts_with('(') {
+        return None;
+    }
+    let (open, close) = if slice.starts_with('{') {
+        ('{', '}')
+    } else {
+        ('(', ')')
+    };
+    let mut in_string = false;
+    let mut escaped = false;
+    let mut depth = 0usize;
+    for (idx, ch) in slice.char_indices() {
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+        if ch == '"' {
+            in_string = true;
+            continue;
+        }
+        if ch == open {
+            depth += 1;
+        } else if ch == close {
+            depth = depth.saturating_sub(1);
+            if depth == 0 {
+                return Some(&slice[..=idx]);
+            }
+        }
+    }
+    None
+}
+
+fn contains_ai_assist_constructor(source: &str) -> bool {
+    let compact: String = source.chars().filter(|c| !c.is_whitespace()).collect();
+    compact.contains("Action::new(Feature::AiAssist)")
+        || compact.contains("Action::limited(Feature::AiAssist)")
+        || compact.contains("Action::request(Feature::AiAssist)")
+}
+
+fn forbids_chat_or_intelligence(path: &str) -> bool {
+    // Exact bind-only loopback route. Prefixes and any other `intelligence`
+    // or `chat` path segment stay forbidden.
+    if path == "/internal/intelligence/bind" {
+        return false;
+    }
+    const PREFIXES: &[&str] = &[
+        "/v1/chat",
+        "/api/v1/chat",
+        "/api/v1/intelligence",
+        "/api/intelligence",
+        "/intelligence",
+    ];
+    if PREFIXES
+        .iter()
+        .any(|prefix| path == *prefix || path.starts_with(&format!("{prefix}/")))
+    {
+        return true;
+    }
+    path.split('/')
+        .any(|segment| segment == "chat" || segment == "intelligence")
+}
+
+fn matching_close_from(source: &str, open: char, close: char) -> Option<usize> {
+    let mut in_string = false;
+    let mut escaped = false;
+    let mut depth = 0usize;
+    for (idx, ch) in source.char_indices() {
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+        match ch {
+            '"' => in_string = true,
+            ch if ch == open => depth += 1,
+            ch if ch == close => {
+                if depth == 0 {
+                    return Some(idx);
+                }
+                depth = depth.saturating_sub(1);
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn nest_calls(source: &'static str) -> Vec<(Option<String>, &'static str)> {
+    let constants = route_path_constants(source);
+    let mut calls = Vec::new();
+    let mut offset = 0;
+    while let Some(relative_start) = source[offset..].find(".nest(") {
+        let args_start = offset + relative_start + ".nest(".len();
+        let Some(end) = matching_close_from(&source[args_start..], '(', ')') else {
+            break;
+        };
+        let inner = &source[args_start..args_start + end];
+        let Some(argument) = first_route_argument(inner) else {
+            break;
+        };
+        let trimmed = argument.trim();
+        let parsed = route_argument_path(trimmed, &constants, &[]);
+        calls.push((parsed.path, inner));
+        offset = args_start + end + 1;
+    }
+    calls
+}
+
+fn quoted_strings(source: &str) -> Vec<&str> {
+    let mut out = Vec::new();
+    let mut rest = source;
+    while let Some(value) = quoted_argument(rest) {
+        out.push(value);
+        let Some(first) = rest.find('"') else {
+            break;
+        };
+        rest = &rest[first + 1 + value.len() + 1..];
+    }
+    out
+}
+
+fn function_body<'a>(source: &'a str, signature: &str) -> Option<&'a str> {
+    let start = source.find(signature)?;
+    let brace = source[start..].find('{')?;
+    brace_matched_from(source, start + brace)
+}
+
+fn projected_dispatch_registry_source(lib: &str) -> &str {
+    let needle = "fn projected_dispatch_registry";
+    let start = lib
+        .find(needle)
+        .unwrap_or_else(|| panic!("missing {needle}"));
+    let brace = lib[start..]
+        .find('{')
+        .unwrap_or_else(|| panic!("{needle} has no body"));
+    brace_matched_from(lib, start + brace).expect("projected_dispatch_registry braces")
+}
+
+#[test]
+fn ai_assist_action_constructors_are_absent_from_landable_http_surfaces() {
+    let mut hits = Vec::new();
+    for source in landable_http_census_sources() {
+        let stripped = strip_cfg_test(source.source);
+        if contains_ai_assist_constructor(&stripped) {
+            hits.push(source.name);
+        }
+    }
+    assert!(
+        hits.is_empty(),
+        "Action::{{new,limited,request}}(Feature::AiAssist) must stay off HTTP surfaces: {}",
+        hits.join(", ")
+    );
+}
+
+#[test]
+fn only_exact_internal_intelligence_bind_is_admitted() {
+    assert!(!forbids_chat_or_intelligence("/internal/intelligence/bind"));
+    for path in [
+        "/v1/chat",
+        "/api/v1/chat",
+        "/api/v1/intelligence",
+        "/api/intelligence",
+        "/intelligence",
+        "/internal/intelligence",
+        "/internal/intelligence/bind/extra",
+        "/api/v1/internal/intelligence/bind",
+    ] {
+        assert!(
+            forbids_chat_or_intelligence(path),
+            "{path} must stay forbidden"
+        );
+    }
+}
+
+#[test]
+fn intelligence_and_chat_http_surfaces_are_absent() {
+    let mut forbidden = Vec::new();
+    for path in openapi_path_keys(OPENAPI_YAML) {
+        if forbids_chat_or_intelligence(&path) {
+            forbidden.push(format!("openapi {path}"));
+        }
+    }
+    for source in landable_http_census_sources() {
+        for route in route_calls(source.source, source.ignored_route_refs) {
+            let Some(path) = route.path else {
+                continue;
+            };
+            if forbids_chat_or_intelligence(&path) {
+                forbidden.push(format!("{} route {path}", source.name));
+            }
+        }
+    }
+
+    let mut saw_ui_nest = false;
+    for (name, source) in APP_PRODUCTION_SOURCES {
+        for (prefix, body) in nest_calls(source) {
+            let Some(prefix) = prefix else {
+                continue;
+            };
+            if forbids_chat_or_intelligence(&prefix) {
+                forbidden.push(format!("{name} nest {prefix}"));
+            }
+            if prefix == "/_ui" {
+                saw_ui_nest = true;
+                assert!(
+                    body.contains(".merge(console_payroll_ui::pkg_router())"),
+                    "{name} /_ui nest must still merge console_payroll_ui::pkg_router()"
+                );
+            }
+        }
+    }
+    assert!(saw_ui_nest, "app production sources must still nest /_ui");
+
+    for value in route_path_constants(todos_rest_source()).values() {
+        if forbids_chat_or_intelligence(value) {
+            forbidden.push(format!("todos-rest const {value}"));
+        }
+    }
+    let routes_body =
+        function_body(todos_rest_source(), "fn routes(").expect("todos-rest fn routes");
+    for value in quoted_strings(routes_body) {
+        if forbids_chat_or_intelligence(value) {
+            forbidden.push(format!("todos-rest routes() {value}"));
+        }
+    }
+
+    assert!(
+        forbidden.is_empty(),
+        "chat/intelligence HTTP surfaces must stay absent:\n{}",
+        forbidden.join("\n")
+    );
+}
+
+#[test]
+fn app_does_not_wire_intelligence_draft_dispatch_or_depend_on_the_seam_crate() {
+    let body = projected_dispatch_registry_source(APP_LIB_RS);
+    assert!(
+        !body.contains("mod projected_dispatch_coverage"),
+        "brace-match must stop before projected_dispatch_coverage"
+    );
+    let register_count = body.matches(".register(").count();
+    assert_eq!(
+        register_count, 1,
+        "projected_dispatch_registry must keep exactly one .register( call, got {register_count}"
+    );
+    let register_at = body.find(".register(").expect(".register(");
+    let after = &body[register_at..];
+    let literal = quoted_argument(after).expect("register string literal");
+    assert_eq!(literal, "registry.update_equipment");
+    assert!(
+        !body.contains("intelligence.draft"),
+        "projected_dispatch_registry must not register intelligence.draft"
+    );
+    assert!(DispatchTarget::from_str("intelligence.draft").is_err());
+    assert!(
+        !APP_CARGO_TOML.contains("console-intelligence-application"),
+        "console-app must not depend on the intelligence seam crate"
+    );
 }

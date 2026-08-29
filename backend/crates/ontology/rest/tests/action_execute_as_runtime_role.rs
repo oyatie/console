@@ -187,6 +187,64 @@ async fn seed_projected_type_with_action(
     .await
 }
 
+/// Clone of [`seed_projected_type_with_action`] with only `dispatch_target`
+/// changed to the non-roster Intelligence draft string.
+async fn seed_projected_type_with_intelligence_draft(
+    owner_pool: &PgPool,
+    org: OrgId,
+    actor: UserId,
+    key: &str,
+    action_key: &str,
+) -> ObjectTypeId {
+    console_platform_request_context::scope_org(org, async {
+        let store = PgOntologyStore::new(owner_pool.clone())
+            .with_command_pool(command_role_pool(owner_pool).await);
+        let draft = CreateObjectTypeDraft {
+            stable_key: key.to_owned(),
+            title: "장비".to_owned(),
+            title_property_key: None,
+            backing_kind: BackingKind::Projected,
+            backing_table: Some("registry_equipment".to_owned()),
+            primary_key_property: Some("id".to_owned()),
+            properties: Vec::new(),
+            links: Vec::new(),
+            actions: vec![ActionTypeInput {
+                stable_key: action_key.to_owned(),
+                title: "장비 갱신".to_owned(),
+                params_schema: json!({}),
+                edits: json!([]),
+                submission_criteria: json!([]),
+                side_effects: json!([]),
+                dispatch: ActionDispatch::ProjectedUsecase,
+                dispatch_target: Some("intelligence.draft".to_owned()),
+                control_points: json!(["authority"]),
+            }],
+            analytics: Vec::new(),
+        };
+        store
+            .create_object_type(actor, draft, TraceContext::generate(), AT)
+            .await
+            .expect("create projected object type")
+            .id
+    })
+    .await
+}
+
+fn intelligence_draft_command(object_type_id: ObjectTypeId) -> ActionCommand {
+    ActionCommand {
+        object_type_id,
+        instance_id: None,
+        title: None,
+        params: json!({}),
+        reason: None,
+        valid_from: Some(AT),
+        checklist_all_acknowledged: None,
+        four_eyes_request_ref: None,
+        command_id: None,
+        expected_revision: None,
+    }
+}
+
 async fn count_instances(owner_pool: &PgPool, org: OrgId) -> i64 {
     sqlx::query_scalar("SELECT COUNT(*) FROM ont_instances WHERE org_id = $1")
         .bind(*org.as_uuid())
@@ -422,6 +480,110 @@ async fn projected_dispatch_is_not_wired_yet_and_writes_nothing(owner_pool: PgPo
         count_instances(&owner_pool, org).await,
         0,
         "a not-wired projected dispatch must write nothing"
+    );
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn intelligence_draft_dispatch_target_is_not_wired_yet_and_writes_nothing(
+    owner_pool: PgPool,
+) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let cmd = command_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "a").await;
+    let type_id = seed_projected_type_with_intelligence_draft(
+        &owner_pool,
+        org,
+        actor,
+        "intel.draft",
+        "draft",
+    )
+    .await;
+
+    let before = row_census(&owner_pool, org).await;
+    let err = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(
+                &super_admin(actor, org),
+                "draft",
+                intelligence_draft_command(type_id),
+            )
+            .await
+    })
+    .await
+    .expect_err("intelligence.draft execute is unwired");
+    match err {
+        ActionError::NotWiredYet { target } => {
+            assert_eq!(target.as_deref(), Some("intelligence.draft"));
+        }
+        other => panic!("expected NotWiredYet, got {other:?}"),
+    }
+    assert_eq!(
+        before,
+        row_census(&owner_pool, org).await,
+        "authority-only intelligence.draft execute must not move the census"
+    );
+}
+
+/// HOLD: non-roster preflight is dry-run Ok / would_execute; execute is still NotWiredYet.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn intelligence_draft_preflight_of_non_roster_string_is_ok(owner_pool: PgPool) {
+    let rt = runtime_role_pool(&owner_pool).await;
+    let cmd = command_role_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "a").await;
+    let type_id = seed_projected_type_with_intelligence_draft(
+        &owner_pool,
+        org,
+        actor,
+        "intel.draft.pre",
+        "draft",
+    )
+    .await;
+
+    let before = row_census(&owner_pool, org).await;
+    let outcome = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .preflight_action(
+                &super_admin(actor, org),
+                "draft",
+                intelligence_draft_command(type_id),
+            )
+            .await
+    })
+    .await
+    .expect("non-roster intelligence.draft preflight is dry-run Ok");
+    assert!(
+        outcome.would_execute,
+        "SuperAdmin + authority-only + empty criteria must report would_execute: {outcome:?}"
+    );
+    let after_preflight = row_census(&owner_pool, org).await;
+    assert_eq!(
+        before, after_preflight,
+        "intelligence.draft preflight must not move the census"
+    );
+
+    let err = console_platform_request_context::scope_org(org, async {
+        state(&rt, &cmd)
+            .execute_action(
+                &super_admin(actor, org),
+                "draft",
+                intelligence_draft_command(type_id),
+            )
+            .await
+    })
+    .await
+    .expect_err("intelligence.draft execute is still unwired");
+    match err {
+        ActionError::NotWiredYet { target } => {
+            assert_eq!(target.as_deref(), Some("intelligence.draft"));
+        }
+        other => panic!("expected NotWiredYet, got {other:?}"),
+    }
+    assert_eq!(
+        after_preflight,
+        row_census(&owner_pool, org).await,
+        "authority-only intelligence.draft execute must not move the census"
     );
 }
 

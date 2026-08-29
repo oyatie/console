@@ -2156,6 +2156,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "console-intelligence-application"
+version = "0.1.0"
+dependencies = [
+ "console-kernel-core",
+ "console-ontology-canonical-domain",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
 name = "console-inventory-adapter-postgres"
 version = "0.1.0"
 dependencies = [

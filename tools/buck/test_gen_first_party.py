@@ -192,6 +192,15 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             for destination in config["external"].values()
         ]
         app_source_root = Path(GENERATOR.REPO) / "backend/app/src"
+        app_package_root = Path(GENERATOR.REPO) / "backend/app"
+
+        def itest_src_maps(resource: Path, src_pattern: str) -> bool:
+            # Package-relative itest srcs resolve against backend/app/.
+            if "*" not in src_pattern:
+                return resource == (app_package_root / src_pattern).resolve()
+            prefix = src_pattern.split("*", 1)[0].rstrip("/")
+            root = (app_package_root / prefix).resolve()
+            return resource == root or (root.is_dir() and resource.is_relative_to(root))
 
         unmapped = []
         for include_path in include_paths:
@@ -204,6 +213,8 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
                 or (mapped_root.is_dir() and resource.is_relative_to(mapped_root))
                 for mapped_root in mapped_roots
             ):
+                continue
+            if any(itest_src_maps(resource, src) for src in config.get("srcs", [])):
                 continue
             unmapped.append(str(resource.relative_to(GENERATOR.REPO)))
 

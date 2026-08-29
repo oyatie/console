@@ -368,7 +368,7 @@ jobs:
             -p console-attendance-application -p console-compliance-domain -p console-governance-domain \
             -p console-platform-audit-chain -p console-platform-authz \
             -p console-policy-application -p console-policy-domain \
-            -p console-action-inbox-application -p console-attendance-domain -p console-benefit-application \
+            -p console-action-inbox-application -p console-intelligence-application -p console-attendance-domain -p console-benefit-application \
             -p console-benefit-domain -p console-comms-application -p console-comms-domain \
             -p console-dispatch-application -p console-dispatch-domain -p console-docs-application \
             -p console-docs-domain -p console-equipment-domain -p console-erp-domain \
@@ -475,7 +475,7 @@ jobs:
           check_status "realtime"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-app --test config --test dev_seed_notification_links --test openslo_files \
-            --test well_known --test workbench_api
+            --test well_known --test workbench_api --test intelligence_bind
           check_status "app"
           # The writer-ownership gate's mutation suite. It lives here and not in
           # the backend job's Buck2 mutation-suite step because 3 of its 41 tests

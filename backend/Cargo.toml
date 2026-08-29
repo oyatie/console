@@ -21,6 +21,7 @@ members = [
   "crates/governance/*",
   "crates/identity/*",
   "crates/inspection/*",
+  "crates/intelligence/*",
   "crates/inventory/*",
   "crates/logistics/*",
   "crates/equipment/*",
