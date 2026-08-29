@@ -70,6 +70,25 @@ impl OrgChangeRestState {
     pub fn new(store: PgOrgChangeStore, jwt: Option<JwtVerifier>) -> Self {
         Self { store, jwt }
     }
+
+    /// SSR composition helper: the same org-entity listing as GET
+    /// `/org-entities`, or empty (omit) when unauthenticated, unauthorized,
+    /// or the listing fails.
+    pub async fn visible_org_entities(&self, headers: &HeaderMap) -> Vec<VisibleOrgEntity> {
+        match list_visible_org_entities(self, headers).await {
+            Ok(entities) => entities,
+            Err(_) => Vec::new(),
+        }
+    }
+}
+
+/// Org entity already authorized for SSR. Required `OrgEntitySummary` keys.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct VisibleOrgEntity {
+    pub org_id: String,
+    pub slug: String,
+    pub name: String,
+    pub status: String,
 }
 
 pub fn router(state: OrgChangeRestState) -> Router {
@@ -657,6 +676,28 @@ async fn org_entities(
             .await
             .map_err(RestError::store)?,
     )
+}
+
+async fn list_visible_org_entities(
+    state: &OrgChangeRestState,
+    headers: &HeaderMap,
+) -> Result<Vec<VisibleOrgEntity>, RestError> {
+    let principal = principal(state, headers).await?;
+    allow_read(&principal)?;
+    let entities = state
+        .store
+        .org_entities(principal.user_id)
+        .await
+        .map_err(RestError::store)?;
+    Ok(entities
+        .into_iter()
+        .map(|entity| VisibleOrgEntity {
+            org_id: entity.org_id.to_string(),
+            slug: entity.slug,
+            name: entity.name,
+            status: entity.status,
+        })
+        .collect())
 }
 
 // ---------------------------------------------------------------------------

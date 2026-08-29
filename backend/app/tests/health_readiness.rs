@@ -111,7 +111,16 @@ async fn ui_shell_serves_empty_ssr_html() -> Result<(), Box<dyn std::error::Erro
     let mut last = String::new();
     let slash_ui = concat!("/", "_ui");
     let slash_ui_slash = concat!("/", "_ui/");
-    for uri in [slash_ui, slash_ui_slash] {
+    let slash_ui_org = concat!("/", "_ui/organization");
+    let slash_ui_hr = concat!("/", "_ui/hr");
+    let slash_ui_payroll = concat!("/", "_ui/payroll");
+    for uri in [
+        slash_ui,
+        slash_ui_slash,
+        slash_ui_org,
+        slash_ui_hr,
+        slash_ui_payroll,
+    ] {
         let response = app
             .clone()
             .oneshot(Request::builder().uri(uri).body(Body::empty())?)
@@ -318,7 +327,15 @@ mod authorized {
     }
 
     async fn get_ui(app: axum::Router, token: Option<&str>) -> (StatusCode, String) {
-        let mut builder = Request::builder().uri("/_ui");
+        get_ui_path(app, "/_ui", token).await
+    }
+
+    async fn get_ui_path(
+        app: axum::Router,
+        uri: &str,
+        token: Option<&str>,
+    ) -> (StatusCode, String) {
+        let mut builder = Request::builder().uri(uri);
         if let Some(token) = token {
             builder = builder.header(header::AUTHORIZATION, format!("Bearer {token}"));
         }
@@ -389,5 +406,92 @@ mod authorized {
             "golden won leaked: {admin_html}"
         );
         assert!(!lowered.contains("payslip"), "payslip leaked: {admin_html}");
+    }
+
+    async fn grant_group_viewer(pool: &PgPool, org: OrgId, user: UserId) {
+        sqlx::query(
+            "INSERT INTO group_role_grants (group_id, user_id, group_role) \
+             SELECT group_id, $1, 'GROUP_VIEWER' FROM organizations WHERE id = $2",
+        )
+        .bind(*user.as_uuid())
+        .bind(*org.as_uuid())
+        .execute(pool)
+        .await
+        .unwrap();
+    }
+
+    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    async fn ui_shipping_screens_deny_by_omission(pool: PgPool) {
+        let keys = keys();
+        let org = OrgId::knl();
+        let super_admin = UserId::new();
+        seed_user(&pool, org, super_admin, "SUPER_ADMIN").await;
+        grant_group_viewer(&pool, org, super_admin).await;
+        let member = UserId::new();
+        seed_user(&pool, org, member, "MEMBER").await;
+        let run = seed_run(&pool, org, super_admin).await;
+
+        let service = build_router(jwt_app_state(
+            runtime_role_pool(&pool).await,
+            keys.public_pem.clone(),
+        ));
+        let admin = bearer(&keys, org, super_admin, "SUPER_ADMIN");
+        let member_tok = bearer(&keys, org, member, "MEMBER");
+
+        for uri in ["/_ui", "/_ui/organization", "/_ui/hr", "/_ui/payroll"] {
+            let (status, html) = get_ui_path(service.clone(), uri, Some(&member_tok)).await;
+            assert_eq!(status, StatusCode::OK, "{uri} {html}");
+            assert_eq!(html, console_payroll_ui::render_shell(), "{uri}");
+            assert!(
+                !html.contains("data-screen="),
+                "MEMBER must omit shipping screens at {uri}: {html}"
+            );
+        }
+
+        let (status, org_html) =
+            get_ui_path(service.clone(), "/_ui/organization", Some(&admin)).await;
+        assert_eq!(status, StatusCode::OK, "{org_html}");
+        assert!(
+            org_html.contains("data-screen=\"organization\"")
+                && org_html.contains(&format!("data-org-id=\"{}\"", org.as_uuid())),
+            "SUPER_ADMIN organization screen must render authorized org-entities: {org_html}"
+        );
+        assert!(
+            !org_html.contains("/_ui/pkg/"),
+            "organization SSR must not load WASM: {org_html}"
+        );
+
+        let (status, hr_html) = get_ui_path(service.clone(), "/_ui/hr", Some(&admin)).await;
+        assert_eq!(status, StatusCode::OK, "{hr_html}");
+        assert!(
+            hr_html.contains("data-screen=\"hr\"")
+                && hr_html.contains(&format!("data-person-id=\"{}\"", super_admin.as_uuid())),
+            "SUPER_ADMIN HR screen must render authorized directory people: {hr_html}"
+        );
+        assert!(
+            !hr_html.to_ascii_lowercase().contains("phone"),
+            "HR screen leaked phone: {hr_html}"
+        );
+        assert!(
+            !hr_html.contains("/_ui/pkg/"),
+            "HR SSR must not load WASM: {hr_html}"
+        );
+
+        let (status, payroll_html) =
+            get_ui_path(service.clone(), "/_ui/payroll", Some(&admin)).await;
+        assert_eq!(status, StatusCode::OK, "{payroll_html}");
+        assert!(
+            payroll_html.contains("data-screen=\"payroll\"")
+                && payroll_html.contains(&format!("data-run-id=\"{run}\"")),
+            "SUPER_ADMIN payroll screen must render authorized runs: {payroll_html}"
+        );
+        assert!(
+            payroll_html.contains("/_ui/pkg/console_payroll_ui.js"),
+            "payroll island must hydrate via committed WASM: {payroll_html}"
+        );
+        let lowered = payroll_html.to_ascii_lowercase();
+        assert!(!lowered.contains("won"), "won leaked: {payroll_html}");
+        assert!(!lowered.contains("group-switcher"), "{payroll_html}");
+        assert!(!lowered.contains("comms-rail"), "{payroll_html}");
     }
 }

@@ -206,6 +206,43 @@ impl IdentityRestState {
     fn pool(&self) -> &PgPool {
         self.store.pool()
     }
+
+    /// SSR composition helper: the same `EmployeeDirectoryRead` listing as
+    /// GET `/directory/people`, or an empty vec (omit) when the caller is
+    /// unauthenticated, unauthorized, or the listing fails.
+    pub async fn visible_directory_people(
+        &self,
+        headers: &HeaderMap,
+    ) -> Vec<VisibleDirectoryPerson> {
+        match list_visible_directory_people(self, headers).await {
+            Ok(people) => people,
+            Err(_) => Vec::new(),
+        }
+    }
+}
+
+/// Directory person already authorized for SSR. Required `DirectoryPerson`
+/// keys only; never phone.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct VisibleDirectoryPerson {
+    pub id: String,
+    pub display_name: String,
+    pub employee_id: String,
+    pub employee_name: String,
+    pub employee_number: String,
+    pub employee_company: String,
+    pub employee_org_unit: String,
+    pub employee_position: String,
+    pub employee_identity_review_required: String,
+    pub employee_identity_resolution_confidence: String,
+    pub employee_link_status: String,
+    pub team: String,
+    pub roles: String,
+    pub branch_ids: String,
+    pub is_active: String,
+    pub has_passkey: String,
+    pub account_status: String,
+    pub created_at: String,
 }
 
 pub fn router(state: IdentityRestState) -> Router {
@@ -434,6 +471,69 @@ struct DirectoryPerson {
     has_passkey: bool,
     account_status: AccountStatus,
     created_at: Timestamp,
+}
+
+impl From<UserSummary> for VisibleDirectoryPerson {
+    fn from(user: UserSummary) -> Self {
+        use time::format_description::well_known::Rfc3339;
+        let UserSummary {
+            id,
+            display_name,
+            employee_id,
+            employee_name,
+            employee_number,
+            employee_company,
+            employee_org_unit,
+            employee_position,
+            employee_identity_review_required,
+            employee_identity_resolution_confidence,
+            employee_link_status,
+            phone: _,
+            team,
+            roles,
+            branch_ids,
+            is_active,
+            has_passkey,
+            account_status,
+            created_at,
+        } = user;
+        Self {
+            id: id.to_string(),
+            display_name,
+            employee_id: employee_id
+                .map(|value| value.to_string())
+                .unwrap_or_default(),
+            employee_name: employee_name.unwrap_or_default(),
+            employee_number: employee_number.unwrap_or_default(),
+            employee_company: employee_company.unwrap_or_default(),
+            employee_org_unit: employee_org_unit.unwrap_or_default(),
+            employee_position: employee_position.unwrap_or_default(),
+            employee_identity_review_required: employee_identity_review_required
+                .map(|value| value.to_string())
+                .unwrap_or_default(),
+            employee_identity_resolution_confidence: employee_identity_resolution_confidence
+                .unwrap_or_default(),
+            employee_link_status: match employee_link_status {
+                EmployeeLinkStatus::Linked => "LINKED".to_owned(),
+                EmployeeLinkStatus::Unlinked => "UNLINKED".to_owned(),
+            },
+            team: team.map(|value| value.to_string()).unwrap_or_default(),
+            roles: roles.join(","),
+            branch_ids: branch_ids
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join(","),
+            is_active: is_active.to_string(),
+            has_passkey: has_passkey.to_string(),
+            account_status: match account_status {
+                AccountStatus::Active => "ACTIVE".to_owned(),
+                AccountStatus::PendingSetup => "PENDING_SETUP".to_owned(),
+                AccountStatus::Archived => "ARCHIVED".to_owned(),
+            },
+            created_at: created_at.format(&Rfc3339).unwrap_or_default(),
+        }
+    }
 }
 
 impl From<UserSummary> for DirectoryPerson {
@@ -2963,6 +3063,38 @@ async fn list_directory_people(
         .await
         .map_err(RestError::from_store)?;
     Ok(Json(DirectoryPage::from(page)))
+}
+
+async fn list_visible_directory_people(
+    state: &IdentityRestState,
+    headers: &HeaderMap,
+) -> Result<Vec<VisibleDirectoryPerson>, RestError> {
+    let principal = principal_from_headers(state, headers).await?;
+    let scope = directory_read_scope(&principal)?;
+    let org = principal.org_id;
+    let page = console_platform_request_context::scope_org(org, async {
+        state
+            .store
+            .list_directory_people(
+                &scope,
+                DirectoryListQuery {
+                    search: None,
+                    team: None,
+                    branch_id: None,
+                    include_inactive: false,
+                    limit: Some(100),
+                    offset: Some(0),
+                },
+            )
+            .await
+    })
+    .await
+    .map_err(RestError::from_store)?;
+    Ok(page
+        .items
+        .into_iter()
+        .map(VisibleDirectoryPerson::from)
+        .collect())
 }
 
 async fn get_user(

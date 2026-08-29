@@ -3531,6 +3531,9 @@ pub fn build_router(state: AppState) -> Router {
         "/_ui",
         Router::new()
             .route("/", get(ui_shell))
+            .route("/organization", get(ui_organization))
+            .route("/hr", get(ui_hr))
+            .route("/payroll", get(ui_payroll))
             .merge(console_payroll_ui::pkg_router())
             .with_state(state.clone()),
     );
@@ -3558,16 +3561,96 @@ pub fn build_router(state: AppState) -> Router {
 }
 
 async fn ui_shell(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
-    let runs = match (&state.database, &state.jwt_verifier) {
+    ui_screens(state, headers, console_payroll_ui::UiScreen::Home).await
+}
+
+async fn ui_organization(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
+    ui_screens(state, headers, console_payroll_ui::UiScreen::Organization).await
+}
+
+async fn ui_hr(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
+    ui_screens(state, headers, console_payroll_ui::UiScreen::Hr).await
+}
+
+async fn ui_payroll(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
+    ui_screens(state, headers, console_payroll_ui::UiScreen::Payroll).await
+}
+
+async fn ui_screens(
+    state: AppState,
+    headers: HeaderMap,
+    focus: console_payroll_ui::UiScreen,
+) -> impl IntoResponse {
+    console_payroll_ui::html_shell_with_screens(&compose_ui_screens(&state, &headers).await, focus)
+}
+
+async fn compose_ui_screens(
+    state: &AppState,
+    headers: &HeaderMap,
+) -> console_payroll_ui::ShippingScreens {
+    let (org_entities, people, runs) = match (&state.database, &state.jwt_verifier) {
         (DatabaseDependency::Postgres(pool), Some(verifier)) => {
-            let rest =
-                PayrollRestState::new(PgPayrollStore::new(pool.clone()), Some(verifier.clone()));
-            rest.visible_run_summaries(&headers).await
+            let org = OrgChangeRestState::new(
+                PgOrgChangeStore::new(pool.clone()),
+                Some(verifier.clone()),
+            )
+            .visible_org_entities(headers)
+            .await;
+            let people =
+                IdentityRestState::new(PgOrgStore::new(pool.clone()), Some(verifier.clone()))
+                    .visible_directory_people(headers)
+                    .await;
+            let runs =
+                PayrollRestState::new(PgPayrollStore::new(pool.clone()), Some(verifier.clone()))
+                    .visible_run_summaries(headers)
+                    .await;
+            (org, people, runs)
         }
-        _ => Vec::new(),
+        _ => (Vec::new(), Vec::new(), Vec::new()),
     };
-    let views: Vec<console_payroll_ui::RunSummary> = runs.iter().map(ui_run_summary).collect();
-    console_payroll_ui::html_shell_with(&views)
+    console_payroll_ui::ShippingScreens {
+        org_entities: org_entities.iter().map(ui_org_entity).collect(),
+        people: people.iter().map(ui_person).collect(),
+        runs: runs.iter().map(ui_run_summary).collect(),
+    }
+}
+
+fn ui_org_entity(
+    entity: &console_orgchange_rest::VisibleOrgEntity,
+) -> console_payroll_ui::OrgEntityView {
+    console_payroll_ui::OrgEntityView {
+        org_id: entity.org_id.clone(),
+        slug: entity.slug.clone(),
+        name: entity.name.clone(),
+        status: entity.status.clone(),
+    }
+}
+
+fn ui_person(
+    person: &console_identity_rest::VisibleDirectoryPerson,
+) -> console_payroll_ui::PersonView {
+    console_payroll_ui::PersonView {
+        id: person.id.clone(),
+        display_name: person.display_name.clone(),
+        employee_id: person.employee_id.clone(),
+        employee_name: person.employee_name.clone(),
+        employee_number: person.employee_number.clone(),
+        employee_company: person.employee_company.clone(),
+        employee_org_unit: person.employee_org_unit.clone(),
+        employee_position: person.employee_position.clone(),
+        employee_identity_review_required: person.employee_identity_review_required.clone(),
+        employee_identity_resolution_confidence: person
+            .employee_identity_resolution_confidence
+            .clone(),
+        employee_link_status: person.employee_link_status.clone(),
+        team: person.team.clone(),
+        roles: person.roles.clone(),
+        branch_ids: person.branch_ids.clone(),
+        is_active: person.is_active.clone(),
+        has_passkey: person.has_passkey.clone(),
+        account_status: person.account_status.clone(),
+        created_at: person.created_at.clone(),
+    }
 }
 
 fn ui_run_summary(
