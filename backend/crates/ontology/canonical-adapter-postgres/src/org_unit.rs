@@ -318,6 +318,11 @@ impl PgOrgUnitPort {
             ));
         }
 
+        let kind_blockers = Self::kind_execute_blockers(&mut tx, org, &command.query).await?;
+        if !kind_blockers.is_empty() {
+            return Err(OrgUnitError::Blocked(kind_blockers));
+        }
+
         let target = command.query.target();
         let (org_unit_id, version) = match &command.query {
             OrgUnitQuery::Create { .. } => {
@@ -428,6 +433,70 @@ impl PgOrgUnitPort {
             created_at,
         ))
     }
+
+    async fn kind_execute_blockers(
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        org: Uuid,
+        query: &OrgUnitQuery,
+    ) -> Result<Vec<String>, OrgUnitError> {
+        let attributes = query.attributes();
+        let Some(kind) = attr_string(attributes, crate::catalog::ORG_UNIT_KIND) else {
+            return Ok(Vec::new());
+        };
+        if let OrgUnitQuery::Revise { org_unit_id, .. } = query {
+            if let Some(stored) = Self::head_attributes(tx, org, *org_unit_id).await?
+                && let Some(stored_kind) = attr_string(&stored, crate::catalog::ORG_UNIT_KIND)
+                && stored_kind != kind
+            {
+                return Ok(vec!["kind is immutable".to_owned()]);
+            }
+            if let Some(parent_id) = attr_uuid(attributes, "parent_id")
+                && parent_id == *org_unit_id
+            {
+                return Ok(vec!["parent_id must not be self".to_owned()]);
+            }
+        }
+        let Some(parent_id) = attr_uuid(attributes, "parent_id") else {
+            return Ok(Vec::new());
+        };
+        let Some(parent_attrs) = Self::head_attributes(tx, org, parent_id).await? else {
+            return Ok(vec![
+                "parent_id must refer to an OrgUnit in this organization".to_owned(),
+            ]);
+        };
+        let parent_kind = attr_string(&parent_attrs, crate::catalog::ORG_UNIT_KIND);
+        Ok(match kind.as_str() {
+            "department" if parent_kind.as_deref() != Some("site") => {
+                vec!["department parent must be a site".to_owned()]
+            }
+            "team"
+                if parent_kind.as_deref() != Some("department")
+                    && parent_kind.as_deref() != Some("team") =>
+            {
+                vec!["team parent must be a department or team".to_owned()]
+            }
+            _ => Vec::new(),
+        })
+    }
+
+    async fn head_attributes(
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        org: Uuid,
+        org_unit_id: Uuid,
+    ) -> Result<Option<serde_json::Value>, OrgUnitError> {
+        Ok(sqlx::query_scalar(
+            "SELECT r.attributes FROM org_unit_revisions r \
+             WHERE r.org_id = $1 AND r.org_unit_id = $2 \
+               AND r.version = ( \
+                 SELECT MAX(version) FROM org_unit_revisions \
+                 WHERE org_id = $1 AND org_unit_id = $2 \
+               )",
+        )
+        .bind(org)
+        .bind(org_unit_id)
+        .fetch_optional(&mut **tx)
+        .await?)
+    }
 }
 
 impl CanonicalPort for PgOrgUnitPort {
@@ -439,10 +508,10 @@ impl CanonicalPort for PgOrgUnitPort {
     /// PURE: no `&self`, no IO, no persistence. A blocked preflight has written
     /// nothing, so it can never spend an approval.
     fn preflight(query: &Self::Query) -> Preflight {
-        let mut blockers = crate::catalog::require_text_property(
-            query.attributes(),
-            crate::catalog::ORG_UNIT_NAME,
-        );
+        let attributes = query.attributes();
+        let mut blockers =
+            crate::catalog::require_text_property(attributes, crate::catalog::ORG_UNIT_NAME);
+        blockers.extend(kind_preflight(attributes));
         if let OrgUnitQuery::Revise { org_unit_id, .. } = query
             && org_unit_id.is_nil()
         {
@@ -586,6 +655,45 @@ fn canonical_json(value: &serde_json::Value) -> serde_json::Value {
         }
         primitive => primitive.clone(),
     }
+}
+
+fn kind_preflight(attributes: &serde_json::Value) -> Vec<String> {
+    let Some(object) = attributes.as_object() else {
+        return Vec::new();
+    };
+    let mut blockers =
+        crate::catalog::require_text_property(attributes, crate::catalog::ORG_UNIT_KIND);
+    if !blockers.is_empty() {
+        return blockers;
+    }
+    let Some(kind) = object
+        .get(crate::catalog::ORG_UNIT_KIND)
+        .and_then(serde_json::Value::as_str)
+    else {
+        return blockers;
+    };
+    if !matches!(kind, "site" | "department" | "team") {
+        return vec!["kind must be site, department, or team".to_owned()];
+    }
+    let parent = object.get("parent_id");
+    match kind {
+        "site" => {
+            if parent.is_some_and(|value| !value.is_null()) {
+                blockers.push("site must not have parent_id".to_owned());
+            }
+        }
+        "department" | "team" => match parent {
+            None | Some(serde_json::Value::Null) => blockers.push(if kind == "department" {
+                "department parent_id is required".to_owned()
+            } else {
+                "team parent_id is required".to_owned()
+            }),
+            Some(serde_json::Value::String(raw)) if Uuid::parse_str(raw).is_ok() => {}
+            Some(_) => blockers.push("parent_id must be a uuid".to_owned()),
+        },
+        _ => {}
+    }
+    blockers
 }
 
 fn attr_string(attributes: &serde_json::Value, key: &str) -> Option<String> {

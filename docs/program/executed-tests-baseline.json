@@ -240,6 +240,7 @@
     "backend/crates/ontology/canonical-adapter-postgres/tests/employment_reassign_as_runtime_role.rs": 2,
     "backend/crates/ontology/canonical-adapter-postgres/tests/employment_reassign_identity_as_runtime_role.rs": 2,
     "backend/crates/ontology/canonical-adapter-postgres/tests/job_position_port_as_runtime_role.rs": 14,
+    "backend/crates/ontology/canonical-adapter-postgres/tests/org_unit_kinds_as_runtime_role.rs": 17,
     "backend/crates/ontology/canonical-adapter-postgres/tests/org_unit_port_as_runtime_role.rs": 14,
     "backend/crates/ontology/canonical-adapter-postgres/tests/person_port_as_runtime_role.rs": 16,
     "backend/crates/ontology/canonical-adapter-postgres/tests/receipt_owner_widening.rs": 4,

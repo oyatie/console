@@ -2321,7 +2321,7 @@ async fn empty_tenant_hr_promote_and_transfer_sit_on_canonical_org_tree(owner_po
             actor_id: tree.actor,
             query: OrgUnitQuery::Create {
                 source: None,
-                attributes: json!({ "name": "기술본부" }),
+                attributes: json!({ "name": "기술본부", "kind": "site" }),
             },
             action_key: "create_org_unit".to_owned(),
             object_type_id: Uuid::nil(),
@@ -2492,7 +2492,7 @@ async fn provision_empty_tenant_assignment(owner_pool: &PgPool) -> EmptyTenantAs
             actor_id: actor,
             query: OrgUnitQuery::Create {
                 source: None,
-                attributes: json!({ "name": "영업본부" }),
+                attributes: json!({ "name": "영업본부", "kind": "site" }),
             },
             action_key: "create_org_unit".to_owned(),
             object_type_id: Uuid::nil(),

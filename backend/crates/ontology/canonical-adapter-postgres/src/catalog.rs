@@ -10,8 +10,7 @@
 //! `company_conformance` fixtures already publish `company` / `org_unit` /
 //! `job_position` under those stable keys. Putting the canonical objects in
 //! the builtin catalog would collide. 0215 also refuses a `parent_id` column
-//! on `org_units`; a tree, if the contract ever names one, is a catalog
-//! property on the revision bag, not a head-column invention.
+//! on `org_units`; kind and parent live on the revision bag, not as columns.
 //!
 //! Writes still go through the owning ports. Required-ness is enforced in
 //! PURE preflight so a blocked command never spends an approval.
@@ -24,6 +23,9 @@ pub const COMPANY_LEGAL_NAME: &str = "legal_name";
 
 /// `OrgUnit` title property. Stored on `org_unit_revisions.attributes`.
 pub const ORG_UNIT_NAME: &str = "name";
+
+/// Closed OrgUnit kind. Stored on `org_unit_revisions.attributes`.
+pub const ORG_UNIT_KIND: &str = "kind";
 
 /// `JobPosition` title property. Stored on `job_position_revisions.attributes`.
 /// Recruiting `role_title` / `employees.position` are not this field.

@@ -178,7 +178,7 @@ fn source(kind: &str, id: &str) -> SourceBinding {
 fn create(source: Option<SourceBinding>, name: &str) -> OrgUnitQuery {
     OrgUnitQuery::Create {
         source,
-        attributes: json!({ "name": name }),
+        attributes: json!({ "name": name, "kind": "site" }),
     }
 }
 
@@ -186,7 +186,7 @@ fn revise(org_unit_id: Uuid, source: Option<SourceBinding>, name: &str) -> OrgUn
     OrgUnitQuery::Revise {
         org_unit_id,
         source,
-        attributes: json!({ "name": name }),
+        attributes: json!({ "name": name, "kind": "site" }),
     }
 }
 
@@ -288,11 +288,14 @@ fn preflight_is_pure_and_blocks_what_the_database_would_only_catch_later() {
     };
     let missing = <PgOrgUnitPort as CanonicalPort>::preflight(&missing_name);
     assert!(!missing.is_ok());
-    assert_eq!(missing.blockers(), ["name is required".to_owned()]);
+    assert_eq!(
+        missing.blockers(),
+        ["name is required".to_owned(), "kind is required".to_owned()]
+    );
 
     let blank_name = OrgUnitQuery::Create {
         source: None,
-        attributes: json!({ "name": "  " }),
+        attributes: json!({ "name": "  ", "kind": "site" }),
     };
     let blank = <PgOrgUnitPort as CanonicalPort>::preflight(&blank_name);
     assert!(!blank.is_ok());
@@ -344,7 +347,7 @@ async fn an_org_unit_is_created_and_read_back(owner_pool: PgPool) {
     assert_eq!(row.get::<i64, _>("version"), 1);
     assert_eq!(
         row.get::<serde_json::Value, _>("attributes"),
-        json!({ "name": "영업본부" })
+        json!({ "name": "영업본부", "kind": "site" })
     );
     assert_eq!(
         row.get::<Uuid, _>("command_id"),
@@ -773,8 +776,8 @@ async fn a_repeat_of_the_same_command_replays_the_stored_receipt(owner_pool: PgP
     // this workspace, so these two objects compare EQUAL while serialising to
     // different bytes — the digest must not be able to tell them apart, or the
     // retry after a timeout is refused instead of replayed.
-    let first_attributes = json!({ "name": "영업본부", "code": "SALES" });
-    let retry_attributes = json!({ "code": "SALES", "name": "영업본부" });
+    let first_attributes = json!({ "name": "영업본부", "code": "SALES", "kind": "site" });
+    let retry_attributes = json!({ "code": "SALES", "kind": "site", "name": "영업본부" });
     assert_eq!(
         first_attributes, retry_attributes,
         "the two payloads must be the same command for this test to mean anything"
