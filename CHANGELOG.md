@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.22](https://github.com/oyatie/console/compare/v0.3.21...v0.3.22) (2026-08-29)
+
+
+### Features
+
+* **ontology:** OrgUnit kinds Site/Department/Team ([#975](https://github.com/oyatie/console/issues/975)) ([a8c0758](https://github.com/oyatie/console/commit/a8c075840116ad95af2c8776834d02a02d9d8001))
+* **ui:** compose org, HR, and payroll shipping screens on /_ui ([#976](https://github.com/oyatie/console/issues/976)) ([88547eb](https://github.com/oyatie/console/commit/88547eba50a90885187a143837d78a0ebe9c19ab))
+
 ## [0.3.21](https://github.com/oyatie/console/compare/v0.3.20...v0.3.21) (2026-08-29)
 
 
