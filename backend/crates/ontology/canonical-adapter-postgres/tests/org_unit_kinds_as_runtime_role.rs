@@ -365,3 +365,17 @@ async fn t16_self_parent_on_revise_is_blocked(owner_pool: PgPool) {
     .unwrap_err();
     assert_blocked(err, &[PARENT_NOT_SELF]);
 }
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn t17_department_parent_must_not_be_a_department(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let site_id = create_unit(&port, org, actor, site("본사")).await;
+    let dept_id = create_unit(&port, org, actor, department("영업", site_id)).await;
+    let err = execute(
+        &port,
+        command(org, actor, create(department("기획", dept_id))),
+    )
+    .await
+    .unwrap_err();
+    assert_blocked(err, &[DEPT_PARENT_SITE]);
+}
