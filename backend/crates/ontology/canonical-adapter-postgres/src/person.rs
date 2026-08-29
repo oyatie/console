@@ -65,7 +65,7 @@ use console_ontology_canonical_domain::{
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use sqlx::{PgPool, Row};
+use sqlx::{PgPool, Postgres, Row, Transaction};
 use std::str::FromStr;
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -146,6 +146,29 @@ pub struct PersonCommand {
     pub query: PersonQuery,
     pub action_key: String,
     pub object_type_id: Uuid,
+}
+
+impl PersonCommand {
+    /// Trusted uniquely-resolved directory create: `person_id = employee_id`.
+    #[must_use]
+    pub fn create_bound(
+        org_id: OrgId,
+        actor_id: UserId,
+        employee_id: Uuid,
+        legal_name: &str,
+    ) -> Self {
+        Self {
+            org_id,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id,
+            query: PersonQuery::Create {
+                employee_id: Some(employee_id),
+                attributes: serde_json::json!({ "legal_name": legal_name }),
+            },
+            action_key: "create_person".to_owned(),
+            object_type_id: Uuid::nil(),
+        }
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -231,7 +254,7 @@ impl PgPersonPort {
         person_id: Option<Uuid>,
     ) -> Result<Vec<PersonHead>, PersonError> {
         let mut tx = self.pool.begin().await?;
-        self.arm_org(&mut *tx, org).await?;
+        self.arm_org(tx.as_mut(), org).await?;
         let rows = sqlx::query(
             "SELECT p.id, r.version, r.attributes \
              FROM persons p \
@@ -246,7 +269,7 @@ impl PgPersonPort {
         )
         .bind(org)
         .bind(person_id)
-        .fetch_all(&mut *tx)
+        .fetch_all(tx.as_mut())
         .await?;
         tx.commit().await?;
         Ok(rows
@@ -259,101 +282,111 @@ impl PgPersonPort {
     }
 
     async fn write(&self, command: &PersonCommand) -> Result<CommandReceipt, PersonError> {
-        let preflight = <Self as CanonicalPort>::preflight(&command.query);
-        if !preflight.is_ok() {
-            return Err(PersonError::Blocked(preflight.blockers().to_vec()));
-        }
-
-        let digest = payload_digest(command);
-        let org = *command.org_id.as_uuid();
-        let actor = *command.actor_id.as_uuid();
-        let command_uuid = *command.command_id.as_uuid();
-
         let mut tx = self.pool.begin().await?;
-        // Transaction-local, so it is cleared on COMMIT/ROLLBACK and never
-        // leaks to the next checkout of a pooled connection. Unset fails
-        // closed: RLS shows no rows and accepts no writes.
         sqlx::query("SELECT set_config('app.current_org', $1, true)")
-            .bind(org.to_string())
-            .execute(&mut *tx)
+            .bind(command.org_id.as_uuid().to_string())
+            .execute(tx.as_mut())
             .await?;
+        let receipt = write_in_tx(&mut tx, command).await?;
+        tx.commit().await?;
+        Ok(receipt)
+    }
+}
 
-        if let Some(stored) = sqlx::query(
-            "SELECT actor_id, payload_digest, receipt, created_at \
+/// Apply one Person command inside a caller-owned, org-armed transaction.
+///
+/// People create uses this so the `employees` row and the Person binding share
+/// the directory transaction. Callers must already have set `app.current_org`.
+pub async fn write_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    command: &PersonCommand,
+) -> Result<CommandReceipt, PersonError> {
+    let preflight = <PgPersonPort as CanonicalPort>::preflight(&command.query);
+    if !preflight.is_ok() {
+        return Err(PersonError::Blocked(preflight.blockers().to_vec()));
+    }
+
+    let digest = payload_digest(command);
+    let org = *command.org_id.as_uuid();
+    let actor = *command.actor_id.as_uuid();
+    let command_uuid = *command.command_id.as_uuid();
+
+    if let Some(stored) = sqlx::query(
+        "SELECT actor_id, payload_digest, receipt, created_at \
              FROM ont_action_command_receipts WHERE org_id = $1 AND command_id = $2",
-        )
-        .bind(org)
-        .bind(command_uuid)
-        .fetch_optional(&mut *tx)
-        .await?
-        {
-            let stored_digest: Vec<u8> = stored.get("payload_digest");
-            if stored_digest != digest {
-                return Err(PersonError::DigestConflict(command_uuid));
-            }
-            let result: serde_json::Value = stored.get("receipt");
-            let target = stored_target(command_uuid, &result)?;
-            let stored_actor: Uuid = stored.get("actor_id");
-            let created_at: OffsetDateTime = stored.get("created_at");
-            return Ok(receipt(
-                command,
-                target,
-                UserId::from_uuid(stored_actor),
-                digest,
-                result,
-                created_at,
-            ));
+    )
+    .bind(org)
+    .bind(command_uuid)
+    .fetch_optional(tx.as_mut())
+    .await?
+    {
+        let stored_digest: Vec<u8> = stored.get("payload_digest");
+        if stored_digest != digest {
+            return Err(PersonError::DigestConflict(command_uuid));
         }
+        let result: serde_json::Value = stored.get("receipt");
+        let target = stored_target(command_uuid, &result)?;
+        let stored_actor: Uuid = stored.get("actor_id");
+        let created_at: OffsetDateTime = stored.get("created_at");
+        return Ok(receipt(
+            command,
+            target,
+            UserId::from_uuid(stored_actor),
+            digest,
+            result,
+            created_at,
+        ));
+    }
 
-        let target = command.query.target();
-        let (person_id, version) = match &command.query {
-            PersonQuery::Create { employee_id, .. } => {
-                // Trusted uniquely-resolved: person_id = employee_id (P5).
-                // Unbound / review-required: omit employee_id → random id, no binding.
-                let person_id: Uuid = match employee_id {
-                    Some(trusted) => {
-                        sqlx::query_scalar(
-                            "INSERT INTO persons (org_id, id) VALUES ($1, $2) RETURNING id",
-                        )
+    let target = command.query.target();
+    let (person_id, version) = match &command.query {
+        PersonQuery::Create { employee_id, .. } => {
+            // Trusted uniquely-resolved: person_id = employee_id (P5).
+            // Unbound / review-required: omit employee_id → random id, no binding.
+            let person_id: Uuid = match employee_id {
+                Some(trusted) => {
+                    sqlx::query_scalar(
+                        "INSERT INTO persons (org_id, id) VALUES ($1, $2) RETURNING id",
+                    )
+                    .bind(org)
+                    .bind(trusted)
+                    .fetch_one(tx.as_mut())
+                    .await?
+                }
+                None => {
+                    sqlx::query_scalar("INSERT INTO persons (org_id) VALUES ($1) RETURNING id")
                         .bind(org)
-                        .bind(trusted)
-                        .fetch_one(&mut *tx)
+                        .fetch_one(tx.as_mut())
                         .await?
-                    }
-                    None => {
-                        sqlx::query_scalar("INSERT INTO persons (org_id) VALUES ($1) RETURNING id")
-                            .bind(org)
-                            .fetch_one(&mut *tx)
-                            .await?
-                    }
-                };
-                (person_id, 1_i64)
-            }
-            PersonQuery::Revise { person_id, .. } => {
-                // ponytail: MAX + 1 under the row's own transaction. A
-                // concurrent revise of the same person loses to
-                // UNIQUE (org_id, person_id, version) with 23505 rather than
-                // silently overwriting; add SELECT ... FOR UPDATE on `persons`
-                // if that contention is ever measured.
-                let next: i64 = sqlx::query_scalar(
-                    "SELECT COALESCE(MAX(version), 0) + 1 FROM person_revisions \
+                }
+            };
+            (person_id, 1_i64)
+        }
+        PersonQuery::Revise { person_id, .. } => {
+            // ponytail: MAX + 1 under the row's own transaction. A
+            // concurrent revise of the same person loses to
+            // UNIQUE (org_id, person_id, version) with 23505 rather than
+            // silently overwriting; add SELECT ... FOR UPDATE on `persons`
+            // if that contention is ever measured.
+            let next: i64 = sqlx::query_scalar(
+                "SELECT COALESCE(MAX(version), 0) + 1 FROM person_revisions \
                      WHERE org_id = $1 AND person_id = $2",
-                )
-                .bind(org)
-                .bind(person_id)
-                .fetch_one(&mut *tx)
-                .await?;
-                (*person_id, next)
-            }
-        };
+            )
+            .bind(org)
+            .bind(person_id)
+            .fetch_one(tx.as_mut())
+            .await?;
+            (*person_id, next)
+        }
+    };
 
-        let result = serde_json::json!({
-            "person_id": person_id.to_string(),
-            "version": version,
-            "target": target.as_str(),
-        });
+    let result = serde_json::json!({
+        "person_id": person_id.to_string(),
+        "version": version,
+        "target": target.as_str(),
+    });
 
-        let created_at: OffsetDateTime = sqlx::query_scalar(
+    let created_at: OffsetDateTime = sqlx::query_scalar(
             "INSERT INTO person_revisions \
              (org_id, person_id, version, command_id, actor_id, payload_digest, attributes, receipt) \
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING created_at",
@@ -366,41 +399,41 @@ impl PgPersonPort {
         .bind(digest.as_slice())
         .bind(command.query.attributes())
         .bind(&result)
-        .fetch_one(&mut *tx)
+        .fetch_one(tx.as_mut())
         .await?;
 
-        if let Some(employee_id) = command.query.employee_id() {
-            sqlx::query(
-                "INSERT INTO employee_person_bindings \
+    if let Some(employee_id) = command.query.employee_id() {
+        sqlx::query(
+            "INSERT INTO employee_person_bindings \
                  (org_id, employee_id, person_id, actor_id, payload_digest) \
                  VALUES ($1, $2, $3, $4, $5)",
-            )
-            .bind(org)
-            .bind(employee_id)
-            .bind(person_id)
-            .bind(actor)
-            .bind(digest.as_slice())
-            .execute(&mut *tx)
-            .await?;
-        }
+        )
+        .bind(org)
+        .bind(employee_id)
+        .bind(person_id)
+        .bind(actor)
+        .bind(digest.as_slice())
+        .execute(tx.as_mut())
+        .await?;
+    }
 
-        // The receipt store, and with it the tenant-global command-id
-        // namespace this port shares with every other receipt owner.
-        // Attribute the receipt to the object whose action it records.
-        //
-        // DERIVED from the command's own query, which already implements
-        // `dispatch_target()` -- the same value the projected-dispatch path uses.
-        // NOT from `action_key`: that is "unique only per object type" (a bare
-        // "revise"), so it cannot name a target on its own, and the internal
-        // reassign path carries "internal.reassign_org_unit", which names none at
-        // all. The query knows; the string does not.
-        //
-        // Without this the row takes the `owner` DEFAULT of 'ontology.action',
-        // filing a canonical receipt under the pre-existing instance-action path
-        // -- a wrong attribution recorded as fact.
-        let receipt_target = command.query.dispatch_target();
-        let receipt_owner = ReceiptOwner::Canonical(receipt_target.object());
-        sqlx::query(
+    // The receipt store, and with it the tenant-global command-id
+    // namespace this port shares with every other receipt owner.
+    // Attribute the receipt to the object whose action it records.
+    //
+    // DERIVED from the command's own query, which already implements
+    // `dispatch_target()` -- the same value the projected-dispatch path uses.
+    // NOT from `action_key`: that is "unique only per object type" (a bare
+    // "revise"), so it cannot name a target on its own, and the internal
+    // reassign path carries "internal.reassign_org_unit", which names none at
+    // all. The query knows; the string does not.
+    //
+    // Without this the row takes the `owner` DEFAULT of 'ontology.action',
+    // filing a canonical receipt under the pre-existing instance-action path
+    // -- a wrong attribution recorded as fact.
+    let receipt_target = command.query.dispatch_target();
+    let receipt_owner = ReceiptOwner::Canonical(receipt_target.object());
+    sqlx::query(
             "INSERT INTO ont_action_command_receipts \
              (org_id, command_id, actor_id, payload_digest, receipt, action_key, object_type_id, created_at, owner, target) \
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
@@ -415,19 +448,17 @@ impl PgPersonPort {
         .bind(created_at)
         .bind(receipt_owner.as_str())
         .bind(receipt_target.as_str())
-        .execute(&mut *tx)
+        .execute(tx.as_mut())
         .await?;
 
-        tx.commit().await?;
-        Ok(receipt(
-            command,
-            target,
-            command.actor_id,
-            digest,
-            result,
-            created_at,
-        ))
-    }
+    Ok(receipt(
+        command,
+        target,
+        command.actor_id,
+        digest,
+        result,
+        created_at,
+    ))
 }
 
 impl CanonicalPort for PgPersonPort {

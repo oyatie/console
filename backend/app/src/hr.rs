@@ -17,6 +17,9 @@ use console_leave_domain::LeaveBalanceAmount;
 // `ObjectKey::Employment`'s owner. Every `employees` statement this module used
 // to hold lives there now; console-app is no longer a second writer of it.
 use console_ontology_canonical_adapter_postgres::employment;
+use console_ontology_canonical_adapter_postgres::person::{
+    PersonCommand, PersonError, write_in_tx as write_person_in_tx,
+};
 use console_payroll_domain::{
     ProfessionalReviewerKind, ProfessionalValidation, SeverancePayInput, build_severance_pay_draft,
     moel_retirement_pay_source, nhis_qualification_loss_form_source,
@@ -1268,6 +1271,18 @@ pub(crate) async fn create_employee_core(
     )
     .await
     .map_err(employee_create_db_error)?;
+    // Directory create mints the Person in the same transaction (person_id =
+    // employee_id). hr.appoint stays a separate four-eyes assignment.
+    write_person_in_tx(
+        tx,
+        &PersonCommand::create_bound(
+            OrgId::from_uuid(org_uuid),
+            actor,
+            employee_id,
+            &request.name,
+        ),
+    )
+    .await?;
     sqlx::query(
         r#"INSERT INTO employee_employment_profiles (
             employee_id, org_id, employment_type, phone_e164, base_pay,
@@ -8653,6 +8668,24 @@ impl From<DbError> for HrError {
 impl From<sqlx::Error> for HrError {
     fn from(value: sqlx::Error) -> Self {
         HrError::from(DbError::Sqlx(value))
+    }
+}
+
+impl From<PersonError> for HrError {
+    fn from(error: PersonError) -> Self {
+        match error {
+            PersonError::Blocked(blockers) => Self::from_kernel(KernelError::validation(format!(
+                "preflight blocked the command: {blockers:?}"
+            ))),
+            PersonError::DigestConflict(id) => Self::from_kernel(KernelError::conflict(format!(
+                "command {id} was already applied with a different payload"
+            ))),
+            PersonError::Database(error) => Self::from(error),
+            PersonError::UnreadableReceipt(id, message) => {
+                tracing::error!(command = %id, receipt = %message, "person command receipt unreadable");
+                Self::internal("employee directory request failed")
+            }
+        }
     }
 }
 

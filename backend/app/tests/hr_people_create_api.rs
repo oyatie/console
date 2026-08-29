@@ -154,11 +154,13 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
         json!({}),
         "employee creation must not fabricate acknowledgements"
     );
-    let row_counts: (i64, i64, i64, i64) = sqlx::query_as(
+    let row_counts: (i64, i64, i64, i64, i64, i64) = sqlx::query_as(
         "SELECT (SELECT count(*) FROM employees WHERE org_id = $1), \
          (SELECT count(*) FROM employee_employment_profiles WHERE org_id = $1), \
          (SELECT count(*) FROM employee_lifecycle_events WHERE org_id = $1), \
-         (SELECT count(*) FROM employee_create_idempotency WHERE org_id = $1)",
+         (SELECT count(*) FROM employee_create_idempotency WHERE org_id = $1), \
+         (SELECT count(*) FROM persons WHERE org_id = $1), \
+         (SELECT count(*) FROM employee_person_bindings WHERE org_id = $1)",
     )
     .bind(*org.as_uuid())
     .fetch_one(&pool)
@@ -166,8 +168,21 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
     .unwrap();
     assert_eq!(
         row_counts,
-        (1, 1, 1, 1),
+        (1, 1, 1, 1, 1, 1),
         "same-key race must write exactly one row in each employee creation table"
+    );
+    let bound_person: Uuid = sqlx::query_scalar(
+        "SELECT person_id FROM employee_person_bindings WHERE org_id = $1 AND employee_id = $2",
+    )
+    .bind(*org.as_uuid())
+    .bind(Uuid::parse_str(employee_id).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        bound_person,
+        Uuid::parse_str(employee_id).unwrap(),
+        "trusted create binds person_id = employee_id"
     );
 
     // 1a: the employee ROW is created through the Employment port and its
