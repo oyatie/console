@@ -595,6 +595,48 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
 }
 
 #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn employee_create_rejects_unknown_org_unit_uuid(pool: PgPool) {
+    let keys = keys();
+    let org = OrgId::knl();
+    let user = UserId::new();
+    seed_user(&pool, org, user).await;
+    let branch = seed_branch(&pool, org, "People uuid-ref branch").await;
+    let service = build_router(
+        app_state(
+            runtime_role_pool(&pool).await,
+            leave_command_role_pool(&pool).await,
+            keys.public_pem.clone(),
+        )
+        .unwrap(),
+    );
+    let token = bearer(&keys, org, user, &["SUPER_ADMIN"]);
+    let mut body = create_body(
+        branch,
+        "PEOPLE-UUID-ORG",
+        "uuid-org-key",
+        "010-1234-5678",
+        "UuidOrg",
+    );
+    body["org_unit"] = json!(Uuid::new_v4().to_string());
+    let refused = post(service, EMPLOYEES_PATH, &token, body).await;
+    assert_eq!(
+        refused.status,
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "{:?}",
+        refused.json
+    );
+    let employees: i64 = sqlx::query_scalar("SELECT count(*) FROM employees WHERE org_id = $1")
+        .bind(*org.as_uuid())
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        employees, 0,
+        "unknown OrgUnit UUID must not insert an employee"
+    );
+}
+
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
 async fn deactivated_super_admin_cannot_create_employee(pool: PgPool) {
     let keys = keys();
     let org = OrgId::knl();

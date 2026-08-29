@@ -52,7 +52,7 @@
     "backend/app/tests/hr_attendance_manager_scope.rs": 1,
     "backend/app/tests/hr_attendance_self_read.rs": 3,
     "backend/app/tests/hr_ingest_checklist_gate.rs": 2,
-    "backend/app/tests/hr_people_create_api.rs": 4,
+    "backend/app/tests/hr_people_create_api.rs": 5,
     "backend/app/tests/logistics_pilot_story.rs": 3,
     "backend/app/tests/m2_real_engine_drive.rs": 2,
     "backend/app/tests/maintenance_chain_api.rs": 4,

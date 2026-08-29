@@ -964,7 +964,7 @@ async fn ensure_attribute_refs(
     Ok(())
 }
 
-async fn ensure_org_unit_exists(
+pub async fn ensure_org_unit_exists(
     tx: &mut Transaction<'_, Postgres>,
     org_id: Uuid,
     org_unit_id: Uuid,
@@ -982,7 +982,7 @@ async fn ensure_org_unit_exists(
     }
 }
 
-async fn ensure_job_position_exists(
+pub async fn ensure_job_position_exists(
     tx: &mut Transaction<'_, Postgres>,
     org_id: Uuid,
     job_position_id: Uuid,

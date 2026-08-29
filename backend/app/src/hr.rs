@@ -1246,6 +1246,12 @@ pub(crate) async fn create_employee_core(
             "active home branch was not found in this organization",
         )));
     }
+    if let Ok(org_unit_id) = Uuid::parse_str(&request.org_unit) {
+        employment::ensure_org_unit_exists(tx, org_uuid, org_unit_id).await?;
+    }
+    if let Ok(job_position_id) = Uuid::parse_str(&request.position) {
+        employment::ensure_job_position_exists(tx, org_uuid, job_position_id).await?;
+    }
 
     // The statement itself lives in `console-ontology-canonical-adapter-postgres`,
     // which the canonical contract names as `ObjectKey::Employment`'s owner — the
@@ -8705,11 +8711,25 @@ impl From<employment::EmploymentError> for HrError {
             },
             // Preserve the exact driver-error mapping (and its trace log).
             employment::EmploymentError::Database(error) => Self::from(error),
-            // Unreachable from `apply_employment_change`, the only statement
-            // routed through this impl (port-level refusals surface through the
-            // ontology dispatcher, not the REST lifecycle handlers). Mapped as
-            // internal so a future variant fails loud rather than as a wrong
-            // HTTP status.
+            employment::EmploymentError::UnknownOrgUnit(id) => {
+                Self::from_kernel(KernelError::validation(format!(
+                    "org_unit_id {id} is not a known OrgUnit in this tenant"
+                )))
+            }
+            employment::EmploymentError::UnknownJobPosition(id) => {
+                Self::from_kernel(KernelError::validation(format!(
+                    "job_position_id {id} is not a known JobPosition in this tenant"
+                )))
+            }
+            employment::EmploymentError::OrgUnitRefNotUuid => {
+                Self::from_kernel(KernelError::validation(
+                    "fromOrgUnit/toOrgUnit must be OrgUnit UUIDs, not free-text team labels"
+                        .to_owned(),
+                ))
+            }
+            // Port-level refusals other than the directory UUID refs surface
+            // through the ontology dispatcher. Mapped as internal so a future
+            // variant fails loud rather than as a wrong HTTP status.
             other => Self::from_kernel(KernelError::internal(other.to_string())),
         }
     }
