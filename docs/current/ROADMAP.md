@@ -30,7 +30,7 @@ Status: active roadmap authority. Product scope comes from [`PRODUCT.md`](PRODUC
    - Shipping screens are admitted. Persona-based real-backend E2E (ADR-0025 §4) remains the bar for calling a screen shipped. Production exposure stays **HOLD**. Import/export is not the data-entry base except 자료실; the comms rail is out of this slice.
 8. **Palantir AIP / Intelligence**
    - Palantir AIP is the target intelligence layer. It is built in the separate Intelligence repository until that repository names a SHA-bound stable base; cloning it into Console is a later lane.
-   - Console-owned fail-closed seams are admitted now (same `Principal`, ontology actions, no second writer, no Palantir client, no Intelligence HTTP on Console). Not a tenant-app Intelligence product.
+   - Console-owned fail-closed seams are admitted now (same `Principal`, ontology actions, no second writer, no Palantir client). Owner lock (2026-08-29): **bind-only** Intelligence HTTP on the existing listener, `127.0.0.1` only, fail-closed if unset or non-loopback. Later implementation (not this record): `GET http://127.0.0.1:<listen-port>/internal/intelligence/bind`. Not published OpenAPI, not `/_ui`, not `/api/v1`. No chat, no inference text in tenant UX, no HR/payroll write, no autonomous merge. Not a tenant-app Intelligence product.
 
 ## Explicit HOLDs
 
