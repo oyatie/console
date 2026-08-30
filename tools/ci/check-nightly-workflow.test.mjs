@@ -38,14 +38,14 @@ test("check-nightly-workflow", async (t) => {
     );
   });
 
-  await t.test("requires push-on-main so detection stays at minutes", () => {
+  await t.test("requires push-on-dev so detection stays at minutes", () => {
     expectFailure(
-      workflow.replace("  push:\n    branches: [main]\n", ""),
-      /must run on push to main/,
+      workflow.replace("  push:\n    branches: [dev]\n", ""),
+      /must run on push to dev/,
     );
     expectFailure(
-      workflow.replace("branches: [main]", "branches: [some-other-branch]"),
-      /must run on push to main/,
+      workflow.replace("branches: [dev]", "branches: [some-other-branch]"),
+      /must run on push to dev/,
     );
   });
 

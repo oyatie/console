@@ -8,7 +8,7 @@ import {
   deriveReleasePleasePrEnvelope,
 } from './release-please-pr-envelope.mjs';
 
-const HEAD_REF = 'release-please--branches--main--components--console';
+const HEAD_REF = 'release-please--branches--dev--components--console';
 const NOTES = [
   '## [0.3.9](https://github.com/oyatie/console/compare/v0.3.8...v0.3.9) (2026-08-24)',
   '',
@@ -33,7 +33,7 @@ const fixture = (overrides = {}) => ({
   headManifest,
   baseChangelog: Buffer.from(BASE_CHANGELOG),
   headChangelog: Buffer.from(HEAD_CHANGELOG),
-  subject: 'chore(main): release 0.3.9',
+  subject: 'chore(dev): release 0.3.9',
   headRef: HEAD_REF,
   ...overrides,
 });
@@ -42,8 +42,8 @@ test('derives the exact native Release Please title, body, labels, and path enve
   const envelope = deriveReleasePleasePrEnvelope(fixture());
   assert.deepEqual(envelope, {
     headBranchName: HEAD_REF,
-    baseBranchName: 'main',
-    title: 'chore(main): release 0.3.9',
+    baseBranchName: 'dev',
+    title: 'chore(dev): release 0.3.9',
     body: `${RELEASE_PLEASE_ACTION_BODY_PREFIX}${NOTES}${RELEASE_PLEASE_ACTION_BODY_SUFFIX}`,
     labels: [RELEASE_PLEASE_PENDING_LABEL],
     files: [],
@@ -70,7 +70,7 @@ test('rejects manifest, leading changelog version, subject version, and ref drif
     { headManifest: Buffer.from('{\n  ".": "0.3.8"\n}\n') },
     { headManifest: Buffer.from('{".":"0.3.9"}\n') },
     { headChangelog: Buffer.from(HEAD_CHANGELOG.replaceAll('0.3.9', '0.4.0')) },
-    { subject: 'chore(main): release 0.4.0' },
+    { subject: 'chore(dev): release 0.4.0' },
     { subject: 'fix: not a release' },
     { headRef: 'feature/release' },
   ]) {
@@ -88,10 +88,10 @@ test('rejects PR body overflow and any action-output metadata drift', () => {
   );
   const expected = deriveReleasePleasePrEnvelope(fixture());
   for (const mutation of [
-    { ...expected, title: 'chore(main): release 9.9.9' },
+    { ...expected, title: 'chore(dev): release 9.9.9' },
     { ...expected, body: `${expected.body}\n` },
     { ...expected, labels: [] },
-    { ...expected, baseBranchName: 'dev' },
+    { ...expected, baseBranchName: 'main' },
     { ...expected, files: null },
   ]) {
     assert.throws(() => assertReleasePleasePrEnvelope(mutation, expected));

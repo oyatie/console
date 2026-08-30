@@ -7,7 +7,7 @@ on:
   merge_group:
   push:
     branches:
-      - main
+      - dev
     tags:
       - "v*"
   # Required checks must be created for every relevant push and pull request. A
@@ -21,10 +21,10 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  # Cancel superseded runs only for PRs. On main, every push must run CI to
+  # Cancel superseded runs only for PRs. On dev, every push must run CI to
   # completion. Its completion wakes image-release's read-only classifier; only
   # an exact immutable source release with matching CI + Security may allocate
-  # native image builders. A rapid merge train must not cancel main CI.
+  # native image builders. A rapid merge train must not cancel dev CI.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -966,7 +966,7 @@ jobs:
     # A matrix keeps the job id and every step's place in the bypass-mutation
     # matrix. Membership in Required / CI was removed 2026-08-28: this job is
     # postsubmit (push/workflow_dispatch) so the merge wall stays under 5m.
-    # Image-release still waits for the completed CI workflow on main.
+    # Image-release still waits for the completed CI workflow on dev.
     #
     # Each leg pays its own ~55s setup (containers, cache restore, toolchain,
     # checkout). fail-fast is off so one red leg never hides the others'
@@ -1074,9 +1074,9 @@ jobs:
           cache-all-crates: "true"
           # The ONLY writer. `backend` runs clippy --all-targets over the whole
           # workspace, a strict superset of every other cargo job, so its target dir
-          # is the one worth sharing. Saving only from main keeps PR branches from
+          # is the one worth sharing. Saving only from dev keeps PR branches from
           # publishing a cache shaped by their own diff.
-          save-if: ${{ github.ref == 'refs/heads/main' && matrix.leg == 'cargo' }}
+          save-if: ${{ github.ref == 'refs/heads/dev' && matrix.leg == 'cargo' }}
 
       - name: rustfmt check
         id: fmt
@@ -1891,7 +1891,7 @@ jobs:
     # under 5m. Live Postgres is path-gated like oyatie pg-gate; domain-unit,
     # backend, generated-faces, company-conformance, and migration expand/contract
     # run on push/workflow_dispatch only (postsubmit). Image-release still waits
-    # for the whole CI workflow on main, so those proofs remain release evidence.
+    # for the whole CI workflow on dev, so those proofs remain release evidence.
     # Display name is load-bearing for branch protection — do not rename.
     name: Required / CI
     needs:

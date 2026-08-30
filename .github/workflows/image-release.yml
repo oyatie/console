@@ -9,12 +9,12 @@ name: Image Release
 # per-arch digests into one manifest list with `docker buildx imagetools
 # create`. The manifest-LIST digest (the multi-arch index) is the immutable
 # artifact that gets Trivy-scanned, cosign-signed, and provenance-attested.
-# Completed CI is only a wake-up: ordinary main commits stop after one read-only
+# Completed CI is only a wake-up: ordinary dev commits stop after one read-only
 # classification job. Native builders run only for a canonical version-changing
 # signed release squash whose PR creator and author are the exact Release Please
 # bot or pinned fallback transport identity, and whose same-tree bot custody head
 # has native protected Release Please proof. The squash must also bind to an
-# immutable published GitHub release, its exact lightweight tag, current main,
+# immutable published GitHub release, its exact lightweight tag, current dev,
 # and exact successful CI + Security workflow/job records.
 # Updating the prod overlay is a separate, explicit workflow_dispatch action
 # guarded by the protected production environment; a push or merge never
@@ -30,11 +30,11 @@ on:
   workflow_run:
     workflows: ["CI"]
     types: [completed]
-    branches: [main]
+    branches: [dev]
   workflow_dispatch:
     inputs:
       candidate_sha:
-        description: Exact current-main SHA whose successful push CI authorizes recovery
+        description: Exact current-dev SHA whose successful push CI authorizes recovery
         required: true
         type: string
       promote_production:
@@ -53,7 +53,7 @@ concurrency:
 
 jobs:
   # `workflow_run` is only a wake-up signal. This read-only job classifies the
-  # exact CI candidate and emits `eligible=false` for ordinary/stale main
+  # exact CI candidate and emits `eligible=false` for ordinary/stale dev
   # commits. A release-version change is privileged: it must bind to an
   # immutable GitHub release + lightweight tag and exact successful CI/Security
   # workflow runs before any packages:write or OIDC job can start. No candidate
@@ -73,7 +73,7 @@ jobs:
       ci_run_id: ${{ steps.admit.outputs.ci_run_id }}
       security_run_id: ${{ steps.admit.outputs.security_run_id }}
     steps:
-      - name: Bind immutable release, tag, CI, Security, and current main
+      - name: Bind immutable release, tag, CI, Security, and current dev
         id: admit
         env:
           EVENT_NAME: ${{ github.event_name }}
@@ -108,8 +108,8 @@ jobs:
           readonly RELEASE_TRANSPORT_ID="56489493"
           readonly WEB_FLOW_ID="19864447"
           readonly STABLE_VERSION_RE='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
-          readonly RELEASE_SUBJECT_RE='^chore\(main\): release ((0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)) \(#([1-9][0-9]*)\)$'
-          readonly RELEASE_HEAD_REF_RE='^release-please--branches--main--components--[A-Za-z0-9._-]+$'
+          readonly RELEASE_SUBJECT_RE='^chore\(dev\): release ((0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)) \(#([1-9][0-9]*)\)$'
+          readonly RELEASE_HEAD_REF_RE='^release-please--branches--dev--components--[A-Za-z0-9._-]+$'
 
           die() {
             echo "::error::$*" >&2
@@ -134,14 +134,14 @@ jobs:
               "$@"
           }
 
-          current_main() {
+          current_dev() {
             local ref
-            ref="$(api "repos/${REPO}/git/ref/heads/main")" || die "unable to read current main"
+            ref="$(api "repos/${REPO}/git/ref/heads/dev")" || die "unable to read current dev"
             jq -e \
               '.object.type == "commit" and (.object.sha | type == "string") and
                (.object.sha | length == 40 and test("^[0-9a-f]{40}$"))' \
               <<< "$ref" >/dev/null \
-              || die "main ref is not one exact commit"
+              || die "dev ref is not one exact commit"
             jq -r '.object.sha' <<< "$ref"
           }
 
@@ -203,7 +203,7 @@ jobs:
           verify_workflow_evidence() {
             local workflow_id="$1" workflow_path="$2" aggregate_name="$3"
             local expected_trigger_id="${4:-}" runs total run jobs matches fresh_runs fresh_run
-            runs="$(api "repos/${REPO}/actions/workflows/${workflow_id}/runs?event=push&branch=main&head_sha=${candidate_sha}&per_page=100")" \
+            runs="$(api "repos/${REPO}/actions/workflows/${workflow_id}/runs?event=push&branch=dev&head_sha=${candidate_sha}&per_page=100")" \
               || die "unable to read ${aggregate_name} workflow runs"
             jq -e '(.total_count | type == "number" and . >= 0 and floor == .) and
               (.workflow_runs | type == "array")' <<< "$runs" >/dev/null \
@@ -213,7 +213,7 @@ jobs:
               return 10
             fi
             [[ "$total" == "1" && "$(jq '.workflow_runs | length' <<< "$runs")" == "1" ]] \
-              || die "${aggregate_name} must have exactly one exact-SHA main-push run"
+              || die "${aggregate_name} must have exactly one exact-SHA dev-push run"
             run="$(jq -c '.workflow_runs[0]' <<< "$runs")"
             jq -e \
               --argjson repository_id "$EXPECTED_REPOSITORY_ID" \
@@ -221,7 +221,7 @@ jobs:
               --arg path "$workflow_path" \
               --arg sha "$candidate_sha" \
               '.repository.id == $repository_id and .workflow_id == $workflow_id and
-               .path == $path and .event == "push" and .head_branch == "main" and
+               .path == $path and .event == "push" and .head_branch == "dev" and
                .head_sha == $sha and
                (.id | type == "number" and . >= 1 and floor == .) and
                (.run_attempt | type == "number" and . >= 1 and floor == .)' \
@@ -261,7 +261,7 @@ jobs:
             # A rerun can advance the current attempt between the run-list read
             # and the attempt-scoped jobs read. Re-list after the aggregate and
             # require the same attempt to remain the unique completed success.
-            fresh_runs="$(api "repos/${REPO}/actions/workflows/${workflow_id}/runs?event=push&branch=main&head_sha=${candidate_sha}&per_page=100")" \
+            fresh_runs="$(api "repos/${REPO}/actions/workflows/${workflow_id}/runs?event=push&branch=dev&head_sha=${candidate_sha}&per_page=100")" \
               || die "unable to re-read ${aggregate_name} workflow run"
             jq -e '.total_count == 1 and
               (.workflow_runs | type == "array" and length == 1)' \
@@ -321,8 +321,8 @@ jobs:
             workflow_run)
               [[ "$TRIGGER_RUN_ID" =~ ^[1-9][0-9]*$ && "$TRIGGER_WORKFLOW_NAME" == "CI" ]] \
                 || die "unexpected completed workflow"
-              [[ "$TRIGGER_WORKFLOW_EVENT" == "push" && "$TRIGGER_WORKFLOW_HEAD_BRANCH" == "main" ]] \
-                || die "only main push CI may wake image publication"
+              [[ "$TRIGGER_WORKFLOW_EVENT" == "push" && "$TRIGGER_WORKFLOW_HEAD_BRANCH" == "dev" ]] \
+                || die "only dev push CI may wake image publication"
               candidate_sha="$TRIGGER_WORKFLOW_HEAD_SHA"
               [[ "$candidate_sha" =~ ^[0-9a-f]{40}$ ]] || die "trigger lacks an exact candidate SHA"
               trigger_run="$(api "repos/${REPO}/actions/runs/${TRIGGER_RUN_ID}")" \
@@ -336,7 +336,7 @@ jobs:
                 --arg conclusion "$TRIGGER_WORKFLOW_CONCLUSION" \
                 '.repository.id == $repository_id and .workflow_id == $workflow_id and
                  .id == $run_id and .path == $path and .event == "push" and
-                 .head_branch == "main" and .head_sha == $sha and .status == "completed" and
+                 .head_branch == "dev" and .head_sha == $sha and .status == "completed" and
                  .conclusion == $conclusion and
                  (.run_attempt | type == "number" and . >= 1 and floor == .)' \
                 <<< "$trigger_run" >/dev/null || die "triggering CI metadata changed or is untrusted"
@@ -347,8 +347,8 @@ jobs:
               trigger_run_attempt="1"
               ;;
             workflow_dispatch)
-              [[ "$DISPATCH_REF" == "refs/heads/main" ]] \
-                || die "manual recovery requires a first-attempt main dispatch"
+              [[ "$DISPATCH_REF" == "refs/heads/dev" ]] \
+                || die "manual recovery requires a first-attempt dev dispatch"
               candidate_sha="$DISPATCH_CANDIDATE_SHA"
               [[ "$candidate_sha" =~ ^[0-9a-f]{40}$ ]] \
                 || die "candidate_sha must be a full lowercase SHA"
@@ -356,11 +356,11 @@ jobs:
             *) die "unsupported release trigger" ;;
           esac
 
-          current_main_sha="$(current_main)"
-          if [[ "$current_main_sha" != "$candidate_sha" ]]; then
+          current_dev_sha="$(current_dev)"
+          if [[ "$current_dev_sha" != "$candidate_sha" ]]; then
             [[ "$EVENT_NAME" == "workflow_run" ]] \
-              && skip_publication "candidate is no longer current main"
-            die "manual recovery candidate is not current main"
+              && skip_publication "candidate is no longer current dev"
+            die "manual recovery candidate is not current dev"
           fi
 
           commit="$(api "repos/${REPO}/commits/${candidate_sha}")" \
@@ -391,7 +391,7 @@ jobs:
             || die "release subject and manifest version disagree"
           [[ "$release_pr_number" =~ ^[1-9][0-9]{0,14}$ ]] \
             || die "release subject PR number is outside the exact integer bound"
-          expected_release_title="chore(main): release ${candidate_version}"
+          expected_release_title="chore(dev): release ${candidate_version}"
 
           release_pr="$(api "repos/${REPO}/pulls/${release_pr_number}")" \
             || die "unable to read the release pull request"
@@ -408,7 +408,7 @@ jobs:
             '.number == $pr_number and .state == "closed" and .draft == false and
              .merged == true and (.merged_at | type == "string" and length > 0) and
              .merge_commit_sha == $candidate and .title == $title and
-             .base.ref == "main" and .base.sha == $parent and
+             .base.ref == "dev" and .base.sha == $parent and
              .base.repo.id == $repository_id and .base.repo.full_name == $repo and
              (.head.ref | type == "string" and test($head_ref_re)) and
              (.head.sha | type == "string" and length == 40 and test("^[0-9a-f]{40}$")) and
@@ -489,7 +489,7 @@ jobs:
           release_head_snapshot="$(canonical_release_head_snapshot <<< "$release_head")" \
             || die "unable to snapshot protected release head"
 
-          release_runs_endpoint="repos/${REPO}/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${parent_sha}&per_page=100"
+          release_runs_endpoint="repos/${REPO}/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${parent_sha}&per_page=100"
           release_runs="$(api "$release_runs_endpoint")" \
             || die "unable to read protected Release Please proof runs"
           jq -e \
@@ -501,7 +501,7 @@ jobs:
             '.total_count == 1 and (.workflow_runs | type == "array" and length == 1) and
              .workflow_runs[0].workflow_id == $workflow_id and
              .workflow_runs[0].path == $path and .workflow_runs[0].event == "push" and
-             .workflow_runs[0].head_branch == "main" and .workflow_runs[0].head_sha == $parent and
+             .workflow_runs[0].head_branch == "dev" and .workflow_runs[0].head_sha == $parent and
              .workflow_runs[0].repository.id == $repository_id and
              .workflow_runs[0].repository.full_name == $repo and
              (.workflow_runs[0].id | type == "number" and . >= 1 and floor == .) and
@@ -545,11 +545,11 @@ jobs:
 
           ready=false
           for ((poll = 1; poll <= max_polls; poll++)); do
-            polled_main_sha="$(current_main)"
-            if [[ "$polled_main_sha" != "$candidate_sha" ]]; then
+            polled_dev_sha="$(current_dev)"
+            if [[ "$polled_dev_sha" != "$candidate_sha" ]]; then
               [[ "$EVENT_NAME" == "workflow_run" ]] \
-                && skip_publication "main advanced while release evidence was pending"
-              die "main advanced while release evidence was pending"
+                && skip_publication "dev advanced while release evidence was pending"
+              die "dev advanced while release evidence was pending"
             fi
             pending=false
             if verify_release_snapshot; then
@@ -618,8 +618,8 @@ jobs:
             || die "protected Release Please proof run became malformed during final readback"
           [[ "$fresh_release_run_snapshot" == "$release_run_snapshot" ]] \
             || die "protected Release Please proof run changed during admission"
-          [[ "$(current_main)" == "$candidate_sha" ]] \
-            || die "candidate stopped being current main before publication authorization"
+          [[ "$(current_dev)" == "$candidate_sha" ]] \
+            || die "candidate stopped being current dev before publication authorization"
 
           {
             echo "eligible=true"
@@ -778,7 +778,7 @@ jobs:
           tags: |
             type=semver,pattern={{version}},value=${{ needs.ci-admission.outputs.release_tag }}
             type=semver,pattern={{major}}.{{minor}},value=${{ needs.ci-admission.outputs.release_tag }}
-            type=raw,value=main
+            type=raw,value=dev
             type=raw,value=edge
             type=raw,value=sha-${{ needs.ci-admission.outputs.release_sha }}
           labels: |
@@ -1111,7 +1111,7 @@ jobs:
     needs: [ci-admission, merge, release-probe]
     if: >-
       github.event_name == 'workflow_dispatch' &&
-      github.ref == 'refs/heads/main' &&
+      github.ref == 'refs/heads/dev' &&
       github.run_attempt == 1 &&
       inputs.promote_production == true
     permissions:
@@ -1123,7 +1123,7 @@ jobs:
           ref: ${{ needs.ci-admission.outputs.release_sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Verify immutable main and production authorization
+      - name: Verify immutable dev and production authorization
         env:
           EXPECTED_SHA: ${{ needs.ci-admission.outputs.release_sha }}
           EXPECTED_REF: ${{ github.ref }}
@@ -1132,9 +1132,9 @@ jobs:
           --expected-sha "$EXPECTED_SHA"
           --expected-ref "$EXPECTED_REF"
 
-  # Explicit production promotion. A merge/main push may build, scan, sign, and
+  # Explicit production promotion. A merge/dev push may build, scan, sign, and
   # attest images, but it cannot mutate the Argo-tracked production overlay.
-  # Promotion requires a manual dispatch on main, an explicit true input, the
+  # Promotion requires a manual dispatch on dev, an explicit true input, the
   # protected production environment, and a fail-closed runtime check that the
   # environment actually has required reviewers configured.
   bump-digests:
@@ -1144,7 +1144,7 @@ jobs:
     environment: production
     if: >-
       github.event_name == 'workflow_dispatch' &&
-      github.ref == 'refs/heads/main' &&
+      github.ref == 'refs/heads/dev' &&
       github.run_attempt == 1 &&
       inputs.promote_production == true
     permissions:
@@ -1159,7 +1159,7 @@ jobs:
           ref: ${{ needs.ci-admission.outputs.release_sha }}
           fetch-depth: 0
 
-      - name: Re-verify immutable main and production authority inside protected job
+      - name: Re-verify immutable dev and production authority inside protected job
         env:
           EXPECTED_SHA: ${{ needs.ci-admission.outputs.release_sha }}
           EXPECTED_REF: ${{ github.ref }}
@@ -1238,4 +1238,4 @@ jobs:
           git commit -m "deploy(prod): promote console-app @${AUTHORIZED_SHA:0:7}"
           python3 scripts/check-production-promotion-authority.py pre-push \
             --expected-sha "$AUTHORIZED_SHA"
-          git push origin "HEAD:main"
+          git push origin "HEAD:dev"

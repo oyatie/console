@@ -34,7 +34,7 @@ export const FALLBACK_REPOSITORY_ID = 1269693002;
 export const FALLBACK_WORKFLOW_ID = 296023729;
 export const FALLBACK_WORKFLOW_PATH = '.github/workflows/release-please.yml';
 export const FALLBACK_WORKFLOW_NAME = 'Release Please';
-export const FALLBACK_HEAD_REF = 'release-please--branches--main--components--console';
+export const FALLBACK_HEAD_REF = 'release-please--branches--dev--components--console';
 export const FALLBACK_WEB_FLOW_ID = 19864447;
 export const FALLBACK_WEB_FLOW_LOGIN = 'web-flow';
 export const FALLBACK_WEB_FLOW_TYPE = 'User';
@@ -71,13 +71,13 @@ function exactEnvironment(source = process.env) {
   if (String(source.GITHUB_REPOSITORY_ID ?? '') !== String(FALLBACK_REPOSITORY_ID)) {
     fail('GITHUB_REPOSITORY_ID is not the pinned repository id');
   }
-  if (source.GITHUB_EVENT_NAME !== 'push' || source.GITHUB_REF !== 'refs/heads/main') {
-    fail('fallback is restricted to a protected main push');
+  if (source.GITHUB_EVENT_NAME !== 'push' || source.GITHUB_REF !== 'refs/heads/dev') {
+    fail('fallback is restricted to a protected dev push');
   }
   if (source.GITHUB_WORKFLOW !== FALLBACK_WORKFLOW_NAME) fail('GITHUB_WORKFLOW is not pinned');
-  const workflowRef = `${FALLBACK_REPOSITORY}/${FALLBACK_WORKFLOW_PATH}@refs/heads/main`;
+  const workflowRef = `${FALLBACK_REPOSITORY}/${FALLBACK_WORKFLOW_PATH}@refs/heads/dev`;
   if (source.GITHUB_WORKFLOW_REF !== workflowRef || source.GITHUB_WORKFLOW_SHA !== sha) {
-    fail('workflow ref/SHA is not bound to the triggering protected main commit');
+    fail('workflow ref/SHA is not bound to the triggering protected dev commit');
   }
   return Object.freeze({
     repository,
@@ -158,7 +158,7 @@ function assertRun(run, coordinates) {
     || run?.workflow_id !== FALLBACK_WORKFLOW_ID
     || run?.path !== FALLBACK_WORKFLOW_PATH
     || run?.event !== 'push'
-    || run?.head_branch !== 'main'
+    || run?.head_branch !== 'dev'
     || run?.head_sha !== coordinates.sha
     || run?.run_number !== coordinates.runNumber
     || run?.run_attempt !== coordinates.runAttempt
@@ -186,7 +186,7 @@ async function assertSoleActiveRun({ request, token, coordinates }) {
       method: 'GET',
       endpoint: apiEndpoint(
         `/repos/${FALLBACK_REPOSITORY}/actions/workflows/${FALLBACK_WORKFLOW_ID}/runs`,
-        { branch: 'main', event: 'push', status, per_page: 100 },
+        { branch: 'dev', event: 'push', status, per_page: 100 },
       ),
       expectedStatus: 200,
     });
@@ -240,7 +240,7 @@ async function listReleasePulls({ request, token }) {
     method: 'GET',
     endpoint: apiEndpoint(`/repos/${FALLBACK_REPOSITORY}/pulls`, {
       state: 'open',
-      base: 'main',
+      base: 'dev',
       head: `oyatie:${FALLBACK_HEAD_REF}`,
       per_page: 100,
     }),
@@ -256,7 +256,7 @@ function canonicalSnapshot(snapshot) {
   const coordinates = {
     repository: snapshot.repository,
     repositoryId: snapshot.repositoryId,
-    sha: exactSha(snapshot.sha, 'snapshot main SHA'),
+    sha: exactSha(snapshot.sha, 'snapshot dev SHA'),
     runId: positiveInteger(snapshot.runId, 'snapshot run id'),
     runNumber: positiveInteger(snapshot.runNumber, 'snapshot run number'),
     runAttempt: positiveInteger(snapshot.runAttempt, 'snapshot run attempt'),
@@ -307,8 +307,8 @@ export async function snapshotReleasePleaseState({
   const coordinates = exactEnvironment(environment);
   const token = exactToken(environment.GITHUB_TOKEN, 'GITHUB_TOKEN');
   await assertSoleActiveRun({ request, token, coordinates });
-  const mainTip = await readRef({ request, token, ref: 'main' });
-  if (mainTip !== coordinates.sha) fail('live main moved before Release Please action execution');
+  const mainTip = await readRef({ request, token, ref: 'dev' });
+  if (mainTip !== coordinates.sha) fail('live dev moved before Release Please action execution');
   // GitHub deletes an unprotected release branch when its PR is merged. An
   // absent exact ref is therefore a valid pre-action state; the post-action
   // fallback still requires one newly created exact commit ref.
@@ -479,7 +479,7 @@ function assertCreatedPullRequest(pr, { number, baseSha, headSha, envelope, labe
     || pr?.head?.sha !== headSha
     || pr?.head?.repo?.id !== FALLBACK_REPOSITORY_ID
     || pr?.head?.repo?.full_name !== FALLBACK_REPOSITORY
-    || pr?.base?.ref !== 'main'
+    || pr?.base?.ref !== 'dev'
     || pr?.base?.sha !== baseSha
     || pr?.base?.repo?.id !== FALLBACK_REPOSITORY_ID
     || pr?.base?.repo?.full_name !== FALLBACK_REPOSITORY
@@ -532,8 +532,8 @@ export async function createReleasePleaseFallbackPr({
   if (workflowToken === transportToken) fail('transport token must differ from GITHUB_TOKEN');
 
   await assertSoleActiveRun({ request, token: workflowToken, coordinates });
-  const mainTip = await readRef({ request, token: workflowToken, ref: 'main' });
-  if (mainTip !== coordinates.sha) fail('live main moved after the action');
+  const mainTip = await readRef({ request, token: workflowToken, ref: 'dev' });
+  if (mainTip !== coordinates.sha) fail('live dev moved after the action');
   const newTip = await readRef({ request, token: workflowToken, ref: FALLBACK_HEAD_REF });
   if (newTip === snapshot.releaseTip) fail('Release Please ref did not advance after the action failure');
   if ((await listReleasePulls({ request, token: workflowToken })).length !== 0) {
@@ -567,7 +567,7 @@ export async function createReleasePleaseFallbackPr({
     body: {
       title: envelope.title,
       head: FALLBACK_HEAD_REF,
-      base: 'main',
+      base: 'dev',
       body: envelope.body,
       draft: false,
     },
@@ -616,9 +616,9 @@ export async function createReleasePleaseFallbackPr({
     envelope,
     labels: [RELEASE_PLEASE_PENDING_LABEL],
   });
-  if ((await readRef({ request, token: workflowToken, ref: 'main' })) !== coordinates.sha
+  if ((await readRef({ request, token: workflowToken, ref: 'dev' })) !== coordinates.sha
     || (await readRef({ request, token: workflowToken, ref: FALLBACK_HEAD_REF })) !== newTip) {
-    fail('main or release ref moved during fallback readback');
+    fail('dev or release ref moved during fallback readback');
   }
   await assertSoleActiveRun({ request, token: workflowToken, coordinates });
 

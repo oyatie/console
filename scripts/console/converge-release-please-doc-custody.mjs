@@ -101,7 +101,7 @@ function assertStableReleasePr(pr, expected, phase) {
     [pr?.head?.ref === expected.headRef, 'head ref'],
     [pr?.head?.repo?.full_name === expected.repository, 'head repository name'],
     [pr?.head?.repo?.id === expected.repositoryId, 'head repository id'],
-    [pr?.base?.ref === 'main', 'base ref'],
+    [pr?.base?.ref === 'dev', 'base ref'],
     [pr?.base?.sha === expected.parentSha, 'base SHA'],
     [pr?.base?.repo?.full_name === expected.repository, 'base repository name'],
     [pr?.base?.repo?.id === expected.repositoryId, 'base repository id'],
@@ -167,7 +167,7 @@ export function assertReleasePleasePrePushSnapshot({
   if (!RELEASE_PLEASE_HEAD_REF.test(headRef)) {
     fail('release action PR head ref must match the release-please branch pattern');
   }
-  if (actionPr.baseBranchName !== 'main') fail('release action PR base must be main');
+  if (actionPr.baseBranchName !== 'dev') fail('release action PR base must be dev');
 
   if (releasePleasePrCreatorClass(initialPr?.user) === null) {
     fail('pre-push PR creator must be the exact bot or pinned transport principal');
@@ -280,8 +280,8 @@ export function assertReleasePleaseActionCoreBinding({
   }
   if (livePr?.head?.repo?.full_name !== repo) fail('live PR head repository must equal the protected repository');
   if (livePr?.head?.ref !== actionPr.headBranchName) fail('live PR head ref must equal release action PR output');
-  if (livePr?.base?.ref !== actionPr.baseBranchName || actionPr.baseBranchName !== 'main') {
-    fail('live PR base must equal the release action output and protected main branch');
+  if (livePr?.base?.ref !== actionPr.baseBranchName || actionPr.baseBranchName !== 'dev') {
+    fail('live PR base must equal the release action output and protected dev branch');
   }
   if (!RELEASE_PLEASE_HEAD_REF.test(actionPr.headBranchName)) {
     fail('release action PR head ref must match the release-please branch pattern');
@@ -465,7 +465,7 @@ export function main() {
   if (!RELEASE_PLEASE_HEAD_REF.test(actionPr.headBranchName)) {
     fail('release action PR head ref must match the release-please branch pattern');
   }
-  if (actionPr.baseBranchName !== 'main') fail('release action PR base must be main');
+  if (actionPr.baseBranchName !== 'dev') fail('release action PR base must be dev');
 
   const pr = ghJson(['api', `repos/${repository}/pulls/${actionPr.number}`]);
   run('git', [

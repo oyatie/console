@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened, edited, ready_for_review]
     branches:
-      - main
+      - dev
 
 # This workflow is deliberately target-branch-only: it checks out and executes
 # protected code only, carries no repository secrets/write/OIDC, and never

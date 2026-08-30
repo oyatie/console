@@ -30,7 +30,7 @@ const H = 'a'.repeat(40);
 const M = 'b'.repeat(40);
 const P = 'c'.repeat(40);
 const RELEASE_BOT_ID = 41898282;
-const RELEASE_HEAD_REF = 'release-please--branches--main--components--console';
+const RELEASE_HEAD_REF = 'release-please--branches--dev--components--console';
 const ORDINARY_HEAD_REF = 'feature/ordinary';
 const RELEASE_PATHS = ['.release-please-manifest.json', 'CHANGELOG.md'];
 
@@ -86,7 +86,7 @@ function releaseOps(overrides = {}) {
       authorEmail: '41898282+github-actions[bot]@users.noreply.github.com',
       committerName: 'GitHub',
       committerEmail: 'noreply@github.com',
-      subject: 'chore(main): release 0.3.4',
+      subject: 'chore(dev): release 0.3.4',
     }),
     diff: () => RELEASE_PATHS.map(modified),
     ...overrides,
@@ -223,7 +223,7 @@ test('malformed release claims cannot fall through to ordinary admission', () =>
       authorEmail: 'wrong@example.invalid',
       committerName: 'GitHub',
       committerEmail: 'noreply@github.com',
-      subject: 'chore(main): release 0.3.4',
+      subject: 'chore(dev): release 0.3.4',
     }),
   });
   const cases = [
@@ -307,7 +307,7 @@ test('live PR snapshot pins repository identity, state, base, head, and release 
     draft: false,
     user: { id: RELEASE_BOT_ID, login: 'github-actions[bot]' },
     base: {
-      ref: 'main',
+      ref: 'dev',
       sha: B,
       repo: { id: PINNED_RELEASE_REPOSITORY_ID, full_name: PINNED_RELEASE_REPOSITORY },
     },
@@ -347,7 +347,7 @@ const expectedProtectedWorkflow = Object.freeze({
   on: {
     pull_request_target: {
       types: ['opened', 'synchronize', 'reopened', 'edited', 'ready_for_review'],
-      branches: ['main'],
+      branches: ['dev'],
     },
   },
   permissions: { actions: 'read', contents: 'read', 'pull-requests': 'read' },
@@ -416,9 +416,9 @@ test('workflow emits one unconditional protected-code-only required context', ()
 });
 
 const protectedExecutableClosure = Object.freeze([
-  ['./verify-console-pr-authority-bootstrap.mjs', '1f2199ccf6d67bd0656f43799ef2c9f61f4719bd7baa15931bdeab0ddbca1a8f'],
+  ['./verify-console-pr-authority-bootstrap.mjs', '3914310c92c16ff2829d347a507723f4f434895c4c651032cf8d14548027979b'],
   ['./authority-ledger-path.mjs', '756e838e3979508d3be0b7d9974a0e719de9f1a08effbe60c272c2cad25b498e'],
-  ['./release-please-bot-candidate.mjs', 'e1bbf8819e3cca1d227293abbced2026bdc18d3953be3b1af0eaa5ed0a738108'],
+  ['./release-please-bot-candidate.mjs', '91aa1f7c4f0c882c4de560e3d5af0a37351b233d48cb974b897b7c1ebdaa3b6e'],
 ]);
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 

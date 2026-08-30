@@ -27,7 +27,7 @@ const M = 'b'.repeat(40);
 const BASE = 'd'.repeat(40);
 const trustedPrMeta = Object.freeze({
   prAuthorLogin: 'github-actions[bot]',
-  prHeadRef: 'release-please--branches--main--components--console',
+  prHeadRef: 'release-please--branches--dev--components--console',
   eventSenderLogin: 'github-actions[bot]',
   prHeadRepository: 'oyatie/console',
   repository: 'oyatie/console',
@@ -58,7 +58,7 @@ const botIdentity = {
   authorEmail: RELEASE_PLEASE_BOT_EMAIL,
   committerName: RELEASE_PLEASE_COMMITTER_NAME,
   committerEmail: RELEASE_PLEASE_COMMITTER_EMAIL,
-  subject: 'chore(main): release 0.3.4',
+  subject: 'chore(dev): release 0.3.4',
 };
 
 const releaseDiff = RELEASE_PLEASE_PATHS.map((path) => ({
@@ -196,7 +196,7 @@ test('bootstrap requirePrMeta rejects human creator/updater, fork heads, and non
   assert.throws(
     () => assertTrustedReleasePleasePrMeta({
       prAuthorLogin: 'jason931225',
-      prHeadRef: 'release-please--branches--main--components--console',
+      prHeadRef: 'release-please--branches--dev--components--console',
       eventSenderLogin: 'github-actions[bot]',
       prHeadRepository: 'oyatie/console',
       repository: 'oyatie/console',
@@ -263,7 +263,7 @@ test('admits main squash that tree-binds a classifiable release-please tip; forg
     parents: (sha) => (sha === S || sha === T0 ? [C] : []),
     commitIdentity: (sha) => (sha === T0
       ? botIdentity
-      : { ...botIdentity, subject: 'chore(main): release 0.3.4 (#621)' }),
+      : { ...botIdentity, subject: 'chore(dev): release 0.3.4 (#621)' }),
     diff: () => releaseDiff,
     tree: (sha) => (sha === S || sha === T0 ? 'tree-release' : 'tree-other'),
     sameTreeDiff: (left, right) => left === S && right === T0 || left === T0 && right === S,
@@ -301,7 +301,7 @@ test('admits main squash that tree-binds a classifiable release-please tip; forg
       ...baseOps,
       commitIdentity: (sha) => (sha === T0
         ? { ...botIdentity, authorName: 'Eve' }
-        : { ...botIdentity, subject: 'chore(main): release 0.3.4 (#621)' }),
+        : { ...botIdentity, subject: 'chore(dev): release 0.3.4 (#621)' }),
     }, S),
     null,
     'T0 that fails bot identity must not admit the squash',

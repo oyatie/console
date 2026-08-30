@@ -20,14 +20,14 @@ const C = 'c'.repeat(40);
 const T = 'a'.repeat(40);
 const OTHER = 'b'.repeat(40);
 const PR_NUMBER = 760;
-const HEAD_REF = 'release-please--branches--main--components--console';
+const HEAD_REF = 'release-please--branches--dev--components--console';
 const proofName = `release-authority-proof pr=${PR_NUMBER} head=${T}`;
 const run = Object.freeze({
   id: 31906390000,
   workflow_id: RELEASE_PLEASE_WORKFLOW_ID,
   path: RELEASE_PLEASE_WORKFLOW_PATH,
   event: 'push',
-  head_branch: 'main',
+  head_branch: 'dev',
   head_sha: C,
   run_number: 842,
   run_attempt: 2,
@@ -79,7 +79,7 @@ test('rejects run provenance, state, attempt, or ambiguity drift', () => {
     [{ ...run, path: '.github/workflows/ci.yml' }, /workflow path/],
     [{ ...run, event: 'workflow_dispatch' }, /allowed event/],
     [{ ...run, event: 'pull_request' }, /allowed event/],
-    [{ ...run, head_branch: 'release-branch' }, /main branch/],
+    [{ ...run, head_branch: 'release-branch' }, /dev branch/],
     [{ ...run, head_sha: OTHER }, /parent SHA/],
     [{ ...run, repository: { ...run.repository, id: 1 } }, /repository id/],
     [{ ...run, repository: { ...run.repository, full_name: 'attacker/console' } }, /repository name/],
@@ -120,7 +120,7 @@ const livePr = (sha = T, creator = botCreator) => ({
   state: 'open',
   user: { ...creator },
   head: { sha, ref: HEAD_REF, repo: { full_name: PINNED_RELEASE_REPOSITORY } },
-  base: { ref: 'main' },
+  base: { ref: 'dev' },
 });
 
 test('polls boundedly for delayed native proof visibility and rechecks the live PR head', async () => {
@@ -239,7 +239,7 @@ test('filters by exact parent SHA and paginates before selecting the globally ne
       if (endpoint.includes(`/pulls/${PR_NUMBER}`)) return livePr();
       if (endpoint.includes('/actions/workflows/')) {
         const url = new URL(endpoint, 'https://api.github.com');
-        assert.equal(url.searchParams.get('branch'), 'main');
+        assert.equal(url.searchParams.get('branch'), 'dev');
         assert.equal(url.searchParams.get('event'), 'push');
         assert.equal(url.searchParams.get('head_sha'), C);
         const page = Number(url.searchParams.get('page') ?? '1');

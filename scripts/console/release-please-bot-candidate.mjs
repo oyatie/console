@@ -30,7 +30,7 @@ export const RELEASE_PLEASE_TRANSPORT_NAME = 'jason931225';
 export const RELEASE_PLEASE_TRANSPORT_ID = 56489493;
 export const RELEASE_PLEASE_TRANSPORT_TYPE = 'User';
 export const RELEASE_PLEASE_PR_AUTHORS = Object.freeze(['github-actions[bot]']);
-export const RELEASE_PLEASE_HEAD_REF = /^release-please--branches--main--components--[A-Za-z0-9._-]+$/;
+export const RELEASE_PLEASE_HEAD_REF = /^release-please--branches--dev--components--[A-Za-z0-9._-]+$/;
 export const RELEASE_PLEASE_SUBJECT = /^chore\([^)]+\): release \d+\.\d+\.\d+$/;
 export const RELEASE_PLEASE_PATHS = Object.freeze(['.release-please-manifest.json', 'CHANGELOG.md']);
 export const RELEASE_PLEASE_CUSTODY_PATHS = Object.freeze([
@@ -77,7 +77,7 @@ export function assertTrustedReleasePleasePrMeta({
     fail('PR head repository must equal the protected repository');
   }
   if (typeof prHeadRef !== 'string' || !RELEASE_PLEASE_HEAD_REF.test(prHeadRef)) {
-    fail('PR head ref must match release-please--branches--main--components--*');
+    fail('PR head ref must match release-please--branches--dev--components--*');
   }
 }
 
@@ -308,14 +308,14 @@ export function gitOpsForReleasePlease(repoRoot, git, gitSucceeds) {
       try { git(repoRoot, ['diff', '--quiet', '--no-ext-diff', left, right]); return true; } catch { return false; }
     },
     mainTip: () => {
-      // Prefer remotes: shared hubs often leave refs/heads/main stale across worktrees.
-      for (const ref of ['refs/remotes/origin/main', 'origin/main', 'refs/heads/main']) {
+      // Prefer remotes: shared hubs often leave refs/heads/dev stale across worktrees.
+      for (const ref of ['refs/remotes/origin/dev', 'origin/dev', 'refs/heads/dev']) {
         try {
           const tip = git(repoRoot, ['rev-parse', ref]).trim();
           if (SHA.test(tip)) return tip;
         } catch { /* try next */ }
       }
-      fail('protected main tip is unresolvable');
+      fail('protected dev tip is unresolvable');
     },
     isAncestor: (ancestor, descendant) => gitSucceeds(repoRoot, ['merge-base', '--is-ancestor', ancestor, descendant]),
     pullHead: (number) => {

@@ -32,7 +32,7 @@ const REQUIRED_WORKFLOW_ENVELOPE = Object.freeze({
     // Required context: without merge_group it stays Pending for every merge-queue
     // entry and merges deadlock waiting on a check that never starts.
     merge_group: null,
-    push: { branches: ["main"] },
+    push: { branches: ["dev"] },
     pull_request: null,
     workflow_dispatch: null,
     schedule: [{ cron: "23 4 * * 1" }],

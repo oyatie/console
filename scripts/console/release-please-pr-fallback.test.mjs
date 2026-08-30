@@ -74,10 +74,10 @@ const environment = (overrides = {}) => ({
   GITHUB_REPOSITORY: FALLBACK_REPOSITORY,
   GITHUB_REPOSITORY_ID: String(FALLBACK_REPOSITORY_ID),
   GITHUB_EVENT_NAME: 'push',
-  GITHUB_REF: 'refs/heads/main',
+  GITHUB_REF: 'refs/heads/dev',
   GITHUB_SHA: BASE,
   GITHUB_WORKFLOW: FALLBACK_WORKFLOW_NAME,
-  GITHUB_WORKFLOW_REF: `${FALLBACK_REPOSITORY}/${FALLBACK_WORKFLOW_PATH}@refs/heads/main`,
+  GITHUB_WORKFLOW_REF: `${FALLBACK_REPOSITORY}/${FALLBACK_WORKFLOW_PATH}@refs/heads/dev`,
   GITHUB_WORKFLOW_SHA: BASE,
   GITHUB_RUN_ID: String(RUN_ID),
   GITHUB_RUN_NUMBER: String(RUN_NUMBER),
@@ -125,7 +125,7 @@ const activeRun = (overrides = {}) => ({
   workflow_id: FALLBACK_WORKFLOW_ID,
   path: FALLBACK_WORKFLOW_PATH,
   event: 'push',
-  head_branch: 'main',
+  head_branch: 'dev',
   head_sha: BASE,
   run_number: RUN_NUMBER,
   run_attempt: RUN_ATTEMPT,
@@ -180,7 +180,7 @@ function makeApi() {
       author: { id: RELEASE_PLEASE_BOT_ID, login: RELEASE_PLEASE_BOT_NAME, type: 'Bot' },
       committer: { id: FALLBACK_WEB_FLOW_ID, login: FALLBACK_WEB_FLOW_LOGIN, type: FALLBACK_WEB_FLOW_TYPE },
       commit: {
-        message: 'chore(main): release 0.3.9',
+        message: 'chore(dev): release 0.3.9',
         tree: { sha: HEAD_TREE },
         author: { name: RELEASE_PLEASE_BOT_NAME, email: RELEASE_PLEASE_BOT_EMAIL },
         committer: { name: RELEASE_PLEASE_COMMITTER_NAME, email: RELEASE_PLEASE_COMMITTER_EMAIL },
@@ -207,7 +207,7 @@ function makeApi() {
     number: PR_NUMBER,
     state: 'open',
     draft: false,
-    title: 'chore(main): release 0.3.9',
+    title: 'chore(dev): release 0.3.9',
     body: `:robot: I have created a release *beep* *boop*\n---\n\n\n${NOTES}\n\n---\nThis PR was generated with [Release Please](https://github.com/googleapis/release-please). See [documentation](https://github.com/googleapis/release-please#release-please).`,
     user: {
       id: RELEASE_PLEASE_TRANSPORT_ID,
@@ -221,7 +221,7 @@ function makeApi() {
       repo: { id: FALLBACK_REPOSITORY_ID, full_name: FALLBACK_REPOSITORY },
     },
     base: {
-      ref: 'main',
+      ref: 'dev',
       sha: state.mainTip,
       repo: { id: FALLBACK_REPOSITORY_ID, full_name: FALLBACK_REPOSITORY },
     },
@@ -236,8 +236,8 @@ function makeApi() {
       const runs = status === 'in_progress' ? [activeRun(), ...state.extraActive] : [];
       return { total_count: runs.length, workflow_runs: runs };
     }
-    if (endpoint === `/repos/${FALLBACK_REPOSITORY}/git/ref/heads/main`) {
-      return { ref: 'refs/heads/main', object: { type: 'commit', sha: state.mainTip } };
+    if (endpoint === `/repos/${FALLBACK_REPOSITORY}/git/ref/heads/dev`) {
+      return { ref: 'refs/heads/dev', object: { type: 'commit', sha: state.mainTip } };
     }
     if (endpoint === `/repos/${FALLBACK_REPOSITORY}/git/matching-refs/heads/${encodeURIComponent(FALLBACK_HEAD_REF)}`) {
       if (state.matchingReleaseRefs !== null) return structuredClone(state.matchingReleaseRefs);
@@ -347,7 +347,7 @@ test('rejects wrong repository, workflow, run, attempt, event, main, or competin
     { GITHUB_REPOSITORY: 'attacker/console' },
     { GITHUB_REPOSITORY_ID: '1' },
     { GITHUB_EVENT_NAME: 'workflow_dispatch' },
-    { GITHUB_REF: 'refs/heads/dev' },
+    { GITHUB_REF: 'refs/heads/main' },
     { GITHUB_WORKFLOW: 'CI' },
     { GITHUB_WORKFLOW_SHA: TIP },
     { GITHUB_RUN_ATTEMPT: '0' },
@@ -419,7 +419,7 @@ test('rejects main/ref/run races before or after the sole PAT mutation', async (
   {
     const { api, env } = await preparedFallback();
     api.state.mainTip = TIP;
-    await assert.rejects(() => createReleasePleaseFallbackPr({ environment: env, request: api.request }), /main moved/);
+    await assert.rejects(() => createReleasePleaseFallbackPr({ environment: env, request: api.request }), /dev moved/);
     assert.equal(api.state.patPosts, 0);
   }
   {
