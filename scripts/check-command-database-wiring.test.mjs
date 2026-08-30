@@ -101,7 +101,7 @@ test("live Argo, base, prod, and secret wiring remain DARK-topology-free", () =>
   );
 
   assert.match(argo, /path: deploy\/apps\/console\/overlays\/prod/);
-  assert.match(argo, /targetRevision: main/);
+  assert.match(argo, /targetRevision: dev/);
   assert.match(prod, /resources:\s*\n\s+- \.\.\/\.\.\/base/);
   assert.doesNotMatch(prod, /components:|pr-473|governed-command-database/);
   assert.doesNotMatch(base, /database-topology-job|governed-command-database/);
@@ -115,11 +115,11 @@ test("live Argo, base, prod, and secret wiring remain DARK-topology-free", () =>
     );
   }
 
-  const mainRef = run("git", ["rev-parse", "--verify", "origin/main^{commit}"]);
+  const integrationRef = run("git", ["rev-parse", "--verify", "origin/dev^{commit}"]);
   assert.equal(
-    mainRef.status,
+    integrationRef.status,
     0,
-    `origin/main is mandatory for the live GitOps identity gate:\n${mainRef.stderr}`,
+    `origin/dev is mandatory for the live GitOps identity gate:\n${integrationRef.stderr}`,
   );
   const LIVE_PATHS = [
     "deploy/argocd/apps/console.yaml",
@@ -127,29 +127,29 @@ test("live Argo, base, prod, and secret wiring remain DARK-topology-free", () =>
     "deploy/apps/console/overlays/prod",
     "deploy/apps/secrets-management/wiring",
   ];
-  const changed = run("git", ["diff", "--name-only", "origin/main", "--", ...LIVE_PATHS]);
+  const changed = run("git", ["diff", "--name-only", "origin/dev", "--", ...LIVE_PATHS]);
   assert.equal(changed.status, 0, `git diff failed:\n${changed.stderr}`);
   const changedPaths = changed.stdout.split("\n").map((line) => line.trim()).filter(Boolean);
 
-  // ArgoCD syncs these paths from `main` with `targetRevision: main`, so a change to any of
+  // ArgoCD syncs these paths from `dev` with `targetRevision: dev`, so a change to any of
   // them takes effect the instant it merges. The assertions above keep the DARK
   // governed-command-database topology out by NAME; this one is the backstop for a topology
   // nobody has named yet, and it used to be an unconditional byte-identity check.
   //
   // An unconditional identity check is not a gate, it is a wall: it cannot pass on any branch
-  // that changes these paths, because it compares against `origin/main`, which by definition
+  // that changes these paths, because it compares against `origin/dev`, which by definition
   // does not carry the change yet. A control with no exception route either stops all change
   // or gets deleted by whoever needs the next change badly enough — a 90-day retention policy
   // was withdrawn rather than landed for exactly this reason, and the withdrawal is recorded
   // in the program ledger.
   //
   // So the route is: declare the change. Every changed path must appear on a line ADDED to
-  // LIVE_GITOPS_CHANGES relative to origin/main. Naming a path once does not buy silence
+  // LIVE_GITOPS_CHANGES relative to origin/dev. Naming a path once does not buy silence
   // forever — the declaration has to be new, because the diff of the declaration file is what
   // is read. Nothing changes silently; deliberate change costs one line.
   if (changedPaths.length > 0) {
     const LIVE_GITOPS_CHANGES = "deploy/apps/console/LIVE-GITOPS-CHANGES.md";
-    const declared = run("git", ["diff", "origin/main", "--", LIVE_GITOPS_CHANGES]);
+    const declared = run("git", ["diff", "origin/dev", "--", LIVE_GITOPS_CHANGES]);
     assert.equal(declared.status, 0, `git diff failed:\n${declared.stderr}`);
     // `git diff` cannot see an untracked file, so a declaration written but never `git add`ed
     // produces an empty diff and the failure below reads as "you did not declare it" when the
@@ -171,7 +171,7 @@ test("live Argo, base, prod, and secret wiring remain DARK-topology-free", () =>
     assert.deepEqual(
       undeclared,
       [],
-      `live GitOps inputs changed without a declaration. ArgoCD syncs these from main, so ${
+      `live GitOps inputs changed without a declaration. ArgoCD syncs these from dev, so ${
         undeclared.length
       } path(s) would take effect on merge:\n${undeclared.map((entry) => `  ${entry}`).join("\n")}\n\n` +
         `Add an entry to ${LIVE_GITOPS_CHANGES} naming each path and why it changed.`,

@@ -20,7 +20,7 @@ spec:
         valueFiles:
           - $values/deploy/apps/traefik-oci-guest/values.yaml
     - repoURL: https://github.com/jason931225/console.git # replace OWNER
-      targetRevision: main
+      targetRevision: dev
       ref: values
   destination:
     server: https://kubernetes.default.svc

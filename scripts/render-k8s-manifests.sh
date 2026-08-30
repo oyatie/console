@@ -33,16 +33,17 @@ if [[ "$(grep -c 'digest: sha256:' deploy/apps/console/overlays/prod/kustomizati
   exit 1
 fi
 
-# Live production must track main. Past incidents came from Argo Applications left
-# on a feature branch while CI/release/image workflows were green on main.
+# Live production must track the integration branch. Past incidents came from
+# Argo Applications left on a feature branch while CI/release/image workflows
+# were green on the integration tip.
 if grep -R "targetRevision: feat/" deploy/argocd >/dev/null; then
   echo "render-k8s: Argo targetRevision must not point at a feature branch" >&2
   grep -R "targetRevision: feat/" deploy/argocd >&2
   exit 1
 fi
 for app in deploy/argocd/root.yaml deploy/argocd/apps/console.yaml; do
-  if ! grep -q "targetRevision: main" "${app}"; then
-    echo "render-k8s: ${app} must target main" >&2
+  if ! grep -q "targetRevision: dev" "${app}"; then
+    echo "render-k8s: ${app} must target dev" >&2
     exit 1
   fi
 done

@@ -6,7 +6,7 @@
 > currently authorizes zero production mutations. Start with the
 > [disk-wipe consolidation handoff](../../../docs/handoffs/2026-08-03-disk-wipe-consolidation.md).
 
-ArgoCD syncs `deploy/apps/console/overlays/prod` from `main` with `targetRevision: main`.
+ArgoCD syncs `deploy/apps/console/overlays/prod` from `dev` with `targetRevision: dev`.
 A change to any live input therefore takes effect **the instant it merges** — there is no
 separate deploy step to catch it, and no environment between the merge and production.
 
@@ -24,7 +24,7 @@ Changing any of these paths requires an entry below naming each changed path:
 - `deploy/apps/console/overlays/prod`
 - `deploy/apps/secrets-management/wiring`
 
-The gate reads the **diff** of this file against `origin/main`, not its contents. A path
+The gate reads the **diff** of this file against `origin/dev`, not its contents. A path
 named in an earlier entry does not buy silence for a later change — each change declares
 itself. That is the whole cost: one entry, in the same commit as the change.
 
@@ -33,6 +33,17 @@ This exists because the check used to be an unconditional byte-identity assertio
 policy was withdrawn rather than landed for that reason on 2026-07-31. A control with no
 exception route does not hold the line; it gets deleted by whoever needs the next change
 badly enough.
+
+---
+
+## 2026-08-30 — retarget live Argo to `dev`
+
+**Changed:** `deploy/argocd/apps/console.yaml`
+
+Phase C: Application `targetRevision` moves from `main` to `dev` so GitOps tracks the
+integration branch. Creating environment-named mirrors is not go-live. DNS/TLS/secrets
+and Ampere A1 remain HOLD. Live Argo still follows whatever git ref it currently
+syncs until this Application spec is present on that ref.
 
 ---
 

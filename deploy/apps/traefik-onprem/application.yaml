@@ -24,7 +24,7 @@ spec:
         valueFiles:
           - $values/deploy/apps/traefik-onprem/values.yaml
     - repoURL: https://github.com/jason931225/console.git
-      targetRevision: main
+      targetRevision: dev
       ref: values
   destination:
     server: https://kubernetes.default.svc

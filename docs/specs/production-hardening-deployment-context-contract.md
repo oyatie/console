@@ -44,7 +44,7 @@ These checks are independent of whether the selected deployment context is OCI, 
    - Do not treat an OCI-specific architecture string such as `linux/arm64` as globally portable. If the gate validates image platforms, make it context-aware: `oci-guest` may currently be arm64-only, while `on-prem-ha` must require an explicit multi-arch readiness decision before x86_64 hardware is activated.
 3. **Immutable GitOps deployment**
    - Production overlays pin app images by sha256 digest, not mutable tags.
-   - Argo roots that own live production still track `targetRevision: main`.
+   - Argo roots that own live production still track `targetRevision: dev`.
    - Deployment automation keeps an Argo refresh/rollout status guard. Domain names and IPs are context-specific, not global invariants.
 4. **Admission and provenance policy**
    - The optional admission-audit component remains present and documents sigstore policy-controller audit/warn posture.
@@ -123,7 +123,7 @@ The refactor should preserve a fail-closed gate:
    - parse JSON6902 patch values for `/spec/instances` and `/spec/storage/storageClass`;
    - parse `StorageClass` name/provisioner/replica count;
    - count digest pins and reject mutable `newTag` in live overlays;
-   - verify Argo `targetRevision: main` in live roots.
+   - verify Argo `targetRevision: dev` in live roots.
 4. Prose checks remain acceptable for operator-only evidence, but label them as documentation evidence and keep them scoped, e.g. `oci-guest secrets runbook: OCI Vault` or `on-prem-ha secrets runbook: OpenBao`.
 5. Add negative unit tests for the helper-level checks. Minimum cases:
    - `oci-guest` fails if base CNPG is changed to `instances: 3` or prod loads the on-prem storage patch;
@@ -138,6 +138,6 @@ A downstream implementation card is ready to complete when:
 
 - `npm run check:production-hardening` passes and its output identifies global plus context-specific checks.
 - The script no longer treats OCI-only strings like `OCI Vault`, `VM.Standard.A1.Flex`, `never run a second A1`, `OCI Object Storage`, `instances: 1`, `local-path`, or `linux/arm64` as universal production requirements.
-- The script still fails on missing digest pins, mutable image tags, missing `targetRevision: main`, missing cosign/Trivy/provenance gates, missing OpenSLO files, and missing monitoring manifests.
+- The script still fails on missing digest pins, mutable image tags, missing `targetRevision: dev`, missing cosign/Trivy/provenance gates, missing OpenSLO files, and missing monitoring manifests.
 - `oci-guest` and `on-prem-ha` each have at least one positive and one negative helper/unit test.
 - The implementation note here is cited or superseded by a more specific ADR/spec before future contexts are added.

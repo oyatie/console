@@ -15,7 +15,7 @@ spec:
   project: console-object-store-dark
   source:
     repoURL: https://github.com/jason931225/console.git
-    targetRevision: main
+    targetRevision: dev
     path: deploy/apps/object-store/manifests
   destination:
     server: https://kubernetes.default.svc

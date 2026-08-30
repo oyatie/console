@@ -56,7 +56,7 @@ spec:
       project: console
       source:
         repoURL: https://github.com/jason931225/console.git
-        targetRevision: main
+        targetRevision: dev
         path: '{{.values.rootPath}}'
         directory:
           recurse: false

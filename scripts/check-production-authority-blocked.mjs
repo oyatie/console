@@ -523,7 +523,7 @@ function appObserved(text, name) {
     root.apiVersion === "argoproj.io/v1alpha1" &&
     root.kind === "Application" &&
     root.metadata?.name === name &&
-    root.spec?.source?.targetRevision === "main"
+    root.spec?.source?.targetRevision === "dev"
   );
 }
 function exactItem(items, keys, values) {

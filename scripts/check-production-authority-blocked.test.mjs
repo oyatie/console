@@ -117,11 +117,11 @@ function fixture() {
   };
   const files = {
     [paths[0]]:
-      "apiVersion: argoproj.io/v1alpha1\nkind: Application\nmetadata:\n  name: console\nspec:\n  source:\n    targetRevision: main\n",
+      "apiVersion: argoproj.io/v1alpha1\nkind: Application\nmetadata:\n  name: console\nspec:\n  source:\n    targetRevision: dev\n",
     [paths[1]]:
       'apiVersion: argoproj.io/v1alpha1\nkind: AppProject\nmetadata:\n  name: console\nspec:\n  destinations:\n    - server: https://kubernetes.default.svc\n      namespace: "*"\n  clusterResourceWhitelist:\n    - group: "*"\n      kind: "*"\n  namespaceResourceWhitelist:\n    - group: "*"\n      kind: "*"\n',
     [paths[2]]:
-      "apiVersion: argoproj.io/v1alpha1\nkind: Application\nmetadata:\n  name: root\nspec:\n  source:\n    targetRevision: main\n",
+      "apiVersion: argoproj.io/v1alpha1\nkind: Application\nmetadata:\n  name: root\nspec:\n  source:\n    targetRevision: dev\n",
     [paths[3]]: cardinalityText,
     [paths[4]]: `${JSON.stringify(authorization)}\n`,
   };
@@ -601,13 +601,13 @@ describe("production authority blocked observation CLI", () => {
     const cases = [
       [
         paths[2],
-        "targetRevision: main",
+        "targetRevision: dev",
         "targetRevision: [main]",
         "INPUT_YAML_AMBIGUOUS",
       ],
       [
         paths[2],
-        "targetRevision: main",
+        "targetRevision: dev",
         "targetRevision: stable",
         "OBSERVATION_NOT_ESTABLISHED",
       ],
@@ -631,7 +631,7 @@ describe("production authority blocked observation CLI", () => {
       ],
       [
         paths[0],
-        "targetRevision: main",
+        "targetRevision: dev",
         "targetRevision: !main main",
         "INPUT_YAML_AMBIGUOUS",
       ],
@@ -717,7 +717,7 @@ describe("production authority blocked observation CLI", () => {
         paths[0],
         (files) =>
           files[paths[0]].replace(
-            "targetRevision: main",
+            "targetRevision: dev",
             "targetRevision: stable",
           ),
         paths[1],
@@ -754,8 +754,8 @@ describe("production authority blocked observation CLI", () => {
         paths[2],
         (files) =>
           files[paths[2]].replace(
-            "targetRevision: main",
-            "targetRevision: main\n      invalid: sibling",
+            "targetRevision: dev",
+            "targetRevision: dev\n      invalid: sibling",
           ),
         null,
         null,
@@ -813,7 +813,7 @@ describe("production authority blocked observation CLI", () => {
             root,
             paths[2],
             files[paths[2]].replace(
-              "targetRevision: main",
+              "targetRevision: dev",
               "targetRevision: |\n      main",
             ),
           ),
@@ -888,8 +888,8 @@ describe("production authority blocked observation CLI", () => {
       [paths[0], "  source:", "  <<: *defaults\n  source:"],
       [
         paths[0],
-        "    targetRevision: main",
-        "    <<: *defaults\n    targetRevision: main",
+        "    targetRevision: dev",
+        "    <<: *defaults\n    targetRevision: dev",
       ],
       [paths[1], "    - server:", "    - <<: *defaults\n      server:"],
     ];
@@ -950,7 +950,7 @@ describe("production authority blocked observation CLI", () => {
     assertEvaluateFailure(files, { [paths[4]]: `${duplicate}\n`, [paths[3]]: `${JSON.stringify({ ...JSON.parse(files[paths[3]]), unknown: false })}\n` }, "INPUT_DUPLICATE_KEY");
     assertEvaluateFailure(files, { [paths[3]]: `${JSON.stringify({ ...JSON.parse(files[paths[3]]), unknown: false })}\n`, [paths[1]]: "kind: [AppProject]\n" }, "INPUT_UNKNOWN_KEY");
     assertEvaluateFailure(files, { [paths[3]]: "[]\n", [paths[1]]: "kind: [AppProject]\n" }, "INPUT_SCHEMA_MISMATCH");
-    assertEvaluateFailure(files, { [paths[0]]: files[paths[0]].replace("targetRevision: main", "targetRevision: stable"), [paths[2]]: "kind: [Application]\n" }, "INPUT_YAML_AMBIGUOUS");
+    assertEvaluateFailure(files, { [paths[0]]: files[paths[0]].replace("targetRevision: dev", "targetRevision: stable"), [paths[2]]: "kind: [Application]\n" }, "INPUT_YAML_AMBIGUOUS");
   });
   it("binds formatting-only commit changes to raw Git blob digests while retaining the fixed observation", () => {
     const { root, sha, files } = fixture();
@@ -1007,8 +1007,8 @@ describe("production authority blocked observation CLI", () => {
       [paths[0], "  name: console", "  name: [console]"],
       [paths[0], "  name: console", "  name: console\n  name: console"],
       [paths[0], "metadata:", " metadata:"],
-      [paths[2], "targetRevision: main", "targetRevision: *main"],
-      [paths[2], "targetRevision: main", "targetRevision: >\n      main"],
+      [paths[2], "targetRevision: dev", "targetRevision: *main"],
+      [paths[2], "targetRevision: dev", "targetRevision: >\n      main"],
     ];
     for (const [path, from, to] of cases) {
       assertEvaluateFailure(files, { [path]: files[path].replace(from, to) }, "INPUT_YAML_AMBIGUOUS");
@@ -1019,11 +1019,11 @@ describe("production authority blocked observation CLI", () => {
     for (const [path, name] of [[paths[0], "console"], [paths[2], "root"]]) {
       const source = files[path];
       const cases = [
-        [`${name} missing`, source.replace("    targetRevision: main\n", ""), "OBSERVATION_NOT_ESTABLISHED"],
-        [`${name} duplicate`, source.replace("    targetRevision: main", "    targetRevision: main\n    targetRevision: main"), "INPUT_YAML_AMBIGUOUS"],
-        [`${name} relocated`, source.replace("    targetRevision: main", "    wrapper:\n      targetRevision: main"), "OBSERVATION_NOT_ESTABLISHED"],
-        [`${name} wrong value`, source.replace("targetRevision: main", "targetRevision: stable"), "OBSERVATION_NOT_ESTABLISHED"],
-        [`${name} wrong node`, source.replace("targetRevision: main", "targetRevision:\n      child: main"), "INPUT_YAML_AMBIGUOUS"],
+        [`${name} missing`, source.replace("    targetRevision: dev\n", ""), "OBSERVATION_NOT_ESTABLISHED"],
+        [`${name} duplicate`, source.replace("    targetRevision: dev", "    targetRevision: dev\n    targetRevision: dev"), "INPUT_YAML_AMBIGUOUS"],
+        [`${name} relocated`, source.replace("    targetRevision: dev", "    wrapper:\n      targetRevision: dev"), "OBSERVATION_NOT_ESTABLISHED"],
+        [`${name} wrong value`, source.replace("targetRevision: dev", "targetRevision: stable"), "OBSERVATION_NOT_ESTABLISHED"],
+        [`${name} wrong node`, source.replace("targetRevision: dev", "targetRevision:\n      child: main"), "INPUT_YAML_AMBIGUOUS"],
       ];
       for (const [label, text, code] of cases)
         assertEvaluateFailure(files, { [path]: text }, code, label);

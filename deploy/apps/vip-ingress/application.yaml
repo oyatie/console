@@ -21,10 +21,10 @@ spec:
         valueFiles:
           - $values/deploy/apps/vip-ingress/values.yaml
     - repoURL: https://github.com/jason931225/console.git
-      targetRevision: main
+      targetRevision: dev
       ref: values
     - repoURL: https://github.com/jason931225/console.git
-      targetRevision: main
+      targetRevision: dev
       path: deploy/apps/vip-ingress/manifests
   destination:
     server: https://kubernetes.default.svc

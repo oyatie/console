@@ -2109,9 +2109,9 @@ export function evaluateArgoTargetRevisionChecks(readText) {
     );
     requirement(
       result,
-      targetRevision === "main",
-      `${path} tracks main`,
-      `${path} must actively set targetRevision: main (found ${formatScalar(targetRevision)})`,
+      targetRevision === "dev",
+      `${path} tracks dev`,
+      `${path} must actively set targetRevision: dev (found ${formatScalar(targetRevision)})`,
     );
   }
   return result;
