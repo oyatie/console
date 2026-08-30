@@ -336,7 +336,7 @@
     "backend/crates/platform/realtime/tests/hub.rs": 3,
     "backend/crates/platform/realtime/tests/notify_payload.rs": 2,
     "backend/crates/platform/realtime/tests/postgres_bridge.rs": 5,
-    "backend/crates/platform/request-context/src/lib.rs": 15,
+    "backend/crates/platform/request-context/src/lib.rs": 19,
     "backend/crates/platform/storage/src/lib.rs": 22,
     "backend/crates/platform/storage/tests/evidence_processing_rls_surfaces_as_runtime_role.rs": 1,
     "backend/crates/policy/adapter-postgres/tests/draft_storage.rs": 1,

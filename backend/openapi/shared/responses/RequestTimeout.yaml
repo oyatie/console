@@ -1,0 +1,5 @@
+      description: Request exceeded the server timeout budget.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'

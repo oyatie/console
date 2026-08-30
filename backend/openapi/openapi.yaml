@@ -17858,6 +17858,10 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '408':
+          $ref: '#/components/responses/RequestTimeout'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
         '422':
           $ref: '#/components/responses/ValidationError'
   /api/work-orders/{workOrderId}:
@@ -18295,6 +18299,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorBody'
+    PayloadTooLarge:
+      description: Request body exceeded the configured size limit.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
     PreconditionFailed:
       description: The submitted ontology key write validator is stale.
       headers:
@@ -18313,6 +18323,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorBody'
+    RequestTimeout:
+      description: Request exceeded the server timeout budget.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
     ServiceUnavailable:
       description: Required storage or platform dependency is not configured.
       content:
@@ -18321,6 +18337,13 @@ components:
             $ref: "#/components/schemas/ErrorBody"
     TooManyRequests:
       description: Rate limit exceeded for this client; retry later.
+      headers:
+        Retry-After:
+          description: Seconds until the client may retry this endpoint.
+          schema:
+            type: integer
+            minimum: 1
+          required: true
       content:
         application/json:
           schema:

@@ -152,12 +152,20 @@ const SHARED_RESPONSES: &[NamedYaml] = &[
         body: include_str!("../../../openapi/shared/responses/NotFound.yaml"),
     },
     NamedYaml {
+        name: "PayloadTooLarge",
+        body: include_str!("../../../openapi/shared/responses/PayloadTooLarge.yaml"),
+    },
+    NamedYaml {
         name: "PreconditionFailed",
         body: include_str!("../../../openapi/shared/responses/PreconditionFailed.yaml"),
     },
     NamedYaml {
         name: "PreconditionRequired",
         body: include_str!("../../../openapi/shared/responses/PreconditionRequired.yaml"),
+    },
+    NamedYaml {
+        name: "RequestTimeout",
+        body: include_str!("../../../openapi/shared/responses/RequestTimeout.yaml"),
     },
     NamedYaml {
         name: "ServiceUnavailable",

@@ -3567,6 +3567,11 @@ pub fn build_router(state: AppState) -> Router {
         state.config.trusted_proxy_count,
         state.config.trusted_proxy_cidrs.clone(),
     );
+    // Outer envelope: TimeoutLayer 408 and DefaultBodyLimit 413 are plaintext
+    // tower rejections; 429 handlers already emit JSON ErrorBody but omit
+    // Retry-After. Applied after those layers so the rewrite sees the status.
+    // Auth 401/403 mapping is unchanged (fail-closed).
+    let router = console_platform_request_context::with_http_error_envelope(router);
     with_metrics(router, &state)
 }
 

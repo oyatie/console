@@ -25,6 +25,7 @@ use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
 use std::sync::Arc;
 
+use axum::Json;
 use axum::extract::{ConnectInfo, Request};
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
@@ -38,8 +39,9 @@ use console_platform_authz::{
     resolve_branch_scope_in_org, resolve_effective_feature_grants_in_org,
 };
 use console_platform_group::group_admin_member_orgs;
-use http::{HeaderMap, StatusCode};
+use http::{HeaderMap, HeaderValue, StatusCode, header};
 use ipnet::IpNet;
+use serde::Serialize;
 use sqlx::PgPool;
 use std::collections::BTreeSet;
 
@@ -467,6 +469,7 @@ where
                 let Some(verifier) = verifier.as_ref() else {
                     return error_response(
                         StatusCode::SERVICE_UNAVAILABLE,
+                        "service_unavailable",
                         "JWT verification is not configured",
                     );
                 };
@@ -555,27 +558,145 @@ fn is_lower_hex(value: &str, len: usize) -> bool {
             .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
 }
 
-fn error_response(status: StatusCode, message: &str) -> Response {
-    (status, message.to_owned()).into_response()
+/// Delay-seconds advertised on HTTP 429. Matches the unauthenticated auth
+/// rate-limit window (one minute). Remaining-window is not computed here so this
+/// path cannot leak bucket keys or per-client counts.
+const RETRY_AFTER_SECONDS: HeaderValue = HeaderValue::from_static("60");
+
+#[derive(Debug, Serialize)]
+struct ErrorBody {
+    error: ErrorPayload,
+}
+
+#[derive(Debug, Serialize)]
+struct ErrorPayload {
+    code: &'static str,
+    message: String,
+}
+
+fn error_response(status: StatusCode, code: &'static str, message: &str) -> Response {
+    (
+        status,
+        Json(ErrorBody {
+            error: ErrorPayload {
+                code,
+                message: message.to_owned(),
+            },
+        }),
+    )
+        .into_response()
 }
 
 fn error_response_for(err: &RequestContextError) -> Response {
-    let status = match err {
-        RequestContextError::VerifierUnavailable => StatusCode::SERVICE_UNAVAILABLE,
-        RequestContextError::BranchScope(_) | RequestContextError::EffectivePolicy(_) => {
-            StatusCode::INTERNAL_SERVER_ERROR
-        }
+    let (status, code, message) = match err {
+        RequestContextError::VerifierUnavailable => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "service_unavailable",
+            "JWT verification is not configured",
+        ),
+        RequestContextError::BranchScope(_) | RequestContextError::EffectivePolicy(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "internal",
+            "internal server error",
+        ),
         RequestContextError::AccessScope(error) if error.kind == ErrorKind::Forbidden => {
-            StatusCode::FORBIDDEN
+            (StatusCode::FORBIDDEN, "forbidden", "forbidden")
         }
-        RequestContextError::AccessScope(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        RequestContextError::AccessScope(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "internal",
+            "internal server error",
+        ),
         // A valid token presented to the wrong tier is an authorization failure,
         // not an authentication one: the caller IS authenticated, just not for
-        // this route. 403 keeps it distinct from "no/!invalid token" (401).
-        RequestContextError::WrongTokenTier => StatusCode::FORBIDDEN,
-        _ => StatusCode::UNAUTHORIZED,
+        // this route. 403 keeps it distinct from "no/invalid token" (401).
+        RequestContextError::WrongTokenTier => (
+            StatusCode::FORBIDDEN,
+            "forbidden",
+            "token tier is not valid for this route",
+        ),
+        RequestContextError::MissingBearer => (
+            StatusCode::UNAUTHORIZED,
+            "unauthorized",
+            "missing or malformed bearer token",
+        ),
+        RequestContextError::InvalidToken => (
+            StatusCode::UNAUTHORIZED,
+            "unauthorized",
+            "invalid bearer token",
+        ),
+        RequestContextError::InvalidClaim(_) => (
+            StatusCode::UNAUTHORIZED,
+            "unauthorized",
+            "token claim is invalid",
+        ),
+        RequestContextError::MissingOrg => (
+            StatusCode::UNAUTHORIZED,
+            "unauthorized",
+            "no tenant context is bound to the current request",
+        ),
     };
-    error_response(status, &err.to_string())
+    error_response(status, code, message)
+}
+
+fn content_type_is_json(response: &Response) -> bool {
+    response
+        .headers()
+        .get(header::CONTENT_TYPE)
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(|value| {
+            let media = value.split(';').next().unwrap_or(value).trim();
+            media.eq_ignore_ascii_case("application/json")
+        })
+}
+
+/// Rewrite reachable 408/413 tower rejections into JSON [`ErrorBody`], and add
+/// `Retry-After` on 429 when the status is produced without that header.
+///
+/// Fail-closed auth stays fail-closed: this mapper does not change 401/403
+/// status mapping. It only fills the envelope the shared OpenAPI responses
+/// already promise. Existing JSON 429 bodies are preserved; only the missing
+/// header is added.
+pub fn with_http_error_envelope<S>(router: axum::Router<S>) -> axum::Router<S>
+where
+    S: Clone + Send + Sync + 'static,
+{
+    router.layer(axum::middleware::from_fn(http_error_envelope))
+}
+
+async fn http_error_envelope(request: Request, next: Next) -> Response {
+    let mut response = next.run(request).await;
+    match response.status() {
+        StatusCode::REQUEST_TIMEOUT if !content_type_is_json(&response) => error_response(
+            StatusCode::REQUEST_TIMEOUT,
+            "request_timeout",
+            "request timed out",
+        ),
+        StatusCode::PAYLOAD_TOO_LARGE if !content_type_is_json(&response) => error_response(
+            StatusCode::PAYLOAD_TOO_LARGE,
+            "payload_too_large",
+            "request body too large",
+        ),
+        StatusCode::TOO_MANY_REQUESTS => {
+            if response.headers().get(header::RETRY_AFTER).is_none() {
+                response
+                    .headers_mut()
+                    .insert(header::RETRY_AFTER, RETRY_AFTER_SECONDS);
+            }
+            if content_type_is_json(&response) {
+                return response;
+            }
+            let mut json = error_response(
+                StatusCode::TOO_MANY_REQUESTS,
+                "too_many_requests",
+                "too many requests; please retry later",
+            );
+            json.headers_mut()
+                .insert(header::RETRY_AFTER, RETRY_AFTER_SECONDS);
+            json
+        }
+        _ => response,
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -636,6 +757,7 @@ where
                 let Some(verifier) = verifier.as_ref() else {
                     return error_response(
                         StatusCode::SERVICE_UNAVAILABLE,
+                        "service_unavailable",
                         "JWT verification is not configured",
                     );
                 };
@@ -958,5 +1080,120 @@ mod tests {
         };
         assert_eq!(err.kind, ErrorKind::Forbidden);
         Ok(())
+    }
+
+    #[tokio::test]
+    async fn missing_bearer_returns_json_error_body() {
+        let response = error_response_for(&RequestContextError::MissingBearer);
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+        assert_eq!(
+            response
+                .headers()
+                .get(header::CONTENT_TYPE)
+                .and_then(|value| value.to_str().ok()),
+            Some("application/json")
+        );
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        assert_eq!(
+            body.as_ref(),
+            br#"{"error":{"code":"unauthorized","message":"missing or malformed bearer token"}}"#
+        );
+    }
+
+    #[tokio::test]
+    async fn internal_failures_do_not_leak_into_the_json_message() {
+        let response = error_response_for(&RequestContextError::BranchScope(
+            "relation \"authz\" does not exist".to_owned(),
+        ));
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let text = std::str::from_utf8(&body).unwrap();
+        assert!(text.contains(r#""code":"internal""#));
+        assert!(
+            !text.contains("authz"),
+            "internal envelope must not leak storage detail: {text}"
+        );
+    }
+
+    #[tokio::test]
+    async fn envelope_rewrites_plain_408_and_413_to_json_error_body() {
+        for (status, code, message) in [
+            (
+                StatusCode::REQUEST_TIMEOUT,
+                "request_timeout",
+                "request timed out",
+            ),
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                "payload_too_large",
+                "request body too large",
+            ),
+        ] {
+            let mut app = with_http_error_envelope(
+                axum::Router::new().route("/", get(move || async move { status })),
+            );
+            let response = Service::call(
+                &mut app,
+                Request::builder().uri("/").body(Body::empty()).unwrap(),
+            )
+            .await
+            .unwrap();
+            assert_eq!(response.status(), status);
+            assert_eq!(
+                response
+                    .headers()
+                    .get(header::CONTENT_TYPE)
+                    .and_then(|value| value.to_str().ok()),
+                Some("application/json")
+            );
+            let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+                .await
+                .unwrap();
+            let expected = format!(r#"{{"error":{{"code":"{code}","message":"{message}"}}}}"#);
+            assert_eq!(body.as_ref(), expected.as_bytes());
+        }
+    }
+
+    #[tokio::test]
+    async fn envelope_adds_retry_after_to_json_429_without_replacing_the_body() {
+        let mut app = with_http_error_envelope(axum::Router::new().route(
+            "/",
+            get(|| async {
+                (
+                    StatusCode::TOO_MANY_REQUESTS,
+                    Json(ErrorBody {
+                        error: ErrorPayload {
+                            code: "too_many_requests",
+                            message: "too many requests; please retry later".to_owned(),
+                        },
+                    }),
+                )
+            }),
+        ));
+        let response = Service::call(
+            &mut app,
+            Request::builder().uri("/").body(Body::empty()).unwrap(),
+        )
+        .await
+        .unwrap();
+        assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
+        assert_eq!(
+            response
+                .headers()
+                .get(header::RETRY_AFTER)
+                .and_then(|value| value.to_str().ok()),
+            Some("60")
+        );
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        assert_eq!(
+            body.as_ref(),
+            br#"{"error":{"code":"too_many_requests","message":"too many requests; please retry later"}}"#
+        );
     }
 }

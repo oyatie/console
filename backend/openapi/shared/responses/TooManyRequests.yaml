@@ -1,4 +1,11 @@
       description: Rate limit exceeded for this client; retry later.
+      headers:
+        Retry-After:
+          description: Seconds until the client may retry this endpoint.
+          schema:
+            type: integer
+            minimum: 1
+          required: true
       content:
         application/json:
           schema:
