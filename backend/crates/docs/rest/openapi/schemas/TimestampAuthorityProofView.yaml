@@ -1,22 +1,76 @@
 type: object
 description: Nullable/absent until an RFC-3161 TSA lane exists (FUTURE — not faked).
-required: [id, copy_id, status, provider, hash_algorithm, created_by, created_at]
+required:
+  - id
+  - copy_id
+  - status
+  - provider
+  - hash_algorithm
+  - created_by
+  - created_at
 properties:
-  id: { type: string, format: uuid }
-  copy_id: { type: string, format: uuid }
-  status: { $ref: '#/components/schemas/TsaProofStatus' }
-  provider: { type: string }
-  policy_oid: { type: string, nullable: true }
-  serial_number: { type: string, nullable: true }
-  hash_algorithm: { type: string }
-  message_imprint_sha256: { type: string, nullable: true }
-  generated_at: { type: string, format: date-time, nullable: true }
-  accuracy_millis: { type: integer, format: int64, nullable: true }
-  ordering: { type: boolean, nullable: true }
-  tsa_cert_fingerprint_sha256: { type: string, nullable: true }
-  token_digest_sha256: { type: string, nullable: true }
-  token_storage: { allOf: [ { $ref: '#/components/schemas/EvidenceStorageRef' } ], nullable: true }
-  verified_at: { type: string, format: date-time, nullable: true }
-  failure_reason: { type: string, nullable: true }
-  created_by: { type: string, format: uuid }
-  created_at: { type: string, format: date-time }
+  id:
+    type: string
+    format: uuid
+  copy_id:
+    type: string
+    format: uuid
+  status:
+    $ref: '#/components/schemas/TsaProofStatus'
+  provider:
+    type: string
+  policy_oid:
+    type:
+      - string
+      - 'null'
+  serial_number:
+    type:
+      - string
+      - 'null'
+  hash_algorithm:
+    type: string
+  message_imprint_sha256:
+    type:
+      - string
+      - 'null'
+  generated_at:
+    type:
+      - string
+      - 'null'
+    format: date-time
+  accuracy_millis:
+    type:
+      - integer
+      - 'null'
+    format: int64
+  ordering:
+    type:
+      - boolean
+      - 'null'
+  tsa_cert_fingerprint_sha256:
+    type:
+      - string
+      - 'null'
+  token_digest_sha256:
+    type:
+      - string
+      - 'null'
+  token_storage:
+    oneOf:
+      - {$ref: '#/components/schemas/EvidenceStorageRef'}
+      - {type: 'null'}
+  verified_at:
+    type:
+      - string
+      - 'null'
+    format: date-time
+  failure_reason:
+    type:
+      - string
+      - 'null'
+  created_by:
+    type: string
+    format: uuid
+  created_at:
+    type: string
+    format: date-time

@@ -1,9 +1,9 @@
 type: object
 required:
-- user_id
-- display_name
-- arrivals
-- departures
+  - user_id
+  - display_name
+  - arrivals
+  - departures
 properties:
   user_id:
     $ref: '#/components/schemas/Uuid'
@@ -18,9 +18,10 @@ properties:
     format: int64
     minimum: 0
   last_kind:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   last_event_at:
-    allOf:
-    - $ref: '#/components/schemas/Timestamp'
-    nullable: true
+    oneOf:
+      - {$ref: '#/components/schemas/Timestamp'}
+      - {type: 'null'}

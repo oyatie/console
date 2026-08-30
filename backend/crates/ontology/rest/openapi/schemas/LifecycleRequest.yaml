@@ -1,7 +1,19 @@
 type: object
-required: [to_state]
+required:
+  - to_state
 properties:
-  to_state: { $ref: '#/components/schemas/InstanceLifecycleState' }
-  reason: { type: string, nullable: true }
-  checklist_all_acknowledged: { type: boolean, nullable: true }
-  four_eyes_request_ref: { type: string, format: uuid, nullable: true }
+  to_state:
+    $ref: '#/components/schemas/InstanceLifecycleState'
+  reason:
+    type:
+      - string
+      - 'null'
+  checklist_all_acknowledged:
+    type:
+      - boolean
+      - 'null'
+  four_eyes_request_ref:
+    type:
+      - string
+      - 'null'
+    format: uuid

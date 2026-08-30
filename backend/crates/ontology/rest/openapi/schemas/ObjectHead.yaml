@@ -1,27 +1,30 @@
 type: object
-description: Compact, kind-agnostic head for any object. exists=false means the object is absent OR outside the
-  caller's scope (indistinguishable, by design). Carries no route/URL — objectRegistry (frontend) is the sole
-  kind->URL authority.
+description: >-
+  Compact, kind-agnostic head for any object. exists=false means the object is absent OR outside the caller's scope
+  (indistinguishable, by design). Carries no route/URL — objectRegistry (frontend) is the sole kind->URL authority.
 required:
-- kind
-- id
-- exists
+  - kind
+  - id
+  - exists
 properties:
   kind:
     type: string
   id:
     type: string
   code:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
     description: Canonical issued code if the kind has one (e.g. work-order request_no); absent otherwise.
   title:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
     description: Human display label if available.
   status:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
     description: Domain status string if available.
   exists:
     type: boolean

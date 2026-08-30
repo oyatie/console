@@ -1,14 +1,14 @@
 type: object
 required:
-- id
-- employee_id
-- event_type
-- to_status
-- effective_date
-- comment
-- signoffs
-- created_by
-- created_at
+  - id
+  - employee_id
+  - event_type
+  - to_status
+  - effective_date
+  - comment
+  - signoffs
+  - created_by
+  - created_at
 properties:
   id:
     $ref: '#/components/schemas/Uuid'
@@ -17,37 +17,44 @@ properties:
   event_type:
     type: string
     enum:
-    - ONBOARD
-    - OFFBOARD
-    - TERMINATE
-    - TRANSFER
+      - ONBOARD
+      - OFFBOARD
+      - TERMINATE
+      - TRANSFER
   from_status:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   to_status:
     type: string
     enum:
-    - ACTIVE
-    - EXITED
-    - UNKNOWN
+      - ACTIVE
+      - EXITED
+      - UNKNOWN
   from_company:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   to_company:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   from_org_unit:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   to_org_unit:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   from_position:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   to_position:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   effective_date:
     type: string
   comment:

@@ -1169,6 +1169,25 @@ function schemaEnum(document, original, seen = new Set()) {
     return { kind: "unsupported" };
   }
   if (own(original, "allOf") || own(original, "anyOf")) return { kind: "unsupported" };
+  // OpenAPI 3.1 JSON Schema null union: type: [string, "null"] (and enum: [..., null]).
+  // Unwrap before the string-type test so Option enums keep comparing.
+  const jsonType = own(original, "type");
+  if (Array.isArray(jsonType) && jsonType.includes("null")) {
+    const nonNull = jsonType.filter((item) => item !== "null");
+    if (nonNull.length === 1) {
+      const stripped = {};
+      for (const key of Object.keys(original)) {
+        if (!Object.hasOwn(original, key) || key === "nullable") continue;
+        stripped[key] = original[key];
+      }
+      stripped.type = nonNull[0];
+      const unionEnum = own(stripped, "enum");
+      if (Array.isArray(unionEnum)) {
+        stripped.enum = unionEnum.filter((value) => value !== null);
+      }
+      return schemaEnum(document, stripped, seen);
+    }
+  }
   const values = own(original, "enum");
   if (Array.isArray(values)) {
     return values.every((value) => typeof value === "string")

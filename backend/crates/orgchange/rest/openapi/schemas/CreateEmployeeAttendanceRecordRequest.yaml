@@ -1,7 +1,7 @@
 type: object
 required:
-- kind
-- idempotency_key
+  - kind
+  - idempotency_key
 properties:
   kind:
     $ref: '#/components/schemas/AttendanceRecordKind'
@@ -10,6 +10,7 @@ properties:
     minLength: 1
     maxLength: 128
   note:
-    type: string
+    type:
+      - string
+      - 'null'
     maxLength: 500
-    nullable: true

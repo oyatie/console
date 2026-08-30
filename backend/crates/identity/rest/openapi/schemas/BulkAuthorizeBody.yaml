@@ -1,14 +1,13 @@
 type: object
-required: [subject, checks]
+required:
+  - subject
+  - checks
 properties:
-  subject: { $ref: '#/components/schemas/PolicySimSubject' }
+  subject:
+    $ref: '#/components/schemas/PolicySimSubject'
   checks:
     type: array
     items:
       type: object
       required: [action, resource]
-      properties:
-        action: { type: string }
-        resource: { $ref: '#/components/schemas/PolicySimResource' }
-        purpose: { type: string, nullable: true }
-        field: { type: string, nullable: true }
+      properties: {action: {type: string}, resource: {$ref: '#/components/schemas/PolicySimResource'}, purpose: {type: [string, 'null']}, field: {type: [string, 'null']}}

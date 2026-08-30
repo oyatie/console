@@ -1,3 +1,15 @@
 type: object
-required: [key, ok]
-properties: { key: { type: string }, ok: { type: boolean }, warn: { type: boolean }, note: { type: string, nullable: true } }
+required:
+  - key
+  - ok
+properties:
+  key:
+    type: string
+  ok:
+    type: boolean
+  warn:
+    type: boolean
+  note:
+    type:
+      - string
+      - 'null'

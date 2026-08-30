@@ -1,3 +1,13 @@
 type: object
-required: [kind, label]
-properties: { kind: { type: string }, label: { type: string }, ref: { type: string, nullable: true } }
+required:
+  - kind
+  - label
+properties:
+  kind:
+    type: string
+  label:
+    type: string
+  ref:
+    type:
+      - string
+      - 'null'

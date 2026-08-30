@@ -1,7 +1,19 @@
-      type: object
-      required: [employee_id]
-      properties:
-        employee_id: { type: string, format: uuid }
-        leave_accrued: { type: string, nullable: true }
-        leave_used: { type: string, nullable: true }
-        leave_remaining: { type: string, nullable: true }
+type: object
+required:
+  - employee_id
+properties:
+  employee_id:
+    type: string
+    format: uuid
+  leave_accrued:
+    type:
+      - string
+      - 'null'
+  leave_used:
+    type:
+      - string
+      - 'null'
+  leave_remaining:
+    type:
+      - string
+      - 'null'

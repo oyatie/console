@@ -1,33 +1,38 @@
 type: object
 required:
-- employee_id
-- name
-- accrued_units
-- used_units
-- remaining_units
-- filing_state
-- home_branch_id
+  - employee_id
+  - name
+  - accrued_units
+  - used_units
+  - remaining_units
+  - filing_state
+  - home_branch_id
 properties:
   employee_id:
     $ref: '#/components/schemas/Uuid'
   name:
     type: string
   accrued_units:
-    allOf: [{$ref: '#/components/schemas/LeaveBalanceAmount'}]
-    nullable: true
+    oneOf:
+      - {$ref: '#/components/schemas/LeaveBalanceAmount'}
+      - {type: 'null'}
   used_units:
-    allOf: [{$ref: '#/components/schemas/LeaveBalanceAmount'}]
-    nullable: true
+    oneOf:
+      - {$ref: '#/components/schemas/LeaveBalanceAmount'}
+      - {type: 'null'}
   remaining_units:
-    allOf: [{$ref: '#/components/schemas/LeaveBalanceAmount'}]
-    nullable: true
+    oneOf:
+      - {$ref: '#/components/schemas/LeaveBalanceAmount'}
+      - {type: 'null'}
   filing_state:
     type: string
-    enum: [ready, home_branch_required]
+    enum:
+      - ready
+      - home_branch_required
     description: Whether self-service filing currently has an active authoritative home branch.
   home_branch_id:
     type:
-    - string
-    - 'null'
+      - string
+      - 'null'
     format: uuid
     description: Active authoritative routing branch; null exactly when filing_state is home_branch_required.

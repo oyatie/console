@@ -1,10 +1,11 @@
 type: object
 required:
-- count
+  - count
 properties:
   key:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
     description: Text form of the group value; null when the attribute is absent.
   count:
     type: integer

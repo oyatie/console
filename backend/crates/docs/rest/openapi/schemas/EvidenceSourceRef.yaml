@@ -1,6 +1,13 @@
 type: object
-required: [source_type, source_id]
+required:
+  - source_type
+  - source_id
 properties:
-  source_type: { $ref: '#/components/schemas/EvidenceSourceType' }
-  source_id: { type: string }
-  source_code: { type: string, nullable: true }
+  source_type:
+    $ref: '#/components/schemas/EvidenceSourceType'
+  source_id:
+    type: string
+  source_code:
+    type:
+      - string
+      - 'null'

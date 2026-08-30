@@ -1,9 +1,11 @@
 allOf:
   - $ref: '#/components/schemas/Equipment3rUnitView'
   - type: object
-    required: [createdAt, updatedAt]
+    required:
+      - createdAt
+      - updatedAt
     properties:
-      activeCaseId: { $ref: '#/components/schemas/Uuid', nullable: true }
-      openDispositionId: { $ref: '#/components/schemas/Uuid', nullable: true }
-      createdAt: { type: string, format: date-time }
-      updatedAt: { type: string, format: date-time }
+      activeCaseId: {oneOf: [{$ref: '#/components/schemas/Uuid'}, {type: 'null'}]}
+      openDispositionId: {oneOf: [{$ref: '#/components/schemas/Uuid'}, {type: 'null'}]}
+      createdAt: {type: string, format: date-time}
+      updatedAt: {type: string, format: date-time}

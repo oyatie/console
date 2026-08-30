@@ -1,26 +1,32 @@
 type: object
 required:
-- description
-- sort_order
+  - description
+  - sort_order
 properties:
   work_order_id:
-    $ref: '#/components/schemas/Uuid'
-    nullable: true
+    oneOf:
+      - {$ref: '#/components/schemas/Uuid'}
+      - {type: 'null'}
   request_no:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   equipment_no:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   management_no:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   customer_name:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   site_name:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   description:
     type: string
   sort_order:

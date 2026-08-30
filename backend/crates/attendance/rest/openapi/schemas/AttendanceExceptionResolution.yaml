@@ -1,3 +1,24 @@
 type: object
-required: [action, reason, actor, resolved_at]
-properties: { action: { type: string }, reason: { type: string }, linked_work_ref: { type: string, nullable: true }, ot_hours: { type: number, nullable: true }, actor: { $ref: '#/components/schemas/Uuid' }, resolved_at: { type: string, format: date-time } }
+required:
+  - action
+  - reason
+  - actor
+  - resolved_at
+properties:
+  action:
+    type: string
+  reason:
+    type: string
+  linked_work_ref:
+    type:
+      - string
+      - 'null'
+  ot_hours:
+    type:
+      - number
+      - 'null'
+  actor:
+    $ref: '#/components/schemas/Uuid'
+  resolved_at:
+    type: string
+    format: date-time

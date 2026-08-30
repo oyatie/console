@@ -1,33 +1,33 @@
 type: object
 required:
-- event_type
-- effective_date
-- comment
-- signoffs
+  - event_type
+  - effective_date
+  - comment
+  - signoffs
 properties:
   event_type:
     type: string
     enum:
-    - ONBOARD
-    - OFFBOARD
-    - TERMINATE
-    - TRANSFER
+      - ONBOARD
+      - OFFBOARD
+      - TERMINATE
+      - TRANSFER
   to_status:
-    type: string
-    nullable: true
-    enum:
-    - ACTIVE
-    - EXITED
-    - UNKNOWN
+    oneOf:
+      - {type: string, enum: [ACTIVE, EXITED, UNKNOWN]}
+      - {type: 'null'}
   to_company:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   to_org_unit:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   to_position:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   effective_date:
     type: string
     minLength: 1

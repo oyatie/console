@@ -6386,7 +6386,8 @@ paths:
           $ref: '#/components/responses/NotFound'
   /api/v1/governance/approvals:
     post:
-      tags: [Governance]
+      tags:
+        - Governance
       operationId: createGovernanceApproval
       security:
         - bearerAuth: []
@@ -6395,40 +6396,18 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [request_ref, kind]
-              properties:
-                request_ref: { type: string, format: uuid }
-                kind: { type: string, maxLength: 80 }
-                target_ref:
-                  type: string
-                  format: uuid
-                  nullable: true
-                  description: >-
-                    The object this approval is FOR (a hold id, a workflow definition id, an
-                    ontology instance id). A four-eyes gate binds the approval to the action's
-                    target, so an approval decided for one object can never satisfy a gate for
-                    another. Omit for create-style actions with no pre-existing target.
-                payload_summary: { type: object, additionalProperties: true }
+            schema: {type: object, required: [request_ref, kind], properties: {request_ref: {type: string, format: uuid}, kind: {type: string, maxLength: 80}, target_ref: {type: [string, 'null'], format: uuid, description: 'The object this approval is FOR (a hold id, a workflow definition id, an ontology instance id). A four-eyes gate binds the approval to the action''s target, so an approval decided for one object can never satisfy a gate for another. Omit for create-style actions with no pre-existing target.'}, payload_summary: {type: object, additionalProperties: true}}}
       responses:
         '201':
           description: Pending approval request created
           content:
-            application/json:
-              schema:
-                type: object
-                required: [id, request_ref, kind, requested_by, payload_summary, created_at]
-                properties:
-                  id: { type: string, format: uuid }
-                  request_ref: { type: string, format: uuid }
-                  kind: { type: string }
-                  requested_by: { type: string, format: uuid }
-                  payload_summary: { type: object, additionalProperties: true }
-                  created_at: { type: string, format: date-time }
-        '403': { description: Forbidden }
-        '409': { description: A request already exists for this ref }
-        '422': { description: Validation error }
+            application/json: {schema: {type: object, required: [id, request_ref, kind, requested_by, payload_summary, created_at], properties: {id: {type: string, format: uuid}, request_ref: {type: string, format: uuid}, kind: {type: string}, requested_by: {type: string, format: uuid}, payload_summary: {type: object, additionalProperties: true}, created_at: {type: string, format: date-time}}}}
+        '403':
+          description: Forbidden
+        '409':
+          description: A request already exists for this ref
+        '422':
+          description: Validation error
   /api/v1/governance/approvals/decide:
     post:
       operationId: decideGovernanceApproval
@@ -19110,8 +19089,49 @@ components:
     AssignAttendanceSubstituteRequest:
       type: object
       additionalProperties: false
-      required: [site, role, cover_date, from_minutes, to_minutes, covered_employee_id, reason_kind, worker_employee_id]
-      properties: { site: { type: string }, branch_id: { oneOf: [{ $ref: '#/components/schemas/Uuid' }, { type: 'null' }] }, role: { type: string }, cover_date: { type: string, format: date }, from_minutes: { type: integer, minimum: 0, maximum: 1439 }, to_minutes: { type: integer, minimum: 1, maximum: 1440 }, covered_employee_id: { $ref: '#/components/schemas/Uuid' }, reason_kind: { type: string }, reason_detail: { type: string, nullable: true }, worker_employee_id: { $ref: '#/components/schemas/Uuid' }, exception_id: { oneOf: [{ $ref: '#/components/schemas/Uuid' }, { type: 'null' }] } }
+      required:
+        - site
+        - role
+        - cover_date
+        - from_minutes
+        - to_minutes
+        - covered_employee_id
+        - reason_kind
+        - worker_employee_id
+      properties:
+        site:
+          type: string
+        branch_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        role:
+          type: string
+        cover_date:
+          type: string
+          format: date
+        from_minutes:
+          type: integer
+          minimum: 0
+          maximum: 1439
+        to_minutes:
+          type: integer
+          minimum: 1
+          maximum: 1440
+        covered_employee_id:
+          $ref: '#/components/schemas/Uuid'
+        reason_kind:
+          type: string
+        reason_detail:
+          type:
+            - string
+            - 'null'
+        worker_employee_id:
+          $ref: '#/components/schemas/Uuid'
+        exception_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
     AssignSubstituteRequest:
       type: object
       required:
@@ -19225,16 +19245,38 @@ components:
     AttendanceCloseAmendmentRequest:
       type: object
       additionalProperties: false
-      required: [reason, detail]
-      properties: { reason: { type: string }, detail: { type: string }, ref: { type: string, nullable: true } }
+      required:
+        - reason
+        - detail
+      properties:
+        reason:
+          type: string
+        detail:
+          type: string
+        ref:
+          type:
+            - string
+            - 'null'
     AttendanceCloseBoard:
       type: object
       required: [month, items]
       properties: { month: { type: string, pattern: '^\\d{4}-\\d{2}$' }, items: { type: array, items: { $ref: '#/components/schemas/AttendanceMonthCloseItem' } } }
     AttendanceCloseCheck:
       type: object
-      required: [key, ok]
-      properties: { key: { type: string }, ok: { type: boolean }, warn: { type: boolean }, note: { type: string, nullable: true } }
+      required:
+        - key
+        - ok
+      properties:
+        key:
+          type: string
+        ok:
+          type: boolean
+        warn:
+          type: boolean
+        note:
+          type:
+            - string
+            - 'null'
     AttendanceClosePreflight:
       type: object
       required: [month, branch_scope, checks, can_close]
@@ -19242,28 +19284,141 @@ components:
     AttendanceCloseRequest:
       type: object
       additionalProperties: false
-      required: [month]
-      properties: { month: { type: string, pattern: '^\\d{4}-\\d{2}$' }, branch_scope: { $ref: '#/components/schemas/Uuid', nullable: true }, attest: { type: boolean, nullable: true } }
+      required:
+        - month
+      properties:
+        month:
+          type: string
+          pattern: ^\\d{4}-\\d{2}$
+        branch_scope:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        attest:
+          type:
+            - boolean
+            - 'null'
     AttendanceException:
       type: object
-      required: [id, code, kind, status, employee_id, employee_name, work_date, occurred_at, detail, evidence, links, created_at]
-      properties: { id: { $ref: '#/components/schemas/Uuid' }, code: { type: string }, kind: { type: string, enum: [LATE, NO_SHOW, UNAPPROVED_OVERTIME, EARLY_LEAVE] }, status: { type: string, enum: [OPEN, RESOLVED] }, employee_id: { $ref: '#/components/schemas/Uuid' }, employee_name: { type: string }, team: { type: string, nullable: true }, branch_id: { $ref: '#/components/schemas/Uuid', nullable: true }, work_date: { type: string, format: date }, occurred_at: { type: string, format: date-time }, detail: { type: string }, evidence: { type: array, items: { $ref: '#/components/schemas/AttendanceExceptionEvidence' } }, links: { type: array, items: { $ref: '#/components/schemas/AttendanceExceptionLink' } }, resolution: { $ref: '#/components/schemas/AttendanceExceptionResolution', nullable: true }, created_at: { type: string, format: date-time } }
+      required:
+        - id
+        - code
+        - kind
+        - status
+        - employee_id
+        - employee_name
+        - work_date
+        - occurred_at
+        - detail
+        - evidence
+        - links
+        - created_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        code:
+          type: string
+        kind:
+          type: string
+          enum:
+            - LATE
+            - NO_SHOW
+            - UNAPPROVED_OVERTIME
+            - EARLY_LEAVE
+        status:
+          type: string
+          enum:
+            - OPEN
+            - RESOLVED
+        employee_id:
+          $ref: '#/components/schemas/Uuid'
+        employee_name:
+          type: string
+        team:
+          type:
+            - string
+            - 'null'
+        branch_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        work_date:
+          type: string
+          format: date
+        occurred_at:
+          type: string
+          format: date-time
+        detail:
+          type: string
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceExceptionEvidence'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceExceptionLink'
+        resolution:
+          oneOf:
+            - {$ref: '#/components/schemas/AttendanceExceptionResolution'}
+            - {type: 'null'}
+        created_at:
+          type: string
+          format: date-time
     AttendanceExceptionEvidence:
       type: object
-      required: [name]
-      properties: { name: { type: string }, size: { type: string, nullable: true } }
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        size:
+          type:
+            - string
+            - 'null'
     AttendanceExceptionLink:
       type: object
-      required: [kind, label]
-      properties: { kind: { type: string }, label: { type: string }, ref: { type: string, nullable: true } }
+      required:
+        - kind
+        - label
+      properties:
+        kind:
+          type: string
+        label:
+          type: string
+        ref:
+          type:
+            - string
+            - 'null'
     AttendanceExceptionPage:
       type: object
       required: [items, total, limit, offset]
       properties: { items: { type: array, items: { $ref: '#/components/schemas/AttendanceException' } }, total: { type: integer, format: int64 }, limit: { type: integer, format: int64 }, offset: { type: integer, format: int64 } }
     AttendanceExceptionResolution:
       type: object
-      required: [action, reason, actor, resolved_at]
-      properties: { action: { type: string }, reason: { type: string }, linked_work_ref: { type: string, nullable: true }, ot_hours: { type: number, nullable: true }, actor: { $ref: '#/components/schemas/Uuid' }, resolved_at: { type: string, format: date-time } }
+      required:
+        - action
+        - reason
+        - actor
+        - resolved_at
+      properties:
+        action:
+          type: string
+        reason:
+          type: string
+        linked_work_ref:
+          type:
+            - string
+            - 'null'
+        ot_hours:
+          type:
+            - number
+            - 'null'
+        actor:
+          $ref: '#/components/schemas/Uuid'
+        resolved_at:
+          type: string
+          format: date-time
     AttendanceImportApplyReport:
       type: object
       required:
@@ -19286,32 +19441,25 @@ components:
     AttendanceImportColumn:
       type: object
       required:
-      - source_header
-      - normalized_header
-      - classification
-      - preview_allowed
+        - source_header
+        - normalized_header
+        - classification
+        - preview_allowed
       properties:
         source_header:
           type: string
         normalized_header:
           type: string
         target:
-          type: string
-          nullable: true
-          enum:
-          - employee_number
-          - employee_name
-          - branch_name
-          - work_date
-          - check_in_at
-          - check_out_at
-          - minutes_worked
+          oneOf:
+            - {type: string, enum: [employee_number, employee_name, branch_name, work_date, check_in_at, check_out_at, minutes_worked]}
+            - {type: 'null'}
         classification:
           type: string
           enum:
-          - canonical
-          - retained
-          - restricted
+            - canonical
+            - retained
+            - restricted
         preview_allowed:
           type: boolean
     AttendanceImportDryRunSummary:
@@ -19454,34 +19602,34 @@ components:
     AttendanceImportSummaryItem:
       type: object
       required:
-      - run_id
-      - status
-      - source_filename
-      - source_format
-      - source_sha256
-      - input_rows
-      - candidate_rows
-      - preserved_rows
-      - dry_run_summary
-      - apply_summary
-      - created_at
+        - run_id
+        - status
+        - source_filename
+        - source_format
+        - source_sha256
+        - input_rows
+        - candidate_rows
+        - preserved_rows
+        - dry_run_summary
+        - apply_summary
+        - created_at
       properties:
         run_id:
           $ref: '#/components/schemas/Uuid'
         status:
           type: string
           enum:
-          - PREVIEWED
-          - DRY_RUN
-          - APPLIED
-          - FAILED
+            - PREVIEWED
+            - DRY_RUN
+            - APPLIED
+            - FAILED
         source_filename:
           type: string
         source_format:
           type: string
           enum:
-          - xlsx
-          - csv
+            - xlsx
+            - csv
         source_sha256:
           type: string
           pattern: ^[a-f0-9]{64}$
@@ -19506,9 +19654,9 @@ components:
         created_at:
           $ref: '#/components/schemas/Timestamp'
         applied_at:
-          allOf:
-          - $ref: '#/components/schemas/Timestamp'
-          nullable: true
+          oneOf:
+            - {$ref: '#/components/schemas/Timestamp'}
+            - {type: 'null'}
     AttendanceImportSummaryPage:
       type: object
       required:
@@ -19533,12 +19681,65 @@ components:
           format: int64
     AttendanceMonthClose:
       type: object
-      required: [id, month, branch_scope, checks, attested_by, attested_at, closed_at, amendments]
-      properties: { id: { $ref: '#/components/schemas/Uuid' }, month: { type: string, pattern: '^\\d{4}-\\d{2}$' }, branch_scope: { type: string }, checks: { type: array, items: { $ref: '#/components/schemas/AttendanceCloseCheck' } }, attested_by: { $ref: '#/components/schemas/Uuid' }, attested_at: { type: string, format: date-time }, period_lock_id: { $ref: '#/components/schemas/Uuid', nullable: true }, closed_at: { type: string, format: date-time }, amendments: { type: array, items: { $ref: '#/components/schemas/AttendanceCloseAmendment' } } }
+      required:
+        - id
+        - month
+        - branch_scope
+        - checks
+        - attested_by
+        - attested_at
+        - closed_at
+        - amendments
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        month:
+          type: string
+          pattern: ^\\d{4}-\\d{2}$
+        branch_scope:
+          type: string
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceCloseCheck'
+        attested_by:
+          $ref: '#/components/schemas/Uuid'
+        attested_at:
+          type: string
+          format: date-time
+        period_lock_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        closed_at:
+          type: string
+          format: date-time
+        amendments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceCloseAmendment'
     AttendanceMonthCloseItem:
       type: object
-      required: [branch_scope, closed, open_exceptions, pending_leave]
-      properties: { branch_scope: { type: string }, closed: { type: boolean }, close: { $ref: '#/components/schemas/AttendanceMonthClose', nullable: true }, open_exceptions: { type: integer, format: int64 }, pending_leave: { type: integer, format: int64 } }
+      required:
+        - branch_scope
+        - closed
+        - open_exceptions
+        - pending_leave
+      properties:
+        branch_scope:
+          type: string
+        closed:
+          type: boolean
+        close:
+          oneOf:
+            - {$ref: '#/components/schemas/AttendanceMonthClose'}
+            - {type: 'null'}
+        open_exceptions:
+          type: integer
+          format: int64
+        pending_leave:
+          type: integer
+          format: int64
     AttendanceRecordKind:
       type: string
       enum:
@@ -19549,8 +19750,75 @@ components:
       - CLOCK_OUT
     AttendanceSubstitution:
       type: object
-      required: [id, site, role, cover_date, from_minutes, to_minutes, covered_employee_id, covered_name, reason_kind, worker_name, worker_type, status, created_by, created_at]
-      properties: { id: { $ref: '#/components/schemas/Uuid' }, site: { type: string }, branch_id: { $ref: '#/components/schemas/Uuid', nullable: true }, role: { type: string }, cover_date: { type: string, format: date }, from_minutes: { type: integer }, to_minutes: { type: integer }, covered_employee_id: { $ref: '#/components/schemas/Uuid' }, covered_name: { type: string }, reason_kind: { type: string }, reason_detail: { type: string, nullable: true }, worker_employee_id: { $ref: '#/components/schemas/Uuid', nullable: true }, worker_name: { type: string }, worker_type: { type: string }, worker_rate: { type: string, nullable: true }, status: { type: string, enum: [ASSIGNED, CANCELLED] }, exception_id: { $ref: '#/components/schemas/Uuid', nullable: true }, created_by: { $ref: '#/components/schemas/Uuid' }, created_at: { type: string, format: date-time } }
+      required:
+        - id
+        - site
+        - role
+        - cover_date
+        - from_minutes
+        - to_minutes
+        - covered_employee_id
+        - covered_name
+        - reason_kind
+        - worker_name
+        - worker_type
+        - status
+        - created_by
+        - created_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        site:
+          type: string
+        branch_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        role:
+          type: string
+        cover_date:
+          type: string
+          format: date
+        from_minutes:
+          type: integer
+        to_minutes:
+          type: integer
+        covered_employee_id:
+          $ref: '#/components/schemas/Uuid'
+        covered_name:
+          type: string
+        reason_kind:
+          type: string
+        reason_detail:
+          type:
+            - string
+            - 'null'
+        worker_employee_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        worker_name:
+          type: string
+        worker_type:
+          type: string
+        worker_rate:
+          type:
+            - string
+            - 'null'
+        status:
+          type: string
+          enum:
+            - ASSIGNED
+            - CANCELLED
+        exception_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        created_by:
+          $ref: '#/components/schemas/Uuid'
+        created_at:
+          type: string
+          format: date-time
     AttendanceSubstitutionCandidate:
       type: object
       required: [employee_id, employee_name, branch_id]
@@ -19566,10 +19834,10 @@ components:
     AttendanceSummaryItem:
       type: object
       required:
-      - user_id
-      - display_name
-      - arrivals
-      - departures
+        - user_id
+        - display_name
+        - arrivals
+        - departures
       properties:
         user_id:
           $ref: '#/components/schemas/Uuid'
@@ -19584,12 +19852,13 @@ components:
           format: int64
           minimum: 0
         last_kind:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         last_event_at:
-          allOf:
-          - $ref: '#/components/schemas/Timestamp'
-          nullable: true
+          oneOf:
+            - {$ref: '#/components/schemas/Timestamp'}
+            - {type: 'null'}
     AttendanceSummaryPage:
       type: object
       required:
@@ -19622,8 +19891,43 @@ components:
       properties: { week_start: { type: string, format: date }, items: { type: array, items: { $ref: '#/components/schemas/AttendanceWeek52Row' } } }
     AttendanceWeek52Row:
       type: object
-      required: [employee_id, name, week_start, current_hours, projected_hours, tone, acked]
-      properties: { employee_id: { $ref: '#/components/schemas/Uuid' }, name: { type: string }, team: { type: string, nullable: true }, week_start: { type: string, format: date }, current_hours: { type: number }, projected_hours: { type: number }, tone: { type: string, enum: [OK, WARN, DANGER] }, acked: { type: boolean }, acked_at: { type: string, format: date-time, nullable: true } }
+      required:
+        - employee_id
+        - name
+        - week_start
+        - current_hours
+        - projected_hours
+        - tone
+        - acked
+      properties:
+        employee_id:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          type: string
+        team:
+          type:
+            - string
+            - 'null'
+        week_start:
+          type: string
+          format: date
+        current_hours:
+          type: number
+        projected_hours:
+          type: number
+        tone:
+          type: string
+          enum:
+            - OK
+            - WARN
+            - DANGER
+        acked:
+          type: boolean
+        acked_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
     AttestPayrollDisbursementRequest:
       type: object
       required:
@@ -19638,10 +19942,10 @@ components:
     AuditChainAttestation:
       type: object
       required:
-      - org_id
-      - ok
-      - kind
-      - unsealed_tail
+        - org_id
+        - ok
+        - kind
+        - unsealed_tail
       properties:
         org_id:
           type: string
@@ -19650,27 +19954,28 @@ components:
           type: boolean
           description: No tamper detected. Independent of unsealed_tail.
         first_bad_seq:
-          type: integer
+          type:
+            - integer
+            - 'null'
           format: int64
-          nullable: true
           description: The first offending seal's seq, when the failure localizes to one seal.
         kind:
           type: string
           enum:
-          - ok
-          - seal_hash_mismatch
-          - batch_hash_mismatch
-          - broken_continuity
-          - bad_signature
-          - missing_seq
-          - coverage_gap
-          - corrupt_seal
-          description: Tamper classification. `ok` means every seal recomputes, chains, verifies, and covers its range
-            with no gap.
+            - ok
+            - seal_hash_mismatch
+            - batch_hash_mismatch
+            - broken_continuity
+            - bad_signature
+            - missing_seq
+            - coverage_gap
+            - corrupt_seal
+          description: Tamper classification. `ok` means every seal recomputes, chains, verifies, and covers its range with no gap.
         unsealed_tail:
           type: boolean
-          description: Freshness signal — committed rows older than the seal watermark exist beyond the head seal's
-            cursor (the worker fell behind or is stopped). Never forces ok=false on a healthy live chain.
+          description: >-
+            Freshness signal — committed rows older than the seal watermark exist beyond the head seal's cursor (the worker
+            fell behind or is stopped). Never forces ok=false on a healthy live chain.
     AuditStreamPage:
       type: object
       required:
@@ -19760,64 +20065,195 @@ components:
     BenefitCatalogCondition:
       type: object
       additionalProperties: false
-      required: [condition_kind, operator, condition_key, condition_value, display_label, display_order]
+      required:
+        - condition_kind
+        - operator
+        - condition_key
+        - condition_value
+        - display_label
+        - display_order
       properties:
-        id: { $ref: '#/components/schemas/Uuid' }
-        benefit_id: { $ref: '#/components/schemas/Uuid' }
-        condition_kind: { type: string }
-        operator: { type: string }
-        condition_key: { type: string }
-        condition_value: { type: object, additionalProperties: true }
-        display_label: { type: string }
-        cedar_policy_ref: { type: string, nullable: true }
-        display_order: { type: integer }
+        id:
+          $ref: '#/components/schemas/Uuid'
+        benefit_id:
+          $ref: '#/components/schemas/Uuid'
+        condition_kind:
+          type: string
+        operator:
+          type: string
+        condition_key:
+          type: string
+        condition_value:
+          type: object
+          additionalProperties: true
+        display_label:
+          type: string
+        cedar_policy_ref:
+          type:
+            - string
+            - 'null'
+        display_order:
+          type: integer
     BenefitCatalogCreateRequest:
       type: object
       description: Tenant and actor are derived from the verified bearer token; neither can be supplied by callers.
       additionalProperties: false
-      required: [scope, category, name, coverageLabel, costLabel]
+      required:
+        - scope
+        - category
+        - name
+        - coverageLabel
+        - costLabel
       properties:
-        scope: { $ref: '#/components/schemas/BenefitCatalogScope' }
-        category: { type: string, enum: [legal, extra] }
-        name: { type: string, minLength: 1 }
-        coverageLabel: { type: string, minLength: 1 }
-        coveredCount: { type: integer, nullable: true }
-        costLabel: { type: string, minLength: 1 }
-        estimatedAnnualCostWon: { type: integer, format: int64, nullable: true }
-        employerRateBps: { type: integer, nullable: true }
-        note: { type: string, nullable: true }
-        legalBasis: { type: string, nullable: true }
-        relatedDomain: { type: string, nullable: true }
-        relatedObjectId: { $ref: '#/components/schemas/Uuid', nullable: true }
-        effectiveOn: { type: string, format: date, nullable: true }
-        retiresOn: { type: string, format: date, nullable: true }
-        displayOrder: { type: integer, default: 0 }
-        metadata: { type: object, additionalProperties: true }
-        tiers: { type: array, items: { $ref: '#/components/schemas/BenefitCatalogTier' } }
-        conditions: { type: array, items: { $ref: '#/components/schemas/BenefitCatalogCondition' } }
+        scope:
+          $ref: '#/components/schemas/BenefitCatalogScope'
+        category:
+          type: string
+          enum:
+            - legal
+            - extra
+        name:
+          type: string
+          minLength: 1
+        coverageLabel:
+          type: string
+          minLength: 1
+        coveredCount:
+          type:
+            - integer
+            - 'null'
+        costLabel:
+          type: string
+          minLength: 1
+        estimatedAnnualCostWon:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        employerRateBps:
+          type:
+            - integer
+            - 'null'
+        note:
+          type:
+            - string
+            - 'null'
+        legalBasis:
+          type:
+            - string
+            - 'null'
+        relatedDomain:
+          type:
+            - string
+            - 'null'
+        relatedObjectId:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        effectiveOn:
+          type:
+            - string
+            - 'null'
+          format: date
+        retiresOn:
+          type:
+            - string
+            - 'null'
+          format: date
+        displayOrder:
+          type: integer
+          default: 0
+        metadata:
+          type: object
+          additionalProperties: true
+        tiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/BenefitCatalogTier'
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/BenefitCatalogCondition'
     BenefitCatalogItem:
       type: object
-      required: [id, benefit_code, category, name, scope, coverage_label, cost_label, tiers, conditions, lifecycle]
+      required:
+        - id
+        - benefit_code
+        - category
+        - name
+        - scope
+        - coverage_label
+        - cost_label
+        - tiers
+        - conditions
+        - lifecycle
       properties:
-        id: { $ref: '#/components/schemas/Uuid' }
-        benefit_code: { type: string }
-        category: { type: string, enum: [legal, extra] }
-        name: { type: string }
-        scope: { $ref: '#/components/schemas/BenefitCatalogScope' }
-        coverage_label: { type: string }
-        covered_count: { type: integer, nullable: true }
-        cost_label: { type: string }
-        estimated_annual_cost_won: { type: integer, format: int64, nullable: true }
-        employer_rate_bps: { type: integer, nullable: true }
-        note: { type: string, nullable: true }
-        legal_basis: { type: string, nullable: true }
-        related_domain: { type: string, nullable: true }
-        related_object_id: { $ref: '#/components/schemas/Uuid', nullable: true }
-        effective_on: { type: string, format: date, nullable: true }
-        retires_on: { type: string, format: date, nullable: true }
-        tiers: { type: array, items: { $ref: '#/components/schemas/BenefitCatalogTier' } }
-        conditions: { type: array, items: { $ref: '#/components/schemas/BenefitCatalogCondition' } }
-        lifecycle: { $ref: '#/components/schemas/BenefitCatalogLifecycleBinding' }
+        id:
+          $ref: '#/components/schemas/Uuid'
+        benefit_code:
+          type: string
+        category:
+          type: string
+          enum:
+            - legal
+            - extra
+        name:
+          type: string
+        scope:
+          $ref: '#/components/schemas/BenefitCatalogScope'
+        coverage_label:
+          type: string
+        covered_count:
+          type:
+            - integer
+            - 'null'
+        cost_label:
+          type: string
+        estimated_annual_cost_won:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        employer_rate_bps:
+          type:
+            - integer
+            - 'null'
+        note:
+          type:
+            - string
+            - 'null'
+        legal_basis:
+          type:
+            - string
+            - 'null'
+        related_domain:
+          type:
+            - string
+            - 'null'
+        related_object_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        effective_on:
+          type:
+            - string
+            - 'null'
+          format: date
+        retires_on:
+          type:
+            - string
+            - 'null'
+          format: date
+        tiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/BenefitCatalogTier'
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/BenefitCatalogCondition'
+        lifecycle:
+          $ref: '#/components/schemas/BenefitCatalogLifecycleBinding'
     BenefitCatalogItemPage:
       type: object
       required: [items, limit, offset, total]
@@ -19829,13 +20265,29 @@ components:
     BenefitCatalogLifecycleBinding:
       type: object
       additionalProperties: false
-      required: [object_type, object_id]
+      required:
+        - object_type
+        - object_id
       properties:
-        object_type: { type: string, enum: [benefit_catalog_item] }
-        object_id: { $ref: '#/components/schemas/Uuid' }
-        current_state: { type: string, nullable: true }
-        legal_hold: { type: boolean, nullable: true }
-        retention_until: { type: string, format: date-time, nullable: true }
+        object_type:
+          type: string
+          enum:
+            - benefit_catalog_item
+        object_id:
+          $ref: '#/components/schemas/Uuid'
+        current_state:
+          type:
+            - string
+            - 'null'
+        legal_hold:
+          type:
+            - boolean
+            - 'null'
+        retention_until:
+          type:
+            - string
+            - 'null'
+          format: date-time
     BenefitCatalogReplaceConditionsRequest:
       type: object
       additionalProperties: false
@@ -19851,47 +20303,127 @@ components:
     BenefitCatalogScope:
       type: object
       additionalProperties: false
-      required: [scope_type]
+      required:
+        - scope_type
       properties:
-        scope_type: { type: string, enum: [ORG, BRANCH, SITE, TEAM, ROLE, EMPLOYEE_SEGMENT] }
-        scope_ref: { $ref: '#/components/schemas/Uuid', nullable: true }
-        branch_id: { $ref: '#/components/schemas/Uuid', nullable: true }
-        site_id: { $ref: '#/components/schemas/Uuid', nullable: true }
+        scope_type:
+          type: string
+          enum:
+            - ORG
+            - BRANCH
+            - SITE
+            - TEAM
+            - ROLE
+            - EMPLOYEE_SEGMENT
+        scope_ref:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        branch_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        site_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
     BenefitCatalogTier:
       type: object
       additionalProperties: false
-      required: [tier_basis, tier_key, value_label, criteria, display_order]
+      required:
+        - tier_basis
+        - tier_key
+        - value_label
+        - criteria
+        - display_order
       properties:
-        id: { $ref: '#/components/schemas/Uuid' }
-        benefit_id: { $ref: '#/components/schemas/Uuid' }
-        tier_basis: { type: string }
-        tier_key: { type: string }
-        value_label: { type: string }
-        amount_won: { type: integer, format: int64, nullable: true }
-        limit_period: { type: string, nullable: true }
-        criteria: { type: object, additionalProperties: true }
-        display_order: { type: integer }
+        id:
+          $ref: '#/components/schemas/Uuid'
+        benefit_id:
+          $ref: '#/components/schemas/Uuid'
+        tier_basis:
+          type: string
+        tier_key:
+          type: string
+        value_label:
+          type: string
+        amount_won:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        limit_period:
+          type:
+            - string
+            - 'null'
+        criteria:
+          type: object
+          additionalProperties: true
+        display_order:
+          type: integer
     BenefitCatalogUpdateRequest:
       type: object
       description: Mutable catalog fields only; tenant, actor, identifiers, and lifecycle state are server-owned.
       additionalProperties: false
       properties:
-        category: { type: string, enum: [legal, extra] }
-        name: { type: string, minLength: 1 }
-        scope: { $ref: '#/components/schemas/BenefitCatalogScope' }
-        coverageLabel: { type: string }
-        coveredCount: { type: integer, nullable: true }
-        costLabel: { type: string }
-        estimatedAnnualCostWon: { type: integer, format: int64, nullable: true }
-        employerRateBps: { type: integer, nullable: true }
-        note: { type: string, nullable: true }
-        legalBasis: { type: string, nullable: true }
-        relatedDomain: { type: string, nullable: true }
-        relatedObjectId: { $ref: '#/components/schemas/Uuid', nullable: true }
-        effectiveOn: { type: string, format: date, nullable: true }
-        retiresOn: { type: string, format: date, nullable: true }
-        displayOrder: { type: integer }
-        metadata: { type: object, additionalProperties: true }
+        category:
+          type: string
+          enum:
+            - legal
+            - extra
+        name:
+          type: string
+          minLength: 1
+        scope:
+          $ref: '#/components/schemas/BenefitCatalogScope'
+        coverageLabel:
+          type: string
+        coveredCount:
+          type:
+            - integer
+            - 'null'
+        costLabel:
+          type: string
+        estimatedAnnualCostWon:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        employerRateBps:
+          type:
+            - integer
+            - 'null'
+        note:
+          type:
+            - string
+            - 'null'
+        legalBasis:
+          type:
+            - string
+            - 'null'
+        relatedDomain:
+          type:
+            - string
+            - 'null'
+        relatedObjectId:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        effectiveOn:
+          type:
+            - string
+            - 'null'
+          format: date
+        retiresOn:
+          type:
+            - string
+            - 'null'
+          format: date
+        displayOrder:
+          type: integer
+        metadata:
+          type: object
+          additionalProperties: true
     BranchScope:
       type: object
       description: >-
@@ -19990,19 +20522,18 @@ components:
           $ref: '#/components/schemas/BulkApprovalCapability'
     BulkAuthorizeBody:
       type: object
-      required: [subject, checks]
+      required:
+        - subject
+        - checks
       properties:
-        subject: { $ref: '#/components/schemas/PolicySimSubject' }
+        subject:
+          $ref: '#/components/schemas/PolicySimSubject'
         checks:
           type: array
           items:
             type: object
             required: [action, resource]
-            properties:
-              action: { type: string }
-              resource: { $ref: '#/components/schemas/PolicySimResource' }
-              purpose: { type: string, nullable: true }
-              field: { type: string, nullable: true }
+            properties: {action: {type: string}, resource: {$ref: '#/components/schemas/PolicySimResource'}, purpose: {type: [string, 'null']}, field: {type: [string, 'null']}}
     BulkDecisionResponse:
       type: object
       required: [decisions]
@@ -20465,29 +20996,112 @@ components:
     ConsultingBenefitObservation:
       { type: object, required: [id, initiative_id, kpi_definition_id, evidence_id, observed_at, note, created_at], properties: { id: { $ref: '#/components/schemas/Uuid' }, initiative_id: { $ref: '#/components/schemas/Uuid' }, kpi_definition_id: { $ref: '#/components/schemas/Uuid' }, evidence_id: { $ref: '#/components/schemas/Uuid' }, observed_at: { type: string, format: date-time }, note: { type: string }, created_at: { type: string, format: date-time } } }
     ConsultingDiagnostic:
-      { type: object, required: [id, summary, created_at], properties: { id: { $ref: '#/components/schemas/Uuid' }, summary: { type: string }, document_id: { $ref: '#/components/schemas/Uuid', nullable: true }, created_at: { type: string, format: date-time } } }
+      type: object
+      required:
+        - id
+        - summary
+        - created_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        summary:
+          type: string
+        document_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        created_at:
+          type: string
+          format: date-time
     ConsultingDiagnosticCreateRequest:
-      { type: object, additionalProperties: false, required: [summary], properties: { summary: { type: string, minLength: 1 }, documentId: { $ref: '#/components/schemas/Uuid', nullable: true } } }
+      type: object
+      additionalProperties: false
+      required:
+        - summary
+      properties:
+        summary:
+          type: string
+          minLength: 1
+        documentId:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
     ConsultingEngagement:
       type: object
-      required: [id, customer_id, title, status, version, created_at, updated_at]
+      required:
+        - id
+        - customer_id
+        - title
+        - status
+        - version
+        - created_at
+        - updated_at
       properties:
-        id: { $ref: '#/components/schemas/Uuid' }
-        customer_id: { $ref: '#/components/schemas/Uuid' }
-        customer_document_id: { $ref: '#/components/schemas/Uuid', nullable: true }
-        ontology_instance_id: { $ref: '#/components/schemas/Uuid', nullable: true }
-        title: { type: string }
-        status: { type: string, enum: [DRAFT, PROPOSED, APPROVED, IMPLEMENTED, MEASURED, SUSTAINED, CORRECTIVE] }
-        approval_id: { $ref: '#/components/schemas/Uuid', nullable: true }
-        workflow_execution_id: { $ref: '#/components/schemas/Uuid', nullable: true }
-        version: { type: integer, format: int64 }
-        created_at: { type: string, format: date-time }
-        updated_at: { type: string, format: date-time }
+        id:
+          $ref: '#/components/schemas/Uuid'
+        customer_id:
+          $ref: '#/components/schemas/Uuid'
+        customer_document_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        ontology_instance_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        title:
+          type: string
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - PROPOSED
+            - APPROVED
+            - IMPLEMENTED
+            - MEASURED
+            - SUSTAINED
+            - CORRECTIVE
+        approval_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        workflow_execution_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        version:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
     ConsultingEngagementCreateRequest:
       type: object
       additionalProperties: false
-      required: [customerId, title, idempotencyKey]
-      properties: { customerId: { $ref: '#/components/schemas/Uuid' }, customerDocumentId: { $ref: '#/components/schemas/Uuid', nullable: true }, ontologyInstanceId: { $ref: '#/components/schemas/Uuid', nullable: true }, title: { type: string, minLength: 1 }, idempotencyKey: { type: string, minLength: 1 } }
+      required:
+        - customerId
+        - title
+        - idempotencyKey
+      properties:
+        customerId:
+          $ref: '#/components/schemas/Uuid'
+        customerDocumentId:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        ontologyInstanceId:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        title:
+          type: string
+          minLength: 1
+        idempotencyKey:
+          type: string
+          minLength: 1
     ConsultingEngagementDetail:
       allOf:
       - { $ref: '#/components/schemas/ConsultingEngagement' }
@@ -20503,11 +21117,78 @@ components:
       required: [items, limit, offset, total]
       properties: { items: { type: array, items: { $ref: '#/components/schemas/ConsultingEngagement' } }, limit: { type: integer }, offset: { type: integer }, total: { type: integer } }
     ConsultingFinding:
-      { type: object, required: [id, diagnostic_id, statement, evidence_id, created_at], properties: { id: { $ref: '#/components/schemas/Uuid' }, diagnostic_id: { $ref: '#/components/schemas/Uuid' }, statement: { type: string }, evidence_id: { $ref: '#/components/schemas/Uuid' }, document_id: { $ref: '#/components/schemas/Uuid', nullable: true }, created_at: { type: string, format: date-time } } }
+      type: object
+      required:
+        - id
+        - diagnostic_id
+        - statement
+        - evidence_id
+        - created_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        diagnostic_id:
+          $ref: '#/components/schemas/Uuid'
+        statement:
+          type: string
+        evidence_id:
+          $ref: '#/components/schemas/Uuid'
+        document_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        created_at:
+          type: string
+          format: date-time
     ConsultingFindingCreateRequest:
-      { type: object, additionalProperties: false, required: [diagnosticId, statement, evidenceId], properties: { diagnosticId: { $ref: '#/components/schemas/Uuid' }, statement: { type: string, minLength: 1 }, evidenceId: { $ref: '#/components/schemas/Uuid' }, documentId: { $ref: '#/components/schemas/Uuid', nullable: true } } }
+      type: object
+      additionalProperties: false
+      required:
+        - diagnosticId
+        - statement
+        - evidenceId
+      properties:
+        diagnosticId:
+          $ref: '#/components/schemas/Uuid'
+        statement:
+          type: string
+          minLength: 1
+        evidenceId:
+          $ref: '#/components/schemas/Uuid'
+        documentId:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
     ConsultingHistoryEntry:
-      { type: object, required: [id, event_type, version, payload, occurred_at], properties: { id: { $ref: '#/components/schemas/Uuid' }, event_type: { type: string }, from_status: { type: string, nullable: true }, to_status: { type: string, nullable: true }, version: { type: integer, format: int64 }, payload: { type: object, additionalProperties: true }, occurred_at: { type: string, format: date-time } } }
+      type: object
+      required:
+        - id
+        - event_type
+        - version
+        - payload
+        - occurred_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        event_type:
+          type: string
+        from_status:
+          type:
+            - string
+            - 'null'
+        to_status:
+          type:
+            - string
+            - 'null'
+        version:
+          type: integer
+          format: int64
+        payload:
+          type: object
+          additionalProperties: true
+        occurred_at:
+          type: string
+          format: date-time
     ConsultingInitiative:
       { type: object, required: [id, finding_id, title, hypothesis, kpi_definition_id, target_direction, created_at], properties: { id: { $ref: '#/components/schemas/Uuid' }, finding_id: { $ref: '#/components/schemas/Uuid' }, title: { type: string }, hypothesis: { type: string }, kpi_definition_id: { $ref: '#/components/schemas/Uuid' }, target_direction: { type: string, enum: [INCREASE, DECREASE] }, created_at: { type: string, format: date-time } } }
     ConsultingInitiativeCreateRequest:
@@ -20515,12 +21196,60 @@ components:
     ConsultingObservationCreateRequest:
       { type: object, additionalProperties: false, required: [initiativeId, kpiDefinitionId, evidenceId, observedAt, note], properties: { initiativeId: { $ref: '#/components/schemas/Uuid' }, kpiDefinitionId: { $ref: '#/components/schemas/Uuid' }, evidenceId: { $ref: '#/components/schemas/Uuid' }, observedAt: { type: string, format: date-time }, note: { type: string, minLength: 1 } } }
     ConsultingTransitionRequest:
-      { type: object, additionalProperties: false, required: [toStatus, expectedVersion, reason], properties: { toStatus: { type: string, enum: [PROPOSED, APPROVED, IMPLEMENTED, MEASURED, SUSTAINED, CORRECTIVE] }, expectedVersion: { type: integer, format: int64, minimum: 1 }, approvalId: { $ref: '#/components/schemas/Uuid', nullable: true }, reason: { type: string, minLength: 1 } } }
+      type: object
+      additionalProperties: false
+      required:
+        - toStatus
+        - expectedVersion
+        - reason
+      properties:
+        toStatus:
+          type: string
+          enum:
+            - PROPOSED
+            - APPROVED
+            - IMPLEMENTED
+            - MEASURED
+            - SUSTAINED
+            - CORRECTIVE
+        expectedVersion:
+          type: integer
+          format: int64
+          minimum: 1
+        approvalId:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        reason:
+          type: string
+          minLength: 1
     ConsumeInventoryItemRequest:
       type: object
       additionalProperties: false
-      required: [source, quantityConsumedMilli, idempotencyKey]
-      properties: { source: { $ref: '#/components/schemas/InventoryConsumptionSource' }, quantityConsumedMilli: { type: integer, format: int64, minimum: 1 }, occurredAt: { type: string, format: date-time, nullable: true }, memo: { type: string, nullable: true }, idempotencyKey: { type: string, minLength: 16, maxLength: 200 } }
+      required:
+        - source
+        - quantityConsumedMilli
+        - idempotencyKey
+      properties:
+        source:
+          $ref: '#/components/schemas/InventoryConsumptionSource'
+        quantityConsumedMilli:
+          type: integer
+          format: int64
+          minimum: 1
+        occurredAt:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        memo:
+          type:
+            - string
+            - 'null'
+        idempotencyKey:
+          type: string
+          minLength: 16
+          maxLength: 200
     ControlCadence:
       type: string
       enum: [CONTINUOUS, DAILY, WEEKLY, MONTHLY, QUARTERLY, ANNUAL, EVENT_DRIVEN]
@@ -20546,15 +21275,34 @@ components:
       enum: [PREVENTIVE, DETECTIVE, CORRECTIVE, DIRECTIVE, COMPENSATING]
     CopyVerification:
       type: object
-      required: [copy_id, copy_kind, recorded_digest_sha256, recorded_size_bytes, status]
+      required:
+        - copy_id
+        - copy_kind
+        - recorded_digest_sha256
+        - recorded_size_bytes
+        - status
       properties:
-        copy_id: { type: string, format: uuid }
-        copy_kind: { $ref: '#/components/schemas/EvidenceCopyKind' }
-        recorded_digest_sha256: { type: string }
-        storage_checksum_sha256: { type: string, nullable: true }
-        recorded_size_bytes: { type: integer, format: int64 }
-        storage_size_bytes: { type: integer, format: int64, nullable: true }
-        status: { $ref: '#/components/schemas/FixityStatus' }
+        copy_id:
+          type: string
+          format: uuid
+        copy_kind:
+          $ref: '#/components/schemas/EvidenceCopyKind'
+        recorded_digest_sha256:
+          type: string
+        storage_checksum_sha256:
+          type:
+            - string
+            - 'null'
+        recorded_size_bytes:
+          type: integer
+          format: int64
+        storage_size_bytes:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        status:
+          $ref: '#/components/schemas/FixityStatus'
     CostLedgerEntrySummary:
       type: object
       required:
@@ -20737,8 +21485,8 @@ components:
     CreateEmployeeAttendanceRecordRequest:
       type: object
       required:
-      - kind
-      - idempotency_key
+        - kind
+        - idempotency_key
       properties:
         kind:
           $ref: '#/components/schemas/AttendanceRecordKind'
@@ -20747,40 +21495,41 @@ components:
           minLength: 1
           maxLength: 128
         note:
-          type: string
+          type:
+            - string
+            - 'null'
           maxLength: 500
-          nullable: true
     CreateEmployeeLifecycleEventRequest:
       type: object
       required:
-      - event_type
-      - effective_date
-      - comment
-      - signoffs
+        - event_type
+        - effective_date
+        - comment
+        - signoffs
       properties:
         event_type:
           type: string
           enum:
-          - ONBOARD
-          - OFFBOARD
-          - TERMINATE
-          - TRANSFER
+            - ONBOARD
+            - OFFBOARD
+            - TERMINATE
+            - TRANSFER
         to_status:
-          type: string
-          nullable: true
-          enum:
-          - ACTIVE
-          - EXITED
-          - UNKNOWN
+          oneOf:
+            - {type: string, enum: [ACTIVE, EXITED, UNKNOWN]}
+            - {type: 'null'}
         to_company:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         to_org_unit:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         to_position:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         effective_date:
           type: string
           minLength: 1
@@ -21054,21 +21803,64 @@ components:
           minLength: 1
     CreateLeavePromotion:
       type: object
-      required: [round_no, reference_year]
+      required:
+        - round_no
+        - reference_year
       properties:
-        round_no: { type: integer, enum: [1, 2] }
-        reference_year: { type: integer }
-        min_remaining_days: { type: number, nullable: true }
-        note: { type: string, nullable: true }
+        round_no:
+          type: integer
+          enum:
+            - 1
+            - 2
+        reference_year:
+          type: integer
+        min_remaining_days:
+          type:
+            - number
+            - 'null'
+        note:
+          type:
+            - string
+            - 'null'
     CreateLeaveRequest:
       type: object
-      required: [leave_type, reason, start_date, end_date]
+      required:
+        - leave_type
+        - reason
+        - start_date
+        - end_date
       properties:
-        leave_type: { type: string, enum: [ANNUAL, HALF_DAY_AM, HALF_DAY_PM, SICK, FAMILY_EVENT, PUBLIC_DUTY, UNPAID, OTHER] }
-        reason: { type: string, enum: [PERSONAL, FAMILY_EVENT, MEDICAL, BEREAVEMENT, CHILDCARE, CIVIC_DUTY, OTHER] }
-        start_date: { type: string, format: date }
-        end_date: { type: string, format: date }
-        note: { type: string, nullable: true }
+        leave_type:
+          type: string
+          enum:
+            - ANNUAL
+            - HALF_DAY_AM
+            - HALF_DAY_PM
+            - SICK
+            - FAMILY_EVENT
+            - PUBLIC_DUTY
+            - UNPAID
+            - OTHER
+        reason:
+          type: string
+          enum:
+            - PERSONAL
+            - FAMILY_EVENT
+            - MEDICAL
+            - BEREAVEMENT
+            - CHILDCARE
+            - CIVIC_DUTY
+            - OTHER
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        note:
+          type:
+            - string
+            - 'null'
     CreateListingRequest:
       type: object
       description: Full editable field set for creating a sales listing.
@@ -22002,22 +22794,65 @@ components:
           - 'null'
     CustodyEventView:
       type: object
-      required: [id, evidence_object_id, stage, actor_user_id, reason, event_digest_sha256, occurred_at, created_at]
+      required:
+        - id
+        - evidence_object_id
+        - stage
+        - actor_user_id
+        - reason
+        - event_digest_sha256
+        - occurred_at
+        - created_at
       properties:
-        id: { type: string, format: uuid }
-        evidence_object_id: { type: string, format: uuid }
-        stage: { $ref: '#/components/schemas/CustodyStage' }
-        actor_user_id: { type: string, format: uuid }
-        from_custodian: { type: object, additionalProperties: true, nullable: true }
-        to_custodian: { type: object, additionalProperties: true, nullable: true }
-        location_label: { type: string, nullable: true }
-        reason: { type: string }
-        source_ref: { allOf: [ { $ref: '#/components/schemas/EvidenceSourceRef' } ], nullable: true }
-        audit_event_id: { type: string, format: uuid, nullable: true }
-        previous_event_id: { type: string, format: uuid, nullable: true }
-        event_digest_sha256: { type: string }
-        occurred_at: { type: string, format: date-time }
-        created_at: { type: string, format: date-time }
+        id:
+          type: string
+          format: uuid
+        evidence_object_id:
+          type: string
+          format: uuid
+        stage:
+          $ref: '#/components/schemas/CustodyStage'
+        actor_user_id:
+          type: string
+          format: uuid
+        from_custodian:
+          type:
+            - object
+            - 'null'
+          additionalProperties: true
+        to_custodian:
+          type:
+            - object
+            - 'null'
+          additionalProperties: true
+        location_label:
+          type:
+            - string
+            - 'null'
+        reason:
+          type: string
+        source_ref:
+          oneOf:
+            - {$ref: '#/components/schemas/EvidenceSourceRef'}
+            - {type: 'null'}
+        audit_event_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        previous_event_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        event_digest_sha256:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
     CustodyStage:
       { type: string, enum: [REGISTERED, HASH_RECORDED, TSA_SUBMITTED, TSA_VERIFIED, WORM_REPLICATED, CUSTODY_TRANSFERRED, UNDER_REVIEW, ADMISSIBILITY_EVALUATED, LEGAL_HOLD_APPLIED, LEGAL_HOLD_RELEASED, EXPORTED, ARCHIVED, DISPOSAL_REQUESTED, DISPOSED] }
     CustomerInquiryPage:
@@ -22109,16 +22944,123 @@ components:
           minLength: 1
     CycleCount:
       type: object
-      required: [id, ccCode, branchId, stockLocation, status, version, openedBy, lineCount, varianceLineCount, createdAt, updatedAt]
-      properties: { id: { $ref: '#/components/schemas/Uuid' }, ccCode: { type: string }, branchId: { $ref: '#/components/schemas/Uuid' }, stockLocation: { $ref: '#/components/schemas/InventoryStockLocationSummary' }, status: { type: string, enum: [DRAFT, SUBMITTED, APPROVED, REJECTED, CANCELLED] }, version: { type: integer }, openedBy: { $ref: '#/components/schemas/Uuid' }, submittedBy: { $ref: '#/components/schemas/Uuid', nullable: true }, submittedAt: { type: string, format: date-time, nullable: true }, decidedBy: { $ref: '#/components/schemas/Uuid', nullable: true }, decidedAt: { type: string, format: date-time, nullable: true }, decisionMemo: { type: string, nullable: true }, lineCount: { type: integer, format: int64 }, varianceLineCount: { type: integer, format: int64 }, createdAt: { type: string, format: date-time }, updatedAt: { type: string, format: date-time } }
+      required:
+        - id
+        - ccCode
+        - branchId
+        - stockLocation
+        - status
+        - version
+        - openedBy
+        - lineCount
+        - varianceLineCount
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        ccCode:
+          type: string
+        branchId:
+          $ref: '#/components/schemas/Uuid'
+        stockLocation:
+          $ref: '#/components/schemas/InventoryStockLocationSummary'
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - SUBMITTED
+            - APPROVED
+            - REJECTED
+            - CANCELLED
+        version:
+          type: integer
+        openedBy:
+          $ref: '#/components/schemas/Uuid'
+        submittedBy:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        submittedAt:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        decidedBy:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        decidedAt:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        decisionMemo:
+          type:
+            - string
+            - 'null'
+        lineCount:
+          type: integer
+          format: int64
+        varianceLineCount:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     CycleCountDetail:
       type: object
       required: [count, lines, appliedMovementIds]
       properties: { count: { $ref: '#/components/schemas/CycleCount' }, lines: { type: array, items: { $ref: '#/components/schemas/CycleCountLine' } }, appliedMovementIds: { type: array, items: { $ref: '#/components/schemas/Uuid' } } }
     CycleCountLine:
       type: object
-      required: [id, itemId, ivCode, displayName, unitCode, systemQuantityMilli, countedQuantityMilli, varianceMilli, recordedBy, recordedAt]
-      properties: { id: { $ref: '#/components/schemas/Uuid' }, itemId: { $ref: '#/components/schemas/Uuid' }, ivCode: { type: string }, displayName: { type: string }, unitCode: { type: string }, systemQuantityMilli: { type: integer, format: int64 }, countedQuantityMilli: { type: integer, format: int64 }, varianceMilli: { type: integer, format: int64 }, reason: { type: string, nullable: true, enum: [DAMAGE, LOSS, MISCOUNT, FOUND, OTHER] }, note: { type: string, nullable: true }, recordedBy: { $ref: '#/components/schemas/Uuid' }, recordedAt: { type: string, format: date-time } }
+      required:
+        - id
+        - itemId
+        - ivCode
+        - displayName
+        - unitCode
+        - systemQuantityMilli
+        - countedQuantityMilli
+        - varianceMilli
+        - recordedBy
+        - recordedAt
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        itemId:
+          $ref: '#/components/schemas/Uuid'
+        ivCode:
+          type: string
+        displayName:
+          type: string
+        unitCode:
+          type: string
+        systemQuantityMilli:
+          type: integer
+          format: int64
+        countedQuantityMilli:
+          type: integer
+          format: int64
+        varianceMilli:
+          type: integer
+          format: int64
+        reason:
+          oneOf:
+            - {type: string, enum: [DAMAGE, LOSS, MISCOUNT, FOUND, OTHER]}
+            - {type: 'null'}
+        note:
+          type:
+            - string
+            - 'null'
+        recordedBy:
+          $ref: '#/components/schemas/Uuid'
+        recordedAt:
+          type: string
+          format: date-time
     CycleCountPage:
       type: object
       required: [items, limit, offset, total]
@@ -22131,27 +23073,33 @@ components:
     DailyPlanItemSummary:
       type: object
       required:
-      - description
-      - sort_order
+        - description
+        - sort_order
       properties:
         work_order_id:
-          $ref: '#/components/schemas/Uuid'
-          nullable: true
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
         request_no:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         equipment_no:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         management_no:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         customer_name:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         site_name:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         description:
           type: string
         sort_order:
@@ -22200,14 +23148,42 @@ components:
     DecideCycleCountRequest:
       type: object
       additionalProperties: false
-      required: [expectedVersion, decision]
-      properties: { expectedVersion: { type: integer, minimum: 1 }, decision: { type: string, enum: [APPROVE, REJECT] }, memo: { type: string, nullable: true }, idempotencyKey: { type: string, nullable: true, minLength: 16, maxLength: 200 } }
+      required:
+        - expectedVersion
+        - decision
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+        decision:
+          type: string
+          enum:
+            - APPROVE
+            - REJECT
+        memo:
+          type:
+            - string
+            - 'null'
+        idempotencyKey:
+          type:
+            - string
+            - 'null'
+          minLength: 16
+          maxLength: 200
     DecideLeaveRequest:
       type: object
-      required: [decision]
+      required:
+        - decision
       properties:
-        decision: { type: string, enum: [APPROVE, REJECT] }
-        note: { type: string, nullable: true }
+        decision:
+          type: string
+          enum:
+            - APPROVE
+            - REJECT
+        note:
+          type:
+            - string
+            - 'null'
     DecideOwnershipTransferRequest:
       type: object
       required:
@@ -22283,17 +23259,43 @@ components:
           additionalProperties: true
     DecisionLogRow:
       type: object
-      required: [id, decided_at, subject_ref, action, resource_type, effect, determining_policies, reason]
+      required:
+        - id
+        - decided_at
+        - subject_ref
+        - action
+        - resource_type
+        - effect
+        - determining_policies
+        - reason
       properties:
-        id: { type: string, format: uuid }
-        decided_at: { type: string, format: date-time }
-        subject_ref: { type: string }
-        action: { type: string }
-        resource_type: { type: string }
-        resource_id: { type: string, nullable: true }
-        effect: { type: string, enum: [allow, deny] }
-        determining_policies: { type: array, items: { type: string } }
-        reason: { type: string }
+        id:
+          type: string
+          format: uuid
+        decided_at:
+          type: string
+          format: date-time
+        subject_ref:
+          type: string
+        action:
+          type: string
+        resource_type:
+          type: string
+        resource_id:
+          type:
+            - string
+            - 'null'
+        effect:
+          type: string
+          enum:
+            - allow
+            - deny
+        determining_policies:
+          type: array
+          items:
+            type: string
+        reason:
+          type: string
     DefinitionsByObjectKindResponse:
       type: object
       required: [kind, definitions, bindings]
@@ -22344,33 +23346,36 @@ components:
     DeviceLoginPollResponse:
       type: object
       required:
-      - status
+        - status
       properties:
         status:
           type: string
           enum:
-          - pending
-          - approved
-          - expired
+            - pending
+            - approved
+            - expired
         access_token:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         refresh_token:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
           description: Null in web cookie transport; present in body transport.
         token_type:
-          type: string
-          nullable: true
-          enum:
-          - Bearer
+          oneOf:
+            - {type: string, enum: [Bearer]}
+            - {type: 'null'}
         refresh_expires_at:
-          type: string
+          type:
+            - string
+            - 'null'
           format: date-time
-          nullable: true
         requires_passkey_setup:
-          type: boolean
-          nullable: true
+          type:
+            - boolean
+            - 'null'
           description: Approved desktop QR sessions are passkey-authenticated and return false.
     DeviceLoginStartResponse:
       type: object
@@ -22651,16 +23656,16 @@ components:
     Employee:
       type: object
       required:
-      - id
-      - company
-      - name
-      - identity_resolution_strategy
-      - identity_resolution_confidence
-      - identity_review_required
-      - identity_name_only_merge
-      - home_branch_review_required
-      - created_at
-      - updated_at
+        - id
+        - company
+        - name
+        - identity_resolution_strategy
+        - identity_resolution_confidence
+        - identity_review_required
+        - identity_name_only_merge
+        - home_branch_review_required
+        - created_at
+        - updated_at
       properties:
         id:
           $ref: '#/components/schemas/Uuid'
@@ -22669,66 +23674,80 @@ components:
         name:
           type: string
         employee_number:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         org_unit:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         worksite_name:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         worksite:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         job:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         position:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         hire_date:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         exit_date:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         status:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         leave_accrued:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         leave_used:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         leave_remaining:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         home_branch_id:
-          type: string
+          type:
+            - string
+            - 'null'
           format: uuid
-          nullable: true
           description: Active authoritative leave-routing branch; null requires HR review before self-service filing.
         home_branch_name:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         home_branch_review_required:
           type: boolean
           description: True when no active authoritative home branch is configured.
         identity_resolution_strategy:
           type: string
           enum:
-          - employee_number
-          - legal_identifier_hash
-          - birth_hire_fingerprint
-          - source_row_fingerprint
+            - employee_number
+            - legal_identifier_hash
+            - birth_hire_fingerprint
+            - source_row_fingerprint
           description: Non-PII strategy used to keep same-name employees from being merged by name alone.
         identity_resolution_confidence:
           type: string
           enum:
-          - high
-          - medium
-          - low
+            - high
+            - medium
+            - low
           description: Confidence derived from the accepted identity strategy; never from user-supplied labels.
         identity_review_required:
           type: boolean
@@ -22743,16 +23762,16 @@ components:
     EmployeeAttendanceRecord:
       type: object
       required:
-      - id
-      - employee_id
-      - employee_display_name
-      - kind
-      - occurred_at
-      - work_date
-      - state_after
-      - payroll_material_ref_id
-      - payroll_link_status
-      - duplicate
+        - id
+        - employee_id
+        - employee_display_name
+        - kind
+        - occurred_at
+        - work_date
+        - state_after
+        - payroll_material_ref_id
+        - payroll_link_status
+        - duplicate
       properties:
         id:
           $ref: '#/components/schemas/Uuid'
@@ -22770,19 +23789,20 @@ components:
         state_after:
           type: string
           enum:
-          - CLOCKED_IN
-          - OUT_FOR_WORK
-          - BUSINESS_TRIP
-          - OFF_DUTY
+            - CLOCKED_IN
+            - OUT_FOR_WORK
+            - BUSINESS_TRIP
+            - OFF_DUTY
         note:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         payroll_material_ref_id:
           $ref: '#/components/schemas/Uuid'
         payroll_link_status:
           type: string
           enum:
-          - LINKED
+            - LINKED
         duplicate:
           type: boolean
     EmployeeAttendanceRecordPage:
@@ -22850,39 +23870,26 @@ components:
     EmployeeImportColumn:
       type: object
       required:
-      - source_header
-      - normalized_header
-      - classification
-      - preview_allowed
+        - source_header
+        - normalized_header
+        - classification
+        - preview_allowed
       properties:
         source_header:
           type: string
         normalized_header:
           type: string
         target:
-          type: string
-          nullable: true
-          enum:
-          - name
-          - employee_number
-          - org_unit
-          - job
-          - position
-          - worksite_name
-          - worksite_address
-          - hire_date
-          - exit_date
-          - leave_accrued
-          - leave_used
-          - leave_remaining
-          - company
+          oneOf:
+            - {type: string, enum: [name, employee_number, org_unit, job, position, worksite_name, worksite_address, hire_date, exit_date, leave_accrued, leave_used, leave_remaining, company]}
+            - {type: 'null'}
         classification:
           type: string
           enum:
-          - canonical
-          - retained
-          - restricted
-          - location
+            - canonical
+            - retained
+            - restricted
+            - location
         preview_allowed:
           type: boolean
     EmployeeImportCompanySummary:
@@ -23036,15 +24043,15 @@ components:
     EmployeeLifecycleEvent:
       type: object
       required:
-      - id
-      - employee_id
-      - event_type
-      - to_status
-      - effective_date
-      - comment
-      - signoffs
-      - created_by
-      - created_at
+        - id
+        - employee_id
+        - event_type
+        - to_status
+        - effective_date
+        - comment
+        - signoffs
+        - created_by
+        - created_at
       properties:
         id:
           $ref: '#/components/schemas/Uuid'
@@ -23053,37 +24060,44 @@ components:
         event_type:
           type: string
           enum:
-          - ONBOARD
-          - OFFBOARD
-          - TERMINATE
-          - TRANSFER
+            - ONBOARD
+            - OFFBOARD
+            - TERMINATE
+            - TRANSFER
         from_status:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         to_status:
           type: string
           enum:
-          - ACTIVE
-          - EXITED
-          - UNKNOWN
+            - ACTIVE
+            - EXITED
+            - UNKNOWN
         from_company:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         to_company:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         from_org_unit:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         to_org_unit:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         from_position:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         to_position:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         effective_date:
           type: string
         comment:
@@ -23181,47 +24195,22 @@ components:
       allOf:
         - $ref: '#/components/schemas/Equipment3rCaseView'
         - type: object
-          required: [inspections, createdBy, createdAt, updatedAt]
+          required:
+            - inspections
+            - createdBy
+            - createdAt
+            - updatedAt
           properties:
-            approval:
-              type: object
-              nullable: true
-              properties:
-                decision: { type: string, enum: [APPROVED, DECLINED] }
-                reason: { type: string, nullable: true }
-                decidedBy: { $ref: '#/components/schemas/Uuid' }
-                decidedAt: { type: string, format: date-time }
-            dispatch:
-              type: object
-              nullable: true
-              properties:
-                carrierName: { type: string }
-                vehicleReference: { type: string }
-                dispatchedAt: { type: string, format: date-time }
-            handover:
-              type: object
-              nullable: true
-              properties:
-                recipientName: { type: string }
-                evidenceObjectId: { $ref: '#/components/schemas/Uuid' }
-                handedOverAt: { type: string, format: date-time }
-            returnedAt: { type: string, format: date-time, nullable: true }
-            assessment:
-              type: object
-              nullable: true
-              properties:
-                conditionGrade: { type: string, enum: [A, B, C, D] }
-                findings: { type: string }
-                disposition: { type: string, enum: [REPAIR, REFURBISH, RESALE, REDEPLOY] }
-                assessedBy: { $ref: '#/components/schemas/Uuid' }
-                assessedAt: { type: string, format: date-time }
-            dispositionId: { $ref: '#/components/schemas/Uuid', nullable: true }
-            inspections:
-              type: array
-              items: { $ref: '#/components/schemas/Equipment3rInspectionView' }
-            createdBy: { $ref: '#/components/schemas/Uuid' }
-            createdAt: { type: string, format: date-time }
-            updatedAt: { type: string, format: date-time }
+            approval: {type: [object, 'null'], properties: {decision: {type: string, enum: [APPROVED, DECLINED]}, reason: {type: [string, 'null']}, decidedBy: {$ref: '#/components/schemas/Uuid'}, decidedAt: {type: string, format: date-time}}}
+            dispatch: {type: [object, 'null'], properties: {carrierName: {type: string}, vehicleReference: {type: string}, dispatchedAt: {type: string, format: date-time}}}
+            handover: {type: [object, 'null'], properties: {recipientName: {type: string}, evidenceObjectId: {$ref: '#/components/schemas/Uuid'}, handedOverAt: {type: string, format: date-time}}}
+            returnedAt: {type: [string, 'null'], format: date-time}
+            assessment: {type: [object, 'null'], properties: {conditionGrade: {type: string, enum: [A, B, C, D]}, findings: {type: string}, disposition: {type: string, enum: [REPAIR, REFURBISH, RESALE, REDEPLOY]}, assessedBy: {$ref: '#/components/schemas/Uuid'}, assessedAt: {type: string, format: date-time}}}
+            dispositionId: {oneOf: [{$ref: '#/components/schemas/Uuid'}, {type: 'null'}]}
+            inspections: {type: array, items: {$ref: '#/components/schemas/Equipment3rInspectionView'}}
+            createdBy: {$ref: '#/components/schemas/Uuid'}
+            createdAt: {type: string, format: date-time}
+            updatedAt: {type: string, format: date-time}
     Equipment3rCaseView:
       type: object
       required: [id, unitId, status, customerName, siteReference, monthlyRateMinor, durationMonths, currencyCode, branchId]
@@ -23238,19 +24227,56 @@ components:
         replayed: { type: boolean, description: Present and true only on an idempotent replay }
     Equipment3rDispositionView:
       type: object
-      required: [id, unitId, caseId, kind, status, completedBy, completedAt, financeGlPosting]
+      required:
+        - id
+        - unitId
+        - caseId
+        - kind
+        - status
+        - completedBy
+        - completedAt
+        - financeGlPosting
       properties:
-        id: { $ref: '#/components/schemas/Uuid' }
-        unitId: { $ref: '#/components/schemas/Uuid' }
-        caseId: { $ref: '#/components/schemas/Uuid' }
-        kind: { type: string, enum: [REPAIR, REFURBISH, RESALE, REDEPLOY] }
-        status: { type: string, enum: [OPEN, COMPLETED] }
-        costMinor: { type: integer, format: int64, nullable: true }
-        saleAmountMinor: { type: integer, format: int64, nullable: true }
-        buyerName: { type: string, nullable: true }
-        completedBy: { $ref: '#/components/schemas/Uuid' }
-        completedAt: { type: string, format: date-time }
-        financeGlPosting: { nullable: true, description: Always null — the pilot records no GL posting }
+        id:
+          $ref: '#/components/schemas/Uuid'
+        unitId:
+          $ref: '#/components/schemas/Uuid'
+        caseId:
+          $ref: '#/components/schemas/Uuid'
+        kind:
+          type: string
+          enum:
+            - REPAIR
+            - REFURBISH
+            - RESALE
+            - REDEPLOY
+        status:
+          type: string
+          enum:
+            - OPEN
+            - COMPLETED
+        costMinor:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        saleAmountMinor:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        buyerName:
+          type:
+            - string
+            - 'null'
+        completedBy:
+          $ref: '#/components/schemas/Uuid'
+        completedAt:
+          type: string
+          format: date-time
+        financeGlPosting:
+          description: Always null — the pilot records no GL posting
+          type: 'null'
     Equipment3rHistoryEntry:
       type: object
       required: [aggregateKind, aggregateId, transition, actorId, occurredAt]
@@ -23262,25 +24288,46 @@ components:
         occurredAt: { type: string, format: date-time }
     Equipment3rInspectionView:
       type: object
-      required: [id, caseId, outcome, findings, inspectedBy, inspectedAt]
+      required:
+        - id
+        - caseId
+        - outcome
+        - findings
+        - inspectedBy
+        - inspectedAt
       properties:
-        id: { $ref: '#/components/schemas/Uuid' }
-        caseId: { $ref: '#/components/schemas/Uuid' }
-        outcome: { type: string, enum: [PASS, MAINTENANCE_PERFORMED] }
-        findings: { type: string }
-        maintenanceNote: { type: string, nullable: true }
-        inspectedBy: { $ref: '#/components/schemas/Uuid' }
-        inspectedAt: { type: string, format: date-time }
+        id:
+          $ref: '#/components/schemas/Uuid'
+        caseId:
+          $ref: '#/components/schemas/Uuid'
+        outcome:
+          type: string
+          enum:
+            - PASS
+            - MAINTENANCE_PERFORMED
+        findings:
+          type: string
+        maintenanceNote:
+          type:
+            - string
+            - 'null'
+        inspectedBy:
+          $ref: '#/components/schemas/Uuid'
+        inspectedAt:
+          type: string
+          format: date-time
     Equipment3rUnitDetailView:
       allOf:
         - $ref: '#/components/schemas/Equipment3rUnitView'
         - type: object
-          required: [createdAt, updatedAt]
+          required:
+            - createdAt
+            - updatedAt
           properties:
-            activeCaseId: { $ref: '#/components/schemas/Uuid', nullable: true }
-            openDispositionId: { $ref: '#/components/schemas/Uuid', nullable: true }
-            createdAt: { type: string, format: date-time }
-            updatedAt: { type: string, format: date-time }
+            activeCaseId: {oneOf: [{$ref: '#/components/schemas/Uuid'}, {type: 'null'}]}
+            openDispositionId: {oneOf: [{$ref: '#/components/schemas/Uuid'}, {type: 'null'}]}
+            createdAt: {type: string, format: date-time}
+            updatedAt: {type: string, format: date-time}
     Equipment3rUnitView:
       type: object
       required: [id, serialNo, modelName, capacityClass, availability, acquisitionCostMinor, branchId]
@@ -23994,35 +25041,98 @@ components:
       { type: string, enum: [ORIGINAL, DERIVATIVE] }
     EvidenceCopyView:
       type: object
-      required: [id, evidence_object_id, copy_kind, evidentiary_status, storage, digest_sha256, content_type, size_bytes, worm_status, created_by, created_at]
+      required:
+        - id
+        - evidence_object_id
+        - copy_kind
+        - evidentiary_status
+        - storage
+        - digest_sha256
+        - content_type
+        - size_bytes
+        - worm_status
+        - created_by
+        - created_at
       properties:
-        id: { type: string, format: uuid }
-        evidence_object_id: { type: string, format: uuid }
-        copy_kind: { $ref: '#/components/schemas/EvidenceCopyKind' }
-        evidentiary_status: { $ref: '#/components/schemas/EvidenceCopyEvidentiaryStatus' }
-        derivative_kind: { type: string, nullable: true, enum: [REDACTED, THUMBNAIL, TRANSCODED, EXCERPT, EXPORT_MANIFEST, NORMALIZED_TEXT, OTHER] }
-        parent_copy_id: { type: string, format: uuid, nullable: true }
-        storage: { $ref: '#/components/schemas/EvidenceStorageRef' }
-        source_evidence_media_id: { type: string, format: uuid, nullable: true }
-        digest_sha256: { type: string }
-        content_type: { type: string }
-        size_bytes: { type: integer, format: int64 }
-        worm_status: { $ref: '#/components/schemas/WormStorageStatus' }
-        verified_at: { type: string, format: date-time, nullable: true }
-        created_by: { type: string, format: uuid }
-        created_at: { type: string, format: date-time }
+        id:
+          type: string
+          format: uuid
+        evidence_object_id:
+          type: string
+          format: uuid
+        copy_kind:
+          $ref: '#/components/schemas/EvidenceCopyKind'
+        evidentiary_status:
+          $ref: '#/components/schemas/EvidenceCopyEvidentiaryStatus'
+        derivative_kind:
+          oneOf:
+            - {type: string, enum: [REDACTED, THUMBNAIL, TRANSCODED, EXCERPT, EXPORT_MANIFEST, NORMALIZED_TEXT, OTHER]}
+            - {type: 'null'}
+        parent_copy_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        storage:
+          $ref: '#/components/schemas/EvidenceStorageRef'
+        source_evidence_media_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        digest_sha256:
+          type: string
+        content_type:
+          type: string
+        size_bytes:
+          type: integer
+          format: int64
+        worm_status:
+          $ref: '#/components/schemas/WormStorageStatus'
+        verified_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        created_by:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
     EvidenceExportView:
       type: object
-      required: [id, evidence_object_id, manifest_digest_sha256, signature_algorithm, export_reason, exported_by, exported_at]
+      required:
+        - id
+        - evidence_object_id
+        - manifest_digest_sha256
+        - signature_algorithm
+        - export_reason
+        - exported_by
+        - exported_at
       properties:
-        id: { type: string, format: uuid }
-        evidence_object_id: { type: string, format: uuid }
-        manifest_digest_sha256: { type: string }
-        signature_algorithm: { type: string }
-        signature_ref: { type: string, nullable: true }
-        export_reason: { type: string }
-        exported_by: { type: string, format: uuid }
-        exported_at: { type: string, format: date-time }
+        id:
+          type: string
+          format: uuid
+        evidence_object_id:
+          type: string
+          format: uuid
+        manifest_digest_sha256:
+          type: string
+        signature_algorithm:
+          type: string
+        signature_ref:
+          type:
+            - string
+            - 'null'
+        export_reason:
+          type: string
+        exported_by:
+          type: string
+          format: uuid
+        exported_at:
+          type: string
+          format: date-time
     EvidenceHoldRequest:
       oneOf:
         - type: object
@@ -24066,25 +25176,72 @@ components:
           description: Opaque unpadded-base64url continuation token, or null at the end of the snapshot.
     EvidenceObjectView:
       type: object
-      required: [id, code, title, source, classification, current_custody_stage, legal_hold_state, admissibility_status, admissibility_reasons, admissibility_inputs, created_by, updated_by, created_at, updated_at]
+      required:
+        - id
+        - code
+        - title
+        - source
+        - classification
+        - current_custody_stage
+        - legal_hold_state
+        - admissibility_status
+        - admissibility_reasons
+        - admissibility_inputs
+        - created_by
+        - updated_by
+        - created_at
+        - updated_at
       properties:
-        id: { type: string, format: uuid }
-        code: { type: string }
-        title: { type: string }
-        description: { type: string, nullable: true }
-        source: { $ref: '#/components/schemas/EvidenceSourceRef' }
-        classification: { $ref: '#/components/schemas/EvidenceClassification' }
-        record_owner_user_id: { type: string, format: uuid, nullable: true }
-        current_custody_stage: { $ref: '#/components/schemas/CustodyStage' }
-        legal_hold_state: { $ref: '#/components/schemas/LegalHoldState' }
-        admissibility_status: { $ref: '#/components/schemas/AdmissibilityStatus' }
-        admissibility_reasons: { type: array, items: { type: string } }
-        admissibility_inputs: { type: object, additionalProperties: true }
-        created_by: { type: string, format: uuid }
-        updated_by: { type: string, format: uuid }
-        created_at: { type: string, format: date-time }
-        updated_at: { type: string, format: date-time }
-        disposed_at: { type: string, format: date-time, nullable: true }
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        title:
+          type: string
+        description:
+          type:
+            - string
+            - 'null'
+        source:
+          $ref: '#/components/schemas/EvidenceSourceRef'
+        classification:
+          $ref: '#/components/schemas/EvidenceClassification'
+        record_owner_user_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        current_custody_stage:
+          $ref: '#/components/schemas/CustodyStage'
+        legal_hold_state:
+          $ref: '#/components/schemas/LegalHoldState'
+        admissibility_status:
+          $ref: '#/components/schemas/AdmissibilityStatus'
+        admissibility_reasons:
+          type: array
+          items:
+            type: string
+        admissibility_inputs:
+          type: object
+          additionalProperties: true
+        created_by:
+          type: string
+          format: uuid
+        updated_by:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        disposed_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
     EvidencePresignRequest:
       type: object
       required:
@@ -24123,11 +25280,18 @@ components:
           $ref: '#/components/schemas/PresignedUpload'
     EvidenceSourceRef:
       type: object
-      required: [source_type, source_id]
+      required:
+        - source_type
+        - source_id
       properties:
-        source_type: { $ref: '#/components/schemas/EvidenceSourceType' }
-        source_id: { type: string }
-        source_code: { type: string, nullable: true }
+        source_type:
+          $ref: '#/components/schemas/EvidenceSourceType'
+        source_id:
+          type: string
+        source_code:
+          type:
+            - string
+            - 'null'
     EvidenceSourceType:
       { type: string, enum: [record_archive, inbox_doc, mail_attachment, ingest_job, work_order_evidence_media, external_document] }
     EvidenceStagingPresignRequest:
@@ -24202,12 +25366,22 @@ components:
           $ref: '#/components/schemas/Timestamp'
     EvidenceStorageRef:
       type: object
-      required: [provider, object_id]
+      required:
+        - provider
+        - object_id
       properties:
-        provider: { type: string }
-        object_id: { type: string }
-        key_ref: { type: string, nullable: true }
-        version_id: { type: string, nullable: true }
+        provider:
+          type: string
+        object_id:
+          type: string
+        key_ref:
+          type:
+            - string
+            - 'null'
+        version_id:
+          type:
+            - string
+            - 'null'
     EvidenceSummary:
       type: object
       required:
@@ -25015,17 +26189,18 @@ components:
     HrOrgChartEmployee:
       type: object
       required:
-      - id
-      - name
-      - status
+        - id
+        - name
+        - status
       properties:
         id:
           $ref: '#/components/schemas/Uuid'
         name:
           type: string
         employee_number:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         status:
           type: string
     HrOrgChartPosition:
@@ -25359,13 +26534,27 @@ components:
           $ref: '#/components/schemas/Timestamp'
     InstanceHead:
       type: object
-      required: [id, object_type_id, title, lifecycle_state]
+      required:
+        - id
+        - object_type_id
+        - title
+        - lifecycle_state
       properties:
-        id: { type: string, format: uuid }
-        object_type_id: { type: string, format: uuid }
-        title: { type: string }
-        current_revision_id: { type: string, format: uuid, nullable: true }
-        lifecycle_state: { $ref: '#/components/schemas/InstanceLifecycleState' }
+        id:
+          type: string
+          format: uuid
+        object_type_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        current_revision_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        lifecycle_state:
+          $ref: '#/components/schemas/InstanceLifecycleState'
     InstanceLifecycleState:
       type: string
       enum: [draft, active, locked, archived, disposed]
@@ -25377,8 +26566,63 @@ components:
         revision: { $ref: '#/components/schemas/RevisionSummary' }
     InventoryConsumptionEvent:
       type: object
-      required: [id, item_id, iv_code, branch_id, stock_location_id, source, quantity_before_milli, quantity_consumed_milli, quantity_after_milli, consumed_by, occurred_at, created_at]
-      properties: { id: { $ref: '#/components/schemas/Uuid' }, item_id: { $ref: '#/components/schemas/Uuid' }, iv_code: { type: string }, branch_id: { $ref: '#/components/schemas/Uuid' }, stock_location_id: { $ref: '#/components/schemas/Uuid' }, source: { $ref: '#/components/schemas/InventoryConsumptionSource' }, quantity_before_milli: { type: integer, format: int64 }, quantity_consumed_milli: { type: integer, format: int64 }, quantity_after_milli: { type: integer, format: int64 }, unit_cost_won: { type: integer, format: int64, nullable: true }, cost_won: { type: integer, format: int64, nullable: true }, consumed_by: { $ref: '#/components/schemas/Uuid' }, occurred_at: { type: string, format: date-time }, memo: { type: string, nullable: true }, created_at: { type: string, format: date-time } }
+      required:
+        - id
+        - item_id
+        - iv_code
+        - branch_id
+        - stock_location_id
+        - source
+        - quantity_before_milli
+        - quantity_consumed_milli
+        - quantity_after_milli
+        - consumed_by
+        - occurred_at
+        - created_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        item_id:
+          $ref: '#/components/schemas/Uuid'
+        iv_code:
+          type: string
+        branch_id:
+          $ref: '#/components/schemas/Uuid'
+        stock_location_id:
+          $ref: '#/components/schemas/Uuid'
+        source:
+          $ref: '#/components/schemas/InventoryConsumptionSource'
+        quantity_before_milli:
+          type: integer
+          format: int64
+        quantity_consumed_milli:
+          type: integer
+          format: int64
+        quantity_after_milli:
+          type: integer
+          format: int64
+        unit_cost_won:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        cost_won:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        consumed_by:
+          $ref: '#/components/schemas/Uuid'
+        occurred_at:
+          type: string
+          format: date-time
+        memo:
+          type:
+            - string
+            - 'null'
+        created_at:
+          type: string
+          format: date-time
     InventoryConsumptionResult:
       type: object
       required: [event, item]
@@ -25393,16 +26637,121 @@ components:
           properties: { kind: { type: string, enum: [p1_dispatch] }, dispatch_id: { $ref: '#/components/schemas/Uuid' } }
     InventoryItem:
       type: object
-      required: [id, branch_id, stock_location, iv_code, display_name, unit_code, quantity_on_hand_milli, safety_stock_milli, low_stock, status, href, created_by, created_at, updated_at]
-      properties: { id: { $ref: '#/components/schemas/Uuid' }, branch_id: { $ref: '#/components/schemas/Uuid' }, site_id: { $ref: '#/components/schemas/Uuid', nullable: true }, stock_location: { $ref: '#/components/schemas/InventoryStockLocationSummary' }, iv_code: { type: string }, sku: { type: string, nullable: true }, display_name: { type: string }, description: { type: string, nullable: true }, unit_code: { type: string }, quantity_on_hand_milli: { type: integer, format: int64 }, safety_stock_milli: { type: integer, format: int64 }, unit_cost_won: { type: integer, format: int64, nullable: true }, low_stock: { type: boolean }, status: { type: string }, href: { type: string }, created_by: { $ref: '#/components/schemas/Uuid' }, created_at: { type: string, format: date-time }, updated_at: { type: string, format: date-time } }
+      required:
+        - id
+        - branch_id
+        - stock_location
+        - iv_code
+        - display_name
+        - unit_code
+        - quantity_on_hand_milli
+        - safety_stock_milli
+        - low_stock
+        - status
+        - href
+        - created_by
+        - created_at
+        - updated_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        branch_id:
+          $ref: '#/components/schemas/Uuid'
+        site_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        stock_location:
+          $ref: '#/components/schemas/InventoryStockLocationSummary'
+        iv_code:
+          type: string
+        sku:
+          type:
+            - string
+            - 'null'
+        display_name:
+          type: string
+        description:
+          type:
+            - string
+            - 'null'
+        unit_code:
+          type: string
+        quantity_on_hand_milli:
+          type: integer
+          format: int64
+        safety_stock_milli:
+          type: integer
+          format: int64
+        unit_cost_won:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        low_stock:
+          type: boolean
+        status:
+          type: string
+        href:
+          type: string
+        created_by:
+          $ref: '#/components/schemas/Uuid'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
     InventoryItemPage:
       type: object
       required: [items, limit, offset, total]
       properties: { items: { type: array, items: { $ref: '#/components/schemas/InventoryItem' } }, limit: { type: integer, format: int64 }, offset: { type: integer, format: int64 }, total: { type: integer, format: int64 } }
     InventoryMovement:
       type: object
-      required: [id, itemId, ivCode, kind, quantityDeltaMilli, quantityBeforeMilli, quantityAfterMilli, source, actor, occurredAt]
-      properties: { id: { $ref: '#/components/schemas/Uuid' }, itemId: { $ref: '#/components/schemas/Uuid' }, ivCode: { type: string }, kind: { type: string, enum: [ISSUE, RECEIPT, ADJUSTMENT] }, quantityDeltaMilli: { type: integer, format: int64 }, quantityBeforeMilli: { type: integer, format: int64 }, quantityAfterMilli: { type: integer, format: int64 }, source: { $ref: '#/components/schemas/InventoryMovementSource' }, actor: { $ref: '#/components/schemas/Uuid' }, occurredAt: { type: string, format: date-time }, memo: { type: string, nullable: true } }
+      required:
+        - id
+        - itemId
+        - ivCode
+        - kind
+        - quantityDeltaMilli
+        - quantityBeforeMilli
+        - quantityAfterMilli
+        - source
+        - actor
+        - occurredAt
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        itemId:
+          $ref: '#/components/schemas/Uuid'
+        ivCode:
+          type: string
+        kind:
+          type: string
+          enum:
+            - ISSUE
+            - RECEIPT
+            - ADJUSTMENT
+        quantityDeltaMilli:
+          type: integer
+          format: int64
+        quantityBeforeMilli:
+          type: integer
+          format: int64
+        quantityAfterMilli:
+          type: integer
+          format: int64
+        source:
+          $ref: '#/components/schemas/InventoryMovementSource'
+        actor:
+          $ref: '#/components/schemas/Uuid'
+        occurredAt:
+          type: string
+          format: date-time
+        memo:
+          type:
+            - string
+            - 'null'
     InventoryMovementSource:
       oneOf:
       - $ref: '#/components/schemas/InventoryMovementSourceWorkOrder'
@@ -25424,8 +26773,18 @@ components:
     InventoryMovementSourceExternalRef:
       type: object
       additionalProperties: false
-      required: [kind, sourceRef]
-      properties: { kind: { type: string, enum: [external_ref] }, sourceRef: { type: string, nullable: true } }
+      required:
+        - kind
+        - sourceRef
+      properties:
+        kind:
+          type: string
+          enum:
+            - external_ref
+        sourceRef:
+          type:
+            - string
+            - 'null'
     InventoryMovementSourceP1Dispatch:
       type: object
       additionalProperties: false
@@ -25438,8 +26797,52 @@ components:
       properties: { kind: { type: string, enum: [work_order] }, workOrderId: { $ref: '#/components/schemas/Uuid' } }
     InventoryMrpLine:
       type: object
-      required: [itemId, ivCode, displayName, unitCode, quantityOnHandMilli, safetyStockMilli, inboundExpectedMilli, reservedOutboundMilli, monthlyUsageMilli, short, proposedOrderMilli]
-      properties: { itemId: { $ref: '#/components/schemas/Uuid' }, ivCode: { type: string }, displayName: { type: string }, unitCode: { type: string }, quantityOnHandMilli: { type: integer, format: int64 }, safetyStockMilli: { type: integer, format: int64 }, inboundExpectedMilli: { type: integer, format: int64 }, reservedOutboundMilli: { type: integer, format: int64 }, monthlyUsageMilli: { type: integer, format: int64 }, coverMonthsCenti: { type: integer, format: int64, nullable: true }, short: { type: boolean }, proposedOrderMilli: { type: integer, format: int64 } }
+      required:
+        - itemId
+        - ivCode
+        - displayName
+        - unitCode
+        - quantityOnHandMilli
+        - safetyStockMilli
+        - inboundExpectedMilli
+        - reservedOutboundMilli
+        - monthlyUsageMilli
+        - short
+        - proposedOrderMilli
+      properties:
+        itemId:
+          $ref: '#/components/schemas/Uuid'
+        ivCode:
+          type: string
+        displayName:
+          type: string
+        unitCode:
+          type: string
+        quantityOnHandMilli:
+          type: integer
+          format: int64
+        safetyStockMilli:
+          type: integer
+          format: int64
+        inboundExpectedMilli:
+          type: integer
+          format: int64
+        reservedOutboundMilli:
+          type: integer
+          format: int64
+        monthlyUsageMilli:
+          type: integer
+          format: int64
+        coverMonthsCenti:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        short:
+          type: boolean
+        proposedOrderMilli:
+          type: integer
+          format: int64
     InventoryReceiptResult:
       type: object
       required: [movement, item]
@@ -25621,9 +27024,9 @@ components:
     LeaveBalanceItem:
       type: object
       required:
-      - id
-      - company
-      - name
+        - id
+        - company
+        - name
       properties:
         id:
           $ref: '#/components/schemas/Uuid'
@@ -25632,23 +27035,29 @@ components:
         name:
           type: string
         employee_number:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         org_unit:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         position:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         leave_accrued:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         leave_used:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         leave_remaining:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
     LeaveBalancePage:
       type: object
       required:
@@ -25754,11 +27163,9 @@ components:
     LeaveCreateRequest:
       type: object
       description: >-
-        A self-service leave-request filing. The subject employee and branch are
-        NOT accepted here — they are resolved from the authenticated caller.
-        There is deliberately no `reason` field: 근로기준법 §60 grants the worker
-        the 시기지정권, so a 연차/반차 filing carries no 사유 and a body that
-        still sends one is rejected (422).
+        A self-service leave-request filing. The subject employee and branch are NOT accepted here — they are resolved from
+        the authenticated caller. There is deliberately no `reason` field: 근로기준법 §60 grants the worker the 시기지정권, so a 연차/반차
+        filing carries no 사유 and a body that still sends one is rejected (422).
       additionalProperties: false
       required:
         - idempotency_key
@@ -25769,15 +27176,19 @@ components:
         idempotency_key:
           type: string
           format: uuid
-          description: Stable client submission id. Reuse it only to retry the same canonical client intent after an unknown or lost response.
+          description: >-
+            Stable client submission id. Reuse it only to retry the same canonical client intent after an unknown or lost
+            response.
         leave_type:
           type: string
-          enum: [annual, half_day]
+          enum:
+            - annual
+            - half_day
           description: Full-day or partial-day intent; quantity is resolved only from evidence.
         partial_day_period:
-          type: string
-          enum: [am, pm]
-          nullable: true
+          oneOf:
+            - {type: string, enum: [am, pm]}
+            - {type: 'null'}
           description: Required exactly when leave_type is half_day.
         start_date:
           type: string
@@ -25848,18 +27259,47 @@ components:
           description: Mandatory for time_change; optional for approve.
     LeavePromotion:
       type: object
-      required: [id, round_no, reference_year, threshold_days, status, created_by, target_count, confirmed_count]
+      required:
+        - id
+        - round_no
+        - reference_year
+        - threshold_days
+        - status
+        - created_by
+        - target_count
+        - confirmed_count
       properties:
-        id: { type: string, format: uuid }
-        round_no: { type: integer }
-        reference_year: { type: integer }
-        threshold_days: { type: string }
-        status: { type: string, enum: [DRAFT, SENT, COMPLETED] }
-        note: { type: string, nullable: true }
-        created_by: { type: string, format: uuid }
-        sent_at: { type: string, format: date-time, nullable: true }
-        target_count: { type: integer }
-        confirmed_count: { type: integer }
+        id:
+          type: string
+          format: uuid
+        round_no:
+          type: integer
+        reference_year:
+          type: integer
+        threshold_days:
+          type: string
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - SENT
+            - COMPLETED
+        note:
+          type:
+            - string
+            - 'null'
+        created_by:
+          type: string
+          format: uuid
+        sent_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        target_count:
+          type: integer
+        confirmed_count:
+          type: integer
     LeavePromotionRequest:
       type: object
       description: A §61 연차 사용 촉진 push to a target employee.
@@ -25923,23 +27363,73 @@ components:
           format: double
     LeaveRequest:
       type: object
-      required: [id, employee_id, leave_type, reason, start_date, end_date, status, requested_by, requested_at]
+      required:
+        - id
+        - employee_id
+        - leave_type
+        - reason
+        - start_date
+        - end_date
+        - status
+        - requested_by
+        - requested_at
       properties:
-        id: { type: string, format: uuid }
-        employee_id: { type: string, format: uuid }
-        employee_name: { type: string, nullable: true }
-        branch_id: { type: string, format: uuid, nullable: true }
-        leave_type: { type: string }
-        reason: { type: string }
-        start_date: { type: string, format: date }
-        end_date: { type: string, format: date }
-        note: { type: string, nullable: true }
-        status: { type: string, enum: [DRAFT, SUBMITTED, APPROVED, REJECTED] }
-        requested_by: { type: string, format: uuid }
-        requested_at: { type: string, format: date-time }
-        decided_by: { type: string, format: uuid, nullable: true }
-        decided_at: { type: string, format: date-time, nullable: true }
-        decision_note: { type: string, nullable: true }
+        id:
+          type: string
+          format: uuid
+        employee_id:
+          type: string
+          format: uuid
+        employee_name:
+          type:
+            - string
+            - 'null'
+        branch_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        leave_type:
+          type: string
+        reason:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        note:
+          type:
+            - string
+            - 'null'
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - SUBMITTED
+            - APPROVED
+            - REJECTED
+        requested_by:
+          type: string
+          format: uuid
+        requested_at:
+          type: string
+          format: date-time
+        decided_by:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        decided_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        decision_note:
+          type:
+            - string
+            - 'null'
     LeaveRequestPage:
       type: object
       required:
@@ -26261,20 +27751,55 @@ components:
       description: Exact fixed-scale leave days; six fractional digits and no floating-point semantics.
     LegalHoldRecordView:
       type: object
-      required: [id, evidence_object_id, status, case_ref, basis, reason, applied_by, applied_at]
+      required:
+        - id
+        - evidence_object_id
+        - status
+        - case_ref
+        - basis
+        - reason
+        - applied_by
+        - applied_at
       properties:
-        id: { type: string, format: uuid }
-        evidence_object_id: { type: string, format: uuid }
-        status: { $ref: '#/components/schemas/LegalHoldStatus' }
-        case_ref: { type: string }
-        basis: { type: string }
-        reason: { type: string }
-        applied_by: { type: string, format: uuid }
-        applied_at: { type: string, format: date-time }
-        released_by: { type: string, format: uuid, nullable: true }
-        released_at: { type: string, format: date-time, nullable: true }
-        release_reason: { type: string, nullable: true }
-        audit_event_id: { type: string, format: uuid, nullable: true }
+        id:
+          type: string
+          format: uuid
+        evidence_object_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/LegalHoldStatus'
+        case_ref:
+          type: string
+        basis:
+          type: string
+        reason:
+          type: string
+        applied_by:
+          type: string
+          format: uuid
+        applied_at:
+          type: string
+          format: date-time
+        released_by:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        released_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        release_reason:
+          type:
+            - string
+            - 'null'
+        audit_event_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
     LegalHoldState:
       { type: string, enum: [CLEAR, ACTIVE] }
     LegalHoldStatus:
@@ -26288,12 +27813,24 @@ components:
         gates: { $ref: '#/components/schemas/GateChainOutcome' }
     LifecycleRequest:
       type: object
-      required: [to_state]
+      required:
+        - to_state
       properties:
-        to_state: { $ref: '#/components/schemas/InstanceLifecycleState' }
-        reason: { type: string, nullable: true }
-        checklist_all_acknowledged: { type: boolean, nullable: true }
-        four_eyes_request_ref: { type: string, format: uuid, nullable: true }
+        to_state:
+          $ref: '#/components/schemas/InstanceLifecycleState'
+        reason:
+          type:
+            - string
+            - 'null'
+        checklist_all_acknowledged:
+          type:
+            - boolean
+            - 'null'
+        four_eyes_request_ref:
+          type:
+            - string
+            - 'null'
+          format: uuid
     LifecycleState:
       type: string
       description: Instance lifecycle state. Dispose is terminal; there is no hard delete.
@@ -26613,17 +28150,29 @@ components:
         status: { type: string, enum: [DISPATCHED] }
     LogisticsShipmentSettlement:
       type: object
-      required: [id, status, operationalCost, financeGlPosting]
+      required:
+        - id
+        - status
+        - operationalCost
+        - financeGlPosting
       properties:
-        id: { $ref: '#/components/schemas/Uuid' }
-        status: { type: string, enum: [SETTLED] }
+        id:
+          $ref: '#/components/schemas/Uuid'
+        status:
+          type: string
+          enum:
+            - SETTLED
         operationalCost:
           type: object
-          required: [currency, amountMinor]
+          required:
+            - currency
+            - amountMinor
           properties:
-            currency: { type: string, enum: [KRW] }
-            amountMinor: { type: integer, format: int64 }
-        financeGlPosting: { nullable: true, description: 'Always null by design — no GL/finance edge in the pilot' }
+            currency: {type: string, enum: [KRW]}
+            amountMinor: {type: integer, format: int64}
+        financeGlPosting:
+          description: Always null by design — no GL/finance edge in the pilot
+          type: 'null'
     LogisticsTimeTuple:
       type: array
       minItems: 9
@@ -27450,12 +28999,24 @@ components:
             $ref: '#/components/schemas/MyDispatchOffer'
     MyLeaveBalance:
       type: object
-      required: [employee_id]
+      required:
+        - employee_id
       properties:
-        employee_id: { type: string, format: uuid }
-        leave_accrued: { type: string, nullable: true }
-        leave_used: { type: string, nullable: true }
-        leave_remaining: { type: string, nullable: true }
+        employee_id:
+          type: string
+          format: uuid
+        leave_accrued:
+          type:
+            - string
+            - 'null'
+        leave_used:
+          type:
+            - string
+            - 'null'
+        leave_remaining:
+          type:
+            - string
+            - 'null'
     MyLeaveOverview:
       type: object
       required: [balance, requests]
@@ -28072,29 +29633,32 @@ components:
           description: True if the node cap was hit before the walk exhausted the requested depth.
     ObjectHead:
       type: object
-      description: Compact, kind-agnostic head for any object. exists=false means the object is absent OR outside the
-        caller's scope (indistinguishable, by design). Carries no route/URL — objectRegistry (frontend) is the sole
-        kind->URL authority.
+      description: >-
+        Compact, kind-agnostic head for any object. exists=false means the object is absent OR outside the caller's scope
+        (indistinguishable, by design). Carries no route/URL — objectRegistry (frontend) is the sole kind->URL authority.
       required:
-      - kind
-      - id
-      - exists
+        - kind
+        - id
+        - exists
       properties:
         kind:
           type: string
         id:
           type: string
         code:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
           description: Canonical issued code if the kind has one (e.g. work-order request_no); absent otherwise.
         title:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
           description: Human display label if available.
         status:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
           description: Domain status string if available.
         exists:
           type: boolean
@@ -28154,13 +29718,13 @@ components:
     ObjectLinkResponse:
       type: object
       required:
-      - id
-      - src_kind
-      - src_id
-      - dst_kind
-      - dst_id
-      - link_type
-      - created_at
+        - id
+        - src_kind
+        - src_id
+        - dst_kind
+        - dst_id
+        - link_type
+        - created_at
       properties:
         id:
           $ref: '#/components/schemas/Uuid'
@@ -28175,8 +29739,9 @@ components:
         link_type:
           type: string
         created_by:
-          $ref: '#/components/schemas/Uuid'
-          nullable: true
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
         created_at:
           $ref: '#/components/schemas/Timestamp'
     ObjectLinksListResponse:
@@ -28200,16 +29765,17 @@ components:
       type: object
       description: An object-type registry row plus the caller-visible active instance count.
       required:
-      - kind
-      - description
-      - status
-      - active_count
+        - kind
+        - description
+        - status
+        - active_count
       properties:
         kind:
           type: string
         code_prefix:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
           description: Canonical per-kind code prefix (e.g. AP-, CS-); absent for id/name-referenced kinds.
         description:
           type: string
@@ -28217,9 +29783,9 @@ components:
           type: string
           description: Type lifecycle state (draft, active, archived).
           enum:
-          - draft
-          - active
-          - archived
+            - draft
+            - active
+            - archived
         active_count:
           type: integer
           format: int64
@@ -28330,11 +29896,12 @@ components:
     OntologyInstanceAggregateBucket:
       type: object
       required:
-      - count
+        - count
       properties:
         key:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
           description: Text form of the group value; null when the attribute is absent.
         count:
           type: integer
@@ -28946,18 +30513,20 @@ components:
     OtpRedeemResponse:
       type: object
       required:
-      - access_token
-      - token_type
-      - refresh_expires_at
-      - requires_passkey_setup
+        - access_token
+        - token_type
+        - refresh_expires_at
+        - requires_passkey_setup
       properties:
         access_token:
           type: string
         refresh_token:
-          type: string
-          nullable: true
-          description: The opaque rotating refresh token in the body transport (mobile). It is null in the cookie transport
-            (web), where the token is set as an HttpOnly `console_refresh` cookie and must never reach web JS.
+          type:
+            - string
+            - 'null'
+          description: >-
+            The opaque rotating refresh token in the body transport (mobile). It is null in the cookie transport (web), where
+            the token is set as an HttpOnly `console_refresh` cookie and must never reach web JS.
         token_type:
           type: string
         refresh_expires_at:
@@ -28988,8 +30557,52 @@ components:
     OwnAttendanceException:
       type: object
       additionalProperties: false
-      required: [id, code, kind, status, work_date, occurred_at, detail, evidence, created_at]
-      properties: { id: { $ref: '#/components/schemas/Uuid' }, code: { type: string }, kind: { type: string, enum: [LATE, NO_SHOW, UNAPPROVED_OVERTIME, EARLY_LEAVE] }, status: { type: string, enum: [OPEN, RESOLVED] }, work_date: { type: string, format: date }, occurred_at: { type: string, format: date-time }, detail: { type: string }, evidence: { type: array, items: { $ref: '#/components/schemas/AttendanceExceptionEvidence' } }, resolution: { $ref: '#/components/schemas/OwnAttendanceExceptionResolution', nullable: true }, created_at: { type: string, format: date-time } }
+      required:
+        - id
+        - code
+        - kind
+        - status
+        - work_date
+        - occurred_at
+        - detail
+        - evidence
+        - created_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        code:
+          type: string
+        kind:
+          type: string
+          enum:
+            - LATE
+            - NO_SHOW
+            - UNAPPROVED_OVERTIME
+            - EARLY_LEAVE
+        status:
+          type: string
+          enum:
+            - OPEN
+            - RESOLVED
+        work_date:
+          type: string
+          format: date
+        occurred_at:
+          type: string
+          format: date-time
+        detail:
+          type: string
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceExceptionEvidence'
+        resolution:
+          oneOf:
+            - {$ref: '#/components/schemas/OwnAttendanceExceptionResolution'}
+            - {type: 'null'}
+        created_at:
+          type: string
+          format: date-time
     OwnAttendanceExceptionPage:
       type: object
       additionalProperties: false
@@ -28998,13 +30611,49 @@ components:
     OwnAttendanceExceptionResolution:
       type: object
       additionalProperties: false
-      required: [action, reason, resolved_at]
-      properties: { action: { type: string }, reason: { type: string }, ot_hours: { type: string, nullable: true }, resolved_at: { type: string, format: date-time } }
+      required:
+        - action
+        - reason
+        - resolved_at
+      properties:
+        action:
+          type: string
+        reason:
+          type: string
+        ot_hours:
+          type:
+            - string
+            - 'null'
+        resolved_at:
+          type: string
+          format: date-time
     OwnAttendanceWeek52:
       type: object
       additionalProperties: false
-      required: [week_start, current_hours, projected_hours, tone]
-      properties: { week_start: { type: string, format: date }, current_hours: { type: number }, projected_hours: { type: number }, tone: { type: string, enum: [OK, WARN, DANGER] }, acknowledged_at: { type: string, format: date-time, nullable: true } }
+      required:
+        - week_start
+        - current_hours
+        - projected_hours
+        - tone
+      properties:
+        week_start:
+          type: string
+          format: date
+        current_hours:
+          type: number
+        projected_hours:
+          type: number
+        tone:
+          type: string
+          enum:
+            - OK
+            - WARN
+            - DANGER
+        acknowledged_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
     OwnAttendanceWeek52Response:
       type: object
       additionalProperties: false
@@ -30542,41 +32191,43 @@ components:
             type: string
     PolicyAuditEventResponse:
       type: object
-      description: Append-only Policy Studio audit evidence. Console UI should render human-safe summaries and avoid exposing
-        raw target identifiers by default; the identifiers remain in the API for export and traceability.
+      description: >-
+        Append-only Policy Studio audit evidence. Console UI should render human-safe summaries and avoid exposing raw target
+        identifiers by default; the identifiers remain in the API for export and traceability.
       required:
-      - id
-      - action
-      - target_type
-      - target_id
-      - trace_id
-      - span_id
-      - occurred_at
+        - id
+        - action
+        - target_type
+        - target_id
+        - trace_id
+        - span_id
+        - occurred_at
       properties:
         id:
           $ref: '#/components/schemas/Uuid'
         actor:
-          $ref: '#/components/schemas/Uuid'
-          nullable: true
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
         action:
           type: string
           pattern: ^[a-z0-9_]+(\.[a-z0-9_]+)+$
         target_type:
           type: string
           enum:
-          - policy_role
-          - policy_role_assignment
+            - policy_role
+            - policy_role_assignment
         target_id:
           type: string
         before_snapshot:
           type:
-          - object
-          - 'null'
+            - object
+            - 'null'
           additionalProperties: true
         after_snapshot:
           type:
-          - object
-          - 'null'
+            - object
+            - 'null'
           additionalProperties: true
         trace_id:
           type: string
@@ -31126,19 +32777,21 @@ components:
           $ref: '#/components/schemas/PolicyNoCodeBlocks'
     PolicyVersionResponse:
       type: object
-      description: Monotonic tenant policy revision. Version 0 means no custom policy write has occurred yet; every role or
-        custom-role assignment write bumps the stored version for future effective-policy cache invalidation.
+      description: >-
+        Monotonic tenant policy revision. Version 0 means no custom policy write has occurred yet; every role or custom-role
+        assignment write bumps the stored version for future effective-policy cache invalidation.
       required:
-      - version
+        - version
       properties:
         version:
           type: integer
           format: int64
           minimum: 0
         updated_at:
-          type: string
+          type:
+            - string
+            - 'null'
           format: date-time
-          nullable: true
     PollAnonymity:
       type: string
       enum:
@@ -31390,8 +33043,8 @@ components:
       type: object
       description: Current required first-login privacy/terms consent status.
       required:
-      - policy_version
-      - accepted
+        - policy_version
+        - accepted
       properties:
         policy_version:
           type: string
@@ -31400,9 +33053,10 @@ components:
           type: boolean
           description: True when the authenticated user has accepted the current version.
         accepted_at:
-          type: string
+          type:
+            - string
+            - 'null'
           format: date-time
-          nullable: true
           description: UTC timestamp of the latest acceptance for the current version.
     ProcessingStatus:
       type: string
@@ -31969,13 +33623,60 @@ components:
     RaiseAttendanceExceptionRequest:
       type: object
       additionalProperties: false
-      required: [kind, employee_id, work_date, detail]
-      properties: { kind: { type: string, enum: [LATE, NO_SHOW, UNAPPROVED_OVERTIME, EARLY_LEAVE] }, employee_id: { $ref: '#/components/schemas/Uuid' }, branch_id: { $ref: '#/components/schemas/Uuid', nullable: true }, work_date: { type: string, format: date }, detail: { type: string }, evidence: { type: array, items: { type: object, additionalProperties: false, required: [name], properties: { name: { type: string }, size: { type: string, nullable: true } } } } }
+      required:
+        - kind
+        - employee_id
+        - work_date
+        - detail
+      properties:
+        kind:
+          type: string
+          enum:
+            - LATE
+            - NO_SHOW
+            - UNAPPROVED_OVERTIME
+            - EARLY_LEAVE
+        employee_id:
+          $ref: '#/components/schemas/Uuid'
+        branch_id:
+          oneOf:
+            - {$ref: '#/components/schemas/Uuid'}
+            - {type: 'null'}
+        work_date:
+          type: string
+          format: date
+        detail:
+          type: string
+        evidence:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [name]
+            properties: {name: {type: string}, size: {type: [string, 'null']}}
     RecordInventoryReceiptRequest:
       type: object
       additionalProperties: false
-      required: [quantityReceivedMilli, idempotencyKey]
-      properties: { quantityReceivedMilli: { type: integer, format: int64, minimum: 1 }, sourceRef: { type: string, nullable: true }, memo: { type: string, nullable: true }, idempotencyKey: { type: string, minLength: 16, maxLength: 200 } }
+      required:
+        - quantityReceivedMilli
+        - idempotencyKey
+      properties:
+        quantityReceivedMilli:
+          type: integer
+          format: int64
+          minimum: 1
+        sourceRef:
+          type:
+            - string
+            - 'null'
+        memo:
+          type:
+            - string
+            - 'null'
+        idempotencyKey:
+          type: string
+          minLength: 16
+          maxLength: 200
     RecordProductionOperation:
       type: object
       required: [expected_version, idempotency_key, output_quantity, scrap_quantity, downtime_minutes, quality_evidence_ref, quality_passed, note]
@@ -32494,13 +34195,15 @@ components:
             $ref: '#/components/schemas/RecruitTalentPoolEntry'
     RefreshTokenRequest:
       type: object
-      description: Refresh/logout request body. `refresh_token` is OPTIONAL because the web transport carries the token in
-        the HttpOnly `console_refresh` cookie (sent automatically by the browser) and the body is empty; mobile clients send the
-        token here.
+      description: >-
+        Refresh/logout request body. `refresh_token` is OPTIONAL because the web transport carries the token in the HttpOnly
+        `console_refresh` cookie (sent automatically by the browser) and the body is empty; mobile clients send the token
+        here.
       properties:
         refresh_token:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
     RegionSummary:
       type: object
       required:
@@ -32745,8 +34448,22 @@ components:
     ResolveAttendanceExceptionRequest:
       type: object
       additionalProperties: false
-      required: [action, reason]
-      properties: { action: { type: string }, reason: { type: string }, linked_work_ref: { type: string, nullable: true }, ot_hours: { type: number, nullable: true } }
+      required:
+        - action
+        - reason
+      properties:
+        action:
+          type: string
+        reason:
+          type: string
+        linked_work_ref:
+          type:
+            - string
+            - 'null'
+        ot_hours:
+          type:
+            - number
+            - 'null'
     ResolvePayrollExceptionRequest:
       type: object
       required:
@@ -32848,19 +34565,53 @@ components:
           type: string
     RevisionSummary:
       type: object
-      required: [id, instance_id, version, attributes, valid_from, prev_hash, row_hash]
+      required:
+        - id
+        - instance_id
+        - version
+        - attributes
+        - valid_from
+        - prev_hash
+        - row_hash
       properties:
-        id: { type: string, format: uuid }
-        instance_id: { type: string, format: uuid }
-        version: { type: integer, format: int64 }
-        attributes: { type: object, additionalProperties: true }
-        valid_from: { type: string, format: date-time }
-        valid_to: { type: string, format: date-time, nullable: true }
-        action_type_id: { type: string, format: uuid, nullable: true }
-        actor: { type: string, format: uuid, nullable: true }
-        reason: { type: string, nullable: true }
-        prev_hash: { type: string }
-        row_hash: { type: string }
+        id:
+          type: string
+          format: uuid
+        instance_id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+        attributes:
+          type: object
+          additionalProperties: true
+        valid_from:
+          type: string
+          format: date-time
+        valid_to:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        action_type_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        actor:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        reason:
+          type:
+            - string
+            - 'null'
+        prev_hash:
+          type: string
+        row_hash:
+          type: string
     RollbackWorkflowDefinitionRequest:
       type: object
       required:
@@ -33054,7 +34805,12 @@ components:
           description: RFC 3339; must be in the future.
     ScheduleRunItem:
       type: object
-      required: [run_id, status, definition_id, definition_version, started_at]
+      required:
+        - run_id
+        - status
+        - definition_id
+        - definition_version
+        - started_at
       properties:
         run_id:
           $ref: '#/components/schemas/Uuid'
@@ -33068,13 +34824,15 @@ components:
           type: string
           format: date-time
         completed_at:
-          type: string
+          type:
+            - string
+            - 'null'
           format: date-time
-          nullable: true
         failed_at:
-          type: string
+          type:
+            - string
+            - 'null'
           format: date-time
-          nullable: true
     ScheduleRunListResponse:
       type: object
       required: [items]
@@ -33097,35 +34855,40 @@ components:
     SelfLeaveBalance:
       type: object
       required:
-      - employee_id
-      - name
-      - accrued_units
-      - used_units
-      - remaining_units
-      - filing_state
-      - home_branch_id
+        - employee_id
+        - name
+        - accrued_units
+        - used_units
+        - remaining_units
+        - filing_state
+        - home_branch_id
       properties:
         employee_id:
           $ref: '#/components/schemas/Uuid'
         name:
           type: string
         accrued_units:
-          allOf: [{$ref: '#/components/schemas/LeaveBalanceAmount'}]
-          nullable: true
+          oneOf:
+            - {$ref: '#/components/schemas/LeaveBalanceAmount'}
+            - {type: 'null'}
         used_units:
-          allOf: [{$ref: '#/components/schemas/LeaveBalanceAmount'}]
-          nullable: true
+          oneOf:
+            - {$ref: '#/components/schemas/LeaveBalanceAmount'}
+            - {type: 'null'}
         remaining_units:
-          allOf: [{$ref: '#/components/schemas/LeaveBalanceAmount'}]
-          nullable: true
+          oneOf:
+            - {$ref: '#/components/schemas/LeaveBalanceAmount'}
+            - {type: 'null'}
         filing_state:
           type: string
-          enum: [ready, home_branch_required]
+          enum:
+            - ready
+            - home_branch_required
           description: Whether self-service filing currently has an active authoritative home branch.
         home_branch_id:
           type:
-          - string
-          - 'null'
+            - string
+            - 'null'
           format: uuid
           description: Active authoritative routing branch; null exactly when filing_state is home_branch_required.
     SendMailRequest:
@@ -34344,26 +36107,80 @@ components:
     TimestampAuthorityProofView:
       type: object
       description: Nullable/absent until an RFC-3161 TSA lane exists (FUTURE — not faked).
-      required: [id, copy_id, status, provider, hash_algorithm, created_by, created_at]
+      required:
+        - id
+        - copy_id
+        - status
+        - provider
+        - hash_algorithm
+        - created_by
+        - created_at
       properties:
-        id: { type: string, format: uuid }
-        copy_id: { type: string, format: uuid }
-        status: { $ref: '#/components/schemas/TsaProofStatus' }
-        provider: { type: string }
-        policy_oid: { type: string, nullable: true }
-        serial_number: { type: string, nullable: true }
-        hash_algorithm: { type: string }
-        message_imprint_sha256: { type: string, nullable: true }
-        generated_at: { type: string, format: date-time, nullable: true }
-        accuracy_millis: { type: integer, format: int64, nullable: true }
-        ordering: { type: boolean, nullable: true }
-        tsa_cert_fingerprint_sha256: { type: string, nullable: true }
-        token_digest_sha256: { type: string, nullable: true }
-        token_storage: { allOf: [ { $ref: '#/components/schemas/EvidenceStorageRef' } ], nullable: true }
-        verified_at: { type: string, format: date-time, nullable: true }
-        failure_reason: { type: string, nullable: true }
-        created_by: { type: string, format: uuid }
-        created_at: { type: string, format: date-time }
+        id:
+          type: string
+          format: uuid
+        copy_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/TsaProofStatus'
+        provider:
+          type: string
+        policy_oid:
+          type:
+            - string
+            - 'null'
+        serial_number:
+          type:
+            - string
+            - 'null'
+        hash_algorithm:
+          type: string
+        message_imprint_sha256:
+          type:
+            - string
+            - 'null'
+        generated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        accuracy_millis:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        ordering:
+          type:
+            - boolean
+            - 'null'
+        tsa_cert_fingerprint_sha256:
+          type:
+            - string
+            - 'null'
+        token_digest_sha256:
+          type:
+            - string
+            - 'null'
+        token_storage:
+          oneOf:
+            - {$ref: '#/components/schemas/EvidenceStorageRef'}
+            - {type: 'null'}
+        verified_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        failure_reason:
+          type:
+            - string
+            - 'null'
+        created_by:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
     TodoPage:
       type: object
       required:
@@ -34432,29 +36249,31 @@ components:
     TokenPairResponse:
       type: object
       required:
-      - access_token
-      - token_type
-      - refresh_expires_at
-      - requires_passkey_setup
+        - access_token
+        - token_type
+        - refresh_expires_at
+        - requires_passkey_setup
       properties:
         access_token:
           type: string
         refresh_token:
-          type: string
-          nullable: true
-          description: The opaque rotating refresh token in the body transport (mobile). It is null in the cookie transport
-            (web), where the token is set as an HttpOnly `console_refresh` cookie and must never reach web JS.
+          type:
+            - string
+            - 'null'
+          description: >-
+            The opaque rotating refresh token in the body transport (mobile). It is null in the cookie transport (web), where
+            the token is set as an HttpOnly `console_refresh` cookie and must never reach web JS.
         token_type:
           type: string
           enum:
-          - Bearer
+            - Bearer
         refresh_expires_at:
           $ref: '#/components/schemas/Timestamp'
         requires_passkey_setup:
           type: boolean
-          description: True when the refreshed session belongs to an OTP-signed-in user who still has no passkey. Web clients
-            must keep routing this session to initial passkey enrollment after a reload; passkey-authenticated sessions return
-            false.
+          description: >-
+            True when the refreshed session belongs to an OTP-signed-in user who still has no passkey. Web clients must keep
+            routing this session to initial passkey enrollment after a reload; passkey-authenticated sessions return false.
     TransitionLifecycleRequest:
       type: object
       required:
@@ -35097,8 +36916,28 @@ components:
     UpsertCycleCountLineRequest:
       type: object
       additionalProperties: false
-      required: [expectedVersion, itemId, countedQuantityMilli]
-      properties: { expectedVersion: { type: integer, minimum: 1 }, itemId: { $ref: '#/components/schemas/Uuid' }, countedQuantityMilli: { type: integer, format: int64, minimum: 0 }, reason: { type: string, nullable: true, enum: [DAMAGE, LOSS, MISCOUNT, FOUND, OTHER] }, note: { type: string, nullable: true } }
+      required:
+        - expectedVersion
+        - itemId
+        - countedQuantityMilli
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+        itemId:
+          $ref: '#/components/schemas/Uuid'
+        countedQuantityMilli:
+          type: integer
+          format: int64
+          minimum: 0
+        reason:
+          oneOf:
+            - {type: string, enum: [DAMAGE, LOSS, MISCOUNT, FOUND, OTHER]}
+            - {type: 'null'}
+        note:
+          type:
+            - string
+            - 'null'
     UpsertNotificationPolicyRequest:
       type: object
       required:
@@ -36636,7 +38475,15 @@ components:
             $ref: '#/components/schemas/WorkflowScheduleResponse'
     WorkflowScheduleResponse:
       type: object
-      required: [id, label, cron_expr, timezone, definition_id, enabled, created_at, updated_at]
+      required:
+        - id
+        - label
+        - cron_expr
+        - timezone
+        - definition_id
+        - enabled
+        - created_at
+        - updated_at
       properties:
         id:
           $ref: '#/components/schemas/Uuid'
@@ -36651,17 +38498,19 @@ components:
         enabled:
           type: boolean
         next_run_at:
-          type: string
+          type:
+            - string
+            - 'null'
           format: date-time
-          nullable: true
         last_run_at:
-          type: string
+          type:
+            - string
+            - 'null'
           format: date-time
-          nullable: true
         last_status:
-          type: string
-          enum: [STARTED, SKIPPED, FAILED]
-          nullable: true
+          oneOf:
+            - {type: string, enum: [STARTED, SKIPPED, FAILED]}
+            - {type: 'null'}
         created_at:
           type: string
           format: date-time

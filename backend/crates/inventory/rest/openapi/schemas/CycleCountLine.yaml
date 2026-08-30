@@ -1,3 +1,45 @@
 type: object
-required: [id, itemId, ivCode, displayName, unitCode, systemQuantityMilli, countedQuantityMilli, varianceMilli, recordedBy, recordedAt]
-properties: { id: { $ref: '#/components/schemas/Uuid' }, itemId: { $ref: '#/components/schemas/Uuid' }, ivCode: { type: string }, displayName: { type: string }, unitCode: { type: string }, systemQuantityMilli: { type: integer, format: int64 }, countedQuantityMilli: { type: integer, format: int64 }, varianceMilli: { type: integer, format: int64 }, reason: { type: string, nullable: true, enum: [DAMAGE, LOSS, MISCOUNT, FOUND, OTHER] }, note: { type: string, nullable: true }, recordedBy: { $ref: '#/components/schemas/Uuid' }, recordedAt: { type: string, format: date-time } }
+required:
+  - id
+  - itemId
+  - ivCode
+  - displayName
+  - unitCode
+  - systemQuantityMilli
+  - countedQuantityMilli
+  - varianceMilli
+  - recordedBy
+  - recordedAt
+properties:
+  id:
+    $ref: '#/components/schemas/Uuid'
+  itemId:
+    $ref: '#/components/schemas/Uuid'
+  ivCode:
+    type: string
+  displayName:
+    type: string
+  unitCode:
+    type: string
+  systemQuantityMilli:
+    type: integer
+    format: int64
+  countedQuantityMilli:
+    type: integer
+    format: int64
+  varianceMilli:
+    type: integer
+    format: int64
+  reason:
+    oneOf:
+      - {type: string, enum: [DAMAGE, LOSS, MISCOUNT, FOUND, OTHER]}
+      - {type: 'null'}
+  note:
+    type:
+      - string
+      - 'null'
+  recordedBy:
+    $ref: '#/components/schemas/Uuid'
+  recordedAt:
+    type: string
+    format: date-time

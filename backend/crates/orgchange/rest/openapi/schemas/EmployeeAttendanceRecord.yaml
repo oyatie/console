@@ -1,15 +1,15 @@
 type: object
 required:
-- id
-- employee_id
-- employee_display_name
-- kind
-- occurred_at
-- work_date
-- state_after
-- payroll_material_ref_id
-- payroll_link_status
-- duplicate
+  - id
+  - employee_id
+  - employee_display_name
+  - kind
+  - occurred_at
+  - work_date
+  - state_after
+  - payroll_material_ref_id
+  - payroll_link_status
+  - duplicate
 properties:
   id:
     $ref: '#/components/schemas/Uuid'
@@ -27,18 +27,19 @@ properties:
   state_after:
     type: string
     enum:
-    - CLOCKED_IN
-    - OUT_FOR_WORK
-    - BUSINESS_TRIP
-    - OFF_DUTY
+      - CLOCKED_IN
+      - OUT_FOR_WORK
+      - BUSINESS_TRIP
+      - OFF_DUTY
   note:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   payroll_material_ref_id:
     $ref: '#/components/schemas/Uuid'
   payroll_link_status:
     type: string
     enum:
-    - LINKED
+      - LINKED
   duplicate:
     type: boolean

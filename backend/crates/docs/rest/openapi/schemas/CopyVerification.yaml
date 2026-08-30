@@ -1,10 +1,29 @@
 type: object
-required: [copy_id, copy_kind, recorded_digest_sha256, recorded_size_bytes, status]
+required:
+  - copy_id
+  - copy_kind
+  - recorded_digest_sha256
+  - recorded_size_bytes
+  - status
 properties:
-  copy_id: { type: string, format: uuid }
-  copy_kind: { $ref: '#/components/schemas/EvidenceCopyKind' }
-  recorded_digest_sha256: { type: string }
-  storage_checksum_sha256: { type: string, nullable: true }
-  recorded_size_bytes: { type: integer, format: int64 }
-  storage_size_bytes: { type: integer, format: int64, nullable: true }
-  status: { $ref: '#/components/schemas/FixityStatus' }
+  copy_id:
+    type: string
+    format: uuid
+  copy_kind:
+    $ref: '#/components/schemas/EvidenceCopyKind'
+  recorded_digest_sha256:
+    type: string
+  storage_checksum_sha256:
+    type:
+      - string
+      - 'null'
+  recorded_size_bytes:
+    type: integer
+    format: int64
+  storage_size_bytes:
+    type:
+      - integer
+      - 'null'
+    format: int64
+  status:
+    $ref: '#/components/schemas/FixityStatus'

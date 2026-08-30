@@ -848,6 +848,20 @@ describe("request body enum-variant contract", () => {
     assert.deepEqual(report.findings, []);
   });
 
+  it("compares a qualified Option enum through a JSON Schema type null union", () => {
+    const root = enumFixture({
+      fieldType: "Option<crate::WidgetMode>",
+      property: `{ type: [string, 'null'], enum: [fast_mode, safe_mode, null] }`,
+    });
+
+    const report = evaluateRequestBodyContract({ repoRoot: root });
+
+    assert.equal(report.enumCandidates, 1);
+    assert.equal(report.enumResolved, 1);
+    assert.equal(report.enumSkipped, 0);
+    assert.deepEqual(report.findings, []);
+  });
+
   it("reports a variant the spec advertises but serde rejects", () => {
     const report = evaluateRequestBodyContract({
       repoRoot: enumFixture({ property: "{ type: string, enum: [fast_mode, safe_mode, turbo_mode] }" }),

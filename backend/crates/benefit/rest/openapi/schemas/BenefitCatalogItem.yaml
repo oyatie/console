@@ -1,22 +1,79 @@
 type: object
-required: [id, benefit_code, category, name, scope, coverage_label, cost_label, tiers, conditions, lifecycle]
+required:
+  - id
+  - benefit_code
+  - category
+  - name
+  - scope
+  - coverage_label
+  - cost_label
+  - tiers
+  - conditions
+  - lifecycle
 properties:
-  id: { $ref: '#/components/schemas/Uuid' }
-  benefit_code: { type: string }
-  category: { type: string, enum: [legal, extra] }
-  name: { type: string }
-  scope: { $ref: '#/components/schemas/BenefitCatalogScope' }
-  coverage_label: { type: string }
-  covered_count: { type: integer, nullable: true }
-  cost_label: { type: string }
-  estimated_annual_cost_won: { type: integer, format: int64, nullable: true }
-  employer_rate_bps: { type: integer, nullable: true }
-  note: { type: string, nullable: true }
-  legal_basis: { type: string, nullable: true }
-  related_domain: { type: string, nullable: true }
-  related_object_id: { $ref: '#/components/schemas/Uuid', nullable: true }
-  effective_on: { type: string, format: date, nullable: true }
-  retires_on: { type: string, format: date, nullable: true }
-  tiers: { type: array, items: { $ref: '#/components/schemas/BenefitCatalogTier' } }
-  conditions: { type: array, items: { $ref: '#/components/schemas/BenefitCatalogCondition' } }
-  lifecycle: { $ref: '#/components/schemas/BenefitCatalogLifecycleBinding' }
+  id:
+    $ref: '#/components/schemas/Uuid'
+  benefit_code:
+    type: string
+  category:
+    type: string
+    enum:
+      - legal
+      - extra
+  name:
+    type: string
+  scope:
+    $ref: '#/components/schemas/BenefitCatalogScope'
+  coverage_label:
+    type: string
+  covered_count:
+    type:
+      - integer
+      - 'null'
+  cost_label:
+    type: string
+  estimated_annual_cost_won:
+    type:
+      - integer
+      - 'null'
+    format: int64
+  employer_rate_bps:
+    type:
+      - integer
+      - 'null'
+  note:
+    type:
+      - string
+      - 'null'
+  legal_basis:
+    type:
+      - string
+      - 'null'
+  related_domain:
+    type:
+      - string
+      - 'null'
+  related_object_id:
+    oneOf:
+      - {$ref: '#/components/schemas/Uuid'}
+      - {type: 'null'}
+  effective_on:
+    type:
+      - string
+      - 'null'
+    format: date
+  retires_on:
+    type:
+      - string
+      - 'null'
+    format: date
+  tiers:
+    type: array
+    items:
+      $ref: '#/components/schemas/BenefitCatalogTier'
+  conditions:
+    type: array
+    items:
+      $ref: '#/components/schemas/BenefitCatalogCondition'
+  lifecycle:
+    $ref: '#/components/schemas/BenefitCatalogLifecycleBinding'

@@ -1,30 +1,33 @@
 type: object
 required:
-- status
+  - status
 properties:
   status:
     type: string
     enum:
-    - pending
-    - approved
-    - expired
+      - pending
+      - approved
+      - expired
   access_token:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
   refresh_token:
-    type: string
-    nullable: true
+    type:
+      - string
+      - 'null'
     description: Null in web cookie transport; present in body transport.
   token_type:
-    type: string
-    nullable: true
-    enum:
-    - Bearer
+    oneOf:
+      - {type: string, enum: [Bearer]}
+      - {type: 'null'}
   refresh_expires_at:
-    type: string
+    type:
+      - string
+      - 'null'
     format: date-time
-    nullable: true
   requires_passkey_setup:
-    type: boolean
-    nullable: true
+    type:
+      - boolean
+      - 'null'
     description: Approved desktop QR sessions are passkey-authenticated and return false.
