@@ -83,6 +83,7 @@ MANUAL_PREFIXES = [
     ("/api/v1/users", "identity"),
     ("/api/v1/passkeys", "identity"),
     ("/api/v1/policy", "identity"),
+    ("/api/v1/employments", "ontology"),
     ("/api/v1/employees", "orgchange"),
     ("/api/v1/hr", "orgchange"),
     ("/api/audit", "governance"),

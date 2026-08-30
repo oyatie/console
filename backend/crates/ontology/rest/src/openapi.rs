@@ -34,6 +34,13 @@ const PATHS: &[PathItem] = &[
         }],
     },
     PathItem {
+        path: "/api/v1/employments/{id}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../openapi/paths/api__v1__employments__id.get.yaml"),
+        }],
+    },
+    PathItem {
         path: "/api/v1/link-types",
         operations: &[Operation {
             method: "get",

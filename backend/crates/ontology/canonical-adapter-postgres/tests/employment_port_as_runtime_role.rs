@@ -195,6 +195,18 @@ async fn get(
         .unwrap()
 }
 
+async fn get_as_of(
+    port: &PgEmploymentPort,
+    org: OrgId,
+    employment_id: Uuid,
+    at: OffsetDateTime,
+) -> Result<Option<EmploymentHead>, EmploymentError> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.get_as_of(org, employment_id, at))
+        .await
+        .unwrap()
+}
+
 async fn list(port: &PgEmploymentPort, org: OrgId) -> Result<Vec<EmploymentHead>, EmploymentError> {
     let port = port.clone();
     tokio::task::spawn_blocking(move || port.list(org))
@@ -574,6 +586,117 @@ async fn a_promotion_carries_the_new_state_onto_the_legacy_employees_head(owner_
         head.appointed_on,
         at(0),
         "appointed_on is the head opening, not the promote revision's valid_from"
+    );
+}
+
+/// As-of must honor the same half-open window as ontology instance GET:
+/// `valid_from <= at < next.valid_from` (or head.valid_to). A promote that
+/// only changed `get()` would leave as_of stuck on the appointment slice, and
+/// an as_of that always returned the head would ignore history.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn as_of_reads_the_revision_effective_at_that_instant(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (_employee, employment_id) = appointed(&owner_pool, org, actor, &port, "asof-1").await;
+
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: at(86_400),
+                attributes: attributes(ORG_UNIT_SALES, JOB_LEAD, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    let before = get_as_of(&port, org, employment_id, at(1))
+        .await
+        .unwrap()
+        .expect("as_of inside the appointment window must return that slice");
+    assert_eq!(before.job_position_id, Some(JOB_STAFF));
+    assert_eq!(before.org_unit_id, Some(ORG_UNIT_SALES));
+    assert_eq!(before.appointed_on, at(0));
+
+    let at_promote = get_as_of(&port, org, employment_id, at(86_400))
+        .await
+        .unwrap()
+        .expect("as_of at the promote valid_from is inside the new slice");
+    assert_eq!(at_promote.job_position_id, Some(JOB_LEAD));
+    assert_eq!(at_promote.appointed_on, at(0));
+
+    let current = get(&port, org, employment_id)
+        .await
+        .unwrap()
+        .expect("open head after promote");
+    assert_eq!(current.job_position_id, Some(JOB_LEAD));
+
+    assert!(
+        get_as_of(&port, org, employment_id, at(-1))
+            .await
+            .unwrap()
+            .is_none(),
+        "as_of before the head opening is omit-by-absence, not the current head"
+    );
+}
+
+/// EXITED closes `employment_heads.valid_to`. Current get omits the row.
+/// as_of inside the closed window still returns that historical slice; as_of
+/// at/after valid_to is None (half-open). A leak of the EXITED revision as a
+/// live assignment, or of extra PII fields, would fail this.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn as_of_inside_a_closed_window_returns_the_slice_and_after_valid_to_is_none(
+    owner_pool: PgPool,
+) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (_employee, employment_id) = appointed(&owner_pool, org, actor, &port, "asof-exit").await;
+
+    let exit_at = at(86_400);
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: exit_at,
+                attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "EXITED"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    assert!(
+        get(&port, org, employment_id).await.unwrap().is_none(),
+        "current get must omit a closed window or the as_of contrast is vacuous"
+    );
+
+    let inside = get_as_of(&port, org, employment_id, at(1))
+        .await
+        .unwrap()
+        .expect("as_of inside the closed window must reconstruct the last open slice");
+    assert_eq!(inside.job_position_id, Some(JOB_STAFF));
+    assert_eq!(inside.appointed_on, at(0));
+    let blob = serde_json::to_string(&inside).unwrap();
+    assert!(
+        !blob.contains("phone")
+            && !blob.contains("salary")
+            && !blob.contains("bank_account")
+            && !blob.contains("rrn")
+            && !blob.contains("base_pay"),
+        "as_of Head must not leak hidden PII; got {blob}"
+    );
+
+    assert!(
+        get_as_of(&port, org, employment_id, exit_at)
+            .await
+            .unwrap()
+            .is_none(),
+        "half-open: as_of at valid_to is outside the employment window"
     );
 }
 
@@ -1160,6 +1283,11 @@ async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_
     assert!(
         matches!(unknown, Ok(None)),
         "unknown Employment id is indistinguishable from a foreign tenant: Ok(None); got {unknown:?}"
+    );
+    let foreign_as_of = get_as_of(&port, org, foreign_employment, at(1)).await;
+    assert!(
+        matches!(foreign_as_of, Ok(None)),
+        "as_of must not leak a foreign tenant's historical slice; got {foreign_as_of:?}"
     );
 }
 

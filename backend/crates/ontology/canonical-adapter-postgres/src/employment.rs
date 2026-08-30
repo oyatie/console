@@ -80,7 +80,7 @@ use console_ontology_canonical_domain::{
     Employment, ObjectKey, Preflight, ReceiptOwner,
 };
 use console_platform_db::{PeriodLockDomain, assert_period_open, lock_period_lock_key};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Row, Transaction};
 use std::str::FromStr;
@@ -454,22 +454,26 @@ impl CanonicalPortError for EmploymentError {
     }
 }
 
-/// Current canonical Employment head — an *open* head (`valid_to IS NULL`).
+/// Canonical Employment head.
 ///
 /// Closed (EXITED) windows are omitted by list/get: `valid_to` is the half-open
 /// bound that exists so a temporal reader does not treat an exited assignment
-/// as current. `org_unit_id` / `job_position_id` come from the latest
-/// *effective* revision (`MAX(valid_from)` — a backdated history insert is a
-/// later version with an earlier effect). `person_id` is the unique
-/// source-binding → person-binding path; ambiguous or unbound identities are
-/// omitted, never invented from `employee_id`. `appointed_on` is the head's
-/// opening `valid_from`.
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// as current. `get_as_of` reconstructs the slice whose window covers `at`
+/// (`valid_from <= at < coalesce(valid_to, ∞)`), including a closed window when
+/// `at` is still inside it. `org_unit_id` / `job_position_id` come from the
+/// *effective* revision (`MAX(valid_from)` among revisions with
+/// `valid_from <= at` — a backdated history insert is a later version with an
+/// earlier effect). `person_id` is the unique source-binding → person-binding
+/// path; ambiguous or unbound identities are omitted, never invented from
+/// `employee_id`. `appointed_on` is the head's opening `valid_from`. The Head
+/// never copies stored phone / salary / bank_account / rrn / base_pay.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct EmploymentHead {
     pub id: Uuid,
     pub person_id: Option<Uuid>,
     pub org_unit_id: Option<Uuid>,
     pub job_position_id: Option<Uuid>,
+    #[serde(with = "time::serde::rfc3339")]
     pub appointed_on: OffsetDateTime,
 }
 
@@ -498,6 +502,22 @@ impl PgEmploymentPort {
         self.runtime
             .block_on(self.read_heads(*org_id.as_uuid(), Some(employment_id)))
             .map(|heads| heads.into_iter().next())
+    }
+
+    /// As-of head: the revision whose half-open window covers `at`
+    /// (`head.valid_from <= at < coalesce(head.valid_to, ∞)`, revision
+    /// `MAX(valid_from) <= at`). Same algebra as ontology instance GET as-of,
+    /// adapted to 0214's revision shape (no per-revision `valid_to`). A miss,
+    /// a foreign tenant's id, or unset RLS is `None` — never a fabricated row
+    /// and never extra PII.
+    pub fn get_as_of(
+        &self,
+        org_id: OrgId,
+        employment_id: Uuid,
+        at: OffsetDateTime,
+    ) -> Result<Option<EmploymentHead>, EmploymentError> {
+        self.runtime
+            .block_on(self.read_as_of(*org_id.as_uuid(), employment_id, at))
     }
 
     /// Current open heads in the armed tenant. Empty when none are visible.
@@ -550,19 +570,46 @@ impl PgEmploymentPort {
         .fetch_all(&mut *tx)
         .await?;
         tx.commit().await?;
-        Ok(rows
-            .into_iter()
-            .map(|row| {
-                let attributes: serde_json::Value = row.get("attributes");
-                EmploymentHead {
-                    id: row.get("id"),
-                    person_id: row.get("person_id"),
-                    org_unit_id: attr_uuid(&attributes, "org_unit_id"),
-                    job_position_id: attr_uuid(&attributes, "job_position_id"),
-                    appointed_on: row.get("appointed_on"),
-                }
-            })
-            .collect())
+        Ok(rows.into_iter().map(head_from_row).collect())
+    }
+
+    async fn read_as_of(
+        &self,
+        org: Uuid,
+        employment_id: Uuid,
+        at: OffsetDateTime,
+    ) -> Result<Option<EmploymentHead>, EmploymentError> {
+        let mut tx = self.pool.begin().await?;
+        self.arm_org(&mut *tx, org).await?;
+        let row = sqlx::query(
+            "SELECT h.id, h.valid_from AS appointed_on, r.attributes, \
+                    CASE WHEN bind.n = 1 THEN bind.person_id END AS person_id \
+             FROM employment_heads h \
+             JOIN employment_revisions r \
+               ON r.org_id = h.org_id AND r.employment_id = h.id \
+              AND r.valid_from = ( \
+                SELECT MAX(valid_from) FROM employment_revisions \
+                WHERE org_id = h.org_id AND employment_id = h.id \
+                  AND valid_from <= $3 \
+              ) \
+             LEFT JOIN LATERAL ( \
+               SELECT COUNT(*)::bigint AS n, (ARRAY_AGG(p.person_id))[1] AS person_id \
+               FROM employment_source_bindings b \
+               LEFT JOIN employee_person_bindings p \
+                 ON p.org_id = b.org_id AND p.employee_id = b.employee_id \
+               WHERE b.org_id = h.org_id AND b.employment_id = h.id \
+             ) bind ON true \
+             WHERE h.org_id = $1 AND h.id = $2 \
+               AND h.valid_from <= $3 \
+               AND (h.valid_to IS NULL OR $3 < h.valid_to)",
+        )
+        .bind(org)
+        .bind(employment_id)
+        .bind(at)
+        .fetch_optional(&mut *tx)
+        .await?;
+        tx.commit().await?;
+        Ok(row.map(head_from_row))
     }
 
     async fn write(&self, command: &EmploymentCommand) -> Result<CommandReceipt, EmploymentError> {
@@ -1187,6 +1234,17 @@ fn attr_uuid(attributes: &serde_json::Value, key: &str) -> Option<Uuid> {
         .get(key)
         .and_then(serde_json::Value::as_str)
         .and_then(|value| Uuid::parse_str(value).ok())
+}
+
+fn head_from_row(row: sqlx::postgres::PgRow) -> EmploymentHead {
+    let attributes: serde_json::Value = row.get("attributes");
+    EmploymentHead {
+        id: row.get("id"),
+        person_id: row.get("person_id"),
+        org_unit_id: attr_uuid(&attributes, "org_unit_id"),
+        job_position_id: attr_uuid(&attributes, "job_position_id"),
+        appointed_on: row.get("appointed_on"),
+    }
 }
 
 #[cfg(test)]

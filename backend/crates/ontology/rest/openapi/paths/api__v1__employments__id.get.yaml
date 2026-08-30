@@ -1,0 +1,41 @@
+operationId: getEmployment
+summary: Get a canonical Employment head (current or as-of)
+description: >-
+  Returns one Employment Head. Absent as_of is the current *open* head
+  (`employment_heads.valid_to IS NULL`), the same row `get`/`list` already
+  return. as_of is the RFC3339 instant for a bi-temporal as-of read, copied
+  from GET /api/v1/ontology/instances/{id}: the revision whose half-open
+  window covers that instant (`valid_from <= as_of < coalesce(valid_to, ∞)`).
+  A closed (EXITED) window is omitted by current get and by as_of at or after
+  valid_to (deny-by-omission, same as a missing id). The Head never includes
+  phone, salary, bank_account, rrn, or base_pay. from/to range queries,
+  corrections vs new slice, and delta transmission remain HOLD.
+tags:
+- Ontology
+security:
+- bearerAuth: []
+parameters:
+- name: id
+  in: path
+  required: true
+  schema:
+    $ref: '#/components/schemas/Uuid'
+- name: as_of
+  in: query
+  required: false
+  description: RFC3339 instant for a bi-temporal as-of read; absent = current head.
+  schema:
+    $ref: '#/components/schemas/Timestamp'
+responses:
+  '200':
+    description: Employment head at current time or as_of.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Employment'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'
+  '404':
+    $ref: '#/components/responses/NotFound'

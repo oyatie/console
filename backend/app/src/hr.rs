@@ -38,6 +38,7 @@ use uuid::Uuid;
 
 pub const EMPLOYEES_PATH: &str = "/api/v1/employees";
 pub const EMPLOYEE_DETAIL_PATH_TEMPLATE: &str = "/api/v1/employees/{id}";
+pub const EMPLOYMENT_PATH_TEMPLATE: &str = "/api/v1/employments/{id}";
 pub const EMPLOYEES_IMPORT_PATH: &str = "/api/v1/employees/import";
 pub const EMPLOYEES_IMPORT_PREVIEW_PATH: &str = "/api/v1/employees/import/preview";
 pub const EMPLOYEES_IMPORT_DRY_RUN_PATH_TEMPLATE: &str =
@@ -66,6 +67,7 @@ pub const HR_EXIT_CASE_APPROVAL_DRAFT_PATH_TEMPLATE: &str =
 pub const HR_ROUTE_PATHS: &[&str] = &[
     EMPLOYEES_PATH,
     EMPLOYEE_DETAIL_PATH_TEMPLATE,
+    EMPLOYMENT_PATH_TEMPLATE,
     EMPLOYEES_IMPORT_PATH,
     EMPLOYEES_IMPORT_PREVIEW_PATH,
     EMPLOYEES_IMPORT_DRY_RUN_PATH_TEMPLATE,
@@ -123,6 +125,7 @@ pub fn router(state: HrState) -> Router {
     let router = Router::new()
         .route(EMPLOYEES_PATH, get(list_employees).post(create_employee))
         .route(EMPLOYEE_DETAIL_PATH_TEMPLATE, get(get_employee_detail))
+        .route(EMPLOYMENT_PATH_TEMPLATE, get(get_employment))
         .route(HR_ORG_CHART_PATH, get(get_hr_org_chart))
         .route(HR_LEAVE_BALANCES_PATH, get(list_leave_balances))
         .route(HR_ATTENDANCE_SUMMARY_PATH, get(list_attendance_summary))
@@ -1367,6 +1370,13 @@ pub(crate) fn employee_create_audit(
     ))
 }
 
+#[derive(Debug, Deserialize)]
+struct EmploymentAsOfQuery {
+    /// RFC3339 instant for a bi-temporal as-of read; absent = current head.
+    #[serde(default, with = "time::serde::rfc3339::option")]
+    as_of: Option<OffsetDateTime>,
+}
+
 async fn get_employee_detail(
     State(state): State<HrState>,
     Extension(principal): Extension<Principal>,
@@ -1380,6 +1390,39 @@ async fn get_employee_detail(
     })
     .await?;
     Ok(Json(detail))
+}
+
+/// Canonical Employment Head. Absent `as_of` is the current open head. Present
+/// `as_of` reconstructs the slice effective at that RFC3339 instant. Gated on
+/// directory *read* (the Head has no compensation/phone). A miss, a closed
+/// window at/after `valid_to`, and a foreign tenant are all 404.
+async fn get_employment(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+    Path(employment_id): Path<Uuid>,
+    Query(query): Query<EmploymentAsOfQuery>,
+) -> Result<Json<employment::EmploymentHead>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    record_hr_read("employments");
+    let org = principal.org_id;
+    let pool = state.pool.clone();
+    let handle = tokio::runtime::Handle::current();
+    let as_of = query.as_of;
+    let head = tokio::task::spawn_blocking(move || {
+        let port = employment::PgEmploymentPort::new(pool, handle);
+        match as_of {
+            Some(at) => port.get_as_of(org, employment_id, at),
+            None => port.get(org, employment_id),
+        }
+    })
+    .await
+    .map_err(|_| HrError::from_kernel(KernelError::internal("employment read join failed")))??;
+    let head = head.ok_or_else(|| {
+        HrError::from_kernel(KernelError::not_found(
+            "employment was not found in this organization",
+        ))
+    })?;
+    Ok(Json(head))
 }
 
 /// Assign the employee's authoritative approval-routing branch. No inference is

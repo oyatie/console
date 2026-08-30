@@ -46,7 +46,13 @@ async fn evaluation_routes_are_mounted_by_the_authenticated_app_router(pool: PgP
         StatusCode::UNAUTHORIZED,
         "app router must authenticate evaluation routes: {body}"
     );
-    assert_eq!(body, json!("missing or malformed bearer token"));
+    // #991: request-context middleware 401 is ErrorBody, not a JSON string.
+    // Mounting a new HR GET made this app-postgres binary execute; the JWT
+    // gate is unchanged.
+    assert_eq!(
+        body,
+        json!({"error": {"code": "unauthorized", "message": "missing or malformed bearer token"}})
+    );
 
     let (status, page) = send(&router, "GET", CYCLES, Some(&fixture.admin), None).await;
     assert_eq!(status, StatusCode::OK, "authorized evaluation read: {page}");
