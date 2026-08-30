@@ -1,0 +1,34 @@
+type: object
+description: >-
+  Canonical Employment *open* head (`employment_heads.valid_to IS NULL`). Closed
+  (EXITED) windows are omitted by list/get. `org_unit_id` / `job_position_id`
+  are canonical UUIDs from the latest effective revision, not free-text team or
+  title labels. `person_id` is the unique source-binding → person-binding path;
+  ambiguous or unbound identities are null, never invented from `employee_id`.
+  `appointed_on` is the head's opening `valid_from`. Write attributes also carry
+  `company` and `employment_status` in {ACTIVE, EXITED, UNKNOWN}; those write
+  fields are not this Head. asOf/from/to slices and corrections (P0.4) are HOLD.
+  Links, actions, and permissions are HOLD — not a Palantir property graph.
+required:
+- id
+- appointed_on
+- person_id
+- org_unit_id
+- job_position_id
+properties:
+  id:
+    $ref: '#/components/schemas/Uuid'
+  person_id:
+    oneOf:
+    - $ref: '#/components/schemas/Uuid'
+    - type: 'null'
+  org_unit_id:
+    oneOf:
+    - $ref: '#/components/schemas/Uuid'
+    - type: 'null'
+  job_position_id:
+    oneOf:
+    - $ref: '#/components/schemas/Uuid'
+    - type: 'null'
+  appointed_on:
+    $ref: '#/components/schemas/Timestamp'

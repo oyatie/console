@@ -180,6 +180,10 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/MyPayrollLinePage.yaml"),
     },
     NamedYaml {
+        name: "PayRun",
+        body: include_str!("../openapi/schemas/PayRun.yaml"),
+    },
+    NamedYaml {
         name: "PayrollClosePreflight",
         body: include_str!("../openapi/schemas/PayrollClosePreflight.yaml"),
     },

@@ -6324,6 +6324,10 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../ontology/rest/openapi/schemas/AttachInstanceRequest.yaml"),
     },
     NamedYaml {
+        name: "Company",
+        body: include_str!("../../ontology/rest/openapi/schemas/Company.yaml"),
+    },
+    NamedYaml {
         name: "CreateObjectLinkRequest",
         body: include_str!("../../ontology/rest/openapi/schemas/CreateObjectLinkRequest.yaml"),
     },
@@ -6334,6 +6338,10 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "CreateSeriesRequest",
         body: include_str!("../../ontology/rest/openapi/schemas/CreateSeriesRequest.yaml"),
+    },
+    NamedYaml {
+        name: "Employment",
+        body: include_str!("../../ontology/rest/openapi/schemas/Employment.yaml"),
     },
     NamedYaml {
         name: "GateChainConfig",
@@ -6350,6 +6358,10 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "InstanceLifecycleState",
         body: include_str!("../../ontology/rest/openapi/schemas/InstanceLifecycleState.yaml"),
+    },
+    NamedYaml {
+        name: "JobPosition",
+        body: include_str!("../../ontology/rest/openapi/schemas/JobPosition.yaml"),
     },
     NamedYaml {
         name: "LifecycleOutcome",
@@ -6404,6 +6416,14 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!(
             "../../ontology/rest/openapi/schemas/OntologyInstanceAggregateBucket.yaml"
         ),
+    },
+    NamedYaml {
+        name: "OrgUnit",
+        body: include_str!("../../ontology/rest/openapi/schemas/OrgUnit.yaml"),
+    },
+    NamedYaml {
+        name: "Person",
+        body: include_str!("../../ontology/rest/openapi/schemas/Person.yaml"),
     },
     NamedYaml {
         name: "ResolvedInstance",
@@ -7284,6 +7304,10 @@ const PAYROLL_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "MyPayrollLinePage",
         body: include_str!("../../payroll/rest/openapi/schemas/MyPayrollLinePage.yaml"),
+    },
+    NamedYaml {
+        name: "PayRun",
+        body: include_str!("../../payroll/rest/openapi/schemas/PayRun.yaml"),
     },
     NamedYaml {
         name: "PayrollClosePreflight",

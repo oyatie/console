@@ -1,0 +1,32 @@
+type: object
+description: >-
+  Canonical Company head for one tenant. The tenant IS the company (`org_id`).
+  `legal_name` and `reg_no` are read from the latest `company_revisions.attributes`;
+  they are never copied from provisioning-owned `organizations.name`. Write
+  preflight requires a non-empty string `legal_name`; an omitted key is JSON null
+  on the Head. `founded_on` and `registration_number` are company_conformance
+  fixture keys, not this port. Links, actions, permissions, and temporal slices
+  are HOLD — not a Palantir property graph.
+required:
+- org_id
+- version
+- legal_name
+- reg_no
+properties:
+  org_id:
+    $ref: '#/components/schemas/Uuid'
+  legal_name:
+    type:
+    - string
+    - 'null'
+    description: Title property. Required non-empty on write; omitted key is null on read.
+  reg_no:
+    type:
+    - string
+    - 'null'
+    description: >-
+      Optional `reg_no` on the latest revision. Not `registration_number`.
+  version:
+    type: integer
+    format: int64
+    minimum: 1

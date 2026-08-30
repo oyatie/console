@@ -1,0 +1,27 @@
+type: object
+description: >-
+  Canonical JobPosition head. Distinct from recruiting postings and from
+  `employees.position` TEXT. `org_unit_id` is a foreign key to an existing
+  OrgUnit. `attributes` is the latest revision bag; write preflight requires a
+  non-empty string `title` (catalog JOB_POSITION_TITLE). Other attribute keys
+  are not a published closed set. Links, actions, permissions, and temporal
+  slices are HOLD — not a Palantir property graph.
+required:
+- job_position_id
+- org_unit_id
+- version
+- attributes
+properties:
+  job_position_id:
+    $ref: '#/components/schemas/Uuid'
+  org_unit_id:
+    $ref: '#/components/schemas/Uuid'
+  version:
+    type: integer
+    format: int64
+    minimum: 1
+  attributes:
+    type: object
+    additionalProperties: true
+    description: >-
+      Latest revision JSON object. Write requires non-empty `title`.

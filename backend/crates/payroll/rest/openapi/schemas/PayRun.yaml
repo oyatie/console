@@ -1,0 +1,36 @@
+type: object
+description: >-
+  Canonical PayRun scaffold over existing `payroll_draft_runs`. Not SAP-complete.
+  Draft calculate is admitted. `payable` is always false. Payment execution,
+  Korea compliance conclusions, and wage-statement legal sign-off remain HOLD.
+  REST list/detail DTOs remain `PayrollRunSummary` / `PayrollRunDetail`. Links,
+  actions, permissions, and temporal slices are HOLD — not a Palantir graph.
+required:
+- id
+- period_start
+- period_end
+- source_label
+- status
+- payable
+properties:
+  id:
+    $ref: '#/components/schemas/Uuid'
+  period_start:
+    type: string
+    format: date
+  period_end:
+    type: string
+    format: date
+  source_label:
+    type: string
+  status:
+    type: string
+    enum: [STAGED, BLOCKED_LEGAL_GATE, READY_FOR_REVIEW, ATTENDANCE_CLOSED, CALCULATING, CALCULATED, SUBMITTED, REJECTED, APPROVED, DISBURSEMENT_SCHEDULED, PAID, ISSUED, VOID]
+    description: >-
+      `payroll_draft_runs.status`. Same closed set as `PayrollRunSummary`.
+  payable:
+    type: boolean
+    const: false
+    description: >-
+      Always false until the 노무사/세무사 release gate flips stored calculation rows.
+      Payment execution remains HOLD. Not a payable payroll object.

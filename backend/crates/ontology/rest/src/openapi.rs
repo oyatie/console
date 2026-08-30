@@ -264,6 +264,10 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/AttachInstanceRequest.yaml"),
     },
     NamedYaml {
+        name: "Company",
+        body: include_str!("../openapi/schemas/Company.yaml"),
+    },
+    NamedYaml {
         name: "CreateObjectLinkRequest",
         body: include_str!("../openapi/schemas/CreateObjectLinkRequest.yaml"),
     },
@@ -274,6 +278,10 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "CreateSeriesRequest",
         body: include_str!("../openapi/schemas/CreateSeriesRequest.yaml"),
+    },
+    NamedYaml {
+        name: "Employment",
+        body: include_str!("../openapi/schemas/Employment.yaml"),
     },
     NamedYaml {
         name: "GateChainConfig",
@@ -290,6 +298,10 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "InstanceLifecycleState",
         body: include_str!("../openapi/schemas/InstanceLifecycleState.yaml"),
+    },
+    NamedYaml {
+        name: "JobPosition",
+        body: include_str!("../openapi/schemas/JobPosition.yaml"),
     },
     NamedYaml {
         name: "LifecycleOutcome",
@@ -342,6 +354,14 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "OntologyInstanceAggregateBucket",
         body: include_str!("../openapi/schemas/OntologyInstanceAggregateBucket.yaml"),
+    },
+    NamedYaml {
+        name: "OrgUnit",
+        body: include_str!("../openapi/schemas/OrgUnit.yaml"),
+    },
+    NamedYaml {
+        name: "Person",
+        body: include_str!("../openapi/schemas/Person.yaml"),
     },
     NamedYaml {
         name: "ResolvedInstance",

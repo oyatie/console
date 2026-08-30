@@ -1,0 +1,30 @@
+type: object
+description: >-
+  Canonical OrgUnit head. `name` and `parent_id` are parsed from the latest
+  `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites,
+  regions, and branches stay the operational auth spine and are not OrgUnits.
+  OrgUnit kinds Site/Department/Team are admitted direction on revision
+  attributes and are not a Head column. Links, actions, permissions, and
+  temporal slices are HOLD — not a Palantir property graph.
+required:
+- id
+- version
+- name
+- parent_id
+properties:
+  id:
+    $ref: '#/components/schemas/Uuid'
+  name:
+    type:
+    - string
+    - 'null'
+    description: Title property. Required non-empty on write; omitted key is null on read.
+  parent_id:
+    oneOf:
+    - $ref: '#/components/schemas/Uuid'
+    - type: 'null'
+    description: Optional parent OrgUnit. Root units send JSON null.
+  version:
+    type: integer
+    format: int64
+    minimum: 1

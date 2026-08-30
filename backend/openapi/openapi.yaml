@@ -20758,6 +20758,39 @@ components:
       - DEPARTMENT
       - TEAM
       - PERSONAL
+    Company:
+      type: object
+      description: >-
+        Canonical Company head for one tenant. The tenant IS the company (`org_id`).
+        `legal_name` and `reg_no` are read from the latest `company_revisions.attributes`;
+        they are never copied from provisioning-owned `organizations.name`. Write
+        preflight requires a non-empty string `legal_name`; an omitted key is JSON null
+        on the Head. `founded_on` and `registration_number` are company_conformance
+        fixture keys, not this port. Links, actions, permissions, and temporal slices
+        are HOLD — not a Palantir property graph.
+      required:
+      - org_id
+      - version
+      - legal_name
+      - reg_no
+      properties:
+        org_id:
+          $ref: '#/components/schemas/Uuid'
+        legal_name:
+          type:
+          - string
+          - 'null'
+          description: Title property. Required non-empty on write; omitted key is null on read.
+        reg_no:
+          type:
+          - string
+          - 'null'
+          description: >-
+            Optional `reg_no` on the latest revision. Not `registration_number`.
+        version:
+          type: integer
+          format: int64
+          minimum: 1
     CompleteInspectionRoundRequest:
       type: object
       required:
@@ -24200,6 +24233,41 @@ components:
         offset:
           type: integer
           format: int64
+    Employment:
+      type: object
+      description: >-
+        Canonical Employment *open* head (`employment_heads.valid_to IS NULL`). Closed
+        (EXITED) windows are omitted by list/get. `org_unit_id` / `job_position_id`
+        are canonical UUIDs from the latest effective revision, not free-text team or
+        title labels. `person_id` is the unique source-binding → person-binding path;
+        ambiguous or unbound identities are null, never invented from `employee_id`.
+        `appointed_on` is the head's opening `valid_from`. Write attributes also carry
+        `company` and `employment_status` in {ACTIVE, EXITED, UNKNOWN}; those write
+        fields are not this Head. asOf/from/to slices and corrections (P0.4) are HOLD.
+        Links, actions, and permissions are HOLD — not a Palantir property graph.
+      required:
+      - id
+      - appointed_on
+      - person_id
+      - org_unit_id
+      - job_position_id
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        person_id:
+          oneOf:
+          - $ref: '#/components/schemas/Uuid'
+          - type: 'null'
+        org_unit_id:
+          oneOf:
+          - $ref: '#/components/schemas/Uuid'
+          - type: 'null'
+        job_position_id:
+          oneOf:
+          - $ref: '#/components/schemas/Uuid'
+          - type: 'null'
+        appointed_on:
+          $ref: '#/components/schemas/Timestamp'
     EnrollHandoffRequest:
       type: object
       description: Cross-device passkey-enrollment handoff request. Carries NO user/org — those come from the verified access
@@ -26893,6 +26961,34 @@ components:
       type: object
       required: [id, label]
       properties: { id: { $ref: '#/components/schemas/Uuid' }, label: { type: string } }
+    JobPosition:
+      type: object
+      description: >-
+        Canonical JobPosition head. Distinct from recruiting postings and from
+        `employees.position` TEXT. `org_unit_id` is a foreign key to an existing
+        OrgUnit. `attributes` is the latest revision bag; write preflight requires a
+        non-empty string `title` (catalog JOB_POSITION_TITLE). Other attribute keys
+        are not a published closed set. Links, actions, permissions, and temporal
+        slices are HOLD — not a Palantir property graph.
+      required:
+      - job_position_id
+      - org_unit_id
+      - version
+      - attributes
+      properties:
+        job_position_id:
+          $ref: '#/components/schemas/Uuid'
+        org_unit_id:
+          $ref: '#/components/schemas/Uuid'
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        attributes:
+          type: object
+          additionalProperties: true
+          description: >-
+            Latest revision JSON object. Write requires non-empty `title`.
     KpiMetric:
       type: string
       enum:
@@ -30544,6 +30640,37 @@ components:
           type: string
           minLength: 1
           maxLength: 120
+    OrgUnit:
+      type: object
+      description: >-
+        Canonical OrgUnit head. `name` and `parent_id` are parsed from the latest
+        `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites,
+        regions, and branches stay the operational auth spine and are not OrgUnits.
+        OrgUnit kinds Site/Department/Team are admitted direction on revision
+        attributes and are not a Head column. Links, actions, permissions, and
+        temporal slices are HOLD — not a Palantir property graph.
+      required:
+      - id
+      - version
+      - name
+      - parent_id
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          type:
+          - string
+          - 'null'
+          description: Title property. Required non-empty on write; omitted key is null on read.
+        parent_id:
+          oneOf:
+          - $ref: '#/components/schemas/Uuid'
+          - type: 'null'
+          description: Optional parent OrgUnit. Root units send JSON null.
+        version:
+          type: integer
+          format: int64
+          minimum: 1
     OtpRedeemRequest:
       type: object
       required:
@@ -30991,6 +31118,43 @@ components:
           - string
           - 'null'
           format: date-time
+    PayRun:
+      type: object
+      description: >-
+        Canonical PayRun scaffold over existing `payroll_draft_runs`. Not SAP-complete.
+        Draft calculate is admitted. `payable` is always false. Payment execution,
+        Korea compliance conclusions, and wage-statement legal sign-off remain HOLD.
+        REST list/detail DTOs remain `PayrollRunSummary` / `PayrollRunDetail`. Links,
+        actions, permissions, and temporal slices are HOLD — not a Palantir graph.
+      required:
+      - id
+      - period_start
+      - period_end
+      - source_label
+      - status
+      - payable
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        source_label:
+          type: string
+        status:
+          type: string
+          enum: [STAGED, BLOCKED_LEGAL_GATE, READY_FOR_REVIEW, ATTENDANCE_CLOSED, CALCULATING, CALCULATED, SUBMITTED, REJECTED, APPROVED, DISBURSEMENT_SCHEDULED, PAID, ISSUED, VOID]
+          description: >-
+            `payroll_draft_runs.status`. Same closed set as `PayrollRunSummary`.
+        payable:
+          type: boolean
+          const: false
+          description: >-
+            Always false until the 노무사/세무사 release gate flips stored calculation rows.
+            Payment execution remains HOLD. Not a payable payroll object.
     PayrollClosePreflight:
       type: object
       required:
@@ -31824,6 +31988,36 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PeriodLock'
+    Person:
+      type: object
+      description: >-
+        Canonical Person head. Closed four-field projection of the latest
+        `person_revisions` row. `get`/`list` never copy the attributes object onto
+        the wire, so stored `phone` / `salary` / `bank_account` / `rrn` cannot appear.
+        Trusted directory create mints `person_id = employee_id`. Links, actions,
+        permissions, and temporal slices are HOLD — not a Palantir property graph.
+      required:
+      - id
+      - version
+      - display_name
+      - legal_name
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        display_name:
+          type:
+          - string
+          - 'null'
+          description: >-
+            Optional `display_name` attribute. Never invented from `legal_name`.
+        legal_name:
+          type:
+          - string
+          - 'null'
+        version:
+          type: integer
+          format: int64
+          minimum: 1
     PlatformAccountStatus:
       type: string
       enum:

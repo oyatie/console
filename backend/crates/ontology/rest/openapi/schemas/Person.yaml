@@ -1,0 +1,29 @@
+type: object
+description: >-
+  Canonical Person head. Closed four-field projection of the latest
+  `person_revisions` row. `get`/`list` never copy the attributes object onto
+  the wire, so stored `phone` / `salary` / `bank_account` / `rrn` cannot appear.
+  Trusted directory create mints `person_id = employee_id`. Links, actions,
+  permissions, and temporal slices are HOLD — not a Palantir property graph.
+required:
+- id
+- version
+- display_name
+- legal_name
+properties:
+  id:
+    $ref: '#/components/schemas/Uuid'
+  display_name:
+    type:
+    - string
+    - 'null'
+    description: >-
+      Optional `display_name` attribute. Never invented from `legal_name`.
+  legal_name:
+    type:
+    - string
+    - 'null'
+  version:
+    type: integer
+    format: int64
+    minimum: 1

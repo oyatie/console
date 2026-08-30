@@ -59,6 +59,7 @@
     "DecidePayrollRunRequest",
     "MyPayrollLine",
     "MyPayrollLinePage",
+    "PayRun",
     "PayrollClosePreflight",
     "PayrollDisbursement",
     "PayrollException",
