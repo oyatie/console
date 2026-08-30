@@ -23,13 +23,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "PATCH /api/v1/branches/{id}",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
       "operation": "PATCH /api/v1/equipment/{id}",
       "rust_file": "backend/crates/registry/rest/src/lib.rs",
       "handler": "update_equipment",
@@ -51,13 +44,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "PATCH /api/v1/org-changes/{id}",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
       "operation": "PATCH /api/v1/policy/roles/{id}",
       "rust_file": "backend/crates/identity/rest/src/lib.rs",
       "handler": "update_policy_role",
@@ -70,13 +56,6 @@
       "handler": "update_policy_role_status",
       "body_type": "UpdatePolicyRoleStatusRequest",
       "reason": "rust_struct_not_strict"
-    },
-    {
-      "operation": "PATCH /api/v1/regions/{id}",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
     },
     {
       "operation": "PATCH /api/v1/sales/inquiries/{id}",
@@ -157,17 +136,17 @@
     },
     {
       "operation": "POST /api/messenger/threads",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/messenger/rest/src/lib.rs",
+      "handler": "create_thread",
+      "body_type": "CreateThreadRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/messenger/threads/{threadId}/messages",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/messenger/rest/src/lib.rs",
+      "handler": "send_message",
+      "body_type": "SendMessageRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/platform/groups",
@@ -324,13 +303,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/branches",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
       "operation": "POST /api/v1/collaboration/calendar/events",
       "rust_file": "backend/app/src/collaboration.rs",
       "handler": "create_calendar_event",
@@ -353,52 +325,52 @@
     },
     {
       "operation": "POST /api/v1/compliance/control-obligation-coverage",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "link_control_obligation",
+      "body_type": "LinkControlObligationRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/compliance/evidence-bindings",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "create_evidence_binding",
+      "body_type": "CreateEvidenceBindingRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/compliance/framework-controls",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "create_framework_control",
+      "body_type": "CreateControlRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/compliance/frameworks",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "create_framework",
+      "body_type": "CreateFrameworkRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/compliance/obligation-regulation-links",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "link_obligation_regulation",
+      "body_type": "LinkObligationRegulationRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/compliance/obligations",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "create_obligation",
+      "body_type": "CreateObligationRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/compliance/regulations",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "create_regulation",
+      "body_type": "CreateRegulationRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/console/kill-switch",
@@ -717,10 +689,10 @@
     },
     {
       "operation": "POST /api/v1/inspections/schedules/{schedule_id}/rounds",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/inspection/rest/src/lib.rs",
+      "handler": "complete_round",
+      "body_type": "CompleteRoundRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/integrity/findings/{id}/triage",
@@ -759,101 +731,38 @@
     },
     {
       "operation": "POST /api/v1/location-consent/grant",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "grant_consent",
+      "body_type": "TransitionRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/location-consent/resume",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "resume_consent",
+      "body_type": "TransitionRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/location-consent/suspend",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "suspend_consent",
+      "body_type": "TransitionRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/location-consent/withdraw",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "withdraw_consent",
+      "body_type": "TransitionRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/location-pings",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/logistics/asns",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/logistics/asns/{asn_id}/putaway",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/logistics/asns/{asn_id}/receipts",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/logistics/fulfillments",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/logistics/fulfillments/{fulfillment_id}/dispatch",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/logistics/fulfillments/{fulfillment_id}/pack",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/logistics/fulfillments/{fulfillment_id}/pick",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/logistics/shipments/{shipment_id}/pod",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/logistics/shipments/{shipment_id}/settlements",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/compliance/rest/src/lib.rs",
+      "handler": "record_location_ping",
+      "body_type": "LocationPingRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/mail/forward",
@@ -987,34 +896,6 @@
       "handler": "attach_object_policy",
       "body_type": "AttachObjectPolicyRequest",
       "reason": "rust_struct_not_strict"
-    },
-    {
-      "operation": "POST /api/v1/org-changes",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/org-changes/{id}/approval-steps/{stepId}/decision",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/org-changes/{id}/cancel",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/org-changes/{id}/settlement-items/{itemId}/complete",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
     },
     {
       "operation": "POST /api/v1/p1-dispatches/{dispatchId}/force-assign",
@@ -1190,97 +1071,6 @@
       "handler": "rotate_source_system",
       "body_type": "RotateSourceSystem",
       "reason": "rust_struct_not_strict"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/applicants/{applicantId}/advance",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/applicants/{applicantId}/assess",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/applicants/{applicantId}/hold",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/applicants/{applicantId}/offer",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/applicants/{applicantId}/reject",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/offers/{offerId}/adjust",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/offers/{offerId}/record-reply",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/offers/{offerId}/withdraw",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/postings",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/postings/{postingId}/applicants",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/postings/{postingId}/close",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/recruiting/postings/{postingId}/publish",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
-    },
-    {
-      "operation": "POST /api/v1/regions",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
     },
     {
       "operation": "POST /api/v1/sales/listings",
@@ -1571,17 +1361,17 @@
     },
     {
       "operation": "PUT /api/messenger/threads/{threadId}/mute",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/messenger/rest/src/lib.rs",
+      "handler": "set_mute",
+      "body_type": "SetMuteRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "PUT /api/messenger/threads/{threadId}/read-receipt",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/messenger/rest/src/lib.rs",
+      "handler": "mark_thread_read",
+      "body_type": "ReadReceiptRequest",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "PUT /api/v1/console/rollout/opt-in",
@@ -1648,10 +1438,10 @@
     },
     {
       "operation": "PUT /api/v1/recruiting/postings/{postingId}",
-      "rust_file": null,
-      "handler": null,
-      "body_type": null,
-      "reason": "route_parser_unresolved"
+      "rust_file": "backend/crates/recruiting/rest/src/lib.rs",
+      "handler": "update_posting",
+      "body_type": "UpdateRecruitPostingRequest",
+      "reason": "openapi_schema_composition_unsupported"
     },
     {
       "operation": "PUT /api/v1/reporting/work-diary",
@@ -1762,6 +1552,62 @@
       "wire_field": "decision",
       "rust_file": "backend/crates/leave/rest/src/lib.rs",
       "body_type": "DecideRequestV1",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
+    {
+      "operation": "POST /api/v1/logistics/shipments/{shipment_id}/settlements",
+      "wire_field": "currencyCode",
+      "rust_file": "backend/crates/logistics/rest/src/lib.rs",
+      "body_type": "SettleBody",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
+    {
+      "operation": "POST /api/v1/recruiting/applicants/{applicantId}/assess",
+      "wire_field": "score",
+      "rust_file": "backend/crates/recruiting/rest/src/lib.rs",
+      "body_type": "AssessRecruitApplicantRequest",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
+    {
+      "operation": "POST /api/v1/recruiting/applicants/{applicantId}/offer",
+      "wire_field": "amount_period",
+      "rust_file": "backend/crates/recruiting/rest/src/lib.rs",
+      "body_type": "ExtendRecruitOfferRequest",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
+    {
+      "operation": "POST /api/v1/recruiting/applicants/{applicantId}/reject",
+      "wire_field": "reason",
+      "rust_file": "backend/crates/recruiting/rest/src/lib.rs",
+      "body_type": "RejectRecruitApplicantRequest",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
+    {
+      "operation": "POST /api/v1/recruiting/offers/{offerId}/record-reply",
+      "wire_field": "decision",
+      "rust_file": "backend/crates/recruiting/rest/src/lib.rs",
+      "body_type": "RecordOfferReplyRequest",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
+    {
+      "operation": "POST /api/v1/recruiting/postings",
+      "wire_field": "employment_type",
+      "rust_file": "backend/crates/recruiting/rest/src/lib.rs",
+      "body_type": "CreateRecruitPostingRequest",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
+    {
+      "operation": "POST /api/v1/recruiting/postings",
+      "wire_field": "scope",
+      "rust_file": "backend/crates/recruiting/rest/src/lib.rs",
+      "body_type": "CreateRecruitPostingRequest",
       "rust_type": "String",
       "reason": "string_backed_spec_enum"
     },

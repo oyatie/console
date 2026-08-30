@@ -26,6 +26,17 @@ const ANCHORS = [
   "POST /api/v1/inventory/items/{item_id}/receipts",
 ];
 
+// String-literal `.route("/path", method(handler))` is a first-party form the CONST matcher
+// does not see. These operations have deny_unknown_fields JSON bodies today and must resolve
+// once that syntax is bound. They are checked only when present in the spec so widget
+// fixtures that copy live OpenAPI without those crates still isolate the CONST floor.
+export const LITERAL_PATH_ANCHORS = [
+  "POST /api/v1/org-changes",
+  "POST /api/v1/branches",
+  "POST /api/v1/logistics/asns",
+  "POST /api/v1/recruiting/postings",
+];
+
 const ENUM_ANCHORS = [
   "POST /api/v1/benefit-catalog/items#category",
   "PATCH /api/v1/benefit-catalog/items/{benefit_id}#category",
@@ -36,11 +47,11 @@ const ENUM_ANCHORS = [
   "POST /api/v1/inventory/cycle-counts/{count_id}/decision#decision",
 ];
 
-const RESOLVED_FLOOR = 45;
+const RESOLVED_FLOOR = 75;
 const CENSUS_FLOOR = 291;
-const ENUM_RESOLVED_FLOOR = 7;
-const BODY_UNDECIDABLE_MAX = 238;
-const ENUM_UNDECIDABLE_MAX = 15;
+const ENUM_RESOLVED_FLOOR = 10;
+const BODY_UNDECIDABLE_MAX = 208;
+const ENUM_UNDECIDABLE_MAX = 22;
 const REGISTER_VERSION = 1;
 const REGISTER_PATH = "scripts/request-body-contract-undecidable.json";
 const HTTP_METHODS = ["get", "put", "post", "delete", "options", "head", "patch", "trace"];
@@ -75,9 +86,12 @@ const INERT_MODULE_ATTRIBUTES = new Set([
 ]);
 
 // These expressions intentionally cover the concrete first-party route and handler forms. Any
-// new syntax falls into the exact undecidable register instead of being guessed.
+// new syntax falls into the exact undecidable register instead of being guessed. LITERAL_ROUTE
+// is the `.route("/path", …)` sibling of the CONST matcher; `router.route(path, methods)`
+// tables (todos) stay unresolved.
 const CONST_PATH = /pub const ([A-Z0-9_]+): &str =\s*"([^"]+)"/g;
 const ROUTE = /\.route\(\s*([A-Z0-9_]+)\s*,([\s\S]*?)\)\s*,?\s*\)/g;
+const LITERAL_ROUTE = /\.route\(\s*"([^"]+)"\s*,([\s\S]*?)\)\s*,?\s*\)/g;
 const METHOD = /\b(get|post|put|patch|delete)\(\s*([a-z0-9_]+)/g;
 const HANDLER = /async fn ([a-z0-9_]+)\s*\(([\s\S]*?)\)\s*->/g;
 const JSON_BODY = /Json\(\s*\w+\s*\)\s*:\s*Json<\s*((?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*)\s*>/;
@@ -982,6 +996,22 @@ function collectSources(repoRoot) {
           crateQualifier: identity.crateQualifier,
           imports: items.rootImports,
           constName: match[1],
+          literalPath: null,
+          method: method[1],
+          handler: method[2],
+        });
+      }
+    }
+    for (const match of source.matchAll(LITERAL_ROUTE)) {
+      for (const method of match[2].matchAll(METHOD)) {
+        rawRoutes.push({
+          file,
+          identityKey,
+          modulePath: identity.modulePath,
+          crateQualifier: identity.crateQualifier,
+          imports: items.rootImports,
+          constName: null,
+          literalPath: match[1],
           method: method[1],
           handler: method[2],
         });
@@ -990,9 +1020,12 @@ function collectSources(repoRoot) {
   }
 
   const routes = rawRoutes.map((route) => {
-    const candidates = consts.get(route.constName) ?? [];
-    const local = candidates.filter((candidate) => candidate.identityKey === route.identityKey);
-    const path = local.length === 1 ? local[0].path : candidates.length === 1 ? candidates[0].path : null;
+    let path = route.literalPath;
+    if (path == null) {
+      const candidates = consts.get(route.constName) ?? [];
+      const local = candidates.filter((candidate) => candidate.identityKey === route.identityKey);
+      path = local.length === 1 ? local[0].path : candidates.length === 1 ? candidates[0].path : null;
+    }
     return {
       ...route,
       path,
@@ -1549,12 +1582,17 @@ export function evaluateRequestBodyContract({ repoRoot }) {
     return operationOrder || compareText(left.message, right.message);
   });
 
+  const specOperationIds = new Set(operations.map((candidate) => candidate.operation));
+
   return {
     population: operations.length + routeOnly.size,
     resolved: resolvedOperations.size,
     skipped: bodyUndecidable.length,
     findings,
     unresolvedAnchors: ANCHORS.filter((anchor) => !resolvedOperations.has(anchor)),
+    unresolvedLiteralAnchors: LITERAL_PATH_ANCHORS.filter((anchor) => (
+      specOperationIds.has(anchor) && !resolvedOperations.has(anchor)
+    )),
     enumCandidates,
     enumResolved,
     enumSkipped: enumUndecidable.length,
@@ -1574,6 +1612,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   for (const finding of report.registerFindings) console.error(finding);
   for (const anchor of report.unresolvedAnchors) {
     console.error(`anchor operation ${anchor} no longer resolves — the resolver has silently degraded`);
+  }
+  for (const anchor of report.unresolvedLiteralAnchors) {
+    console.error(`literal-path operation ${anchor} is still undecidable — `
+      + "string-literal .route() JSON bodies are a named hole");
   }
   for (const anchor of report.unresolvedEnumAnchors) {
     console.error(`enum anchor ${anchor} no longer resolves — enum coverage has silently degraded`);
@@ -1602,6 +1644,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const failed = report.findings.length > 0
     || report.registerFindings.length > 0
     || report.unresolvedAnchors.length > 0
+    || report.unresolvedLiteralAnchors.length > 0
     || report.unresolvedEnumAnchors.length > 0
     || belowFloor
     || belowCensus
