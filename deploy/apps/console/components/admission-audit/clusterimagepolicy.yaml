@@ -21,6 +21,6 @@ spec:
         url: https://fulcio.sigstore.dev
         identities:
           - issuer: https://token.actions.githubusercontent.com
-            subjectRegExp: '^https://github\.com/jason931225/console/\.github/workflows/image-release\.yml@refs/(heads/main|tags/v[0-9].*)$'
+            subjectRegExp: '^https://github\.com/jason931225/console/\.github/workflows/image-release\.yml@refs/(heads/dev|tags/v[0-9].*)$'
       ctlog:
         url: https://rekor.sigstore.dev

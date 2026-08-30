@@ -70,7 +70,7 @@ export function assertReleaseAuthorityProof({
   if (!RELEASE_PLEASE_WORKFLOW_EVENTS.includes(run.event)) {
     fail('release proof must originate from an allowed event');
   }
-  if (run.head_branch !== 'main') fail('release proof run must use the main branch');
+  if (run.head_branch !== 'dev') fail('release proof run must use the dev branch');
   if (run.head_sha !== C) fail('release proof run head must equal the release tip parent SHA');
   if (run?.repository?.id !== PINNED_RELEASE_REPOSITORY_ID) fail('release proof repository id is not pinned');
   if (run?.repository?.full_name !== PINNED_RELEASE_REPOSITORY) fail('release proof repository name is not pinned');
@@ -114,7 +114,7 @@ function assertLiveReleasePr(pr, { repository, prNumber, headSha, headRef }, pha
     || pr?.head?.sha !== headSha
     || pr?.head?.ref !== headRef
     || pr?.head?.repo?.full_name !== repository
-    || pr?.base?.ref !== 'main'
+    || pr?.base?.ref !== 'dev'
   ) {
     fail(`live PR head or protected release shape moved ${phase} proof polling`);
   }
@@ -122,7 +122,7 @@ function assertLiveReleasePr(pr, { repository, prNumber, headSha, headRef }, pha
 
 async function listAllReleaseProofRuns({ request, repository, parentSha }) {
   const endpoint = `/repos/${repository}/actions/workflows/${RELEASE_PLEASE_WORKFLOW_ID}/runs`
-    + `?branch=main&event=push&head_sha=${parentSha}&per_page=100`;
+    + `?branch=dev&event=push&head_sha=${parentSha}&per_page=100`;
   const runs = [];
   const seenRunIds = new Set();
   let totalCount = null;
@@ -437,7 +437,7 @@ export function assertLivePullRequestSnapshot(pr, {
     || !Number.isSafeInteger(pr?.user?.id)
     || typeof pr?.user?.login !== 'string'
     || pr.user.login.length === 0
-    || pr?.base?.ref !== 'main'
+    || pr?.base?.ref !== 'dev'
     || pr?.base?.sha !== B
     || pr?.base?.repo?.id !== PINNED_RELEASE_REPOSITORY_ID
     || pr?.base?.repo?.full_name !== repository
@@ -517,14 +517,14 @@ function parseArgs(argv) {
     const value = argv[index + 1];
     const name = typeof key === 'string' ? key.slice(2) : '';
     if (!allowed.has(key) || value === undefined || Object.hasOwn(result, name)) {
-      fail('usage: --pr-number N --head SHA --base-sha SHA --base main --repository OWNER/REPO');
+      fail('usage: --pr-number N --head SHA --base-sha SHA --base dev --repository OWNER/REPO');
     }
     result[name] = value;
   }
   if (!/^\d+$/.test(result['pr-number'] ?? '')) fail('PR number is invalid');
   exactSha(result.head, 'PR head');
   exactSha(result['base-sha'], 'protected base');
-  if (result.base !== 'main') fail('PR base is outside the protected main trust scope');
+  if (result.base !== 'dev') fail('PR base is outside the protected dev trust scope');
   if (result.repository !== PINNED_RELEASE_REPOSITORY) fail('repository name is not pinned');
   return result;
 }
@@ -538,8 +538,8 @@ function exactPrNumber(value) {
 export function fetchExactProtectedBase(repo, expectedBase) {
   const B = exactSha(expectedBase, 'protected base');
   const ref = 'refs/console-bootstrap/protected-main';
-  git(repo, ['fetch', '--no-tags', '--no-recurse-submodules', 'origin', `+refs/heads/main:${ref}`]);
-  if (git(repo, ['rev-parse', ref]).trim() !== B) fail('protected main ref does not match the event base SHA');
+  git(repo, ['fetch', '--no-tags', '--no-recurse-submodules', 'origin', `+refs/heads/dev:${ref}`]);
+  if (git(repo, ['rev-parse', ref]).trim() !== B) fail('protected dev ref does not match the event base SHA');
   return B;
 }
 

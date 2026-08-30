@@ -1008,7 +1008,7 @@ jobs:
     environment: production
     if: >-
       github.event_name == 'workflow_dispatch' &&
-      github.ref == 'refs/heads/main' &&
+      github.ref == 'refs/heads/dev' &&
       github.run_attempt == 1 &&
       inputs.promote_production == true
     permissions:
@@ -1060,7 +1060,7 @@ jobs:
         run: |
           git commit -m promote
           python3 scripts/check-production-promotion-authority.py pre-push --expected-sha "$GITHUB_SHA"
-          git push origin "HEAD:main"
+          git push origin "HEAD:dev"
 `,
   "scripts/check-production-promotion-authority.py": `
 from pathlib import PurePosixPath
@@ -1081,9 +1081,9 @@ raise RuntimeError("keys are not exact")
 git("rev-parse", "HEAD")
 run(["git", "show", f"{expected_sha}:{path}"])
 git("status", "--porcelain", "--untracked-files=no")
-git("fetch", "--no-tags", "origin", "+refs/heads/main:refs/remotes/origin/main")
+git("fetch", "--no-tags", "origin", "+refs/heads/dev:refs/remotes/origin/dev")
 git("diff-tree")
-raise RuntimeError("origin/main advanced after authorization")
+raise RuntimeError("origin/dev advanced after authorization")
 raise RuntimeError("activation requires a separate accepted higher-authority ADR/cutover")
 `,
 
@@ -1827,8 +1827,8 @@ describe("production hardening workflow gates", () => {
     assertHasFailure(
       evaluateWorkflows({
         ".github/workflows/image-release.yml": workflow.replace(
-          'git push origin "HEAD:main"',
-          'git pull --rebase origin main\n          git push origin "HEAD:main"',
+          'git push origin "HEAD:dev"',
+          'git pull --rebase origin dev\n          git push origin "HEAD:dev"',
         ),
       }),
       "must not pull, rebase, retry, or loop",
@@ -1841,7 +1841,7 @@ describe("production hardening workflow gates", () => {
     const result = evaluateWorkflows({
       ".github/workflows/image-release.yml": releaseWorkflow.replace(
         `      candidate_sha:
-        description: Exact current-main SHA whose successful push CI authorizes recovery
+        description: Exact current-dev SHA whose successful push CI authorizes recovery
         required: true
         type: string
 `,
@@ -1876,7 +1876,7 @@ describe("production hardening workflow gates", () => {
     );
   });
 
-  it("rejects production digest promotion on push or outside main", () => {
+  it("rejects production digest promotion on push or outside dev", () => {
     const releaseWorkflow =
       validWorkflowFiles[".github/workflows/image-release.yml"];
     const result = evaluateWorkflows({
@@ -1886,14 +1886,14 @@ describe("production hardening workflow gates", () => {
           "github.event_name == 'push'",
         )
         .replaceAll(
-          "github.ref == 'refs/heads/main'",
+          "github.ref == 'refs/heads/dev'",
           "startsWith(github.ref, 'refs/heads/')",
         ),
     });
 
     assertHasFailure(
       result,
-      "must run only for an explicit workflow_dispatch on refs/heads/main",
+      "must run only for an explicit workflow_dispatch on refs/heads/dev",
     );
   });
 
@@ -1965,7 +1965,7 @@ describe("production hardening workflow gates", () => {
           "github.run_attempt >= 1",
         ),
       }),
-      "explicit workflow_dispatch on refs/heads/main",
+      "explicit workflow_dispatch on refs/heads/dev",
     );
   });
 

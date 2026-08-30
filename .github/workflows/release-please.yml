@@ -1,9 +1,9 @@
 name: Release Please
 
-# Enforced semantic versioning. Conventional-commit history on main drives an
+# Enforced semantic versioning. Conventional-commit history on dev drives an
 # automatically maintained release PR; merging it bumps the version, updates the
 # changelog, and pushes a vX.Y.Z tag. Image publication remains a separate
-# exact-main-CI workflow_run boundary in image-release.yml. That wake-up is not
+# exact-dev-CI workflow_run boundary in image-release.yml. That wake-up is not
 # release authority: publication additionally requires an immutable live release,
 # its exact lightweight tag, and exact successful CI + Security runs.
 #
@@ -17,7 +17,7 @@ name: Release Please
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
 
 permissions: {}
 

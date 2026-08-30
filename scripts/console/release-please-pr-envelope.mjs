@@ -91,7 +91,7 @@ export function deriveReleasePleasePrEnvelope({
   }
   return Object.freeze({
     headBranchName: headRef,
-    baseBranchName: 'main',
+    baseBranchName: 'dev',
     title,
     body,
     labels: Object.freeze([RELEASE_PLEASE_PENDING_LABEL]),

@@ -3,7 +3,7 @@
 # CAS is unreachable, so a build cache must never be able to fail Required CI.
 #
 # Durability model:
-#   push:main     -> build and SAVE. Default-branch caches are readable from every
+#   push:dev     -> build and SAVE. Default-branch caches are readable from every
 #                    branch and PR, so one save serves everyone.
 #   pull_request  -> RESTORE only. A PR never writes, so no PR can spend the shared
 #                    ~10 GB Actions budget (cache-hygiene.yml hard-fails above 8 GiB).
@@ -11,7 +11,7 @@ name: CAS canary
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
   pull_request:
   workflow_dispatch:
 
@@ -45,7 +45,7 @@ jobs:
           echo "OK: cold path selected, build may proceed locally"
 
   seed:
-    name: Seed the durable cache (main only)
+    name: Seed the durable cache (dev only)
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -70,7 +70,7 @@ jobs:
           key: nativelink-cas-linux-x64-${{ github.run_id }}
 
   consume:
-    name: A PR reuses what main seeded
+    name: A PR reuses what dev seeded
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -91,13 +91,13 @@ jobs:
             //backend/ci/gates/layer-boundary:console-gate-layer-boundary --console=simple 2>&1 | tee /tmp/b.log | tail -5
           echo "--- verdict ---"
           if [ -z "${{ steps.cas.outputs.restored-key }}" ]; then
-            # No main-seeded cache exists yet. Report it; do not invent a pass or a failure.
-            echo "NO SEEDED CACHE YET — nothing to reuse. This becomes a real assertion once main has seeded one."
+            # No dev-seeded cache exists yet. Report it; do not invent a pass or a failure.
+            echo "NO SEEDED CACHE YET — nothing to reuse. This becomes a real assertion once dev has seeded one."
             grep -E 'Cache hits|Commands:' /tmp/b.log || true
             exit 0
           fi
           if grep -qE 'Cache hits: (100|[1-9][0-9])%' /tmp/b.log; then
-            echo "OK: this PR reused the cache main seeded"
+            echo "OK: this PR reused the cache dev seeded"
           else
             echo "REGRESSION: a seeded cache was restored but produced no hits"
             grep -E 'Cache hits|Commands:' /tmp/b.log || true

@@ -36,7 +36,7 @@ const N = 'b'.repeat(40);
 const REPOSITORY = 'oyatie/console';
 const REPOSITORY_ID = 1269693002;
 const BOT_ID = 41898282;
-const HEAD_REF = 'release-please--branches--main--components--console';
+const HEAD_REF = 'release-please--branches--dev--components--console';
 const NOTES = [
   '## [0.3.7](https://github.com/oyatie/console/compare/v0.3.6...v0.3.7) (2026-08-16)',
   '',
@@ -69,9 +69,9 @@ const BASE_CHANGELOG = [
 const HEAD_CHANGELOG = `# Changelog\n\n${NOTES}\n\n${BASE_CHANGELOG.slice('# Changelog\n\n'.length)}`;
 const actionPr = Object.freeze({
   headBranchName: HEAD_REF,
-  baseBranchName: 'main',
+  baseBranchName: 'dev',
   number: 760,
-  title: 'chore(main): release 0.3.7',
+  title: 'chore(dev): release 0.3.7',
   body: PR_BODY,
   labels: ['autorelease: pending'],
   files: [],
@@ -89,7 +89,7 @@ const livePr = Object.freeze({
     repo: { full_name: REPOSITORY, id: REPOSITORY_ID },
   },
   base: {
-    ref: 'main',
+    ref: 'dev',
     sha: C,
     repo: { full_name: REPOSITORY, id: REPOSITORY_ID },
   },
@@ -142,12 +142,12 @@ const pollFixture = (overrides = {}) => ({
   ...overrides,
 });
 const protectedReleaseIssuerClosure = Object.freeze([
-  ['./converge-release-please-doc-custody.mjs', '084e81a401e0e0ef4479d37b15d5e2d7a6250c7a3a8c6d51cee8293b8ece48cd'],
-  ['./release-please-pr-fallback.mjs', '6bf38a44adbbf5c6677f91901e61bfa773fbf902691f48e772d30883c2c07962'],
-  ['./release-please-pr-envelope.mjs', '3ce48af43c2bd476e4f1fc7ad4e787b23990c89ad468a28df7a0ae82a35d6240'],
+  ['./converge-release-please-doc-custody.mjs', 'a3d8d44840bd3397732a9a7cfd76f49c80029adfb4f7660d09ccdf2d3d22de70'],
+  ['./release-please-pr-fallback.mjs', 'f0a8fb9c2e4698b07d38092efb29de2faa7a954143d12f8befa029b5c0edc0c6'],
+  ['./release-please-pr-envelope.mjs', 'df8e389bd22f46e6747fd6f93027190e5c710be8cb1998ed7c8c5dd30b627096'],
   ['./generate-documentation-manifest.mjs', 'df87d926caa67c08ccecc6eba7fca58c9f4bc1190c1e08fd3857290985379481'],
   ['./validate-documentation-archive.mjs', '8462e2650bc8a5d2802d77701d490fcae4d0b33eaa34f2a2f6fb8130e193c2e8'],
-  ['./release-please-bot-candidate.mjs', 'e1bbf8819e3cca1d227293abbced2026bdc18d3953be3b1af0eaa5ed0a738108'],
+  ['./release-please-bot-candidate.mjs', '91aa1f7c4f0c882c4de560e3d5af0a37351b233d48cb974b897b7c1ebdaa3b6e'],
   ['./authority-ledger-path.mjs', '756e838e3979508d3be0b7d9974a0e719de9f1a08effbe60c272c2cad25b498e'],
   ['../check-release-metadata.mjs', '534b49d8426a1a3ae86e88ca026cf034162dd1d6289de3f9c4103e447b998b4a'],
 ]);
@@ -421,7 +421,7 @@ test('rejects a raced live PR or a tip detached from the triggering main SHA', (
 test('rejects PR metadata, repository, action body, or bot identity drift', () => {
   for (const [overrides, pattern] of [
     [{ livePr: { ...livePr, body: `${PR_BODY}\nforged` } }, /body/],
-    [{ livePr: { ...livePr, title: 'chore(main): release 9.9.9' } }, /title/],
+    [{ livePr: { ...livePr, title: 'chore(dev): release 9.9.9' } }, /title/],
     [{ livePr: { ...livePr, user: { login: 'oyatie' } } }, /creator/],
     [{ livePr: { ...livePr, head: { ...livePr.head, repo: { full_name: 'attacker/console' } } } }, /repository/],
     [{ actionPr: { ...actionPr, headBranchName: 'evil' } }, /head ref/],
@@ -593,7 +593,7 @@ test('protected producer validates before transport and accepts the exact post-p
 const expectedReleaseWorkflow = Object.freeze({
   name: 'Release Please',
   on: {
-    push: { branches: ['main'] },
+    push: { branches: ['dev'] },
   },
   permissions: {},
   concurrency: { group: 'release-please', 'cancel-in-progress': false },

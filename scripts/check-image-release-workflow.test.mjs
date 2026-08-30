@@ -103,7 +103,7 @@ function releaseCommit() {
     sha: CANDIDATE,
     parents: [{ sha: PARENT }],
     commit: {
-      message: `chore(main): release 1.2.3 (#${RELEASE_PR_NUMBER})\n\nrelease notes`,
+      message: `chore(dev): release 1.2.3 (#${RELEASE_PR_NUMBER})\n\nrelease notes`,
       tree: { sha: RELEASE_TREE },
       author: {
         name: "github-actions[bot]",
@@ -142,7 +142,7 @@ function releaseHeadCommit() {
     sha: RELEASE_HEAD,
     parents: [{ sha: PARENT }],
     commit: {
-      message: "chore(main): release 1.2.3",
+      message: "chore(dev): release 1.2.3",
       tree: { sha: RELEASE_TREE },
       author: {
         name: "github-actions[bot]",
@@ -168,15 +168,15 @@ function releasePullRequest({ transport = false } = {}) {
     merged: true,
     merged_at: "2026-08-16T12:00:00Z",
     merge_commit_sha: CANDIDATE,
-    title: "chore(main): release 1.2.3",
+    title: "chore(dev): release 1.2.3",
     user,
     base: {
-      ref: "main",
+      ref: "dev",
       sha: PARENT,
       repo: { id: REPOSITORY_ID, full_name: "oyatie/console" },
     },
     head: {
-      ref: "release-please--branches--main--components--console",
+      ref: "release-please--branches--dev--components--console",
       sha: RELEASE_HEAD,
       repo: { id: REPOSITORY_ID, full_name: "oyatie/console" },
     },
@@ -200,7 +200,7 @@ function workflowRun({
     run_number: runNumber,
     run_attempt: runAttempt,
     event: "push",
-    head_branch: "main",
+    head_branch: "dev",
     head_sha: headSha,
     status,
     conclusion,
@@ -268,25 +268,25 @@ function baseRoutes() {
   });
   return {
     [`repos/oyatie/console/actions/runs/${CI_RUN_ID}`]: [ciRun],
-    [`repos/oyatie/console/actions/workflows/${CI_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${CANDIDATE}&per_page=100`]: [
+    [`repos/oyatie/console/actions/workflows/${CI_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${CANDIDATE}&per_page=100`]: [
       { total_count: 1, workflow_runs: [ciRun] },
     ],
     [`repos/oyatie/console/actions/runs/${CI_RUN_ID}/attempts/1/jobs?per_page=100`]: [
       aggregateJobs("Required / CI"),
     ],
-    [`repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${CANDIDATE}&per_page=100`]: [
+    [`repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${CANDIDATE}&per_page=100`]: [
       { total_count: 1, workflow_runs: [securityRun] },
     ],
     [`repos/oyatie/console/actions/runs/${SECURITY_RUN_ID}/attempts/1/jobs?per_page=100`]: [
       aggregateJobs("Required / Security"),
     ],
-    [`repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${PARENT}&per_page=100`]: [
+    [`repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${PARENT}&per_page=100`]: [
       { total_count: 1, workflow_runs: [releaseRun] },
     ],
     [`repos/oyatie/console/actions/runs/${RELEASE_RUN_ID}/attempts/1/jobs?per_page=100`]: [
       releaseProofJobs(),
     ],
-    [`repos/oyatie/console/git/ref/heads/main`]: [
+    [`repos/oyatie/console/git/ref/heads/dev`]: [
       { object: { type: "commit", sha: CANDIDATE } },
     ],
     [`repos/oyatie/console/commits/${CANDIDATE}`]: [releaseCommit()],
@@ -408,7 +408,7 @@ process.stdout.write(typeof response === "string" ? response : JSON.stringify(re
       TRIGGER_WORKFLOW_NAME: "CI",
       TRIGGER_WORKFLOW_CONCLUSION: "success",
       TRIGGER_WORKFLOW_EVENT: "push",
-      TRIGGER_WORKFLOW_HEAD_BRANCH: "main",
+      TRIGGER_WORKFLOW_HEAD_BRANCH: "dev",
       TRIGGER_WORKFLOW_HEAD_SHA: CANDIDATE,
       DISPATCH_CANDIDATE_SHA: "",
       DISPATCH_REF: "",
@@ -563,7 +563,7 @@ describe("Image Release protected workflow shape", () => {
       [
         "type=semver,pattern={{version}},value=${{ needs.ci-admission.outputs.release_tag }}",
         "type=semver,pattern={{major}}.{{minor}},value=${{ needs.ci-admission.outputs.release_tag }}",
-        "type=raw,value=main",
+        "type=raw,value=dev",
         "type=raw,value=edge",
         "type=raw,value=sha-${{ needs.ci-admission.outputs.release_sha }}",
       ],
@@ -605,7 +605,7 @@ describe("Image Release protected workflow shape", () => {
   it("does not alter either protected production-promotion job", () => {
     assert.equal(
       productionJobDigest(),
-      "03b816c09d40906b50523f530551fda517cbb52a98017da9ca75ea728285eebd",
+      "6cf3c0754c9f65c0a92a87233e2dd41a36d6edb6cf8ff45be2064e805c1376db",
     );
   });
 
@@ -688,7 +688,7 @@ describe("Image Release live admission shell", () => {
 
   it("cleanly ignores an automatic stale candidate", () => {
     const routes = baseRoutes();
-    routes["repos/oyatie/console/git/ref/heads/main"] = [
+    routes["repos/oyatie/console/git/ref/heads/dev"] = [
       { object: { type: "commit", sha: OTHER } },
     ];
     const result = runAdmission({ routes });
@@ -698,7 +698,7 @@ describe("Image Release live admission shell", () => {
 
   it("fails red when current-main readback is unavailable during polling", () => {
     const routes = baseRoutes();
-    routes["repos/oyatie/console/git/ref/heads/main"] = [
+    routes["repos/oyatie/console/git/ref/heads/dev"] = [
       { object: { type: "commit", sha: CANDIDATE } },
       { exit: 1, stderr: "connection refused\n" },
     ];
@@ -711,7 +711,7 @@ describe("Image Release live admission shell", () => {
   it("fails red instead of treating malformed main refs as stale", () => {
     for (const sha of ["not-a-full-lowercase-sha", `${CANDIDATE}\n`]) {
       const routes = baseRoutes();
-      routes["repos/oyatie/console/git/ref/heads/main"] = [
+      routes["repos/oyatie/console/git/ref/heads/dev"] = [
         { object: { type: "commit", sha } },
       ];
       const result = runAdmission({ routes });
@@ -780,7 +780,7 @@ describe("Image Release live admission shell", () => {
         "subject",
         (commit) => ({
           ...commit,
-          commit: { ...commit.commit, message: "chore(main): release 1.2.4 (#760)" },
+          commit: { ...commit.commit, message: "chore(dev): release 1.2.4 (#760)" },
         }),
       ],
       [
@@ -789,7 +789,7 @@ describe("Image Release live admission shell", () => {
           ...commit,
           commit: {
             ...commit.commit,
-            message: "chore(main): release 1.2.3 (#760)\u0000\n\nrelease notes",
+            message: "chore(dev): release 1.2.3 (#760)\u0000\n\nrelease notes",
           },
         }),
       ],
@@ -981,7 +981,7 @@ describe("Image Release live admission shell", () => {
   it("requires native proof and an exact same-tree protected release head", () => {
     const withoutProof = transportRoutes();
     withoutProof[
-      `repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${PARENT}&per_page=100`
+      `repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${PARENT}&per_page=100`
     ] = [{ total_count: 0, workflow_runs: [] }];
     const missingProof = runAdmission({ routes: withoutProof });
     assert.notEqual(missingProof.status, 0, "accepted transport author without proof");
@@ -1010,7 +1010,7 @@ describe("Image Release live admission shell", () => {
       ["merged bit", (pr) => ({ ...pr, merged: false })],
       ["merged timestamp", (pr) => ({ ...pr, merged_at: null })],
       ["empty merged timestamp", (pr) => ({ ...pr, merged_at: "" })],
-      ["title", (pr) => ({ ...pr, title: "chore(main): release 1.2.4" })],
+      ["title", (pr) => ({ ...pr, title: "chore(dev): release 1.2.4" })],
       ["merge SHA", (pr) => ({ ...pr, merge_commit_sha: OTHER })],
       ["base ref", (pr) => ({ ...pr, base: { ...pr.base, ref: "release" } })],
       ["base SHA", (pr) => ({ ...pr, base: { ...pr.base, sha: OTHER } })],
@@ -1128,7 +1128,7 @@ describe("Image Release live admission shell", () => {
         "subject",
         (head) => ({
           ...head,
-          commit: { ...head.commit, message: "chore(main): release 1.2.4" },
+          commit: { ...head.commit, message: "chore(dev): release 1.2.4" },
         }),
       ],
       [
@@ -1233,7 +1233,7 @@ describe("Image Release live admission shell", () => {
   });
 
   it("rejects every protected Release Please run disagreement", () => {
-    const endpoint = `repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${PARENT}&per_page=100`;
+    const endpoint = `repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${PARENT}&per_page=100`;
     const trusted = workflowRun({
       id: RELEASE_RUN_ID,
       workflowId: RELEASE_WORKFLOW_ID,
@@ -1319,7 +1319,7 @@ describe("Image Release live admission shell", () => {
       [
         `repos/oyatie/console/pulls/${RELEASE_PR_NUMBER}`,
         releasePullRequest(),
-        { ...releasePullRequest(), title: "chore(main): release 1.2.4" },
+        { ...releasePullRequest(), title: "chore(dev): release 1.2.4" },
         /release pull request changed during admission/,
       ],
       [
@@ -1329,7 +1329,7 @@ describe("Image Release live admission shell", () => {
         /protected release head changed during admission/,
       ],
       [
-        `repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${PARENT}&per_page=100`,
+        `repos/oyatie/console/actions/workflows/${RELEASE_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${PARENT}&per_page=100`,
         {
           total_count: 1,
           workflow_runs: [
@@ -1371,7 +1371,7 @@ describe("Image Release live admission shell", () => {
   it("fails closed when exact Security is terminally red", () => {
     const routes = baseRoutes();
     routes[
-      `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${CANDIDATE}&per_page=100`
+      `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${CANDIDATE}&per_page=100`
     ] = [
       {
         total_count: 1,
@@ -1404,7 +1404,7 @@ describe("Image Release live admission shell", () => {
       conclusion: null,
     };
     routes[
-      `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${CANDIDATE}&per_page=100`
+      `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${CANDIDATE}&per_page=100`
     ] = [
       { total_count: 1, workflow_runs: [attemptOne] },
       { total_count: 1, workflow_runs: [attemptTwo] },
@@ -1428,7 +1428,7 @@ describe("Image Release live admission shell", () => {
   it("polls bounded pending Security evidence and then admits it", () => {
     const routes = baseRoutes();
     routes[
-      `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${CANDIDATE}&per_page=100`
+      `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${CANDIDATE}&per_page=100`
     ] = [
       {
         total_count: 1,
@@ -1484,7 +1484,7 @@ describe("Image Release live admission shell", () => {
       ],
     };
     routes[
-      `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${CANDIDATE}&per_page=100`
+      `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${CANDIDATE}&per_page=100`
     ] = [
       ...Array.from({ length: 12 }, () => pendingSecurity),
       successfulSecurity,
@@ -1541,7 +1541,7 @@ describe("Image Release live admission shell", () => {
         TRIGGER_WORKFLOW_HEAD_BRANCH: "",
         TRIGGER_WORKFLOW_HEAD_SHA: "",
         DISPATCH_CANDIDATE_SHA: CANDIDATE,
-        DISPATCH_REF: "refs/heads/main",
+        DISPATCH_REF: "refs/heads/dev",
       },
     });
     assert.equal(result.status, 0, result.stderr);
@@ -1634,7 +1634,7 @@ describe("Image Release live admission shell", () => {
       path: ".github/workflows/security.yml",
     });
     duplicateSecurity[
-      `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${CANDIDATE}&per_page=100`
+      `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${CANDIDATE}&per_page=100`
     ] = [{ total_count: 2, workflow_runs: [securityRun, { ...securityRun, id: 2202 }] }];
     assert.notEqual(runAdmission({ routes: duplicateSecurity }).status, 0);
   });
@@ -1663,7 +1663,7 @@ describe("Image Release live admission shell", () => {
       ["conclusion control", (run) => ({ ...run, conclusion: "success\u0000" })],
     ];
     for (const lane of lanes) {
-      const endpoint = `repos/oyatie/console/actions/workflows/${lane.workflowId}/runs?event=push&branch=main&head_sha=${CANDIDATE}&per_page=100`;
+      const endpoint = `repos/oyatie/console/actions/workflows/${lane.workflowId}/runs?event=push&branch=dev&head_sha=${CANDIDATE}&per_page=100`;
       for (const [label, mutate] of mutations) {
         const routes = baseRoutes();
         const trusted = workflowRun(lane);
@@ -1735,7 +1735,7 @@ describe("Image Release live admission shell", () => {
 
   it("rejects a shell-normalizable workflow run count before extraction", () => {
     const routes = baseRoutes();
-    const endpoint = `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=main&head_sha=${CANDIDATE}&per_page=100`;
+    const endpoint = `repos/oyatie/console/actions/workflows/${SECURITY_WORKFLOW_ID}/runs?event=push&branch=dev&head_sha=${CANDIDATE}&per_page=100`;
     routes[endpoint] = [
       {
         total_count: "1\u0000",

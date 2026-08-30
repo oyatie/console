@@ -51,7 +51,7 @@ class PromotionAuthorityTest(unittest.TestCase):
             env=git_fixture_environment(),
         )
         subprocess.run(
-            ["git", "init", "-b", "main", str(self.repo)],
+            ["git", "init", "-b", "dev", str(self.repo)],
             check=True,
             capture_output=True,
             env=git_fixture_environment(),
@@ -95,7 +95,7 @@ class PromotionAuthorityTest(unittest.TestCase):
         self.git("add", AUTH_PATH)
         self.git("commit", "-m", "authorize once")
         self.authorized_sha = self.git("rev-parse", "HEAD")
-        self.git("push", "-u", "origin", "main")
+        self.git("push", "-u", "origin", "dev")
 
     def tearDown(self) -> None:
         self.temp.cleanup()
@@ -218,12 +218,12 @@ class PromotionAuthorityTest(unittest.TestCase):
             "--expected-sha",
             sha or self.authorized_sha,
             "--expected-ref",
-            "refs/heads/main",
+            "refs/heads/dev",
             "--require-local-branch",
         )
 
     def force_remote(self, sha: str) -> None:
-        self.git("push", "--force", "origin", f"{sha}:main")
+        self.git("push", "--force", "origin", f"{sha}:dev")
 
     def commit_bad_evidence(self, mutate) -> str:
         self.git("reset", "--hard", self.candidate_sha)
@@ -388,7 +388,7 @@ class PromotionAuthorityTest(unittest.TestCase):
         self.git("reset", "--hard", self.evidence_sha)
         self.git("checkout", "-b", "side")
         self.git("commit", "--allow-empty", "-m", "side")
-        self.git("checkout", "main")
+        self.git("checkout", "dev")
         self.git("reset", "--hard", self.evidence_sha)
         self.write_authorization(True)
         self.git("add", AUTH_PATH)
@@ -430,14 +430,14 @@ class PromotionAuthorityTest(unittest.TestCase):
         self.force_remote(self.evidence_sha)
         result = self.run_gate("pre-push", "--expected-sha", self.authorized_sha)
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("origin/main advanced after authorization", result.stderr)
+        self.assertIn("origin/dev advanced after authorization", result.stderr)
 
     def test_promotion_commit_must_have_exactly_one_parent(self) -> None:
         promotion_sha = self.prepare_promotion_commit()
         self.git("branch", "promotion-side", self.authorized_sha)
         self.git("checkout", "promotion-side")
         self.git("commit", "--allow-empty", "-m", "promotion side")
-        self.git("checkout", "main")
+        self.git("checkout", "dev")
         self.git("reset", "--hard", promotion_sha)
         self.git("merge", "--no-ff", "promotion-side", "-m", "merge promotion")
         result = self.run_gate("pre-push", "--expected-sha", self.authorized_sha)

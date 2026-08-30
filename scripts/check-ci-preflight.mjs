@@ -1200,7 +1200,7 @@ const requiredJobActionContracts = Object.freeze({
   "backend": [
     actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { id: "checkout" }),
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.97.1","components":"rustfmt, clippy"}, { if: backendIndependentCondition, id: "rust" }),
-    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo-${{ matrix.os }}","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/main' && matrix.leg == 'cargo' }}"}, { if: backendIndependentCondition, id: "rust-cache" }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo-${{ matrix.os }}","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/dev' && matrix.leg == 'cargo' }}"}, { if: backendIndependentCondition, id: "rust-cache" }),
   ],
   "migration-expand-contract": [
     actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { id: "checkout" }),
@@ -1283,7 +1283,7 @@ const requiredJobMetadataSha256 = Object.freeze({
   "postgres-domain-reachability": "a550cd1d598d606236777ed184ee873c60a3a0e8844401c3ac14a5dc4bf8f074",
 });
 
-const workflowExecutionEnvelopeSha256 = "1619dddbbbce5a1985e65244880e40c26015efd2bdc43a8fcb014d36fe2c3ef7";
+const workflowExecutionEnvelopeSha256 = "ca24e7bdbd6b02f79d1dea2fc2787835156b669a2ae4643d60290207f72864cf";
 const freeRunnerDiskActionSha256 = "1c1a2307321f732c3dcd67e3af2f33a771ce5b81ea814445390b65946b52fc8f";
 const exactCiJobIds = Object.freeze([
   "api-contract",

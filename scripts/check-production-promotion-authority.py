@@ -17,7 +17,7 @@ ENGINEERING_GATE_PATH = "docs/release/PR-473-EXPAND-CONTRACT.gate.json"
 AUTHORIZATION_PATH = "docs/release/PR-473-PRODUCTION-PROMOTION.authorization.json"
 CANONICAL_EVIDENCE_PATH = "docs/release/PR-473-PRODUCTION-CARDINALITY.evidence.json"
 PROD_OVERLAY_PATH = "deploy/apps/console/overlays/prod/kustomization.yaml"
-MAIN_REF = "refs/heads/main"
+MAIN_REF = "refs/heads/dev"
 ROLLBACK_FLOOR = "f6ff236b9770c79301a3d07da6afb56be1e27bbf"
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -533,9 +533,9 @@ def verify_authorized_commit(expected_sha: str) -> dict[str, object]:
     return authorization
 
 
-def fetch_origin_main() -> str:
-    git("fetch", "--no-tags", "origin", "+refs/heads/main:refs/remotes/origin/main")
-    return require_sha(git("rev-parse", "refs/remotes/origin/main"), "origin/main SHA")
+def fetch_origin_dev() -> str:
+    git("fetch", "--no-tags", "origin", "+refs/heads/dev:refs/remotes/origin/dev")
+    return require_sha(git("rev-parse", "refs/remotes/origin/dev"), "origin/dev SHA")
 
 
 def require_clean_tracked_worktree() -> None:
@@ -549,10 +549,10 @@ def verify_initial(expected_sha: str, expected_ref: str, require_local_branch: b
     if git("rev-parse", "HEAD") != expected_sha:
         raise AuthorityError("checked-out HEAD does not equal the authorized promotion SHA")
     require_clean_tracked_worktree()
-    if require_local_branch and git("symbolic-ref", "--quiet", "--short", "HEAD") != "main":
-        raise AuthorityError("manual production promotion must run from local branch main")
-    if fetch_origin_main() != expected_sha:
-        raise AuthorityError("origin/main does not equal the authorized promotion SHA")
+    if require_local_branch and git("symbolic-ref", "--quiet", "--short", "HEAD") != "dev":
+        raise AuthorityError("manual production promotion must run from local branch dev")
+    if fetch_origin_dev() != expected_sha:
+        raise AuthorityError("origin/dev does not equal the authorized promotion SHA")
     authorization = verify_authorized_commit(expected_sha)
     if authorization["desired_state_authority_cutover"] is not True:
         raise AuthorityError(
@@ -569,8 +569,8 @@ def reset_authorization(expected_sha: str) -> None:
 
 
 def verify_pre_push(expected_sha: str) -> None:
-    if fetch_origin_main() != expected_sha:
-        raise AuthorityError("origin/main advanced after authorization; refusing production push")
+    if fetch_origin_dev() != expected_sha:
+        raise AuthorityError("origin/dev advanced after authorization; refusing production push")
     require_clean_tracked_worktree()
     new_sha = require_sha(git("rev-parse", "HEAD"), "promotion commit SHA")
     parent = commit_parent(new_sha, "promotion commit")
@@ -592,8 +592,8 @@ def verify_pre_push(expected_sha: str) -> None:
 
 
 def verify_remote(expected_sha: str) -> None:
-    if fetch_origin_main() != expected_sha:
-        raise AuthorityError("origin/main is not the exact expected production revision")
+    if fetch_origin_dev() != expected_sha:
+        raise AuthorityError("origin/dev is not the exact expected production revision")
 
 
 def reviewer_context(expected_sha: str) -> dict[str, object]:

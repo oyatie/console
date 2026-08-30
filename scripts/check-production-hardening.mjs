@@ -1560,7 +1560,7 @@ export function evaluateWorkflowHardeningChecks(readText) {
     result,
     /workflows:\s*\["CI"\]/.test(workflowRunTrigger) &&
       /types:\s*\[completed\]/.test(workflowRunTrigger) &&
-      /branches:\s*\[main\]/.test(workflowRunTrigger) &&
+      /branches:\s*\[dev\]/.test(workflowRunTrigger) &&
       !/^  push:/m.test(activeImageRelease) &&
       ciAdmissionJob !== "" &&
       /TRIGGER_RUN_ID:\s*\$\{\{\s*github\.event\.workflow_run\.id\s*\}\}/.test(ciAdmissionJob) &&
@@ -1577,10 +1577,10 @@ export function evaluateWorkflowHardeningChecks(readText) {
       /git\/ref\/tags\/\$\{release_tag\}/.test(ciAdmissionJob) &&
       /Required \/ CI/.test(ciAdmissionJob) &&
       /Required \/ Security/.test(ciAdmissionJob) &&
-      /actions\/workflows\/\$\{workflow_id\}\/runs\?event=push&branch=main&head_sha=\$\{candidate_sha\}&per_page=100/.test(ciAdmissionJob) &&
-      /repos\/\$\{REPO\}\/git\/ref\/heads\/main/.test(ciAdmissionJob) &&
+      /actions\/workflows\/\$\{workflow_id\}\/runs\?event=push&branch=dev&head_sha=\$\{candidate_sha\}&per_page=100/.test(ciAdmissionJob) &&
+      /repos\/\$\{REPO\}\/git\/ref\/heads\/dev/.test(ciAdmissionJob) &&
       /release manifest version is unchanged/.test(ciAdmissionJob) &&
-      /candidate stopped being current main before publication authorization/.test(ciAdmissionJob) &&
+      /candidate stopped being current dev before publication authorization/.test(ciAdmissionJob) &&
       /RUN_ATTEMPT" == "1/.test(ciAdmissionJob) &&
       /timeout 20s gh api/.test(ciAdmissionJob) &&
       /ADMISSION_MAX_POLLS:\s*"48"/.test(ciAdmissionJob) &&
@@ -1615,11 +1615,11 @@ export function evaluateWorkflowHardeningChecks(readText) {
       extractYamlScalar(candidateShaInput, "required") === "true" &&
       extractYamlScalar(candidateShaInput, "type") === "string" &&
       /DISPATCH_CANDIDATE_SHA:\s*\$\{\{\s*inputs\.candidate_sha\s*\}\}/.test(ciAdmissionJob) &&
-      /\[\[ "\$DISPATCH_REF" == "refs\/heads\/main" \]\]/.test(ciAdmissionJob) &&
+      /\[\[ "\$DISPATCH_REF" == "refs\/heads\/dev" \]\]/.test(ciAdmissionJob) &&
       /\[\[ "\$RUN_ATTEMPT" == "1" \]\]/.test(ciAdmissionJob) &&
       /\[\[ "\$candidate_sha" =~ \^\[0-9a-f\]\{40\}\$ \]\]/.test(ciAdmissionJob),
-    "image-release recovery: required exact-SHA first-attempt main dispatch",
-    "image-release workflow_dispatch recovery must require a lowercase 40-character candidate_sha and reject non-main or rerun attempts",
+    "image-release recovery: required exact-SHA first-attempt dev dispatch",
+    "image-release workflow_dispatch recovery must require a lowercase 40-character candidate_sha and reject non-dev or rerun attempts",
   );
   requirement(
     result,
@@ -1650,14 +1650,14 @@ export function evaluateWorkflowHardeningChecks(readText) {
     /github\.event_name\s*==\s*["']workflow_dispatch["']/.test(
       bumpDigestJobHeader,
     ) &&
-      /github\.ref\s*==\s*["']refs\/heads\/main["']/.test(
+      /github\.ref\s*==\s*["']refs\/heads\/dev["']/.test(
         bumpDigestJobHeader,
       ) &&
       /inputs\.promote_production\s*==\s*true/.test(bumpDigestJobHeader) &&
       /github\.run_attempt\s*==\s*1/.test(bumpDigestJobHeader) &&
       !/github\.event_name\s*==\s*["']push["']/.test(bumpDigestJobHeader),
-    "image-release production promotion: manual dispatch on main with explicit true input",
-    "image-release bump-digests must run only for an explicit workflow_dispatch on refs/heads/main with inputs.promote_production == true; push events must never mutate production",
+    "image-release production promotion: manual dispatch on dev with explicit true input",
+    "image-release bump-digests must run only for an explicit workflow_dispatch on refs/heads/dev with inputs.promote_production == true; push events must never mutate production",
   );
   requirement(
     result,
@@ -1694,9 +1694,9 @@ export function evaluateWorkflowHardeningChecks(readText) {
     "python3 scripts/check-production-promotion-authority.py pre-push",
   );
   const pushMatches =
-    bumpDigestJob.match(/\bgit\s+push\s+origin\s+["']?HEAD:main["']?/g) ?? [];
+    bumpDigestJob.match(/\bgit\s+push\s+origin\s+["']?HEAD:dev["']?/g) ?? [];
   const pushIndex = bumpDigestJob.search(
-    /\bgit\s+push\s+origin\s+["']?HEAD:main["']?/,
+    /\bgit\s+push\s+origin\s+["']?HEAD:dev["']?/,
   );
   requirement(
     result,
@@ -1714,8 +1714,8 @@ export function evaluateWorkflowHardeningChecks(readText) {
       prePushAuthorityIndex > commitIndex &&
       pushIndex > prePushAuthorityIndex &&
       pushMatches.length === 1,
-    "image-release production promotion: immutable-main recheck precedes one push",
-    "image-release bump-digests must re-check origin/main after commit and immediately precede exactly one normal HEAD:main push",
+    "image-release production promotion: immutable-dev recheck precedes one push",
+    "image-release bump-digests must re-check origin/dev after commit and immediately precede exactly one normal HEAD:dev push",
   );
   requirement(
     result,
@@ -1723,7 +1723,7 @@ export function evaluateWorkflowHardeningChecks(readText) {
       bumpDigestJob,
     ),
     "image-release production promotion: no rebase or retry path",
-    "image-release bump-digests must not pull, rebase, retry, or loop after a racing main push",
+    "image-release bump-digests must not pull, rebase, retry, or loop after a racing dev push",
   );
   requirement(
     result,
@@ -1747,15 +1747,15 @@ export function evaluateWorkflowHardeningChecks(readText) {
       /team_id/,
       /commit_parent/,
       /diff-tree/,
-      /git\(["']fetch["'],\s*["']--no-tags["'],\s*["']origin["'],\s*["']\+refs\/heads\/main:refs\/remotes\/origin\/main["']\)/,
+      /git\(["']fetch["'],\s*["']--no-tags["'],\s*["']origin["'],\s*["']\+refs\/heads\/dev:refs\/remotes\/origin\/dev["']\)/,
       /git\(["']rev-parse["'],\s*["']HEAD["']\)/,
       /["']git["'],\s*["']show["'],\s*f["']\{expected_sha\}:\{path\}["']/,
       /git\(["']status["'],\s*["']--porcelain["'],\s*["']--untracked-files=no["']\)/,
       /keys are not exact/,
-      /origin\/main advanced after authorization/,
+      /origin\/dev advanced after authorization/,
     ].every((pattern) => pattern.test(promotionAuthority)),
     "production promotion verifier: immutable typed authorization state machine",
-    "production promotion authority verifier must fail closed on immutable git-show inputs, exact schema-v2 types, evidence hash, false-to-true authorization, reset commit shape, and origin/main races",
+    "production promotion authority verifier must fail closed on immutable git-show inputs, exact schema-v2 types, evidence hash, false-to-true authorization, reset commit shape, and origin/dev races",
   );
   requirement(
     result,
@@ -2228,8 +2228,8 @@ export function evaluateDeployAutomationChecks(readText) {
         prePushAuthorityIndex > commitIndex &&
         pushIndex > prePushAuthorityIndex &&
         pushMatches.length === 1,
-      "deploy automation immutable-main recheck precedes push",
-      `${path} must re-check origin/main after commit and before its production push`,
+      "deploy automation immutable-dev recheck precedes push",
+      `${path} must re-check origin/dev after commit and before its production push`,
     );
     requirement(
       result,
@@ -2249,7 +2249,7 @@ export function evaluateDeployAutomationChecks(readText) {
         executableText,
       ),
       "deploy automation has no rebase or retry path",
-      `${path} must not pull, rebase, retry, or loop after a racing main push`,
+      `${path} must not pull, rebase, retry, or loop after a racing dev push`,
     );
   }
 
@@ -2385,7 +2385,7 @@ export function evaluateGlobalHardeningChecks(readText) {
     "mode: warn",
     "ghcr.io/jason931225/console-app",
     "https://token.actions.githubusercontent.com",
-    "image-release\\.yml@refs/(heads/main|tags/v[0-9].*)",
+    "image-release\\.yml@refs/(heads/dev|tags/v[0-9].*)",
     "https://fulcio.sigstore.dev",
     "https://rekor.sigstore.dev",
   ]) {

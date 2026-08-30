@@ -10,19 +10,19 @@ name: Nightly
 # gate, and it is the only CI job that currently qualifies. `company-conformance`
 # (generic-engine regression) and `generated-face-authority` (drift authority)
 # were considered and deliberately KEPT in ci.yml: both guard correctness, and a
-# regression that merges and sits on main is exactly the failure this repo has
+# regression that merges and sits on dev is exactly the failure this repo has
 # spent its history engineering against.
 #
-# Detection is deliberately NOT 24 hours. This runs on every push to main, so a
+# Detection is deliberately NOT 24 hours. This runs on every push to dev, so a
 # break surfaces ~15 minutes after the merge that caused it, against a candidate
 # set of one. The schedule is the backstop that catches decay with no push --
 # expired fixtures, upstream image drift, a compose base that moved.
 #
 # The trade is explicit: this proof no longer blocks a PR. It moved from
-# "cannot merge" to "main goes red immediately, with one obvious culprit".
+# "cannot merge" to "dev goes red immediately, with one obvious culprit".
 on:
   push:
-    branches: [main]
+    branches: [dev]
   schedule:
     - cron: "41 5 * * *" # 05:41 UTC daily — off-peak, and off the :00/:30 stampede
   workflow_dispatch:

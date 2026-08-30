@@ -62,15 +62,15 @@ export function evaluateNightlyWorkflow(text) {
   if (!triggers || typeof triggers !== "object") {
     failures.push("nightly.yml must declare triggers");
   } else {
-    // The schedule is the decay backstop; push-on-main is what keeps detection
+    // The schedule is the decay backstop; push-on-dev is what keeps detection
     // at minutes rather than up to 24 hours. Losing either silently changes the
     // risk this move was justified on.
     if (!Array.isArray(triggers.schedule) || triggers.schedule.length === 0) {
       failures.push("Nightly must keep its schedule trigger");
     }
     const branches = triggers.push?.branches;
-    if (!Array.isArray(branches) || !branches.includes("main")) {
-      failures.push("Nightly must run on push to main so a break is caught within minutes");
+    if (!Array.isArray(branches) || !branches.includes("dev")) {
+      failures.push("Nightly must run on push to dev so a break is caught within minutes");
     }
   }
 

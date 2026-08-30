@@ -9,7 +9,7 @@ on:
   # deadlock waiting for a check that never starts.
   merge_group:
   push:
-    branches: [main]
+    branches: [dev]
   pull_request:
   workflow_dispatch:
   schedule:
@@ -20,7 +20,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  # PR-only cancellation; main pushes run to completion (release evidence).
+  # PR-only cancellation; dev pushes run to completion (release evidence).
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
