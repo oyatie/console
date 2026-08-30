@@ -1,5 +1,6 @@
 tags:
   - system
+security: []
 operationId: androidAssetLinks
 summary: Android Digital Asset Links (native passkeys)
 description: Public, unauthenticated Digital Asset Links document Android fetches to authorize the native app's passkeys

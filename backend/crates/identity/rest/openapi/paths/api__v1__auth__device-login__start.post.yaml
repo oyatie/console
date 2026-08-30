@@ -1,5 +1,6 @@
 tags:
   - auth
+security: []
 operationId: startDeviceLogin
 summary: Start desktop QR login handoff
 description: Creates a short-lived desktop login handoff. The desktop keeps the `poll_token` and renders `approve_url`

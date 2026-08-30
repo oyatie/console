@@ -393,6 +393,7 @@ def write_gen_registry() -> None:
         "pub const PREAMBLE: DocumentPreamble = DocumentPreamble {",
         f"    openapi: {json.dumps(ver)},",
         '    info: include_str!("../../../openapi/shared/info.yaml"),',
+        '    security: include_str!("../../../openapi/shared/security.yaml"),',
         "};",
         "",
         "pub const SHARED: Fragment = Fragment {",
@@ -495,6 +496,10 @@ def main() -> int:
         raise SystemExit("expected openapi: on line 1")
     openapi_ver = lines[0].split(":", 1)[1].strip()
     info_body, _ = block_after(lines, "info:", 0)
+    try:
+        security_req_body, _ = block_after(lines, "security:", 0)
+    except KeyError:
+        security_req_body = ["- bearerAuth: []"]
 
     paths_body, _ = block_after(lines, "paths:", 0)
     # Split paths at indent 2
@@ -602,6 +607,7 @@ def main() -> int:
     (SHARED_DIR / "schemas").mkdir()
 
     (SHARED_DIR / "info.yaml").write_text("\n".join(info_body) + "\n")
+    (SHARED_DIR / "security.yaml").write_text("\n".join(security_req_body) + "\n")
     (SHARED_DIR / "openapi.version").write_text(openapi_ver + "\n")
     for name, body in security.items():
         (SHARED_DIR / "securitySchemes" / f"{name}.yaml").write_text(body if body.endswith("\n") else body + "\n")

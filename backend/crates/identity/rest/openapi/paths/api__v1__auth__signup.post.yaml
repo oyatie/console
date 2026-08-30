@@ -1,5 +1,6 @@
 tags:
   - auth
+security: []
 summary: Open self-service signup
 description: Public, unauthenticated open signup. Creates a new lowest-privilege MEMBER account in the default organization
   and emails it a single-use one-time sign-in code; the caller then redeems that code via `POST /api/v1/auth/otp/redeem`

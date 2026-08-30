@@ -1,5 +1,6 @@
 tags:
   - auth
+security: []
 operationId: approveDeviceLogin
 summary: Approve a desktop QR login with an existing phone passkey
 description: Phone-side approval for an existing passkey user. The phone submits the approve token plus a usernameless

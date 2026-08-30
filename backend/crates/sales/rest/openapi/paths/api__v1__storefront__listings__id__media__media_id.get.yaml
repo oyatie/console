@@ -1,5 +1,6 @@
 tags:
   - storefront
+security: []
 operationId: storefrontGetListingMedia
 summary: Serve one public sales-listing photo (#6)
 description: Public, unauthenticated serve of one listing photo's bytes, streamed from the object store. The media must

@@ -1,5 +1,6 @@
 tags:
   - auth
+security: []
 summary: Rotate refresh token
 description: Rotates an opaque refresh token; reuse of an old token revokes the whole family and returns 401.
 requestBody:

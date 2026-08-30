@@ -1,5 +1,6 @@
 tags:
   - storefront
+security: []
 operationId: submitInquiry
 summary: Submit a public customer inquiry (#6)
 description: Public, unauthenticated lead intake. Accepts the customer's contact details and topic and acknowledges

@@ -1,5 +1,6 @@
 tags:
   - storefront
+security: []
 operationId: storefrontListListings
 summary: List published sales listings for the public storefront (#6)
 description: Public, unauthenticated catalog read. Returns only published/reserved listings (the storefront-visible

@@ -1,5 +1,6 @@
 tags:
   - auth
+security: []
 summary: Finish passkey login
 description: Verifies the passkey assertion and issues an ES256 access JWT plus an opaque rotating refresh token.
 requestBody:

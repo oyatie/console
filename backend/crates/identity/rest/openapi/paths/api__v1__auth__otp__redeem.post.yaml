@@ -1,5 +1,6 @@
 tags:
   - auth
+security: []
 summary: First sign-in by redeeming a one-time code
 description: First sign-in for a pre-provisioned user. Redeems a single-use, expiring one-time code (admin-issued, or
   the cold-start secret) and mints a normal session token pair. The code is consumed atomically on success only; a wrong

@@ -1,5 +1,6 @@
 tags:
   - system
+security: []
 operationId: appleAppSiteAssociation
 summary: Apple App Site Association (native passkeys)
 description: Public, unauthenticated association document Apple fetches over the RP origin to authorize the native iOS

@@ -1,5 +1,6 @@
 tags:
   - system
+security: []
 operationId: readyz
 summary: Readiness check
 responses:

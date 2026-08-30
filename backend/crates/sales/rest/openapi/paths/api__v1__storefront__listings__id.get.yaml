@@ -1,5 +1,6 @@
 tags:
   - storefront
+security: []
 operationId: storefrontGetListing
 summary: Read one public sales listing (#6)
 description: Public, unauthenticated read of a single storefront-visible listing. Returns 404 if the listing does not

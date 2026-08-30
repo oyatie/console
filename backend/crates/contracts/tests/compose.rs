@@ -1103,6 +1103,7 @@ fn prose_that_mentions_a_ref_key_is_not_a_ref() -> Result<(), Box<dyn std::error
 const PREAMBLE: DocumentPreamble = DocumentPreamble {
     openapi: "3.1.0",
     info: "title: Console API\nversion: 0.1.0\n",
+    security: "",
 };
 
 #[test]
@@ -1111,6 +1112,23 @@ fn compose_document_emits_openapi_info_preamble() -> Result<(), Box<dyn std::err
     assert!(
         out.starts_with("openapi: 3.1.0\ninfo:\n  title: Console API\n  version: 0.1.0\npaths:\n"),
         "preamble must lead the document:\n{out}"
+    );
+    Ok(())
+}
+
+#[test]
+fn compose_document_emits_top_level_bearer_security() -> Result<(), Box<dyn std::error::Error>> {
+    const WITH_SECURITY: DocumentPreamble = DocumentPreamble {
+        openapi: "3.1.0",
+        info: "title: Console API\nversion: 0.1.0\n",
+        security: "- bearerAuth: []\n",
+    };
+    let out = compose_document(&[&TODOS], &WITH_SECURITY)?;
+    assert!(
+        out.starts_with(
+            "openapi: 3.1.0\ninfo:\n  title: Console API\n  version: 0.1.0\nsecurity:\n- bearerAuth: []\npaths:\n"
+        ),
+        "document-level bearer security must follow info:\n{out}"
     );
     Ok(())
 }

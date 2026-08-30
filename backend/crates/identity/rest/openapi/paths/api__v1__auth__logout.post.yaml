@@ -1,5 +1,6 @@
 tags:
   - auth
+security: []
 summary: Logout and revoke refresh-token family
 requestBody:
   required: true

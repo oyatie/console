@@ -1,5 +1,6 @@
 tags:
   - auth
+security: []
 operationId: pollDeviceLogin
 summary: Poll a desktop QR login handoff
 description: Desktop-only polling endpoint. Pending/expired responses carry no tokens. Once a phone has approved the

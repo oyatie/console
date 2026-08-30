@@ -109,14 +109,18 @@ pub struct Fragment {
     pub external_schemas: &'static [&'static str],
 }
 
-/// Document preamble: the `openapi:` version and `info:` block. Owned by the
-/// generator's shared fragment, not by any REST face.
+/// Document preamble: the `openapi:` version, `info:` block, and document-level
+/// `security:` requirement. Owned by the generator's shared fragment, not by
+/// any REST face.
 #[derive(Debug, Clone, Copy)]
 pub struct DocumentPreamble {
     /// Value of the top-level `openapi` field, e.g. `3.1.0`.
     pub openapi: &'static str,
     /// YAML body beneath `info:` (title, version, …) at any indentation.
     pub info: &'static str,
+    /// YAML sequence body beneath document-level `security:`. Empty omits the
+    /// key so fragment-only tests stay `info` then `paths`.
+    pub security: &'static str,
 }
 
 /// One path and every operation served on it. A path is owned by exactly one
@@ -474,6 +478,10 @@ fn compose_parts(
         out.push('\n');
         out.push_str("info:\n");
         out.push_str(&reindent(preamble.info, 2));
+        if !preamble.security.trim().is_empty() {
+            out.push_str("security:\n");
+            out.push_str(&reindent(preamble.security, 0));
+        }
     }
 
     // Paths stay BTree-keyed for collision detection, but emit order is

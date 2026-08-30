@@ -1,5 +1,6 @@
 tags:
   - support
+security: []
 operationId: submitSupportIntake
 summary: Submit a support request from the unauthenticated customer channel
 description: 'Unauthenticated, rate-limited customer intake. Generic validation errors are returned; the customer contact

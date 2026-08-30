@@ -6,6 +6,7 @@ use console_contracts::{DocumentPreamble, Fragment, NamedYaml, Operation, PathIt
 pub const PREAMBLE: DocumentPreamble = DocumentPreamble {
     openapi: "3.1.0",
     info: include_str!("../../../openapi/shared/info.yaml"),
+    security: include_str!("../../../openapi/shared/security.yaml"),
 };
 
 pub const SHARED: Fragment = Fragment {
