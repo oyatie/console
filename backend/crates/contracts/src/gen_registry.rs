@@ -7052,6 +7052,16 @@ const ORGCHANGE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../orgchange/rest/openapi/schemas/EmployeeEmploymentDetail.yaml"),
     },
     NamedYaml {
+        name: "EmployeeExitCaseResponse",
+        body: include_str!("../../orgchange/rest/openapi/schemas/EmployeeExitCaseResponse.yaml"),
+    },
+    NamedYaml {
+        name: "EmployeeExitSettlementPackageResponse",
+        body: include_str!(
+            "../../orgchange/rest/openapi/schemas/EmployeeExitSettlementPackageResponse.yaml"
+        ),
+    },
+    NamedYaml {
         name: "EmployeeHomeBranch",
         body: include_str!("../../orgchange/rest/openapi/schemas/EmployeeHomeBranch.yaml"),
     },
@@ -7098,6 +7108,10 @@ const ORGCHANGE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "EmployeePage",
         body: include_str!("../../orgchange/rest/openapi/schemas/EmployeePage.yaml"),
+    },
+    NamedYaml {
+        name: "ExitCaseNextAction",
+        body: include_str!("../../orgchange/rest/openapi/schemas/ExitCaseNextAction.yaml"),
     },
     NamedYaml {
         name: "HrAnnualLeaveReadinessSummary",

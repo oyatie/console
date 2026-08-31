@@ -1,0 +1,12 @@
+type: object
+required:
+- key
+- label
+- href
+properties:
+  key:
+    type: string
+  label:
+    type: string
+  href:
+    type: string

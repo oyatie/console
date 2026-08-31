@@ -1,0 +1,61 @@
+type: object
+required:
+- id
+- employee_id
+- employee_name
+- company
+- status
+- effective_exit_date
+- site_manager_note
+- reported_by
+- reported_at
+- next_actions
+properties:
+  id:
+    $ref: '#/components/schemas/Uuid'
+  employee_id:
+    $ref: '#/components/schemas/Uuid'
+  employee_name:
+    type: string
+  employee_number:
+    type: string
+  company:
+    type: string
+  org_unit:
+    type: string
+  worksite_name:
+    type: string
+  branch_id:
+    $ref: '#/components/schemas/Uuid'
+  branch_name:
+    type: string
+  absence_alert_id:
+    $ref: '#/components/schemas/Uuid'
+  status:
+    type: string
+  effective_exit_date:
+    type: string
+  site_manager_note:
+    type: string
+  reported_by:
+    $ref: '#/components/schemas/Uuid'
+  reported_at:
+    $ref: '#/components/schemas/Timestamp'
+  hr_confirmed_by:
+    $ref: '#/components/schemas/Uuid'
+  hr_confirmed_at:
+    $ref: '#/components/schemas/Timestamp'
+  hq_confirmed_by:
+    $ref: '#/components/schemas/Uuid'
+  hq_confirmed_at:
+    $ref: '#/components/schemas/Timestamp'
+  approval_submitted_by:
+    $ref: '#/components/schemas/Uuid'
+  approval_submitted_at:
+    $ref: '#/components/schemas/Timestamp'
+  settlement_package:
+    $ref: '#/components/schemas/EmployeeExitSettlementPackageResponse'
+  next_actions:
+    type: array
+    items:
+      $ref: '#/components/schemas/ExitCaseNextAction'

@@ -31,8 +31,7 @@ responses:
     content:
       application/json:
         schema:
-          type: object
-          additionalProperties: true
+          $ref: '#/components/schemas/EmployeeExitCaseResponse'
   '401':
     $ref: '#/components/responses/Unauthorized'
   '403':

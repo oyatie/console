@@ -394,6 +394,14 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/EmployeeEmploymentDetail.yaml"),
     },
     NamedYaml {
+        name: "EmployeeExitCaseResponse",
+        body: include_str!("../openapi/schemas/EmployeeExitCaseResponse.yaml"),
+    },
+    NamedYaml {
+        name: "EmployeeExitSettlementPackageResponse",
+        body: include_str!("../openapi/schemas/EmployeeExitSettlementPackageResponse.yaml"),
+    },
+    NamedYaml {
         name: "EmployeeHomeBranch",
         body: include_str!("../openapi/schemas/EmployeeHomeBranch.yaml"),
     },
@@ -436,6 +444,10 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "EmployeePage",
         body: include_str!("../openapi/schemas/EmployeePage.yaml"),
+    },
+    NamedYaml {
+        name: "ExitCaseNextAction",
+        body: include_str!("../openapi/schemas/ExitCaseNextAction.yaml"),
     },
     NamedYaml {
         name: "HrAnnualLeaveReadinessSummary",
