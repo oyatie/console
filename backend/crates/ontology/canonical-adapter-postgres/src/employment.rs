@@ -435,6 +435,10 @@ pub enum EmploymentError {
     UnboundEmployeeForTransfer { employee_id: Uuid },
     #[error("fromOrgUnit/toOrgUnit must be OrgUnit UUIDs, not free-text team labels")]
     OrgUnitRefNotUuid,
+    /// Collection from/to is the same half-open algebra as as_of; an empty or
+    /// inverted window is not a range.
+    #[error("from/to must be a non-empty half-open window (from < to)")]
+    InvertedRange,
 }
 
 impl CanonicalPortError for EmploymentError {
@@ -446,7 +450,8 @@ impl CanonicalPortError for EmploymentError {
             | Self::UnknownOrgUnit(_)
             | Self::UnknownJobPosition(_)
             | Self::UnboundEmployeeForTransfer { .. }
-            | Self::OrgUnitRefNotUuid => KernelError::validation(message),
+            | Self::OrgUnitRefNotUuid
+            | Self::InvertedRange => KernelError::validation(message),
             Self::DigestConflict(_) => KernelError::conflict(message),
             Self::Frozen(error) => error,
             Self::Database(_) | Self::UnreadableReceipt(_, _) => KernelError::internal(message),
@@ -524,6 +529,32 @@ impl PgEmploymentPort {
     pub fn list(&self, org_id: OrgId) -> Result<Vec<EmploymentHead>, EmploymentError> {
         self.runtime
             .block_on(self.read_heads(*org_id.as_uuid(), None))
+    }
+
+    /// Collection range: heads whose `[valid_from, valid_to)` overlaps
+    /// `[from, to)` using the same half-open algebra as [`Self::get_as_of`].
+    /// Absent both bounds is current open heads ([`Self::list`]). A missing
+    /// `from` is unbounded below; a missing `to` is unbounded above.
+    /// `from >= to` is refused. Each Head is reconstructed at
+    /// `greatest(from, valid_from)` when `from` is set, otherwise at the latest
+    /// revision with `valid_from < to`. Foreign tenants and unset RLS yield
+    /// empty, never extra PII.
+    pub fn list_in_range(
+        &self,
+        org_id: OrgId,
+        from: Option<OffsetDateTime>,
+        to: Option<OffsetDateTime>,
+    ) -> Result<Vec<EmploymentHead>, EmploymentError> {
+        if let (Some(start), Some(end)) = (from, to) {
+            if start >= end {
+                return Err(EmploymentError::InvertedRange);
+            }
+        }
+        if from.is_none() && to.is_none() {
+            return self.list(org_id);
+        }
+        self.runtime
+            .block_on(self.read_in_range(*org_id.as_uuid(), from, to))
     }
 
     async fn arm_org<'e, E>(&self, executor: E, org: Uuid) -> Result<(), EmploymentError>
@@ -610,6 +641,51 @@ impl PgEmploymentPort {
         .await?;
         tx.commit().await?;
         Ok(row.map(head_from_row))
+    }
+
+    async fn read_in_range(
+        &self,
+        org: Uuid,
+        from: Option<OffsetDateTime>,
+        to: Option<OffsetDateTime>,
+    ) -> Result<Vec<EmploymentHead>, EmploymentError> {
+        let mut tx = self.pool.begin().await?;
+        self.arm_org(&mut *tx, org).await?;
+        let rows = sqlx::query(
+            "SELECT h.id, h.valid_from AS appointed_on, r.attributes, \
+                    CASE WHEN bind.n = 1 THEN bind.person_id END AS person_id \
+             FROM employment_heads h \
+             JOIN employment_revisions r \
+               ON r.org_id = h.org_id AND r.employment_id = h.id \
+              AND r.valid_from = ( \
+                SELECT MAX(vr.valid_from) FROM employment_revisions vr \
+                WHERE vr.org_id = h.org_id AND vr.employment_id = h.id \
+                  AND ( \
+                    ($2::timestamptz IS NOT NULL \
+                     AND vr.valid_from <= GREATEST($2, h.valid_from)) \
+                    OR ($2::timestamptz IS NULL AND $3::timestamptz IS NOT NULL \
+                        AND vr.valid_from < $3) \
+                  ) \
+              ) \
+             LEFT JOIN LATERAL ( \
+               SELECT COUNT(*)::bigint AS n, (ARRAY_AGG(p.person_id))[1] AS person_id \
+               FROM employment_source_bindings b \
+               LEFT JOIN employee_person_bindings p \
+                 ON p.org_id = b.org_id AND p.employee_id = b.employee_id \
+               WHERE b.org_id = h.org_id AND b.employment_id = h.id \
+             ) bind ON true \
+             WHERE h.org_id = $1 \
+               AND ($2::timestamptz IS NULL OR h.valid_to IS NULL OR $2 < h.valid_to) \
+               AND ($3::timestamptz IS NULL OR h.valid_from < $3) \
+             ORDER BY h.id",
+        )
+        .bind(org)
+        .bind(from)
+        .bind(to)
+        .fetch_all(&mut *tx)
+        .await?;
+        tx.commit().await?;
+        Ok(rows.into_iter().map(head_from_row).collect())
     }
 
     async fn write(&self, command: &EmploymentCommand) -> Result<CommandReceipt, EmploymentError> {
@@ -1292,6 +1368,14 @@ mod port_error_kind_tests {
             EmploymentError::Frozen(KernelError::validation("unparseable date".to_owned()))
                 .into_kernel_error()
                 .kind,
+            ErrorKind::Validation
+        );
+    }
+
+    #[test]
+    fn inverted_range_is_validation() {
+        assert_eq!(
+            EmploymentError::InvertedRange.into_kernel_error().kind,
             ErrorKind::Validation
         );
     }

@@ -38,6 +38,7 @@ use uuid::Uuid;
 
 pub const EMPLOYEES_PATH: &str = "/api/v1/employees";
 pub const EMPLOYEE_DETAIL_PATH_TEMPLATE: &str = "/api/v1/employees/{id}";
+pub const EMPLOYMENTS_PATH: &str = "/api/v1/employments";
 pub const EMPLOYMENT_PATH_TEMPLATE: &str = "/api/v1/employments/{id}";
 pub const EMPLOYEES_IMPORT_PATH: &str = "/api/v1/employees/import";
 pub const EMPLOYEES_IMPORT_PREVIEW_PATH: &str = "/api/v1/employees/import/preview";
@@ -67,6 +68,7 @@ pub const HR_EXIT_CASE_APPROVAL_DRAFT_PATH_TEMPLATE: &str =
 pub const HR_ROUTE_PATHS: &[&str] = &[
     EMPLOYEES_PATH,
     EMPLOYEE_DETAIL_PATH_TEMPLATE,
+    EMPLOYMENTS_PATH,
     EMPLOYMENT_PATH_TEMPLATE,
     EMPLOYEES_IMPORT_PATH,
     EMPLOYEES_IMPORT_PREVIEW_PATH,
@@ -125,6 +127,7 @@ pub fn router(state: HrState) -> Router {
     let router = Router::new()
         .route(EMPLOYEES_PATH, get(list_employees).post(create_employee))
         .route(EMPLOYEE_DETAIL_PATH_TEMPLATE, get(get_employee_detail))
+        .route(EMPLOYMENTS_PATH, get(list_employments))
         .route(EMPLOYMENT_PATH_TEMPLATE, get(get_employment))
         .route(HR_ORG_CHART_PATH, get(get_hr_org_chart))
         .route(HR_LEAVE_BALANCES_PATH, get(list_leave_balances))
@@ -1377,6 +1380,16 @@ struct EmploymentAsOfQuery {
     as_of: Option<OffsetDateTime>,
 }
 
+#[derive(Debug, Deserialize)]
+struct EmploymentRangeQuery {
+    /// Inclusive start of the half-open collection window; absent = unbounded.
+    #[serde(default, with = "time::serde::rfc3339::option")]
+    from: Option<OffsetDateTime>,
+    /// Exclusive end of the half-open collection window; absent = unbounded.
+    #[serde(default, with = "time::serde::rfc3339::option")]
+    to: Option<OffsetDateTime>,
+}
+
 async fn get_employee_detail(
     State(state): State<HrState>,
     Extension(principal): Extension<Principal>,
@@ -1390,6 +1403,39 @@ async fn get_employee_detail(
     })
     .await?;
     Ok(Json(detail))
+}
+
+/// Canonical Employment Head collection. Absent from and to is current open
+/// heads. Present from/to selects heads whose `[valid_from, valid_to)` overlaps
+/// `[from, to)` using the same half-open algebra as GET as_of. Gated on
+/// directory *read* (the Head has no compensation/phone). Inverted from >= to
+/// is 422. EmployeeDetail as_of remains HOLD.
+async fn list_employments(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+    Query(query): Query<EmploymentRangeQuery>,
+) -> Result<Json<Vec<employment::EmploymentHead>>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    record_hr_read("employments");
+    if let (Some(from), Some(to)) = (query.from, query.to) {
+        if from >= to {
+            return Err(HrError::validation(
+                "from/to must be a non-empty half-open window (from < to)",
+            ));
+        }
+    }
+    let org = principal.org_id;
+    let pool = state.pool.clone();
+    let handle = tokio::runtime::Handle::current();
+    let from = query.from;
+    let to = query.to;
+    let heads = tokio::task::spawn_blocking(move || {
+        let port = employment::PgEmploymentPort::new(pool, handle);
+        port.list_in_range(org, from, to)
+    })
+    .await
+    .map_err(|_| HrError::from_kernel(KernelError::internal("employment list join failed")))??;
+    Ok(Json(heads))
 }
 
 /// Canonical Employment Head. Absent `as_of` is the current open head. Present
@@ -8768,6 +8814,11 @@ impl From<employment::EmploymentError> for HrError {
                 Self::from_kernel(KernelError::validation(
                     "fromOrgUnit/toOrgUnit must be OrgUnit UUIDs, not free-text team labels"
                         .to_owned(),
+                ))
+            }
+            employment::EmploymentError::InvertedRange => {
+                Self::from_kernel(KernelError::validation(
+                    "from/to must be a non-empty half-open window (from < to)".to_owned(),
                 ))
             }
             // Port-level refusals other than the directory UUID refs surface

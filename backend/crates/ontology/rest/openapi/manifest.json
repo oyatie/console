@@ -7,6 +7,9 @@
     "/api/objects/{kind}/{id}/graph": [
       "get"
     ],
+    "/api/v1/employments": [
+      "get"
+    ],
     "/api/v1/employments/{id}": [
       "get"
     ],

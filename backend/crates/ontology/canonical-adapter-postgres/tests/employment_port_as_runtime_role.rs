@@ -214,6 +214,18 @@ async fn list(port: &PgEmploymentPort, org: OrgId) -> Result<Vec<EmploymentHead>
         .unwrap()
 }
 
+async fn list_in_range(
+    port: &PgEmploymentPort,
+    org: OrgId,
+    from: Option<OffsetDateTime>,
+    to: Option<OffsetDateTime>,
+) -> Result<Vec<EmploymentHead>, EmploymentError> {
+    let port = port.clone();
+    tokio::task::spawn_blocking(move || port.list_in_range(org, from, to))
+        .await
+        .unwrap()
+}
+
 fn attributes(org_unit: Uuid, position: Uuid, status: &str) -> EmploymentAttributes {
     EmploymentAttributes {
         company: "ACME".to_owned(),
@@ -697,6 +709,112 @@ async fn as_of_inside_a_closed_window_returns_the_slice_and_after_valid_to_is_no
             .unwrap()
             .is_none(),
         "half-open: as_of at valid_to is outside the employment window"
+    );
+}
+
+/// Absent from/to is current open heads. Overlap uses the same half-open
+/// algebra as as_of: a closed window is visible inside `[from, to)` and omitted
+/// at `from = valid_to`. After a promote, the Head at `from` is the revision
+/// effective at that instant (`MAX(valid_from) <= from`).
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn list_in_range_overlaps_half_open_windows_and_reconstructs_as_of(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let (_employee, employment_id) = appointed(&owner_pool, org, actor, &port, "range-1").await;
+
+    let unbounded = list_in_range(&port, org, None, None).await.unwrap();
+    assert_eq!(unbounded, list(&port, org).await.unwrap());
+    assert_eq!(unbounded.len(), 1);
+    assert_eq!(unbounded[0].job_position_id, Some(JOB_STAFF));
+
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: at(86_400),
+                attributes: attributes(ORG_UNIT_SALES, JOB_LEAD, "ACTIVE"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    let before_promote = list_in_range(&port, org, Some(at(1)), Some(at(86_400)))
+        .await
+        .unwrap();
+    assert_eq!(before_promote.len(), 1);
+    assert_eq!(before_promote[0].job_position_id, Some(JOB_STAFF));
+
+    let after_promote = list_in_range(&port, org, Some(at(86_400)), None)
+        .await
+        .unwrap();
+    assert_eq!(after_promote.len(), 1);
+    assert_eq!(after_promote[0].job_position_id, Some(JOB_LEAD));
+
+    let exit_at = at(172_800);
+    execute(
+        &port,
+        command(
+            org,
+            actor,
+            EmploymentQuery::Promote {
+                employment_id,
+                valid_from: exit_at,
+                attributes: attributes(ORG_UNIT_SALES, JOB_LEAD, "EXITED"),
+            },
+        ),
+    )
+    .await
+    .unwrap();
+
+    assert!(
+        list(&port, org).await.unwrap().is_empty(),
+        "current list must omit a closed window or the range contrast is vacuous"
+    );
+    let inside_closed = list_in_range(&port, org, Some(at(1)), Some(exit_at))
+        .await
+        .unwrap();
+    assert_eq!(inside_closed.len(), 1);
+    assert_eq!(inside_closed[0].id, employment_id);
+    let blob = serde_json::to_string(&inside_closed[0]).unwrap();
+    assert!(
+        !blob.contains("phone")
+            && !blob.contains("salary")
+            && !blob.contains("bank_account")
+            && !blob.contains("rrn")
+            && !blob.contains("base_pay"),
+        "range Head must not leak hidden PII; got {blob}"
+    );
+    assert!(
+        list_in_range(&port, org, Some(exit_at), None)
+            .await
+            .unwrap()
+            .is_empty(),
+        "half-open: from at valid_to is outside the employment window"
+    );
+    assert!(
+        list_in_range(&port, org, None, Some(at(0)))
+            .await
+            .unwrap()
+            .is_empty(),
+        "half-open: to at valid_from does not overlap"
+    );
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn inverted_from_to_is_refused(owner_pool: PgPool) {
+    let (org, _actor, port) = fixture(&owner_pool).await;
+    let equal = list_in_range(&port, org, Some(at(1)), Some(at(1))).await;
+    assert!(
+        matches!(equal, Err(EmploymentError::InvertedRange)),
+        "from == to is an empty half-open window; got {equal:?}"
+    );
+    let inverted = list_in_range(&port, org, Some(at(10)), Some(at(1))).await;
+    assert!(
+        matches!(inverted, Err(EmploymentError::InvertedRange)),
+        "from > to is inverted; got {inverted:?}"
     );
 }
 
@@ -1288,6 +1406,13 @@ async fn a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role(owner_
     assert!(
         matches!(foreign_as_of, Ok(None)),
         "as_of must not leak a foreign tenant's historical slice; got {foreign_as_of:?}"
+    );
+    let foreign_range = list_in_range(&port, org, Some(at(0)), Some(at(86_400)))
+        .await
+        .unwrap();
+    assert!(
+        foreign_range.is_empty(),
+        "from/to must not leak a foreign tenant's overlapping slice; got {foreign_range:?}"
     );
 }
 

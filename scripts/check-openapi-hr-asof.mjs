@@ -5,17 +5,18 @@
 // but the published contract exposes `as_of` on only two GET operations, and
 // neither is the Employment Head. One is ontology instance GET (RFC3339
 // Timestamp, bi-temporal). The other is evidence-register GET (int64 sequence)
-// — a different temporal model. SAP-class from/to, corrections, and delta are
-// HOLD. This slice requires the instance GET's as_of query to be published on
-// every GET whose 200 schema is the canonical Employment Head.
+// — a different temporal model. Collection from/to is a separate gate
+// (`check-openapi-hr-from-to.mjs`). This slice requires the instance GET's
+// as_of query to be published on every GET whose 200 schema is the canonical
+// Employment Head.
 //
 // Totality: js-yaml load + own-property walk of every path item / GET, same
 // primitive as scripts/check-openapi-refs.mjs. A walker that visits nothing
 // reports nothing, so GET_FLOOR is the examined-zero lock.
 //
 // Chesterton: copy the instance GET parameter (name as_of, query, optional,
-// Timestamp $ref). Do not copy the evidence-register integer as_of. Do not
-// invent from/to — they are not on the template.
+// Timestamp $ref). Do not copy the evidence-register integer as_of. Collection
+// from/to is asserted by check-openapi-hr-from-to.mjs, not this gate.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -194,7 +195,7 @@ export function evaluateOpenapiHrAsof({ repoRoot }) {
         `Employment Head is published but ${employmentAsOf} of ${EMPLOYMENT_ASOF_FLOOR} `
         + "required GET operations expose Timestamp as_of; history exists on "
         + "employment_revisions and must be a consistent published query. "
-        + "from/to, corrections, and delta remain HOLD.",
+        + "Collection from/to is a separate gate; corrections and delta remain HOLD.",
     });
   }
 
