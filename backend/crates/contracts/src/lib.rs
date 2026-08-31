@@ -124,6 +124,14 @@ pub struct Fragment {
     pub external_schemas: &'static [&'static str],
 }
 
+/// Release version stamped into composed `info.version`. Sourced from this
+/// crate's Cargo package version, not a hand-edited YAML string.
+pub const COMPOSE_API_VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// `info.*` keys compose owns. A face/hand YAML string carrying them can
+/// drift from [`COMPOSE_API_VERSION`].
+const INFO_OWNED_LIFECYCLE_KEYS: &[&str] = &["version"];
+
 /// Document preamble: the `openapi:` version, `info:` block, and document-level
 /// `security:` requirement. Owned by the generator's shared fragment, not by
 /// any REST face.
@@ -131,7 +139,8 @@ pub struct Fragment {
 pub struct DocumentPreamble {
     /// Value of the top-level `openapi` field, e.g. `3.1.0`.
     pub openapi: &'static str,
-    /// YAML body beneath `info:` (title, version, …) at any indentation.
+    /// YAML body beneath `info:` (title, …) at any indentation. Do not include
+    /// `version:` — compose stamps [`COMPOSE_API_VERSION`].
     pub info: &'static str,
     /// YAML sequence body beneath document-level `security:`. Empty omits the
     /// key so fragment-only tests stay `info` then `paths`.
@@ -307,6 +316,9 @@ pub struct ComposeError {
     /// YAML aliases whose first `*name` appears before the defining `&name`.
     /// Empty when path emit order is sound; fail-closed when a topo bug slips.
     pub yaml_alias_before_anchor: Vec<String>,
+    /// `info.*` keys that compose owns. A face/hand YAML string carrying them
+    /// can drift from [`COMPOSE_API_VERSION`].
+    pub hand_lifecycle_fields: Vec<String>,
 }
 
 impl fmt::Display for ComposeError {
@@ -325,6 +337,12 @@ impl fmt::Display for ComposeError {
             write!(
                 f,
                 "\n  YAML alias *{name} appears before its &{name} anchor"
+            )?;
+        }
+        for field in &self.hand_lifecycle_fields {
+            write!(
+                f,
+                "\n  info.{field} is a compose-owned lifecycle field; remove it from the face/hand info YAML and let compose emit COMPOSE_API_VERSION"
             )?;
         }
         Ok(())
@@ -471,6 +489,7 @@ fn compose_parts(
             unresolvable: Vec::new(),
             dangling: Vec::new(),
             yaml_alias_before_anchor: Vec::new(),
+            hand_lifecycle_fields: Vec::new(),
         });
     }
 
@@ -558,16 +577,30 @@ fn compose_parts(
             unresolvable,
             dangling,
             yaml_alias_before_anchor: Vec::new(),
+            hand_lifecycle_fields: Vec::new(),
         });
     }
 
     let mut out = String::new();
     if let Some(preamble) = preamble {
+        let hand_lifecycle_fields = hand_info_lifecycle_fields(preamble.info);
+        if !hand_lifecycle_fields.is_empty() {
+            return Err(ComposeError {
+                duplicates: Vec::new(),
+                unresolvable: Vec::new(),
+                dangling: Vec::new(),
+                yaml_alias_before_anchor: Vec::new(),
+                hand_lifecycle_fields,
+            });
+        }
         out.push_str("openapi: ");
         out.push_str(preamble.openapi.trim());
         out.push('\n');
         out.push_str("info:\n");
         out.push_str(&reindent(preamble.info, 2));
+        out.push_str("  version: ");
+        out.push_str(COMPOSE_API_VERSION);
+        out.push('\n');
         if !preamble.security.trim().is_empty() {
             out.push_str("security:\n");
             out.push_str(&reindent(preamble.security, 0));
@@ -605,6 +638,7 @@ fn compose_parts(
             unresolvable: Vec::new(),
             dangling: Vec::new(),
             yaml_alias_before_anchor: vec![name],
+            hand_lifecycle_fields: Vec::new(),
         });
     }
 
@@ -970,6 +1004,31 @@ fn component_ref(value: &str) -> Option<(&str, &str)> {
             .chars()
             .all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_'));
     (COMPONENT_SECTIONS.contains(&section) && key_is_a_component_key).then_some((section, key))
+}
+
+/// Top-level `info:` keys after compose re-indent (exactly two spaces).
+fn top_level_info_key(line: &str) -> Option<&str> {
+    let rest = line.strip_prefix("  ")?;
+    if rest.starts_with(' ') || rest.starts_with('\t') || rest.is_empty() || rest.starts_with('#') {
+        return None;
+    }
+    let key = rest.split_once(':')?.0.trim();
+    (!key.is_empty()).then_some(key)
+}
+
+fn hand_info_lifecycle_fields(info: &str) -> Vec<String> {
+    let body = reindent(info, 2);
+    let mut found = Vec::new();
+    for line in body.lines() {
+        let Some(key) = top_level_info_key(line) else {
+            continue;
+        };
+        if INFO_OWNED_LIFECYCLE_KEYS.contains(&key) && !found.iter().any(|existing| existing == key)
+        {
+            found.push(key.to_owned());
+        }
+    }
+    found
 }
 
 /// Re-emit `body` at exactly `indent` spaces: strip blank leading/trailing

@@ -10,9 +10,10 @@
 //! `unwrap_used` / `expect_used` / `panic` lints.
 
 use console_contracts::{
-    CODEC_SCHEMA_COUNT, DISPATCH_TARGET_COUNT, DocumentPreamble, DuplicateKind, Fragment,
-    GENERATED_SCHEMA_COUNT, NamedYaml, Operation, PathItem, compose, compose_document,
-    compose_with_owned, generated_schema_yaml, generated_typed_action_rs, schema_refs,
+    CODEC_SCHEMA_COUNT, COMPOSE_API_VERSION, DISPATCH_TARGET_COUNT, DocumentPreamble,
+    DuplicateKind, Fragment, GENERATED_SCHEMA_COUNT, NamedYaml, Operation, PathItem, compose,
+    compose_document, compose_with_owned, generated_schema_yaml, generated_typed_action_rs,
+    schema_refs,
 };
 
 // ---------------------------------------------------------------------------
@@ -1103,15 +1104,18 @@ fn prose_that_mentions_a_ref_key_is_not_a_ref() -> Result<(), Box<dyn std::error
 
 const PREAMBLE: DocumentPreamble = DocumentPreamble {
     openapi: "3.1.0",
-    info: "title: Console API\nversion: 0.1.0\n",
+    info: "title: Console API\n",
     security: "",
 };
 
 #[test]
 fn compose_document_emits_openapi_info_preamble() -> Result<(), Box<dyn std::error::Error>> {
     let out = compose_document(&[&TODOS], &PREAMBLE)?;
+    let expected = format!(
+        "openapi: 3.1.0\ninfo:\n  title: Console API\n  version: {COMPOSE_API_VERSION}\npaths:\n"
+    );
     assert!(
-        out.starts_with("openapi: 3.1.0\ninfo:\n  title: Console API\n  version: 0.1.0\npaths:\n"),
+        out.starts_with(&expected),
         "preamble must lead the document:\n{out}"
     );
     Ok(())
@@ -1121,17 +1125,37 @@ fn compose_document_emits_openapi_info_preamble() -> Result<(), Box<dyn std::err
 fn compose_document_emits_top_level_bearer_security() -> Result<(), Box<dyn std::error::Error>> {
     const WITH_SECURITY: DocumentPreamble = DocumentPreamble {
         openapi: "3.1.0",
-        info: "title: Console API\nversion: 0.1.0\n",
+        info: "title: Console API\n",
         security: "- bearerAuth: []\n",
     };
     let out = compose_document(&[&TODOS], &WITH_SECURITY)?;
+    let expected = format!(
+        "openapi: 3.1.0\ninfo:\n  title: Console API\n  version: {COMPOSE_API_VERSION}\nsecurity:\n- bearerAuth: []\npaths:\n"
+    );
     assert!(
-        out.starts_with(
-            "openapi: 3.1.0\ninfo:\n  title: Console API\n  version: 0.1.0\nsecurity:\n- bearerAuth: []\npaths:\n"
-        ),
+        out.starts_with(&expected),
         "document-level bearer security must follow info:\n{out}"
     );
     Ok(())
+}
+
+#[test]
+fn compose_document_refuses_hand_info_version() -> Result<(), Box<dyn std::error::Error>> {
+    const HAND: DocumentPreamble = DocumentPreamble {
+        openapi: "3.1.0",
+        info: "title: Console API\nversion: 9.9.9\n",
+        security: "",
+    };
+    match compose_document(&[&TODOS], &HAND) {
+        Ok(out) => Err(format!("hand info.version must fail closed, got:\n{out}").into()),
+        Err(err) => {
+            assert!(
+                err.hand_lifecycle_fields.iter().any(|key| key == "version"),
+                "{err}"
+            );
+            Ok(())
+        }
+    }
 }
 
 #[test]

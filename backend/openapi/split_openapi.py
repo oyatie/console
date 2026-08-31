@@ -528,6 +528,10 @@ def main() -> int:
         raise SystemExit("expected openapi: on line 1")
     openapi_ver = lines[0].split(":", 1)[1].strip()
     info_body, _ = block_after(lines, "info:", 0)
+    # Compose owns info.version from CARGO_PKG_VERSION. A re-split of the
+    # published document must not write that lifecycle field back into the
+    # face/hand shared YAML.
+    info_body = [ln for ln in info_body if not re.match(r"^ {2}version\s*:", ln)]
     try:
         security_req_body, _ = block_after(lines, "security:", 0)
     except KeyError:
