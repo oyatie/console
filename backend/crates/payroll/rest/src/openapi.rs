@@ -180,20 +180,8 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/MyPayrollLinePage.yaml"),
     },
     NamedYaml {
-        name: "PayRun",
-        body: include_str!("../openapi/schemas/PayRun.yaml"),
-    },
-    NamedYaml {
         name: "PayrollClosePreflight",
         body: include_str!("../openapi/schemas/PayrollClosePreflight.yaml"),
-    },
-    NamedYaml {
-        name: "PayrollCreateRunInput",
-        body: include_str!("../openapi/schemas/PayrollCreateRunInput.yaml"),
-    },
-    NamedYaml {
-        name: "PayrollDecideRunInput",
-        body: include_str!("../openapi/schemas/PayrollDecideRunInput.yaml"),
     },
     NamedYaml {
         name: "PayrollDisbursement",
@@ -258,10 +246,6 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "PayrollStatutoryInstrument",
         body: include_str!("../openapi/schemas/PayrollStatutoryInstrument.yaml"),
-    },
-    NamedYaml {
-        name: "PayrollSubmitRunInput",
-        body: include_str!("../openapi/schemas/PayrollSubmitRunInput.yaml"),
     },
     NamedYaml {
         name: "ResolvePayrollExceptionRequest",

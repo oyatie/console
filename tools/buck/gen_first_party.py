@@ -104,6 +104,9 @@ OPENAPI_DRIFT_EXTERNAL["//backend/openapi:openapi.yaml"] = (
 # Compile-time and runtime fixture inputs outside a crate package. Labels expose
 # the authoritative bytes; mapped destinations preserve the checkout topology.
 RESOURCE_CONFIG = {
+    "console-contracts": {
+        "srcs": ["src/**/*.json"],
+    },
     "console-app": {
         "external": {
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",

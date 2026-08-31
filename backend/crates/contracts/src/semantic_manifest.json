@@ -1,0 +1,1049 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "name": "Company",
+      "object_key": "company",
+      "actions": [
+        "company.revise"
+      ]
+    },
+    {
+      "name": "OrgUnit",
+      "object_key": "org_unit",
+      "actions": [
+        "organization.create_org_unit",
+        "organization.revise_org_unit"
+      ]
+    },
+    {
+      "name": "JobPosition",
+      "object_key": "job_position",
+      "actions": [
+        "organization.create_job_position",
+        "organization.revise_job_position"
+      ]
+    },
+    {
+      "name": "Person",
+      "object_key": "person",
+      "actions": [
+        "people.create_person",
+        "people.revise_person"
+      ]
+    },
+    {
+      "name": "Employment",
+      "object_key": "employment",
+      "actions": [
+        "hr.appoint",
+        "hr.promote",
+        "hr.transfer"
+      ]
+    },
+    {
+      "name": "PayRun",
+      "object_key": "pay_run",
+      "actions": [
+        "payroll.create_run",
+        "payroll.submit_run",
+        "payroll.decide_run"
+      ]
+    }
+  ],
+  "links": [
+    {
+      "key": "org_unit_parent",
+      "from": "OrgUnit",
+      "to": "OrgUnit",
+      "field": "parent_id",
+      "cardinality": "many-to-one",
+      "option": true
+    },
+    {
+      "key": "job_position_org_unit",
+      "from": "JobPosition",
+      "to": "OrgUnit",
+      "field": "org_unit_id",
+      "cardinality": "many-to-one",
+      "option": false
+    },
+    {
+      "key": "employment_person",
+      "from": "Employment",
+      "to": "Person",
+      "field": "person_id",
+      "cardinality": "many-to-one",
+      "option": true
+    },
+    {
+      "key": "employment_org_unit",
+      "from": "Employment",
+      "to": "OrgUnit",
+      "field": "org_unit_id",
+      "cardinality": "many-to-one",
+      "option": true
+    },
+    {
+      "key": "employment_job_position",
+      "from": "Employment",
+      "to": "JobPosition",
+      "field": "job_position_id",
+      "cardinality": "many-to-one",
+      "option": true
+    }
+  ],
+  "actions": [
+    {
+      "action_key": "company.revise",
+      "object": "Company",
+      "object_key": "company",
+      "input": "CompanyReviseInput",
+      "four_eyes": "natural_person",
+      "edits": [
+        "company_revisions"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "organization.create_org_unit",
+      "object": "OrgUnit",
+      "object_key": "org_unit",
+      "input": "OrganizationCreateOrgUnitInput",
+      "four_eyes": "account",
+      "edits": [
+        "org_units",
+        "org_unit_revisions",
+        "org_unit_source_bindings"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "organization.revise_org_unit",
+      "object": "OrgUnit",
+      "object_key": "org_unit",
+      "input": "OrganizationReviseOrgUnitInput",
+      "four_eyes": "account",
+      "edits": [
+        "org_unit_revisions",
+        "org_unit_source_bindings"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "organization.create_job_position",
+      "object": "JobPosition",
+      "object_key": "job_position",
+      "input": "OrganizationCreateJobPositionInput",
+      "four_eyes": "account",
+      "edits": [
+        "job_positions",
+        "job_position_revisions"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "organization.revise_job_position",
+      "object": "JobPosition",
+      "object_key": "job_position",
+      "input": "OrganizationReviseJobPositionInput",
+      "four_eyes": "account",
+      "edits": [
+        "job_positions",
+        "job_position_revisions"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "people.create_person",
+      "object": "Person",
+      "object_key": "person",
+      "input": "PeopleCreatePersonInput",
+      "four_eyes": "account",
+      "edits": [
+        "persons",
+        "person_revisions",
+        "employee_person_bindings"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "people.revise_person",
+      "object": "Person",
+      "object_key": "person",
+      "input": "PeopleRevisePersonInput",
+      "four_eyes": "account",
+      "edits": [
+        "person_revisions",
+        "employee_person_bindings"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "hr.appoint",
+      "object": "Employment",
+      "object_key": "employment",
+      "input": "HrAppointInput",
+      "four_eyes": "natural_person",
+      "edits": [
+        "employment_heads",
+        "employment_revisions",
+        "employment_source_bindings"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "hr.promote",
+      "object": "Employment",
+      "object_key": "employment",
+      "input": "HrPromoteInput",
+      "four_eyes": "natural_person",
+      "edits": [
+        "employment_revisions",
+        "employees"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "hr.transfer",
+      "object": "Employment",
+      "object_key": "employment",
+      "input": "HrTransferInput",
+      "four_eyes": "natural_person",
+      "edits": [
+        "employment_revisions",
+        "employees"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "payroll.create_run",
+      "object": "PayRun",
+      "object_key": "pay_run",
+      "input": "PayrollCreateRunInput",
+      "four_eyes": "natural_person",
+      "edits": [
+        "payroll_draft_runs"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "payroll.submit_run",
+      "object": "PayRun",
+      "object_key": "pay_run",
+      "input": "PayrollSubmitRunInput",
+      "four_eyes": "natural_person",
+      "edits": [
+        "payroll_draft_runs"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    },
+    {
+      "action_key": "payroll.decide_run",
+      "object": "PayRun",
+      "object_key": "pay_run",
+      "input": "PayrollDecideRunInput",
+      "four_eyes": "natural_person",
+      "edits": [
+        "payroll_draft_runs"
+      ],
+      "permissions": [
+        "role_manage"
+      ],
+      "concurrency": {
+        "command_id": "tenant_global_idempotency",
+        "expected_revision": "optional_cas"
+      }
+    }
+  ],
+  "schemas": {
+    "CompanyReviseInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `company.revise` (`CompanyQuery`). The tenant is `org_id` on the command envelope, not this bag. Preflight requires non-empty `legal_name`.",
+      "required": [
+        "attributes"
+      ],
+      "properties": {
+        "attributes": {
+          "type": "object",
+          "required": [
+            "legal_name"
+          ],
+          "properties": {
+            "legal_name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reg_no": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "OrganizationCreateOrgUnitInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `organization.create_org_unit` (`OrgUnitQuery::Create`). Write preflight requires non-empty `name` and `kind` ∈ {site, department, team}.",
+      "required": [
+        "attributes"
+      ],
+      "properties": {
+        "source": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/OrgUnitSourceBinding"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attributes": {
+          "type": "object",
+          "required": [
+            "name",
+            "kind"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "site",
+                "department",
+                "team"
+              ]
+            },
+            "parent_id": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/Uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "OrganizationReviseOrgUnitInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `organization.revise_org_unit` (`OrgUnitQuery::Revise`).",
+      "required": [
+        "org_unit_id",
+        "attributes"
+      ],
+      "properties": {
+        "org_unit_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "source": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/OrgUnitSourceBinding"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attributes": {
+          "type": "object",
+          "required": [
+            "name",
+            "kind"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "site",
+                "department",
+                "team"
+              ]
+            },
+            "parent_id": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/Uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "OrganizationCreateJobPositionInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `organization.create_job_position` (`JobPositionQuery::Create`). The named OrgUnit must already exist. Write preflight requires non-empty `title`.",
+      "required": [
+        "org_unit_id",
+        "attributes"
+      ],
+      "properties": {
+        "org_unit_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "attributes": {
+          "type": "object",
+          "required": [
+            "title"
+          ],
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "OrganizationReviseJobPositionInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `organization.revise_job_position` (`JobPositionQuery::Revise`). Null `org_unit_id` leaves the position where it is; a UUID moves it.",
+      "required": [
+        "job_position_id",
+        "attributes"
+      ],
+      "properties": {
+        "job_position_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "org_unit_id": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attributes": {
+          "type": "object",
+          "required": [
+            "title"
+          ],
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "PeopleCreatePersonInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `people.create_person` (`PersonQuery::Create`). When `employee_id` is set (trusted uniquely resolved), the new person's id IS that employee id. Head projection stays four fields; this bag is not a license to publish phone/salary/bank_account/rrn on GET.",
+      "required": [
+        "attributes"
+      ],
+      "properties": {
+        "employee_id": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "legal_name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "display_name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "PeopleRevisePersonInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `people.revise_person` (`PersonQuery::Revise`). Optional `employee_id` binds a further employee record to the same natural person.",
+      "required": [
+        "person_id",
+        "attributes"
+      ],
+      "properties": {
+        "person_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "employee_id": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "legal_name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "display_name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "HrAppointInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `hr.appoint` (`EmploymentQuery::Appoint`). Opens a head at `valid_from`. Four-eyes is natural-person. The legacy employees row is not rewritten by this command.",
+      "required": [
+        "employee_id",
+        "valid_from",
+        "attributes"
+      ],
+      "properties": {
+        "employee_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "valid_from": {
+          "$ref": "#/components/schemas/Timestamp"
+        },
+        "attributes": {
+          "$ref": "#/components/schemas/EmploymentAttributesInput"
+        }
+      }
+    },
+    "HrPromoteInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `hr.promote` (`EmploymentQuery::Promote`). Appends a revision and carries the new state onto the legacy head. Four-eyes is natural-person.",
+      "required": [
+        "employment_id",
+        "valid_from",
+        "attributes"
+      ],
+      "properties": {
+        "employment_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "valid_from": {
+          "$ref": "#/components/schemas/Timestamp"
+        },
+        "attributes": {
+          "$ref": "#/components/schemas/EmploymentAttributesInput"
+        }
+      }
+    },
+    "HrTransferInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `hr.transfer` (`EmploymentQuery::Transfer`). Same shape as promote; the receipt records a different dispatch target. Four-eyes is natural-person.",
+      "required": [
+        "employment_id",
+        "valid_from",
+        "attributes"
+      ],
+      "properties": {
+        "employment_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "valid_from": {
+          "$ref": "#/components/schemas/Timestamp"
+        },
+        "attributes": {
+          "$ref": "#/components/schemas/EmploymentAttributesInput"
+        }
+      }
+    },
+    "PayrollCreateRunInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `payroll.create_run` (`PayRunQuery::CreateRun`). Stages a draft under a caller-chosen source label. `payable` is not an input; stored calculations stay false. Payment execution remains HOLD.",
+      "required": [
+        "run_id",
+        "period_start",
+        "period_end"
+      ],
+      "properties": {
+        "run_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "period_start": {
+          "type": "string",
+          "format": "date"
+        },
+        "period_end": {
+          "type": "string",
+          "format": "date"
+        },
+        "connector": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "job": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "PayrollSubmitRunInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `payroll.submit_run` (`PayRunQuery::SubmitRun`). `CALCULATED → SUBMITTED`, refused while any exception is open. `payable` stays false.",
+      "required": [
+        "run_id"
+      ],
+      "properties": {
+        "run_id": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      }
+    },
+    "PayrollDecideRunInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed params for `payroll.decide_run` (`PayRunQuery::DecideRun`). `SUBMITTED → APPROVED|REJECTED`, refused when the decider is the submitter. Distinct from path-bound `DecidePayrollRunRequest` (run_id is in this bag). `payable` stays false. Payment execution remains HOLD.",
+      "required": [
+        "run_id",
+        "decision"
+      ],
+      "properties": {
+        "run_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "APPROVE",
+            "REJECT"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Required for REJECT at the lifecycle writer (blank reason is 422)."
+        }
+      }
+    },
+    "EmploymentAttributesInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Write bag for `hr.appoint` / `hr.promote` / `hr.transfer` (`EmploymentAttributes`). Not the Employment Head. `company` is a non-blank string; `employment_status` is the 0066 CHECK set. UUID refs must not be nil.",
+      "required": [
+        "company",
+        "employment_status"
+      ],
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "org_unit_id": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "job_position_id": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "employment_status": {
+          "type": "string",
+          "enum": [
+            "ACTIVE",
+            "EXITED",
+            "UNKNOWN"
+          ]
+        }
+      }
+    },
+    "OrgUnitSourceBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional legacy source binding on OrgUnit create/revise. `kind` and `id` are TEXT; the closed set of kinds is not yet enumerable and legacy identifiers are not all UUIDs.",
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "Company": {
+      "type": "object",
+      "description": "Canonical Company head for one tenant. The tenant IS the company (`org_id`). `legal_name` and `reg_no` are read from the latest `company_revisions.attributes`; they are never copied from provisioning-owned `organizations.name`. Write preflight requires a non-empty string `legal_name`; an omitted key is JSON null on the Head. `founded_on` and `registration_number` are company_conformance fixture keys, not this port. `org_id` is the RLS cell, not a Palantir link. Temporal slices other than revision `version` remain HOLD.",
+      "required": [
+        "org_id",
+        "version",
+        "legal_name",
+        "reg_no"
+      ],
+      "properties": {
+        "org_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "legal_name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Title property. Required non-empty on write; omitted key is null on read."
+        },
+        "reg_no": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Optional `reg_no` on the latest revision. Not `registration_number`."
+        },
+        "version": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1
+        }
+      }
+    },
+    "OrgUnit": {
+      "type": "object",
+      "description": "Canonical OrgUnit head. `name` and `parent_id` are parsed from the latest `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites, regions, and branches stay the operational auth spine and are not OrgUnits. OrgUnit kinds Site/Department/Team are write-preflight on revision attributes (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices other than revision `version` remain HOLD.",
+      "required": [
+        "id",
+        "version",
+        "name",
+        "parent_id"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Title property. Required non-empty on write; omitted key is null on read."
+        },
+        "parent_id": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional parent OrgUnit. Root units send JSON null."
+        },
+        "version": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1
+        }
+      }
+    },
+    "JobPosition": {
+      "type": "object",
+      "description": "Canonical JobPosition head. Distinct from recruiting postings and from `employees.position` TEXT. `org_unit_id` is a foreign key to an existing OrgUnit. `attributes` is the latest revision bag; write preflight requires a non-empty string `title` (catalog JOB_POSITION_TITLE). Other attribute keys are not a published closed set. Temporal slices other than revision `version` remain HOLD.",
+      "required": [
+        "job_position_id",
+        "org_unit_id",
+        "version",
+        "attributes"
+      ],
+      "properties": {
+        "job_position_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "org_unit_id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "version": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Latest revision JSON object. Write requires non-empty `title`."
+        }
+      }
+    },
+    "Person": {
+      "type": "object",
+      "description": "Canonical Person head. Closed four-field projection of the latest `person_revisions` row. `get`/`list` never copy the attributes object onto the wire, so stored `phone` / `salary` / `bank_account` / `rrn` cannot appear. Trusted directory create mints `person_id = employee_id`. No outgoing Head FK; Employment.person_id is the reverse. Temporal slices other than revision `version` remain HOLD.",
+      "required": [
+        "id",
+        "version",
+        "display_name",
+        "legal_name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "display_name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Optional `display_name` attribute. Never invented from `legal_name`."
+        },
+        "legal_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1
+        }
+      }
+    },
+    "Employment": {
+      "type": "object",
+      "description": "Canonical Employment head. Current get/list still return the *open* head (`employment_heads.valid_to IS NULL`). GET /api/v1/employments/{id}?as_of= reconstructs the slice effective at an RFC3339 instant using the same half-open predicate as ontology instance GET (`valid_from <= as_of < coalesce(valid_to, ∞)`); absent as_of = current open head. Closed (EXITED) windows are omitted by current get/list and by as_of at or after valid_to. `org_unit_id` / `job_position_id` are canonical UUIDs from the effective revision, not free-text team or title labels. `person_id` is the unique source-binding → person-binding path; ambiguous or unbound identities are null, never invented from `employee_id`. `appointed_on` is the head's opening `valid_from`. Write attributes also carry `company` and `employment_status` in {ACTIVE, EXITED, UNKNOWN}; those write fields are not this Head. The Head never includes phone, salary, bank_account, rrn, or base_pay. from/to range queries, corrections vs new slice, and delta transmission remain HOLD. EmployeeDetail as_of remains HOLD.",
+      "required": [
+        "id",
+        "appointed_on",
+        "person_id",
+        "org_unit_id",
+        "job_position_id"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "person_id": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "org_unit_id": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "job_position_id": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "appointed_on": {
+          "$ref": "#/components/schemas/Timestamp"
+        }
+      }
+    },
+    "PayRun": {
+      "type": "object",
+      "description": "Canonical PayRun scaffold over existing `payroll_draft_runs`. Not SAP-complete. Draft calculate is admitted on POST /api/v1/payroll/runs/{id}/calculate (not a DispatchTarget). `payable` is always false. Payment execution, Korea compliance conclusions, and wage-statement legal sign-off remain HOLD. REST list/detail DTOs remain `PayrollRunSummary` / `PayrollRunDetail`. No outgoing Head FK; the run is Company-scoped via RLS `org_id`, which is the cell, not a Palantir link. Temporal slices other than draft status remain HOLD.",
+      "required": [
+        "id",
+        "period_start",
+        "period_end",
+        "source_label",
+        "status",
+        "payable"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/components/schemas/Uuid"
+        },
+        "period_start": {
+          "type": "string",
+          "format": "date"
+        },
+        "period_end": {
+          "type": "string",
+          "format": "date"
+        },
+        "source_label": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "STAGED",
+            "BLOCKED_LEGAL_GATE",
+            "READY_FOR_REVIEW",
+            "ATTENDANCE_CLOSED",
+            "CALCULATING",
+            "CALCULATED",
+            "SUBMITTED",
+            "REJECTED",
+            "APPROVED",
+            "DISBURSEMENT_SCHEDULED",
+            "PAID",
+            "ISSUED",
+            "VOID"
+          ],
+          "description": "`payroll_draft_runs.status`. Same closed set as `PayrollRunSummary`."
+        },
+        "payable": {
+          "type": "boolean",
+          "const": false,
+          "description": "Always false until the 노무사/세무사 release gate flips stored calculation rows. Payment execution remains HOLD. Not a payable payroll object."
+        }
+      }
+    }
+  }
+}

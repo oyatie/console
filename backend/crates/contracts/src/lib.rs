@@ -75,9 +75,18 @@
 //! would be a second source of truth to keep in sync.
 //! ponytail: raw-text bodies, upgrade to a typed model only if we ever need to
 //! query the composed document rather than emit it.
+//!
+//! Exception (this crate, ADR-0031 slice): the thirteen DispatchTarget Input
+//! schemas, two nested write bags, and six PRODUCT Heads are emitted from
+//! `semantic_manifest.json` via [`generated_schema_yaml`] and merged by
+//! [`compose_document_with_owned`]. Face YAML must not also own those names.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
+
+mod semantic;
+
+pub use semantic::{GENERATED_SCHEMA_COUNT, SEMANTIC_SOURCE, generated_schema_yaml};
 
 // ---------------------------------------------------------------------------
 // Fragment model
@@ -144,6 +153,18 @@ pub struct Operation {
 pub struct NamedYaml {
     pub name: &'static str,
     pub body: &'static str,
+}
+
+/// A schema body produced at compose time (semantic-manifest generation).
+///
+/// Face fragments stay `'static` `include_str` slices. Generated Input/Head
+/// schemas cannot: they are YAML emitted from JSON. Compose treats a duplicate
+/// against a fragment or another owned schema as [`DuplicateKey`].
+#[derive(Debug, Clone)]
+pub struct OwnedNamedYaml {
+    pub name: String,
+    pub body: String,
+    pub source: &'static str,
 }
 
 // ---------------------------------------------------------------------------
@@ -319,7 +340,7 @@ impl std::error::Error for ComposeError {}
 /// the first, so one CI run reports the whole conflict set. Once the keys are
 /// unique, returns every malformed and every unresolvable `$ref`.
 pub fn compose(fragments: &[&Fragment]) -> Result<String, ComposeError> {
-    compose_parts(fragments, None)
+    compose_parts(fragments, None, &[])
 }
 
 /// Merge `fragments` into a full OpenAPI document, including the preamble.
@@ -327,16 +348,38 @@ pub fn compose_document(
     fragments: &[&Fragment],
     preamble: &DocumentPreamble,
 ) -> Result<String, ComposeError> {
-    compose_parts(fragments, Some(preamble))
+    compose_parts(fragments, Some(preamble), &[])
+}
+
+/// Merge `fragments` and owned schema bodies into a full OpenAPI document.
+///
+/// Owned schemas are the semantic-manifest generation path: the same duplicate
+/// and `$ref` rules as fragment schemas, so a face that still `include_str`s a
+/// generated name fails closed instead of last-writer-wins.
+pub fn compose_document_with_owned(
+    fragments: &[&Fragment],
+    preamble: &DocumentPreamble,
+    owned_schemas: &[OwnedNamedYaml],
+) -> Result<String, ComposeError> {
+    compose_parts(fragments, Some(preamble), owned_schemas)
+}
+
+/// Merge `fragments` and owned schema bodies without a preamble (tests).
+pub fn compose_with_owned(
+    fragments: &[&Fragment],
+    owned_schemas: &[OwnedNamedYaml],
+) -> Result<String, ComposeError> {
+    compose_parts(fragments, None, owned_schemas)
 }
 
 fn compose_parts(
     fragments: &[&Fragment],
     preamble: Option<&DocumentPreamble>,
+    owned_schemas: &[OwnedNamedYaml],
 ) -> Result<String, ComposeError> {
     // Value carries the owning source so a later collision can name both sides.
     let mut paths: BTreeMap<&str, (&'static str, BTreeMap<String, String>)> = BTreeMap::new();
-    let mut schemas: BTreeMap<&str, (&'static str, String)> = BTreeMap::new();
+    let mut schemas: BTreeMap<String, (&'static str, String)> = BTreeMap::new();
     let mut parameters: BTreeMap<&str, (&'static str, String)> = BTreeMap::new();
     let mut responses: BTreeMap<&str, (&'static str, String)> = BTreeMap::new();
     let mut security_schemes: BTreeMap<&str, (&'static str, String)> = BTreeMap::new();
@@ -373,11 +416,10 @@ fn compose_parts(
             paths.insert(item.path, (fragment.source, operations));
         }
 
-        collect_named(
+        collect_schema(
             fragment.source,
             fragment.schemas,
             &mut schemas,
-            DuplicateKind::Schema,
             &mut duplicates,
         );
         collect_named(
@@ -403,6 +445,19 @@ fn compose_parts(
         );
     }
 
+    for item in owned_schemas {
+        if let Some((owner, _)) = schemas.get(&item.name) {
+            duplicates.push(DuplicateKey {
+                kind: DuplicateKind::Schema,
+                key: item.name.clone(),
+                first: owner,
+                second: item.source,
+            });
+            continue;
+        }
+        schemas.insert(item.name.clone(), (item.source, reindent(&item.body, 6)));
+    }
+
     if !duplicates.is_empty() {
         // Ref resolution needs the complete set, which a collision denies.
         return Err(ComposeError {
@@ -413,7 +468,7 @@ fn compose_parts(
         });
     }
 
-    let mut known_schemas: BTreeSet<&str> = schemas.keys().copied().collect();
+    let mut known_schemas: BTreeSet<String> = schemas.keys().cloned().collect();
     let known_parameters: BTreeSet<&str> = parameters.keys().copied().collect();
     let known_responses: BTreeSet<&str> = responses.keys().copied().collect();
     let known_security: BTreeSet<&str> = security_schemes.keys().copied().collect();
@@ -426,7 +481,12 @@ fn compose_parts(
     let mut unresolvable = Vec::new();
     let mut dangling = Vec::new();
     for fragment in fragments {
-        known_schemas.extend(fragment.external_schemas.iter().copied());
+        known_schemas.extend(
+            fragment
+                .external_schemas
+                .iter()
+                .map(|name| (*name).to_owned()),
+        );
     }
     for fragment in fragments {
         let bodies = fragment
@@ -458,6 +518,30 @@ fn compose_parts(
                 dangling.push(DanglingRef {
                     schema: key.to_owned(),
                     source: fragment.source,
+                });
+            }
+        }
+    }
+    for item in owned_schemas {
+        for value in ref_values(&item.body) {
+            let Some((section, key)) = component_ref(value) else {
+                unresolvable.push(UnresolvableRef {
+                    value: value.to_owned(),
+                    source: item.source,
+                });
+                continue;
+            };
+            let dangling_here = match section {
+                "schemas" => !known_schemas.contains(key),
+                "parameters" => resolve_parameters && !known_parameters.contains(key),
+                "responses" => resolve_responses && !known_responses.contains(key),
+                "securitySchemes" => resolve_security && !known_security.contains(key),
+                _ => false,
+            };
+            if dangling_here {
+                dangling.push(DanglingRef {
+                    schema: key.to_owned(),
+                    source: item.source,
                 });
             }
         }
@@ -521,6 +605,26 @@ fn compose_parts(
     Ok(out)
 }
 
+fn collect_schema(
+    source: &'static str,
+    items: &'static [NamedYaml],
+    into: &mut BTreeMap<String, (&'static str, String)>,
+    duplicates: &mut Vec<DuplicateKey>,
+) {
+    for item in items {
+        if let Some((owner, _)) = into.get(item.name) {
+            duplicates.push(DuplicateKey {
+                kind: DuplicateKind::Schema,
+                key: item.name.to_owned(),
+                first: owner,
+                second: source,
+            });
+            continue;
+        }
+        into.insert(item.name.to_owned(), (source, reindent(item.body, 6)));
+    }
+}
+
 fn collect_named(
     source: &'static str,
     items: &'static [NamedYaml],
@@ -542,10 +646,10 @@ fn collect_named(
     }
 }
 
-fn emit_component_section(
+fn emit_component_section<K: Ord + std::fmt::Display>(
     out: &mut String,
     section: &str,
-    items: &BTreeMap<&str, (&'static str, String)>,
+    items: &BTreeMap<K, (&'static str, String)>,
 ) {
     if items.is_empty() {
         return;

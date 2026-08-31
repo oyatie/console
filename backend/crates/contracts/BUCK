@@ -10,7 +10,7 @@ export_file(
 
 rust_library(
     name = "console-contracts",
-    mapped_srcs = repo_mapped_srcs("backend/crates/contracts", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/contracts", glob(["src/**/*.rs", "src/**/*.json"])),
     crate = "console_contracts",
     edition = "2024",
     crate_root = "backend/crates/contracts/src/lib.rs",

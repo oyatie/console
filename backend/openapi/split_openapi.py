@@ -19,6 +19,33 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 YAML_PATH = ROOT / "backend/openapi/openapi.yaml"
 SHARED_DIR = ROOT / "backend/openapi/shared"
+# Composed from backend/crates/contracts/src/semantic_manifest.json via
+# console-openapi-gen; a re-split must not write face/shared YAML for them.
+SEMANTIC_SCHEMA_NAMES = frozenset(
+    {
+        "Company",
+        "CompanyReviseInput",
+        "Employment",
+        "EmploymentAttributesInput",
+        "HrAppointInput",
+        "HrPromoteInput",
+        "HrTransferInput",
+        "JobPosition",
+        "OrganizationCreateJobPositionInput",
+        "OrganizationCreateOrgUnitInput",
+        "OrganizationReviseJobPositionInput",
+        "OrganizationReviseOrgUnitInput",
+        "OrgUnit",
+        "OrgUnitSourceBinding",
+        "PayRun",
+        "PayrollCreateRunInput",
+        "PayrollDecideRunInput",
+        "PayrollSubmitRunInput",
+        "PeopleCreatePersonInput",
+        "PeopleRevisePersonInput",
+        "Person",
+    }
+)
 FACES = [
     "analytics-quant",
     "attendance",
@@ -589,6 +616,8 @@ def main() -> int:
     face_schemas: dict[str, dict[str, str]] = {f: {} for f in FACES}
     shared_schemas: dict[str, str] = {}
     for name, body in schemas.items():
+        if name in SEMANTIC_SCHEMA_NAMES:
+            continue
         owners = schema_owners.get(name, set())
         if len(owners) == 1:
             face = next(iter(owners))
@@ -675,8 +704,14 @@ def main() -> int:
             (face_closures[face] & set(shared_schemas))
             | (face_closures[face] - set(face_schemas[face]) - set(shared_schemas))
         )
-        # Only names that exist somewhere
-        external = [n for n in external if n in schemas and n not in face_schemas[face]]
+        # Only names that exist somewhere. Semantic-manifest schemas are owned
+        # by console-openapi-gen, not by a face YAML file; keep them external
+        # so a face composed alone still names the $ref.
+        external = [
+            n
+            for n in external
+            if (n in schemas and n not in face_schemas[face]) or n in SEMANTIC_SCHEMA_NAMES
+        ]
         write_openapi_rs(face, crate, face_ops[face], face_schemas[face], external)
         write_manifest(face, crate, face_ops[face], face_schemas[face], external)
         ensure_mod_and_dep(face)

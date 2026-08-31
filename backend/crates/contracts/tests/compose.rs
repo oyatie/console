@@ -10,8 +10,8 @@
 //! `unwrap_used` / `expect_used` / `panic` lints.
 
 use console_contracts::{
-    DocumentPreamble, DuplicateKind, Fragment, NamedYaml, Operation, PathItem, compose,
-    compose_document, schema_refs,
+    DocumentPreamble, DuplicateKind, Fragment, GENERATED_SCHEMA_COUNT, NamedYaml, Operation,
+    PathItem, compose, compose_document, compose_with_owned, generated_schema_yaml, schema_refs,
 };
 
 // ---------------------------------------------------------------------------
@@ -1385,4 +1385,139 @@ fn first_yaml_alias_before_anchor_detects_inverted_order() {
         None,
         "sound order must pass"
     );
+}
+
+#[test]
+fn semantic_manifest_generates_twenty_one_schemas() -> Result<(), Box<dyn std::error::Error>> {
+    let owned = generated_schema_yaml()?;
+    assert_eq!(owned.len(), GENERATED_SCHEMA_COUNT);
+    let names: std::collections::BTreeSet<&str> =
+        owned.iter().map(|item| item.name.as_str()).collect();
+    for name in [
+        "CompanyReviseInput",
+        "OrganizationCreateOrgUnitInput",
+        "OrganizationReviseOrgUnitInput",
+        "OrganizationCreateJobPositionInput",
+        "OrganizationReviseJobPositionInput",
+        "PeopleCreatePersonInput",
+        "PeopleRevisePersonInput",
+        "HrAppointInput",
+        "HrPromoteInput",
+        "HrTransferInput",
+        "PayrollCreateRunInput",
+        "PayrollSubmitRunInput",
+        "PayrollDecideRunInput",
+        "EmploymentAttributesInput",
+        "OrgUnitSourceBinding",
+        "Company",
+        "OrgUnit",
+        "JobPosition",
+        "Person",
+        "Employment",
+        "PayRun",
+    ] {
+        assert!(names.contains(name), "generated set missing {name}");
+    }
+    Ok(())
+}
+
+#[test]
+fn owned_schema_duplicate_against_fragment_is_rejected() -> Result<(), Box<dyn std::error::Error>> {
+    let owned = generated_schema_yaml()?;
+    const FACE: Fragment = Fragment {
+        source: "console-demo-shadow-rest",
+        paths: &[],
+        schemas: &[NamedYaml {
+            name: "CompanyReviseInput",
+            body: "type: object\n",
+        }],
+        external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
+    };
+    let errors = compose_with_owned(&[&FACE], &owned)
+        .err()
+        .ok_or("a face that still owns a generated Input name must fail")?;
+    let dup = errors
+        .duplicates
+        .iter()
+        .find(|item| item.kind == DuplicateKind::Schema && item.key == "CompanyReviseInput")
+        .ok_or_else(|| format!("expected CompanyReviseInput duplicate, got {errors:#?}"))?;
+    assert_eq!(dup.first, "console-demo-shadow-rest");
+    assert_eq!(dup.second, "console-contracts-semantic");
+    Ok(())
+}
+
+#[test]
+fn generated_person_head_stays_a_closed_projection() -> Result<(), Box<dyn std::error::Error>> {
+    let owned = generated_schema_yaml()?;
+    let person = owned
+        .iter()
+        .find(|item| item.name == "Person")
+        .ok_or("Person must be generated")?;
+    assert!(
+        !person.body.contains("phone:") && !person.body.contains("salary:"),
+        "Person Head must not grow phone/salary: {}",
+        person.body
+    );
+    assert!(
+        person.body.contains("people.create_person"),
+        "Person actions must be generated: {}",
+        person.body
+    );
+    Ok(())
+}
+
+#[test]
+fn generated_pay_run_payable_stays_const_false() -> Result<(), Box<dyn std::error::Error>> {
+    let owned = generated_schema_yaml()?;
+    let pay_run = owned
+        .iter()
+        .find(|item| item.name == "PayRun")
+        .ok_or("PayRun must be generated")?;
+    assert!(
+        pay_run.body.contains("const: false"),
+        "PayRun.payable must stay const false: {}",
+        pay_run.body
+    );
+    assert!(
+        pay_run.body.contains("payroll.create_run"),
+        "PayRun actions must be generated: {}",
+        pay_run.body
+    );
+    Ok(())
+}
+
+#[test]
+fn generated_inputs_compose_with_shared_stubs() -> Result<(), Box<dyn std::error::Error>> {
+    let owned = generated_schema_yaml()?;
+    const STUB: Fragment = Fragment {
+        source: "console-demo-shared-stub",
+        paths: &[],
+        schemas: &[
+            NamedYaml {
+                name: "Uuid",
+                body: "type: string\nformat: uuid\n",
+            },
+            NamedYaml {
+                name: "Timestamp",
+                body: "type: string\nformat: date-time\n",
+            },
+            NamedYaml {
+                name: "OntologyActionExecuteOutcome",
+                body: "type: object\n",
+            },
+        ],
+        external_schemas: &[],
+        parameters: &[],
+        responses: &[],
+        security_schemes: &[],
+    };
+    let doc = compose_with_owned(&[&STUB], &owned)?;
+    assert!(
+        doc.contains("    CompanyReviseInput:\n") && doc.contains("additionalProperties: false"),
+        "generated Inputs must appear in compose output:\n{doc}"
+    );
+    Ok(())
 }

@@ -14,7 +14,9 @@ mod gen_registry;
 use std::path::PathBuf;
 use std::{env, fs, process};
 
-use console_contracts::compose_document;
+use console_contracts::{
+    GENERATED_SCHEMA_COUNT, compose_document_with_owned, generated_schema_yaml,
+};
 
 fn main() {
     // Examined-zero must fail: a registry that forgot the faces would "regen"
@@ -30,7 +32,26 @@ fn main() {
         process::exit(1);
     }
 
-    let doc = match compose_document(gen_registry::ALL_FRAGMENTS, &gen_registry::PREAMBLE) {
+    let owned = match generated_schema_yaml() {
+        Ok(owned) => owned,
+        Err(err) => {
+            eprintln!("console-openapi-gen: semantic manifest generation failed:\n{err}");
+            process::exit(1);
+        }
+    };
+    if owned.len() != GENERATED_SCHEMA_COUNT {
+        eprintln!(
+            "console-openapi-gen: expected {GENERATED_SCHEMA_COUNT} generated schemas, found {}",
+            owned.len()
+        );
+        process::exit(1);
+    }
+
+    let doc = match compose_document_with_owned(
+        gen_registry::ALL_FRAGMENTS,
+        &gen_registry::PREAMBLE,
+        &owned,
+    ) {
         Ok(doc) => doc,
         Err(err) => {
             eprintln!("console-openapi-gen: composition failed:\n{err}");

@@ -59,10 +59,7 @@
     "DecidePayrollRunRequest",
     "MyPayrollLine",
     "MyPayrollLinePage",
-    "PayRun",
     "PayrollClosePreflight",
-    "PayrollCreateRunInput",
-    "PayrollDecideRunInput",
     "PayrollDisbursement",
     "PayrollException",
     "PayrollExceptionPage",
@@ -79,7 +76,6 @@
     "PayrollRunSummary",
     "PayrollStatutoryCitation",
     "PayrollStatutoryInstrument",
-    "PayrollSubmitRunInput",
     "ResolvePayrollExceptionRequest",
     "SchedulePayrollDisbursementRequest"
   ],
