@@ -1555,8 +1555,20 @@ fn semantic_manifest_generates_typed_action_codecs() -> Result<(), Box<dyn std::
             "generated decode missing {variant}: {rust}"
         );
     }
+    assert!(
+        rust.contains("fn bind_canonical_action_params"),
+        "generated rust must include the execute binder: {rust}"
+    );
+    assert!(
+        rust.contains("fn reject_caller_action_key"),
+        "generated rust must reject caller action_key/target: {rust}"
+    );
+    assert!(
+        rust.contains("DispatchTarget::from_str"),
+        "generated binder must use DispatchTarget::from_str, not a second match table: {rust}"
+    );
     assert_eq!(
-        rust.matches("DispatchTarget::").count(),
+        rust.matches("DispatchTarget::").count() - rust.matches("DispatchTarget::from_str").count(),
         DISPATCH_TARGET_COUNT
     );
     Ok(())
@@ -1572,6 +1584,10 @@ fn generated_typed_action_codecs_deny_unknown_fields() -> Result<(), Box<dyn std
     assert!(
         rust.contains("fn decode_dispatch_target"),
         "generated codecs must include decode_dispatch_target: {rust}"
+    );
+    assert!(
+        rust.contains("Value::Null | Value::Object(_)"),
+        "generated binder must keep the non-roster object-or-null catch-all: {rust}"
     );
     Ok(())
 }

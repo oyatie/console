@@ -121,6 +121,15 @@ fn main() {
         );
         process::exit(1);
     }
+    if !rust.contains("fn bind_canonical_action_params")
+        || !rust.contains("fn reject_caller_action_key")
+        || !rust.contains("fn decode_dispatch_target")
+    {
+        eprintln!(
+            "console-openapi-gen: generated typed-action rust is missing the execute binder (bind_canonical_action_params / reject_caller_action_key / decode_dispatch_target)"
+        );
+        process::exit(1);
+    }
 
     let rust_out = manifest_dir.join("../../ontology/rest/src/typed_action_generated.rs");
     let rust_out = if rust_out.exists() {

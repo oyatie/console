@@ -170,3 +170,65 @@ fn decode_dispatch_target(target: DispatchTarget, params: &Value) -> Result<(), 
         DispatchTarget::PayrollDecideRun => decode::<PayrollDecideRunInput>(target, params),
     }
 }
+
+fn decode<T: DeserializeOwned>(target: DispatchTarget, params: &Value) -> Result<(), ActionError> {
+    serde_json::from_value::<T>(params.clone())
+        .map(|_| ())
+        .map_err(|error| {
+            ActionError::Validation(format!(
+                "params do not decode as {}: {error}",
+                target.as_str()
+            ))
+        })
+}
+
+fn reject_caller_action_key(action_key: &str, params: &Value) -> Result<(), ActionError> {
+    let obj = params.as_object().ok_or_else(|| {
+        ActionError::Validation(format!("params must be a JSON object for {action_key}"))
+    })?;
+    for field in ["target", "action_key"] {
+        let Some(value) = obj.get(field) else {
+            continue;
+        };
+        let sent = match value {
+            Value::String(text) => text.as_str(),
+            other => {
+                return Err(ActionError::Validation(format!(
+                    "params.{field} must be a string matching {action_key}, got {other}"
+                )));
+            }
+        };
+        if sent != action_key {
+            return Err(ActionError::Validation(format!(
+                "params.{field} {sent:?} does not match action_key {action_key}"
+            )));
+        }
+        return Err(ActionError::Validation(format!(
+            "params.{field} is not a field of the typed {action_key} input"
+        )));
+    }
+    Ok(())
+}
+
+/// Validate `params` against the typed input for a DispatchTarget `action_key`.
+///
+/// Non-roster keys (generic instance-revision actions) keep an object-or-null
+/// params bag, validated later against the action's `params_schema`.
+pub(crate) fn bind_canonical_action_params(
+    action_key: &str,
+    params: &Value,
+) -> Result<Value, ActionError> {
+    match DispatchTarget::from_str(action_key) {
+        Ok(target) => {
+            reject_caller_action_key(action_key, params)?;
+            decode_dispatch_target(target, params)?;
+            Ok(params.clone())
+        }
+        Err(_) => match params {
+            Value::Null | Value::Object(_) => Ok(params.clone()),
+            other => Err(ActionError::Validation(format!(
+                "params must be a JSON object, got {other}"
+            ))),
+        },
+    }
+}
