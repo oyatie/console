@@ -6774,8 +6774,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/GroupAdminTenantContextStartResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -26909,6 +26908,33 @@ components:
           type: string
         status:
           type: string
+    GroupAdminTenantContextStartResponse:
+      type: object
+      required:
+      - access_token
+      - token_type
+      - acting_org_id
+      - acting_org_name
+      - acting_role
+      - expires_at
+      properties:
+        access_token:
+          type: string
+          minLength: 1
+        token_type:
+          type: string
+          enum:
+          - Bearer
+        acting_org_id:
+          $ref: '#/components/schemas/Uuid'
+        acting_org_name:
+          type: string
+        acting_role:
+          type: string
+          enum:
+          - GROUP_ADMIN_DELEGATED_ADMIN
+        expires_at:
+          $ref: '#/components/schemas/Timestamp'
     HireRecruitApplicantRequest:
       type: object
       required:

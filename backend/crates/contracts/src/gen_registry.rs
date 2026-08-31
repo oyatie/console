@@ -4379,6 +4379,12 @@ const IDENTITY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../identity/rest/openapi/schemas/GroupAdminMemberOrgResponse.yaml"),
     },
     NamedYaml {
+        name: "GroupAdminTenantContextStartResponse",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/GroupAdminTenantContextStartResponse.yaml"
+        ),
+    },
+    NamedYaml {
         name: "LogoutRequest",
         body: include_str!("../../identity/rest/openapi/schemas/LogoutRequest.yaml"),
     },

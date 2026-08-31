@@ -301,6 +301,7 @@
     "GroupAdminGroupResponse",
     "GroupAdminGroupsResponse",
     "GroupAdminMemberOrgResponse",
+    "GroupAdminTenantContextStartResponse",
     "LogoutRequest",
     "MeAuthzCapability",
     "MeAuthzResponse",
