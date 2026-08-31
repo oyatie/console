@@ -274,6 +274,7 @@
     "BranchSummary",
     "BulkAuthorizeBody",
     "BulkDecisionResponse",
+    "CatalogEntry",
     "ConsoleRouteSurface",
     "ConsoleRouteTelemetryAccepted",
     "ConsoleRouteTelemetryEventKind",

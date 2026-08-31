@@ -773,6 +773,10 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/BulkDecisionResponse.yaml"),
     },
     NamedYaml {
+        name: "CatalogEntry",
+        body: include_str!("../openapi/schemas/CatalogEntry.yaml"),
+    },
+    NamedYaml {
         name: "ConsoleRouteSurface",
         body: include_str!("../openapi/schemas/ConsoleRouteSurface.yaml"),
     },

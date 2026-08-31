@@ -4251,6 +4251,10 @@ const IDENTITY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../identity/rest/openapi/schemas/BulkDecisionResponse.yaml"),
     },
     NamedYaml {
+        name: "CatalogEntry",
+        body: include_str!("../../identity/rest/openapi/schemas/CatalogEntry.yaml"),
+    },
+    NamedYaml {
         name: "ConsoleRouteSurface",
         body: include_str!("../../identity/rest/openapi/schemas/ConsoleRouteSurface.yaml"),
     },
