@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `organization.create_job_position` (`JobPositionQuery::Create`).
   The named OrgUnit must already exist. Write preflight requires non-empty `title`.

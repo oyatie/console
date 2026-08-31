@@ -1,5 +1,6 @@
 type: object
-description: An object-action preflight/execute request. `params` is validated against the action type's typed param schema.
+description: An object-action preflight/execute request. Canonical DispatchTarget `params` `$ref` the typed input schemas; generic instance-revision actions keep a free-form object validated against the action's `params_schema` at runtime.
+additionalProperties: false
 required:
 - object_type_id
 properties:
@@ -10,8 +11,29 @@ properties:
   title:
     type: string
   params:
-    type: object
-    additionalProperties: true
+    description: >-
+      Typed params for the thirteen DispatchTarget action_keys, or a free-form
+      object for generic instance-revision actions. The path `action_key` selects
+      the codec; a caller-supplied `target` / `action_key` property is refused.
+    anyOf:
+    - $ref: '#/components/schemas/CompanyReviseInput'
+    - $ref: '#/components/schemas/OrganizationCreateOrgUnitInput'
+    - $ref: '#/components/schemas/OrganizationReviseOrgUnitInput'
+    - $ref: '#/components/schemas/OrganizationCreateJobPositionInput'
+    - $ref: '#/components/schemas/OrganizationReviseJobPositionInput'
+    - $ref: '#/components/schemas/PeopleCreatePersonInput'
+    - $ref: '#/components/schemas/PeopleRevisePersonInput'
+    - $ref: '#/components/schemas/HrAppointInput'
+    - $ref: '#/components/schemas/HrPromoteInput'
+    - $ref: '#/components/schemas/HrTransferInput'
+    - $ref: '#/components/schemas/PayrollCreateRunInput'
+    - $ref: '#/components/schemas/PayrollSubmitRunInput'
+    - $ref: '#/components/schemas/PayrollDecideRunInput'
+    - type: object
+      additionalProperties: true
+      description: >-
+        Non-DispatchTarget instance-revision params (`create`, `set_priority`,
+        …). Runtime `params_schema` still fail-closes undeclared keys.
   reason:
     type: string
   valid_from:

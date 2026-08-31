@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `company.revise` (`CompanyQuery`). The tenant is `org_id` on
   the command envelope, not this bag. Preflight requires non-empty `legal_name`.

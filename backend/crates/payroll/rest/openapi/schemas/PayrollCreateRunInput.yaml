@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `payroll.create_run` (`PayRunQuery::CreateRun`). Stages a
   draft under a caller-chosen source label. `payable` is not an input; stored

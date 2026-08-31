@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `hr.transfer` (`EmploymentQuery::Transfer`). Same shape as
   promote; the receipt records a different dispatch target. Four-eyes is

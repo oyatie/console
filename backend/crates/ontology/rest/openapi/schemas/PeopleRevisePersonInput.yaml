@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `people.revise_person` (`PersonQuery::Revise`). Optional
   `employee_id` binds a further employee record to the same natural person.

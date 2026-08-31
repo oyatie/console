@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `organization.create_org_unit` (`OrgUnitQuery::Create`).
   Write preflight requires non-empty `name` and `kind` ∈ {site, department, team}.

@@ -20852,6 +20852,7 @@ components:
           expected_revision: optional_cas
     CompanyReviseInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `company.revise` (`CompanyQuery`). The tenant is `org_id` on
         the command envelope, not this bag. Preflight requires non-empty `legal_name`.
@@ -24422,6 +24423,7 @@ components:
           expected_revision: optional_cas
     EmploymentAttributesInput:
       type: object
+      additionalProperties: false
       description: >-
         Write bag for `hr.appoint` / `hr.promote` / `hr.transfer` (`EmploymentAttributes`).
         Not the Employment Head. `company` is a non-blank string; `employment_status`
@@ -26455,6 +26457,7 @@ components:
           type: boolean
     HrAppointInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `hr.appoint` (`EmploymentQuery::Appoint`). Opens a head at
         `valid_from`. Four-eyes is natural-person. The legacy employees row is not
@@ -26554,6 +26557,7 @@ components:
             $ref: '#/components/schemas/HrOrgChartPosition'
     HrPromoteInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `hr.promote` (`EmploymentQuery::Promote`). Appends a revision
         and carries the new state onto the legacy head. Four-eyes is natural-person.
@@ -26570,6 +26574,7 @@ components:
           $ref: '#/components/schemas/EmploymentAttributesInput'
     HrTransferInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `hr.transfer` (`EmploymentQuery::Transfer`). Same shape as
         promote; the receipt records a different dispatch target. Four-eyes is
@@ -30271,7 +30276,8 @@ components:
           $ref: '#/components/schemas/OntologyActionCommandReceipt'
     OntologyActionRequest:
       type: object
-      description: An object-action preflight/execute request. `params` is validated against the action type's typed param schema.
+      description: An object-action preflight/execute request. Canonical DispatchTarget `params` `$ref` the typed input schemas; generic instance-revision actions keep a free-form object validated against the action's `params_schema` at runtime.
+      additionalProperties: false
       required:
       - object_type_id
       properties:
@@ -30282,8 +30288,29 @@ components:
         title:
           type: string
         params:
-          type: object
-          additionalProperties: true
+          description: >-
+            Typed params for the thirteen DispatchTarget action_keys, or a free-form
+            object for generic instance-revision actions. The path `action_key` selects
+            the codec; a caller-supplied `target` / `action_key` property is refused.
+          anyOf:
+          - $ref: '#/components/schemas/CompanyReviseInput'
+          - $ref: '#/components/schemas/OrganizationCreateOrgUnitInput'
+          - $ref: '#/components/schemas/OrganizationReviseOrgUnitInput'
+          - $ref: '#/components/schemas/OrganizationCreateJobPositionInput'
+          - $ref: '#/components/schemas/OrganizationReviseJobPositionInput'
+          - $ref: '#/components/schemas/PeopleCreatePersonInput'
+          - $ref: '#/components/schemas/PeopleRevisePersonInput'
+          - $ref: '#/components/schemas/HrAppointInput'
+          - $ref: '#/components/schemas/HrPromoteInput'
+          - $ref: '#/components/schemas/HrTransferInput'
+          - $ref: '#/components/schemas/PayrollCreateRunInput'
+          - $ref: '#/components/schemas/PayrollSubmitRunInput'
+          - $ref: '#/components/schemas/PayrollDecideRunInput'
+          - type: object
+            additionalProperties: true
+            description: >-
+              Non-DispatchTarget instance-revision params (`create`, `set_priority`,
+              …). Runtime `params_schema` still fail-closes undeclared keys.
         reason:
           type: string
         valid_from:
@@ -30979,6 +31006,7 @@ components:
           expected_revision: optional_cas
     OrgUnitSourceBinding:
       type: object
+      additionalProperties: false
       description: >-
         Optional legacy source binding on OrgUnit create/revise. `kind` and `id` are
         TEXT; the closed set of kinds is not yet enumerable and legacy identifiers
@@ -30995,6 +31023,7 @@ components:
           minLength: 1
     OrganizationCreateJobPositionInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `organization.create_job_position` (`JobPositionQuery::Create`).
         The named OrgUnit must already exist. Write preflight requires non-empty `title`.
@@ -31015,6 +31044,7 @@ components:
           additionalProperties: true
     OrganizationCreateOrgUnitInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `organization.create_org_unit` (`OrgUnitQuery::Create`).
         Write preflight requires non-empty `name` and `kind` ∈ {site, department, team}.
@@ -31047,6 +31077,7 @@ components:
           additionalProperties: true
     OrganizationReviseJobPositionInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `organization.revise_job_position` (`JobPositionQuery::Revise`).
         Null `org_unit_id` leaves the position where it is; a UUID moves it.
@@ -31071,6 +31102,7 @@ components:
           additionalProperties: true
     OrganizationReviseOrgUnitInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `organization.revise_org_unit` (`OrgUnitQuery::Revise`).
       required:
@@ -31647,6 +31679,7 @@ components:
           type: boolean
     PayrollCreateRunInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `payroll.create_run` (`PayRunQuery::CreateRun`). Stages a
         draft under a caller-chosen source label. `payable` is not an input; stored
@@ -31674,6 +31707,7 @@ components:
           - 'null'
     PayrollDecideRunInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `payroll.decide_run` (`PayRunQuery::DecideRun`).
         `SUBMITTED → APPROVED|REJECTED`, refused when the decider is the submitter.
@@ -32461,6 +32495,7 @@ components:
         retrieved_on: { type: string, format: date }
     PayrollSubmitRunInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `payroll.submit_run` (`PayRunQuery::SubmitRun`).
         `CALCULATED → SUBMITTED`, refused while any exception is open. `payable`
@@ -32472,6 +32507,7 @@ components:
           $ref: '#/components/schemas/Uuid'
     PeopleCreatePersonInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `people.create_person` (`PersonQuery::Create`). When
         `employee_id` is set (trusted uniquely resolved), the new person's id IS that
@@ -32498,6 +32534,7 @@ components:
           additionalProperties: true
     PeopleRevisePersonInput:
       type: object
+      additionalProperties: false
       description: >-
         Typed params for `people.revise_person` (`PersonQuery::Revise`). Optional
         `employee_id` binds a further employee record to the same natural person.

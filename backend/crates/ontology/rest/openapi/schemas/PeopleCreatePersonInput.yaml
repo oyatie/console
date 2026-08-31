@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `people.create_person` (`PersonQuery::Create`). When
   `employee_id` is set (trusted uniquely resolved), the new person's id IS that

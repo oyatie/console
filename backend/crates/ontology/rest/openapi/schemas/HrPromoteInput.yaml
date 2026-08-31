@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `hr.promote` (`EmploymentQuery::Promote`). Appends a revision
   and carries the new state onto the legacy head. Four-eyes is natural-person.

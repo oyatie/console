@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `payroll.decide_run` (`PayRunQuery::DecideRun`).
   `SUBMITTED → APPROVED|REJECTED`, refused when the decider is the submitter.

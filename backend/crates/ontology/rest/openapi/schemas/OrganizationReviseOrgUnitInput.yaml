@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `organization.revise_org_unit` (`OrgUnitQuery::Revise`).
 required:

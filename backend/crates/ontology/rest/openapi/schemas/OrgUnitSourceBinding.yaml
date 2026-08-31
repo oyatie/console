@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Optional legacy source binding on OrgUnit create/revise. `kind` and `id` are
   TEXT; the closed set of kinds is not yet enumerable and legacy identifiers

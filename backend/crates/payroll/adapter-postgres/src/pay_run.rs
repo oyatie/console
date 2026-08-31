@@ -116,6 +116,11 @@ use std::str::FromStr;
 use time::{Date, OffsetDateTime};
 use uuid::Uuid;
 
+// Wire format matches PayrollCreateRunInput (`format: date`), not time's default
+// (year, ordinal) tuple. decode_canonical_query deserializes this query from
+// execute/preflight params.
+time::serde::format_description!(iso_date, Date, "[year]-[month]-[day]");
+
 // ---------------------------------------------------------------------------
 // The one statement that moved
 // ---------------------------------------------------------------------------
@@ -420,7 +425,9 @@ pub enum PayRunQuery {
     #[serde(rename = "payroll.create_run")]
     CreateRun {
         run_id: Uuid,
+        #[serde(with = "iso_date")]
         period_start: Date,
+        #[serde(with = "iso_date")]
         period_end: Date,
         #[serde(default)]
         connector: Option<String>,

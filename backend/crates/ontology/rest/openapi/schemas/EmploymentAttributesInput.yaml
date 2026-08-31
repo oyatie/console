@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Write bag for `hr.appoint` / `hr.promote` / `hr.transfer` (`EmploymentAttributes`).
   Not the Employment Head. `company` is a non-blank string; `employment_status`

@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `payroll.submit_run` (`PayRunQuery::SubmitRun`).
   `CALCULATED → SUBMITTED`, refused while any exception is open. `payable`

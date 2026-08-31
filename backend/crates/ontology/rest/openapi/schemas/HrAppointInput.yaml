@@ -1,4 +1,5 @@
 type: object
+additionalProperties: false
 description: >-
   Typed params for `hr.appoint` (`EmploymentQuery::Appoint`). Opens a head at
   `valid_from`. Four-eyes is natural-person. The legacy employees row is not

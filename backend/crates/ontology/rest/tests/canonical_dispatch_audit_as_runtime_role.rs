@@ -1542,9 +1542,8 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
                     title: None,
                     params: json!({
                         "run_id": run_id,
-                        // `time::Date`'s serde is (year, ordinal), not ISO-8601.
-                        "period_start": [2026, 152],
-                        "period_end": [2026, 181],
+                        "period_start": "2026-06-01",
+                        "period_end": "2026-06-30",
                         "connector": "m2",
                         "job": "payroll_draft"
                     }),

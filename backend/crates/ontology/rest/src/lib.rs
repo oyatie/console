@@ -91,6 +91,7 @@ use time::OffsetDateTime;
 use uuid::Uuid;
 
 mod job_position;
+mod typed_action;
 pub use job_position::{
     JobPositionIdentity, JobPositionProjectionError, identity_from_receipt_result,
 };
@@ -1521,7 +1522,10 @@ pub struct ActionCommand {
 
 /// The HTTP body for both preflight and execute (JSON with bare UUIDs); converted
 /// to a typed [`ActionCommand`] before it touches the orchestration.
+/// Unknown envelope fields fail closed (`deny_unknown_fields`). Canonical
+/// DispatchTarget `params` are typed in [`typed_action::bind_canonical_action_params`].
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ActionRequest {
     object_type_id: Uuid,
     #[serde(default)]
@@ -1981,6 +1985,7 @@ impl OntologyRestState {
         action_key: &str,
         command: &ActionCommand,
     ) -> Result<Prepared, ActionError> {
+        let params = typed_action::bind_canonical_action_params(action_key, &command.params)?;
         let action = self
             .registry
             .get_action_type(command.object_type_id, action_key)
@@ -2013,12 +2018,10 @@ impl OntologyRestState {
             _ => Value::Object(serde_json::Map::new()),
         };
 
-        let command = PreparedCommand::prepare(
-            action_definition(&action),
-            command_inputs(command),
-            &base_attrs,
-        )
-        .map_err(|e| ActionError::Validation(e.message))?;
+        let mut inputs = command_inputs(command);
+        inputs.params = params;
+        let command = PreparedCommand::prepare(action_definition(&action), inputs, &base_attrs)
+            .map_err(|e| ActionError::Validation(e.message))?;
 
         Ok(Prepared { action, command })
     }
