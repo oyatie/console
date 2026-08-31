@@ -3285,6 +3285,10 @@ const GOVERNANCE_FRAGMENT_PATHS: &[PathItem] = &[
 
 const GOVERNANCE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
+        name: "ApprovalSummary",
+        body: include_str!("../../governance/rest/openapi/schemas/ApprovalSummary.yaml"),
+    },
+    NamedYaml {
         name: "AuditChainAttestation",
         body: include_str!("../../governance/rest/openapi/schemas/AuditChainAttestation.yaml"),
     },

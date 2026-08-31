@@ -125,6 +125,10 @@ const PATHS: &[PathItem] = &[
 
 const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
+        name: "ApprovalSummary",
+        body: include_str!("../openapi/schemas/ApprovalSummary.yaml"),
+    },
+    NamedYaml {
         name: "AuditChainAttestation",
         body: include_str!("../openapi/schemas/AuditChainAttestation.yaml"),
     },

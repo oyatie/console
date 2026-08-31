@@ -22,8 +22,7 @@ responses:
     content:
       application/json:
         schema:
-          type: object
-          additionalProperties: true
+          $ref: '#/components/schemas/ApprovalSummary'
   '401':
     $ref: '#/components/responses/Unauthorized'
   '403':

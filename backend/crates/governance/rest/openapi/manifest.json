@@ -39,6 +39,7 @@
     ]
   },
   "schemas": [
+    "ApprovalSummary",
     "AuditChainAttestation",
     "AuditRecord",
     "FindingSeverity",

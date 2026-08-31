@@ -1,0 +1,27 @@
+type: object
+required:
+- id
+- request_ref
+- kind
+- requested_by
+- approver_id
+- decision
+- decided_at
+properties:
+  id:
+    $ref: '#/components/schemas/Uuid'
+  request_ref:
+    $ref: '#/components/schemas/Uuid'
+  kind:
+    type: string
+  requested_by:
+    $ref: '#/components/schemas/Uuid'
+  approver_id:
+    $ref: '#/components/schemas/Uuid'
+  decision:
+    type: string
+    enum:
+    - approved
+    - rejected
+  decided_at:
+    $ref: '#/components/schemas/Timestamp'
