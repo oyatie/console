@@ -1451,6 +1451,22 @@ fn owned_schema_duplicate_against_fragment_is_rejected() -> Result<(), Box<dyn s
 }
 
 #[test]
+fn property_bags_come_from_the_dto_inventory_not_the_manifest()
+-> Result<(), Box<dyn std::error::Error>> {
+    let manifest = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/semantic_manifest.json"
+    ));
+    assert!(
+        !manifest.contains("\"schemas\""),
+        "semantic_manifest.json must not carry property bags: {manifest}"
+    );
+    let owned = generated_schema_yaml()?;
+    assert_eq!(owned.len(), GENERATED_SCHEMA_COUNT);
+    Ok(())
+}
+
+#[test]
 fn generated_person_head_stays_a_closed_projection() -> Result<(), Box<dyn std::error::Error>> {
     let owned = generated_schema_yaml()?;
     let person = owned

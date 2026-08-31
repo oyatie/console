@@ -239,11 +239,25 @@ export function evaluateTypedActionCodecs({ repoRoot }) {
       );
     }
     if (!isPlainObject(schemas)) {
-      push(
-        findings,
-        `${MANIFEST_REL}#/schemas`,
-        "schemas must map generated names to OpenAPI schema objects",
-      );
+      for (const name of CODEC_SCHEMA_NAMES) {
+        const loc = `${TYPED_ACTION_GENERATED_REL}:${name}`;
+        if (!hasStruct(text, name)) {
+          push(
+            findings,
+            loc,
+            "generated Rust is missing a codec struct the DTO inventory declares",
+          );
+          continue;
+        }
+        if (!text.includes("deny_unknown_fields")) {
+          push(
+            findings,
+            loc,
+            "generated codecs must serde(deny_unknown_fields) when Inputs deny unknown fields",
+          );
+        }
+        codecs += 1;
+      }
     } else {
       for (const name of CODEC_SCHEMA_NAMES) {
         const schema = own(schemas, name);

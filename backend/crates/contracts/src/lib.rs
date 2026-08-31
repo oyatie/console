@@ -78,10 +78,11 @@
 //!
 //! Exception (this crate, ADR-0031 slice): the thirteen DispatchTarget Input
 //! schemas, two nested write bags, and six PRODUCT Heads are emitted from
-//! `semantic_manifest.json` via [`generated_schema_yaml`] and merged by
-//! [`compose_document_with_owned`]. Face YAML must not also own those names.
-//! The same manifest emits the typed execute codecs via
-//! [`generated_typed_action_rs`]; `typed_action.rs` must not dual-maintain them.
+//! the DTO inventory via [`generated_schema_yaml`] (objects/links/actions stay
+//! in `semantic_manifest.json`) and merged by [`compose_document_with_owned`].
+//! Face YAML must not also own those names. The same DTO bags emit the typed
+//! execute codecs via [`generated_typed_action_rs`]; `typed_action.rs` must not
+//! dual-maintain them.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;

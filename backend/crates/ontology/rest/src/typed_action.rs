@@ -11,10 +11,10 @@
 //! The original `Value` is returned on success so command-id payload digests
 //! do not change shape.
 //!
-//! Codec structs and `decode_dispatch_target` are generated from
-//! `semantic_manifest.json` by `console-openapi-gen` into
-//! `typed_action_generated.rs`. This file is the runtime binder, not a second
-//! contract.
+//! Codec structs and `decode_dispatch_target` are generated from the DTO
+//! inventory (`semantic_dtos.rs`) plus `semantic_manifest.json` actions by
+//! `console-openapi-gen` into `typed_action_generated.rs`. This file is the
+//! runtime binder, not a second contract.
 
 use console_ontology_canonical_domain::DispatchTarget;
 use serde::Deserialize;

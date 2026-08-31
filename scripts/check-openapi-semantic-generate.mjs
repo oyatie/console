@@ -255,11 +255,7 @@ export function evaluateSemanticGenerate({ repoRoot }) {
   }
 
   if (!isPlainObject(schemas)) {
-    push(
-      findings,
-      `${MANIFEST_REL}#/schemas`,
-      "schemas must map generated names to OpenAPI schema objects",
-    );
+    // DTO-derived property bags: the manifest no longer carries schema literals.
   } else {
     for (const name of GENERATED_SCHEMA_NAMES) {
       const schema = own(schemas, name);
@@ -304,6 +300,17 @@ export function evaluateSemanticGenerate({ repoRoot }) {
         findings,
         SEMANTIC_RS_REL,
         "semantic emitter must export generated_schema_yaml for compose",
+      );
+    }
+    if (
+      !isPlainObject(schemas)
+      && !text.includes("dto_schema_bags")
+      && !text.includes("semantic_dtos")
+    ) {
+      push(
+        findings,
+        SEMANTIC_RS_REL,
+        "semantic emitter must generate property bags from the DTO inventory",
       );
     }
   }
@@ -408,6 +415,36 @@ export function evaluateSemanticGenerate({ repoRoot }) {
           "composed schema does not match the semantic manifest (hand-written YAML drifted, or compose did not emit this body)",
         );
         continue;
+      }
+      generated += 1;
+    }
+  } else {
+    for (const name of GENERATED_SCHEMA_NAMES) {
+      const actual = own(published, name);
+      const loc = `#/components/schemas/${name}`;
+      if (!isPlainObject(actual)) {
+        push(findings, loc, "composed document is missing a DTO-generated schema");
+        continue;
+      }
+      if (HEAD_SCHEMA_NAMES.includes(name)) {
+        if (!Array.isArray(own(actual, "links")) || !Array.isArray(own(actual, "actions"))) {
+          push(
+            findings,
+            loc,
+            "Head schema must carry generated links/actions from the semantic manifest",
+          );
+          continue;
+        }
+      }
+      if (INPUT_SCHEMA_NAMES.includes(name) || NESTED_INPUT_SCHEMAS.includes(name)) {
+        if (own(actual, "additionalProperties") !== false) {
+          push(
+            findings,
+            `${loc}/additionalProperties`,
+            "typed input must set additionalProperties: false",
+          );
+          continue;
+        }
       }
       generated += 1;
     }
