@@ -17,6 +17,7 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
 };
 
 const EXTERNAL_SCHEMAS: &[&str] = &[
+    "Company",
     "CompanyReviseInput",
     "Employment",
     "ErrorBody",
@@ -27,11 +28,13 @@ const EXTERNAL_SCHEMAS: &[&str] = &[
     "OrganizationCreateOrgUnitInput",
     "OrganizationReviseJobPositionInput",
     "OrganizationReviseOrgUnitInput",
+    "OrgUnit",
     "PayrollCreateRunInput",
     "PayrollDecideRunInput",
     "PayrollSubmitRunInput",
     "PeopleCreatePersonInput",
     "PeopleRevisePersonInput",
+    "Person",
     "Timestamp",
     "Uuid",
 ];
@@ -52,6 +55,13 @@ const PATHS: &[PathItem] = &[
         }],
     },
     PathItem {
+        path: "/api/v1/companies/{id}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../openapi/paths/api__v1__companies__id.get.yaml"),
+        }],
+    },
+    PathItem {
         path: "/api/v1/employments",
         operations: &[Operation {
             method: "get",
@@ -63,6 +73,20 @@ const PATHS: &[PathItem] = &[
         operations: &[Operation {
             method: "get",
             body: include_str!("../openapi/paths/api__v1__employments__id.get.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v1/org-units/{id}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../openapi/paths/api__v1__org-units__id.get.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v1/persons/{id}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../openapi/paths/api__v1__persons__id.get.yaml"),
         }],
     },
     PathItem {

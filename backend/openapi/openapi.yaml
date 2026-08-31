@@ -2798,6 +2798,41 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/ValidationError'
+  /api/v1/companies/{id}:
+    get:
+      operationId: getCompany
+      summary: Get a canonical Company head
+      description: >-
+        Returns one Company Head for the armed tenant. The tenant IS the company:
+        path `id` is `org_id`. as_of is omitted: `company_revisions` has no
+        valid-time columns, and using `created_at` as `valid_from` would be a second
+        time model. A path id that is not this tenant, or a tenant with no revision,
+        is 404 (deny-by-omission). `legal_name` / `reg_no` come from the latest
+        revision attributes, never from provisioning-owned `organizations.name`.
+        EmployeeDetail as_of remains HOLD.
+      tags:
+      - Ontology
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Current Company head.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /api/v1/compliance/control-obligation-coverage:
     post:
       tags: [Compliance]
@@ -11713,6 +11748,40 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
+  /api/v1/org-units/{id}:
+    get:
+      operationId: getOrgUnit
+      summary: Get a canonical OrgUnit head
+      description: >-
+        Returns one OrgUnit Head — the current latest revision (`MAX(version)`), the
+        same row `get` already returns. as_of is omitted: `org_units` /
+        `org_unit_revisions` have no valid-time columns, and using `created_at` as
+        `valid_from` would be a second time model. A miss or a foreign tenant is 404
+        (deny-by-omission). Sites, regions, and branches stay the operational auth
+        spine and are not OrgUnits. EmployeeDetail as_of remains HOLD.
+      tags:
+      - Ontology
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Current OrgUnit head.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgUnit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /api/v1/p1-dispatches/{dispatchId}:
     get:
       tags:
@@ -12676,6 +12745,40 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '503':
           description: JWT verification is not configured.
+  /api/v1/persons/{id}:
+    get:
+      operationId: getPerson
+      summary: Get a canonical Person head
+      description: >-
+        Returns one Person Head — the current latest revision (`MAX(version)`), the
+        same closed four-field projection `get` already returns. as_of is omitted:
+        `persons` / `person_revisions` have no valid-time columns, and using
+        `created_at` as `valid_from` would be a second time model. A miss or a
+        foreign tenant is 404 (deny-by-omission). The Head never includes phone,
+        salary, bank_account, or rrn. EmployeeDetail as_of remains HOLD.
+      tags:
+      - Ontology
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Current Person head.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /api/v1/policy/assignments:
     get:
       tags:
@@ -20854,7 +20957,7 @@ components:
       - PERSONAL
     Company:
       type: object
-      description: Canonical Company head for one tenant. The tenant IS the company (`org_id`). `legal_name` and `reg_no` are read from the latest `company_revisions.attributes`; they are never copied from provisioning-owned `organizations.name`. Write preflight requires a non-empty string `legal_name`; an omitted key is JSON null on the Head. `founded_on` and `registration_number` are company_conformance fixture keys, not this port. `org_id` is the RLS cell, not a Palantir link. Temporal slices other than revision `version` remain HOLD.
+      description: "Canonical Company head for one tenant. The tenant IS the company (`org_id`). GET /api/v1/companies/{id} returns this current head (path `id` is `org_id`). as_of is omitted: `company_revisions` has no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `legal_name` and `reg_no` are read from the latest `company_revisions.attributes`; they are never copied from provisioning-owned `organizations.name`. Write preflight requires a non-empty string `legal_name`; an omitted key is JSON null on the Head. `founded_on` and `registration_number` are company_conformance fixture keys, not this port. `org_id` is the RLS cell, not a Palantir link. Temporal slices other than revision `version` remain HOLD."
       required:
         - org_id
         - version
@@ -30964,7 +31067,7 @@ components:
           maxLength: 120
     OrgUnit:
       type: object
-      description: Canonical OrgUnit head. `name` and `parent_id` are parsed from the latest `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites, regions, and branches stay the operational auth spine and are not OrgUnits. OrgUnit kinds Site/Department/Team are write-preflight on revision attributes (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices other than revision `version` remain HOLD.
+      description: "Canonical OrgUnit head. GET /api/v1/org-units/{id} returns this current head. as_of is omitted: `org_units` / `org_unit_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `name` and `parent_id` are parsed from the latest `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites, regions, and branches stay the operational auth spine and are not OrgUnits. OrgUnit kinds Site/Department/Team are write-preflight on revision attributes (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices other than revision `version` remain HOLD."
       required:
         - id
         - version
@@ -32627,7 +32730,7 @@ components:
             $ref: '#/components/schemas/PeriodLock'
     Person:
       type: object
-      description: Canonical Person head. Closed four-field projection of the latest `person_revisions` row. `get`/`list` never copy the attributes object onto the wire, so stored `phone` / `salary` / `bank_account` / `rrn` cannot appear. Trusted directory create mints `person_id = employee_id`. No outgoing Head FK; Employment.person_id is the reverse. Temporal slices other than revision `version` remain HOLD.
+      description: "Canonical Person head. Closed four-field projection of the latest `person_revisions` row. GET /api/v1/persons/{id} returns this current head. as_of is omitted: `persons` / `person_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `get`/`list` never copy the attributes object onto the wire, so stored `phone` / `salary` / `bank_account` / `rrn` cannot appear. Trusted directory create mints `person_id = employee_id`. No outgoing Head FK; Employment.person_id is the reverse. Temporal slices other than revision `version` remain HOLD."
       required:
         - id
         - version

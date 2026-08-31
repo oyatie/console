@@ -73,7 +73,7 @@ use console_ontology_canonical_domain::{
     CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, Company,
     DispatchTarget, ObjectKey, Preflight, ReceiptOwner,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
 use std::str::FromStr;
@@ -156,7 +156,7 @@ impl CanonicalPortError for CompanyError {
 /// `legal_name` / `reg_no` come from the latest revision's attributes. They are
 /// never copied from `organizations` — the runtime role is SELECT-only there,
 /// and the provisioning-owned `name` is not the canonical company state.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct CompanyHead {
     pub org_id: Uuid,
     pub legal_name: Option<String>,

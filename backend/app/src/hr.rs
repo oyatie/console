@@ -16,9 +16,11 @@ use console_leave_adapter_postgres::{PgLeaveError, PgLeaveStore};
 use console_leave_domain::LeaveBalanceAmount;
 // `ObjectKey::Employment`'s owner. Every `employees` statement this module used
 // to hold lives there now; console-app is no longer a second writer of it.
+use console_ontology_canonical_adapter_postgres::company;
 use console_ontology_canonical_adapter_postgres::employment;
+use console_ontology_canonical_adapter_postgres::org_unit;
 use console_ontology_canonical_adapter_postgres::person::{
-    PersonCommand, PersonError, write_in_tx as write_person_in_tx,
+    PersonCommand, PersonError, PersonHead, PgPersonPort, write_in_tx as write_person_in_tx,
 };
 use console_payroll_domain::{
     ProfessionalReviewerKind, ProfessionalValidation, SeverancePayInput, build_severance_pay_draft,
@@ -40,6 +42,9 @@ pub const EMPLOYEES_PATH: &str = "/api/v1/employees";
 pub const EMPLOYEE_DETAIL_PATH_TEMPLATE: &str = "/api/v1/employees/{id}";
 pub const EMPLOYMENTS_PATH: &str = "/api/v1/employments";
 pub const EMPLOYMENT_PATH_TEMPLATE: &str = "/api/v1/employments/{id}";
+pub const ORG_UNIT_PATH_TEMPLATE: &str = "/api/v1/org-units/{id}";
+pub const COMPANY_PATH_TEMPLATE: &str = "/api/v1/companies/{id}";
+pub const PERSON_PATH_TEMPLATE: &str = "/api/v1/persons/{id}";
 pub const EMPLOYEES_IMPORT_PATH: &str = "/api/v1/employees/import";
 pub const EMPLOYEES_IMPORT_PREVIEW_PATH: &str = "/api/v1/employees/import/preview";
 pub const EMPLOYEES_IMPORT_DRY_RUN_PATH_TEMPLATE: &str =
@@ -70,6 +75,9 @@ pub const HR_ROUTE_PATHS: &[&str] = &[
     EMPLOYEE_DETAIL_PATH_TEMPLATE,
     EMPLOYMENTS_PATH,
     EMPLOYMENT_PATH_TEMPLATE,
+    ORG_UNIT_PATH_TEMPLATE,
+    COMPANY_PATH_TEMPLATE,
+    PERSON_PATH_TEMPLATE,
     EMPLOYEES_IMPORT_PATH,
     EMPLOYEES_IMPORT_PREVIEW_PATH,
     EMPLOYEES_IMPORT_DRY_RUN_PATH_TEMPLATE,
@@ -129,6 +137,9 @@ pub fn router(state: HrState) -> Router {
         .route(EMPLOYEE_DETAIL_PATH_TEMPLATE, get(get_employee_detail))
         .route(EMPLOYMENTS_PATH, get(list_employments))
         .route(EMPLOYMENT_PATH_TEMPLATE, get(get_employment))
+        .route(ORG_UNIT_PATH_TEMPLATE, get(get_org_unit))
+        .route(COMPANY_PATH_TEMPLATE, get(get_company))
+        .route(PERSON_PATH_TEMPLATE, get(get_person_head))
         .route(HR_ORG_CHART_PATH, get(get_hr_org_chart))
         .route(HR_LEAVE_BALANCES_PATH, get(list_leave_balances))
         .route(HR_ATTENDANCE_SUMMARY_PATH, get(list_attendance_summary))
@@ -1466,6 +1477,91 @@ async fn get_employment(
     let head = head.ok_or_else(|| {
         HrError::from_kernel(KernelError::not_found(
             "employment was not found in this organization",
+        ))
+    })?;
+    Ok(Json(head))
+}
+
+/// Canonical OrgUnit Head. Current latest revision only — org_units has no
+/// valid-time columns, so as_of is not a query. Gated on directory *read*.
+/// A miss or a foreign tenant is 404.
+async fn get_org_unit(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+    Path(org_unit_id): Path<Uuid>,
+) -> Result<Json<org_unit::OrgUnitHead>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    record_hr_read("org-units");
+    let org = principal.org_id;
+    let pool = state.pool.clone();
+    let handle = tokio::runtime::Handle::current();
+    let head = tokio::task::spawn_blocking(move || {
+        let port = org_unit::PgOrgUnitPort::new(pool, handle);
+        port.get(org, org_unit_id)
+    })
+    .await
+    .map_err(|_| HrError::from_kernel(KernelError::internal("org unit read join failed")))??;
+    let head = head.ok_or_else(|| {
+        HrError::from_kernel(KernelError::not_found(
+            "org unit was not found in this organization",
+        ))
+    })?;
+    Ok(Json(head))
+}
+
+/// Canonical Company Head. Path `id` is `org_id` (the tenant IS the company).
+/// as_of is omitted: company_revisions has no valid-time columns. A path id
+/// that is not this tenant, or a tenant with no revision, is 404.
+async fn get_company(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+    Path(company_id): Path<Uuid>,
+) -> Result<Json<company::CompanyHead>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    record_hr_read("companies");
+    if company_id != *principal.org_id.as_uuid() {
+        return Err(HrError::from_kernel(KernelError::not_found(
+            "company was not found in this organization",
+        )));
+    }
+    let org = principal.org_id;
+    let pool = state.pool.clone();
+    let handle = tokio::runtime::Handle::current();
+    let head = tokio::task::spawn_blocking(move || {
+        let port = company::PgCompanyPort::new(pool, handle);
+        port.get(org)
+    })
+    .await
+    .map_err(|_| HrError::from_kernel(KernelError::internal("company read join failed")))??;
+    let head = head.ok_or_else(|| {
+        HrError::from_kernel(KernelError::not_found(
+            "company was not found in this organization",
+        ))
+    })?;
+    Ok(Json(head))
+}
+
+/// Canonical Person Head. Closed four-field projection. as_of is omitted:
+/// persons has no valid-time columns. A miss or a foreign tenant is 404.
+async fn get_person_head(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+    Path(person_id): Path<Uuid>,
+) -> Result<Json<PersonHead>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    record_hr_read("persons");
+    let org = principal.org_id;
+    let pool = state.pool.clone();
+    let handle = tokio::runtime::Handle::current();
+    let head = tokio::task::spawn_blocking(move || {
+        let port = PgPersonPort::new(pool, handle);
+        port.get(org, person_id)
+    })
+    .await
+    .map_err(|_| HrError::from_kernel(KernelError::internal("person read join failed")))??;
+    let head = head.ok_or_else(|| {
+        HrError::from_kernel(KernelError::not_found(
+            "person was not found in this organization",
         ))
     })?;
     Ok(Json(head))
@@ -8779,6 +8875,42 @@ impl From<PersonError> for HrError {
             PersonError::UnreadableReceipt(id, message) => {
                 tracing::error!(command = %id, receipt = %message, "person command receipt unreadable");
                 Self::internal("employee directory request failed")
+            }
+        }
+    }
+}
+
+impl From<org_unit::OrgUnitError> for HrError {
+    fn from(error: org_unit::OrgUnitError) -> Self {
+        match error {
+            org_unit::OrgUnitError::Blocked(blockers) => Self::from_kernel(
+                KernelError::validation(format!("preflight blocked the command: {blockers:?}")),
+            ),
+            org_unit::OrgUnitError::DigestConflict(id) => Self::from_kernel(KernelError::conflict(
+                format!("command {id} was already applied with a different payload"),
+            )),
+            org_unit::OrgUnitError::Database(error) => Self::from(error),
+            org_unit::OrgUnitError::UnreadableReceipt(id, message) => {
+                tracing::error!(command = %id, receipt = %message, "org unit command receipt unreadable");
+                Self::internal("org unit request failed")
+            }
+        }
+    }
+}
+
+impl From<company::CompanyError> for HrError {
+    fn from(error: company::CompanyError) -> Self {
+        match error {
+            company::CompanyError::Blocked(blockers) => Self::from_kernel(KernelError::validation(
+                format!("preflight blocked the command: {blockers:?}"),
+            )),
+            company::CompanyError::DigestConflict(id) => Self::from_kernel(KernelError::conflict(
+                format!("command {id} was already applied with a different payload"),
+            )),
+            company::CompanyError::Database(error) => Self::from(error),
+            company::CompanyError::UnreadableReceipt(id, message) => {
+                tracing::error!(command = %id, receipt = %message, "company command receipt unreadable");
+                Self::internal("company request failed")
             }
         }
     }

@@ -66,7 +66,7 @@ use console_ontology_canonical_domain::{
     CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget,
     ObjectKey, OrgUnit, Preflight, ReceiptOwner,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
 use std::collections::HashSet;
@@ -183,7 +183,7 @@ impl CanonicalPortError for OrgUnitError {
 
 /// Current canonical OrgUnit head. `name` / `parent_id` are parsed from the
 /// latest revision's attributes; neither is a column on `org_units`.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct OrgUnitHead {
     pub id: Uuid,
     pub name: Option<String>,

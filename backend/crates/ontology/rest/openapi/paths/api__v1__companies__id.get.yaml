@@ -1,0 +1,33 @@
+operationId: getCompany
+summary: Get a canonical Company head
+description: >-
+  Returns one Company Head for the armed tenant. The tenant IS the company:
+  path `id` is `org_id`. as_of is omitted: `company_revisions` has no
+  valid-time columns, and using `created_at` as `valid_from` would be a second
+  time model. A path id that is not this tenant, or a tenant with no revision,
+  is 404 (deny-by-omission). `legal_name` / `reg_no` come from the latest
+  revision attributes, never from provisioning-owned `organizations.name`.
+  EmployeeDetail as_of remains HOLD.
+tags:
+- Ontology
+security:
+- bearerAuth: []
+parameters:
+- name: id
+  in: path
+  required: true
+  schema:
+    $ref: '#/components/schemas/Uuid'
+responses:
+  '200':
+    description: Current Company head.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Company'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'
+  '404':
+    $ref: '#/components/responses/NotFound'

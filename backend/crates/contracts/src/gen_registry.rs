@@ -6052,6 +6052,7 @@ pub const ONTOLOGY_FRAGMENT: Fragment = Fragment {
 };
 
 const ONTOLOGY_FRAGMENT_EXTERNAL: &[&str] = &[
+    "Company",
     "CompanyReviseInput",
     "Employment",
     "ErrorBody",
@@ -6062,11 +6063,13 @@ const ONTOLOGY_FRAGMENT_EXTERNAL: &[&str] = &[
     "OrganizationCreateOrgUnitInput",
     "OrganizationReviseJobPositionInput",
     "OrganizationReviseOrgUnitInput",
+    "OrgUnit",
     "PayrollCreateRunInput",
     "PayrollDecideRunInput",
     "PayrollSubmitRunInput",
     "PeopleCreatePersonInput",
     "PeopleRevisePersonInput",
+    "Person",
     "Timestamp",
     "Uuid",
 ];
@@ -6089,6 +6092,13 @@ const ONTOLOGY_FRAGMENT_PATHS: &[PathItem] = &[
         }],
     },
     PathItem {
+        path: "/api/v1/companies/{id}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../../ontology/rest/openapi/paths/api__v1__companies__id.get.yaml"),
+        }],
+    },
+    PathItem {
         path: "/api/v1/employments",
         operations: &[Operation {
             method: "get",
@@ -6102,6 +6112,20 @@ const ONTOLOGY_FRAGMENT_PATHS: &[PathItem] = &[
             body: include_str!(
                 "../../ontology/rest/openapi/paths/api__v1__employments__id.get.yaml"
             ),
+        }],
+    },
+    PathItem {
+        path: "/api/v1/org-units/{id}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../../ontology/rest/openapi/paths/api__v1__org-units__id.get.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v1/persons/{id}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../../ontology/rest/openapi/paths/api__v1__persons__id.get.yaml"),
         }],
     },
     PathItem {

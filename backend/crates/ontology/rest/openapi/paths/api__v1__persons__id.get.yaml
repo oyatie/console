@@ -1,0 +1,32 @@
+operationId: getPerson
+summary: Get a canonical Person head
+description: >-
+  Returns one Person Head — the current latest revision (`MAX(version)`), the
+  same closed four-field projection `get` already returns. as_of is omitted:
+  `persons` / `person_revisions` have no valid-time columns, and using
+  `created_at` as `valid_from` would be a second time model. A miss or a
+  foreign tenant is 404 (deny-by-omission). The Head never includes phone,
+  salary, bank_account, or rrn. EmployeeDetail as_of remains HOLD.
+tags:
+- Ontology
+security:
+- bearerAuth: []
+parameters:
+- name: id
+  in: path
+  required: true
+  schema:
+    $ref: '#/components/schemas/Uuid'
+responses:
+  '200':
+    description: Current Person head.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Person'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'
+  '404':
+    $ref: '#/components/responses/NotFound'

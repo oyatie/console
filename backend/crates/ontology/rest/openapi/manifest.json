@@ -7,6 +7,9 @@
     "/api/objects/{kind}/{id}/graph": [
       "get"
     ],
+    "/api/v1/companies/{id}": [
+      "get"
+    ],
     "/api/v1/employments": [
       "get"
     ],
@@ -76,6 +79,12 @@
     "/api/v1/ontology/resolve": [
       "get"
     ],
+    "/api/v1/org-units/{id}": [
+      "get"
+    ],
+    "/api/v1/persons/{id}": [
+      "get"
+    ],
     "/api/v1/search": [
       "get"
     ],
@@ -123,6 +132,7 @@
     "SeriesHead"
   ],
   "external_schemas": [
+    "Company",
     "CompanyReviseInput",
     "Employment",
     "ErrorBody",
@@ -133,11 +143,13 @@
     "OrganizationCreateOrgUnitInput",
     "OrganizationReviseJobPositionInput",
     "OrganizationReviseOrgUnitInput",
+    "OrgUnit",
     "PayrollCreateRunInput",
     "PayrollDecideRunInput",
     "PayrollSubmitRunInput",
     "PeopleCreatePersonInput",
     "PeopleRevisePersonInput",
+    "Person",
     "Timestamp",
     "Uuid"
   ]
