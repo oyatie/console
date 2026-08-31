@@ -19,8 +19,7 @@ responses:
         schema:
           type: array
           items:
-            type: object
-            additionalProperties: true
+            $ref: '#/components/schemas/RevisionSummary'
   '401':
     $ref: '#/components/responses/Unauthorized'
   '403':

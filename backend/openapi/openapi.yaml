@@ -10766,8 +10766,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/InstanceState'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -10854,8 +10853,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/InstanceState'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -10902,8 +10900,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/RevisionSummary'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -10963,8 +10960,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/TraversalGraph'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':

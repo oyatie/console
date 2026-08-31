@@ -157,6 +157,7 @@
     "HrAppointInput",
     "HrPromoteInput",
     "HrTransferInput",
+    "InstanceState",
     "JobPosition",
     "OrganizationCreateJobPositionInput",
     "OrganizationCreateOrgUnitInput",
@@ -169,7 +170,9 @@
     "PeopleCreatePersonInput",
     "PeopleRevisePersonInput",
     "Person",
+    "RevisionSummary",
     "Timestamp",
+    "TraversalGraph",
     "Uuid"
   ]
 }

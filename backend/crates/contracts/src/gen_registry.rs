@@ -6059,6 +6059,7 @@ const ONTOLOGY_FRAGMENT_EXTERNAL: &[&str] = &[
     "HrAppointInput",
     "HrPromoteInput",
     "HrTransferInput",
+    "InstanceState",
     "JobPosition",
     "OrganizationCreateJobPositionInput",
     "OrganizationCreateOrgUnitInput",
@@ -6071,7 +6072,9 @@ const ONTOLOGY_FRAGMENT_EXTERNAL: &[&str] = &[
     "PeopleCreatePersonInput",
     "PeopleRevisePersonInput",
     "Person",
+    "RevisionSummary",
     "Timestamp",
+    "TraversalGraph",
     "Uuid",
 ];
 

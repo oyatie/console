@@ -24,6 +24,7 @@ const EXTERNAL_SCHEMAS: &[&str] = &[
     "HrAppointInput",
     "HrPromoteInput",
     "HrTransferInput",
+    "InstanceState",
     "JobPosition",
     "OrganizationCreateJobPositionInput",
     "OrganizationCreateOrgUnitInput",
@@ -36,7 +37,9 @@ const EXTERNAL_SCHEMAS: &[&str] = &[
     "PeopleCreatePersonInput",
     "PeopleRevisePersonInput",
     "Person",
+    "RevisionSummary",
     "Timestamp",
+    "TraversalGraph",
     "Uuid",
 ];
 
