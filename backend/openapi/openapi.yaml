@@ -13073,8 +13073,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/DecisionResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -13664,8 +13663,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/DecisionResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -23908,6 +23906,11 @@ components:
             type: string
         reason:
           type: string
+    DecisionResponse:
+      type: object
+      required: [outcome]
+      properties:
+        outcome: { $ref: '#/components/schemas/SimulationOutcome' }
     DefinitionsByObjectKindResponse:
       type: object
       required: [kind, definitions, bindings]

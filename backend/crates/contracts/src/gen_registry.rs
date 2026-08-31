@@ -4315,6 +4315,10 @@ const IDENTITY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../identity/rest/openapi/schemas/DecisionLogRow.yaml"),
     },
     NamedYaml {
+        name: "DecisionResponse",
+        body: include_str!("../../identity/rest/openapi/schemas/DecisionResponse.yaml"),
+    },
+    NamedYaml {
         name: "DeviceLoginApproveRequest",
         body: include_str!("../../identity/rest/openapi/schemas/DeviceLoginApproveRequest.yaml"),
     },

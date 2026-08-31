@@ -288,6 +288,7 @@
     "CreateRegionRequest",
     "CreateUserRequest",
     "DecisionLogRow",
+    "DecisionResponse",
     "DeviceLoginApproveRequest",
     "DeviceLoginApproveSessionRequest",
     "DeviceLoginPollRequest",

@@ -1,0 +1,4 @@
+type: object
+required: [outcome]
+properties:
+  outcome: { $ref: '#/components/schemas/SimulationOutcome' }

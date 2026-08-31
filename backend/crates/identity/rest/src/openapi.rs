@@ -829,6 +829,10 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/DecisionLogRow.yaml"),
     },
     NamedYaml {
+        name: "DecisionResponse",
+        body: include_str!("../openapi/schemas/DecisionResponse.yaml"),
+    },
+    NamedYaml {
         name: "DeviceLoginApproveRequest",
         body: include_str!("../openapi/schemas/DeviceLoginApproveRequest.yaml"),
     },
