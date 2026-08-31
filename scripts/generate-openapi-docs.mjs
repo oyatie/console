@@ -7,7 +7,8 @@
 // Chesterton: extend the OpenAPI regen+diff pattern. Do not replace compose.
 // This generator reads committed `backend/openapi/openapi.yaml` and emits one
 // static HTML artifact. Schema *names* reuse the existing 21-name roster;
-// property *shapes*, links, actions, and operations come from the composed
+// property *shapes*, links (including operationId), actions (including
+// permissions), operation permissions, and operations come from the composed
 // document. Not published.
 //
 // Totality: js-yaml load + own-property walks of components.schemas and paths.
@@ -192,6 +193,11 @@ function propertyRow(name, schema, requiredSet) {
   return `<tr ${attrs.join(" ")}><th>${escapeHtml(name)}</th><td>${required ? "required" : "optional"}</td><td>${schemaToHtml(schema)}</td><td>${escapeHtml(description)}</td></tr>`;
 }
 
+function stringList(value) {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item) => typeof item === "string" && item.length > 0);
+}
+
 function renderLinks(links) {
   if (!Array.isArray(links) || links.length === 0) {
     return '<p class="empty">No outgoing Head links.</p>';
@@ -204,8 +210,13 @@ function renderLinks(links) {
     const to = typeof own(link, "to") === "string" ? own(link, "to") : "";
     const field = typeof own(link, "field") === "string" ? own(link, "field") : "";
     const cardinality = typeof own(link, "cardinality") === "string" ? own(link, "cardinality") : "";
+    const operationId = typeof own(link, "operationId") === "string" ? own(link, "operationId") : "";
+    const opAttr = operationId === "" ? "" : ` data-operation-id="${escapeHtml(operationId)}"`;
+    const opText = operationId === ""
+      ? ""
+      : ` operation <code>${escapeHtml(operationId)}</code>`;
     items.push(
-      `<li data-link="${escapeHtml(key)}"><code>${escapeHtml(key)}</code> ${escapeHtml(from)} → ${escapeHtml(to)} via <code>${escapeHtml(field)}</code> (${escapeHtml(cardinality)})</li>`,
+      `<li data-link="${escapeHtml(key)}"${opAttr}><code>${escapeHtml(key)}</code> ${escapeHtml(from)} → ${escapeHtml(to)} via <code>${escapeHtml(field)}</code> (${escapeHtml(cardinality)})${opText}</li>`,
     );
   }
   return items.length > 0 ? `<ul class="links">${items.join("")}</ul>` : '<p class="empty">No outgoing Head links.</p>';
@@ -250,11 +261,18 @@ function renderActions(actions) {
     const key = typeof own(action, "action_key") === "string" ? own(action, "action_key") : "";
     const inputRef = schemaRefName(own(own(action, "input"), "$ref")) ?? "";
     const fourEyes = typeof own(action, "four_eyes") === "string" ? own(action, "four_eyes") : "";
+    const permissions = stringList(own(action, "permissions"));
+    const permAttr = permissions.length === 0
+      ? ""
+      : ` data-permissions="${escapeHtml(permissions.join(" "))}"`;
+    const permText = permissions.length === 0
+      ? ""
+      : ` permissions ${permissions.map((item) => `<code>${escapeHtml(item)}</code>`).join(" ")}`;
     const inputHtml = inputRef === ""
       ? "untyped"
       : `<a href="#schema-${escapeHtml(inputRef)}">${escapeHtml(inputRef)}</a>`;
     items.push(
-      `<li data-action="${escapeHtml(key)}"><code>${escapeHtml(key)}</code> input ${inputHtml} four_eyes ${escapeHtml(fourEyes)}</li>`,
+      `<li data-action="${escapeHtml(key)}"${permAttr}><code>${escapeHtml(key)}</code> input ${inputHtml} four_eyes ${escapeHtml(fourEyes)}${permText}</li>`,
     );
   }
   return items.length > 0 ? `<ul class="actions">${items.join("")}</ul>` : '<p class="empty">No actions.</p>';
@@ -284,7 +302,7 @@ function emitSchema(name, schema) {
 
 /**
  * @param {unknown} document
- * @returns {{ method: string, path: string, operationId: string, summary: string }[]}
+ * @returns {{ method: string, path: string, operationId: string, summary: string, permissions: string[] }[]}
  */
 export function collectOperations(document) {
   const operations = [];
@@ -301,6 +319,7 @@ export function collectOperations(document) {
         path,
         operationId: typeof own(op, "operationId") === "string" ? own(op, "operationId") : "",
         summary: typeof own(op, "summary") === "string" ? own(op, "summary") : "",
+        permissions: stringList(own(op, "permissions")),
       });
     }
   }
@@ -310,9 +329,16 @@ export function collectOperations(document) {
 function renderOperations(operations) {
   const rows = operations.map((operation) => {
     const key = `${operation.method} ${operation.path}`;
-    return `<tr data-operation="${escapeHtml(key)}"><th>${escapeHtml(operation.method)}</th><td><code>${escapeHtml(operation.path)}</code></td><td>${escapeHtml(operation.operationId)}</td><td>${escapeHtml(operation.summary)}</td></tr>`;
+    const permissions = stringList(operation.permissions);
+    const permAttr = permissions.length === 0
+      ? ""
+      : ` data-permissions="${escapeHtml(permissions.join(" "))}"`;
+    const permCell = permissions.length === 0
+      ? ""
+      : permissions.map((item) => `<code>${escapeHtml(item)}</code>`).join(" ");
+    return `<tr data-operation="${escapeHtml(key)}"${permAttr}><th>${escapeHtml(operation.method)}</th><td><code>${escapeHtml(operation.path)}</code></td><td>${escapeHtml(operation.operationId)}</td><td>${escapeHtml(operation.summary)}</td><td>${permCell}</td></tr>`;
   });
-  return `<section id="operations" data-operation-count="${operations.length}"><h2>Operations</h2><p class="meta">${operations.length} operations from composed <code>paths</code>.</p><table class="operations"><thead><tr><th>Method</th><th>Path</th><th>Operation ID</th><th>Summary</th></tr></thead><tbody>${rows.join("")}</tbody></table></section>`;
+  return `<section id="operations" data-operation-count="${operations.length}"><h2>Operations</h2><p class="meta">${operations.length} operations from composed <code>paths</code>.</p><table class="operations"><thead><tr><th>Method</th><th>Path</th><th>Operation ID</th><th>Summary</th><th>Permissions</th></tr></thead><tbody>${rows.join("")}</tbody></table></section>`;
 }
 
 const STYLE = [
