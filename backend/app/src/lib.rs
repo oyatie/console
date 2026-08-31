@@ -3535,8 +3535,12 @@ pub fn build_router(state: AppState) -> Router {
         }
         DatabaseDependency::NotConfigured => router,
     };
-    let router = router.nest(
-        "/_ui",
+    // Human UI occupies conventional public paths. Axum panics on nest("/"),
+    // and `/api/v1`, `/healthz`, `/readyz`, `/metrics`, `/openapi`,
+    // `/.well-known`, and `/internal/intelligence/bind` already occupy the
+    // only other public documents — none clash with `/`, `/organization`,
+    // `/hr`, `/payroll`, or `/pkg`.
+    let router = router.merge(
         Router::new()
             .route("/", get(ui_shell))
             .route("/organization", get(ui_organization))

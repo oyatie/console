@@ -1,12 +1,12 @@
-//! Payroll `Layer::Ui` surface. SSR HTML for `/_ui`; no payroll math.
+//! Payroll `Layer::Ui` surface. SSR HTML for `/`; no payroll math.
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
-const PKG_JS: &str = "/_ui/pkg/console_payroll_ui.js";
-const PKG_WASM: &str = "/_ui/pkg/console_payroll_ui_bg.wasm";
+const PKG_JS: &str = "/pkg/console_payroll_ui.js";
+const PKG_WASM: &str = "/pkg/console_payroll_ui_bg.wasm";
 const ISLAND_BOOTSTRAP: &str = concat!(
     include_str!("island_script.js"),
-    "(\"/_ui\", \"pkg\", \"console_payroll_ui\", \"console_payroll_ui_bg\");"
+    "(\"\", \"pkg\", \"console_payroll_ui\", \"console_payroll_ui_bg\");"
 );
 
 /// Contract-shaped run summary for SSR composition. Field names match
@@ -110,7 +110,7 @@ pub struct ShippingScreens {
     pub runs: ScreenSection<RunSummary>,
 }
 
-/// Which `/_ui` body to render. Nav still only names authorized non-empty screens.
+/// Which shipping-UI body to render. Nav still only names authorized non-empty screens.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum UiScreen {
     Home,
@@ -276,9 +276,9 @@ fn Employments(employments: Vec<EmploymentView>) -> impl IntoView {
 fn ShippingNav(has_org: bool, has_hr: bool, has_payroll: bool) -> impl IntoView {
     view! {
         <nav>
-            {has_org.then(|| view! { <a href="/_ui/organization">"조직"</a> })}
-            {has_hr.then(|| view! { <a href="/_ui/hr">"인사"</a> })}
-            {has_payroll.then(|| view! { <a href="/_ui/payroll">"급여"</a> })}
+            {has_org.then(|| view! { <a href="/organization">"조직"</a> })}
+            {has_hr.then(|| view! { <a href="/hr">"인사"</a> })}
+            {has_payroll.then(|| view! { <a href="/payroll">"급여"</a> })}
         </nav>
     }
 }
@@ -643,7 +643,7 @@ mod tests {
             render_shell()
         );
         assert!(
-            !render_shell().contains("/_ui/pkg/"),
+            !render_shell().contains("/pkg/"),
             "empty shell must not load WASM: {}",
             render_shell()
         );
@@ -680,7 +680,7 @@ mod tests {
             "authorized markup must preload wasm: {html}"
         );
         assert!(
-            html.contains("(\"/_ui\", \"pkg\", \"console_payroll_ui\", \"console_payroll_ui_bg\")"),
+            html.contains("(\"\", \"pkg\", \"console_payroll_ui\", \"console_payroll_ui_bg\")"),
             "authorized markup must invoke leptos island_script: {html}"
         );
         assert!(
@@ -845,7 +845,7 @@ mod tests {
             render_shell()
         );
         assert!(
-            !render_shell().contains("href=\"/_ui/"),
+            !render_shell().contains("href=\"/"),
             "empty shell must omit nav: {}",
             render_shell()
         );
@@ -882,7 +882,7 @@ mod tests {
             empty_pay.contains("data-screen=\"payroll\"")
                 && empty_pay.contains("data-state=\"empty\"")
                 && empty_pay.contains("표시할 급여 이력이 없습니다")
-                && !empty_pay.contains("/_ui/pkg/")
+                && !empty_pay.contains("/pkg/")
                 && !empty_pay.contains("data-run-id"),
             "authorized-empty payroll is SSR empty copy, not omit and not WASM: {empty_pay}"
         );
@@ -905,7 +905,7 @@ mod tests {
                 && fail_html.contains("data-state=\"failure\"")
                 && fail_html.contains("목록을 불러오지 못했습니다")
                 && !fail_html.contains("data-run-id")
-                && !fail_html.contains("/_ui/pkg/"),
+                && !fail_html.contains("/pkg/"),
             "listing failure marks the section without object ids: {fail_html}"
         );
         assert_shipping_invariants(&fail_html);
@@ -966,15 +966,15 @@ mod tests {
             "must not keep the OrgEntitySummary dual contract: {html}"
         );
         assert!(
-            html.contains("href=\"/_ui/organization\""),
+            html.contains("href=\"/organization\""),
             "authorized org nav is SSR: {html}"
         );
         assert!(
-            !html.contains("href=\"/_ui/hr\"") && !html.contains("href=\"/_ui/payroll\""),
+            !html.contains("href=\"/hr\"") && !html.contains("href=\"/payroll\""),
             "nav must omit unauthorized/empty screens: {html}"
         );
         assert!(
-            !html.contains("/_ui/pkg/"),
+            !html.contains("/pkg/"),
             "org read projection is SSR, not an island: {html}"
         );
         assert!(
@@ -1058,7 +1058,7 @@ mod tests {
         );
         assert_not_directory_person(&html);
         assert!(
-            html.contains("href=\"/_ui/hr\""),
+            html.contains("href=\"/hr\""),
             "authorized HR nav is SSR: {html}"
         );
         let lowered = html.to_ascii_lowercase();
@@ -1071,7 +1071,7 @@ mod tests {
             "Employment Head must not copy write-bag or PII: {html}"
         );
         assert!(
-            !html.contains("/_ui/pkg/"),
+            !html.contains("/pkg/"),
             "HR read projection is SSR, not an island: {html}"
         );
         assert!(
@@ -1094,9 +1094,9 @@ mod tests {
         assert!(html.contains("data-screen=\"organization\""), "{html}");
         assert!(html.contains("data-screen=\"hr\""), "{html}");
         assert!(html.contains("data-screen=\"payroll\""), "{html}");
-        assert!(html.contains("href=\"/_ui/organization\""), "{html}");
-        assert!(html.contains("href=\"/_ui/hr\""), "{html}");
-        assert!(html.contains("href=\"/_ui/payroll\""), "{html}");
+        assert!(html.contains("href=\"/organization\""), "{html}");
+        assert!(html.contains("href=\"/hr\""), "{html}");
+        assert!(html.contains("href=\"/payroll\""), "{html}");
         assert!(
             html.contains("data-org-id=\"00000000-0000-0000-0000-0000000000aa\"")
                 && html.contains("data-org-unit-id=\"00000000-0000-0000-0000-0000000000dd\"")
@@ -1113,7 +1113,7 @@ mod tests {
             "payroll interaction stays the AuthorizedRuns island: {html}"
         );
         assert!(
-            html.contains("/_ui/pkg/console_payroll_ui.js"),
+            html.contains("/pkg/console_payroll_ui.js"),
             "WASM hydrate only when the payroll island is composed: {html}"
         );
         assert_shipping_invariants(&html);
@@ -1157,14 +1157,11 @@ mod tests {
                 && !org_html.contains("data-screen=\"payroll\""),
             "focused org must omit other bodies: {org_html}"
         );
+        assert!(org_html.contains("href=\"/organization\""), "{org_html}");
+        assert!(org_html.contains("href=\"/hr\""), "{org_html}");
+        assert!(org_html.contains("href=\"/payroll\""), "{org_html}");
         assert!(
-            org_html.contains("href=\"/_ui/organization\""),
-            "{org_html}"
-        );
-        assert!(org_html.contains("href=\"/_ui/hr\""), "{org_html}");
-        assert!(org_html.contains("href=\"/_ui/payroll\""), "{org_html}");
-        assert!(
-            !org_html.contains("/_ui/pkg/"),
+            !org_html.contains("/pkg/"),
             "org body must not hydrate WASM: {org_html}"
         );
         assert_shipping_invariants(&org_html);
@@ -1180,13 +1177,13 @@ mod tests {
             "focused payroll must omit other bodies: {payroll_html}"
         );
         assert!(
-            payroll_html.contains("href=\"/_ui/organization\"")
-                && payroll_html.contains("href=\"/_ui/hr\"")
-                && payroll_html.contains("href=\"/_ui/payroll\""),
+            payroll_html.contains("href=\"/organization\"")
+                && payroll_html.contains("href=\"/hr\"")
+                && payroll_html.contains("href=\"/payroll\""),
             "authorized nav must stay reachable from a focused screen: {payroll_html}"
         );
         assert!(
-            payroll_html.contains("/_ui/pkg/console_payroll_ui.js"),
+            payroll_html.contains("/pkg/console_payroll_ui.js"),
             "{payroll_html}"
         );
         assert_shipping_invariants(&payroll_html);

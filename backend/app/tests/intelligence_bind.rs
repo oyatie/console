@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Bind-only Intelligence HTTP: GET `/internal/intelligence/bind` on the
-//! existing listener, loopback only. Not OpenAPI, not `/_ui`, not `/api/v1`.
+//! existing listener, loopback only. Not OpenAPI, not shipping UI, not `/api/v1`.
 
 use axum::body::Body;
 use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};

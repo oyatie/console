@@ -31,11 +31,11 @@ Status: active roadmap authority. Product scope comes from [`PRODUCT.md`](PRODUC
    - Draft calculate is admitted. `payable`, Korea compliance conclusions, wage-statement legal sign-off, and payment execution remain **HOLD**.
 7. **Leptos acceptance surface**
    - `Layer::Ui` is accepted (ADR-0041); first full-depth vertical is payroll execution.
-   - GET `/_ui` is mounted (#952). Contracts-backed authorized reads (#959): empty shell without `PayrollRunRead`; `data-run-*` from `PayrollRunSummary` required fields with it. Those runs are a Leptos `#[island]` (#962) hydrated by committed release WASM (#964). Empty shell still omits `/_ui/pkg/`.
-   - Shipping screens are composed (#976). Payroll drill-through hrefs and empty-vs-denied SSR landed (#982). Persona real-backend E2E (ADR-0025 §4) on org/HR/payroll GET `/_ui` landed (#978). Production exposure stays **HOLD**. Import/export is not the data-entry base except 자료실; the comms rail is out of this slice.
+   - GET `/` is mounted (#952). Contracts-backed authorized reads (#959): empty shell without `PayrollRunRead`; `data-run-*` from `PayrollRunSummary` required fields with it. Those runs are a Leptos `#[island]` (#962) hydrated by committed release WASM (#964). Empty shell still omits `/pkg/`.
+   - Shipping screens are composed (#976). Payroll drill-through hrefs and empty-vs-denied SSR landed (#982). Persona real-backend E2E (ADR-0025 §4) on org/HR/payroll GET `/`, `/organization`, `/hr`, and `/payroll` landed (#978). Production exposure stays **HOLD**. Import/export is not the data-entry base except 자료실; the comms rail is out of this slice.
 8. **Palantir AIP / Intelligence**
    - Palantir AIP is the target intelligence layer. It is built in the separate Intelligence repository until that repository names a SHA-bound stable base; cloning it into Console is a later lane.
-   - Console-owned fail-closed seams are admitted now (same `Principal`, ontology actions, no second writer, no Palantir client). Owner lock (2026-08-29): **bind-only** Intelligence HTTP on the existing listener, `127.0.0.1` only, fail-closed if unset or non-loopback. Implemented (#972): `GET http://127.0.0.1:<listen-port>/internal/intelligence/bind`. Not published OpenAPI, not `/_ui`, not `/api/v1`. No chat, no inference text in tenant UX, no HR/payroll write, no autonomous merge. Not a tenant-app Intelligence product.
+   - Console-owned fail-closed seams are admitted now (same `Principal`, ontology actions, no second writer, no Palantir client). Owner lock (2026-08-29): **bind-only** Intelligence HTTP on the existing listener, `127.0.0.1` only, fail-closed if unset or non-loopback. Implemented (#972): `GET http://127.0.0.1:<listen-port>/internal/intelligence/bind`. Not published OpenAPI, not shipping UI, not `/api/v1`. No chat, no inference text in tenant UX, no HR/payroll write, no autonomous merge. Not a tenant-app Intelligence product.
 
 ## Explicit HOLDs
 

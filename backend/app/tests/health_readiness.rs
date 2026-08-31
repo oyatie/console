@@ -109,18 +109,7 @@ async fn ui_shell_serves_empty_ssr_html() -> Result<(), Box<dyn std::error::Erro
     let state = AppState::new(config, DatabaseDependency::NotConfigured)?;
     let app = build_router(state);
     let mut last = String::new();
-    let slash_ui = concat!("/", "_ui");
-    let slash_ui_slash = concat!("/", "_ui/");
-    let slash_ui_org = concat!("/", "_ui/organization");
-    let slash_ui_hr = concat!("/", "_ui/hr");
-    let slash_ui_payroll = concat!("/", "_ui/payroll");
-    for uri in [
-        slash_ui,
-        slash_ui_slash,
-        slash_ui_org,
-        slash_ui_hr,
-        slash_ui_payroll,
-    ] {
+    for uri in ["/", "/organization", "/hr", "/payroll"] {
         let response = app
             .clone()
             .oneshot(Request::builder().uri(uri).body(Body::empty())?)
@@ -138,7 +127,7 @@ async fn ui_shell_serves_empty_ssr_html() -> Result<(), Box<dyn std::error::Erro
         );
         return Ok(());
     }
-    Err(format!("/_ui did not return 200 ({last})").into())
+    Err(format!("/ did not return 200 ({last})").into())
 }
 
 #[tokio::test]
@@ -148,12 +137,12 @@ async fn ui_pkg_serves_committed_hydrate_assets() -> Result<(), Box<dyn std::err
     let app = build_router(state);
     let cases: [(&str, &[u8], &[u8]); 2] = [
         (
-            "/_ui/pkg/console_payroll_ui.js",
+            "/pkg/console_payroll_ui.js",
             b"text/javascript; charset=utf-8",
             console_payroll_ui::payroll_ui_js(),
         ),
         (
-            "/_ui/pkg/console_payroll_ui_bg.wasm",
+            "/pkg/console_payroll_ui_bg.wasm",
             b"application/wasm",
             console_payroll_ui::payroll_ui_wasm(),
         ),
@@ -455,7 +444,7 @@ mod authorized {
     }
 
     async fn get_ui(app: axum::Router, token: Option<&str>) -> (StatusCode, String) {
-        get_ui_path(app, "/_ui", token).await
+        get_ui_path(app, "/", token).await
     }
 
     async fn get_ui_path(
@@ -495,7 +484,7 @@ mod authorized {
         assert_eq!(status, StatusCode::OK, "{unauth}");
         assert_eq!(unauth, console_payroll_ui::render_shell());
         assert!(
-            !unauth.contains("/_ui/pkg/"),
+            !unauth.contains("/pkg/"),
             "empty shell must not load WASM: {unauth}"
         );
 
@@ -508,7 +497,7 @@ mod authorized {
             "MEMBER must not see the run id: {member_html}"
         );
         assert!(
-            !member_html.contains("/_ui/pkg/"),
+            !member_html.contains("/pkg/"),
             "MEMBER shell must not load WASM: {member_html}"
         );
 
@@ -524,7 +513,7 @@ mod authorized {
             "SUPER_ADMIN must see the authorized run: {admin_html}"
         );
         assert!(
-            admin_html.contains("/_ui/pkg/console_payroll_ui.js"),
+            admin_html.contains("/pkg/console_payroll_ui.js"),
             "authorized shell must preload bindgen js: {admin_html}"
         );
         let lowered = admin_html.to_ascii_lowercase();
@@ -567,7 +556,7 @@ mod authorized {
         let admin = bearer(&keys, org, super_admin, "SUPER_ADMIN");
         let member_tok = bearer(&keys, org, member, "MEMBER");
 
-        for uri in ["/_ui", "/_ui/organization", "/_ui/hr", "/_ui/payroll"] {
+        for uri in ["/", "/organization", "/hr", "/payroll"] {
             let (status, html) = get_ui_path(service.clone(), uri, Some(&member_tok)).await;
             assert_eq!(status, StatusCode::OK, "{uri} {html}");
             assert_eq!(html, console_payroll_ui::render_shell(), "{uri}");
@@ -577,8 +566,7 @@ mod authorized {
             );
         }
 
-        let (status, org_html) =
-            get_ui_path(service.clone(), "/_ui/organization", Some(&admin)).await;
+        let (status, org_html) = get_ui_path(service.clone(), "/organization", Some(&admin)).await;
         assert_eq!(status, StatusCode::OK, "{org_html}");
         assert!(
             org_html.contains("data-screen=\"organization\"")
@@ -591,11 +579,11 @@ mod authorized {
             "SUPER_ADMIN organization screen must render published Company/OrgUnit Heads: {org_html}"
         );
         assert!(
-            !org_html.contains("/_ui/pkg/"),
+            !org_html.contains("/pkg/"),
             "organization SSR must not load WASM: {org_html}"
         );
 
-        let (status, hr_html) = get_ui_path(service.clone(), "/_ui/hr", Some(&admin)).await;
+        let (status, hr_html) = get_ui_path(service.clone(), "/hr", Some(&admin)).await;
         assert_eq!(status, StatusCode::OK, "{hr_html}");
         assert!(
             hr_html.contains("data-screen=\"hr\"")
@@ -618,12 +606,11 @@ mod authorized {
             "HR screen leaked phone: {hr_html}"
         );
         assert!(
-            !hr_html.contains("/_ui/pkg/"),
+            !hr_html.contains("/pkg/"),
             "HR SSR must not load WASM: {hr_html}"
         );
 
-        let (status, payroll_html) =
-            get_ui_path(service.clone(), "/_ui/payroll", Some(&admin)).await;
+        let (status, payroll_html) = get_ui_path(service.clone(), "/payroll", Some(&admin)).await;
         assert_eq!(status, StatusCode::OK, "{payroll_html}");
         assert!(
             payroll_html.contains("data-screen=\"payroll\"")
@@ -631,7 +618,7 @@ mod authorized {
             "SUPER_ADMIN payroll screen must render authorized runs: {payroll_html}"
         );
         assert!(
-            payroll_html.contains("/_ui/pkg/console_payroll_ui.js"),
+            payroll_html.contains("/pkg/console_payroll_ui.js"),
             "payroll island must hydrate via committed WASM: {payroll_html}"
         );
         let lowered = payroll_html.to_ascii_lowercase();
@@ -680,7 +667,7 @@ mod authorized {
         );
     }
 
-    /// ADR-0025 §4 persona real-backend E2E on org/HR/payroll `/_ui`.
+    /// ADR-0025 §4 persona real-backend E2E on `/`, `/organization`, `/hr`, `/payroll`.
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn ui_persona_e2e(pool: PgPool) {
         let keys = keys();
@@ -720,7 +707,7 @@ mod authorized {
         let exec_tok = bearer(&keys, org, executive, "EXECUTIVE");
         let super_tok = bearer(&keys, org, super_admin, "SUPER_ADMIN");
         let foreign_tok = bearer(&keys, other_org, foreign, "SUPER_ADMIN");
-        let routes = ["/_ui", "/_ui/organization", "/_ui/hr", "/_ui/payroll"];
+        let routes = ["/", "/organization", "/hr", "/payroll"];
         let org_id = org.as_uuid().to_string();
         let run_id = run.to_string();
 
@@ -738,7 +725,7 @@ mod authorized {
         }
 
         let (status, admin_org) =
-            get_ui_path(service.clone(), "/_ui/organization", Some(&admin_tok)).await;
+            get_ui_path(service.clone(), "/organization", Some(&admin_tok)).await;
         assert_eq!(status, StatusCode::OK, "{admin_org}");
         assert_eq!(
             admin_org,
@@ -746,7 +733,7 @@ mod authorized {
             "ADMIN without org-wide EmployeeDirectoryRead must omit Company/OrgUnit Heads: {admin_org}"
         );
 
-        let (status, admin_hr) = get_ui_path(service.clone(), "/_ui/hr", Some(&admin_tok)).await;
+        let (status, admin_hr) = get_ui_path(service.clone(), "/hr", Some(&admin_tok)).await;
         assert_eq!(status, StatusCode::OK, "{admin_hr}");
         assert_eq!(
             admin_hr,
@@ -754,8 +741,7 @@ mod authorized {
             "ADMIN without org-wide EmployeeDirectoryRead must omit Person/Employment Heads: {admin_hr}"
         );
 
-        let (status, admin_pay) =
-            get_ui_path(service.clone(), "/_ui/payroll", Some(&admin_tok)).await;
+        let (status, admin_pay) = get_ui_path(service.clone(), "/payroll", Some(&admin_tok)).await;
         assert_eq!(status, StatusCode::OK, "{admin_pay}");
         assert_eq!(
             admin_pay,
@@ -763,7 +749,7 @@ mod authorized {
             "ADMIN payroll route must deny-by-omission: {admin_pay}"
         );
 
-        let (status, exec_home) = get_ui_path(service.clone(), "/_ui", Some(&exec_tok)).await;
+        let (status, exec_home) = get_ui_path(service.clone(), "/", Some(&exec_tok)).await;
         assert_eq!(status, StatusCode::OK, "{exec_home}");
         assert!(
             exec_home.contains("data-screen=\"organization\"")
@@ -772,9 +758,9 @@ mod authorized {
             "EXECUTIVE home must mount every authorized body: {exec_home}"
         );
         assert!(
-            exec_home.contains("href=\"/_ui/organization\"")
-                && exec_home.contains("href=\"/_ui/hr\"")
-                && exec_home.contains("href=\"/_ui/payroll\"")
+            exec_home.contains("href=\"/organization\"")
+                && exec_home.contains("href=\"/hr\"")
+                && exec_home.contains("href=\"/payroll\"")
                 && exec_home.contains("조직")
                 && exec_home.contains("인사")
                 && exec_home.contains("급여"),
@@ -800,25 +786,25 @@ mod authorized {
             "EXECUTIVE markup must carry published Head identifiers: {exec_home}"
         );
         assert!(
-            exec_home.contains("/_ui/pkg/console_payroll_ui.js") && exec_home.contains("charset"),
+            exec_home.contains("/pkg/console_payroll_ui.js") && exec_home.contains("charset"),
             "payroll island hydrates via committed WASM; charset stays SSR: {exec_home}"
         );
         assert_ui_invariants(&exec_home);
 
         let (status, exec_org) =
-            get_ui_path(service.clone(), "/_ui/organization", Some(&exec_tok)).await;
+            get_ui_path(service.clone(), "/organization", Some(&exec_tok)).await;
         assert_eq!(status, StatusCode::OK, "{exec_org}");
         assert!(
             exec_org.contains("data-screen=\"organization\"")
                 && !exec_org.contains("data-screen=\"payroll\"")
-                && !exec_org.contains("/_ui/pkg/")
-                && exec_org.contains("href=\"/_ui/hr\"")
-                && exec_org.contains("href=\"/_ui/payroll\""),
+                && !exec_org.contains("/pkg/")
+                && exec_org.contains("href=\"/hr\"")
+                && exec_org.contains("href=\"/payroll\""),
             "focused org keeps authorized nav and omits payroll WASM: {exec_org}"
         );
         assert_ui_invariants(&exec_org);
 
-        let (status, exec_hr) = get_ui_path(service.clone(), "/_ui/hr", Some(&exec_tok)).await;
+        let (status, exec_hr) = get_ui_path(service.clone(), "/hr", Some(&exec_tok)).await;
         assert_eq!(status, StatusCode::OK, "{exec_hr}");
         assert!(
             exec_hr.contains("data-screen=\"hr\"")
@@ -828,19 +814,18 @@ mod authorized {
                 && exec_hr.contains("data-appointed-on=")
                 && !exec_hr.contains("data-employee-")
                 && !exec_hr.contains("/api/v1/job-positions/")
-                && !exec_hr.contains("/_ui/pkg/"),
+                && !exec_hr.contains("/pkg/"),
             "EXECUTIVE HR is SSR Person+Employment Head, not an island: {exec_hr}"
         );
         assert_ui_invariants(&exec_hr);
 
-        let (status, exec_pay) =
-            get_ui_path(service.clone(), "/_ui/payroll", Some(&exec_tok)).await;
+        let (status, exec_pay) = get_ui_path(service.clone(), "/payroll", Some(&exec_tok)).await;
         assert_eq!(status, StatusCode::OK, "{exec_pay}");
         assert!(
             exec_pay.contains("data-screen=\"payroll\"")
                 && exec_pay.contains(&format!("data-run-id=\"{run_id}\""))
-                && exec_pay.contains("href=\"/_ui/organization\"")
-                && exec_pay.contains("href=\"/_ui/hr\""),
+                && exec_pay.contains("href=\"/organization\"")
+                && exec_pay.contains("href=\"/hr\""),
             "focused payroll stays reachable from org/HR nav: {exec_pay}"
         );
         assert!(
@@ -865,7 +850,7 @@ mod authorized {
             "ADMIN without org-wide PayrollRunRead must not audit payroll list reads"
         );
 
-        let (status, foreign_html) = get_ui_path(service.clone(), "/_ui", Some(&foreign_tok)).await;
+        let (status, foreign_html) = get_ui_path(service.clone(), "/", Some(&foreign_tok)).await;
         assert_eq!(status, StatusCode::OK, "{foreign_html}");
         assert!(
             !foreign_html.contains(&run_id) && !foreign_html.contains(&org_id),
@@ -873,7 +858,7 @@ mod authorized {
         );
         assert_ui_invariants(&foreign_html);
 
-        let (status, super_html) = get_ui_path(service.clone(), "/_ui", Some(&super_tok)).await;
+        let (status, super_html) = get_ui_path(service.clone(), "/", Some(&super_tok)).await;
         assert_eq!(status, StatusCode::OK, "{super_html}");
         assert!(
             super_html.contains(&format!("data-run-id=\"{run_id}\""))

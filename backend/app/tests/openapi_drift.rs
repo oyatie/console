@@ -1378,25 +1378,55 @@ fn intelligence_and_chat_http_surfaces_are_absent() {
         }
     }
 
-    let mut saw_ui_nest = false;
+    let mut saw_ui_pkg = false;
+    let mut ui_routes = BTreeSet::new();
     for (name, source) in APP_PRODUCTION_SOURCES {
-        for (prefix, body) in nest_calls(source) {
+        for (prefix, _body) in nest_calls(source) {
             let Some(prefix) = prefix else {
                 continue;
             };
             if forbids_chat_or_intelligence(&prefix) {
                 forbidden.push(format!("{name} nest {prefix}"));
             }
-            if prefix == "/_ui" {
-                saw_ui_nest = true;
-                assert!(
-                    body.contains(".merge(console_payroll_ui::pkg_router())"),
-                    "{name} /_ui nest must still merge console_payroll_ui::pkg_router()"
-                );
+            assert_ne!(
+                prefix.as_str(),
+                "/_ui",
+                "{name} must not nest shipping UI under /_ui"
+            );
+        }
+        if *name == "app src/lib.rs" {
+            assert!(
+                source.contains(".merge(console_payroll_ui::pkg_router())"),
+                "{name} must still merge console_payroll_ui::pkg_router()"
+            );
+            assert!(
+                !source.contains("\"/_ui\""),
+                "{name} must not keep /_ui as a canonical path"
+            );
+            saw_ui_pkg = true;
+            for route in route_calls(source, &[]) {
+                if let Some(path) = route.path {
+                    if matches!(path.as_str(), "/" | "/organization" | "/hr" | "/payroll") {
+                        ui_routes.insert(path);
+                    }
+                }
             }
         }
     }
-    assert!(saw_ui_nest, "app production sources must still nest /_ui");
+    assert!(
+        saw_ui_pkg,
+        "app production sources must still merge payroll UI pkg"
+    );
+    assert_eq!(
+        ui_routes,
+        BTreeSet::from([
+            "/".to_owned(),
+            "/organization".to_owned(),
+            "/hr".to_owned(),
+            "/payroll".to_owned(),
+        ]),
+        "shipping UI must occupy conventional public paths"
+    );
 
     for value in route_path_constants(todos_rest_source()).values() {
         if forbids_chat_or_intelligence(value) {
