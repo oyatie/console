@@ -1,0 +1,10 @@
+{
+  "name": "@oyatie/console-openapi",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "In-repo TypeScript SDK generated from backend/openapi/openapi.yaml. Not published.",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
