@@ -1,0 +1,23 @@
+type: object
+description: >-
+  Typed params for `organization.revise_job_position` (`JobPositionQuery::Revise`).
+  Null `org_unit_id` leaves the position where it is; a UUID moves it.
+required:
+- job_position_id
+- attributes
+properties:
+  job_position_id:
+    $ref: '#/components/schemas/Uuid'
+  org_unit_id:
+    oneOf:
+    - $ref: '#/components/schemas/Uuid'
+    - type: 'null'
+  attributes:
+    type: object
+    required:
+    - title
+    properties:
+      title:
+        type: string
+        minLength: 1
+    additionalProperties: true

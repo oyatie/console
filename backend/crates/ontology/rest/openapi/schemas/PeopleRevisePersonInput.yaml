@@ -1,0 +1,26 @@
+type: object
+description: >-
+  Typed params for `people.revise_person` (`PersonQuery::Revise`). Optional
+  `employee_id` binds a further employee record to the same natural person.
+required:
+- person_id
+- attributes
+properties:
+  person_id:
+    $ref: '#/components/schemas/Uuid'
+  employee_id:
+    oneOf:
+    - $ref: '#/components/schemas/Uuid'
+    - type: 'null'
+  attributes:
+    type: object
+    properties:
+      legal_name:
+        type:
+        - string
+        - 'null'
+      display_name:
+        type:
+        - string
+        - 'null'
+    additionalProperties: true

@@ -16,7 +16,7 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &["OntologyActionExecuteOutcome", "Timestamp", "Uuid"];
 
 const PATHS: &[PathItem] = &[
     PathItem {
@@ -188,6 +188,14 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/PayrollClosePreflight.yaml"),
     },
     NamedYaml {
+        name: "PayrollCreateRunInput",
+        body: include_str!("../openapi/schemas/PayrollCreateRunInput.yaml"),
+    },
+    NamedYaml {
+        name: "PayrollDecideRunInput",
+        body: include_str!("../openapi/schemas/PayrollDecideRunInput.yaml"),
+    },
+    NamedYaml {
         name: "PayrollDisbursement",
         body: include_str!("../openapi/schemas/PayrollDisbursement.yaml"),
     },
@@ -250,6 +258,10 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "PayrollStatutoryInstrument",
         body: include_str!("../openapi/schemas/PayrollStatutoryInstrument.yaml"),
+    },
+    NamedYaml {
+        name: "PayrollSubmitRunInput",
+        body: include_str!("../openapi/schemas/PayrollSubmitRunInput.yaml"),
     },
     NamedYaml {
         name: "ResolvePayrollExceptionRequest",

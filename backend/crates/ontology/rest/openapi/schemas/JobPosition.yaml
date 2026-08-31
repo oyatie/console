@@ -4,8 +4,8 @@ description: >-
   `employees.position` TEXT. `org_unit_id` is a foreign key to an existing
   OrgUnit. `attributes` is the latest revision bag; write preflight requires a
   non-empty string `title` (catalog JOB_POSITION_TITLE). Other attribute keys
-  are not a published closed set. Links, actions, permissions, and temporal
-  slices are HOLD — not a Palantir property graph.
+  are not a published closed set. Temporal slices other than revision `version`
+  remain HOLD.
 required:
 - job_position_id
 - org_unit_id
@@ -25,3 +25,41 @@ properties:
     additionalProperties: true
     description: >-
       Latest revision JSON object. Write requires non-empty `title`.
+links:
+- key: job_position_org_unit
+  from: JobPosition
+  to: OrgUnit
+  field: org_unit_id
+  cardinality: many-to-one
+  option: false
+actions:
+- action_key: organization.create_job_position
+  object_key: job_position
+  input:
+    $ref: '#/components/schemas/OrganizationCreateJobPositionInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: account
+  edits:
+  - job_positions
+  - job_position_revisions
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas
+- action_key: organization.revise_job_position
+  object_key: job_position
+  input:
+    $ref: '#/components/schemas/OrganizationReviseJobPositionInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: account
+  edits:
+  - job_positions
+  - job_position_revisions
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas

@@ -1,0 +1,15 @@
+type: object
+description: >-
+  Typed params for `hr.promote` (`EmploymentQuery::Promote`). Appends a revision
+  and carries the new state onto the legacy head. Four-eyes is natural-person.
+required:
+- employment_id
+- valid_from
+- attributes
+properties:
+  employment_id:
+    $ref: '#/components/schemas/Uuid'
+  valid_from:
+    $ref: '#/components/schemas/Timestamp'
+  attributes:
+    $ref: '#/components/schemas/EmploymentAttributesInput'

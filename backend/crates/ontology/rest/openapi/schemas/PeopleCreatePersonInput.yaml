@@ -1,0 +1,25 @@
+type: object
+description: >-
+  Typed params for `people.create_person` (`PersonQuery::Create`). When
+  `employee_id` is set (trusted uniquely resolved), the new person's id IS that
+  employee id. Head projection stays four fields; this bag is not a license to
+  publish phone/salary/bank_account/rrn on GET.
+required:
+- attributes
+properties:
+  employee_id:
+    oneOf:
+    - $ref: '#/components/schemas/Uuid'
+    - type: 'null'
+  attributes:
+    type: object
+    properties:
+      legal_name:
+        type:
+        - string
+        - 'null'
+      display_name:
+        type:
+        - string
+        - 'null'
+    additionalProperties: true

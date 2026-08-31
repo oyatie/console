@@ -14,8 +14,7 @@ description: >-
   `employment_status` in {ACTIVE, EXITED, UNKNOWN}; those write fields are
   not this Head. The Head never includes phone, salary, bank_account, rrn,
   or base_pay. from/to range queries, corrections vs new slice, and delta
-  transmission remain HOLD. Links, actions, and permissions are HOLD — not a
-  Palantir property graph.
+  transmission remain HOLD. EmployeeDetail as_of remains HOLD.
 required:
 - id
 - appointed_on
@@ -39,3 +38,69 @@ properties:
     - type: 'null'
   appointed_on:
     $ref: '#/components/schemas/Timestamp'
+links:
+- key: employment_person
+  from: Employment
+  to: Person
+  field: person_id
+  cardinality: many-to-one
+  option: true
+- key: employment_org_unit
+  from: Employment
+  to: OrgUnit
+  field: org_unit_id
+  cardinality: many-to-one
+  option: true
+- key: employment_job_position
+  from: Employment
+  to: JobPosition
+  field: job_position_id
+  cardinality: many-to-one
+  option: true
+actions:
+- action_key: hr.appoint
+  object_key: employment
+  input:
+    $ref: '#/components/schemas/HrAppointInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: natural_person
+  edits:
+  - employment_heads
+  - employment_revisions
+  - employment_source_bindings
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas
+- action_key: hr.promote
+  object_key: employment
+  input:
+    $ref: '#/components/schemas/HrPromoteInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: natural_person
+  edits:
+  - employment_revisions
+  - employees
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas
+- action_key: hr.transfer
+  object_key: employment
+  input:
+    $ref: '#/components/schemas/HrTransferInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: natural_person
+  edits:
+  - employment_revisions
+  - employees
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas

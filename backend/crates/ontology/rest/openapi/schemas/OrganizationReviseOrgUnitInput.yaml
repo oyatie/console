@@ -1,0 +1,33 @@
+type: object
+description: >-
+  Typed params for `organization.revise_org_unit` (`OrgUnitQuery::Revise`).
+required:
+- org_unit_id
+- attributes
+properties:
+  org_unit_id:
+    $ref: '#/components/schemas/Uuid'
+  source:
+    oneOf:
+    - $ref: '#/components/schemas/OrgUnitSourceBinding'
+    - type: 'null'
+  attributes:
+    type: object
+    required:
+    - name
+    - kind
+    properties:
+      name:
+        type: string
+        minLength: 1
+      kind:
+        type: string
+        enum:
+        - site
+        - department
+        - team
+      parent_id:
+        oneOf:
+        - $ref: '#/components/schemas/Uuid'
+        - type: 'null'
+    additionalProperties: true

@@ -5,8 +5,8 @@ description: >-
   they are never copied from provisioning-owned `organizations.name`. Write
   preflight requires a non-empty string `legal_name`; an omitted key is JSON null
   on the Head. `founded_on` and `registration_number` are company_conformance
-  fixture keys, not this port. Links, actions, permissions, and temporal slices
-  are HOLD — not a Palantir property graph.
+  fixture keys, not this port. `org_id` is the RLS cell, not a Palantir link.
+  Temporal slices other than revision `version` remain HOLD.
 required:
 - org_id
 - version
@@ -30,3 +30,19 @@ properties:
     type: integer
     format: int64
     minimum: 1
+links: []
+actions:
+- action_key: company.revise
+  object_key: company
+  input:
+    $ref: '#/components/schemas/CompanyReviseInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: natural_person
+  edits:
+  - company_revisions
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas

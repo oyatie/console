@@ -1,10 +1,12 @@
 type: object
 description: >-
   Canonical PayRun scaffold over existing `payroll_draft_runs`. Not SAP-complete.
-  Draft calculate is admitted. `payable` is always false. Payment execution,
-  Korea compliance conclusions, and wage-statement legal sign-off remain HOLD.
-  REST list/detail DTOs remain `PayrollRunSummary` / `PayrollRunDetail`. Links,
-  actions, permissions, and temporal slices are HOLD — not a Palantir graph.
+  Draft calculate is admitted on POST /api/v1/payroll/runs/{id}/calculate (not a
+  DispatchTarget). `payable` is always false. Payment execution, Korea
+  compliance conclusions, and wage-statement legal sign-off remain HOLD.
+  REST list/detail DTOs remain `PayrollRunSummary` / `PayrollRunDetail`. No
+  outgoing Head FK; the run is Company-scoped via RLS `org_id`, which is the
+  cell, not a Palantir link. Temporal slices other than draft status remain HOLD.
 required:
 - id
 - period_start
@@ -34,3 +36,47 @@ properties:
     description: >-
       Always false until the 노무사/세무사 release gate flips stored calculation rows.
       Payment execution remains HOLD. Not a payable payroll object.
+links: []
+actions:
+- action_key: payroll.create_run
+  object_key: pay_run
+  input:
+    $ref: '#/components/schemas/PayrollCreateRunInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: natural_person
+  edits:
+  - payroll_draft_runs
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas
+- action_key: payroll.submit_run
+  object_key: pay_run
+  input:
+    $ref: '#/components/schemas/PayrollSubmitRunInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: natural_person
+  edits:
+  - payroll_draft_runs
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas
+- action_key: payroll.decide_run
+  object_key: pay_run
+  input:
+    $ref: '#/components/schemas/PayrollDecideRunInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: natural_person
+  edits:
+  - payroll_draft_runs
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas

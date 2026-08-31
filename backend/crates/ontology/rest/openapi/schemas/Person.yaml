@@ -3,8 +3,9 @@ description: >-
   Canonical Person head. Closed four-field projection of the latest
   `person_revisions` row. `get`/`list` never copy the attributes object onto
   the wire, so stored `phone` / `salary` / `bank_account` / `rrn` cannot appear.
-  Trusted directory create mints `person_id = employee_id`. Links, actions,
-  permissions, and temporal slices are HOLD — not a Palantir property graph.
+  Trusted directory create mints `person_id = employee_id`. No outgoing Head
+  FK; Employment.person_id is the reverse. Temporal slices other than revision
+  `version` remain HOLD.
 required:
 - id
 - version
@@ -27,3 +28,36 @@ properties:
     type: integer
     format: int64
     minimum: 1
+links: []
+actions:
+- action_key: people.create_person
+  object_key: person
+  input:
+    $ref: '#/components/schemas/PeopleCreatePersonInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: account
+  edits:
+  - persons
+  - person_revisions
+  - employee_person_bindings
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas
+- action_key: people.revise_person
+  object_key: person
+  input:
+    $ref: '#/components/schemas/PeopleRevisePersonInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: account
+  edits:
+  - person_revisions
+  - employee_person_bindings
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas

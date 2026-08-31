@@ -6337,6 +6337,10 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../ontology/rest/openapi/schemas/Company.yaml"),
     },
     NamedYaml {
+        name: "CompanyReviseInput",
+        body: include_str!("../../ontology/rest/openapi/schemas/CompanyReviseInput.yaml"),
+    },
+    NamedYaml {
         name: "CreateObjectLinkRequest",
         body: include_str!("../../ontology/rest/openapi/schemas/CreateObjectLinkRequest.yaml"),
     },
@@ -6353,12 +6357,28 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../ontology/rest/openapi/schemas/Employment.yaml"),
     },
     NamedYaml {
+        name: "EmploymentAttributesInput",
+        body: include_str!("../../ontology/rest/openapi/schemas/EmploymentAttributesInput.yaml"),
+    },
+    NamedYaml {
         name: "GateChainConfig",
         body: include_str!("../../ontology/rest/openapi/schemas/GateChainConfig.yaml"),
     },
     NamedYaml {
         name: "GateChainOutcome",
         body: include_str!("../../ontology/rest/openapi/schemas/GateChainOutcome.yaml"),
+    },
+    NamedYaml {
+        name: "HrAppointInput",
+        body: include_str!("../../ontology/rest/openapi/schemas/HrAppointInput.yaml"),
+    },
+    NamedYaml {
+        name: "HrPromoteInput",
+        body: include_str!("../../ontology/rest/openapi/schemas/HrPromoteInput.yaml"),
+    },
+    NamedYaml {
+        name: "HrTransferInput",
+        body: include_str!("../../ontology/rest/openapi/schemas/HrTransferInput.yaml"),
     },
     NamedYaml {
         name: "InstanceHead",
@@ -6427,8 +6447,44 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         ),
     },
     NamedYaml {
+        name: "OrganizationCreateJobPositionInput",
+        body: include_str!(
+            "../../ontology/rest/openapi/schemas/OrganizationCreateJobPositionInput.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "OrganizationCreateOrgUnitInput",
+        body: include_str!(
+            "../../ontology/rest/openapi/schemas/OrganizationCreateOrgUnitInput.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "OrganizationReviseJobPositionInput",
+        body: include_str!(
+            "../../ontology/rest/openapi/schemas/OrganizationReviseJobPositionInput.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "OrganizationReviseOrgUnitInput",
+        body: include_str!(
+            "../../ontology/rest/openapi/schemas/OrganizationReviseOrgUnitInput.yaml"
+        ),
+    },
+    NamedYaml {
         name: "OrgUnit",
         body: include_str!("../../ontology/rest/openapi/schemas/OrgUnit.yaml"),
+    },
+    NamedYaml {
+        name: "OrgUnitSourceBinding",
+        body: include_str!("../../ontology/rest/openapi/schemas/OrgUnitSourceBinding.yaml"),
+    },
+    NamedYaml {
+        name: "PeopleCreatePersonInput",
+        body: include_str!("../../ontology/rest/openapi/schemas/PeopleCreatePersonInput.yaml"),
+    },
+    NamedYaml {
+        name: "PeopleRevisePersonInput",
+        body: include_str!("../../ontology/rest/openapi/schemas/PeopleRevisePersonInput.yaml"),
     },
     NamedYaml {
         name: "Person",
@@ -7135,7 +7191,7 @@ pub const PAYROLL_FRAGMENT: Fragment = Fragment {
     external_schemas: PAYROLL_FRAGMENT_EXTERNAL,
 };
 
-const PAYROLL_FRAGMENT_EXTERNAL: &[&str] = &["Timestamp", "Uuid"];
+const PAYROLL_FRAGMENT_EXTERNAL: &[&str] = &["OntologyActionExecuteOutcome", "Timestamp", "Uuid"];
 
 const PAYROLL_FRAGMENT_PATHS: &[PathItem] = &[
     PathItem {
@@ -7323,6 +7379,14 @@ const PAYROLL_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../payroll/rest/openapi/schemas/PayrollClosePreflight.yaml"),
     },
     NamedYaml {
+        name: "PayrollCreateRunInput",
+        body: include_str!("../../payroll/rest/openapi/schemas/PayrollCreateRunInput.yaml"),
+    },
+    NamedYaml {
+        name: "PayrollDecideRunInput",
+        body: include_str!("../../payroll/rest/openapi/schemas/PayrollDecideRunInput.yaml"),
+    },
+    NamedYaml {
         name: "PayrollDisbursement",
         body: include_str!("../../payroll/rest/openapi/schemas/PayrollDisbursement.yaml"),
     },
@@ -7385,6 +7449,10 @@ const PAYROLL_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "PayrollStatutoryInstrument",
         body: include_str!("../../payroll/rest/openapi/schemas/PayrollStatutoryInstrument.yaml"),
+    },
+    NamedYaml {
+        name: "PayrollSubmitRunInput",
+        body: include_str!("../../payroll/rest/openapi/schemas/PayrollSubmitRunInput.yaml"),
     },
     NamedYaml {
         name: "ResolvePayrollExceptionRequest",

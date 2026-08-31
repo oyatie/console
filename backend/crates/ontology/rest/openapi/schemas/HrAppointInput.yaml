@@ -1,0 +1,16 @@
+type: object
+description: >-
+  Typed params for `hr.appoint` (`EmploymentQuery::Appoint`). Opens a head at
+  `valid_from`. Four-eyes is natural-person. The legacy employees row is not
+  rewritten by this command.
+required:
+- employee_id
+- valid_from
+- attributes
+properties:
+  employee_id:
+    $ref: '#/components/schemas/Uuid'
+  valid_from:
+    $ref: '#/components/schemas/Timestamp'
+  attributes:
+    $ref: '#/components/schemas/EmploymentAttributesInput'

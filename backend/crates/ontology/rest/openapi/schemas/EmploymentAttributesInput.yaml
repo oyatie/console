@@ -1,0 +1,26 @@
+type: object
+description: >-
+  Write bag for `hr.appoint` / `hr.promote` / `hr.transfer` (`EmploymentAttributes`).
+  Not the Employment Head. `company` is a non-blank string; `employment_status`
+  is the 0066 CHECK set. UUID refs must not be nil.
+required:
+- company
+- employment_status
+properties:
+  company:
+    type: string
+    minLength: 1
+  org_unit_id:
+    oneOf:
+    - $ref: '#/components/schemas/Uuid'
+    - type: 'null'
+  job_position_id:
+    oneOf:
+    - $ref: '#/components/schemas/Uuid'
+    - type: 'null'
+  employment_status:
+    type: string
+    enum:
+    - ACTIVE
+    - EXITED
+    - UNKNOWN

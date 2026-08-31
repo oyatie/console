@@ -3,9 +3,9 @@ description: >-
   Canonical OrgUnit head. `name` and `parent_id` are parsed from the latest
   `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites,
   regions, and branches stay the operational auth spine and are not OrgUnits.
-  OrgUnit kinds Site/Department/Team are admitted direction on revision
-  attributes and are not a Head column. Links, actions, permissions, and
-  temporal slices are HOLD — not a Palantir property graph.
+  OrgUnit kinds Site/Department/Team are write-preflight on revision attributes
+  (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices
+  other than revision `version` remain HOLD.
 required:
 - id
 - version
@@ -28,3 +28,42 @@ properties:
     type: integer
     format: int64
     minimum: 1
+links:
+- key: org_unit_parent
+  from: OrgUnit
+  to: OrgUnit
+  field: parent_id
+  cardinality: many-to-one
+  option: true
+actions:
+- action_key: organization.create_org_unit
+  object_key: org_unit
+  input:
+    $ref: '#/components/schemas/OrganizationCreateOrgUnitInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: account
+  edits:
+  - org_units
+  - org_unit_revisions
+  - org_unit_source_bindings
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas
+- action_key: organization.revise_org_unit
+  object_key: org_unit
+  input:
+    $ref: '#/components/schemas/OrganizationReviseOrgUnitInput'
+  result:
+    $ref: '#/components/schemas/OntologyActionExecuteOutcome'
+  permissions:
+  - role_manage
+  four_eyes: account
+  edits:
+  - org_unit_revisions
+  - org_unit_source_bindings
+  concurrency:
+    command_id: tenant_global_idempotency
+    expected_revision: optional_cas

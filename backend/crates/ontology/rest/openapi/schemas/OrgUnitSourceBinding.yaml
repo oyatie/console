@@ -1,0 +1,15 @@
+type: object
+description: >-
+  Optional legacy source binding on OrgUnit create/revise. `kind` and `id` are
+  TEXT; the closed set of kinds is not yet enumerable and legacy identifiers
+  are not all UUIDs.
+required:
+- kind
+- id
+properties:
+  kind:
+    type: string
+    minLength: 1
+  id:
+    type: string
+    minLength: 1

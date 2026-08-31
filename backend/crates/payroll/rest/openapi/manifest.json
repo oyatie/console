@@ -61,6 +61,8 @@
     "MyPayrollLinePage",
     "PayRun",
     "PayrollClosePreflight",
+    "PayrollCreateRunInput",
+    "PayrollDecideRunInput",
     "PayrollDisbursement",
     "PayrollException",
     "PayrollExceptionPage",
@@ -77,10 +79,12 @@
     "PayrollRunSummary",
     "PayrollStatutoryCitation",
     "PayrollStatutoryInstrument",
+    "PayrollSubmitRunInput",
     "ResolvePayrollExceptionRequest",
     "SchedulePayrollDisbursementRequest"
   ],
   "external_schemas": [
+    "OntologyActionExecuteOutcome",
     "Timestamp",
     "Uuid"
   ]

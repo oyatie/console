@@ -1,0 +1,10 @@
+type: object
+description: >-
+  Typed params for `payroll.submit_run` (`PayRunQuery::SubmitRun`).
+  `CALCULATED → SUBMITTED`, refused while any exception is open. `payable`
+  stays false.
+required:
+- run_id
+properties:
+  run_id:
+    $ref: '#/components/schemas/Uuid'

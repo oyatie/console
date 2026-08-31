@@ -275,6 +275,10 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/Company.yaml"),
     },
     NamedYaml {
+        name: "CompanyReviseInput",
+        body: include_str!("../openapi/schemas/CompanyReviseInput.yaml"),
+    },
+    NamedYaml {
         name: "CreateObjectLinkRequest",
         body: include_str!("../openapi/schemas/CreateObjectLinkRequest.yaml"),
     },
@@ -291,12 +295,28 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/Employment.yaml"),
     },
     NamedYaml {
+        name: "EmploymentAttributesInput",
+        body: include_str!("../openapi/schemas/EmploymentAttributesInput.yaml"),
+    },
+    NamedYaml {
         name: "GateChainConfig",
         body: include_str!("../openapi/schemas/GateChainConfig.yaml"),
     },
     NamedYaml {
         name: "GateChainOutcome",
         body: include_str!("../openapi/schemas/GateChainOutcome.yaml"),
+    },
+    NamedYaml {
+        name: "HrAppointInput",
+        body: include_str!("../openapi/schemas/HrAppointInput.yaml"),
+    },
+    NamedYaml {
+        name: "HrPromoteInput",
+        body: include_str!("../openapi/schemas/HrPromoteInput.yaml"),
+    },
+    NamedYaml {
+        name: "HrTransferInput",
+        body: include_str!("../openapi/schemas/HrTransferInput.yaml"),
     },
     NamedYaml {
         name: "InstanceHead",
@@ -363,8 +383,36 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/OntologyInstanceAggregateBucket.yaml"),
     },
     NamedYaml {
+        name: "OrganizationCreateJobPositionInput",
+        body: include_str!("../openapi/schemas/OrganizationCreateJobPositionInput.yaml"),
+    },
+    NamedYaml {
+        name: "OrganizationCreateOrgUnitInput",
+        body: include_str!("../openapi/schemas/OrganizationCreateOrgUnitInput.yaml"),
+    },
+    NamedYaml {
+        name: "OrganizationReviseJobPositionInput",
+        body: include_str!("../openapi/schemas/OrganizationReviseJobPositionInput.yaml"),
+    },
+    NamedYaml {
+        name: "OrganizationReviseOrgUnitInput",
+        body: include_str!("../openapi/schemas/OrganizationReviseOrgUnitInput.yaml"),
+    },
+    NamedYaml {
         name: "OrgUnit",
         body: include_str!("../openapi/schemas/OrgUnit.yaml"),
+    },
+    NamedYaml {
+        name: "OrgUnitSourceBinding",
+        body: include_str!("../openapi/schemas/OrgUnitSourceBinding.yaml"),
+    },
+    NamedYaml {
+        name: "PeopleCreatePersonInput",
+        body: include_str!("../openapi/schemas/PeopleCreatePersonInput.yaml"),
+    },
+    NamedYaml {
+        name: "PeopleRevisePersonInput",
+        body: include_str!("../openapi/schemas/PeopleRevisePersonInput.yaml"),
     },
     NamedYaml {
         name: "Person",
