@@ -194,6 +194,9 @@ mod authorized {
     use console_ontology_canonical_adapter_postgres::company::{
         CompanyCommand, CompanyQuery, PgCompanyPort,
     };
+    use console_ontology_canonical_adapter_postgres::employment::{
+        EmploymentAttributes, EmploymentCommand, EmploymentQuery, PgEmploymentPort,
+    };
     use console_ontology_canonical_adapter_postgres::org_unit::{
         OrgUnitCommand, OrgUnitQuery, PgOrgUnitPort,
     };
@@ -339,6 +342,7 @@ mod authorized {
     struct SeededHeads {
         person_id: Uuid,
         org_unit_id: Uuid,
+        employment_id: Uuid,
     }
 
     async fn seed_heads(pool: &PgPool, org: OrgId, actor: UserId) -> SeededHeads {
@@ -382,13 +386,24 @@ mod authorized {
             .parse()
             .unwrap();
 
-        let persons = PgPersonPort::new(runtime, handle);
+        let employee_id: Uuid = sqlx::query_scalar(
+            "INSERT INTO employees \
+             (org_id, company, name, source_filename, source_sheet, source_row, source_key) \
+             VALUES ($1, 'KNL', '홍길동', 'seed.xlsx', 'Sheet1', 1, $2) RETURNING id",
+        )
+        .bind(*org.as_uuid())
+        .bind(format!("ui-employment-{}", actor.as_uuid()))
+        .fetch_one(pool)
+        .await
+        .unwrap();
+
+        let persons = PgPersonPort::new(runtime.clone(), handle.clone());
         let person_cmd = PersonCommand {
             org_id: org,
             command_id: CommandId::from_uuid(Uuid::new_v4()),
             actor_id: actor,
             query: PersonQuery::Create {
-                employee_id: None,
+                employee_id: Some(employee_id),
                 attributes: json!({ "legal_name": "홍길동", "display_name": "홍길동" }),
             },
             action_key: "create_person".to_owned(),
@@ -403,9 +418,39 @@ mod authorized {
             .expect("create_person must name person_id")
             .parse()
             .unwrap();
+
+        let employments = PgEmploymentPort::new(runtime, handle);
+        let appoint_cmd = EmploymentCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: EmploymentQuery::Appoint {
+                employee_id,
+                valid_from: OffsetDateTime::from_unix_timestamp(1_800_000_000).unwrap(),
+                attributes: EmploymentAttributes {
+                    company: "KNL".to_owned(),
+                    org_unit_id: Some(org_unit_id),
+                    job_position_id: None,
+                    employment_status: "ACTIVE".to_owned(),
+                },
+            },
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
+        };
+        let created_employment =
+            tokio::task::spawn_blocking(move || employments.execute(&appoint_cmd))
+                .await
+                .unwrap()
+                .expect("hr.appoint as console_rt");
+        let employment_id = created_employment.result()["employment_id"]
+            .as_str()
+            .expect("hr.appoint must name employment_id")
+            .parse()
+            .unwrap();
         SeededHeads {
             person_id,
             org_unit_id,
+            employment_id,
         }
     }
 
@@ -557,8 +602,16 @@ mod authorized {
                 && hr_html.contains(&format!("data-person-id=\"{}\"", heads.person_id))
                 && hr_html.contains("data-legal-name=")
                 && hr_html.contains(&format!("href=\"/api/v1/persons/{}\"", heads.person_id))
+                && hr_html.contains(&format!("data-employment-id=\"{}\"", heads.employment_id))
+                && hr_html.contains(&format!(
+                    "href=\"/api/v1/employments/{}\"",
+                    heads.employment_id
+                ))
+                && hr_html.contains("data-appointed-on=")
+                && hr_html.contains("data-job-position-id=")
+                && !hr_html.contains("/api/v1/job-positions/")
                 && !hr_html.contains("data-employee-"),
-            "SUPER_ADMIN HR screen must render the published Person Head: {hr_html}"
+            "SUPER_ADMIN HR screen must render published Person and Employment Heads: {hr_html}"
         );
         assert!(
             !hr_html.to_ascii_lowercase().contains("phone"),
@@ -613,6 +666,17 @@ mod authorized {
         assert!(
             !html.contains("webpack") && !html.contains("vite") && !html.contains("innerHTML"),
             "must stay Rust-native Leptos SSR: {html}"
+        );
+        assert!(
+            !html.contains("/api/v1/job-positions/"),
+            "must not invent JobPosition routes: {html}"
+        );
+        assert!(
+            !html.contains("type=\"date\"")
+                && !html.contains("name=\"as_of\"")
+                && !html.contains("name=\"from\"")
+                && !html.contains("name=\"to\""),
+            "current-slice directory must not invent a temporal picker: {html}"
         );
     }
 
@@ -687,7 +751,7 @@ mod authorized {
         assert_eq!(
             admin_hr,
             console_payroll_ui::render_shell(),
-            "ADMIN without org-wide EmployeeDirectoryRead must omit Person Heads: {admin_hr}"
+            "ADMIN without org-wide EmployeeDirectoryRead must omit Person/Employment Heads: {admin_hr}"
         );
 
         let (status, admin_pay) =
@@ -720,12 +784,17 @@ mod authorized {
             exec_home.contains(&format!("data-org-id=\"{org_id}\""))
                 && exec_home.contains(&format!("data-org-unit-id=\"{}\"", heads.org_unit_id))
                 && exec_home.contains(&format!("data-person-id=\"{}\"", heads.person_id))
+                && exec_home.contains(&format!("data-employment-id=\"{}\"", heads.employment_id))
                 && exec_home.contains(&format!("data-run-id=\"{run_id}\""))
                 && exec_home.contains("data-legal-name=")
                 && exec_home.contains("data-display-name=")
                 && exec_home.contains(&format!("href=\"/api/v1/companies/{org_id}\""))
                 && exec_home.contains(&format!("href=\"/api/v1/org-units/{}\"", heads.org_unit_id))
                 && exec_home.contains(&format!("href=\"/api/v1/persons/{}\"", heads.person_id))
+                && exec_home.contains(&format!(
+                    "href=\"/api/v1/employments/{}\"",
+                    heads.employment_id
+                ))
                 && !exec_home.contains("data-slug")
                 && !exec_home.contains("data-employee-"),
             "EXECUTIVE markup must carry published Head identifiers: {exec_home}"
@@ -754,10 +823,13 @@ mod authorized {
         assert!(
             exec_hr.contains("data-screen=\"hr\"")
                 && exec_hr.contains(&format!("data-person-id=\"{}\"", heads.person_id))
+                && exec_hr.contains(&format!("data-employment-id=\"{}\"", heads.employment_id))
                 && exec_hr.contains("data-legal-name=")
+                && exec_hr.contains("data-appointed-on=")
                 && !exec_hr.contains("data-employee-")
+                && !exec_hr.contains("/api/v1/job-positions/")
                 && !exec_hr.contains("/_ui/pkg/"),
-            "EXECUTIVE HR is SSR Person Head, not an island: {exec_hr}"
+            "EXECUTIVE HR is SSR Person+Employment Head, not an island: {exec_hr}"
         );
         assert_ui_invariants(&exec_hr);
 

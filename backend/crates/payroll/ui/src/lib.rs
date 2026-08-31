@@ -53,6 +53,19 @@ pub struct PersonView {
     pub version: String,
 }
 
+/// Contract-shaped Employment Head. Field names match OpenAPI `Employment`
+/// required keys; values are already-authorized. Same DTO as
+/// `GET /api/v1/employments`. FKs stay ids (no invented JobPosition href).
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EmploymentView {
+    pub id: String,
+    pub version: String,
+    pub appointed_on: String,
+    pub person_id: String,
+    pub org_unit_id: String,
+    pub job_position_id: String,
+}
+
 /// One shipping-screen listing after server composition.
 ///
 /// `Omitted` is deny-by-omission (unauth / forbidden). `Empty` is an authorized
@@ -93,6 +106,7 @@ pub struct ShippingScreens {
     pub companies: ScreenSection<CompanyView>,
     pub org_units: ScreenSection<OrgUnitView>,
     pub people: ScreenSection<PersonView>,
+    pub employments: ScreenSection<EmploymentView>,
     pub runs: ScreenSection<RunSummary>,
 }
 
@@ -230,6 +244,35 @@ fn DirectoryPeople(people: Vec<PersonView>) -> impl IntoView {
 }
 
 #[component]
+fn Employments(employments: Vec<EmploymentView>) -> impl IntoView {
+    employments
+        .into_iter()
+        .map(|employment| {
+            let href = format!("/api/v1/employments/{}", employment.id);
+            let label = if employment.appointed_on.is_empty() {
+                employment.id.clone()
+            } else {
+                employment.appointed_on.clone()
+            };
+            view! {
+                <a href=href>
+                    <span
+                        data-employment-id=employment.id
+                        data-version=employment.version
+                        data-appointed-on=employment.appointed_on
+                        data-person-id=employment.person_id
+                        data-org-unit-id=employment.org_unit_id
+                        data-job-position-id=employment.job_position_id
+                    >
+                        {label}
+                    </span>
+                </a>
+            }
+        })
+        .collect_view()
+}
+
+#[component]
 fn ShippingNav(has_org: bool, has_hr: bool, has_payroll: bool) -> impl IntoView {
     view! {
         <nav>
@@ -248,6 +291,7 @@ pub fn AuthorizedShell(runs: Vec<RunSummary>) -> impl IntoView {
             companies=ScreenSection::Omitted
             org_units=ScreenSection::Omitted
             people=ScreenSection::Omitted
+            employments=ScreenSection::Omitted
             runs=ScreenSection::from_authorized_listing(runs, false)
             nav_org=false
             nav_hr=false
@@ -301,28 +345,49 @@ fn org_body(
     .into_any()
 }
 
-fn hr_body(people: ScreenSection<PersonView>) -> impl IntoView {
-    match people {
-        ScreenSection::Omitted => ().into_any(),
-        ScreenSection::Empty => view! {
+fn hr_body(
+    people: ScreenSection<PersonView>,
+    employments: ScreenSection<EmploymentView>,
+) -> impl IntoView {
+    if matches!(
+        (&people, &employments),
+        (ScreenSection::Omitted, ScreenSection::Omitted)
+    ) {
+        return ().into_any();
+    }
+    let failed =
+        matches!(&people, ScreenSection::Failure) || matches!(&employments, ScreenSection::Failure);
+    let person_rows = match people {
+        ScreenSection::Rows(rows) => rows,
+        _ => Vec::new(),
+    };
+    let employment_rows = match employments {
+        ScreenSection::Rows(rows) => rows,
+        _ => Vec::new(),
+    };
+    if person_rows.is_empty() && employment_rows.is_empty() {
+        if failed {
+            return view! {
+                <section data-screen="hr" data-state="failure">
+                    "목록을 불러오지 못했습니다"
+                </section>
+            }
+            .into_any();
+        }
+        return view! {
             <section data-screen="hr" data-state="empty">
                 "표시할 사람이 없습니다"
             </section>
         }
-        .into_any(),
-        ScreenSection::Failure => view! {
-            <section data-screen="hr" data-state="failure">
-                "목록을 불러오지 못했습니다"
-            </section>
-        }
-        .into_any(),
-        ScreenSection::Rows(people) => view! {
-            <section data-screen="hr">
-                <DirectoryPeople people=people />
-            </section>
-        }
-        .into_any(),
+        .into_any();
     }
+    view! {
+        <section data-screen="hr">
+            <DirectoryPeople people=person_rows />
+            <Employments employments=employment_rows />
+        </section>
+    }
+    .into_any()
 }
 
 fn payroll_body(runs: ScreenSection<RunSummary>) -> impl IntoView {
@@ -354,6 +419,7 @@ fn ShippingShell(
     companies: ScreenSection<CompanyView>,
     org_units: ScreenSection<OrgUnitView>,
     people: ScreenSection<PersonView>,
+    employments: ScreenSection<EmploymentView>,
     runs: ScreenSection<RunSummary>,
     nav_org: bool,
     nav_hr: bool,
@@ -375,7 +441,7 @@ fn ShippingShell(
             <body>
                 <ShippingNav has_org=nav_org has_hr=nav_hr has_payroll=nav_payroll />
                 {org_body(companies, org_units)}
-                {hr_body(people)}
+                {hr_body(people, employments)}
                 {payroll_body(runs)}
             </body>
         </html>
@@ -402,7 +468,7 @@ pub fn render_shell_with(runs: &[RunSummary]) -> String {
 /// Nav names every offered screen; the body is the focused route.
 pub fn render_screens(screens: &ShippingScreens, focus: UiScreen) -> String {
     let nav_org = screens.companies.is_offered() || screens.org_units.is_offered();
-    let nav_hr = screens.people.is_offered();
+    let nav_hr = screens.people.is_offered() || screens.employments.is_offered();
     let nav_payroll = screens.runs.is_offered();
     let companies = match focus {
         UiScreen::Home | UiScreen::Organization => screens.companies.clone(),
@@ -414,6 +480,10 @@ pub fn render_screens(screens: &ShippingScreens, focus: UiScreen) -> String {
     };
     let people = match focus {
         UiScreen::Home | UiScreen::Hr => screens.people.clone(),
+        UiScreen::Organization | UiScreen::Payroll => ScreenSection::Omitted,
+    };
+    let employments = match focus {
+        UiScreen::Home | UiScreen::Hr => screens.employments.clone(),
         UiScreen::Organization | UiScreen::Payroll => ScreenSection::Omitted,
     };
     let runs = match focus {
@@ -436,6 +506,7 @@ pub fn render_screens(screens: &ShippingScreens, focus: UiScreen) -> String {
                 companies=companies
                 org_units=org_units
                 people=people
+                employments=employments
                 runs=runs
                 nav_org=nav_org
                 nav_hr=nav_hr
@@ -698,6 +769,17 @@ mod tests {
         }
     }
 
+    fn sample_employment() -> EmploymentView {
+        EmploymentView {
+            id: "00000000-0000-0000-0000-0000000000ee".to_owned(),
+            version: "1".to_owned(),
+            appointed_on: "2026-01-15T00:00:00Z".to_owned(),
+            person_id: "00000000-0000-0000-0000-0000000000bb".to_owned(),
+            org_unit_id: "00000000-0000-0000-0000-0000000000dd".to_owned(),
+            job_position_id: String::new(),
+        }
+    }
+
     fn assert_not_directory_person(html: &str) {
         assert!(
             !html.contains("data-employee-")
@@ -734,6 +816,17 @@ mod tests {
             !html.contains("webpack") && !html.contains("vite") && !html.contains("innerHTML"),
             "must stay Rust-native Leptos SSR, not a JS wrapper: {html}"
         );
+        assert!(
+            !html.contains("/api/v1/job-positions/"),
+            "must not invent JobPosition routes: {html}"
+        );
+        assert!(
+            !html.contains("type=\"date\"")
+                && !html.contains("name=\"as_of\"")
+                && !html.contains("name=\"from\"")
+                && !html.contains("name=\"to\""),
+            "current-slice directory must not invent a temporal picker: {html}"
+        );
     }
 
     #[test]
@@ -762,6 +855,7 @@ mod tests {
             companies: ScreenSection::Empty,
             org_units: ScreenSection::Empty,
             people: ScreenSection::Empty,
+            employments: ScreenSection::Empty,
             runs: ScreenSection::Empty,
         };
         let empty_org = render_screens(&authorized_empty, UiScreen::Organization);
@@ -802,6 +896,7 @@ mod tests {
             companies: ScreenSection::Failure,
             org_units: ScreenSection::Omitted,
             people: ScreenSection::Omitted,
+            employments: ScreenSection::Omitted,
             runs: ScreenSection::Failure,
         };
         let fail_html = render_screens(&failed, UiScreen::Payroll);
@@ -893,6 +988,7 @@ mod tests {
     fn shipping_screens_hr_is_ssr_contracts_and_omits_phone() {
         let screens = ShippingScreens {
             people: ScreenSection::Rows(vec![sample_person()]),
+            employments: ScreenSection::Rows(vec![sample_employment()]),
             ..ShippingScreens::default()
         };
         let html = render_screens(&screens, UiScreen::Hr);
@@ -913,8 +1009,31 @@ mod tests {
             ["id", "version", "display_name", "legal_name"],
             "Person Head must stay the published four-field set"
         );
+        for key in yaml_schema_required_keys(OPENAPI, "Employment") {
+            let attr = data_attr(key, "employment-id");
+            assert!(
+                html.contains(&attr),
+                "HR markup must carry Employment Head key {key} as {attr}: {html}"
+            );
+        }
+        assert_eq!(
+            yaml_schema_required_keys(OPENAPI, "Employment"),
+            [
+                "id",
+                "version",
+                "appointed_on",
+                "person_id",
+                "org_unit_id",
+                "job_position_id"
+            ],
+            "Employment Head must stay the published six-field set"
+        );
         assert!(
             html.contains("data-person-id=\"00000000-0000-0000-0000-0000000000bb\""),
+            "{html}"
+        );
+        assert!(
+            html.contains("data-employment-id=\"00000000-0000-0000-0000-0000000000ee\""),
             "{html}"
         );
         assert!(
@@ -924,6 +1043,14 @@ mod tests {
         assert!(
             html.contains("href=\"/api/v1/persons/00000000-0000-0000-0000-0000000000bb\""),
             "HR must drill through the published Person instance GET: {html}"
+        );
+        assert!(
+            html.contains("href=\"/api/v1/employments/00000000-0000-0000-0000-0000000000ee\""),
+            "HR must drill through the published Employment instance GET: {html}"
+        );
+        assert!(
+            html.contains("data-job-position-id=\"\""),
+            "job_position_id stays an id attribute, including empty: {html}"
         );
         assert!(
             !html.contains("/api/v1/employees/") && !html.contains("/api/v1/users/"),
@@ -936,6 +1063,13 @@ mod tests {
         );
         let lowered = html.to_ascii_lowercase();
         assert!(!lowered.contains("phone"), "directory phone leaked: {html}");
+        assert!(
+            !lowered.contains("salary")
+                && !lowered.contains("bank_account")
+                && !lowered.contains("base_pay")
+                && !html.contains("data-rrn"),
+            "Employment Head must not copy write-bag or PII: {html}"
+        );
         assert!(
             !html.contains("/_ui/pkg/"),
             "HR read projection is SSR, not an island: {html}"
@@ -953,6 +1087,7 @@ mod tests {
             companies: ScreenSection::Rows(vec![sample_company()]),
             org_units: ScreenSection::Rows(vec![sample_org_unit()]),
             people: ScreenSection::Rows(vec![sample_person()]),
+            employments: ScreenSection::Rows(vec![sample_employment()]),
             runs: ScreenSection::Rows(vec![sample_run()]),
         };
         let html = render_screens(&screens, UiScreen::Home);
@@ -967,6 +1102,7 @@ mod tests {
                 && html.contains("data-org-unit-id=\"00000000-0000-0000-0000-0000000000dd\"")
                 && html.contains("data-legal-name=")
                 && html.contains("data-person-id=\"00000000-0000-0000-0000-0000000000bb\"")
+                && html.contains("data-employment-id=\"00000000-0000-0000-0000-0000000000ee\"")
                 && html.contains("data-run-id=\"00000000-0000-0000-0000-000000000001\""),
             "home must carry published Head identifiers: {html}"
         );
@@ -1007,6 +1143,7 @@ mod tests {
             companies: ScreenSection::Rows(vec![sample_company()]),
             org_units: ScreenSection::Rows(vec![sample_org_unit()]),
             people: ScreenSection::Rows(vec![sample_person()]),
+            employments: ScreenSection::Rows(vec![sample_employment()]),
             runs: ScreenSection::Rows(vec![sample_run()]),
         };
 

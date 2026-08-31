@@ -3601,60 +3601,71 @@ async fn compose_ui_screens(
     state: &AppState,
     headers: &HeaderMap,
 ) -> console_payroll_ui::ShippingScreens {
-    let (companies, org_units, people, runs, floors) = match (&state.database, &state.jwt_verifier)
-    {
-        (DatabaseDependency::Postgres(pool), Some(verifier)) => {
-            let floors = ui_listing_floors(verifier, pool, headers).await;
-            let heads = match (floors.heads, floors.org_id) {
-                (true, Some(org)) => {
-                    let handle = tokio::runtime::Handle::current();
-                    let company_pool = pool.clone();
-                    let company_handle = handle.clone();
-                    let unit_pool = pool.clone();
-                    let unit_handle = handle.clone();
-                    let person_pool = pool.clone();
-                    let person_handle = handle.clone();
-                    let (companies, org_units, people) = tokio::join!(
-                        tokio::task::spawn_blocking(move || {
-                            PgCompanyPort::new(company_pool, company_handle).list(org)
-                        }),
-                        tokio::task::spawn_blocking(move || {
-                            PgOrgUnitPort::new(unit_pool, unit_handle).list(org)
-                        }),
-                        tokio::task::spawn_blocking(move || {
-                            PgPersonPort::new(person_pool, person_handle).list(org)
-                        }),
-                    );
-                    (
-                        ui_head_section(companies, ui_company),
-                        ui_head_section(org_units, ui_org_unit),
-                        ui_head_section(people, ui_person),
-                    )
-                }
-                _ => (
-                    console_payroll_ui::ScreenSection::Omitted,
-                    console_payroll_ui::ScreenSection::Omitted,
-                    console_payroll_ui::ScreenSection::Omitted,
-                ),
-            };
-            let runs =
-                PayrollRestState::new(PgPayrollStore::new(pool.clone()), Some(verifier.clone()))
-                    .visible_run_summaries(headers)
-                    .await;
-            (heads.0, heads.1, heads.2, runs, floors)
-        }
-        _ => (
-            console_payroll_ui::ScreenSection::Omitted,
-            console_payroll_ui::ScreenSection::Omitted,
-            console_payroll_ui::ScreenSection::Omitted,
-            Vec::new(),
-            UiListingFloors::denied(),
-        ),
-    };
+    let (companies, org_units, people, employments, runs, floors) =
+        match (&state.database, &state.jwt_verifier) {
+            (DatabaseDependency::Postgres(pool), Some(verifier)) => {
+                let floors = ui_listing_floors(verifier, pool, headers).await;
+                let heads = match (floors.heads, floors.org_id) {
+                    (true, Some(org)) => {
+                        let handle = tokio::runtime::Handle::current();
+                        let company_pool = pool.clone();
+                        let company_handle = handle.clone();
+                        let unit_pool = pool.clone();
+                        let unit_handle = handle.clone();
+                        let person_pool = pool.clone();
+                        let person_handle = handle.clone();
+                        let employment_pool = pool.clone();
+                        let employment_handle = handle.clone();
+                        let (companies, org_units, people, employments) = tokio::join!(
+                            tokio::task::spawn_blocking(move || {
+                                PgCompanyPort::new(company_pool, company_handle).list(org)
+                            }),
+                            tokio::task::spawn_blocking(move || {
+                                PgOrgUnitPort::new(unit_pool, unit_handle).list(org)
+                            }),
+                            tokio::task::spawn_blocking(move || {
+                                PgPersonPort::new(person_pool, person_handle).list(org)
+                            }),
+                            tokio::task::spawn_blocking(move || {
+                                PgEmploymentPort::new(employment_pool, employment_handle).list(org)
+                            }),
+                        );
+                        (
+                            ui_head_section(companies, ui_company),
+                            ui_head_section(org_units, ui_org_unit),
+                            ui_head_section(people, ui_person),
+                            ui_head_section(employments, ui_employment),
+                        )
+                    }
+                    _ => (
+                        console_payroll_ui::ScreenSection::Omitted,
+                        console_payroll_ui::ScreenSection::Omitted,
+                        console_payroll_ui::ScreenSection::Omitted,
+                        console_payroll_ui::ScreenSection::Omitted,
+                    ),
+                };
+                let runs = PayrollRestState::new(
+                    PgPayrollStore::new(pool.clone()),
+                    Some(verifier.clone()),
+                )
+                .visible_run_summaries(headers)
+                .await;
+                (heads.0, heads.1, heads.2, heads.3, runs, floors)
+            }
+            _ => (
+                console_payroll_ui::ScreenSection::Omitted,
+                console_payroll_ui::ScreenSection::Omitted,
+                console_payroll_ui::ScreenSection::Omitted,
+                console_payroll_ui::ScreenSection::Omitted,
+                Vec::new(),
+                UiListingFloors::denied(),
+            ),
+        };
     console_payroll_ui::ShippingScreens {
         companies,
         org_units,
         people,
+        employments,
         runs: console_payroll_ui::ScreenSection::from_authorized_listing(
             runs.iter().map(ui_run_summary).collect(),
             floors.payroll,
@@ -3679,9 +3690,9 @@ impl UiListingFloors {
 }
 
 /// Same listing floors as the published Head GETs those screens already use.
-/// Company / OrgUnit / Person collection GETs are `EmployeeDirectoryRead`
-/// org-wide. `visible_run_summaries` still collapses errors to `[]`; payroll
-/// empty vs omit stays that helper's floor.
+/// Company / OrgUnit / Person / Employment collection GETs are
+/// `EmployeeDirectoryRead` org-wide. `visible_run_summaries` still collapses
+/// errors to `[]`; payroll empty vs omit stays that helper's floor.
 async fn ui_listing_floors(
     verifier: &JwtVerifier,
     pool: &PgPool,
@@ -3742,6 +3753,29 @@ fn ui_person(
         display_name: head.display_name.clone().unwrap_or_default(),
         legal_name: head.legal_name.clone().unwrap_or_default(),
         version: head.version.to_string(),
+    }
+}
+
+fn ui_employment(
+    head: &console_ontology_canonical_adapter_postgres::employment::EmploymentHead,
+) -> console_payroll_ui::EmploymentView {
+    use time::format_description::well_known::Rfc3339;
+    console_payroll_ui::EmploymentView {
+        id: head.id.to_string(),
+        version: head.version.to_string(),
+        appointed_on: head
+            .appointed_on
+            .format(&Rfc3339)
+            .unwrap_or_else(|_| String::new()),
+        person_id: head.person_id.map(|id| id.to_string()).unwrap_or_default(),
+        org_unit_id: head
+            .org_unit_id
+            .map(|id| id.to_string())
+            .unwrap_or_default(),
+        job_position_id: head
+            .job_position_id
+            .map(|id| id.to_string())
+            .unwrap_or_default(),
     }
 }
 
