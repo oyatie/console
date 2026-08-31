@@ -1,13 +1,17 @@
 //! JobPosition identity readback on the preserved ontology action namespace.
 //!
-//! L5-JOB does **not** invent `/api/v1/job-positions` or widen `OrgEntitySummary`
-//! (that DTO is Company/OrgUnit — L5-ORG / console-7sx). Canonical position IDs
-//! round-trip through `organization.create_job_position` /
-//! `organization.revise_job_position` receipt results under
-//! `/api/v1/ontology/actions/{action_key}/execute`.
+//! Canonical position IDs still round-trip through
+//! `organization.create_job_position` / `organization.revise_job_position`
+//! receipt results under `/api/v1/ontology/actions/{action_key}/execute`.
+//! HTTP identity for the current head is `GET /api/v1/job-positions` and
+//! `GET /api/v1/job-positions/{id}`, published from `PgJobPositionPort`
+//! (same slice as sibling Head GETs). Recruiting postings and
+//! `employees.position` free text are never projected here: they are not
+//! canonical positions (canonical-domain JobPosition contract).
 //!
-//! Recruiting postings and `employees.position` free text are never projected
-//! here: they are not canonical positions (canonical-domain JobPosition contract).
+//! L5-JOB originally refused *inventing* `/api/v1/job-positions` when sibling
+//! Heads had no collection GET. That invent-fence is lifted because the port
+//! is real — this is not a new store.
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

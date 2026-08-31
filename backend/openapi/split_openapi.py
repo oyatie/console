@@ -114,6 +114,7 @@ MANUAL_PREFIXES = [
     ("/api/v1/org-units", "ontology"),
     ("/api/v1/companies", "ontology"),
     ("/api/v1/persons", "ontology"),
+    ("/api/v1/job-positions", "ontology"),
     ("/api/v1/employees", "orgchange"),
     ("/api/v1/hr", "orgchange"),
     ("/api/audit", "governance"),

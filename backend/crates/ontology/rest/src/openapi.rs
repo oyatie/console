@@ -24,6 +24,7 @@ const EXTERNAL_SCHEMAS: &[&str] = &[
     "HrAppointInput",
     "HrPromoteInput",
     "HrTransferInput",
+    "JobPosition",
     "OrganizationCreateJobPositionInput",
     "OrganizationCreateOrgUnitInput",
     "OrganizationReviseJobPositionInput",
@@ -80,6 +81,20 @@ const PATHS: &[PathItem] = &[
         operations: &[Operation {
             method: "get",
             body: include_str!("../openapi/paths/api__v1__employments__id.get.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v1/job-positions",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../openapi/paths/api__v1__job-positions.get.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v1/job-positions/{id}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../openapi/paths/api__v1__job-positions__id.get.yaml"),
         }],
     },
     PathItem {

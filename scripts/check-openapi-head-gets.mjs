@@ -8,12 +8,14 @@
 // Head that already has a runtime get-by-id port, and refuses as_of on Heads
 // with no valid-time store.
 //
-// Chesterton: L5-JOB still refuses inventing `/api/v1/job-positions` — JobPosition
-// identity stays action-receipt readback. PayRun REST remains PayrollRunSummary
-// (no Head GET, no fake version). OrgUnit / Company / Person ports already
-// load by id; publishing GET that returns the existing Head DTO is not a new
-// store. as_of stays Employment/ontology-instance only; using created_at as
-// valid_from would be a second time model.
+// Chesterton: L5-JOB originally refused *inventing* `/api/v1/job-positions`
+// when sibling Heads had no collection GET and identity was action-receipt
+// readback. PgJobPositionPort::get already exists; Company / OrgUnit / Person
+// / Employment now publish instance GET from their ports. Publishing GET that
+// returns the existing JobPosition Head DTO is the same slice, not a new store.
+// PayRun REST remains PayrollRunSummary (no Head GET, no fake version). as_of
+// stays Employment/ontology-instance only; using created_at as valid_from
+// would be a second time model.
 //
 // Totality: js-yaml load + own-property walk of every path item / GET. A walker
 // that visits nothing reports nothing, so GET_FLOOR locks examined-zero.
@@ -37,15 +39,14 @@ export const GET_FLOOR = ASOF_GET_FLOOR;
 export const REQUIRED_INSTANCE_GET_HEADS = Object.freeze([
   "Company",
   "OrgUnit",
+  "JobPosition",
   "Person",
   "Employment",
 ]);
 
-/** L5-JOB fence: do not invent `/api/v1/job-positions`. */
-export const FENCED_JOB_POSITION = "JobPosition";
 /** PayRun GET stays PayrollRunSummary; no versioned Head GET. */
 export const FENCED_PAY_RUN = "PayRun";
-export const FENCED_HEADS = Object.freeze([FENCED_JOB_POSITION, FENCED_PAY_RUN]);
+export const FENCED_HEADS = Object.freeze([FENCED_PAY_RUN]);
 
 /** Only Employment already has the ontology half-open as_of algebra. */
 export const TEMPORAL_ASOF_HEADS = Object.freeze(["Employment"]);
@@ -160,9 +161,7 @@ export function evaluateOpenapiHeadGets({ repoRoot }) {
           push(
             findings,
             location,
-            name === FENCED_JOB_POSITION
-              ? "JobPosition Head must not gain a GET; L5-JOB still refuses inventing /api/v1/job-positions (identity stays action-receipt readback)"
-              : "PayRun Head must not become a GET 200 schema; REST stays PayrollRunSummary and version stays absent",
+            "PayRun Head must not become a GET 200 schema; REST stays PayrollRunSummary and version stays absent",
           );
         }
       }
@@ -242,6 +241,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     .join(", ");
   console.log(
     `openapi Head instance-GET gate passed `
-      + `(${published}; JobPosition/PayRun fenced; ${gets} GET operations, 0 findings)`,
+      + `(${published}; PayRun fenced; ${gets} GET operations, 0 findings)`,
   );
 }

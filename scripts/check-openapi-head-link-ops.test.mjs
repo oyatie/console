@@ -14,7 +14,6 @@ import {
 import { HEAD_SCHEMA_NAMES } from "./check-openapi-semantic-generate.mjs";
 import {
   FENCED_HEADS,
-  FENCED_JOB_POSITION,
   FENCED_LINK_FLOOR,
   FENCED_LINKS,
   FENCED_PAY_RUN,
@@ -116,6 +115,7 @@ function honestGets() {
   return [
     instanceGet("/api/v1/companies/{id}", "Company", "getCompany"),
     instanceGet("/api/v1/org-units/{id}", "OrgUnit", "getOrgUnit"),
+    instanceGet("/api/v1/job-positions/{id}", "JobPosition", "getJobPosition"),
     instanceGet("/api/v1/persons/{id}", "Person", "getPerson"),
     instanceGet("/api/v1/employments/{id}", "Employment", "getEmployment"),
   ].join("\n");
@@ -126,6 +126,7 @@ const BOUND = Object.freeze({
   job_position_org_unit: "          operationId: getOrgUnit",
   employment_person: "          operationId: getPerson",
   employment_org_unit: "          operationId: getOrgUnit",
+  employment_job_position: "          operationId: getJobPosition",
 });
 
 describe("check-openapi-head-link-ops", () => {
@@ -134,24 +135,31 @@ describe("check-openapi-head-link-ops", () => {
     assert.equal(GET_FLOOR, ASOF_GET_FLOOR);
     assert.equal(OPS_LINK_FLOOR, LINK_FLOOR);
     assert.equal(OPS_LINK_FLOOR, 5);
-    assert.equal(TRAVERSABLE_LINK_FLOOR, 4);
-    assert.equal(FENCED_LINK_FLOOR, 1);
+    assert.equal(TRAVERSABLE_LINK_FLOOR, 5);
+    assert.equal(FENCED_LINK_FLOOR, 0);
     assert.deepEqual(
       TRAVERSABLE_LINKS.map((link) => link.key),
-      ["org_unit_parent", "job_position_org_unit", "employment_person", "employment_org_unit"],
+      [
+        "org_unit_parent",
+        "job_position_org_unit",
+        "employment_person",
+        "employment_org_unit",
+        "employment_job_position",
+      ],
     );
     assert.deepEqual(
       FENCED_LINKS.map((link) => link.key),
-      ["employment_job_position"],
+      [],
     );
     assert.deepEqual(INSTANCE_GET_PATHS, {
       Company: "/api/v1/companies/{id}",
       OrgUnit: "/api/v1/org-units/{id}",
+      JobPosition: "/api/v1/job-positions/{id}",
       Person: "/api/v1/persons/{id}",
       Employment: "/api/v1/employments/{id}",
     });
-    assert.deepEqual(FENCED_HEADS, [FENCED_JOB_POSITION, FENCED_PAY_RUN]);
-    assert.ok(!Object.hasOwn(INSTANCE_GET_PATHS, "JobPosition"));
+    assert.deepEqual(FENCED_HEADS, [FENCED_PAY_RUN]);
+    assert.ok(Object.hasOwn(INSTANCE_GET_PATHS, "JobPosition"));
     assert.ok(!Object.hasOwn(INSTANCE_GET_PATHS, "PayRun"));
   });
 
@@ -161,6 +169,7 @@ describe("check-openapi-head-link-ops", () => {
         org_unit_parent: "          operationId: getOrgUnit",
         job_position_org_unit: "          operationId: getOrgUnit",
         employment_org_unit: "          operationId: getOrgUnit",
+        employment_job_position: "          operationId: getJobPosition",
       })),
     });
     assert.ok(
@@ -172,7 +181,7 @@ describe("check-openapi-head-link-ops", () => {
       ),
       JSON.stringify(result.findings, null, 2),
     );
-    assert.equal(result.traversable, 3);
+    assert.equal(result.traversable, 4);
   });
 
   it("fails while Employment→OrgUnit is schema-only without getOrgUnit", () => {
@@ -181,6 +190,7 @@ describe("check-openapi-head-link-ops", () => {
         org_unit_parent: "          operationId: getOrgUnit",
         job_position_org_unit: "          operationId: getOrgUnit",
         employment_person: "          operationId: getPerson",
+        employment_job_position: "          operationId: getJobPosition",
       })),
     });
     assert.ok(
@@ -210,42 +220,61 @@ describe("check-openapi-head-link-ops", () => {
     );
   });
 
-  it("refuses inventing getJobPosition on the fenced Head FK", () => {
+  it("fails while Employment→JobPosition is schema-only without getJobPosition", () => {
     const result = evaluateOpenapiHeadLinkOps({
       repoRoot: fixture(spec(honestGets(), {
-        ...BOUND,
-        employment_job_position: "          operationId: getJobPosition",
+        org_unit_parent: "          operationId: getOrgUnit",
+        job_position_org_unit: "          operationId: getOrgUnit",
+        employment_person: "          operationId: getPerson",
+        employment_org_unit: "          operationId: getOrgUnit",
       })),
     });
     assert.ok(
       result.findings.some(
         (finding) =>
           finding.location === "#/components/schemas/Employment/links/employment_job_position/operationId"
-          && /id-only/.test(finding.message),
+          && /getJobPosition/.test(finding.message)
+          && /schema-only/.test(finding.message),
+      ),
+      JSON.stringify(result.findings, null, 2),
+    );
+    assert.equal(result.traversable, 4);
+  });
+
+  it("fails while JobPosition instance GET is missing so the link cannot bind", () => {
+    const withoutJobPosition = [
+      instanceGet("/api/v1/companies/{id}", "Company", "getCompany"),
+      instanceGet("/api/v1/org-units/{id}", "OrgUnit", "getOrgUnit"),
+      instanceGet("/api/v1/persons/{id}", "Person", "getPerson"),
+      instanceGet("/api/v1/employments/{id}", "Employment", "getEmployment"),
+    ].join("\n");
+    const result = evaluateOpenapiHeadLinkOps({
+      repoRoot: fixture(spec(withoutJobPosition, {
+        org_unit_parent: "          operationId: getOrgUnit",
+        job_position_org_unit: "          operationId: getOrgUnit",
+        employment_person: "          operationId: getPerson",
+        employment_org_unit: "          operationId: getOrgUnit",
+        employment_job_position: "          operationId: getJobPosition",
+      })),
+    });
+    assert.ok(
+      result.findings.some(
+        (finding) =>
+          finding.location === "#/components/schemas/JobPosition"
+          && /not a 200 schema of any instance GET/.test(finding.message),
       ),
       JSON.stringify(result.findings, null, 2),
     );
   });
 
-  it("refuses inventing /api/v1/job-positions to complete the JobPosition link", () => {
-    const result = evaluateOpenapiHeadLinkOps({
-      repoRoot: fixture(spec(`${honestGets()}
-${instanceGet("/api/v1/job-positions/{id}", "JobPosition", "getJobPosition")}`, BOUND)),
-    });
-    assert.ok(
-      result.findings.some((finding) => /L5-JOB still refuses inventing/.test(finding.message)),
-      JSON.stringify(result.findings, null, 2),
-    );
-  });
-
-  it("passes when Head FKs with published GET bind that operationId and JobPosition stays id-only", () => {
+  it("passes when Head FKs with published GET bind that operationId including employment_job_position", () => {
     const result = evaluateOpenapiHeadLinkOps({
       repoRoot: fixture(spec(honestGets(), BOUND)),
     });
     assert.equal(result.findings.length, 0, JSON.stringify(result.findings, null, 2));
     assert.equal(result.links, 5);
-    assert.equal(result.traversable, 4);
-    assert.equal(result.fenced, 1);
+    assert.equal(result.traversable, 5);
+    assert.equal(result.fenced, 0);
     assert.ok(result.gets >= GET_FLOOR);
   });
 

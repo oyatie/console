@@ -3,16 +3,20 @@
 // The hole this closes: PRODUCT requires typed objects that generate OpenAPI.
 // Company / OrgUnit / Person already have instance GET (#1008) and runtime
 // list/search ports (`PgCompanyPort::list`, `PgOrgUnitPort::list`,
-// `PgPersonPort::list`). Instance GET alone is not a published collection.
+// `PgPersonPort::list`). JobPosition has `PgJobPositionPort::list` /
+// `list_for_org_unit`. Instance GET alone is not a published collection.
 // Employment already has GET /api/v1/employments. This gate requires a
 // collection GET (200 schema is an array of the Head $ref) for every roster
-// Head that already has a list port, except the L5-JOB / PayRun fences.
+// Head that already has a list port, except the PayRun fence.
 //
-// Chesterton: publishing GET /api/v1/org-units (etc.) that returns the existing
-// Head DTO is not a new store. Leptos org-chart / org-entities list via a
-// different path and DTO; that does not invent these ports. as_of / from / to
-// stay Employment-only — these Heads have no valid-time columns. Pagination
-// (#273) is unscheduled; the list ports do not page.
+// Chesterton: L5-JOB originally refused *inventing* `/api/v1/job-positions`
+// when sibling Heads had no collection GET. Those siblings now publish
+// collection GET from existing list ports. Publishing GET /api/v1/job-positions
+// that returns the existing Head DTO is not a new store. Leptos org-chart /
+// org-entities list via a different path and DTO; that does not invent these
+// ports. as_of / from / to stay Employment-only — these Heads have no
+// valid-time columns. Pagination (#273) is unscheduled; the list ports do
+// not page.
 //
 // Totality: js-yaml load + own-property walk of every path item / GET. A walker
 // that visits nothing reports nothing, so GET_FLOOR locks examined-zero.
@@ -25,7 +29,6 @@ import yaml from "js-yaml";
 
 import {
   FENCED_HEADS,
-  FENCED_JOB_POSITION,
   FENCED_PAY_RUN,
   GET_FLOOR,
   TEMPORAL_ASOF_HEADS,
@@ -35,12 +38,13 @@ import { isIntegerNamedParam, isTimestampNamedParam } from "./check-openapi-hr-f
 import { HEAD_SCHEMA_NAMES } from "./check-openapi-semantic-generate.mjs";
 import { hasOwnKey, isPlainObject, own } from "./own-property.mjs";
 
-export { FENCED_HEADS, FENCED_JOB_POSITION, FENCED_PAY_RUN, GET_FLOOR, TEMPORAL_ASOF_HEADS };
+export { FENCED_HEADS, FENCED_PAY_RUN, GET_FLOOR, TEMPORAL_ASOF_HEADS };
 
 /** Heads whose runtime list port already exists and must be published. */
 export const REQUIRED_COLLECTION_GET_HEADS = Object.freeze([
   "Company",
   "OrgUnit",
+  "JobPosition",
   "Person",
 ]);
 
@@ -48,6 +52,7 @@ export const REQUIRED_COLLECTION_GET_HEADS = Object.freeze([
 export const COLLECTION_PATHS = Object.freeze({
   Company: "/api/v1/companies",
   OrgUnit: "/api/v1/org-units",
+  JobPosition: "/api/v1/job-positions",
   Person: "/api/v1/persons",
 });
 
@@ -166,9 +171,7 @@ export function evaluateOpenapiHeadCollections({ repoRoot }) {
         push(
           findings,
           location,
-          itemsHead === FENCED_JOB_POSITION
-            ? "JobPosition Head must not gain a collection GET; L5-JOB still refuses inventing /api/v1/job-positions (identity stays action-receipt readback)"
-            : "PayRun Head must not become a collection GET 200 schema; REST stays PayrollRunSummary and version stays absent",
+          "PayRun Head must not become a collection GET 200 schema; REST stays PayrollRunSummary and version stays absent",
         );
       }
 
@@ -266,6 +269,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     .join(", ");
   console.log(
     `openapi Head collection-GET gate passed `
-      + `(${published}; JobPosition/PayRun fenced; ${gets} GET operations, 0 findings)`,
+      + `(${published}; PayRun fenced; ${gets} GET operations, 0 findings)`,
   );
 }

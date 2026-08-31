@@ -282,7 +282,7 @@ export const OrgUnitDefinition = {
 } as const;
 
 /**
- * Canonical JobPosition head. Distinct from recruiting postings and from `employees.position` TEXT. `org_unit_id` is a foreign key to an existing OrgUnit. `attributes` is the latest revision bag; write preflight requires a non-empty string `title` (catalog JOB_POSITION_TITLE). Other attribute keys are not a published closed set. Temporal slices other than revision `version` remain HOLD.
+ * Canonical JobPosition head. Distinct from recruiting postings and from `employees.position` TEXT. GET /api/v1/job-positions/{id} returns this current head. GET /api/v1/job-positions returns current heads (the same rows `list` already returns). as_of / from / to are omitted: `job_positions` / `job_position_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `org_unit_id` is a foreign key to an existing OrgUnit. `attributes` is the latest revision bag; write preflight requires a non-empty string `title` (catalog JOB_POSITION_TITLE). Other attribute keys are not a published closed set. Temporal slices other than revision `version` remain HOLD.
  */
 export type JobPosition = {
   job_position_id: Uuid;
@@ -466,6 +466,7 @@ export const EmploymentDefinition = {
       field: "job_position_id",
       cardinality: "many-to-one",
       option: true,
+      operationId: "getJobPosition",
     },
   ],
   actions: [

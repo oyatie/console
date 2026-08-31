@@ -232,14 +232,14 @@ pub(super) const HEADS: &[HeadEntry] = &[
 ];
 
 /// Published instance-GET `operationId` for a Head that already has
-/// `GET /api/v1/.../{id}`. JobPosition stays fenced (L5-JOB — no
-/// `/api/v1/job-positions`). PayRun stays `PayrollRunSummary`. Company is not
+/// `GET /api/v1/.../{id}`. PayRun stays `PayrollRunSummary`. Company is not
 /// an outgoing Head FK (`org_id` is the RLS cell). Linked reads do not take
-/// `as_of`: OrgUnit / Person / Company have no valid-time store.
+/// `as_of`: OrgUnit / Person / Company / JobPosition have no valid-time store.
 fn published_instance_get_operation_id(head: &str) -> Option<&'static str> {
     match head {
         "Company" => Some("getCompany"),
         "OrgUnit" => Some("getOrgUnit"),
+        "JobPosition" => Some("getJobPosition"),
         "Person" => Some("getPerson"),
         "Employment" => Some("getEmployment"),
         _ => None,
@@ -861,7 +861,7 @@ pub(super) fn dto_schema_bags() -> Result<Vec<(String, Json)>, SemanticError> {
         (
             "JobPosition",
             head_object(
-                "Canonical JobPosition head. Distinct from recruiting postings and from `employees.position` TEXT. `org_unit_id` is a foreign key to an existing OrgUnit. `attributes` is the latest revision bag; write preflight requires a non-empty string `title` (catalog JOB_POSITION_TITLE). Other attribute keys are not a published closed set. Temporal slices other than revision `version` remain HOLD.",
+                "Canonical JobPosition head. Distinct from recruiting postings and from `employees.position` TEXT. GET /api/v1/job-positions/{id} returns this current head. GET /api/v1/job-positions returns current heads (the same rows `list` already returns). as_of / from / to are omitted: `job_positions` / `job_position_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `org_unit_id` is a foreign key to an existing OrgUnit. `attributes` is the latest revision bag; write preflight requires a non-empty string `title` (catalog JOB_POSITION_TITLE). Other attribute keys are not a published closed set. Temporal slices other than revision `version` remain HOLD.",
                 &["job_position_id", "org_unit_id", "version", "attributes"],
                 vec![
                     ("job_position_id", uuid_ref()),

@@ -19,6 +19,12 @@
     "/api/v1/employments/{id}": [
       "get"
     ],
+    "/api/v1/job-positions": [
+      "get"
+    ],
+    "/api/v1/job-positions/{id}": [
+      "get"
+    ],
     "/api/v1/org-units": [
       "get"
     ],
@@ -148,6 +154,7 @@
     "HrAppointInput",
     "HrPromoteInput",
     "HrTransferInput",
+    "JobPosition",
     "OrganizationCreateJobPositionInput",
     "OrganizationCreateOrgUnitInput",
     "OrganizationReviseJobPositionInput",

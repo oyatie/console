@@ -18,6 +18,7 @@ use console_leave_domain::LeaveBalanceAmount;
 // to hold lives there now; console-app is no longer a second writer of it.
 use console_ontology_canonical_adapter_postgres::company;
 use console_ontology_canonical_adapter_postgres::employment;
+use console_ontology_canonical_adapter_postgres::job_position;
 use console_ontology_canonical_adapter_postgres::org_unit;
 use console_ontology_canonical_adapter_postgres::person::{
     PersonCommand, PersonError, PersonHead, PgPersonPort, write_in_tx as write_person_in_tx,
@@ -48,6 +49,8 @@ pub const COMPANIES_PATH: &str = "/api/v1/companies";
 pub const COMPANY_PATH_TEMPLATE: &str = "/api/v1/companies/{id}";
 pub const PERSONS_PATH: &str = "/api/v1/persons";
 pub const PERSON_PATH_TEMPLATE: &str = "/api/v1/persons/{id}";
+pub const JOB_POSITIONS_PATH: &str = "/api/v1/job-positions";
+pub const JOB_POSITION_PATH_TEMPLATE: &str = "/api/v1/job-positions/{id}";
 pub const EMPLOYEES_IMPORT_PATH: &str = "/api/v1/employees/import";
 pub const EMPLOYEES_IMPORT_PREVIEW_PATH: &str = "/api/v1/employees/import/preview";
 pub const EMPLOYEES_IMPORT_DRY_RUN_PATH_TEMPLATE: &str =
@@ -84,6 +87,8 @@ pub const HR_ROUTE_PATHS: &[&str] = &[
     COMPANY_PATH_TEMPLATE,
     PERSONS_PATH,
     PERSON_PATH_TEMPLATE,
+    JOB_POSITIONS_PATH,
+    JOB_POSITION_PATH_TEMPLATE,
     EMPLOYEES_IMPORT_PATH,
     EMPLOYEES_IMPORT_PREVIEW_PATH,
     EMPLOYEES_IMPORT_DRY_RUN_PATH_TEMPLATE,
@@ -149,6 +154,8 @@ pub fn router(state: HrState) -> Router {
         .route(COMPANY_PATH_TEMPLATE, get(get_company))
         .route(PERSONS_PATH, get(list_persons))
         .route(PERSON_PATH_TEMPLATE, get(get_person_head))
+        .route(JOB_POSITIONS_PATH, get(list_job_positions))
+        .route(JOB_POSITION_PATH_TEMPLATE, get(get_job_position))
         .route(HR_ORG_CHART_PATH, get(get_hr_org_chart))
         .route(HR_LEAVE_BALANCES_PATH, get(list_leave_balances))
         .route(HR_ATTENDANCE_SUMMARY_PATH, get(list_attendance_summary))
@@ -1633,6 +1640,55 @@ async fn get_person_head(
     let head = head.ok_or_else(|| {
         HrError::from_kernel(KernelError::not_found(
             "person was not found in this organization",
+        ))
+    })?;
+    Ok(Json(head))
+}
+
+/// Canonical JobPosition Head collection. Current latest revision only —
+/// job_positions has no valid-time columns, so as_of/from/to are not queries.
+/// Gated on directory *read*. Empty when none are visible. Never invents rows
+/// from recruiting postings or `employees.position` TEXT.
+async fn list_job_positions(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+) -> Result<Json<Vec<job_position::JobPositionView>>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    record_hr_read("job-positions");
+    let org = principal.org_id;
+    let pool = state.pool.clone();
+    let handle = tokio::runtime::Handle::current();
+    let heads = tokio::task::spawn_blocking(move || {
+        let port = job_position::PgJobPositionPort::new(pool, handle);
+        port.list(org)
+    })
+    .await
+    .map_err(|_| HrError::from_kernel(KernelError::internal("job position list join failed")))??;
+    Ok(Json(heads))
+}
+
+/// Canonical JobPosition Head. Current latest revision only — job_positions
+/// has no valid-time columns, so as_of is not a query. Gated on directory
+/// *read*. A miss or a foreign tenant is 404.
+async fn get_job_position(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+    Path(job_position_id): Path<Uuid>,
+) -> Result<Json<job_position::JobPositionView>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    record_hr_read("job-positions");
+    let org = principal.org_id;
+    let pool = state.pool.clone();
+    let handle = tokio::runtime::Handle::current();
+    let head = tokio::task::spawn_blocking(move || {
+        let port = job_position::PgJobPositionPort::new(pool, handle);
+        port.get(org, job_position_id)
+    })
+    .await
+    .map_err(|_| HrError::from_kernel(KernelError::internal("job position read join failed")))??;
+    let head = head.ok_or_else(|| {
+        HrError::from_kernel(KernelError::not_found(
+            "job position was not found in this organization",
         ))
     })?;
     Ok(Json(head))
@@ -8982,6 +9038,26 @@ impl From<company::CompanyError> for HrError {
             company::CompanyError::UnreadableReceipt(id, message) => {
                 tracing::error!(command = %id, receipt = %message, "company command receipt unreadable");
                 Self::internal("company request failed")
+            }
+        }
+    }
+}
+
+impl From<job_position::JobPositionError> for HrError {
+    fn from(error: job_position::JobPositionError) -> Self {
+        match error {
+            job_position::JobPositionError::Blocked(blockers) => Self::from_kernel(
+                KernelError::validation(format!("preflight blocked the command: {blockers:?}")),
+            ),
+            job_position::JobPositionError::DigestConflict(id) => {
+                Self::from_kernel(KernelError::conflict(format!(
+                    "command {id} was already applied with a different payload"
+                )))
+            }
+            job_position::JobPositionError::Database(error) => Self::from(error),
+            job_position::JobPositionError::UnreadableReceipt(id, message) => {
+                tracing::error!(command = %id, receipt = %message, "job position command receipt unreadable");
+                Self::internal("job position request failed")
             }
         }
     }

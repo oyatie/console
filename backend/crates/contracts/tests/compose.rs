@@ -1672,8 +1672,8 @@ fn generated_head_fk_links_bind_published_get_operations() -> Result<(), Box<dyn
         "Employment.org_unit_id must bind GET getOrgUnit: {links}"
     );
     assert!(
-        !links.contains("getJobPosition"),
-        "JobPosition GET is fenced; employment_job_position stays id-only: {links}"
+        links.contains("operationId: getJobPosition"),
+        "Employment.job_position_id must bind GET getJobPosition: {links}"
     );
     assert!(
         !links.contains("as_of"),
@@ -1705,10 +1705,6 @@ fn generated_head_fk_links_bind_published_get_operations() -> Result<(), Box<dyn
     assert!(
         job_links.contains("operationId: getOrgUnit"),
         "JobPosition.org_unit_id must bind GET getOrgUnit: {job_links}"
-    );
-    assert!(
-        !job_links.contains("getJobPosition"),
-        "L5-JOB still fences JobPosition GET: {job_links}"
     );
     Ok(())
 }

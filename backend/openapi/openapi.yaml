@@ -7823,6 +7823,68 @@ paths:
       security: [{ bearerAuth: [] }]
       parameters: [{ name: branchId, in: query, required: true, schema: { $ref: '#/components/schemas/Uuid' } }]
       responses: { '200': { description: MRP lines, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/InventoryMrpLine' } } } } }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /api/v1/job-positions:
+    get:
+      operationId: listJobPositions
+      summary: List canonical JobPosition heads
+      description: >-
+        Returns current JobPosition Heads in the armed tenant — the same rows `list`
+        already returns (latest revision, `MAX(version)`). as_of / from / to are
+        omitted: `job_positions` / `job_position_revisions` have no valid-time
+        columns, and using `created_at` as `valid_from` would be a second time
+        model. Empty when none are visible. Distinct from recruiting postings and
+        from `employees.position` TEXT. EmployeeDetail as_of remains HOLD.
+      tags:
+      - Ontology
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Current JobPosition heads.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobPosition'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/job-positions/{id}:
+    get:
+      operationId: getJobPosition
+      summary: Get a canonical JobPosition head
+      description: >-
+        Returns one JobPosition Head — the current latest revision (`MAX(version)`),
+        the same row `get` already returns. as_of is omitted: `job_positions` /
+        `job_position_revisions` have no valid-time columns, and using `created_at`
+        as `valid_from` would be a second time model. A miss or a foreign tenant is
+        404 (deny-by-omission). Distinct from recruiting postings and from
+        `employees.position` TEXT. EmployeeDetail as_of remains HOLD.
+      tags:
+      - Ontology
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Current JobPosition head.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobPosition'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /api/v1/kpi:
     get:
       tags:
@@ -24602,6 +24664,7 @@ components:
           field: job_position_id
           cardinality: many-to-one
           option: true
+          operationId: getJobPosition
       actions:
         - action_key: hr.appoint
           object_key: employment
@@ -27418,7 +27481,7 @@ components:
       properties: { id: { $ref: '#/components/schemas/Uuid' }, label: { type: string } }
     JobPosition:
       type: object
-      description: Canonical JobPosition head. Distinct from recruiting postings and from `employees.position` TEXT. `org_unit_id` is a foreign key to an existing OrgUnit. `attributes` is the latest revision bag; write preflight requires a non-empty string `title` (catalog JOB_POSITION_TITLE). Other attribute keys are not a published closed set. Temporal slices other than revision `version` remain HOLD.
+      description: "Canonical JobPosition head. Distinct from recruiting postings and from `employees.position` TEXT. GET /api/v1/job-positions/{id} returns this current head. GET /api/v1/job-positions returns current heads (the same rows `list` already returns). as_of / from / to are omitted: `job_positions` / `job_position_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `org_unit_id` is a foreign key to an existing OrgUnit. `attributes` is the latest revision bag; write preflight requires a non-empty string `title` (catalog JOB_POSITION_TITLE). Other attribute keys are not a published closed set. Temporal slices other than revision `version` remain HOLD."
       required:
         - job_position_id
         - org_unit_id

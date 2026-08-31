@@ -6059,6 +6059,7 @@ const ONTOLOGY_FRAGMENT_EXTERNAL: &[&str] = &[
     "HrAppointInput",
     "HrPromoteInput",
     "HrTransferInput",
+    "JobPosition",
     "OrganizationCreateJobPositionInput",
     "OrganizationCreateOrgUnitInput",
     "OrganizationReviseJobPositionInput",
@@ -6118,6 +6119,22 @@ const ONTOLOGY_FRAGMENT_PATHS: &[PathItem] = &[
             method: "get",
             body: include_str!(
                 "../../ontology/rest/openapi/paths/api__v1__employments__id.get.yaml"
+            ),
+        }],
+    },
+    PathItem {
+        path: "/api/v1/job-positions",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../../ontology/rest/openapi/paths/api__v1__job-positions.get.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v1/job-positions/{id}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!(
+                "../../ontology/rest/openapi/paths/api__v1__job-positions__id.get.yaml"
             ),
         }],
     },

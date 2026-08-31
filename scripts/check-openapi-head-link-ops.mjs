@@ -3,16 +3,19 @@
 // The hole this closes: PRODUCT requires typed objects/links that generate
 // OpenAPI. Head schemas already declare schema-level `links` for runtime FKs
 // (Employment.person_id / org_unit_id / job_position_id, OrgUnit.parent_id,
-// JobPosition.org_unit_id), and Company / OrgUnit / Person / Employment now
-// have instance GET. Those links still name `to` + `field` only — annotation,
-// not a traversable operation. This gate requires each link whose `to` Head
-// already has an instance GET to carry that GET's operationId.
+// JobPosition.org_unit_id), and Company / OrgUnit / JobPosition / Person /
+// Employment now have instance GET. Those links still name `to` + `field` only
+// unless they bind that GET's operationId — annotation, not a traversable
+// operation. This gate requires each link whose `to` Head already has an
+// instance GET to carry that GET's operationId.
 //
 // Chesterton: Company.org_id is the RLS cell, not a Palantir/Head FK — do not
-// invent Employment→Company. L5-JOB still refuses `/api/v1/job-positions`;
-// Employment.job_position_id stays id-only. PayRun stays PayrollRunSummary.
-// as_of stays Employment instance GET; linked OrgUnit/Person/Company have no
-// valid-time store. Runtime JSON Heads need not embed hrefs.
+// invent Employment→Company. L5-JOB originally refused *inventing*
+// `/api/v1/job-positions`; PgJobPositionPort::get already exists and sibling
+// Heads now publish GET, so employment_job_position binds getJobPosition.
+// PayRun stays PayrollRunSummary. as_of stays Employment instance GET; linked
+// OrgUnit/Person/Company/JobPosition have no valid-time store. Runtime JSON
+// Heads need not embed hrefs.
 //
 // Totality: js-yaml load + own-property walk of every GET and every canonical
 // schema-level link. A walker that visits nothing reports nothing, so
@@ -26,7 +29,6 @@ import yaml from "js-yaml";
 
 import {
   FENCED_HEADS,
-  FENCED_JOB_POSITION,
   FENCED_PAY_RUN,
   GET_FLOOR,
   REQUIRED_INSTANCE_GET_HEADS,
@@ -37,12 +39,13 @@ import {
 } from "./check-openapi-semantic-contract.mjs";
 import { hasOwnKey, isPlainObject, own } from "./own-property.mjs";
 
-export { FENCED_HEADS, FENCED_JOB_POSITION, FENCED_PAY_RUN, GET_FLOOR, LINK_FLOOR };
+export { FENCED_HEADS, FENCED_PAY_RUN, GET_FLOOR, LINK_FLOOR };
 
-/** Instance GET paths already published. JobPosition is not among them. */
+/** Instance GET paths already published. */
 export const INSTANCE_GET_PATHS = Object.freeze({
   Company: "/api/v1/companies/{id}",
   OrgUnit: "/api/v1/org-units/{id}",
+  JobPosition: "/api/v1/job-positions/{id}",
   Person: "/api/v1/persons/{id}",
   Employment: "/api/v1/employments/{id}",
 });
@@ -158,13 +161,6 @@ export function evaluateOpenapiHeadLinkOps({ repoRoot }) {
       if (!hasOwnKey(paths, path)) continue;
       const item = own(paths, path);
       if (!isPlainObject(item)) continue;
-      if (path === "/api/v1/job-positions" || path.startsWith("/api/v1/job-positions/")) {
-        push(
-          findings,
-          `#/paths/${path}`,
-          "JobPosition Head must not gain a GET; L5-JOB still refuses inventing /api/v1/job-positions (identity stays action-receipt readback)",
-        );
-      }
       for (const method of Object.keys(item)) {
         if (!hasOwnKey(item, method)) continue;
         if (!HTTP_METHODS.has(method)) continue;
@@ -183,9 +179,7 @@ export function evaluateOpenapiHeadLinkOps({ repoRoot }) {
           push(
             findings,
             location,
-            direct === FENCED_JOB_POSITION
-              ? "JobPosition Head must not gain a GET; L5-JOB still refuses inventing /api/v1/job-positions (identity stays action-receipt readback)"
-              : "PayRun Head must not become a GET 200 schema; REST stays PayrollRunSummary and version stays absent",
+            "PayRun Head must not become a GET 200 schema; REST stays PayrollRunSummary and version stays absent",
           );
         }
         if (
@@ -239,9 +233,7 @@ export function evaluateOpenapiHeadLinkOps({ repoRoot }) {
         push(
           findings,
           `${linkLoc}/operationId`,
-          spec.to === FENCED_JOB_POSITION
-            ? "JobPosition GET is fenced (L5-JOB); employment_job_position stays id-only / no operation — do not invent getJobPosition"
-            : "PayRun is not a versioned Head GET; do not bind a PayRun operationId",
+          "PayRun is not a versioned Head GET; do not bind a PayRun operationId",
         );
       }
       continue;
@@ -340,9 +332,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     process.exit(1);
   }
   const bound = TRAVERSABLE_LINKS.map((link) => link.key).join(", ");
-  const held = FENCED_LINKS.map((link) => link.key).join(", ");
   console.log(
     `openapi Head link-ops gate passed `
-      + `(traversable ${bound}; fenced ${held}; ${gets} GET operations, 0 findings)`,
+      + `(traversable ${bound}; PayRun Head fenced; ${gets} GET operations, 0 findings)`,
   );
 }

@@ -11,7 +11,6 @@ import { HEAD_SCHEMA_NAMES } from "./check-openapi-semantic-generate.mjs";
 import {
   COLLECTION_PATHS,
   FENCED_HEADS,
-  FENCED_JOB_POSITION,
   FENCED_PAY_RUN,
   GET_FLOOR,
   REQUIRED_COLLECTION_GET_HEADS,
@@ -116,6 +115,7 @@ function honestCollections() {
   return [
     collectionGet(COLLECTION_PATHS.Company, "Company"),
     collectionGet(COLLECTION_PATHS.OrgUnit, "OrgUnit"),
+    collectionGet(COLLECTION_PATHS.JobPosition, "JobPosition"),
     collectionGet(COLLECTION_PATHS.Person, "Person"),
   ].join("\n");
 }
@@ -124,6 +124,7 @@ function honestInstances() {
   return [
     instanceGet("/api/v1/companies/{id}", "Company"),
     instanceGet("/api/v1/org-units/{id}", "OrgUnit"),
+    instanceGet("/api/v1/job-positions/{id}", "JobPosition"),
     instanceGet("/api/v1/persons/{id}", "Person"),
     instanceGet("/api/v1/employments/{id}", "Employment"),
   ].join("\n");
@@ -136,16 +137,18 @@ describe("check-openapi-head-collections", () => {
     assert.deepEqual(REQUIRED_COLLECTION_GET_HEADS, [
       "Company",
       "OrgUnit",
+      "JobPosition",
       "Person",
     ]);
     assert.deepEqual(COLLECTION_PATHS, {
       Company: "/api/v1/companies",
       OrgUnit: "/api/v1/org-units",
+      JobPosition: "/api/v1/job-positions",
       Person: "/api/v1/persons",
     });
-    assert.deepEqual(FENCED_HEADS, [FENCED_JOB_POSITION, FENCED_PAY_RUN]);
+    assert.deepEqual(FENCED_HEADS, [FENCED_PAY_RUN]);
     assert.deepEqual(TEMPORAL_ASOF_HEADS, ["Employment"]);
-    assert.ok(!REQUIRED_COLLECTION_GET_HEADS.includes("JobPosition"));
+    assert.ok(REQUIRED_COLLECTION_GET_HEADS.includes("JobPosition"));
     assert.ok(!REQUIRED_COLLECTION_GET_HEADS.includes("PayRun"));
     assert.ok(!REQUIRED_COLLECTION_GET_HEADS.includes("Employment"));
   });
@@ -154,6 +157,7 @@ describe("check-openapi-head-collections", () => {
     const result = evaluateOpenapiHeadCollections({
       repoRoot: fixture(spec(`${honestInstances()}
 ${collectionGet(COLLECTION_PATHS.Company, "Company")}
+${collectionGet(COLLECTION_PATHS.JobPosition, "JobPosition")}
 ${collectionGet(COLLECTION_PATHS.Person, "Person")}`)),
     });
     assert.ok(
@@ -193,6 +197,7 @@ ${collectionGet(COLLECTION_PATHS.Person, "Person")}`)),
           [
             collectionGet(COLLECTION_PATHS.OrgUnit, "OrgUnit", RANGE_FROM_TO),
             collectionGet(COLLECTION_PATHS.Company, "Company"),
+            collectionGet(COLLECTION_PATHS.JobPosition, "JobPosition"),
             collectionGet(COLLECTION_PATHS.Person, "Person"),
           ].join("\n"),
         ),
@@ -208,21 +213,22 @@ ${collectionGet(COLLECTION_PATHS.Person, "Person")}`)),
     );
   });
 
-  it("refuses a JobPosition collection GET (L5-JOB fence)", () => {
+  it("fails while JobPosition Head is not a 200 schema of any collection GET", () => {
     const result = evaluateOpenapiHeadCollections({
-      repoRoot: fixture(
-        spec(
-          `${honestCollections()}
-${collectionGet("/api/v1/job-positions", "JobPosition")}`,
-        ),
-      ),
+      repoRoot: fixture(spec(`${honestInstances()}
+${collectionGet(COLLECTION_PATHS.Company, "Company")}
+${collectionGet(COLLECTION_PATHS.OrgUnit, "OrgUnit")}
+${collectionGet(COLLECTION_PATHS.Person, "Person")}`)),
     });
     assert.ok(
       result.findings.some(
-        (finding) => /L5-JOB still refuses inventing/.test(finding.message),
+        (finding) =>
+          finding.location === "#/components/schemas/JobPosition"
+          && /not a 200 schema of any collection GET/.test(finding.message),
       ),
       JSON.stringify(result.findings, null, 2),
     );
+    assert.equal(result.collectionGetsByHead.JobPosition, 0);
   });
 
   it("refuses a PayRun Head collection GET (PayrollRunSummary stays; no version)", () => {
@@ -240,15 +246,15 @@ ${collectionGet("/api/v1/pay-runs", "PayRun")}`,
     );
   });
 
-  it("passes when Company, OrgUnit, and Person collection GETs exist without from/to/as_of", () => {
+  it("passes when Company, OrgUnit, JobPosition, and Person collection GETs exist without from/to/as_of", () => {
     const result = evaluateOpenapiHeadCollections({
       repoRoot: fixture(spec(`${honestCollections()}\n${honestInstances()}`)),
     });
     assert.equal(result.findings.length, 0, JSON.stringify(result.findings, null, 2));
     assert.equal(result.collectionGetsByHead.Company, 1);
     assert.equal(result.collectionGetsByHead.OrgUnit, 1);
+    assert.equal(result.collectionGetsByHead.JobPosition, 1);
     assert.equal(result.collectionGetsByHead.Person, 1);
-    assert.equal(result.collectionGetsByHead.JobPosition, 0);
     assert.equal(result.collectionGetsByHead.PayRun, 0);
     assert.ok(result.gets >= GET_FLOOR);
   });

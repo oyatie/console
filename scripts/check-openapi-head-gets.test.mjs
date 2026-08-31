@@ -10,7 +10,6 @@ import { GET_FLOOR as ASOF_GET_FLOOR } from "./check-openapi-hr-asof.mjs";
 import { HEAD_SCHEMA_NAMES } from "./check-openapi-semantic-generate.mjs";
 import {
   FENCED_HEADS,
-  FENCED_JOB_POSITION,
   FENCED_PAY_RUN,
   GET_FLOOR,
   REQUIRED_INSTANCE_GET_HEADS,
@@ -93,6 +92,7 @@ function honestGets() {
   return [
     instanceGet("/api/v1/companies/{id}", "Company"),
     instanceGet("/api/v1/org-units/{id}", "OrgUnit"),
+    instanceGet("/api/v1/job-positions/{id}", "JobPosition"),
     instanceGet("/api/v1/persons/{id}", "Person"),
     instanceGet("/api/v1/employments/{id}", "Employment", EMPLOYMENT_ASOF),
   ].join("\n");
@@ -105,12 +105,13 @@ describe("check-openapi-head-gets", () => {
     assert.deepEqual(REQUIRED_INSTANCE_GET_HEADS, [
       "Company",
       "OrgUnit",
+      "JobPosition",
       "Person",
       "Employment",
     ]);
-    assert.deepEqual(FENCED_HEADS, [FENCED_JOB_POSITION, FENCED_PAY_RUN]);
+    assert.deepEqual(FENCED_HEADS, [FENCED_PAY_RUN]);
     assert.deepEqual(TEMPORAL_ASOF_HEADS, ["Employment"]);
-    assert.ok(!REQUIRED_INSTANCE_GET_HEADS.includes("JobPosition"));
+    assert.ok(REQUIRED_INSTANCE_GET_HEADS.includes("JobPosition"));
     assert.ok(!REQUIRED_INSTANCE_GET_HEADS.includes("PayRun"));
   });
 
@@ -143,6 +144,7 @@ describe("check-openapi-head-gets", () => {
                 items: { $ref: '#/components/schemas/OrgUnit' }
 ${instanceGet("/api/v1/employments/{id}", "Employment", EMPLOYMENT_ASOF)}
 ${instanceGet("/api/v1/companies/{id}", "Company")}
+${instanceGet("/api/v1/job-positions/{id}", "JobPosition")}
 ${instanceGet("/api/v1/persons/{id}", "Person")}`)),
     });
     assert.equal(result.instanceGetsByHead.OrgUnit, 0);
@@ -159,6 +161,7 @@ ${instanceGet("/api/v1/persons/{id}", "Person")}`)),
           [
             instanceGet("/api/v1/org-units/{id}", "OrgUnit", EMPLOYMENT_ASOF),
             instanceGet("/api/v1/companies/{id}", "Company"),
+            instanceGet("/api/v1/job-positions/{id}", "JobPosition"),
             instanceGet("/api/v1/persons/{id}", "Person"),
             instanceGet("/api/v1/employments/{id}", "Employment", EMPLOYMENT_ASOF),
           ].join("\n"),
@@ -175,21 +178,28 @@ ${instanceGet("/api/v1/persons/{id}", "Person")}`)),
     );
   });
 
-  it("refuses a JobPosition instance GET (L5-JOB fence)", () => {
+  it("fails while JobPosition Head is not a 200 schema of any instance GET", () => {
     const result = evaluateOpenapiHeadGets({
       repoRoot: fixture(
         spec(
-          `${honestGets()}
-${instanceGet("/api/v1/job-positions/{id}", "JobPosition")}`,
+          [
+            instanceGet("/api/v1/companies/{id}", "Company"),
+            instanceGet("/api/v1/org-units/{id}", "OrgUnit"),
+            instanceGet("/api/v1/persons/{id}", "Person"),
+            instanceGet("/api/v1/employments/{id}", "Employment", EMPLOYMENT_ASOF),
+          ].join("\n"),
         ),
       ),
     });
     assert.ok(
       result.findings.some(
-        (finding) => /L5-JOB still refuses inventing/.test(finding.message),
+        (finding) =>
+          finding.location === "#/components/schemas/JobPosition"
+          && /not a 200 schema of any instance GET/.test(finding.message),
       ),
       JSON.stringify(result.findings, null, 2),
     );
+    assert.equal(result.instanceGetsByHead.JobPosition, 0);
   });
 
   it("refuses a PayRun Head GET (PayrollRunSummary stays; no version)", () => {
@@ -207,16 +217,16 @@ ${instanceGet("/api/v1/pay-runs/{id}", "PayRun")}`,
     );
   });
 
-  it("passes when Company, OrgUnit, Person, and Employment instance GETs exist without as_of on non-temporal Heads", () => {
+  it("passes when Company, OrgUnit, JobPosition, Person, and Employment instance GETs exist without as_of on non-temporal Heads", () => {
     const result = evaluateOpenapiHeadGets({
       repoRoot: fixture(spec(honestGets())),
     });
     assert.equal(result.findings.length, 0, JSON.stringify(result.findings, null, 2));
     assert.equal(result.instanceGetsByHead.Company, 1);
     assert.equal(result.instanceGetsByHead.OrgUnit, 1);
+    assert.equal(result.instanceGetsByHead.JobPosition, 1);
     assert.equal(result.instanceGetsByHead.Person, 1);
     assert.equal(result.instanceGetsByHead.Employment, 1);
-    assert.equal(result.instanceGetsByHead.JobPosition, 0);
     assert.equal(result.instanceGetsByHead.PayRun, 0);
     assert.ok(result.gets >= GET_FLOOR);
   });

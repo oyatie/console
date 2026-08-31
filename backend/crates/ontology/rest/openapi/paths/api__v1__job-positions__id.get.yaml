@@ -1,0 +1,32 @@
+operationId: getJobPosition
+summary: Get a canonical JobPosition head
+description: >-
+  Returns one JobPosition Head — the current latest revision (`MAX(version)`),
+  the same row `get` already returns. as_of is omitted: `job_positions` /
+  `job_position_revisions` have no valid-time columns, and using `created_at`
+  as `valid_from` would be a second time model. A miss or a foreign tenant is
+  404 (deny-by-omission). Distinct from recruiting postings and from
+  `employees.position` TEXT. EmployeeDetail as_of remains HOLD.
+tags:
+- Ontology
+security:
+- bearerAuth: []
+parameters:
+- name: id
+  in: path
+  required: true
+  schema:
+    $ref: '#/components/schemas/Uuid'
+responses:
+  '200':
+    description: Current JobPosition head.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/JobPosition'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'
+  '404':
+    $ref: '#/components/responses/NotFound'
