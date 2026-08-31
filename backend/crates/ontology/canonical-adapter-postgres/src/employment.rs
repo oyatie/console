@@ -468,7 +468,8 @@ impl CanonicalPortError for EmploymentError {
 /// `at` is still inside it. `org_unit_id` / `job_position_id` come from the
 /// *effective* revision (`MAX(valid_from)` among revisions with
 /// `valid_from <= at` — a backdated history insert is a later version with an
-/// earlier effect). `person_id` is the unique source-binding → person-binding
+/// earlier effect). `version` is that same row's `employment_revisions.version`,
+/// not `MAX(version)`. `person_id` is the unique source-binding → person-binding
 /// path; ambiguous or unbound identities are omitted, never invented from
 /// `employee_id`. `appointed_on` is the head's opening `valid_from`. The Head
 /// never copies stored phone / salary / bank_account / rrn / base_pay.
@@ -480,6 +481,7 @@ pub struct EmploymentHead {
     pub job_position_id: Option<Uuid>,
     #[serde(with = "time::serde::rfc3339")]
     pub appointed_on: OffsetDateTime,
+    pub version: i64,
 }
 
 /// The one permitted holder of production DML against `employees`,
@@ -576,7 +578,7 @@ impl PgEmploymentPort {
         let mut tx = self.pool.begin().await?;
         self.arm_org(&mut *tx, org).await?;
         let rows = sqlx::query(
-            "SELECT h.id, h.valid_from AS appointed_on, r.attributes, \
+            "SELECT h.id, h.valid_from AS appointed_on, r.version, r.attributes, \
                     CASE WHEN bind.n = 1 THEN bind.person_id END AS person_id \
              FROM employment_heads h \
              JOIN employment_revisions r \
@@ -613,7 +615,7 @@ impl PgEmploymentPort {
         let mut tx = self.pool.begin().await?;
         self.arm_org(&mut *tx, org).await?;
         let row = sqlx::query(
-            "SELECT h.id, h.valid_from AS appointed_on, r.attributes, \
+            "SELECT h.id, h.valid_from AS appointed_on, r.version, r.attributes, \
                     CASE WHEN bind.n = 1 THEN bind.person_id END AS person_id \
              FROM employment_heads h \
              JOIN employment_revisions r \
@@ -652,7 +654,7 @@ impl PgEmploymentPort {
         let mut tx = self.pool.begin().await?;
         self.arm_org(&mut *tx, org).await?;
         let rows = sqlx::query(
-            "SELECT h.id, h.valid_from AS appointed_on, r.attributes, \
+            "SELECT h.id, h.valid_from AS appointed_on, r.version, r.attributes, \
                     CASE WHEN bind.n = 1 THEN bind.person_id END AS person_id \
              FROM employment_heads h \
              JOIN employment_revisions r \
@@ -1320,6 +1322,7 @@ fn head_from_row(row: sqlx::postgres::PgRow) -> EmploymentHead {
         org_unit_id: attr_uuid(&attributes, "org_unit_id"),
         job_position_id: attr_uuid(&attributes, "job_position_id"),
         appointed_on: row.get("appointed_on"),
+        version: row.get("version"),
     }
 }
 

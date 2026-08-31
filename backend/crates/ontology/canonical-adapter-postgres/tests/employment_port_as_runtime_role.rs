@@ -540,6 +540,10 @@ async fn an_appointment_opens_a_head_binds_the_legacy_row_and_appends_revision_o
     assert_eq!(head.org_unit_id, Some(ORG_UNIT_SALES));
     assert_eq!(head.job_position_id, Some(JOB_STAFF));
     assert_eq!(head.appointed_on, at(0));
+    assert_eq!(
+        head.version, 1,
+        "appoint writes employment_revisions.version 1 onto the Head"
+    );
     assert_eq!(list(&port, org).await.unwrap(), vec![head]);
     let unknown = get(&port, org, Uuid::new_v4()).await;
     assert!(
@@ -599,6 +603,10 @@ async fn a_promotion_carries_the_new_state_onto_the_legacy_employees_head(owner_
         at(0),
         "appointed_on is the head opening, not the promote revision's valid_from"
     );
+    assert_eq!(
+        head.version, 2,
+        "promote increments the Head version from the effective revision"
+    );
 }
 
 /// As-of must honor the same half-open window as ontology instance GET:
@@ -632,6 +640,10 @@ async fn as_of_reads_the_revision_effective_at_that_instant(owner_pool: PgPool) 
     assert_eq!(before.job_position_id, Some(JOB_STAFF));
     assert_eq!(before.org_unit_id, Some(ORG_UNIT_SALES));
     assert_eq!(before.appointed_on, at(0));
+    assert_eq!(
+        before.version, 1,
+        "as_of inside the appointment window is revision 1"
+    );
 
     let at_promote = get_as_of(&port, org, employment_id, at(86_400))
         .await
@@ -639,6 +651,10 @@ async fn as_of_reads_the_revision_effective_at_that_instant(owner_pool: PgPool) 
         .expect("as_of at the promote valid_from is inside the new slice");
     assert_eq!(at_promote.job_position_id, Some(JOB_LEAD));
     assert_eq!(at_promote.appointed_on, at(0));
+    assert_eq!(
+        at_promote.version, 2,
+        "as_of at the promote slice is revision 2"
+    );
 
     let current = get(&port, org, employment_id)
         .await
@@ -2281,6 +2297,17 @@ async fn a_backdated_promote_is_history_not_a_head_rewrite(owner_pool: PgPool) {
         ),
         "a backdated promote must not reset the legacy head to the pre-transfer state"
     );
+
+    let current = get(&port, org, employment_id)
+        .await
+        .unwrap()
+        .expect("open head after backdated history insert");
+    assert_eq!(
+        current.version, 2,
+        "current GET version is the MAX(valid_from) revision, not MAX(version)=3"
+    );
+    assert_eq!(current.org_unit_id, Some(ORG_UNIT_TECH));
+    assert_eq!(current.job_position_id, Some(JOB_LEAD));
 }
 
 /// The REST lifecycle handlers (`create_employee_lifecycle_event` and

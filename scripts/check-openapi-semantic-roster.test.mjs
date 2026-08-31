@@ -59,7 +59,7 @@ function headFields(name) {
     OrgUnit: ["id", "name", "parent_id", "version"],
     JobPosition: ["job_position_id", "org_unit_id", "version", "attributes"],
     Person: ["id", "display_name", "legal_name", "version"],
-    Employment: ["id", "person_id", "org_unit_id", "job_position_id", "appointed_on"],
+    Employment: ["id", "person_id", "org_unit_id", "job_position_id", "appointed_on", "version"],
     PayRun: ["id", "period_start", "period_end", "source_label", "status", "payable"],
   };
   return (fields[name] ?? ["id"]).map((field) => `    pub ${field}: Uuid,`).join("\n");

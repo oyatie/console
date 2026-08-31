@@ -80,6 +80,7 @@ function headSchema(name) {
       org_unit_id: { $ref: "#/components/schemas/Uuid" },
       job_position_id: { $ref: "#/components/schemas/Uuid" },
       appointed_on: { $ref: "#/components/schemas/Timestamp" },
+      version: { type: "integer" },
     },
     PayRun: {
       id: { $ref: "#/components/schemas/Uuid" },

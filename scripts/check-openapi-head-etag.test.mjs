@@ -12,6 +12,7 @@ import {
   GET_FLOOR,
   GET_TOKEN_VERSION,
   HEAD_FLOOR,
+  REQUIRED_GET_TOKEN_VERSION_HEADS,
   WRITE_FIELD,
   WRITE_IN_BODY,
   evaluateOpenapiHeadEtag,
@@ -45,7 +46,7 @@ function padGets(count) {
   return paths.join("\n");
 }
 
-const VERSIONED = new Set(["Company", "OrgUnit", "JobPosition", "Person"]);
+const VERSIONED = new Set(["Company", "OrgUnit", "JobPosition", "Person", "Employment"]);
 
 function concurrencyYaml(name) {
   const token = VERSIONED.has(name) ? GET_TOKEN_VERSION : "null";
@@ -186,8 +187,8 @@ describe("check-openapi-head-etag", () => {
 
   it("fails when get_token claims version but the Head has no version property", () => {
     const heads = HEAD_SCHEMA_NAMES.map((name) => {
-      if (name !== "Employment") return concurrencyYaml(name);
-      return `    Employment:
+      if (name !== "PayRun") return concurrencyYaml(name);
+      return `    PayRun:
       type: object
       required: [id]
       properties:
@@ -203,9 +204,40 @@ describe("check-openapi-head-etag", () => {
     assert.ok(
       result.findings.some(
         (finding) =>
-          finding.location.includes("Employment/concurrency/get_token")
+          finding.location.includes("PayRun/concurrency/get_token")
           && /must be null/.test(finding.message),
       ),
+      JSON.stringify(result.findings),
+    );
+  });
+
+  it("fails when Employment omits version while employment_revisions.version exists", () => {
+    assert.deepEqual([...REQUIRED_GET_TOKEN_VERSION_HEADS], ["Employment"]);
+    const heads = HEAD_SCHEMA_NAMES.map((name) => {
+      if (name !== "Employment") return concurrencyYaml(name);
+      return `    Employment:
+      type: object
+      required: [id]
+      properties:
+        id: { type: string }
+      links: []
+      actions: []
+      concurrency:
+        get_token: null
+        write_field: ${WRITE_FIELD}
+        write_in: ${WRITE_IN_BODY}`;
+    }).join("\n");
+    const result = evaluateOpenapiHeadEtag({ repoRoot: fixture(spec({ heads })) });
+    assert.ok(
+      result.findings.some(
+        (finding) =>
+          finding.location.includes("Employment/concurrency/get_token")
+          && /must be "version"/.test(finding.message),
+      ),
+      JSON.stringify(result.findings),
+    );
+    assert.ok(
+      result.findings.some((finding) => finding.location.includes("Employment/properties/version")),
       JSON.stringify(result.findings),
     );
   });

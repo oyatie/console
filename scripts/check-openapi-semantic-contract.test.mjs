@@ -105,6 +105,7 @@ function headProperties(name) {
         legal_name: { type: [string, 'null'] }`;
     case "Employment":
       return `        id: { type: string }
+        version: { type: integer }
         appointed_on: { type: string }
         person_id: { type: [string, 'null'] }
         org_unit_id: { type: [string, 'null'] }
@@ -132,7 +133,7 @@ function requiredFields(name) {
     case "Person":
       return ["id", "version", "display_name", "legal_name"];
     case "Employment":
-      return ["id", "appointed_on", "person_id", "org_unit_id", "job_position_id"];
+      return ["id", "version", "appointed_on", "person_id", "org_unit_id", "job_position_id"];
     case "PayRun":
       return ["id", "period_start", "period_end", "source_label", "status", "payable"];
     default:
@@ -393,9 +394,10 @@ describe("openapi semantic-contract gate (links + action contracts)", () => {
         legal_name: { type: [string, 'null'] }
     Employment:
       type: object
-      required: [id, appointed_on, person_id, org_unit_id, job_position_id]
+      required: [id, version, appointed_on, person_id, org_unit_id, job_position_id]
       properties:
         id: { type: string }
+        version: { type: integer }
         appointed_on: { type: string }
         person_id: { type: [string, 'null'] }
         org_unit_id: { type: [string, 'null'] }

@@ -75,6 +75,7 @@ export const CANONICAL_OBJECT_SCHEMAS = Object.freeze([
     name: "Employment",
     required: Object.freeze([
       "id",
+      "version",
       "appointed_on",
       "person_id",
       "org_unit_id",

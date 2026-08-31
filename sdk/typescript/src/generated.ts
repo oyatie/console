@@ -425,7 +425,7 @@ export const PersonDefinition = {
 } as const;
 
 /**
- * Canonical Employment head. Current get/list still return the *open* head (`employment_heads.valid_to IS NULL`). GET /api/v1/employments/{id}?as_of= reconstructs the slice effective at an RFC3339 instant using the same half-open predicate as ontology instance GET (`valid_from <= as_of < coalesce(valid_to, ∞)`); absent as_of = current open head. GET /api/v1/employments?from=&to= lists heads whose `[valid_from, valid_to)` overlaps `[from, to)` with that same algebra (absent both = current open heads). Closed (EXITED) windows are omitted by current get/list and by as_of at or after valid_to. `org_unit_id` / `job_position_id` are canonical UUIDs from the effective revision, not free-text team or title labels. `person_id` is the unique source-binding → person-binding path; ambiguous or unbound identities are null, never invented from `employee_id`. `appointed_on` is the head's opening `valid_from`. Write attributes also carry `company` and `employment_status` in {ACTIVE, EXITED, UNKNOWN}; those write fields are not this Head. The Head never includes phone, salary, bank_account, rrn, or base_pay. Corrections vs new slice and delta transmission remain HOLD. EmployeeDetail as_of remains HOLD.
+ * Canonical Employment head. Current get/list still return the *open* head (`employment_heads.valid_to IS NULL`). GET /api/v1/employments/{id}?as_of= reconstructs the slice effective at an RFC3339 instant using the same half-open predicate as ontology instance GET (`valid_from <= as_of < coalesce(valid_to, ∞)`); absent as_of = current open head. GET /api/v1/employments?from=&to= lists heads whose `[valid_from, valid_to)` overlaps `[from, to)` with that same algebra (absent both = current open heads). Closed (EXITED) windows are omitted by current get/list and by as_of at or after valid_to. `org_unit_id` / `job_position_id` are canonical UUIDs from the effective revision, not free-text team or title labels. `person_id` is the unique source-binding → person-binding path; ambiguous or unbound identities are null, never invented from `employee_id`. `appointed_on` is the head's opening `valid_from`. `version` is `employment_revisions.version` on that already-joined effective row (MAX(valid_from), not MAX(version)). Write attributes also carry `company` and `employment_status` in {ACTIVE, EXITED, UNKNOWN}; those write fields are not this Head. The Head never includes phone, salary, bank_account, rrn, or base_pay. Corrections vs new slice and delta transmission remain HOLD. EmployeeDetail as_of remains HOLD.
  */
 export type Employment = {
   id: Uuid;
@@ -433,6 +433,7 @@ export type Employment = {
   org_unit_id: Uuid | null;
   job_position_id: Uuid | null;
   appointed_on: Timestamp;
+  version: number;
 };
 
 export const EmploymentDefinition = {
@@ -533,7 +534,7 @@ export const EmploymentDefinition = {
     },
   ],
   concurrency: {
-    get_token: null,
+    get_token: "version",
     write_field: "expected_revision",
     write_in: "body",
   },

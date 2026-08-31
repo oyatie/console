@@ -10,10 +10,15 @@
 // Chesterton: ontology object-type key writes already speak HTTP ETag/If-Match
 // (`key_write_etag`). Canonical Head writes speak JSON `expected_revision`.
 // ROADMAP lists uniform HTTP ETag as unscheduled. Five of six Heads have no
-// GET operation to hang a header on; Employment GET does not serialize
-// version. Generate the GET token from the DTO `version` field (null when the
-// Head does not serialize one) and document writes as the existing body field.
-// Do not invent a parallel ETag type or a new revision store.
+// GET operation to hang a header on. Employment already stores
+// `employment_revisions.version` (COALESCE(MAX(version),0)+1 on write) and
+// already returns it on the command receipt; GET/list JSON must serialize
+// that same column from the already-joined effective revision. PayRun has no
+// Head CAS store (`payroll_draft_runs` has no version; no PayRunHead), so its
+// GET token stays null. Generate the GET token from the DTO `version` field
+// (null when the Head does not serialize one) and document writes as the
+// existing body field. Do not invent a parallel ETag type, a PayRun revision
+// store, or a second Employment time model.
 //
 // Totality: js-yaml load + own-property walk of every Head schema and GET, plus
 // a text scan of the DTO inventory and semantic emitter when those files exist.
@@ -45,6 +50,14 @@ export const GET_FLOOR = 200;
 export const WRITE_IN_BODY = "body";
 export const GET_TOKEN_VERSION = "version";
 export const WRITE_FIELD = "expected_revision";
+
+/** Heads whose revision table already stores a CAS version that GET must serialize. PayRun is omitted: no Head CAS store. */
+export const REQUIRED_GET_TOKEN_VERSION_HEADS = Object.freeze(["Employment"]);
+
+export const EMPLOYMENT_ADAPTER_REL =
+  "backend/crates/ontology/canonical-adapter-postgres/src/employment.rs";
+export const EMPLOYMENT_HEAD_SELECT_VERSION =
+  "SELECT h.id, h.valid_from AS appointed_on, r.version,";
 
 const HTTP_METHODS = new Set([
   "get",
@@ -223,9 +236,49 @@ export function evaluateOpenapiHeadEtag({ repoRoot }) {
     }
 
     const hasVersionProperty = hasOwnKey(properties, "version");
-    const expectedToken = dtoVersionByHead.has(name)
-      ? (dtoVersionByHead.get(name) ? GET_TOKEN_VERSION : null)
-      : (hasVersionProperty ? GET_TOKEN_VERSION : null);
+    const requiresVersion = REQUIRED_GET_TOKEN_VERSION_HEADS.includes(name);
+    const expectedToken = requiresVersion
+      ? GET_TOKEN_VERSION
+      : dtoVersionByHead.has(name)
+        ? (dtoVersionByHead.get(name) ? GET_TOKEN_VERSION : null)
+        : (hasVersionProperty ? GET_TOKEN_VERSION : null);
+
+    if (requiresVersion && dtoVersionByHead.has(name) && !dtoVersionByHead.get(name)) {
+      push(
+        findings,
+        `${DTO_RS_REL}:${name}`,
+        "Employment DTO must serialize employment_revisions.version as the GET concurrency token; PayRun stays null (no Head CAS store)",
+      );
+    }
+    if (requiresVersion && !hasVersionProperty) {
+      push(
+        findings,
+        `${location}/properties/version`,
+        "Employment Head schema must carry version from the already-joined effective employment_revisions row",
+      );
+    }
+    if (name === "Employment") {
+      const adapter = readText(repoRoot, EMPLOYMENT_ADAPTER_REL);
+      if (!adapter.missing) {
+        const fields = rustStructFields(adapter.text, "EmploymentHead");
+        if (fields && !fields.includes("version")) {
+          push(
+            findings,
+            `${EMPLOYMENT_ADAPTER_REL}:EmploymentHead`,
+            "runtime Head JSON must serialize version from the already-joined effective revision",
+          );
+        }
+        const versionSelectCount = adapter.text.split(EMPLOYMENT_HEAD_SELECT_VERSION).length - 1;
+        if (versionSelectCount < 3) {
+          push(
+            findings,
+            `${EMPLOYMENT_ADAPTER_REL}:head_from_row`,
+            "GET/list/as_of/range SELECT must read r.version from the already-joined effective revision "
+              + `(saw ${versionSelectCount} of 3); do not add a second time model`,
+          );
+        }
+      }
+    }
 
     if (dtoVersionByHead.has(name) && dtoVersionByHead.get(name) !== hasVersionProperty) {
       push(

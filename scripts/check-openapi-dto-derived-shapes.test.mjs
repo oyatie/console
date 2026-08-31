@@ -56,7 +56,7 @@ function dtoModule() {
             : name === "Person"
               ? "    pub id: Uuid,\n    pub display_name: Option<String>,\n    pub legal_name: Option<String>,\n    pub version: i64,\n"
               : name === "Employment"
-                ? "    pub id: Uuid,\n    pub person_id: Option<Uuid>,\n    pub org_unit_id: Option<Uuid>,\n    pub job_position_id: Option<Uuid>,\n    pub appointed_on: Timestamp,\n"
+                ? "    pub id: Uuid,\n    pub person_id: Option<Uuid>,\n    pub org_unit_id: Option<Uuid>,\n    pub job_position_id: Option<Uuid>,\n    pub appointed_on: Timestamp,\n    pub version: i64,\n"
                 : name === "PayRun"
                   ? "    pub id: Uuid,\n    pub period_start: IsoDate,\n    pub period_end: IsoDate,\n    pub source_label: String,\n    pub status: String,\n    pub payable: bool,\n"
                   : field;
@@ -76,7 +76,7 @@ function headSources() {
     "backend/crates/ontology/canonical-adapter-postgres/src/person.rs":
       "pub struct PersonHead {\n    pub id: Uuid,\n    pub display_name: Option<String>,\n    pub legal_name: Option<String>,\n    pub version: i64,\n}\n",
     "backend/crates/ontology/canonical-adapter-postgres/src/employment.rs":
-      "pub struct EmploymentHead {\n    pub id: Uuid,\n    pub person_id: Option<Uuid>,\n    pub org_unit_id: Option<Uuid>,\n    pub job_position_id: Option<Uuid>,\n    #[serde(with = \"time::serde::rfc3339\")]\n    pub appointed_on: OffsetDateTime,\n}\n",
+      "pub struct EmploymentHead {\n    pub id: Uuid,\n    pub person_id: Option<Uuid>,\n    pub org_unit_id: Option<Uuid>,\n    pub job_position_id: Option<Uuid>,\n    #[serde(with = \"time::serde::rfc3339\")]\n    pub appointed_on: OffsetDateTime,\n    pub version: i64,\n}\n",
   };
 }
 
@@ -110,6 +110,7 @@ function publishedDoc() {
       properties.org_unit_id = { type: "string" };
       properties.job_position_id = { type: "string" };
       properties.appointed_on = { type: "string" };
+      properties.version = { type: "integer" };
     } else if (name === "PayRun") {
       properties.id = { type: "string" };
       properties.period_start = { type: "string" };
