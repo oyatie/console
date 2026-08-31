@@ -1,0 +1,12 @@
+type: object
+required:
+- requires_reason
+- requires_four_eyes
+- requires_checklist
+properties:
+  requires_reason:
+    type: boolean
+  requires_four_eyes:
+    type: boolean
+  requires_checklist:
+    type: boolean

@@ -3341,6 +3341,10 @@ const GOVERNANCE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../governance/rest/openapi/schemas/LifecycleState.yaml"),
     },
     NamedYaml {
+        name: "LifecycleTransitionConfig",
+        body: include_str!("../../governance/rest/openapi/schemas/LifecycleTransitionConfig.yaml"),
+    },
+    NamedYaml {
         name: "ObjectLifecycle",
         body: include_str!("../../governance/rest/openapi/schemas/ObjectLifecycle.yaml"),
     },
@@ -3355,6 +3359,10 @@ const GOVERNANCE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "TransitionLifecycleRequest",
         body: include_str!("../../governance/rest/openapi/schemas/TransitionLifecycleRequest.yaml"),
+    },
+    NamedYaml {
+        name: "TransitionRequirements",
+        body: include_str!("../../governance/rest/openapi/schemas/TransitionRequirements.yaml"),
     },
     NamedYaml {
         name: "TriageFindingRequest",

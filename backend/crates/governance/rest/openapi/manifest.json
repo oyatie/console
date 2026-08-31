@@ -51,10 +51,12 @@
     "GovernanceOpenOverrideRequest",
     "LifecyclePreflight",
     "LifecycleState",
+    "LifecycleTransitionConfig",
     "ObjectLifecycle",
     "ObjectLifecycleTransition",
     "SetLifecycleHoldRequest",
     "TransitionLifecycleRequest",
+    "TransitionRequirements",
     "TriageFindingRequest"
   ],
   "external_schemas": [

@@ -173,6 +173,10 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/LifecycleState.yaml"),
     },
     NamedYaml {
+        name: "LifecycleTransitionConfig",
+        body: include_str!("../openapi/schemas/LifecycleTransitionConfig.yaml"),
+    },
+    NamedYaml {
         name: "ObjectLifecycle",
         body: include_str!("../openapi/schemas/ObjectLifecycle.yaml"),
     },
@@ -187,6 +191,10 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "TransitionLifecycleRequest",
         body: include_str!("../openapi/schemas/TransitionLifecycleRequest.yaml"),
+    },
+    NamedYaml {
+        name: "TransitionRequirements",
+        body: include_str!("../openapi/schemas/TransitionRequirements.yaml"),
     },
     NamedYaml {
         name: "TriageFindingRequest",
