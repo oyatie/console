@@ -1646,3 +1646,69 @@ fn generated_inputs_compose_with_shared_stubs() -> Result<(), Box<dyn std::error
     );
     Ok(())
 }
+
+#[test]
+fn generated_head_fk_links_bind_published_get_operations() -> Result<(), Box<dyn std::error::Error>>
+{
+    let owned = generated_schema_yaml()?;
+    let employment = owned
+        .iter()
+        .find(|item| item.name == "Employment")
+        .ok_or("Employment must be generated")?;
+    let links_start = employment
+        .body
+        .find("\nlinks:")
+        .ok_or("Employment must declare schema-level links")?;
+    let actions_start = employment.body[links_start..]
+        .find("\nactions:")
+        .ok_or("Employment must declare actions after links")?;
+    let links = &employment.body[links_start..links_start + actions_start];
+    assert!(
+        links.contains("operationId: getPerson"),
+        "Employment.person_id must bind GET getPerson: {links}"
+    );
+    assert!(
+        links.contains("operationId: getOrgUnit"),
+        "Employment.org_unit_id must bind GET getOrgUnit: {links}"
+    );
+    assert!(
+        !links.contains("getJobPosition"),
+        "JobPosition GET is fenced; employment_job_position stays id-only: {links}"
+    );
+    assert!(
+        !links.contains("as_of"),
+        "linked OrgUnit/Person reads have no valid-time store: {links}"
+    );
+
+    let org_unit = owned
+        .iter()
+        .find(|item| item.name == "OrgUnit")
+        .ok_or("OrgUnit must be generated")?;
+    assert!(
+        org_unit.body.contains("operationId: getOrgUnit"),
+        "OrgUnit.parent_id must bind GET getOrgUnit: {}",
+        org_unit.body
+    );
+
+    let job_position = owned
+        .iter()
+        .find(|item| item.name == "JobPosition")
+        .ok_or("JobPosition must be generated")?;
+    let job_links_start = job_position
+        .body
+        .find("\nlinks:")
+        .ok_or("JobPosition must declare schema-level links")?;
+    let job_actions_start = job_position.body[job_links_start..]
+        .find("\nactions:")
+        .ok_or("JobPosition must declare actions after links")?;
+    let job_links = &job_position.body[job_links_start..job_links_start + job_actions_start];
+    assert!(
+        job_links.contains("operationId: getOrgUnit"),
+        "JobPosition.org_unit_id must bind GET getOrgUnit: {job_links}"
+    );
+    assert!(
+        !job_links.contains("getJobPosition"),
+        "L5-JOB still fences JobPosition GET: {job_links}"
+    );
+    Ok(())
+}

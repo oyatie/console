@@ -145,7 +145,7 @@
     "backend/crates/compliance/rest/src/lib.rs": 4,
     "backend/crates/consulting/rest/src/lib.rs": 3,
     "backend/crates/consulting/rest/tests/audit_atomicity.rs": 4,
-    "backend/crates/contracts/tests/compose.rs": 46,
+    "backend/crates/contracts/tests/compose.rs": 47,
     "backend/crates/dispatch/adapter-postgres/tests/p1_dispatch.rs": 13,
     "backend/crates/dispatch/application/src/lib.rs": 2,
     "backend/crates/dispatch/domain/src/lib.rs": 5,

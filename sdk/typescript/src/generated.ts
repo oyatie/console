@@ -224,6 +224,7 @@ export const OrgUnitDefinition = {
       field: "parent_id",
       cardinality: "many-to-one",
       option: true,
+      operationId: "getOrgUnit",
     },
   ],
   actions: [
@@ -302,6 +303,7 @@ export const JobPositionDefinition = {
       field: "org_unit_id",
       cardinality: "many-to-one",
       option: false,
+      operationId: "getOrgUnit",
     },
   ],
   actions: [
@@ -446,6 +448,7 @@ export const EmploymentDefinition = {
       field: "person_id",
       cardinality: "many-to-one",
       option: true,
+      operationId: "getPerson",
     },
     {
       key: "employment_org_unit",
@@ -454,6 +457,7 @@ export const EmploymentDefinition = {
       field: "org_unit_id",
       cardinality: "many-to-one",
       option: true,
+      operationId: "getOrgUnit",
     },
     {
       key: "employment_job_position",

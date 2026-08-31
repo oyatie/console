@@ -24588,12 +24588,14 @@ components:
           field: person_id
           cardinality: many-to-one
           option: true
+          operationId: getPerson
         - key: employment_org_unit
           from: Employment
           to: OrgUnit
           field: org_unit_id
           cardinality: many-to-one
           option: true
+          operationId: getOrgUnit
         - key: employment_job_position
           from: Employment
           to: JobPosition
@@ -27443,6 +27445,7 @@ components:
           field: org_unit_id
           cardinality: many-to-one
           option: false
+          operationId: getOrgUnit
       actions:
         - action_key: organization.create_job_position
           object_key: job_position
@@ -31184,6 +31187,7 @@ components:
           field: parent_id
           cardinality: many-to-one
           option: true
+          operationId: getOrgUnit
       actions:
         - action_key: organization.create_org_unit
           object_key: org_unit

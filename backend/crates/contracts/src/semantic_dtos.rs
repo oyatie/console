@@ -231,6 +231,21 @@ pub(super) const HEADS: &[HeadEntry] = &[
     },
 ];
 
+/// Published instance-GET `operationId` for a Head that already has
+/// `GET /api/v1/.../{id}`. JobPosition stays fenced (L5-JOB — no
+/// `/api/v1/job-positions`). PayRun stays `PayrollRunSummary`. Company is not
+/// an outgoing Head FK (`org_id` is the RLS cell). Linked reads do not take
+/// `as_of`: OrgUnit / Person / Company have no valid-time store.
+fn published_instance_get_operation_id(head: &str) -> Option<&'static str> {
+    match head {
+        "Company" => Some("getCompany"),
+        "OrgUnit" => Some("getOrgUnit"),
+        "Person" => Some("getPerson"),
+        "Employment" => Some("getEmployment"),
+        _ => None,
+    }
+}
+
 /// Runtime Head FKs. Company / Person / PayRun have no outgoing Head link.
 pub(super) const LINKS: &[LinkEntry] = &[
     LinkEntry {
@@ -425,14 +440,18 @@ pub(super) fn dto_links() -> Result<Vec<Json>, SemanticError> {
     Ok(LINKS
         .iter()
         .map(|link| {
-            Json::obj(vec![
+            let mut fields = vec![
                 ("key", Json::str(link.key)),
                 ("from", Json::str(link.from)),
                 ("to", Json::str(link.to)),
                 ("field", Json::str(link.field)),
                 ("cardinality", Json::str(link.cardinality)),
                 ("option", Json::Bool(link.option)),
-            ])
+            ];
+            if let Some(operation_id) = published_instance_get_operation_id(link.to) {
+                fields.push(("operationId", Json::str(operation_id)));
+            }
+            Json::obj(fields)
         })
         .collect())
 }
