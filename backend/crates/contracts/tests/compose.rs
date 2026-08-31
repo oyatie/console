@@ -1713,6 +1713,18 @@ fn generated_head_fk_links_bind_published_get_operations() -> Result<(), Box<dyn
         "OrgUnit.parent_id must bind GET getOrgUnit: {}",
         org_unit.body
     );
+    assert!(
+        org_unit
+            .body
+            .contains("operationId: listOrgUnitJobPositions"),
+        "OrgUnit reverse collection must bind GET listOrgUnitJobPositions: {}",
+        org_unit.body
+    );
+    assert!(
+        org_unit.body.contains("key: org_unit_job_positions"),
+        "OrgUnit must declare reverse collection org_unit_job_positions: {}",
+        org_unit.body
+    );
 
     let job_position = owned
         .iter()

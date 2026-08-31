@@ -290,6 +290,18 @@ pub(super) const LINKS: &[LinkEntry] = &[
     },
 ];
 
+/// Reverse collection of an existing Head FK. Not a sixth FK: OrgUnit has no
+/// `job_position_id` column. `list_for_org_unit` already filters
+/// JobPosition.org_unit_id. Keep LINKS.len() == 5.
+const REVERSE_COLLECTION_LINKS: &[LinkEntry] = &[LinkEntry {
+    key: "org_unit_job_positions",
+    from: "OrgUnit",
+    to: "JobPosition",
+    field: "org_unit_id",
+    cardinality: "one-to-many",
+    option: false,
+}];
+
 /// Thirteen DispatchTarget Inputs. Order matches DispatchTarget declaration order.
 pub(super) const ACTIONS: &[ActionEntry] = &[
     ActionEntry {
@@ -430,6 +442,17 @@ pub(super) fn dto_objects() -> Result<Vec<Json>, SemanticError> {
     Ok(objects)
 }
 
+fn published_link_operation_id(link: &LinkEntry) -> Option<&'static str> {
+    if link.cardinality == "one-to-many" {
+        match link.key {
+            "org_unit_job_positions" => Some("listOrgUnitJobPositions"),
+            _ => None,
+        }
+    } else {
+        published_instance_get_operation_id(link.to)
+    }
+}
+
 pub(super) fn dto_links() -> Result<Vec<Json>, SemanticError> {
     if LINKS.len() != 5 {
         return Err(SemanticError(format!(
@@ -439,6 +462,7 @@ pub(super) fn dto_links() -> Result<Vec<Json>, SemanticError> {
     }
     Ok(LINKS
         .iter()
+        .chain(REVERSE_COLLECTION_LINKS.iter())
         .map(|link| {
             let mut fields = vec![
                 ("key", Json::str(link.key)),
@@ -448,7 +472,7 @@ pub(super) fn dto_links() -> Result<Vec<Json>, SemanticError> {
                 ("cardinality", Json::str(link.cardinality)),
                 ("option", Json::Bool(link.option)),
             ];
-            if let Some(operation_id) = published_instance_get_operation_id(link.to) {
+            if let Some(operation_id) = published_link_operation_id(link) {
                 fields.push(("operationId", Json::str(operation_id)));
             }
             Json::obj(fields)
@@ -836,7 +860,7 @@ pub(super) fn dto_schema_bags() -> Result<Vec<(String, Json)>, SemanticError> {
         (
             "OrgUnit",
             head_object(
-                "Canonical OrgUnit head. GET /api/v1/org-units/{id} returns this current head. GET /api/v1/org-units returns current heads (the same rows `list` already returns). as_of / from / to are omitted: `org_units` / `org_unit_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `name` and `parent_id` are parsed from the latest `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites, regions, and branches stay the operational auth spine and are not OrgUnits. OrgUnit kinds Site/Department/Team are write-preflight on revision attributes (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices other than revision `version` remain HOLD.",
+                "Canonical OrgUnit head. GET /api/v1/org-units/{id} returns this current head. GET /api/v1/org-units returns current heads (the same rows `list` already returns). GET /api/v1/org-units/{id}/job-positions returns current JobPosition heads under this unit (the same rows `list_for_org_unit` already returns). as_of / from / to are omitted: `org_units` / `org_unit_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `name` and `parent_id` are parsed from the latest `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites, regions, and branches stay the operational auth spine and are not OrgUnits. OrgUnit kinds Site/Department/Team are write-preflight on revision attributes (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices other than revision `version` remain HOLD.",
                 &["id", "version", "name", "parent_id"],
                 vec![
                     ("id", uuid_ref()),

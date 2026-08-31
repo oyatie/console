@@ -205,7 +205,7 @@ export const CompanyDefinition = {
 } as const;
 
 /**
- * Canonical OrgUnit head. GET /api/v1/org-units/{id} returns this current head. GET /api/v1/org-units returns current heads (the same rows `list` already returns). as_of / from / to are omitted: `org_units` / `org_unit_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `name` and `parent_id` are parsed from the latest `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites, regions, and branches stay the operational auth spine and are not OrgUnits. OrgUnit kinds Site/Department/Team are write-preflight on revision attributes (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices other than revision `version` remain HOLD.
+ * Canonical OrgUnit head. GET /api/v1/org-units/{id} returns this current head. GET /api/v1/org-units returns current heads (the same rows `list` already returns). GET /api/v1/org-units/{id}/job-positions returns current JobPosition heads under this unit (the same rows `list_for_org_unit` already returns). as_of / from / to are omitted: `org_units` / `org_unit_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `name` and `parent_id` are parsed from the latest `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites, regions, and branches stay the operational auth spine and are not OrgUnits. OrgUnit kinds Site/Department/Team are write-preflight on revision attributes (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices other than revision `version` remain HOLD.
  */
 export type OrgUnit = {
   id: Uuid;
@@ -225,6 +225,15 @@ export const OrgUnitDefinition = {
       cardinality: "many-to-one",
       option: true,
       operationId: "getOrgUnit",
+    },
+    {
+      key: "org_unit_job_positions",
+      from: "OrgUnit",
+      to: "JobPosition",
+      field: "org_unit_id",
+      cardinality: "one-to-many",
+      option: false,
+      operationId: "listOrgUnitJobPositions",
     },
   ],
   actions: [

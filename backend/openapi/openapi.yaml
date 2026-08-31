@@ -11901,6 +11901,43 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/v1/org-units/{id}/job-positions:
+    get:
+      operationId: listOrgUnitJobPositions
+      summary: List JobPosition heads under one OrgUnit
+      description: >-
+        Returns current JobPosition Heads whose `org_unit_id` is this OrgUnit — the
+        same rows `list_for_org_unit` already returns (latest revision,
+        `MAX(version)`). as_of / from / to are omitted: `job_positions` /
+        `job_position_revisions` have no valid-time columns, and using `created_at`
+        as `valid_from` would be a second time model. Empty when the unit has no
+        positions or is invisible to the armed tenant (same as the port; a missing
+        OrgUnit is GET /api/v1/org-units/{id} 404, not this collection). Distinct
+        from GET /api/v1/job-positions (tenant-wide list) and from recruiting
+        postings / `employees.position` TEXT. EmployeeDetail as_of remains HOLD.
+      tags:
+      - Ontology
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Current JobPosition heads under the OrgUnit.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobPosition'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /api/v1/p1-dispatches/{dispatchId}:
     get:
       tags:
@@ -31219,7 +31256,7 @@ components:
           maxLength: 120
     OrgUnit:
       type: object
-      description: "Canonical OrgUnit head. GET /api/v1/org-units/{id} returns this current head. GET /api/v1/org-units returns current heads (the same rows `list` already returns). as_of / from / to are omitted: `org_units` / `org_unit_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `name` and `parent_id` are parsed from the latest `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites, regions, and branches stay the operational auth spine and are not OrgUnits. OrgUnit kinds Site/Department/Team are write-preflight on revision attributes (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices other than revision `version` remain HOLD."
+      description: "Canonical OrgUnit head. GET /api/v1/org-units/{id} returns this current head. GET /api/v1/org-units returns current heads (the same rows `list` already returns). GET /api/v1/org-units/{id}/job-positions returns current JobPosition heads under this unit (the same rows `list_for_org_unit` already returns). as_of / from / to are omitted: `org_units` / `org_unit_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `name` and `parent_id` are parsed from the latest `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites, regions, and branches stay the operational auth spine and are not OrgUnits. OrgUnit kinds Site/Department/Team are write-preflight on revision attributes (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices other than revision `version` remain HOLD."
       required:
         - id
         - version
@@ -31251,6 +31288,13 @@ components:
           cardinality: many-to-one
           option: true
           operationId: getOrgUnit
+        - key: org_unit_job_positions
+          from: OrgUnit
+          to: JobPosition
+          field: org_unit_id
+          cardinality: one-to-many
+          option: false
+          operationId: listOrgUnitJobPositions
       actions:
         - action_key: organization.create_org_unit
           object_key: org_unit

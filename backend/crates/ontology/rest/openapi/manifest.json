@@ -31,6 +31,9 @@
     "/api/v1/org-units/{id}": [
       "get"
     ],
+    "/api/v1/org-units/{id}/job-positions": [
+      "get"
+    ],
     "/api/v1/persons": [
       "get"
     ],

@@ -5,9 +5,10 @@
 //! receipt results under `/api/v1/ontology/actions/{action_key}/execute`.
 //! HTTP identity for the current head is `GET /api/v1/job-positions` and
 //! `GET /api/v1/job-positions/{id}`, published from `PgJobPositionPort`
-//! (same slice as sibling Head GETs). Recruiting postings and
-//! `employees.position` free text are never projected here: they are not
-//! canonical positions (canonical-domain JobPosition contract).
+//! (same slice as sibling Head GETs). Reverse collection under one OrgUnit is
+//! `GET /api/v1/org-units/{id}/job-positions` from `list_for_org_unit`.
+//! Recruiting postings and `employees.position` free text are never projected
+//! here: they are not canonical positions (canonical-domain JobPosition contract).
 //!
 //! L5-JOB originally refused *inventing* `/api/v1/job-positions` when sibling
 //! Heads had no collection GET. That invent-fence is lifted because the port

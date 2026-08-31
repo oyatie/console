@@ -45,6 +45,7 @@ pub const EMPLOYMENTS_PATH: &str = "/api/v1/employments";
 pub const EMPLOYMENT_PATH_TEMPLATE: &str = "/api/v1/employments/{id}";
 pub const ORG_UNITS_PATH: &str = "/api/v1/org-units";
 pub const ORG_UNIT_PATH_TEMPLATE: &str = "/api/v1/org-units/{id}";
+pub const ORG_UNIT_JOB_POSITIONS_PATH_TEMPLATE: &str = "/api/v1/org-units/{id}/job-positions";
 pub const COMPANIES_PATH: &str = "/api/v1/companies";
 pub const COMPANY_PATH_TEMPLATE: &str = "/api/v1/companies/{id}";
 pub const PERSONS_PATH: &str = "/api/v1/persons";
@@ -83,6 +84,7 @@ pub const HR_ROUTE_PATHS: &[&str] = &[
     EMPLOYMENT_PATH_TEMPLATE,
     ORG_UNITS_PATH,
     ORG_UNIT_PATH_TEMPLATE,
+    ORG_UNIT_JOB_POSITIONS_PATH_TEMPLATE,
     COMPANIES_PATH,
     COMPANY_PATH_TEMPLATE,
     PERSONS_PATH,
@@ -150,6 +152,10 @@ pub fn router(state: HrState) -> Router {
         .route(EMPLOYMENT_PATH_TEMPLATE, get(get_employment))
         .route(ORG_UNITS_PATH, get(list_org_units))
         .route(ORG_UNIT_PATH_TEMPLATE, get(get_org_unit))
+        .route(
+            ORG_UNIT_JOB_POSITIONS_PATH_TEMPLATE,
+            get(list_org_unit_job_positions),
+        )
         .route(COMPANIES_PATH, get(list_companies))
         .route(COMPANY_PATH_TEMPLATE, get(get_company))
         .route(PERSONS_PATH, get(list_persons))
@@ -1546,7 +1552,34 @@ async fn get_org_unit(
     Ok(Json(head))
 }
 
-/// Canonical Company Head collection. Zero or one current head for the armed
+/// JobPosition Heads under one OrgUnit — the same rows `list_for_org_unit`
+/// already returns. Current latest revision only; job_positions has no
+/// valid-time columns, so as_of/from/to are not queries. Gated on directory
+/// *read*. Empty when the unit has no positions or is invisible (same as the
+/// port). Never invents rows from recruiting postings or `employees.position`
+/// TEXT.
+async fn list_org_unit_job_positions(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+    Path(org_unit_id): Path<Uuid>,
+) -> Result<Json<Vec<job_position::JobPositionView>>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    record_hr_read("job-positions");
+    let org = principal.org_id;
+    let pool = state.pool.clone();
+    let handle = tokio::runtime::Handle::current();
+    let heads = tokio::task::spawn_blocking(move || {
+        let port = job_position::PgJobPositionPort::new(pool, handle);
+        port.list_for_org_unit(org, org_unit_id)
+    })
+    .await
+    .map_err(|_| {
+        HrError::from_kernel(KernelError::internal(
+            "org unit job position list join failed",
+        ))
+    })??;
+    Ok(Json(heads))
+}
 /// tenant (the tenant IS the company). as_of/from/to are omitted:
 /// company_revisions has no valid-time columns. Empty when no revision.
 async fn list_companies(
