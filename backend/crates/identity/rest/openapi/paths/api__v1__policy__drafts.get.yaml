@@ -13,8 +13,7 @@ responses:
         schema:
           type: array
           items:
-            type: object
-            additionalProperties: true
+            $ref: '#/components/schemas/DraftRecord'
   '401':
     $ref: '#/components/responses/Unauthorized'
   '403':

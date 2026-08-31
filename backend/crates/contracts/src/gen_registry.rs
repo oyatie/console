@@ -4375,6 +4375,10 @@ const IDENTITY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../identity/rest/openapi/schemas/DirectoryPerson.yaml"),
     },
     NamedYaml {
+        name: "DraftRecord",
+        body: include_str!("../../identity/rest/openapi/schemas/DraftRecord.yaml"),
+    },
+    NamedYaml {
         name: "EnrollHandoffRequest",
         body: include_str!("../../identity/rest/openapi/schemas/EnrollHandoffRequest.yaml"),
     },

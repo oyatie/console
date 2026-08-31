@@ -296,6 +296,7 @@
     "DeviceLoginStartResponse",
     "DirectoryPage",
     "DirectoryPerson",
+    "DraftRecord",
     "EnrollHandoffRequest",
     "EnrollHandoffResponse",
     "GroupAdminGroupResponse",

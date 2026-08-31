@@ -1,0 +1,43 @@
+type: object
+required:
+- id
+- draft_key
+- title
+- normalized_row
+- generated_policy_text
+- validation_status
+- validation_errors
+- review_status
+- reviewer_id
+- created_by
+- created_at
+- updated_at
+properties:
+  id:
+    $ref: '#/components/schemas/Uuid'
+  draft_key:
+    type: string
+  title:
+    type: string
+  normalized_row:
+    type: object
+    additionalProperties: true
+  generated_policy_text:
+    type: string
+  validation_status:
+    type: string
+  validation_errors:
+    type: object
+    additionalProperties: true
+  review_status:
+    type: string
+  reviewer_id:
+    oneOf:
+    - $ref: '#/components/schemas/Uuid'
+    - type: 'null'
+  created_by:
+    $ref: '#/components/schemas/Uuid'
+  created_at:
+    $ref: '#/components/schemas/Timestamp'
+  updated_at:
+    $ref: '#/components/schemas/Timestamp'
