@@ -54,6 +54,7 @@
     "LifecycleTransitionConfig",
     "ObjectLifecycle",
     "ObjectLifecycleTransition",
+    "OverrideSummary",
     "SetLifecycleHoldRequest",
     "TransitionLifecycleRequest",
     "TransitionRequirements",

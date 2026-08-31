@@ -185,6 +185,10 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/ObjectLifecycleTransition.yaml"),
     },
     NamedYaml {
+        name: "OverrideSummary",
+        body: include_str!("../openapi/schemas/OverrideSummary.yaml"),
+    },
+    NamedYaml {
         name: "SetLifecycleHoldRequest",
         body: include_str!("../openapi/schemas/SetLifecycleHoldRequest.yaml"),
     },

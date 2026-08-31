@@ -6713,8 +6713,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/OverrideSummary'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -31923,6 +31922,32 @@ components:
           - RESULT_SUBMITTED
           - COMPLETED
           - CANCELLED
+    OverrideSummary:
+      type: object
+      required:
+      - id
+      - target_type
+      - target_id
+      - actor
+      - reason
+      - before_snapshot
+      - created_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        target_type:
+          type: string
+        target_id:
+          $ref: '#/components/schemas/Uuid'
+        actor:
+          $ref: '#/components/schemas/Uuid'
+        reason:
+          type: string
+        before_snapshot:
+          type: object
+          additionalProperties: true
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
     OwnAttendanceException:
       type: object
       additionalProperties: false

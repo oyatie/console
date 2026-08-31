@@ -3353,6 +3353,10 @@ const GOVERNANCE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../governance/rest/openapi/schemas/ObjectLifecycleTransition.yaml"),
     },
     NamedYaml {
+        name: "OverrideSummary",
+        body: include_str!("../../governance/rest/openapi/schemas/OverrideSummary.yaml"),
+    },
+    NamedYaml {
         name: "SetLifecycleHoldRequest",
         body: include_str!("../../governance/rest/openapi/schemas/SetLifecycleHoldRequest.yaml"),
     },
