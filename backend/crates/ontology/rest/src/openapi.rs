@@ -446,6 +446,10 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/OntologyInstanceAggregateBucket.yaml"),
     },
     NamedYaml {
+        name: "PreflightOutcome",
+        body: include_str!("../openapi/schemas/PreflightOutcome.yaml"),
+    },
+    NamedYaml {
         name: "ResolvedInstance",
         body: include_str!("../openapi/schemas/ResolvedInstance.yaml"),
     },

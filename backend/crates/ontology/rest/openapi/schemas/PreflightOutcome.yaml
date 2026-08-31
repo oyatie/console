@@ -1,0 +1,24 @@
+type: object
+required:
+- dispatch
+- dispatch_target
+- config
+- gates
+- criteria_ok
+- would_execute
+properties:
+  dispatch:
+    type: string
+    enum: [instance_revision, projected_usecase]
+  dispatch_target:
+    type: [string, 'null']
+  config:
+    $ref: '#/components/schemas/GateChainConfig'
+  gates:
+    $ref: '#/components/schemas/GateChainOutcome'
+  criteria_ok:
+    type: boolean
+  criteria_error:
+    type: string
+  would_execute:
+    type: boolean

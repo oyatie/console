@@ -6535,6 +6535,10 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         ),
     },
     NamedYaml {
+        name: "PreflightOutcome",
+        body: include_str!("../../ontology/rest/openapi/schemas/PreflightOutcome.yaml"),
+    },
+    NamedYaml {
         name: "ResolvedInstance",
         body: include_str!("../../ontology/rest/openapi/schemas/ResolvedInstance.yaml"),
     },
