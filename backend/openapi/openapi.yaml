@@ -10995,8 +10995,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/ObjectTypeSummary'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
