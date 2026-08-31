@@ -1489,6 +1489,17 @@ fn generated_person_head_stays_a_closed_projection() -> Result<(), Box<dyn std::
         "Person actions must be generated: {}",
         person.body
     );
+    assert!(
+        person.body.contains("get_token: version"),
+        "Person GET concurrency token is DTO version, not HTTP ETag: {}",
+        person.body
+    );
+    assert!(
+        person.body.contains("write_field: expected_revision")
+            && person.body.contains("write_in: body"),
+        "Person writes keep expected_revision in the JSON body: {}",
+        person.body
+    );
     Ok(())
 }
 
@@ -1507,6 +1518,11 @@ fn generated_pay_run_payable_stays_const_false() -> Result<(), Box<dyn std::erro
     assert!(
         pay_run.body.contains("payroll.create_run"),
         "PayRun actions must be generated: {}",
+        pay_run.body
+    );
+    assert!(
+        pay_run.body.contains("get_token: null"),
+        "PayRun does not serialize version; do not invent a GET token: {}",
         pay_run.body
     );
     Ok(())

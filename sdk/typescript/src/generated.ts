@@ -197,6 +197,11 @@ export const CompanyDefinition = {
       },
     },
   ],
+  concurrency: {
+    get_token: "version",
+    write_field: "expected_revision",
+    write_in: "body",
+  },
 } as const;
 
 /**
@@ -268,6 +273,11 @@ export const OrgUnitDefinition = {
       },
     },
   ],
+  concurrency: {
+    get_token: "version",
+    write_field: "expected_revision",
+    write_in: "body",
+  },
 } as const;
 
 /**
@@ -340,6 +350,11 @@ export const JobPositionDefinition = {
       },
     },
   ],
+  concurrency: {
+    get_token: "version",
+    write_field: "expected_revision",
+    write_in: "body",
+  },
 } as const;
 
 /**
@@ -402,6 +417,11 @@ export const PersonDefinition = {
       },
     },
   ],
+  concurrency: {
+    get_token: "version",
+    write_field: "expected_revision",
+    write_in: "body",
+  },
 } as const;
 
 /**
@@ -512,6 +532,11 @@ export const EmploymentDefinition = {
       },
     },
   ],
+  concurrency: {
+    get_token: null,
+    write_field: "expected_revision",
+    write_in: "body",
+  },
 } as const;
 
 /**
@@ -594,6 +619,11 @@ export const PayRunDefinition = {
       },
     },
   ],
+  concurrency: {
+    get_token: null,
+    write_field: "expected_revision",
+    write_in: "body",
+  },
 } as const;
 
 export type Timestamp = string;

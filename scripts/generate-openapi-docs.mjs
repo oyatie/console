@@ -211,6 +211,21 @@ function renderLinks(links) {
   return items.length > 0 ? `<ul class="links">${items.join("")}</ul>` : '<p class="empty">No outgoing Head links.</p>';
 }
 
+function renderConcurrency(concurrency) {
+  if (!isPlainObject(concurrency)) {
+    return '<p class="empty">No Head concurrency token.</p>';
+  }
+  const getToken = own(concurrency, "get_token");
+  const writeField = typeof own(concurrency, "write_field") === "string"
+    ? own(concurrency, "write_field")
+    : "";
+  const writeIn = typeof own(concurrency, "write_in") === "string"
+    ? own(concurrency, "write_in")
+    : "";
+  const token = getToken === null ? "null" : String(getToken ?? "");
+  return `<p class="concurrency" data-get-token="${escapeHtml(token)}" data-write-field="${escapeHtml(writeField)}" data-write-in="${escapeHtml(writeIn)}">GET token <code>${escapeHtml(token)}</code>; writes <code>${escapeHtml(writeField)}</code> in <code>${escapeHtml(writeIn)}</code> (not HTTP If-Match).</p>`;
+}
+
 function renderActions(actions) {
   if (!Array.isArray(actions) || actions.length === 0) {
     return '<p class="empty">No actions.</p>';
@@ -248,7 +263,7 @@ function emitSchema(name, schema) {
     : '<p class="empty">No properties.</p>';
   let extra = "";
   if (kind === "head") {
-    extra = `<h4>Links</h4>${renderLinks(own(schema, "links"))}<h4>Actions</h4>${renderActions(own(schema, "actions"))}`;
+    extra = `<h4>Links</h4>${renderLinks(own(schema, "links"))}<h4>Actions</h4>${renderActions(own(schema, "actions"))}<h4>Concurrency</h4>${renderConcurrency(own(schema, "concurrency"))}`;
   }
   return `<section id="schema-${escapeHtml(name)}" data-schema="${escapeHtml(name)}" data-kind="${escapeHtml(kind)}"><h3>${escapeHtml(name)}</h3><p class="description">${escapeHtml(description)}</p>${propsTable}${extra}</section>`;
 }

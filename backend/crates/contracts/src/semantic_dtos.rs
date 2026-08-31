@@ -526,6 +526,12 @@ fn version_int64() -> Json {
         ("type", Json::str("integer")),
         ("format", Json::str("int64")),
         ("minimum", Json::Number("1".to_owned())),
+        (
+            "description",
+            Json::str(
+                "Optimistic concurrency token for this Head. Mutating roster actions send it as OntologyActionRequest.expected_revision (JSON body, not HTTP If-Match).",
+            ),
+        ),
     ])
 }
 

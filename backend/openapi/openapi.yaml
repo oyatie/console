@@ -20877,6 +20877,7 @@ components:
           type: integer
           format: int64
           minimum: 1
+          description: Optimistic concurrency token for this Head. Mutating roster actions send it as OntologyActionRequest.expected_revision (JSON body, not HTTP If-Match).
       links: []
       actions:
         - action_key: company.revise
@@ -20893,6 +20894,10 @@ components:
           concurrency:
             command_id: tenant_global_idempotency
             expected_revision: optional_cas
+      concurrency:
+        get_token: version
+        write_field: expected_revision
+        write_in: body
     CompanyReviseInput:
       type: object
       additionalProperties: false
@@ -24447,6 +24452,10 @@ components:
           concurrency:
             command_id: tenant_global_idempotency
             expected_revision: optional_cas
+      concurrency:
+        get_token: null
+        write_field: expected_revision
+        write_in: body
     EmploymentAttributesInput:
       type: object
       additionalProperties: false
@@ -27227,6 +27236,7 @@ components:
           type: integer
           format: int64
           minimum: 1
+          description: Optimistic concurrency token for this Head. Mutating roster actions send it as OntologyActionRequest.expected_revision (JSON body, not HTTP If-Match).
         attributes:
           type: object
           additionalProperties: true
@@ -27269,6 +27279,10 @@ components:
           concurrency:
             command_id: tenant_global_idempotency
             expected_revision: optional_cas
+      concurrency:
+        get_token: version
+        write_field: expected_revision
+        write_in: body
     KpiMetric:
       type: string
       enum:
@@ -30967,6 +30981,7 @@ components:
           type: integer
           format: int64
           minimum: 1
+          description: Optimistic concurrency token for this Head. Mutating roster actions send it as OntologyActionRequest.expected_revision (JSON body, not HTTP If-Match).
       links:
         - key: org_unit_parent
           from: OrgUnit
@@ -31006,6 +31021,10 @@ components:
           concurrency:
             command_id: tenant_global_idempotency
             expected_revision: optional_cas
+      concurrency:
+        get_token: version
+        write_field: expected_revision
+        write_in: body
     OrgUnitSourceBinding:
       type: object
       additionalProperties: false
@@ -31660,6 +31679,10 @@ components:
           concurrency:
             command_id: tenant_global_idempotency
             expected_revision: optional_cas
+      concurrency:
+        get_token: null
+        write_field: expected_revision
+        write_in: body
     PayrollClosePreflight:
       type: object
       required:
@@ -32620,6 +32643,7 @@ components:
           type: integer
           format: int64
           minimum: 1
+          description: Optimistic concurrency token for this Head. Mutating roster actions send it as OntologyActionRequest.expected_revision (JSON body, not HTTP If-Match).
       links: []
       actions:
         - action_key: people.create_person
@@ -32653,6 +32677,10 @@ components:
           concurrency:
             command_id: tenant_global_idempotency
             expected_revision: optional_cas
+      concurrency:
+        get_token: version
+        write_field: expected_revision
+        write_in: body
     PlatformAccountStatus:
       type: string
       enum:

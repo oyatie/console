@@ -183,7 +183,7 @@ fn inject_head_contract(
     };
     let mut out: Vec<(String, Json)> = fields
         .iter()
-        .filter(|(key, _)| key != "links" && key != "actions")
+        .filter(|(key, _)| key != "links" && key != "actions" && key != "concurrency")
         .cloned()
         .collect();
 
@@ -214,7 +214,30 @@ fn inject_head_contract(
         declared_actions.push(action_contract(action)?);
     }
     out.push(("actions".to_owned(), Json::Array(declared_actions)));
+    out.push(("concurrency".to_owned(), head_concurrency(schema)));
     Ok(Json::Object(out))
+}
+
+fn json_has_property(schema: &Json, name: &str) -> bool {
+    match schema.get("properties") {
+        Some(Json::Object(fields)) => fields.iter().any(|(key, _)| key == name),
+        _ => false,
+    }
+}
+
+/// GET token is the DTO `version` field when the Head serializes one; writes
+/// already CAS `OntologyActionRequest.expected_revision` in the JSON body.
+fn head_concurrency(schema: &Json) -> Json {
+    let get_token = if json_has_property(schema, "version") {
+        Json::str("version")
+    } else {
+        Json::Null
+    };
+    Json::obj(vec![
+        ("get_token", get_token),
+        ("write_field", Json::str("expected_revision")),
+        ("write_in", Json::str("body")),
+    ])
 }
 
 fn action_contract(action: &Json) -> Result<Json, SemanticError> {

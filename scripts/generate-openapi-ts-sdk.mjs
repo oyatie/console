@@ -261,6 +261,9 @@ function emitHeadDefinition(name, schema) {
     name,
     links: Array.isArray(links) ? links : [],
     actions: Array.isArray(actions) ? actions : [],
+    concurrency: isPlainObject(own(schema, "concurrency"))
+      ? own(schema, "concurrency")
+      : null,
   };
   return `export const ${name}Definition = ${tsLiteral(definition, "")} as const;\n`;
 }
