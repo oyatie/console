@@ -1,13 +1,14 @@
-//! Generate OpenAPI schema YAML from the canonical semantic manifest and DTO inventory.
+//! Generate OpenAPI schema YAML from the DTO inventory (Heads, Inputs, roster).
 //!
 //! ADR-0031: the contracts crate is the internal contract; composed
 //! `openapi.yaml` is a deliverable. This module is the compiler slice: the
 //! thirteen DispatchTarget Input schemas, two nested write bags, and the six
 //! PRODUCT Head schemas (links + actions injected) are emitted from
-//! [`semantic_dtos::dto_schema_bags`] plus [`SEMANTIC_MANIFEST`] objects/links/actions,
-//! then merged by [`crate::compose_document_with_owned`]. Face YAML must not
-//! also own those names. Property bags must not live as JSON literals in the
-//! manifest.
+//! [`semantic_dtos::dto_schema_bags`] plus the DTO roster (`dto_objects` /
+//! `dto_links` / `dto_actions`), then merged by
+//! [`crate::compose_document_with_owned`]. Face YAML must not also
+//! own those names. Property bags and the objects/links/actions catalog must
+//! not live as JSON literals in the manifest.
 //!
 //! The same DTO bags emit the serde codecs and the execute binder included by
 //! ontology REST `typed_action.rs` ([`generated_typed_action_rs`]). Dual-maintained
@@ -104,34 +105,36 @@ impl fmt::Display for SemanticError {
 
 impl std::error::Error for SemanticError {}
 
-/// Emit owned schema bodies for compose, in stable name order.
-///
-/// # Errors
-///
-/// Returns when the committed JSON is not the expected object, when a required
-/// Head/Input body is missing, or when generation would drop below
-/// [`GENERATED_SCHEMA_COUNT`].
-pub fn generated_schema_yaml() -> Result<Vec<OwnedNamedYaml>, SemanticError> {
-    let root = parse_json(SEMANTIC_MANIFEST)?;
+fn refuse_hand_catalog(root: Json) -> Result<(), SemanticError> {
     if root.get("schemas").is_some() {
         return Err(SemanticError(
             "semantic manifest must not carry property bags; Head/Input shapes are generated from semantic_dtos"
                 .to_owned(),
         ));
     }
+    if root.get("objects").is_some() || root.get("links").is_some() || root.get("actions").is_some()
+    {
+        return Err(SemanticError(
+            "semantic manifest must not carry objects/links/actions; roster is generated from semantic_dtos"
+                .to_owned(),
+        ));
+    }
+    Ok(())
+}
+
+/// Emit owned schema bodies for compose, in stable name order.
+///
+/// # Errors
+///
+/// Returns when the committed JSON still carries a hand catalog, when a
+/// required Head/Input body is missing, or when generation would drop below
+/// [`GENERATED_SCHEMA_COUNT`].
+pub fn generated_schema_yaml() -> Result<Vec<OwnedNamedYaml>, SemanticError> {
+    refuse_hand_catalog(parse_json(SEMANTIC_MANIFEST)?)?;
     let schemas = semantic_dtos::dto_schema_bags()?;
-    let objects = root
-        .get("objects")
-        .and_then(Json::as_array)
-        .ok_or_else(|| SemanticError("semantic manifest objects must be an array".to_owned()))?;
-    let links = root
-        .get("links")
-        .and_then(Json::as_array)
-        .ok_or_else(|| SemanticError("semantic manifest links must be an array".to_owned()))?;
-    let actions = root
-        .get("actions")
-        .and_then(Json::as_array)
-        .ok_or_else(|| SemanticError("semantic manifest actions must be an array".to_owned()))?;
+    let objects = semantic_dtos::dto_objects()?;
+    let links = semantic_dtos::dto_links()?;
+    let actions = semantic_dtos::dto_actions()?;
 
     let head_names: Vec<String> = objects
         .iter()
@@ -141,7 +144,7 @@ pub fn generated_schema_yaml() -> Result<Vec<OwnedNamedYaml>, SemanticError> {
     let mut generated: Vec<OwnedNamedYaml> = Vec::new();
     for (name, schema) in &schemas {
         let body_json = if head_names.iter().any(|head| head == name) {
-            inject_head_contract(schema, name, objects, links, actions)?
+            inject_head_contract(schema, name, &objects, &links, &actions)?
         } else {
             schema.clone()
         };
@@ -661,22 +664,10 @@ fn looks_like_number(text: &str) -> bool {
 /// Input body is missing, when a field type is unmapped, or when generation
 /// would drop below [`CODEC_SCHEMA_COUNT`].
 pub fn generated_typed_action_rs() -> Result<String, SemanticError> {
-    let root = parse_json(SEMANTIC_MANIFEST)?;
-    if root.get("schemas").is_some() {
-        return Err(SemanticError(
-            "semantic manifest must not carry property bags; codecs are generated from semantic_dtos"
-                .to_owned(),
-        ));
-    }
+    refuse_hand_catalog(parse_json(SEMANTIC_MANIFEST)?)?;
     let schemas = semantic_dtos::dto_schema_bags()?;
-    let objects = root
-        .get("objects")
-        .and_then(Json::as_array)
-        .ok_or_else(|| SemanticError("semantic manifest objects must be an array".to_owned()))?;
-    let actions = root
-        .get("actions")
-        .and_then(Json::as_array)
-        .ok_or_else(|| SemanticError("semantic manifest actions must be an array".to_owned()))?;
+    let objects = semantic_dtos::dto_objects()?;
+    let actions = semantic_dtos::dto_actions()?;
 
     if actions.len() != DISPATCH_TARGET_COUNT {
         return Err(SemanticError(format!(
@@ -722,7 +713,7 @@ pub fn generated_typed_action_rs() -> Result<String, SemanticError> {
     }
 
     let mut out = String::from(
-        "// @generated by console-openapi-gen from semantic_dtos + semantic_manifest.json. Do not edit.\n\n",
+        "// @generated by console-openapi-gen from semantic_dtos roster. Do not edit.\n\n",
     );
 
     // Nested write bags first (referenced by Inputs), then Inputs in action order.
@@ -777,7 +768,7 @@ pub fn generated_typed_action_rs() -> Result<String, SemanticError> {
 }
 
 /// HTTP trust-boundary binder. Roster membership is `DispatchTarget::from_str`
-/// (decode arms above are generated from the same `actions` array). Unknown
+/// (decode arms above are generated from the same DTO `ACTIONS` roster). Unknown
 /// fields are `deny_unknown_fields` on those Input structs. Non-roster keys
 /// stay object-or-null — do not type-decode them and do not accept arrays.
 fn emit_typed_action_binder(out: &mut String) {

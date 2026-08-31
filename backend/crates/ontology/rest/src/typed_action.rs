@@ -13,9 +13,9 @@
 //!
 //! Codec structs, `decode_dispatch_target`, unknown-field deny, `action_key`
 //! reject, and `bind_canonical_action_params` are generated from the DTO
-//! inventory (`semantic_dtos.rs`) plus `semantic_manifest.json` actions by
-//! `console-openapi-gen` into `typed_action_generated.rs`. This file is the
-//! include host and the behavioural tests, not a second contract.
+//! inventory (`semantic_dtos.rs`) by `console-openapi-gen` into
+//! `typed_action_generated.rs`. This file is the include host and the
+//! behavioural tests, not a second contract.
 
 use console_ontology_canonical_domain::DispatchTarget;
 use serde::Deserialize;

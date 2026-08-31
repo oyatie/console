@@ -36,6 +36,7 @@ import {
 import { hasOwnKey, isPlainObject, own } from "./own-property.mjs";
 
 export const MANIFEST_REL = "backend/crates/contracts/src/semantic_manifest.json";
+export const DTO_RS_REL = "backend/crates/contracts/src/semantic_dtos.rs";
 export const GEN_REGISTRY_REL = "backend/crates/contracts/src/gen_registry.rs";
 export const OPENAPI_GEN_REL = "backend/crates/contracts/src/bin/console_openapi_gen.rs";
 export const COMPOSE_LIB_REL = "backend/crates/contracts/src/lib.rs";
@@ -197,8 +198,33 @@ export function evaluateSemanticGenerate({ repoRoot }) {
   let actionCount = 0;
   let linkCount = 0;
 
+  const dtoPath = join(repoRoot, DTO_RS_REL);
+  const dtoText = existsSync(dtoPath) ? readFileSync(dtoPath, "utf8") : "";
+  const rosterFromDto =
+    dtoText.includes("fn dto_objects")
+    && dtoText.includes("fn dto_links")
+    && dtoText.includes("fn dto_actions");
+
+  const jsonRosterPresent =
+    Array.isArray(objects) && Array.isArray(links) && Array.isArray(actions);
+  const jsonRosterPartial =
+    [objects, links, actions].some((item) => Array.isArray(item)) && !jsonRosterPresent;
+  if (jsonRosterPartial) {
+    push(
+      findings,
+      MANIFEST_REL,
+      "objects/links/actions must be generated together from the DTO inventory; a partial JSON roster is a second catalog",
+    );
+  }
+
   if (!Array.isArray(objects)) {
-    push(findings, `${MANIFEST_REL}#/objects`, "objects must be an array of six Heads");
+    if (rosterFromDto) {
+      objectCount = CANONICAL_OBJECTS.filter((spec) =>
+        new RegExp(String.raw`pub struct ${spec.name}\b`).test(dtoText),
+      ).length;
+    } else {
+      push(findings, `${MANIFEST_REL}#/objects`, "objects must be an array of six Heads");
+    }
   } else {
     for (const spec of CANONICAL_OBJECTS) {
       const found = objects.find((item) => isPlainObject(item) && own(item, "name") === spec.name);
@@ -215,7 +241,11 @@ export function evaluateSemanticGenerate({ repoRoot }) {
   }
 
   if (!Array.isArray(links)) {
-    push(findings, `${MANIFEST_REL}#/links`, "links must be an array of Head FK declarations");
+    if (rosterFromDto) {
+      linkCount = CANONICAL_LINKS.filter((spec) => dtoText.includes(`"${spec.key}"`)).length;
+    } else {
+      push(findings, `${MANIFEST_REL}#/links`, "links must be an array of Head FK declarations");
+    }
   } else {
     for (const spec of CANONICAL_LINKS) {
       const found = links.find((item) => isPlainObject(item) && own(item, "key") === spec.key);
@@ -232,11 +262,17 @@ export function evaluateSemanticGenerate({ repoRoot }) {
   }
 
   if (!Array.isArray(actions)) {
-    push(
-      findings,
-      `${MANIFEST_REL}#/actions`,
-      "actions must be an array of thirteen DispatchTarget contracts",
-    );
+    if (rosterFromDto) {
+      actionCount = CANONICAL_ACTIONS.filter((spec) =>
+        dtoText.includes(`"${spec.action_key}"`),
+      ).length;
+    } else {
+      push(
+        findings,
+        `${MANIFEST_REL}#/actions`,
+        "actions must be an array of thirteen DispatchTarget contracts",
+      );
+    }
   } else {
     for (const spec of CANONICAL_ACTIONS) {
       const found = actions.find(

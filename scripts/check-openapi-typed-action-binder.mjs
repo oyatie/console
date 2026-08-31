@@ -27,6 +27,7 @@ import {
   CANONICAL_ACTIONS,
 } from "./check-openapi-semantic-contract.mjs";
 import {
+  DTO_RS_REL,
   MANIFEST_REL,
   OPENAPI_GEN_REL,
   SEMANTIC_RS_REL,
@@ -101,11 +102,18 @@ export function evaluateTypedActionBinder({ repoRoot }) {
   const actions = own(manifestLoad.value, "actions");
   let actionCount = 0;
   if (!Array.isArray(actions)) {
-    push(
-      findings,
-      `${MANIFEST_REL}#/actions`,
-      "actions must be an array of thirteen DispatchTarget contracts",
-    );
+    const dto = readText(repoRoot, DTO_RS_REL);
+    if (!dto.missing && dto.text.includes("fn dto_actions")) {
+      actionCount = CANONICAL_ACTIONS.filter((spec) =>
+        dto.text.includes(`"${spec.action_key}"`),
+      ).length;
+    } else {
+      push(
+        findings,
+        `${MANIFEST_REL}#/actions`,
+        "actions must be an array of thirteen DispatchTarget contracts",
+      );
+    }
   } else {
     for (const spec of CANONICAL_ACTIONS) {
       const found = actions.find(

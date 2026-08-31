@@ -9,8 +9,9 @@
 //!     backend/crates/ontology/rest/src/typed_action_generated.rs
 //! ```
 //!
-//! Property bags come from `semantic_dtos`; objects/links/actions stay in
-//! `semantic_manifest.json`. Dual-written JSON schema literals are refused.
+//! Property bags and the objects/links/actions roster come from `semantic_dtos`.
+//! Dual-written JSON schema literals and a hand-maintained JSON catalog are
+//! refused.
 
 #[path = "../gen_registry.rs"]
 mod gen_registry;

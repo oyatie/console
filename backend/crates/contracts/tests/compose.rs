@@ -1451,7 +1451,7 @@ fn owned_schema_duplicate_against_fragment_is_rejected() -> Result<(), Box<dyn s
 }
 
 #[test]
-fn property_bags_come_from_the_dto_inventory_not_the_manifest()
+fn property_bags_and_roster_come_from_the_dto_inventory_not_the_manifest()
 -> Result<(), Box<dyn std::error::Error>> {
     let manifest = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
@@ -1460,6 +1460,12 @@ fn property_bags_come_from_the_dto_inventory_not_the_manifest()
     assert!(
         !manifest.contains("\"schemas\""),
         "semantic_manifest.json must not carry property bags: {manifest}"
+    );
+    assert!(
+        !manifest.contains("\"objects\"")
+            && !manifest.contains("\"links\"")
+            && !manifest.contains("\"actions\""),
+        "semantic_manifest.json must not carry objects/links/actions: {manifest}"
     );
     let owned = generated_schema_yaml()?;
     assert_eq!(owned.len(), GENERATED_SCHEMA_COUNT);
@@ -1510,8 +1516,8 @@ fn generated_pay_run_payable_stays_const_false() -> Result<(), Box<dyn std::erro
 fn semantic_manifest_generates_typed_action_codecs() -> Result<(), Box<dyn std::error::Error>> {
     let rust = generated_typed_action_rs()?;
     assert!(
-        rust.contains("semantic_manifest.json"),
-        "generated codecs must name the manifest: {rust}"
+        rust.contains("semantic_dtos roster"),
+        "generated codecs must name the DTO roster: {rust}"
     );
     for name in [
         "CompanyReviseInput",

@@ -7,8 +7,8 @@
 // compose crate's DTO inventory of those types) generate the property bags.
 //
 // Chesterton: extend generated_schema_yaml / generated_typed_action_rs. Do not
-// add a second OpenAPI writer. objects/links/actions stay in the manifest;
-// property shapes must not.
+// add a second OpenAPI writer. objects/links/actions are generated from the
+// DTO roster; property shapes must not live as JSON literals.
 //
 // Totality: own-property reads of the manifest + text scans of the DTO module
 // and emitter + js-yaml of the published document + adapter Head field reads.

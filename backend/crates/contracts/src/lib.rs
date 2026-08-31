@@ -77,9 +77,9 @@
 //! query the composed document rather than emit it.
 //!
 //! Exception (this crate, ADR-0031 slice): the thirteen DispatchTarget Input
-//! schemas, two nested write bags, and six PRODUCT Heads are emitted from
-//! the DTO inventory via [`generated_schema_yaml`] (objects/links/actions stay
-//! in `semantic_manifest.json`) and merged by [`compose_document_with_owned`].
+//! schemas, two nested write bags, and six PRODUCT Heads (links + actions
+//! injected from the DTO roster) are emitted from the DTO inventory via
+//! [`generated_schema_yaml`] and merged by [`compose_document_with_owned`].
 //! Face YAML must not also own those names. The same DTO bags emit the typed
 //! execute codecs and `bind_canonical_action_params` via [`generated_typed_action_rs`];
 //! `typed_action.rs` must not dual-maintain them.
