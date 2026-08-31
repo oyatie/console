@@ -246,6 +246,16 @@ fn published_instance_get_operation_id(head: &str) -> Option<&'static str> {
     }
 }
 
+/// Feature already enforced on published Head GET/list
+/// (`authorize_hr_org_wide` `EmployeeDirectoryRead` in `console-app` HR).
+/// PayRun has no Head GET (`PayrollRunSummary`).
+pub(super) fn published_head_get_permission(head: &str) -> Option<&'static str> {
+    match published_instance_get_operation_id(head) {
+        Some(_) => Some("employee_directory_read"),
+        None => None,
+    }
+}
+
 /// Runtime Head FKs. Company / Person / PayRun have no outgoing Head link.
 pub(super) const LINKS: &[LinkEntry] = &[
     LinkEntry {

@@ -1725,6 +1725,21 @@ fn generated_head_fk_links_bind_published_get_operations() -> Result<(), Box<dyn
         "OrgUnit must declare reverse collection org_unit_job_positions: {}",
         org_unit.body
     );
+    assert!(
+        org_unit.body.contains("employee_directory_read"),
+        "OrgUnit Head GET/list must generate Feature::EmployeeDirectoryRead: {}",
+        org_unit.body
+    );
+
+    let pay_run = owned
+        .iter()
+        .find(|item| item.name == "PayRun")
+        .ok_or("PayRun must be generated")?;
+    assert!(
+        !pay_run.body.contains("employee_directory_read"),
+        "PayRun has no Head GET; do not emit directory-read as a GET permission: {}",
+        pay_run.body
+    );
 
     let job_position = owned
         .iter()

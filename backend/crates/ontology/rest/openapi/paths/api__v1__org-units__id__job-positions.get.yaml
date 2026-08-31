@@ -14,6 +14,8 @@ tags:
 - Ontology
 security:
 - bearerAuth: []
+permissions:
+- employee_directory_read
 parameters:
 - name: id
   in: path

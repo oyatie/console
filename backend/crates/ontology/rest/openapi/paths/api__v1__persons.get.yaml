@@ -12,6 +12,8 @@ tags:
 - Ontology
 security:
 - bearerAuth: []
+permissions:
+- employee_directory_read
 responses:
   '200':
     description: Current Person heads.

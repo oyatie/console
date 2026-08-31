@@ -18,6 +18,8 @@ tags:
 - Ontology
 security:
 - bearerAuth: []
+permissions:
+- employee_directory_read
 parameters:
 - name: from
   in: query

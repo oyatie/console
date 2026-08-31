@@ -183,7 +183,9 @@ fn inject_head_contract(
     };
     let mut out: Vec<(String, Json)> = fields
         .iter()
-        .filter(|(key, _)| key != "links" && key != "actions" && key != "concurrency")
+        .filter(|(key, _)| {
+            key != "links" && key != "actions" && key != "concurrency" && key != "permissions"
+        })
         .cloned()
         .collect();
 
@@ -215,6 +217,9 @@ fn inject_head_contract(
     }
     out.push(("actions".to_owned(), Json::Array(declared_actions)));
     out.push(("concurrency".to_owned(), head_concurrency(schema)));
+    if let Some(permission) = semantic_dtos::published_head_get_permission(name) {
+        out.push(("permissions".to_owned(), Json::arr_str(&[permission])));
+    }
     Ok(Json::Object(out))
 }
 

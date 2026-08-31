@@ -257,6 +257,7 @@ function emitHeadDefinition(name, schema) {
   const links = own(schema, "links");
   const actions = own(schema, "actions");
   if (!Array.isArray(links) && !Array.isArray(actions)) return "";
+  const permissions = own(schema, "permissions");
   const definition = {
     name,
     links: Array.isArray(links) ? links : [],
@@ -264,6 +265,7 @@ function emitHeadDefinition(name, schema) {
     concurrency: isPlainObject(own(schema, "concurrency"))
       ? own(schema, "concurrency")
       : null,
+    permissions: Array.isArray(permissions) ? permissions : [],
   };
   return `export const ${name}Definition = ${tsLiteral(definition, "")} as const;\n`;
 }

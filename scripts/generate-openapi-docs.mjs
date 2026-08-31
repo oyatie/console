@@ -211,6 +211,20 @@ function renderLinks(links) {
   return items.length > 0 ? `<ul class="links">${items.join("")}</ul>` : '<p class="empty">No outgoing Head links.</p>';
 }
 
+function renderPermissions(permissions) {
+  if (!Array.isArray(permissions) || permissions.length === 0) {
+    return '<p class="empty">No Head GET permission.</p>';
+  }
+  const items = [];
+  for (const item of permissions) {
+    if (typeof item !== "string") continue;
+    items.push(`<li><code>${escapeHtml(item)}</code></li>`);
+  }
+  return items.length > 0
+    ? `<ul class="permissions">${items.join("")}</ul>`
+    : '<p class="empty">No Head GET permission.</p>';
+}
+
 function renderConcurrency(concurrency) {
   if (!isPlainObject(concurrency)) {
     return '<p class="empty">No Head concurrency token.</p>';
@@ -263,7 +277,7 @@ function emitSchema(name, schema) {
     : '<p class="empty">No properties.</p>';
   let extra = "";
   if (kind === "head") {
-    extra = `<h4>Links</h4>${renderLinks(own(schema, "links"))}<h4>Actions</h4>${renderActions(own(schema, "actions"))}<h4>Concurrency</h4>${renderConcurrency(own(schema, "concurrency"))}`;
+    extra = `<h4>Links</h4>${renderLinks(own(schema, "links"))}<h4>Actions</h4>${renderActions(own(schema, "actions"))}<h4>Concurrency</h4>${renderConcurrency(own(schema, "concurrency"))}<h4>Permissions</h4>${renderPermissions(own(schema, "permissions"))}`;
   }
   return `<section id="schema-${escapeHtml(name)}" data-schema="${escapeHtml(name)}" data-kind="${escapeHtml(kind)}"><h3>${escapeHtml(name)}</h3><p class="description">${escapeHtml(description)}</p>${propsTable}${extra}</section>`;
 }

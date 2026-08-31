@@ -202,6 +202,9 @@ export const CompanyDefinition = {
     write_field: "expected_revision",
     write_in: "body",
   },
+  permissions: [
+    "employee_directory_read",
+  ],
 } as const;
 
 /**
@@ -288,6 +291,9 @@ export const OrgUnitDefinition = {
     write_field: "expected_revision",
     write_in: "body",
   },
+  permissions: [
+    "employee_directory_read",
+  ],
 } as const;
 
 /**
@@ -366,6 +372,9 @@ export const JobPositionDefinition = {
     write_field: "expected_revision",
     write_in: "body",
   },
+  permissions: [
+    "employee_directory_read",
+  ],
 } as const;
 
 /**
@@ -433,6 +442,9 @@ export const PersonDefinition = {
     write_field: "expected_revision",
     write_in: "body",
   },
+  permissions: [
+    "employee_directory_read",
+  ],
 } as const;
 
 /**
@@ -552,6 +564,9 @@ export const EmploymentDefinition = {
     write_field: "expected_revision",
     write_in: "body",
   },
+  permissions: [
+    "employee_directory_read",
+  ],
 } as const;
 
 /**
@@ -639,6 +654,7 @@ export const PayRunDefinition = {
     write_field: "expected_revision",
     write_in: "body",
   },
+  permissions: [],
 } as const;
 
 export type Timestamp = string;

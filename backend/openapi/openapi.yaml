@@ -2814,6 +2814,8 @@ paths:
       - Ontology
       security:
       - bearerAuth: []
+      permissions:
+      - employee_directory_read
       responses:
         '200':
           description: Current Company heads for the armed tenant (zero or one).
@@ -2843,6 +2845,8 @@ paths:
       - Ontology
       security:
       - bearerAuth: []
+      permissions:
+      - employee_directory_read
       parameters:
       - name: id
         in: path
@@ -3978,6 +3982,8 @@ paths:
       - Ontology
       security:
       - bearerAuth: []
+      permissions:
+      - employee_directory_read
       parameters:
       - name: from
         in: query
@@ -4025,6 +4031,8 @@ paths:
       - Ontology
       security:
       - bearerAuth: []
+      permissions:
+      - employee_directory_read
       parameters:
       - name: id
         in: path
@@ -7838,6 +7846,8 @@ paths:
       - Ontology
       security:
       - bearerAuth: []
+      permissions:
+      - employee_directory_read
       responses:
         '200':
           description: Current JobPosition heads.
@@ -7866,6 +7876,8 @@ paths:
       - Ontology
       security:
       - bearerAuth: []
+      permissions:
+      - employee_directory_read
       parameters:
       - name: id
         in: path
@@ -11854,6 +11866,8 @@ paths:
       - Ontology
       security:
       - bearerAuth: []
+      permissions:
+      - employee_directory_read
       responses:
         '200':
           description: Current OrgUnit heads.
@@ -11882,6 +11896,8 @@ paths:
       - Ontology
       security:
       - bearerAuth: []
+      permissions:
+      - employee_directory_read
       parameters:
       - name: id
         in: path
@@ -11919,6 +11935,8 @@ paths:
       - Ontology
       security:
       - bearerAuth: []
+      permissions:
+      - employee_directory_read
       parameters:
       - name: id
         in: path
@@ -12917,6 +12935,8 @@ paths:
       - Ontology
       security:
       - bearerAuth: []
+      permissions:
+      - employee_directory_read
       responses:
         '200':
           description: Current Person heads.
@@ -12945,6 +12965,8 @@ paths:
       - Ontology
       security:
       - bearerAuth: []
+      permissions:
+      - employee_directory_read
       parameters:
       - name: id
         in: path
@@ -21186,6 +21208,8 @@ components:
         get_token: version
         write_field: expected_revision
         write_in: body
+      permissions:
+        - employee_directory_read
     CompanyReviseInput:
       type: object
       additionalProperties: false
@@ -24753,6 +24777,8 @@ components:
         get_token: version
         write_field: expected_revision
         write_in: body
+      permissions:
+        - employee_directory_read
     EmploymentAttributesInput:
       type: object
       additionalProperties: false
@@ -27581,6 +27607,8 @@ components:
         get_token: version
         write_field: expected_revision
         write_in: body
+      permissions:
+        - employee_directory_read
     KpiMetric:
       type: string
       enum:
@@ -31331,6 +31359,8 @@ components:
         get_token: version
         write_field: expected_revision
         write_in: body
+      permissions:
+        - employee_directory_read
     OrgUnitSourceBinding:
       type: object
       additionalProperties: false
@@ -32987,6 +33017,8 @@ components:
         get_token: version
         write_field: expected_revision
         write_in: body
+      permissions:
+        - employee_directory_read
     PlatformAccountStatus:
       type: string
       enum:
