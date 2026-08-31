@@ -10,8 +10,9 @@
 //! `unwrap_used` / `expect_used` / `panic` lints.
 
 use console_contracts::{
-    DocumentPreamble, DuplicateKind, Fragment, GENERATED_SCHEMA_COUNT, NamedYaml, Operation,
-    PathItem, compose, compose_document, compose_with_owned, generated_schema_yaml, schema_refs,
+    CODEC_SCHEMA_COUNT, DISPATCH_TARGET_COUNT, DocumentPreamble, DuplicateKind, Fragment,
+    GENERATED_SCHEMA_COUNT, NamedYaml, Operation, PathItem, compose, compose_document,
+    compose_with_owned, generated_schema_yaml, generated_typed_action_rs, schema_refs,
 };
 
 // ---------------------------------------------------------------------------
@@ -1485,6 +1486,76 @@ fn generated_pay_run_payable_stays_const_false() -> Result<(), Box<dyn std::erro
         pay_run.body.contains("payroll.create_run"),
         "PayRun actions must be generated: {}",
         pay_run.body
+    );
+    Ok(())
+}
+
+#[test]
+fn semantic_manifest_generates_typed_action_codecs() -> Result<(), Box<dyn std::error::Error>> {
+    let rust = generated_typed_action_rs()?;
+    assert!(
+        rust.contains("semantic_manifest.json"),
+        "generated codecs must name the manifest: {rust}"
+    );
+    for name in [
+        "CompanyReviseInput",
+        "OrganizationCreateOrgUnitInput",
+        "OrganizationReviseOrgUnitInput",
+        "OrganizationCreateJobPositionInput",
+        "OrganizationReviseJobPositionInput",
+        "PeopleCreatePersonInput",
+        "PeopleRevisePersonInput",
+        "HrAppointInput",
+        "HrPromoteInput",
+        "HrTransferInput",
+        "PayrollCreateRunInput",
+        "PayrollSubmitRunInput",
+        "PayrollDecideRunInput",
+        "EmploymentAttributesInput",
+        "OrgUnitSourceBinding",
+    ] {
+        assert!(
+            rust.contains(&format!("struct {name}")),
+            "generated codecs missing {name}: {rust}"
+        );
+    }
+    for variant in [
+        "CompanyRevise",
+        "OrganizationCreateOrgUnit",
+        "OrganizationReviseOrgUnit",
+        "OrganizationCreateJobPosition",
+        "OrganizationReviseJobPosition",
+        "PeopleCreatePerson",
+        "PeopleRevisePerson",
+        "HrAppoint",
+        "HrPromote",
+        "HrTransfer",
+        "PayrollCreateRun",
+        "PayrollSubmitRun",
+        "PayrollDecideRun",
+    ] {
+        assert!(
+            rust.contains(&format!("DispatchTarget::{variant}")),
+            "generated decode missing {variant}: {rust}"
+        );
+    }
+    assert_eq!(
+        rust.matches("DispatchTarget::").count(),
+        DISPATCH_TARGET_COUNT
+    );
+    Ok(())
+}
+
+#[test]
+fn generated_typed_action_codecs_deny_unknown_fields() -> Result<(), Box<dyn std::error::Error>> {
+    let rust = generated_typed_action_rs()?;
+    assert_eq!(
+        rust.matches("#[serde(deny_unknown_fields)]").count(),
+        CODEC_SCHEMA_COUNT
+    );
+    assert!(
+        rust.contains("fn decode_dispatch_target"),
+        "generated codecs must include decode_dispatch_target: {rust}"
     );
     Ok(())
 }

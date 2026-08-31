@@ -5,7 +5,8 @@
 //!
 //! ```text
 //! cargo run --locked --manifest-path backend/Cargo.toml -p console-contracts --bin console-openapi-gen
-//! git diff --exit-code -- backend/openapi/openapi.yaml
+//! git diff --exit-code -- backend/openapi/openapi.yaml \
+//!     backend/crates/ontology/rest/src/typed_action_generated.rs
 //! ```
 
 #[path = "../gen_registry.rs"]
@@ -15,7 +16,8 @@ use std::path::PathBuf;
 use std::{env, fs, process};
 
 use console_contracts::{
-    GENERATED_SCHEMA_COUNT, compose_document_with_owned, generated_schema_yaml,
+    CODEC_SCHEMA_COUNT, GENERATED_SCHEMA_COUNT, compose_document_with_owned, generated_schema_yaml,
+    generated_typed_action_rs,
 };
 
 fn main() {
@@ -101,4 +103,47 @@ fn main() {
         process::exit(1);
     }
     println!("wrote {} ({} bytes)", out.display(), doc.len());
+
+    let rust = match generated_typed_action_rs() {
+        Ok(rust) => rust,
+        Err(err) => {
+            eprintln!("console-openapi-gen: typed action codec generation failed:\n{err}");
+            process::exit(1);
+        }
+    };
+    let struct_count = rust.matches("#[serde(deny_unknown_fields)]").count();
+    if struct_count != CODEC_SCHEMA_COUNT {
+        eprintln!(
+            "console-openapi-gen: expected {CODEC_SCHEMA_COUNT} generated codec structs, found {struct_count}"
+        );
+        process::exit(1);
+    }
+
+    let rust_out = manifest_dir.join("../../ontology/rest/src/typed_action_generated.rs");
+    let rust_out = if rust_out.exists() {
+        rust_out.canonicalize().unwrap_or(rust_out)
+    } else {
+        match manifest_dir
+            .parent()
+            .and_then(|p| p.parent())
+            .map(|backend| backend.join("crates/ontology/rest/src/typed_action_generated.rs"))
+        {
+            Some(path) => path,
+            None => {
+                eprintln!(
+                    "console-openapi-gen: contracts crate must live at backend/crates/contracts"
+                );
+                process::exit(1);
+            }
+        }
+    };
+
+    if let Err(err) = fs::write(&rust_out, &rust) {
+        eprintln!(
+            "console-openapi-gen: failed to write {}: {err}",
+            rust_out.display()
+        );
+        process::exit(1);
+    }
+    println!("wrote {} ({} bytes)", rust_out.display(), rust.len());
 }

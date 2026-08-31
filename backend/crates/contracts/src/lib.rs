@@ -80,13 +80,18 @@
 //! schemas, two nested write bags, and six PRODUCT Heads are emitted from
 //! `semantic_manifest.json` via [`generated_schema_yaml`] and merged by
 //! [`compose_document_with_owned`]. Face YAML must not also own those names.
+//! The same manifest emits the typed execute codecs via
+//! [`generated_typed_action_rs`]; `typed_action.rs` must not dual-maintain them.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
 mod semantic;
 
-pub use semantic::{GENERATED_SCHEMA_COUNT, SEMANTIC_SOURCE, generated_schema_yaml};
+pub use semantic::{
+    CODEC_SCHEMA_COUNT, DISPATCH_TARGET_COUNT, GENERATED_SCHEMA_COUNT, SEMANTIC_SOURCE,
+    generated_schema_yaml, generated_typed_action_rs,
+};
 
 // ---------------------------------------------------------------------------
 // Fragment model

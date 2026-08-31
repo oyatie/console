@@ -10,6 +10,11 @@
 //!
 //! The original `Value` is returned on success so command-id payload digests
 //! do not change shape.
+//!
+//! Codec structs and `decode_dispatch_target` are generated from
+//! `semantic_manifest.json` by `console-openapi-gen` into
+//! `typed_action_generated.rs`. This file is the runtime binder, not a second
+//! contract.
 
 use console_ontology_canonical_domain::DispatchTarget;
 use serde::Deserialize;
@@ -74,32 +79,6 @@ fn reject_caller_action_key(action_key: &str, params: &Value) -> Result<(), Acti
     Ok(())
 }
 
-fn decode_dispatch_target(target: DispatchTarget, params: &Value) -> Result<(), ActionError> {
-    match target {
-        DispatchTarget::CompanyRevise => decode::<CompanyReviseInput>(target, params),
-        DispatchTarget::OrganizationCreateOrgUnit => {
-            decode::<OrganizationCreateOrgUnitInput>(target, params)
-        }
-        DispatchTarget::OrganizationReviseOrgUnit => {
-            decode::<OrganizationReviseOrgUnitInput>(target, params)
-        }
-        DispatchTarget::OrganizationCreateJobPosition => {
-            decode::<OrganizationCreateJobPositionInput>(target, params)
-        }
-        DispatchTarget::OrganizationReviseJobPosition => {
-            decode::<OrganizationReviseJobPositionInput>(target, params)
-        }
-        DispatchTarget::PeopleCreatePerson => decode::<PeopleCreatePersonInput>(target, params),
-        DispatchTarget::PeopleRevisePerson => decode::<PeopleRevisePersonInput>(target, params),
-        DispatchTarget::HrAppoint => decode::<HrAppointInput>(target, params),
-        DispatchTarget::HrPromote => decode::<HrPromoteInput>(target, params),
-        DispatchTarget::HrTransfer => decode::<HrTransferInput>(target, params),
-        DispatchTarget::PayrollCreateRun => decode::<PayrollCreateRunInput>(target, params),
-        DispatchTarget::PayrollSubmitRun => decode::<PayrollSubmitRunInput>(target, params),
-        DispatchTarget::PayrollDecideRun => decode::<PayrollDecideRunInput>(target, params),
-    }
-}
-
 fn decode<T: DeserializeOwned>(target: DispatchTarget, params: &Value) -> Result<(), ActionError> {
     serde_json::from_value::<T>(params.clone())
         .map(|_| ())
@@ -111,150 +90,7 @@ fn decode<T: DeserializeOwned>(target: DispatchTarget, params: &Value) -> Result
         })
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct CompanyReviseInput {
-    attributes: serde_json::Map<String, Value>,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct OrgUnitSourceBinding {
-    kind: String,
-    id: String,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct OrganizationCreateOrgUnitInput {
-    #[serde(default)]
-    source: Option<OrgUnitSourceBinding>,
-    attributes: serde_json::Map<String, Value>,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct OrganizationReviseOrgUnitInput {
-    org_unit_id: Uuid,
-    #[serde(default)]
-    source: Option<OrgUnitSourceBinding>,
-    attributes: serde_json::Map<String, Value>,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct OrganizationCreateJobPositionInput {
-    org_unit_id: Uuid,
-    attributes: serde_json::Map<String, Value>,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct OrganizationReviseJobPositionInput {
-    job_position_id: Uuid,
-    #[serde(default)]
-    org_unit_id: Option<Uuid>,
-    attributes: serde_json::Map<String, Value>,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct PeopleCreatePersonInput {
-    #[serde(default)]
-    employee_id: Option<Uuid>,
-    attributes: serde_json::Map<String, Value>,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct PeopleRevisePersonInput {
-    person_id: Uuid,
-    #[serde(default)]
-    employee_id: Option<Uuid>,
-    attributes: serde_json::Map<String, Value>,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct EmploymentAttributesInput {
-    company: String,
-    #[serde(default)]
-    org_unit_id: Option<Uuid>,
-    #[serde(default)]
-    job_position_id: Option<Uuid>,
-    employment_status: String,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct HrAppointInput {
-    employee_id: Uuid,
-    #[serde(with = "time::serde::rfc3339")]
-    valid_from: OffsetDateTime,
-    attributes: EmploymentAttributesInput,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct HrPromoteInput {
-    employment_id: Uuid,
-    #[serde(with = "time::serde::rfc3339")]
-    valid_from: OffsetDateTime,
-    attributes: EmploymentAttributesInput,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct HrTransferInput {
-    employment_id: Uuid,
-    #[serde(with = "time::serde::rfc3339")]
-    valid_from: OffsetDateTime,
-    attributes: EmploymentAttributesInput,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct PayrollCreateRunInput {
-    run_id: Uuid,
-    #[serde(with = "iso_date")]
-    period_start: Date,
-    #[serde(with = "iso_date")]
-    period_end: Date,
-    #[serde(default)]
-    connector: Option<String>,
-    #[serde(default)]
-    job: Option<String>,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct PayrollSubmitRunInput {
-    run_id: Uuid,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct PayrollDecideRunInput {
-    run_id: Uuid,
-    decision: String,
-    #[serde(default)]
-    reason: Option<String>,
-}
+include!("typed_action_generated.rs");
 
 #[cfg(test)]
 mod tests {

@@ -434,15 +434,16 @@ jobs:
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-todos-rest --test openapi_fragment
           check_status "openapi_fragment"
-          # openapi.yaml is generated from per-face console-contracts Fragments.
-          # Regeneration must be a no-op on a clean tree; a hand-edit that skips
-          # the owning face slice fails this diff. The generator itself refuses
-          # to run with fewer than 35 fragments (shared + 34 faces), so an empty
-          # registry cannot pass by rewriting nothing.
+          # openapi.yaml and typed_action_generated.rs are generated from the
+          # semantic manifest + per-face Fragments. Regeneration must be a no-op
+          # on a clean tree; a hand-edit that skips the owning source fails this
+          # diff. The generator itself refuses to run with fewer than 35
+          # fragments (shared + 34 faces) or fewer than 15 codec structs, so an
+          # empty registry cannot pass by rewriting nothing.
           SQLX_OFFLINE=true cargo run --locked --manifest-path backend/Cargo.toml \
             -p console-contracts --bin console-openapi-gen
           check_status "openapi regen"
-          git diff --exit-code -- backend/openapi/openapi.yaml
+          git diff --exit-code -- backend/openapi/openapi.yaml backend/crates/ontology/rest/src/typed_action_generated.rs
           check_status "openapi diff"
           # ONE -p PER INVOCATION whenever --test is used. Two packages and two --test names on
           # a single line is ambiguous to any reader that pairs them positionally, and
