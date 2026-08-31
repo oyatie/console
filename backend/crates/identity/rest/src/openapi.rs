@@ -865,6 +865,18 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/EnrollHandoffResponse.yaml"),
     },
     NamedYaml {
+        name: "GroupAdminGroupResponse",
+        body: include_str!("../openapi/schemas/GroupAdminGroupResponse.yaml"),
+    },
+    NamedYaml {
+        name: "GroupAdminGroupsResponse",
+        body: include_str!("../openapi/schemas/GroupAdminGroupsResponse.yaml"),
+    },
+    NamedYaml {
+        name: "GroupAdminMemberOrgResponse",
+        body: include_str!("../openapi/schemas/GroupAdminMemberOrgResponse.yaml"),
+    },
+    NamedYaml {
         name: "LogoutRequest",
         body: include_str!("../openapi/schemas/LogoutRequest.yaml"),
     },

@@ -4353,6 +4353,18 @@ const IDENTITY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../identity/rest/openapi/schemas/EnrollHandoffResponse.yaml"),
     },
     NamedYaml {
+        name: "GroupAdminGroupResponse",
+        body: include_str!("../../identity/rest/openapi/schemas/GroupAdminGroupResponse.yaml"),
+    },
+    NamedYaml {
+        name: "GroupAdminGroupsResponse",
+        body: include_str!("../../identity/rest/openapi/schemas/GroupAdminGroupsResponse.yaml"),
+    },
+    NamedYaml {
+        name: "GroupAdminMemberOrgResponse",
+        body: include_str!("../../identity/rest/openapi/schemas/GroupAdminMemberOrgResponse.yaml"),
+    },
+    NamedYaml {
         name: "LogoutRequest",
         body: include_str!("../../identity/rest/openapi/schemas/LogoutRequest.yaml"),
     },

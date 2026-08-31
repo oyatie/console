@@ -6742,8 +6742,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/GroupAdminGroupsResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -26863,6 +26862,52 @@ components:
         before_snapshot:
           type: object
           additionalProperties: true
+    GroupAdminGroupResponse:
+      type: object
+      required:
+      - id
+      - slug
+      - name
+      - status
+      - members
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        slug:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupAdminMemberOrgResponse'
+    GroupAdminGroupsResponse:
+      type: object
+      required:
+      - groups
+      properties:
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupAdminGroupResponse'
+    GroupAdminMemberOrgResponse:
+      type: object
+      required:
+      - id
+      - slug
+      - name
+      - status
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        slug:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
     HireRecruitApplicantRequest:
       type: object
       required:

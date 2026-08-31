@@ -1,0 +1,8 @@
+type: object
+required:
+- groups
+properties:
+  groups:
+    type: array
+    items:
+      $ref: '#/components/schemas/GroupAdminGroupResponse'
