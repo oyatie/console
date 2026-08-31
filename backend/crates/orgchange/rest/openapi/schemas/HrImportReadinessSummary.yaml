@@ -1,0 +1,35 @@
+type: object
+required:
+- runs
+- applied_runs
+- input_rows
+- candidate_rows
+- preserved_rows
+- ledger_rows
+properties:
+  runs:
+    type: integer
+    format: int64
+    minimum: 0
+  applied_runs:
+    type: integer
+    format: int64
+    minimum: 0
+  input_rows:
+    type: integer
+    format: int64
+    minimum: 0
+  candidate_rows:
+    type: integer
+    format: int64
+    minimum: 0
+  preserved_rows:
+    type: integer
+    format: int64
+    minimum: 0
+  ledger_rows:
+    type: integer
+    format: int64
+    minimum: 0
+  latest_import_at:
+    $ref: '#/components/schemas/Timestamp'

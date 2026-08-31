@@ -7040,6 +7040,22 @@ const ORGCHANGE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../orgchange/rest/openapi/schemas/EmployeePage.yaml"),
     },
     NamedYaml {
+        name: "HrAnnualLeaveReadinessSummary",
+        body: include_str!(
+            "../../orgchange/rest/openapi/schemas/HrAnnualLeaveReadinessSummary.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "HrAttendanceReadinessSummary",
+        body: include_str!(
+            "../../orgchange/rest/openapi/schemas/HrAttendanceReadinessSummary.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "HrImportReadinessSummary",
+        body: include_str!("../../orgchange/rest/openapi/schemas/HrImportReadinessSummary.yaml"),
+    },
+    NamedYaml {
         name: "HrOrgChartCompany",
         body: include_str!("../../orgchange/rest/openapi/schemas/HrOrgChartCompany.yaml"),
     },
@@ -7058,6 +7074,14 @@ const ORGCHANGE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "HrOrgChartUnit",
         body: include_str!("../../orgchange/rest/openapi/schemas/HrOrgChartUnit.yaml"),
+    },
+    NamedYaml {
+        name: "HrPayrollReadinessSummary",
+        body: include_str!("../../orgchange/rest/openapi/schemas/HrPayrollReadinessSummary.yaml"),
+    },
+    NamedYaml {
+        name: "HrReadinessSummary",
+        body: include_str!("../../orgchange/rest/openapi/schemas/HrReadinessSummary.yaml"),
     },
     NamedYaml {
         name: "ImportApplyRequest",

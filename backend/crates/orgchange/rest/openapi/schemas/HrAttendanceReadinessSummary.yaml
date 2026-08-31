@@ -1,0 +1,18 @@
+type: object
+required:
+- durable_events
+- self_service_records
+- payroll_material_refs
+properties:
+  durable_events:
+    type: integer
+    format: int64
+    minimum: 0
+  self_service_records:
+    type: integer
+    format: int64
+    minimum: 0
+  payroll_material_refs:
+    type: integer
+    format: int64
+    minimum: 0

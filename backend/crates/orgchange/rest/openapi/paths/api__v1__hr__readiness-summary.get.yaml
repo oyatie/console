@@ -13,22 +13,7 @@ responses:
     content:
       application/json:
         schema:
-          type: object
-          required:
-          - payroll
-          properties:
-            payroll:
-              type: object
-              required:
-              - active_close_runs
-              properties:
-                active_close_runs:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                  description: Number of inspectable non-terminal payroll close runs.
-              additionalProperties: true
-          additionalProperties: true
+          $ref: '#/components/schemas/HrReadinessSummary'
   '401':
     $ref: '#/components/responses/Unauthorized'
   '403':

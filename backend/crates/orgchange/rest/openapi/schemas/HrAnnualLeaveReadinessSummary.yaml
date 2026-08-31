@@ -1,0 +1,26 @@
+type: object
+required:
+- obligations
+- usage_promotion_required
+- payout_review_required
+- needs_review
+- remaining_days
+properties:
+  obligations:
+    type: integer
+    format: int64
+    minimum: 0
+  usage_promotion_required:
+    type: integer
+    format: int64
+    minimum: 0
+  payout_review_required:
+    type: integer
+    format: int64
+    minimum: 0
+  needs_review:
+    type: integer
+    format: int64
+    minimum: 0
+  remaining_days:
+    type: string

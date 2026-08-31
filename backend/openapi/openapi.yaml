@@ -7403,22 +7403,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                - payroll
-                properties:
-                  payroll:
-                    type: object
-                    required:
-                    - active_close_runs
-                    properties:
-                      active_close_runs:
-                        type: integer
-                        format: int64
-                        minimum: 0
-                        description: Number of inspectable non-terminal payroll close runs.
-                    additionalProperties: true
-                additionalProperties: true
+                $ref: '#/components/schemas/HrReadinessSummary'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -26898,6 +26883,33 @@ components:
       properties:
         hold:
           type: boolean
+    HrAnnualLeaveReadinessSummary:
+      type: object
+      required:
+      - obligations
+      - usage_promotion_required
+      - payout_review_required
+      - needs_review
+      - remaining_days
+      properties:
+        obligations:
+          type: integer
+          format: int64
+          minimum: 0
+        usage_promotion_required:
+          type: integer
+          format: int64
+          minimum: 0
+        payout_review_required:
+          type: integer
+          format: int64
+          minimum: 0
+        needs_review:
+          type: integer
+          format: int64
+          minimum: 0
+        remaining_days:
+          type: string
     HrAppointInput:
       type: object
       additionalProperties: false
@@ -26913,6 +26925,61 @@ components:
           $ref: "#/components/schemas/Timestamp"
         attributes:
           $ref: "#/components/schemas/EmploymentAttributesInput"
+    HrAttendanceReadinessSummary:
+      type: object
+      required:
+      - durable_events
+      - self_service_records
+      - payroll_material_refs
+      properties:
+        durable_events:
+          type: integer
+          format: int64
+          minimum: 0
+        self_service_records:
+          type: integer
+          format: int64
+          minimum: 0
+        payroll_material_refs:
+          type: integer
+          format: int64
+          minimum: 0
+    HrImportReadinessSummary:
+      type: object
+      required:
+      - runs
+      - applied_runs
+      - input_rows
+      - candidate_rows
+      - preserved_rows
+      - ledger_rows
+      properties:
+        runs:
+          type: integer
+          format: int64
+          minimum: 0
+        applied_runs:
+          type: integer
+          format: int64
+          minimum: 0
+        input_rows:
+          type: integer
+          format: int64
+          minimum: 0
+        candidate_rows:
+          type: integer
+          format: int64
+          minimum: 0
+        preserved_rows:
+          type: integer
+          format: int64
+          minimum: 0
+        ledger_rows:
+          type: integer
+          format: int64
+          minimum: 0
+        latest_import_at:
+          $ref: '#/components/schemas/Timestamp'
     HrOrgChartCompany:
       type: object
       required:
@@ -26995,6 +27062,76 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HrOrgChartPosition'
+    HrPayrollReadinessSummary:
+      type: object
+      required:
+      - draft_runs
+      - blocked_runs
+      - calculation_enabled_runs
+      - active_close_runs
+      - draft_lines
+      - payroll_source_rows
+      - attendance_source_rows
+      - attendance_event_links
+      - attendance_material_refs
+      - gross_pay_source_lines
+      - net_pay_source_lines
+      properties:
+        draft_runs:
+          type: integer
+          format: int64
+          minimum: 0
+        blocked_runs:
+          type: integer
+          format: int64
+          minimum: 0
+        calculation_enabled_runs:
+          type: integer
+          format: int64
+          minimum: 0
+        active_close_runs:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Number of inspectable non-terminal payroll close runs.
+        draft_lines:
+          type: integer
+          format: int64
+          minimum: 0
+        payroll_source_rows:
+          type: integer
+          format: int64
+          minimum: 0
+        attendance_source_rows:
+          type: integer
+          format: int64
+          minimum: 0
+        attendance_event_links:
+          type: integer
+          format: int64
+          minimum: 0
+        attendance_material_refs:
+          type: integer
+          format: int64
+          minimum: 0
+        gross_pay_source_lines:
+          type: integer
+          format: int64
+          minimum: 0
+        net_pay_source_lines:
+          type: integer
+          format: int64
+          minimum: 0
+        latest_status:
+          type: string
+        latest_source_label:
+          type: string
+        latest_period_start:
+          type: string
+        latest_period_end:
+          type: string
+        latest_updated_at:
+          $ref: '#/components/schemas/Timestamp'
     HrPromoteInput:
       type: object
       additionalProperties: false
@@ -27010,6 +27147,22 @@ components:
           $ref: "#/components/schemas/Timestamp"
         attributes:
           $ref: "#/components/schemas/EmploymentAttributesInput"
+    HrReadinessSummary:
+      type: object
+      required:
+      - imports
+      - payroll
+      - annual_leave
+      - attendance
+      properties:
+        imports:
+          $ref: '#/components/schemas/HrImportReadinessSummary'
+        payroll:
+          $ref: '#/components/schemas/HrPayrollReadinessSummary'
+        annual_leave:
+          $ref: '#/components/schemas/HrAnnualLeaveReadinessSummary'
+        attendance:
+          $ref: '#/components/schemas/HrAttendanceReadinessSummary'
     HrTransferInput:
       type: object
       additionalProperties: false

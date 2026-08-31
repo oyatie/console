@@ -438,6 +438,18 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/EmployeePage.yaml"),
     },
     NamedYaml {
+        name: "HrAnnualLeaveReadinessSummary",
+        body: include_str!("../openapi/schemas/HrAnnualLeaveReadinessSummary.yaml"),
+    },
+    NamedYaml {
+        name: "HrAttendanceReadinessSummary",
+        body: include_str!("../openapi/schemas/HrAttendanceReadinessSummary.yaml"),
+    },
+    NamedYaml {
+        name: "HrImportReadinessSummary",
+        body: include_str!("../openapi/schemas/HrImportReadinessSummary.yaml"),
+    },
+    NamedYaml {
         name: "HrOrgChartCompany",
         body: include_str!("../openapi/schemas/HrOrgChartCompany.yaml"),
     },
@@ -456,6 +468,14 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "HrOrgChartUnit",
         body: include_str!("../openapi/schemas/HrOrgChartUnit.yaml"),
+    },
+    NamedYaml {
+        name: "HrPayrollReadinessSummary",
+        body: include_str!("../openapi/schemas/HrPayrollReadinessSummary.yaml"),
+    },
+    NamedYaml {
+        name: "HrReadinessSummary",
+        body: include_str!("../openapi/schemas/HrReadinessSummary.yaml"),
     },
     NamedYaml {
         name: "ImportApplyRequest",

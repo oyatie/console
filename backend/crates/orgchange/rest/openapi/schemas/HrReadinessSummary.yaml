@@ -1,0 +1,15 @@
+type: object
+required:
+- imports
+- payroll
+- annual_leave
+- attendance
+properties:
+  imports:
+    $ref: '#/components/schemas/HrImportReadinessSummary'
+  payroll:
+    $ref: '#/components/schemas/HrPayrollReadinessSummary'
+  annual_leave:
+    $ref: '#/components/schemas/HrAnnualLeaveReadinessSummary'
+  attendance:
+    $ref: '#/components/schemas/HrAttendanceReadinessSummary'
