@@ -123,6 +123,10 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/AuditChainAttestation.yaml"),
     },
     NamedYaml {
+        name: "AuditRecord",
+        body: include_str!("../openapi/schemas/AuditRecord.yaml"),
+    },
+    NamedYaml {
         name: "FindingSeverity",
         body: include_str!("../openapi/schemas/FindingSeverity.yaml"),
     },

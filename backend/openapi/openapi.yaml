@@ -147,8 +147,7 @@ paths:
                   items:
                     type: array
                     items:
-                      type: object
-                      additionalProperties: true
+                      $ref: '#/components/schemas/AuditRecord'
                   limit:
                     type: integer
                     format: int64
@@ -20428,6 +20427,90 @@ components:
           description: >-
             Freshness signal — committed rows older than the seal watermark exist beyond the head seal's cursor (the worker
             fell behind or is stopped). Never forces ok=false on a healthy live chain.
+    AuditRecord:
+      type: object
+      required:
+      - id
+      - actor
+      - action
+      - target_type
+      - target_id
+      - branch_id
+      - before_snap
+      - after_snap
+      - ip
+      - user_agent
+      - auth_method
+      - device
+      - classification_badges
+      - anomaly
+      - reason
+      - trace_id
+      - span_id
+      - occurred_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        actor:
+          oneOf:
+          - $ref: '#/components/schemas/Uuid'
+          - type: 'null'
+        action:
+          type: string
+        target_type:
+          type: string
+        target_id:
+          type: string
+        branch_id:
+          oneOf:
+          - $ref: '#/components/schemas/Uuid'
+          - type: 'null'
+        before_snap:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+        after_snap:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+        ip:
+          type:
+          - string
+          - 'null'
+        user_agent:
+          type:
+          - string
+          - 'null'
+        auth_method:
+          type:
+          - string
+          - 'null'
+        device:
+          type:
+          - string
+          - 'null'
+        classification_badges:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        anomaly:
+          type:
+          - boolean
+          - 'null'
+        reason:
+          type:
+          - string
+          - 'null'
+        trace_id:
+          type: string
+        span_id:
+          type: string
+        occurred_at:
+          $ref: '#/components/schemas/Timestamp'
     AuditStreamPage:
       type: object
       required:

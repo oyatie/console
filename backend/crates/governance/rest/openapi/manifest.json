@@ -40,6 +40,7 @@
   },
   "schemas": [
     "AuditChainAttestation",
+    "AuditRecord",
     "FindingSeverity",
     "FindingStatus",
     "GovernanceConfigureTransitionRequest",

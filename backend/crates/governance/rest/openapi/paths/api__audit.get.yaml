@@ -59,8 +59,7 @@ responses:
             items:
               type: array
               items:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/AuditRecord'
             limit:
               type: integer
               format: int64

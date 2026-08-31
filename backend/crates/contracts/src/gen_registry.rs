@@ -3283,6 +3283,10 @@ const GOVERNANCE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../governance/rest/openapi/schemas/AuditChainAttestation.yaml"),
     },
     NamedYaml {
+        name: "AuditRecord",
+        body: include_str!("../../governance/rest/openapi/schemas/AuditRecord.yaml"),
+    },
+    NamedYaml {
         name: "FindingSeverity",
         body: include_str!("../../governance/rest/openapi/schemas/FindingSeverity.yaml"),
     },
