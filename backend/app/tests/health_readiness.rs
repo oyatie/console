@@ -191,6 +191,15 @@ mod authorized {
     use super::*;
     use axum::body::to_bytes;
     use console_kernel_core::{OrgId, UserId};
+    use console_ontology_canonical_adapter_postgres::company::{
+        CompanyCommand, CompanyQuery, PgCompanyPort,
+    };
+    use console_ontology_canonical_adapter_postgres::org_unit::{
+        OrgUnitCommand, OrgUnitQuery, PgOrgUnitPort,
+    };
+    use console_ontology_canonical_adapter_postgres::person::{
+        PersonCommand, PersonQuery, PgPersonPort,
+    };
     use console_ontology_canonical_domain::{CanonicalPort, CommandId, DispatchTarget};
     use console_payroll_adapter_postgres::pay_run::{PayRunCommand, PayRunQuery, PgPayRunPort};
     use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
@@ -198,6 +207,7 @@ mod authorized {
     use p256::ecdsa::SigningKey;
     use p256::elliptic_curve::rand_core::OsRng;
     use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
+    use serde_json::json;
     use sqlx::PgPool;
     use time::OffsetDateTime;
     use time::macros::date;
@@ -326,6 +336,79 @@ mod authorized {
             .unwrap()
     }
 
+    struct SeededHeads {
+        person_id: Uuid,
+        org_unit_id: Uuid,
+    }
+
+    async fn seed_heads(pool: &PgPool, org: OrgId, actor: UserId) -> SeededHeads {
+        let runtime = runtime_role_pool(pool).await;
+        let handle = tokio::runtime::Handle::current();
+        let company = PgCompanyPort::new(runtime.clone(), handle.clone());
+        let company_cmd = CompanyCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: CompanyQuery {
+                attributes: json!({ "legal_name": "KNL" }),
+            },
+            action_key: "revise".to_owned(),
+            object_type_id: Uuid::nil(),
+        };
+        tokio::task::spawn_blocking(move || company.execute(&company_cmd))
+            .await
+            .unwrap()
+            .expect("company.revise as console_rt");
+
+        let units = PgOrgUnitPort::new(runtime.clone(), handle.clone());
+        let unit_cmd = OrgUnitCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: OrgUnitQuery::Create {
+                source: None,
+                attributes: json!({ "name": "본사", "kind": "site" }),
+            },
+            action_key: "create_org_unit".to_owned(),
+            object_type_id: Uuid::nil(),
+        };
+        let created_unit = tokio::task::spawn_blocking(move || units.execute(&unit_cmd))
+            .await
+            .unwrap()
+            .expect("organization.create_org_unit as console_rt");
+        let org_unit_id = created_unit.result()["org_unit_id"]
+            .as_str()
+            .expect("create_org_unit must name org_unit_id")
+            .parse()
+            .unwrap();
+
+        let persons = PgPersonPort::new(runtime, handle);
+        let person_cmd = PersonCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: actor,
+            query: PersonQuery::Create {
+                employee_id: None,
+                attributes: json!({ "legal_name": "홍길동", "display_name": "홍길동" }),
+            },
+            action_key: "create_person".to_owned(),
+            object_type_id: Uuid::nil(),
+        };
+        let created_person = tokio::task::spawn_blocking(move || persons.execute(&person_cmd))
+            .await
+            .unwrap()
+            .expect("people.create_person as console_rt");
+        let person_id = created_person.result()["person_id"]
+            .as_str()
+            .expect("create_person must name person_id")
+            .parse()
+            .unwrap();
+        SeededHeads {
+            person_id,
+            org_unit_id,
+        }
+    }
+
     async fn get_ui(app: axum::Router, token: Option<&str>) -> (StatusCode, String) {
         get_ui_path(app, "/_ui", token).await
     }
@@ -430,6 +513,7 @@ mod authorized {
         let member = UserId::new();
         seed_user(&pool, org, member, "MEMBER").await;
         let run = seed_run(&pool, org, super_admin).await;
+        let heads = seed_heads(&pool, org, super_admin).await;
 
         let service = build_router(jwt_app_state(
             runtime_role_pool(&pool).await,
@@ -453,8 +537,13 @@ mod authorized {
         assert_eq!(status, StatusCode::OK, "{org_html}");
         assert!(
             org_html.contains("data-screen=\"organization\"")
-                && org_html.contains(&format!("data-org-id=\"{}\"", org.as_uuid())),
-            "SUPER_ADMIN organization screen must render authorized org-entities: {org_html}"
+                && org_html.contains(&format!("data-org-id=\"{}\"", org.as_uuid()))
+                && org_html.contains("data-legal-name=")
+                && org_html.contains(&format!("data-org-unit-id=\"{}\"", heads.org_unit_id))
+                && org_html.contains(&format!("href=\"/api/v1/companies/{}\"", org.as_uuid()))
+                && org_html.contains(&format!("href=\"/api/v1/org-units/{}\"", heads.org_unit_id))
+                && !org_html.contains("data-slug"),
+            "SUPER_ADMIN organization screen must render published Company/OrgUnit Heads: {org_html}"
         );
         assert!(
             !org_html.contains("/_ui/pkg/"),
@@ -465,8 +554,11 @@ mod authorized {
         assert_eq!(status, StatusCode::OK, "{hr_html}");
         assert!(
             hr_html.contains("data-screen=\"hr\"")
-                && hr_html.contains(&format!("data-person-id=\"{}\"", super_admin.as_uuid())),
-            "SUPER_ADMIN HR screen must render authorized directory people: {hr_html}"
+                && hr_html.contains(&format!("data-person-id=\"{}\"", heads.person_id))
+                && hr_html.contains("data-legal-name=")
+                && hr_html.contains(&format!("href=\"/api/v1/persons/{}\"", heads.person_id))
+                && !hr_html.contains("data-employee-"),
+            "SUPER_ADMIN HR screen must render the published Person Head: {hr_html}"
         );
         assert!(
             !hr_html.to_ascii_lowercase().contains("phone"),
@@ -541,6 +633,7 @@ mod authorized {
         grant_group_viewer(&pool, org, executive).await;
         grant_group_viewer(&pool, org, super_admin).await;
         let run = seed_run(&pool, org, super_admin).await;
+        let heads = seed_heads(&pool, org, super_admin).await;
 
         let other_org = OrgId::from_uuid(Uuid::from_u128(0xb2));
         sqlx::query("INSERT INTO organizations (id, slug, name) VALUES ($1, $2, $3)")
@@ -583,24 +676,19 @@ mod authorized {
         let (status, admin_org) =
             get_ui_path(service.clone(), "/_ui/organization", Some(&admin_tok)).await;
         assert_eq!(status, StatusCode::OK, "{admin_org}");
-        assert!(
-            admin_org.contains("data-screen=\"organization\"")
-                && admin_org.contains(&format!("data-org-id=\"{org_id}\""))
-                && admin_org.contains("data-slug="),
-            "ADMIN org screen must render authorized org identifiers: {admin_org}"
+        assert_eq!(
+            admin_org,
+            console_payroll_ui::render_shell(),
+            "ADMIN without org-wide EmployeeDirectoryRead must omit Company/OrgUnit Heads: {admin_org}"
         );
-        assert!(
-            admin_org.contains("<nav") && admin_org.contains("조직"),
-            "ADMIN org nav must be mounted: {admin_org}"
+
+        let (status, admin_hr) = get_ui_path(service.clone(), "/_ui/hr", Some(&admin_tok)).await;
+        assert_eq!(status, StatusCode::OK, "{admin_hr}");
+        assert_eq!(
+            admin_hr,
+            console_payroll_ui::render_shell(),
+            "ADMIN without org-wide EmployeeDirectoryRead must omit Person Heads: {admin_hr}"
         );
-        assert!(
-            !admin_org.contains("data-screen=\"hr\"")
-                && !admin_org.contains("data-screen=\"payroll\"")
-                && !admin_org.contains(&run_id)
-                && !admin_org.contains("/_ui/pkg/"),
-            "ADMIN without org-wide PayrollRunRead and without branch membership must omit HR/payroll: {admin_org}"
-        );
-        assert_ui_invariants(&admin_org);
 
         let (status, admin_pay) =
             get_ui_path(service.clone(), "/_ui/payroll", Some(&admin_tok)).await;
@@ -630,11 +718,17 @@ mod authorized {
         );
         assert!(
             exec_home.contains(&format!("data-org-id=\"{org_id}\""))
-                && exec_home.contains(&format!("data-person-id=\"{}\"", executive.as_uuid()))
+                && exec_home.contains(&format!("data-org-unit-id=\"{}\"", heads.org_unit_id))
+                && exec_home.contains(&format!("data-person-id=\"{}\"", heads.person_id))
                 && exec_home.contains(&format!("data-run-id=\"{run_id}\""))
-                && exec_home.contains("data-slug=")
-                && exec_home.contains("data-display-name="),
-            "EXECUTIVE markup must carry contract + human-safe identifiers: {exec_home}"
+                && exec_home.contains("data-legal-name=")
+                && exec_home.contains("data-display-name=")
+                && exec_home.contains(&format!("href=\"/api/v1/companies/{org_id}\""))
+                && exec_home.contains(&format!("href=\"/api/v1/org-units/{}\"", heads.org_unit_id))
+                && exec_home.contains(&format!("href=\"/api/v1/persons/{}\"", heads.person_id))
+                && !exec_home.contains("data-slug")
+                && !exec_home.contains("data-employee-"),
+            "EXECUTIVE markup must carry published Head identifiers: {exec_home}"
         );
         assert!(
             exec_home.contains("/_ui/pkg/console_payroll_ui.js") && exec_home.contains("charset"),
@@ -659,9 +753,11 @@ mod authorized {
         assert_eq!(status, StatusCode::OK, "{exec_hr}");
         assert!(
             exec_hr.contains("data-screen=\"hr\"")
-                && exec_hr.contains(&format!("data-person-id=\"{}\"", executive.as_uuid()))
+                && exec_hr.contains(&format!("data-person-id=\"{}\"", heads.person_id))
+                && exec_hr.contains("data-legal-name=")
+                && !exec_hr.contains("data-employee-")
                 && !exec_hr.contains("/_ui/pkg/"),
-            "EXECUTIVE HR is SSR contracts, not an island: {exec_hr}"
+            "EXECUTIVE HR is SSR Person Head, not an island: {exec_hr}"
         );
         assert_ui_invariants(&exec_hr);
 

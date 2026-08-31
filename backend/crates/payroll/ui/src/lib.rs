@@ -23,38 +23,34 @@ pub struct RunSummary {
     pub updated_at: String,
 }
 
-/// Contract-shaped org-entity row. Field names match `OrgEntitySummary.yaml`
-/// required keys; values are already-authorized.
+/// Contract-shaped Company Head. Field names match OpenAPI `Company` required
+/// keys; values are already-authorized. Same DTO as `GET /api/v1/companies`.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct OrgEntityView {
+pub struct CompanyView {
     pub org_id: String,
-    pub slug: String,
-    pub name: String,
-    pub status: String,
+    pub legal_name: String,
+    pub reg_no: String,
+    pub version: String,
 }
 
-/// Contract-shaped directory person. Field names match `DirectoryPerson.yaml`
-/// required keys; values are already-authorized. No phone.
+/// Contract-shaped OrgUnit Head. Field names match OpenAPI `OrgUnit` required
+/// keys; values are already-authorized. Same DTO as `GET /api/v1/org-units`.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OrgUnitView {
+    pub id: String,
+    pub name: String,
+    pub parent_id: String,
+    pub version: String,
+}
+
+/// Contract-shaped Person Head. Closed four-field projection matching OpenAPI
+/// `Person`; values are already-authorized. Same DTO as `GET /api/v1/persons`.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PersonView {
     pub id: String,
     pub display_name: String,
-    pub employee_id: String,
-    pub employee_name: String,
-    pub employee_number: String,
-    pub employee_company: String,
-    pub employee_org_unit: String,
-    pub employee_position: String,
-    pub employee_identity_review_required: String,
-    pub employee_identity_resolution_confidence: String,
-    pub employee_link_status: String,
-    pub team: String,
-    pub roles: String,
-    pub branch_ids: String,
-    pub is_active: String,
-    pub has_passkey: String,
-    pub account_status: String,
-    pub created_at: String,
+    pub legal_name: String,
+    pub version: String,
 }
 
 /// One shipping-screen listing after server composition.
@@ -94,7 +90,8 @@ impl<T> ScreenSection<T> {
 /// Server-composed shipping screens. `Omitted` is omit, not a client decision.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ShippingScreens {
-    pub org_entities: ScreenSection<OrgEntityView>,
+    pub companies: ScreenSection<CompanyView>,
+    pub org_units: ScreenSection<OrgUnitView>,
     pub people: ScreenSection<PersonView>,
     pub runs: ScreenSection<RunSummary>,
 }
@@ -150,20 +147,54 @@ pub fn AuthorizedRuns(runs: Vec<RunSummary>) -> impl IntoView {
 }
 
 #[component]
-fn OrgEntities(entities: Vec<OrgEntityView>) -> impl IntoView {
-    entities
+fn Companies(companies: Vec<CompanyView>) -> impl IntoView {
+    companies
         .into_iter()
-        .map(|entity| {
-            let label = format!("{} ({})", entity.name, entity.slug);
+        .map(|company| {
+            let href = format!("/api/v1/companies/{}", company.org_id);
+            let label = if company.legal_name.is_empty() {
+                company.org_id.clone()
+            } else {
+                company.legal_name.clone()
+            };
             view! {
-                <span
-                    data-org-id=entity.org_id
-                    data-slug=entity.slug
-                    data-name=entity.name
-                    data-status=entity.status
-                >
-                    {label}
-                </span>
+                <a href=href>
+                    <span
+                        data-org-id=company.org_id
+                        data-legal-name=company.legal_name
+                        data-reg-no=company.reg_no
+                        data-version=company.version
+                    >
+                        {label}
+                    </span>
+                </a>
+            }
+        })
+        .collect_view()
+}
+
+#[component]
+fn OrgUnits(units: Vec<OrgUnitView>) -> impl IntoView {
+    units
+        .into_iter()
+        .map(|unit| {
+            let href = format!("/api/v1/org-units/{}", unit.id);
+            let label = if unit.name.is_empty() {
+                unit.id.clone()
+            } else {
+                unit.name.clone()
+            };
+            view! {
+                <a href=href>
+                    <span
+                        data-org-unit-id=unit.id
+                        data-name=unit.name
+                        data-parent-id=unit.parent_id
+                        data-version=unit.version
+                    >
+                        {label}
+                    </span>
+                </a>
             }
         })
         .collect_view()
@@ -174,30 +205,25 @@ fn DirectoryPeople(people: Vec<PersonView>) -> impl IntoView {
     people
         .into_iter()
         .map(|person| {
-            let label = person.display_name.clone();
+            let href = format!("/api/v1/persons/{}", person.id);
+            let label = if !person.display_name.is_empty() {
+                person.display_name.clone()
+            } else if !person.legal_name.is_empty() {
+                person.legal_name.clone()
+            } else {
+                person.id.clone()
+            };
             view! {
-                <span
-                    data-person-id=person.id
-                    data-display-name=person.display_name
-                    data-employee-id=person.employee_id
-                    data-employee-name=person.employee_name
-                    data-employee-number=person.employee_number
-                    data-employee-company=person.employee_company
-                    data-employee-org-unit=person.employee_org_unit
-                    data-employee-position=person.employee_position
-                    data-employee-identity-review-required=person.employee_identity_review_required
-                    data-employee-identity-resolution-confidence=person.employee_identity_resolution_confidence
-                    data-employee-link-status=person.employee_link_status
-                    data-team=person.team
-                    data-roles=person.roles
-                    data-branch-ids=person.branch_ids
-                    data-is-active=person.is_active
-                    data-has-passkey=person.has_passkey
-                    data-account-status=person.account_status
-                    data-created-at=person.created_at
-                >
-                    {label}
-                </span>
+                <a href=href>
+                    <span
+                        data-person-id=person.id
+                        data-display-name=person.display_name
+                        data-legal-name=person.legal_name
+                        data-version=person.version
+                    >
+                        {label}
+                    </span>
+                </a>
             }
         })
         .collect_view()
@@ -219,7 +245,8 @@ pub fn AuthorizedShell(runs: Vec<RunSummary>) -> impl IntoView {
     let nav_payroll = !runs.is_empty();
     view! {
         <ShippingShell
-            org=ScreenSection::Omitted
+            companies=ScreenSection::Omitted
+            org_units=ScreenSection::Omitted
             people=ScreenSection::Omitted
             runs=ScreenSection::from_authorized_listing(runs, false)
             nav_org=false
@@ -229,28 +256,49 @@ pub fn AuthorizedShell(runs: Vec<RunSummary>) -> impl IntoView {
     }
 }
 
-fn org_body(org: ScreenSection<OrgEntityView>) -> impl IntoView {
-    match org {
-        ScreenSection::Omitted => ().into_any(),
-        ScreenSection::Empty => view! {
+fn org_body(
+    companies: ScreenSection<CompanyView>,
+    org_units: ScreenSection<OrgUnitView>,
+) -> impl IntoView {
+    if matches!(
+        (&companies, &org_units),
+        (ScreenSection::Omitted, ScreenSection::Omitted)
+    ) {
+        return ().into_any();
+    }
+    let failed = matches!(&companies, ScreenSection::Failure)
+        || matches!(&org_units, ScreenSection::Failure);
+    let company_rows = match companies {
+        ScreenSection::Rows(rows) => rows,
+        _ => Vec::new(),
+    };
+    let unit_rows = match org_units {
+        ScreenSection::Rows(rows) => rows,
+        _ => Vec::new(),
+    };
+    if company_rows.is_empty() && unit_rows.is_empty() {
+        if failed {
+            return view! {
+                <section data-screen="organization" data-state="failure">
+                    "목록을 불러오지 못했습니다"
+                </section>
+            }
+            .into_any();
+        }
+        return view! {
             <section data-screen="organization" data-state="empty">
                 "표시할 조직이 없습니다"
             </section>
         }
-        .into_any(),
-        ScreenSection::Failure => view! {
-            <section data-screen="organization" data-state="failure">
-                "목록을 불러오지 못했습니다"
-            </section>
-        }
-        .into_any(),
-        ScreenSection::Rows(entities) => view! {
-            <section data-screen="organization">
-                <OrgEntities entities=entities />
-            </section>
-        }
-        .into_any(),
+        .into_any();
     }
+    view! {
+        <section data-screen="organization">
+            <Companies companies=company_rows />
+            <OrgUnits units=unit_rows />
+        </section>
+    }
+    .into_any()
 }
 
 fn hr_body(people: ScreenSection<PersonView>) -> impl IntoView {
@@ -303,7 +351,8 @@ fn payroll_body(runs: ScreenSection<RunSummary>) -> impl IntoView {
 
 #[component]
 fn ShippingShell(
-    org: ScreenSection<OrgEntityView>,
+    companies: ScreenSection<CompanyView>,
+    org_units: ScreenSection<OrgUnitView>,
     people: ScreenSection<PersonView>,
     runs: ScreenSection<RunSummary>,
     nav_org: bool,
@@ -325,7 +374,7 @@ fn ShippingShell(
             </head>
             <body>
                 <ShippingNav has_org=nav_org has_hr=nav_hr has_payroll=nav_payroll />
-                {org_body(org)}
+                {org_body(companies, org_units)}
                 {hr_body(people)}
                 {payroll_body(runs)}
             </body>
@@ -352,11 +401,15 @@ pub fn render_shell_with(runs: &[RunSummary]) -> String {
 /// SSR compose org / HR / payroll. `Omitted` is deny-by-omission.
 /// Nav names every offered screen; the body is the focused route.
 pub fn render_screens(screens: &ShippingScreens, focus: UiScreen) -> String {
-    let nav_org = screens.org_entities.is_offered();
+    let nav_org = screens.companies.is_offered() || screens.org_units.is_offered();
     let nav_hr = screens.people.is_offered();
     let nav_payroll = screens.runs.is_offered();
-    let org = match focus {
-        UiScreen::Home | UiScreen::Organization => screens.org_entities.clone(),
+    let companies = match focus {
+        UiScreen::Home | UiScreen::Organization => screens.companies.clone(),
+        UiScreen::Hr | UiScreen::Payroll => ScreenSection::Omitted,
+    };
+    let org_units = match focus {
+        UiScreen::Home | UiScreen::Organization => screens.org_units.clone(),
         UiScreen::Hr | UiScreen::Payroll => ScreenSection::Omitted,
     };
     let people = match focus {
@@ -380,7 +433,8 @@ pub fn render_screens(screens: &ShippingScreens, focus: UiScreen) -> String {
     html.push_str(
         &view! {
             <ShippingShell
-                org=org
+                companies=companies
+                org_units=org_units
                 people=people
                 runs=runs
                 nav_org=nav_org
@@ -465,10 +519,7 @@ mod tests {
 
     const PAYROLL_RUN_SUMMARY_SCHEMA: &str =
         include_str!("../../rest/openapi/schemas/PayrollRunSummary.yaml");
-    const ORG_ENTITY_SUMMARY_SCHEMA: &str =
-        include_str!("../../../orgchange/rest/openapi/schemas/OrgEntitySummary.yaml");
-    const DIRECTORY_PERSON_SCHEMA: &str =
-        include_str!("../../../identity/rest/openapi/schemas/DirectoryPerson.yaml");
+    const OPENAPI: &str = include_str!("../../../../openapi/openapi.yaml");
 
     fn sample_run() -> RunSummary {
         RunSummary {
@@ -501,6 +552,15 @@ mod tests {
             }
         }
         keys
+    }
+
+    fn yaml_schema_required_keys<'a>(doc: &'a str, schema: &str) -> Vec<&'a str> {
+        let header = format!("    {schema}:\n");
+        let rest = doc
+            .split_once(&header)
+            .unwrap_or_else(|| panic!("OpenAPI must declare schema {schema}"))
+            .1;
+        yaml_required_keys(rest)
     }
 
     #[test]
@@ -611,12 +671,21 @@ mod tests {
         out
     }
 
-    fn sample_org() -> OrgEntityView {
-        OrgEntityView {
+    fn sample_company() -> CompanyView {
+        CompanyView {
             org_id: "00000000-0000-0000-0000-0000000000aa".to_owned(),
-            slug: "knl".to_owned(),
-            name: "KNL".to_owned(),
-            status: "ACTIVE".to_owned(),
+            legal_name: "KNL".to_owned(),
+            reg_no: "110111-0000000".to_owned(),
+            version: "1".to_owned(),
+        }
+    }
+
+    fn sample_org_unit() -> OrgUnitView {
+        OrgUnitView {
+            id: "00000000-0000-0000-0000-0000000000dd".to_owned(),
+            name: "본사".to_owned(),
+            parent_id: String::new(),
+            version: "1".to_owned(),
         }
     }
 
@@ -624,23 +693,22 @@ mod tests {
         PersonView {
             id: "00000000-0000-0000-0000-0000000000bb".to_owned(),
             display_name: "홍길동".to_owned(),
-            employee_id: "00000000-0000-0000-0000-0000000000cc".to_owned(),
-            employee_name: "홍길동".to_owned(),
-            employee_number: "E-1".to_owned(),
-            employee_company: "KNL".to_owned(),
-            employee_org_unit: "본사".to_owned(),
-            employee_position: "사원".to_owned(),
-            employee_identity_review_required: "false".to_owned(),
-            employee_identity_resolution_confidence: "HIGH".to_owned(),
-            employee_link_status: "LINKED".to_owned(),
-            team: "MANAGEMENT".to_owned(),
-            roles: "MEMBER".to_owned(),
-            branch_ids: String::new(),
-            is_active: "true".to_owned(),
-            has_passkey: "false".to_owned(),
-            account_status: "PENDING_SETUP".to_owned(),
-            created_at: "2026-06-01T00:00:00Z".to_owned(),
+            legal_name: "홍길동".to_owned(),
+            version: "1".to_owned(),
         }
+    }
+
+    fn assert_not_directory_person(html: &str) {
+        assert!(
+            !html.contains("data-employee-")
+                && !html.contains("data-slug")
+                && !html.contains("data-account-status")
+                && !html.contains("data-has-passkey")
+                && !html.contains("data-branch-ids")
+                && !html.contains("data-is-active")
+                && !html.contains("employee_identity"),
+            "Person Head must stay the closed four-field projection: {html}"
+        );
     }
 
     fn assert_shipping_invariants(html: &str) {
@@ -691,7 +759,8 @@ mod tests {
         assert_shipping_invariants(&render_shell());
 
         let authorized_empty = ShippingScreens {
-            org_entities: ScreenSection::Empty,
+            companies: ScreenSection::Empty,
+            org_units: ScreenSection::Empty,
             people: ScreenSection::Empty,
             runs: ScreenSection::Empty,
         };
@@ -730,7 +799,8 @@ mod tests {
         );
 
         let failed = ShippingScreens {
-            org_entities: ScreenSection::Failure,
+            companies: ScreenSection::Failure,
+            org_units: ScreenSection::Omitted,
             people: ScreenSection::Omitted,
             runs: ScreenSection::Failure,
         };
@@ -749,7 +819,8 @@ mod tests {
     #[test]
     fn shipping_screens_organization_is_ssr_contracts_and_omits_wasm() {
         let screens = ShippingScreens {
-            org_entities: ScreenSection::Rows(vec![sample_org()]),
+            companies: ScreenSection::Rows(vec![sample_company()]),
+            org_units: ScreenSection::Rows(vec![sample_org_unit()]),
             ..ShippingScreens::default()
         };
         let html = render_screens(&screens, UiScreen::Organization);
@@ -758,11 +829,18 @@ mod tests {
             html.contains("data-screen=\"organization\""),
             "organization body must be a mounted SSR screen: {html}"
         );
-        for key in yaml_required_keys(ORG_ENTITY_SUMMARY_SCHEMA) {
+        for key in yaml_schema_required_keys(OPENAPI, "Company") {
             let attr = data_attr(key, "org-id");
             assert!(
                 html.contains(&attr),
-                "org markup must carry contract key {key} as {attr}: {html}"
+                "org markup must carry Company Head key {key} as {attr}: {html}"
+            );
+        }
+        for key in yaml_schema_required_keys(OPENAPI, "OrgUnit") {
+            let attr = data_attr(key, "org-unit-id");
+            assert!(
+                html.contains(&attr),
+                "org markup must carry OrgUnit Head key {key} as {attr}: {html}"
             );
         }
         assert!(
@@ -770,14 +848,27 @@ mod tests {
             "{html}"
         );
         assert!(
-            html.contains("KNL (knl)"),
-            "org row must show human-safe name/slug: {html}"
+            html.contains("data-org-unit-id=\"00000000-0000-0000-0000-0000000000dd\""),
+            "{html}"
+        );
+        assert!(
+            html.contains("KNL") && html.contains("본사"),
+            "org row must show human-safe Company legal_name and OrgUnit name: {html}"
+        );
+        assert!(
+            html.contains("href=\"/api/v1/companies/00000000-0000-0000-0000-0000000000aa\"")
+                && html.contains("href=\"/api/v1/org-units/00000000-0000-0000-0000-0000000000dd\""),
+            "org must drill through published Company/OrgUnit instance GETs: {html}"
         );
         assert!(
             !html.contains("/api/v1/org-entities/")
                 && !html.contains("/api/v1/employees/")
                 && !html.contains("/api/v1/users/"),
-            "org has no same-capability object GET; must not invent privileged hrefs: {html}"
+            "must not invent privileged hrefs: {html}"
+        );
+        assert!(
+            !html.contains("data-slug") && !html.contains("data-status="),
+            "must not keep the OrgEntitySummary dual contract: {html}"
         );
         assert!(
             html.contains("href=\"/_ui/organization\""),
@@ -810,13 +901,18 @@ mod tests {
             html.contains("data-screen=\"hr\""),
             "HR body must be a mounted SSR screen: {html}"
         );
-        for key in yaml_required_keys(DIRECTORY_PERSON_SCHEMA) {
+        for key in yaml_schema_required_keys(OPENAPI, "Person") {
             let attr = data_attr(key, "person-id");
             assert!(
                 html.contains(&attr),
-                "HR markup must carry contract key {key} as {attr}: {html}"
+                "HR markup must carry Person Head key {key} as {attr}: {html}"
             );
         }
+        assert_eq!(
+            yaml_schema_required_keys(OPENAPI, "Person"),
+            ["id", "version", "display_name", "legal_name"],
+            "Person Head must stay the published four-field set"
+        );
         assert!(
             html.contains("data-person-id=\"00000000-0000-0000-0000-0000000000bb\""),
             "{html}"
@@ -826,9 +922,14 @@ mod tests {
             "HR row must show human-safe display_name: {html}"
         );
         assert!(
+            html.contains("href=\"/api/v1/persons/00000000-0000-0000-0000-0000000000bb\""),
+            "HR must drill through the published Person instance GET: {html}"
+        );
+        assert!(
             !html.contains("/api/v1/employees/") && !html.contains("/api/v1/users/"),
             "HR must not drill through privileged employee/user GET: {html}"
         );
+        assert_not_directory_person(&html);
         assert!(
             html.contains("href=\"/_ui/hr\""),
             "authorized HR nav is SSR: {html}"
@@ -849,7 +950,8 @@ mod tests {
     #[test]
     fn shipping_screens_home_composes_authorized_sections_only() {
         let screens = ShippingScreens {
-            org_entities: ScreenSection::Rows(vec![sample_org()]),
+            companies: ScreenSection::Rows(vec![sample_company()]),
+            org_units: ScreenSection::Rows(vec![sample_org_unit()]),
             people: ScreenSection::Rows(vec![sample_person()]),
             runs: ScreenSection::Rows(vec![sample_run()]),
         };
@@ -861,9 +963,14 @@ mod tests {
         assert!(html.contains("href=\"/_ui/hr\""), "{html}");
         assert!(html.contains("href=\"/_ui/payroll\""), "{html}");
         assert!(
-            html.contains("data-run-id=\"00000000-0000-0000-0000-000000000001\""),
-            "{html}"
+            html.contains("data-org-id=\"00000000-0000-0000-0000-0000000000aa\"")
+                && html.contains("data-org-unit-id=\"00000000-0000-0000-0000-0000000000dd\"")
+                && html.contains("data-legal-name=")
+                && html.contains("data-person-id=\"00000000-0000-0000-0000-0000000000bb\"")
+                && html.contains("data-run-id=\"00000000-0000-0000-0000-000000000001\""),
+            "home must carry published Head identifiers: {html}"
         );
+        assert_not_directory_person(&html);
         let component = island_component(&html).unwrap_or("");
         assert!(
             component.starts_with("AuthorizedRuns_"),
@@ -897,7 +1004,8 @@ mod tests {
     #[test]
     fn shipping_screens_focus_keeps_authorized_nav_and_omits_wasm_off_payroll() {
         let screens = ShippingScreens {
-            org_entities: ScreenSection::Rows(vec![sample_org()]),
+            companies: ScreenSection::Rows(vec![sample_company()]),
+            org_units: ScreenSection::Rows(vec![sample_org_unit()]),
             people: ScreenSection::Rows(vec![sample_person()]),
             runs: ScreenSection::Rows(vec![sample_run()]),
         };
@@ -948,7 +1056,7 @@ mod tests {
 
         let denied_payroll = render_screens(
             &ShippingScreens {
-                org_entities: ScreenSection::Rows(vec![sample_org()]),
+                companies: ScreenSection::Rows(vec![sample_company()]),
                 ..ShippingScreens::default()
             },
             UiScreen::Payroll,

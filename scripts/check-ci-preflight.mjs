@@ -108,7 +108,7 @@ function backendLegTopologyCondition(leg) {
   return `\${{ !cancelled() && matrix.leg == '${leg}' && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}`;
 }
 
-export const PATH_CLASS_RULES_VERSION = "6";
+export const PATH_CLASS_RULES_VERSION = "7";
 const docsOnlyRootFiles = new Set([
   "README.md",
   "CHANGELOG.md",
@@ -137,9 +137,10 @@ const releaseMetadataAllowedPaths = new Set([
  * Fail-closed path-class classifier (S-CI2 / console-7rc mechanism B).
  * Only exact docs-only and release-metadata-only classes set runHeavy=false;
  * every other class keeps the full matrix. Live Postgres is a second axis
- * (oyatie pg-gate): adapter/SQL/migrations/.sqlx/platform-db/named gates and
- * postgres harness paths, or fail-closed unknown classes. Typical backend
- * Rust leaves stay skip-proofed so Required / CI can finish under 5m.
+ * (oyatie pg-gate): adapter/SQL/migrations/.sqlx/platform-db/named gates,
+ * postgres harness paths, shipping `/_ui` persona locks, or fail-closed
+ * unknown classes. Typical backend Rust leaves stay skip-proofed so
+ * Required / CI can finish under 5m.
  */
 export function isLivePostgresPath(path) {
   if (typeof path !== "string" || path.length === 0) return false;
@@ -148,6 +149,14 @@ export function isLivePostgresPath(path) {
   if (/(^|\/)\.sqlx(\/|$)/.test(path)) return true;
   if (path.includes("postgres_bridge")) return true;
   if (path.startsWith("backend/crates/platform/db/")) return true;
+  // Shipping `/_ui` Head DTO screens are locked by console-app
+  // `health_readiness` (`ui_persona_e2e`, `ui_shipping_screens_deny_by_omission`)
+  // against disposable Postgres. A backend-only PR that edits those trees
+  // must not Path-class skip-proof Test PostgreSQL — app.
+  if (path === "backend/app/tests/health_readiness.rs") return true;
+  if (path === "backend/crates/payroll/ui" || path.startsWith("backend/crates/payroll/ui/")) {
+    return true;
+  }
   if (
     path.startsWith("backend/ci/gates/writer-ownership/")
     || path.startsWith("backend/ci/gates/rls-arming/")

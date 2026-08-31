@@ -476,6 +476,27 @@ describe("CI preflight contract", () => {
     );
     assert.equal(classifyChangedPaths(["backend/ci/gates/rls-arming/src/main.rs"]).runLivePostgres, true);
     assert.equal(classifyChangedPaths(["backend/ci/gates/layer-boundary/src/lib.rs"]).runLivePostgres, false);
+    assert.equal(
+      classifyChangedPaths(["backend/app/tests/health_readiness.rs"]).runLivePostgres,
+      true,
+    );
+    assert.equal(
+      classifyChangedPaths(["backend/crates/payroll/ui/src/lib.rs"]).runLivePostgres,
+      true,
+    );
+    assert.equal(
+      classifyChangedPaths([
+        "backend/app/src/lib.rs",
+        "backend/app/tests/health_readiness.rs",
+        "backend/crates/payroll/ui/src/lib.rs",
+      ]).runLivePostgres,
+      true,
+    );
+    assert.equal(
+      classifyChangedPaths(["backend/app/src/lib.rs"]).runLivePostgres,
+      false,
+      "typical backend Rust leaves stay skip-proofed",
+    );
 
     const backendPr = resolvePathClassFromEnv({
       PATH_CLASS_EVENT_NAME: "pull_request",

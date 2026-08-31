@@ -99,8 +99,7 @@ use console_platform_auth::{
 };
 use console_platform_auth_rest::{AuthRestConfig, AuthRestState};
 use console_platform_authz::{
-    Action, Feature, PermissionLevel, Principal, Role, authorize_capability, authorize_org_wide,
-    permission_for,
+    Action, Feature, Principal, Role, authorize_capability, authorize_org_wide,
 };
 use console_platform_authz_rest::{CedarPolicyRestState, PgCedarPolicyStore};
 use console_platform_db::{DbError, with_audit};
@@ -3602,41 +3601,60 @@ async fn compose_ui_screens(
     state: &AppState,
     headers: &HeaderMap,
 ) -> console_payroll_ui::ShippingScreens {
-    let (org_entities, people, runs, floors) = match (&state.database, &state.jwt_verifier) {
+    let (companies, org_units, people, runs, floors) = match (&state.database, &state.jwt_verifier)
+    {
         (DatabaseDependency::Postgres(pool), Some(verifier)) => {
             let floors = ui_listing_floors(verifier, pool, headers).await;
-            let org = OrgChangeRestState::new(
-                PgOrgChangeStore::new(pool.clone()),
-                Some(verifier.clone()),
-            )
-            .visible_org_entities(headers)
-            .await;
-            let people =
-                IdentityRestState::new(PgOrgStore::new(pool.clone()), Some(verifier.clone()))
-                    .visible_directory_people(headers)
-                    .await;
+            let heads = match (floors.heads, floors.org_id) {
+                (true, Some(org)) => {
+                    let handle = tokio::runtime::Handle::current();
+                    let company_pool = pool.clone();
+                    let company_handle = handle.clone();
+                    let unit_pool = pool.clone();
+                    let unit_handle = handle.clone();
+                    let person_pool = pool.clone();
+                    let person_handle = handle.clone();
+                    let (companies, org_units, people) = tokio::join!(
+                        tokio::task::spawn_blocking(move || {
+                            PgCompanyPort::new(company_pool, company_handle).list(org)
+                        }),
+                        tokio::task::spawn_blocking(move || {
+                            PgOrgUnitPort::new(unit_pool, unit_handle).list(org)
+                        }),
+                        tokio::task::spawn_blocking(move || {
+                            PgPersonPort::new(person_pool, person_handle).list(org)
+                        }),
+                    );
+                    (
+                        ui_head_section(companies, ui_company),
+                        ui_head_section(org_units, ui_org_unit),
+                        ui_head_section(people, ui_person),
+                    )
+                }
+                _ => (
+                    console_payroll_ui::ScreenSection::Omitted,
+                    console_payroll_ui::ScreenSection::Omitted,
+                    console_payroll_ui::ScreenSection::Omitted,
+                ),
+            };
             let runs =
                 PayrollRestState::new(PgPayrollStore::new(pool.clone()), Some(verifier.clone()))
                     .visible_run_summaries(headers)
                     .await;
-            (org, people, runs, floors)
+            (heads.0, heads.1, heads.2, runs, floors)
         }
         _ => (
-            Vec::new(),
-            Vec::new(),
+            console_payroll_ui::ScreenSection::Omitted,
+            console_payroll_ui::ScreenSection::Omitted,
+            console_payroll_ui::ScreenSection::Omitted,
             Vec::new(),
             UiListingFloors::denied(),
         ),
     };
     console_payroll_ui::ShippingScreens {
-        org_entities: console_payroll_ui::ScreenSection::from_authorized_listing(
-            org_entities.iter().map(ui_org_entity).collect(),
-            floors.org,
-        ),
-        people: console_payroll_ui::ScreenSection::from_authorized_listing(
-            people.iter().map(ui_person).collect(),
-            floors.hr,
-        ),
+        companies,
+        org_units,
+        people,
         runs: console_payroll_ui::ScreenSection::from_authorized_listing(
             runs.iter().map(ui_run_summary).collect(),
             floors.payroll,
@@ -3645,25 +3663,25 @@ async fn compose_ui_screens(
 }
 
 struct UiListingFloors {
-    org: bool,
-    hr: bool,
+    heads: bool,
     payroll: bool,
+    org_id: Option<OrgId>,
 }
 
 impl UiListingFloors {
     const fn denied() -> Self {
         Self {
-            org: false,
-            hr: false,
+            heads: false,
             payroll: false,
+            org_id: None,
         }
     }
 }
 
-/// Same listing floors as the existing GETs those screens already use.
-/// `visible_*` still collapse errors to `[]`; this only distinguishes authorized
-/// empty from omit. Listing failure stays collapsed until those helpers return
-/// a Result (rest crates are outside this lane).
+/// Same listing floors as the published Head GETs those screens already use.
+/// Company / OrgUnit / Person collection GETs are `EmployeeDirectoryRead`
+/// org-wide. `visible_run_summaries` still collapses errors to `[]`; payroll
+/// empty vs omit stays that helper's floor.
 async fn ui_listing_floors(
     verifier: &JwtVerifier,
     pool: &PgPool,
@@ -3675,80 +3693,55 @@ async fn ui_listing_floors(
             Err(_) => return UiListingFloors::denied(),
         };
     UiListingFloors {
-        org: principal
-            .roles
-            .iter()
-            .any(|role| matches!(role, Role::Admin | Role::Executive | Role::SuperAdmin)),
-        hr: ui_directory_listing_ok(&principal),
+        heads: authorize_org_wide(&principal, Action::new(Feature::EmployeeDirectoryRead)).is_ok(),
         payroll: authorize_org_wide(&principal, Action::new(Feature::PayrollRunRead)).is_ok(),
+        org_id: Some(principal.org_id),
     }
 }
 
-fn ui_directory_listing_ok(principal: &Principal) -> bool {
-    let mut effective = BranchScope::Branches(BTreeSet::new());
-    let role_allows = principal.roles.iter().any(|role| {
-        permission_for(*role, Feature::EmployeeDirectoryRead) == PermissionLevel::Allow
-    });
-    if role_allows {
-        effective = ui_branch_scope_union(&effective, &principal.branch_scope);
-    }
-    for grant in principal.effective_feature_grants.iter().filter(|grant| {
-        grant.feature == Feature::EmployeeDirectoryRead
-            && grant.permission == PermissionLevel::Allow
-    }) {
-        let grant_scope = principal.branch_scope.intersect(&grant.branch_scope);
-        effective = ui_branch_scope_union(&effective, &grant_scope);
-    }
-    match &effective {
-        BranchScope::All => true,
-        BranchScope::Branches(branches) => !branches.is_empty(),
+fn ui_head_section<T, V, E>(
+    join: Result<Result<Vec<T>, E>, tokio::task::JoinError>,
+    map: fn(&T) -> V,
+) -> console_payroll_ui::ScreenSection<V> {
+    match join {
+        Ok(Ok(rows)) => console_payroll_ui::ScreenSection::from_authorized_listing(
+            rows.iter().map(map).collect(),
+            true,
+        ),
+        Ok(Err(_)) | Err(_) => console_payroll_ui::ScreenSection::Failure,
     }
 }
 
-fn ui_branch_scope_union(a: &BranchScope, b: &BranchScope) -> BranchScope {
-    match (a, b) {
-        (BranchScope::All, _) | (_, BranchScope::All) => BranchScope::All,
-        (BranchScope::Branches(left), BranchScope::Branches(right)) => {
-            BranchScope::Branches(left.union(right).copied().collect())
-        }
+fn ui_company(
+    head: &console_ontology_canonical_adapter_postgres::company::CompanyHead,
+) -> console_payroll_ui::CompanyView {
+    console_payroll_ui::CompanyView {
+        org_id: head.org_id.to_string(),
+        legal_name: head.legal_name.clone().unwrap_or_default(),
+        reg_no: head.reg_no.clone().unwrap_or_default(),
+        version: head.version.to_string(),
     }
 }
 
-fn ui_org_entity(
-    entity: &console_orgchange_rest::VisibleOrgEntity,
-) -> console_payroll_ui::OrgEntityView {
-    console_payroll_ui::OrgEntityView {
-        org_id: entity.org_id.clone(),
-        slug: entity.slug.clone(),
-        name: entity.name.clone(),
-        status: entity.status.clone(),
+fn ui_org_unit(
+    head: &console_ontology_canonical_adapter_postgres::org_unit::OrgUnitHead,
+) -> console_payroll_ui::OrgUnitView {
+    console_payroll_ui::OrgUnitView {
+        id: head.id.to_string(),
+        name: head.name.clone().unwrap_or_default(),
+        parent_id: head.parent_id.map(|id| id.to_string()).unwrap_or_default(),
+        version: head.version.to_string(),
     }
 }
 
 fn ui_person(
-    person: &console_identity_rest::VisibleDirectoryPerson,
+    head: &console_ontology_canonical_adapter_postgres::person::PersonHead,
 ) -> console_payroll_ui::PersonView {
     console_payroll_ui::PersonView {
-        id: person.id.clone(),
-        display_name: person.display_name.clone(),
-        employee_id: person.employee_id.clone(),
-        employee_name: person.employee_name.clone(),
-        employee_number: person.employee_number.clone(),
-        employee_company: person.employee_company.clone(),
-        employee_org_unit: person.employee_org_unit.clone(),
-        employee_position: person.employee_position.clone(),
-        employee_identity_review_required: person.employee_identity_review_required.clone(),
-        employee_identity_resolution_confidence: person
-            .employee_identity_resolution_confidence
-            .clone(),
-        employee_link_status: person.employee_link_status.clone(),
-        team: person.team.clone(),
-        roles: person.roles.clone(),
-        branch_ids: person.branch_ids.clone(),
-        is_active: person.is_active.clone(),
-        has_passkey: person.has_passkey.clone(),
-        account_status: person.account_status.clone(),
-        created_at: person.created_at.clone(),
+        id: head.id.to_string(),
+        display_name: head.display_name.clone().unwrap_or_default(),
+        legal_name: head.legal_name.clone().unwrap_or_default(),
+        version: head.version.to_string(),
     }
 }
 
