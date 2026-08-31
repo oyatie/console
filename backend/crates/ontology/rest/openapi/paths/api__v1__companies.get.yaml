@@ -1,0 +1,27 @@
+operationId: listCompanies
+summary: List canonical Company heads
+description: >-
+  Returns zero or one current Company Head for the armed tenant — the same
+  row `list` already returns. The tenant IS the company (`org_id`). as_of /
+  from / to are omitted: `company_revisions` has no valid-time columns, and
+  using `created_at` as `valid_from` would be a second time model. Empty when
+  the tenant has no revision. `legal_name` / `reg_no` come from the latest
+  revision attributes, never from provisioning-owned `organizations.name`.
+  EmployeeDetail as_of remains HOLD.
+tags:
+- Ontology
+security:
+- bearerAuth: []
+responses:
+  '200':
+    description: Current Company heads for the armed tenant (zero or one).
+    content:
+      application/json:
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/Company'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'

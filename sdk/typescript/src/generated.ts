@@ -162,7 +162,7 @@ export type OrgUnitSourceBinding = {
 };
 
 /**
- * Canonical Company head for one tenant. The tenant IS the company (`org_id`). GET /api/v1/companies/{id} returns this current head (path `id` is `org_id`). as_of is omitted: `company_revisions` has no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `legal_name` and `reg_no` are read from the latest `company_revisions.attributes`; they are never copied from provisioning-owned `organizations.name`. Write preflight requires a non-empty string `legal_name`; an omitted key is JSON null on the Head. `founded_on` and `registration_number` are company_conformance fixture keys, not this port. `org_id` is the RLS cell, not a Palantir link. Temporal slices other than revision `version` remain HOLD.
+ * Canonical Company head for one tenant. The tenant IS the company (`org_id`). GET /api/v1/companies/{id} returns this current head (path `id` is `org_id`). GET /api/v1/companies returns zero or one current head for the armed tenant (the same row `list` already returns). as_of / from / to are omitted: `company_revisions` has no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `legal_name` and `reg_no` are read from the latest `company_revisions.attributes`; they are never copied from provisioning-owned `organizations.name`. Write preflight requires a non-empty string `legal_name`; an omitted key is JSON null on the Head. `founded_on` and `registration_number` are company_conformance fixture keys, not this port. `org_id` is the RLS cell, not a Palantir link. Temporal slices other than revision `version` remain HOLD.
  */
 export type Company = {
   org_id: Uuid;
@@ -205,7 +205,7 @@ export const CompanyDefinition = {
 } as const;
 
 /**
- * Canonical OrgUnit head. GET /api/v1/org-units/{id} returns this current head. as_of is omitted: `org_units` / `org_unit_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `name` and `parent_id` are parsed from the latest `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites, regions, and branches stay the operational auth spine and are not OrgUnits. OrgUnit kinds Site/Department/Team are write-preflight on revision attributes (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices other than revision `version` remain HOLD.
+ * Canonical OrgUnit head. GET /api/v1/org-units/{id} returns this current head. GET /api/v1/org-units returns current heads (the same rows `list` already returns). as_of / from / to are omitted: `org_units` / `org_unit_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `name` and `parent_id` are parsed from the latest `org_unit_revisions.attributes`; neither is a column on `org_units`. Sites, regions, and branches stay the operational auth spine and are not OrgUnits. OrgUnit kinds Site/Department/Team are write-preflight on revision attributes (`kind` ∈ {site, department, team}) and are not a Head column. Temporal slices other than revision `version` remain HOLD.
  */
 export type OrgUnit = {
   id: Uuid;
@@ -358,7 +358,7 @@ export const JobPositionDefinition = {
 } as const;
 
 /**
- * Canonical Person head. Closed four-field projection of the latest `person_revisions` row. GET /api/v1/persons/{id} returns this current head. as_of is omitted: `persons` / `person_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `get`/`list` never copy the attributes object onto the wire, so stored `phone` / `salary` / `bank_account` / `rrn` cannot appear. Trusted directory create mints `person_id = employee_id`. No outgoing Head FK; Employment.person_id is the reverse. Temporal slices other than revision `version` remain HOLD.
+ * Canonical Person head. Closed four-field projection of the latest `person_revisions` row. GET /api/v1/persons/{id} returns this current head. GET /api/v1/persons returns current heads (the same closed four-field rows `list` already returns). as_of / from / to are omitted: `persons` / `person_revisions` have no valid-time columns, and using `created_at` as `valid_from` would be a second time model. `get`/`list` never copy the attributes object onto the wire, so stored `phone` / `salary` / `bank_account` / `rrn` cannot appear. Trusted directory create mints `person_id = employee_id`. No outgoing Head FK; Employment.person_id is the reverse. Temporal slices other than revision `version` remain HOLD.
  */
 export type Person = {
   id: Uuid;

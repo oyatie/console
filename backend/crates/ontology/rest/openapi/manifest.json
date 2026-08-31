@@ -7,6 +7,9 @@
     "/api/objects/{kind}/{id}/graph": [
       "get"
     ],
+    "/api/v1/companies": [
+      "get"
+    ],
     "/api/v1/companies/{id}": [
       "get"
     ],
@@ -14,6 +17,18 @@
       "get"
     ],
     "/api/v1/employments/{id}": [
+      "get"
+    ],
+    "/api/v1/org-units": [
+      "get"
+    ],
+    "/api/v1/org-units/{id}": [
+      "get"
+    ],
+    "/api/v1/persons": [
+      "get"
+    ],
+    "/api/v1/persons/{id}": [
       "get"
     ],
     "/api/v1/link-types": [
@@ -77,12 +92,6 @@
       "post"
     ],
     "/api/v1/ontology/resolve": [
-      "get"
-    ],
-    "/api/v1/org-units/{id}": [
-      "get"
-    ],
-    "/api/v1/persons/{id}": [
       "get"
     ],
     "/api/v1/search": [

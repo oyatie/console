@@ -42,8 +42,11 @@ pub const EMPLOYEES_PATH: &str = "/api/v1/employees";
 pub const EMPLOYEE_DETAIL_PATH_TEMPLATE: &str = "/api/v1/employees/{id}";
 pub const EMPLOYMENTS_PATH: &str = "/api/v1/employments";
 pub const EMPLOYMENT_PATH_TEMPLATE: &str = "/api/v1/employments/{id}";
+pub const ORG_UNITS_PATH: &str = "/api/v1/org-units";
 pub const ORG_UNIT_PATH_TEMPLATE: &str = "/api/v1/org-units/{id}";
+pub const COMPANIES_PATH: &str = "/api/v1/companies";
 pub const COMPANY_PATH_TEMPLATE: &str = "/api/v1/companies/{id}";
+pub const PERSONS_PATH: &str = "/api/v1/persons";
 pub const PERSON_PATH_TEMPLATE: &str = "/api/v1/persons/{id}";
 pub const EMPLOYEES_IMPORT_PATH: &str = "/api/v1/employees/import";
 pub const EMPLOYEES_IMPORT_PREVIEW_PATH: &str = "/api/v1/employees/import/preview";
@@ -75,8 +78,11 @@ pub const HR_ROUTE_PATHS: &[&str] = &[
     EMPLOYEE_DETAIL_PATH_TEMPLATE,
     EMPLOYMENTS_PATH,
     EMPLOYMENT_PATH_TEMPLATE,
+    ORG_UNITS_PATH,
     ORG_UNIT_PATH_TEMPLATE,
+    COMPANIES_PATH,
     COMPANY_PATH_TEMPLATE,
+    PERSONS_PATH,
     PERSON_PATH_TEMPLATE,
     EMPLOYEES_IMPORT_PATH,
     EMPLOYEES_IMPORT_PREVIEW_PATH,
@@ -137,8 +143,11 @@ pub fn router(state: HrState) -> Router {
         .route(EMPLOYEE_DETAIL_PATH_TEMPLATE, get(get_employee_detail))
         .route(EMPLOYMENTS_PATH, get(list_employments))
         .route(EMPLOYMENT_PATH_TEMPLATE, get(get_employment))
+        .route(ORG_UNITS_PATH, get(list_org_units))
         .route(ORG_UNIT_PATH_TEMPLATE, get(get_org_unit))
+        .route(COMPANIES_PATH, get(list_companies))
         .route(COMPANY_PATH_TEMPLATE, get(get_company))
+        .route(PERSONS_PATH, get(list_persons))
         .route(PERSON_PATH_TEMPLATE, get(get_person_head))
         .route(HR_ORG_CHART_PATH, get(get_hr_org_chart))
         .route(HR_LEAVE_BALANCES_PATH, get(list_leave_balances))
@@ -1482,6 +1491,27 @@ async fn get_employment(
     Ok(Json(head))
 }
 
+/// Canonical OrgUnit Head collection. Current latest revision only — org_units
+/// has no valid-time columns, so as_of/from/to are not queries. Gated on
+/// directory *read*. Empty when none are visible.
+async fn list_org_units(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+) -> Result<Json<Vec<org_unit::OrgUnitHead>>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    record_hr_read("org-units");
+    let org = principal.org_id;
+    let pool = state.pool.clone();
+    let handle = tokio::runtime::Handle::current();
+    let heads = tokio::task::spawn_blocking(move || {
+        let port = org_unit::PgOrgUnitPort::new(pool, handle);
+        port.list(org)
+    })
+    .await
+    .map_err(|_| HrError::from_kernel(KernelError::internal("org unit list join failed")))??;
+    Ok(Json(heads))
+}
+
 /// Canonical OrgUnit Head. Current latest revision only — org_units has no
 /// valid-time columns, so as_of is not a query. Gated on directory *read*.
 /// A miss or a foreign tenant is 404.
@@ -1507,6 +1537,27 @@ async fn get_org_unit(
         ))
     })?;
     Ok(Json(head))
+}
+
+/// Canonical Company Head collection. Zero or one current head for the armed
+/// tenant (the tenant IS the company). as_of/from/to are omitted:
+/// company_revisions has no valid-time columns. Empty when no revision.
+async fn list_companies(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+) -> Result<Json<Vec<company::CompanyHead>>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    record_hr_read("companies");
+    let org = principal.org_id;
+    let pool = state.pool.clone();
+    let handle = tokio::runtime::Handle::current();
+    let heads = tokio::task::spawn_blocking(move || {
+        let port = company::PgCompanyPort::new(pool, handle);
+        port.list(org)
+    })
+    .await
+    .map_err(|_| HrError::from_kernel(KernelError::internal("company list join failed")))??;
+    Ok(Json(heads))
 }
 
 /// Canonical Company Head. Path `id` is `org_id` (the tenant IS the company).
@@ -1539,6 +1590,26 @@ async fn get_company(
         ))
     })?;
     Ok(Json(head))
+}
+
+/// Canonical Person Head collection. Closed four-field projection. as_of/from/to
+/// are omitted: persons has no valid-time columns. Empty when none are visible.
+async fn list_persons(
+    State(state): State<HrState>,
+    Extension(principal): Extension<Principal>,
+) -> Result<Json<Vec<PersonHead>>, HrError> {
+    authorize_hr_org_wide(&principal, Feature::EmployeeDirectoryRead)?;
+    record_hr_read("persons");
+    let org = principal.org_id;
+    let pool = state.pool.clone();
+    let handle = tokio::runtime::Handle::current();
+    let heads = tokio::task::spawn_blocking(move || {
+        let port = PgPersonPort::new(pool, handle);
+        port.list(org)
+    })
+    .await
+    .map_err(|_| HrError::from_kernel(KernelError::internal("person list join failed")))??;
+    Ok(Json(heads))
 }
 
 /// Canonical Person Head. Closed four-field projection. as_of is omitted:

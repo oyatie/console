@@ -55,6 +55,13 @@ const PATHS: &[PathItem] = &[
         }],
     },
     PathItem {
+        path: "/api/v1/companies",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../openapi/paths/api__v1__companies.get.yaml"),
+        }],
+    },
+    PathItem {
         path: "/api/v1/companies/{id}",
         operations: &[Operation {
             method: "get",
@@ -76,10 +83,24 @@ const PATHS: &[PathItem] = &[
         }],
     },
     PathItem {
+        path: "/api/v1/org-units",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../openapi/paths/api__v1__org-units.get.yaml"),
+        }],
+    },
+    PathItem {
         path: "/api/v1/org-units/{id}",
         operations: &[Operation {
             method: "get",
             body: include_str!("../openapi/paths/api__v1__org-units__id.get.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v1/persons",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../openapi/paths/api__v1__persons.get.yaml"),
         }],
     },
     PathItem {

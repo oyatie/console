@@ -1,0 +1,26 @@
+operationId: listOrgUnits
+summary: List canonical OrgUnit heads
+description: >-
+  Returns current OrgUnit Heads in the armed tenant — the same rows `list`
+  already returns (latest revision, `MAX(version)`). as_of / from / to are
+  omitted: `org_units` / `org_unit_revisions` have no valid-time columns, and
+  using `created_at` as `valid_from` would be a second time model. Empty when
+  none are visible. Sites, regions, and branches stay the operational auth
+  spine and are not OrgUnits. EmployeeDetail as_of remains HOLD.
+tags:
+- Ontology
+security:
+- bearerAuth: []
+responses:
+  '200':
+    description: Current OrgUnit heads.
+    content:
+      application/json:
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgUnit'
+  '401':
+    $ref: '#/components/responses/Unauthorized'
+  '403':
+    $ref: '#/components/responses/Forbidden'
