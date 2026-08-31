@@ -16,7 +16,13 @@ pub const OPENAPI_FRAGMENT: Fragment = Fragment {
     external_schemas: EXTERNAL_SCHEMAS,
 };
 
-const EXTERNAL_SCHEMAS: &[&str] = &["ErrorBody", "Timestamp", "Uuid"];
+const EXTERNAL_SCHEMAS: &[&str] = &[
+    "ErrorBody",
+    "GateChainConfig",
+    "GateChainOutcome",
+    "Timestamp",
+    "Uuid",
+];
 
 const PATHS: &[PathItem] = &[
     PathItem {
@@ -153,6 +159,10 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "GovernanceOpenOverrideRequest",
         body: include_str!("../openapi/schemas/GovernanceOpenOverrideRequest.yaml"),
+    },
+    NamedYaml {
+        name: "LifecyclePreflight",
+        body: include_str!("../openapi/schemas/LifecyclePreflight.yaml"),
     },
     NamedYaml {
         name: "LifecycleState",

@@ -48,6 +48,7 @@
     "GovernanceFinding",
     "GovernanceLifecyclePreflightRequest",
     "GovernanceOpenOverrideRequest",
+    "LifecyclePreflight",
     "LifecycleState",
     "ObjectLifecycle",
     "ObjectLifecycleTransition",
@@ -57,6 +58,8 @@
   ],
   "external_schemas": [
     "ErrorBody",
+    "GateChainConfig",
+    "GateChainOutcome",
     "Timestamp",
     "Uuid"
   ]

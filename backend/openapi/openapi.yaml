@@ -6654,8 +6654,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/LifecyclePreflight'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -28884,6 +28883,13 @@ components:
         instance: { $ref: '#/components/schemas/InstanceHead' }
         config: { $ref: '#/components/schemas/GateChainConfig' }
         gates: { $ref: '#/components/schemas/GateChainOutcome' }
+    LifecyclePreflight:
+      type: object
+      required: [configured, config, outcome]
+      properties:
+        configured: { type: boolean }
+        config: { $ref: '#/components/schemas/GateChainConfig' }
+        outcome: { $ref: '#/components/schemas/GateChainOutcome' }
     LifecycleRequest:
       type: object
       required:

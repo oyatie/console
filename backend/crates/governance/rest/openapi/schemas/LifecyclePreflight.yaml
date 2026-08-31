@@ -1,0 +1,6 @@
+type: object
+required: [configured, config, outcome]
+properties:
+  configured: { type: boolean }
+  config: { $ref: '#/components/schemas/GateChainConfig' }
+  outcome: { $ref: '#/components/schemas/GateChainOutcome' }

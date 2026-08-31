@@ -3166,7 +3166,13 @@ pub const GOVERNANCE_FRAGMENT: Fragment = Fragment {
     external_schemas: GOVERNANCE_FRAGMENT_EXTERNAL,
 };
 
-const GOVERNANCE_FRAGMENT_EXTERNAL: &[&str] = &["ErrorBody", "Timestamp", "Uuid"];
+const GOVERNANCE_FRAGMENT_EXTERNAL: &[&str] = &[
+    "ErrorBody",
+    "GateChainConfig",
+    "GateChainOutcome",
+    "Timestamp",
+    "Uuid",
+];
 
 const GOVERNANCE_FRAGMENT_PATHS: &[PathItem] = &[
     PathItem {
@@ -3321,6 +3327,10 @@ const GOVERNANCE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!(
             "../../governance/rest/openapi/schemas/GovernanceOpenOverrideRequest.yaml"
         ),
+    },
+    NamedYaml {
+        name: "LifecyclePreflight",
+        body: include_str!("../../governance/rest/openapi/schemas/LifecyclePreflight.yaml"),
     },
     NamedYaml {
         name: "LifecycleState",
