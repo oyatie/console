@@ -44,13 +44,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "PATCH /api/v1/policy/roles/{id}",
-      "rust_file": "backend/crates/identity/rest/src/lib.rs",
-      "handler": "update_policy_role",
-      "body_type": "UpdatePolicyRoleRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "PATCH /api/v1/policy/roles/{id}/status",
       "rust_file": "backend/crates/identity/rest/src/lib.rs",
       "handler": "update_policy_role_status",

@@ -748,6 +748,7 @@ struct CreatePolicyRoleRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct UpdatePolicyRoleRequest {
     display_name: String,
     #[serde(default)]
