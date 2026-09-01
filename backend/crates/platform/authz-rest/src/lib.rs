@@ -109,6 +109,7 @@ struct CatalogQuery {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct CreateDraftBody {
     draft_key: String,
     title: String,

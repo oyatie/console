@@ -125,8 +125,8 @@ function assertLiveCycleKindProbationFinding(root) {
     },
     {
       population: 291,
-      resolved: 99,
-      skipped: 192,
+      resolved: 100,
+      skipped: 191,
       enumCandidates: 43,
       enumResolved: 18,
       enumSkipped: 25,
@@ -472,7 +472,7 @@ describe("request body contract gate", () => {
     const { resolved, unresolvedAnchors } = evaluateRequestBodyContract({ repoRoot });
 
     assert.deepEqual(unresolvedAnchors, []);
-    assert.ok(resolved >= 89, `resolver degraded: expected at least 89 resolved operations, got ${resolved}`);
+    assert.ok(resolved >= 90, `resolver degraded: expected at least 90 resolved operations, got ${resolved}`);
   });
 
   it("resolves a string-literal .route() JSON body, not only a path const", () => {
@@ -553,7 +553,7 @@ describe("request body contract gate", () => {
 
   // The exit-0 branch had never executed. While the spec still published snake_case this gate
   // could not pass, and an unpassable gate is the meta-finding's sharper case: it occupies its
-  // slot and reads as coverage. The floor of 89 resolved operations means only the real
+  // slot and reads as coverage. The floor of 90 resolved operations means only the real
   // repository can reach this branch — no fixture is large enough — so the assertion lives here.
   it("exits 0 stating what it compared, against this repository", () => {
     const result = spawnSync(process.execPath, [cli, repoRoot], { encoding: "utf8" });
@@ -971,8 +971,8 @@ describe("request body enum-variant contract", () => {
       },
       {
         population: 291,
-        resolved: 99,
-        skipped: 192,
+        resolved: 100,
+        skipped: 191,
         enumCandidates: 43,
         enumResolved: 18,
         enumSkipped: 25,
@@ -2194,8 +2194,8 @@ describe("live request body census", () => {
     const report = evaluateRequestBodyContract({ repoRoot });
 
     assert.equal(report.population, 291);
-    assert.equal(report.resolved, 99);
-    assert.equal(report.skipped, 192);
+    assert.equal(report.resolved, 100);
+    assert.equal(report.skipped, 191);
     assert.equal(report.enumCandidates, 43);
     assert.equal(report.enumResolved, 18);
     assert.equal(report.enumSkipped, 25);
