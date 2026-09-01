@@ -691,6 +691,7 @@ struct EmployeeAbsenceAlertResponse {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ReportEmployeeExitCaseRequest {
     employee_id: Uuid,
     #[serde(default)]

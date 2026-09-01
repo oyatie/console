@@ -639,13 +639,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/hr/exit-cases",
-      "rust_file": "backend/app/src/hr.rs",
-      "handler": "report_employee_exit_case",
-      "body_type": "ReportEmployeeExitCaseRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/hr/exit-cases/{id}/approval-draft",
       "rust_file": "backend/app/src/hr.rs",
       "handler": "draft_employee_exit_approval",
