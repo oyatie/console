@@ -21592,6 +21592,35 @@ components:
           type: integer
           format: int64
           minimum: 0
+    ConditionValue:
+      oneOf:
+      - $ref: '#/components/schemas/ConditionValueLiteral'
+      - $ref: '#/components/schemas/ConditionValueSubjectAttr'
+      - $ref: '#/components/schemas/ConditionValueBool'
+      discriminator:
+        propertyName: kind
+        mapping:
+          literal: '#/components/schemas/ConditionValueLiteral'
+          subject_attr: '#/components/schemas/ConditionValueSubjectAttr'
+          bool: '#/components/schemas/ConditionValueBool'
+    ConditionValueBool:
+      type: object
+      required: [kind, value]
+      properties:
+        kind: { type: string, enum: [bool] }
+        value: { type: boolean }
+    ConditionValueLiteral:
+      type: object
+      required: [kind, value]
+      properties:
+        kind: { type: string, enum: [literal] }
+        value: { type: string }
+    ConditionValueSubjectAttr:
+      type: object
+      required: [kind, value]
+      properties:
+        kind: { type: string, enum: [subject_attr] }
+        value: { type: string }
     ConfigureMailAccountRequest:
       type: object
       description: Configure (create or replace) the mailbox. A password field that is absent or null leaves the stored secret
@@ -34473,9 +34502,7 @@ components:
           - ne
           - contains
         value:
-          type: object
-          description: 'Tagged right-hand side: {kind: literal|subject_attr|bool, value: ...}.'
-          additionalProperties: true
+          $ref: '#/components/schemas/ConditionValue'
     PolicyPermissionResponse:
       type: object
       required:

@@ -4281,6 +4281,22 @@ const IDENTITY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../identity/rest/openapi/schemas/CatalogEntry.yaml"),
     },
     NamedYaml {
+        name: "ConditionValue",
+        body: include_str!("../../identity/rest/openapi/schemas/ConditionValue.yaml"),
+    },
+    NamedYaml {
+        name: "ConditionValueBool",
+        body: include_str!("../../identity/rest/openapi/schemas/ConditionValueBool.yaml"),
+    },
+    NamedYaml {
+        name: "ConditionValueLiteral",
+        body: include_str!("../../identity/rest/openapi/schemas/ConditionValueLiteral.yaml"),
+    },
+    NamedYaml {
+        name: "ConditionValueSubjectAttr",
+        body: include_str!("../../identity/rest/openapi/schemas/ConditionValueSubjectAttr.yaml"),
+    },
+    NamedYaml {
         name: "ConsoleRouteSurface",
         body: include_str!("../../identity/rest/openapi/schemas/ConsoleRouteSurface.yaml"),
     },

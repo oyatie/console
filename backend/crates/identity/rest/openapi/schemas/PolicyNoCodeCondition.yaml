@@ -13,6 +13,4 @@ properties:
     - ne
     - contains
   value:
-    type: object
-    description: 'Tagged right-hand side: {kind: literal|subject_attr|bool, value: ...}.'
-    additionalProperties: true
+    $ref: '#/components/schemas/ConditionValue'

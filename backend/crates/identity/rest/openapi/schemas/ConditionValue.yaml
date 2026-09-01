@@ -1,0 +1,10 @@
+oneOf:
+- $ref: '#/components/schemas/ConditionValueLiteral'
+- $ref: '#/components/schemas/ConditionValueSubjectAttr'
+- $ref: '#/components/schemas/ConditionValueBool'
+discriminator:
+  propertyName: kind
+  mapping:
+    literal: '#/components/schemas/ConditionValueLiteral'
+    subject_attr: '#/components/schemas/ConditionValueSubjectAttr'
+    bool: '#/components/schemas/ConditionValueBool'

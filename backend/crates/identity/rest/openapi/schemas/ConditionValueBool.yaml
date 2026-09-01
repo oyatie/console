@@ -1,0 +1,5 @@
+type: object
+required: [kind, value]
+properties:
+  kind: { type: string, enum: [bool] }
+  value: { type: boolean }

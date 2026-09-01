@@ -777,6 +777,22 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/CatalogEntry.yaml"),
     },
     NamedYaml {
+        name: "ConditionValue",
+        body: include_str!("../openapi/schemas/ConditionValue.yaml"),
+    },
+    NamedYaml {
+        name: "ConditionValueBool",
+        body: include_str!("../openapi/schemas/ConditionValueBool.yaml"),
+    },
+    NamedYaml {
+        name: "ConditionValueLiteral",
+        body: include_str!("../openapi/schemas/ConditionValueLiteral.yaml"),
+    },
+    NamedYaml {
+        name: "ConditionValueSubjectAttr",
+        body: include_str!("../openapi/schemas/ConditionValueSubjectAttr.yaml"),
+    },
+    NamedYaml {
         name: "ConsoleRouteSurface",
         body: include_str!("../openapi/schemas/ConsoleRouteSurface.yaml"),
     },

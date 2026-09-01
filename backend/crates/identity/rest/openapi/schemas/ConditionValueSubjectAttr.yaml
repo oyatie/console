@@ -1,0 +1,5 @@
+type: object
+required: [kind, value]
+properties:
+  kind: { type: string, enum: [subject_attr] }
+  value: { type: string }
