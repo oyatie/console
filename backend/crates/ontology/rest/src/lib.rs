@@ -2622,6 +2622,7 @@ pub struct LifecycleCommand {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct LifecycleRequest {
     to_state: InstanceLifecycleState,
     #[serde(default)]
@@ -3393,6 +3394,18 @@ mod tests {
             r#"{"to_state":"draft","reason":"nope"}"#,
         )
         .unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("unknown field"), "{msg}");
+    }
+
+    #[test]
+    fn instance_lifecycle_request_denies_unknown_fields() {
+        let ok: LifecycleRequest = serde_json::from_str(r#"{"to_state":"draft"}"#).unwrap();
+        assert_eq!(ok.to_state, InstanceLifecycleState::Draft);
+        assert_eq!(ok.reason, None);
+        let err =
+            serde_json::from_str::<LifecycleRequest>(r#"{"to_state":"draft","invented":true}"#)
+                .unwrap_err();
         let msg = err.to_string();
         assert!(msg.contains("unknown field"), "{msg}");
     }
