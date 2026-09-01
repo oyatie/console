@@ -1,0 +1,13 @@
+type: object
+required:
+- id
+- key
+- title
+- formula
+- result_type
+properties:
+  id: { type: string, format: uuid }
+  key: { type: string }
+  title: { type: string }
+  formula: { type: object, additionalProperties: true }
+  result_type: { type: object, additionalProperties: true }

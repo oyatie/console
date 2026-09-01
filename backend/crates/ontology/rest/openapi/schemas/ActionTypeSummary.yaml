@@ -1,0 +1,25 @@
+type: object
+required:
+- id
+- stable_key
+- title
+- params_schema
+- edits
+- submission_criteria
+- side_effects
+- dispatch
+- control_points
+properties:
+  id: { type: string, format: uuid }
+  stable_key: { type: string }
+  title: { type: string }
+  params_schema: { type: object, additionalProperties: true }
+  edits: { type: object, additionalProperties: true }
+  submission_criteria: { type: object, additionalProperties: true }
+  side_effects: { type: object, additionalProperties: true }
+  dispatch:
+    type: string
+    enum: [projected_usecase, instance_revision]
+  dispatch_target:
+    type: [string, 'null']
+  control_points: { type: object, additionalProperties: true }

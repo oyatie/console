@@ -1,0 +1,32 @@
+type: object
+required:
+- object_type
+- properties
+- links
+- actions
+- analytics
+properties:
+  object_type:
+    $ref: '#/components/schemas/ObjectTypeSummary'
+  title_property_key:
+    type: [string, 'null']
+  backing_table:
+    type: [string, 'null']
+  primary_key_property:
+    type: [string, 'null']
+  properties:
+    type: array
+    items:
+      $ref: '#/components/schemas/PropertyDefSummary'
+  links:
+    type: array
+    items:
+      $ref: '#/components/schemas/LinkTypeSummary'
+  actions:
+    type: array
+    items:
+      $ref: '#/components/schemas/ActionTypeSummary'
+  analytics:
+    type: array
+    items:
+      $ref: '#/components/schemas/AnalyticSummary'

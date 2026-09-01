@@ -358,6 +358,14 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/ActingRule.yaml"),
     },
     NamedYaml {
+        name: "ActionTypeSummary",
+        body: include_str!("../openapi/schemas/ActionTypeSummary.yaml"),
+    },
+    NamedYaml {
+        name: "AnalyticSummary",
+        body: include_str!("../openapi/schemas/AnalyticSummary.yaml"),
+    },
+    NamedYaml {
         name: "AttachInstanceAck",
         body: include_str!("../openapi/schemas/AttachInstanceAck.yaml"),
     },
@@ -406,6 +414,10 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/LinkTypeResponse.yaml"),
     },
     NamedYaml {
+        name: "LinkTypeSummary",
+        body: include_str!("../openapi/schemas/LinkTypeSummary.yaml"),
+    },
+    NamedYaml {
         name: "ObjectGraphResponse",
         body: include_str!("../openapi/schemas/ObjectGraphResponse.yaml"),
     },
@@ -420,6 +432,10 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "ObjectLinksListResponse",
         body: include_str!("../openapi/schemas/ObjectLinksListResponse.yaml"),
+    },
+    NamedYaml {
+        name: "ObjectTypeDetail",
+        body: include_str!("../openapi/schemas/ObjectTypeDetail.yaml"),
     },
     NamedYaml {
         name: "ObjectTypeResponse",
@@ -448,6 +464,10 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "PreflightOutcome",
         body: include_str!("../openapi/schemas/PreflightOutcome.yaml"),
+    },
+    NamedYaml {
+        name: "PropertyDefSummary",
+        body: include_str!("../openapi/schemas/PropertyDefSummary.yaml"),
     },
     NamedYaml {
         name: "ResolvedInstance",

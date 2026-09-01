@@ -1,0 +1,20 @@
+type: object
+required:
+- id
+- stable_key
+- title
+- cardinality
+- traversable
+properties:
+  id: { type: string, format: uuid }
+  stable_key: { type: string }
+  title: { type: string }
+  reverse_title:
+    type: [string, 'null']
+  to_object_type_id:
+    type: [string, 'null']
+    format: uuid
+  cardinality:
+    type: string
+    enum: [one_one, one_many, many_many]
+  traversable: { type: boolean }

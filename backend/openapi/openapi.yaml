@@ -11045,8 +11045,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/ObjectTypeDetail'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -18966,6 +18965,32 @@ components:
           - string
           - 'null'
           description: Opaque cursor for the next immutable-keyset page, or null when exhausted.
+    ActionTypeSummary:
+      type: object
+      required:
+      - id
+      - stable_key
+      - title
+      - params_schema
+      - edits
+      - submission_criteria
+      - side_effects
+      - dispatch
+      - control_points
+      properties:
+        id: { type: string, format: uuid }
+        stable_key: { type: string }
+        title: { type: string }
+        params_schema: { type: object, additionalProperties: true }
+        edits: { type: object, additionalProperties: true }
+        submission_criteria: { type: object, additionalProperties: true }
+        side_effects: { type: object, additionalProperties: true }
+        dispatch:
+          type: string
+          enum: [projected_usecase, instance_revision]
+        dispatch_target:
+          type: [string, 'null']
+        control_points: { type: object, additionalProperties: true }
     AddCommentRequest:
       type: object
       required:
@@ -19066,6 +19091,20 @@ components:
       properties:
         expected_updated_at:
           $ref: '#/components/schemas/Timestamp'
+    AnalyticSummary:
+      type: object
+      required:
+      - id
+      - key
+      - title
+      - formula
+      - result_type
+      properties:
+        id: { type: string, format: uuid }
+        key: { type: string }
+        title: { type: string }
+        formula: { type: object, additionalProperties: true }
+        result_type: { type: object, additionalProperties: true }
     AndroidAssetLinkStatement:
       type: object
       description: A single Android Digital Asset Links statement authorizing the native app's signing keys to provide login
@@ -29315,6 +29354,27 @@ components:
           - draft
           - active
           - archived
+    LinkTypeSummary:
+      type: object
+      required:
+      - id
+      - stable_key
+      - title
+      - cardinality
+      - traversable
+      properties:
+        id: { type: string, format: uuid }
+        stable_key: { type: string }
+        title: { type: string }
+        reverse_title:
+          type: [string, 'null']
+        to_object_type_id:
+          type: [string, 'null']
+          format: uuid
+        cardinality:
+          type: string
+          enum: [one_one, one_many, many_many]
+        traversable: { type: boolean }
     ListingCondition:
       type: string
       description: Whether a listed unit is used (중고) or brand-new (신차).
@@ -31186,6 +31246,39 @@ components:
           description: Links where the queried object is the destination.
           items:
             $ref: '#/components/schemas/ObjectLinkResponse'
+    ObjectTypeDetail:
+      type: object
+      required:
+      - object_type
+      - properties
+      - links
+      - actions
+      - analytics
+      properties:
+        object_type:
+          $ref: '#/components/schemas/ObjectTypeSummary'
+        title_property_key:
+          type: [string, 'null']
+        backing_table:
+          type: [string, 'null']
+        primary_key_property:
+          type: [string, 'null']
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyDefSummary'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkTypeSummary'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionTypeSummary'
+        analytics:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticSummary'
     ObjectTypeResponse:
       type: object
       description: An object-type registry row plus the caller-visible active instance count.
@@ -35210,6 +35303,28 @@ components:
           description: EVT-refined expected shortfall of the worst 5% of outcomes.
         assumptions:
           $ref: '#/components/schemas/ProjectionAssumptions'
+    PropertyDefSummary:
+      type: object
+      required:
+      - id
+      - key
+      - title
+      - field_type
+      - field_kind
+      - config
+      - required
+      - in_property_policy
+      properties:
+        id: { type: string, format: uuid }
+        key: { type: string }
+        title: { type: string }
+        field_type: { type: string }
+        field_kind: { type: string }
+        config: { type: object, additionalProperties: true }
+        backing_column:
+          type: [string, 'null']
+        required: { type: boolean }
+        in_property_policy: { type: boolean }
     PublishRecruitPostingRequest:
       type: object
       required:

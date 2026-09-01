@@ -6485,6 +6485,14 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../ontology/rest/openapi/schemas/ActingRule.yaml"),
     },
     NamedYaml {
+        name: "ActionTypeSummary",
+        body: include_str!("../../ontology/rest/openapi/schemas/ActionTypeSummary.yaml"),
+    },
+    NamedYaml {
+        name: "AnalyticSummary",
+        body: include_str!("../../ontology/rest/openapi/schemas/AnalyticSummary.yaml"),
+    },
+    NamedYaml {
         name: "AttachInstanceAck",
         body: include_str!("../../ontology/rest/openapi/schemas/AttachInstanceAck.yaml"),
     },
@@ -6533,6 +6541,10 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../ontology/rest/openapi/schemas/LinkTypeResponse.yaml"),
     },
     NamedYaml {
+        name: "LinkTypeSummary",
+        body: include_str!("../../ontology/rest/openapi/schemas/LinkTypeSummary.yaml"),
+    },
+    NamedYaml {
         name: "ObjectGraphResponse",
         body: include_str!("../../ontology/rest/openapi/schemas/ObjectGraphResponse.yaml"),
     },
@@ -6547,6 +6559,10 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "ObjectLinksListResponse",
         body: include_str!("../../ontology/rest/openapi/schemas/ObjectLinksListResponse.yaml"),
+    },
+    NamedYaml {
+        name: "ObjectTypeDetail",
+        body: include_str!("../../ontology/rest/openapi/schemas/ObjectTypeDetail.yaml"),
     },
     NamedYaml {
         name: "ObjectTypeResponse",
@@ -6577,6 +6593,10 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "PreflightOutcome",
         body: include_str!("../../ontology/rest/openapi/schemas/PreflightOutcome.yaml"),
+    },
+    NamedYaml {
+        name: "PropertyDefSummary",
+        body: include_str!("../../ontology/rest/openapi/schemas/PropertyDefSummary.yaml"),
     },
     NamedYaml {
         name: "ResolvedInstance",

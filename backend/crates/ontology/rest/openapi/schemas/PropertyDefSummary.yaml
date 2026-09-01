@@ -1,0 +1,21 @@
+type: object
+required:
+- id
+- key
+- title
+- field_type
+- field_kind
+- config
+- required
+- in_property_policy
+properties:
+  id: { type: string, format: uuid }
+  key: { type: string }
+  title: { type: string }
+  field_type: { type: string }
+  field_kind: { type: string }
+  config: { type: object, additionalProperties: true }
+  backing_column:
+    type: [string, 'null']
+  required: { type: boolean }
+  in_property_policy: { type: boolean }
