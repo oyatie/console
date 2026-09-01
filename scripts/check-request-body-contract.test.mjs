@@ -125,11 +125,11 @@ function assertLiveCycleKindProbationFinding(root) {
     },
     {
       population: 291,
-      resolved: 108,
-      skipped: 183,
-      enumCandidates: 45,
+      resolved: 109,
+      skipped: 182,
+      enumCandidates: 46,
       enumResolved: 19,
-      enumSkipped: 26,
+      enumSkipped: 27,
     },
   );
   assert.deepEqual(report.registerFindings, []);
@@ -472,7 +472,7 @@ describe("request body contract gate", () => {
     const { resolved, unresolvedAnchors } = evaluateRequestBodyContract({ repoRoot });
 
     assert.deepEqual(unresolvedAnchors, []);
-    assert.ok(resolved >= 98, `resolver degraded: expected at least 98 resolved operations, got ${resolved}`);
+    assert.ok(resolved >= 99, `resolver degraded: expected at least 99 resolved operations, got ${resolved}`);
   });
 
   it("resolves a string-literal .route() JSON body, not only a path const", () => {
@@ -553,7 +553,7 @@ describe("request body contract gate", () => {
 
   // The exit-0 branch had never executed. While the spec still published snake_case this gate
   // could not pass, and an unpassable gate is the meta-finding's sharper case: it occupies its
-  // slot and reads as coverage. The floor of 98 resolved operations means only the real
+  // slot and reads as coverage. The floor of 99 resolved operations means only the real
   // repository can reach this branch — no fixture is large enough — so the assertion lives here.
   it("exits 0 stating what it compared, against this repository", () => {
     const result = spawnSync(process.execPath, [cli, repoRoot], { encoding: "utf8" });
@@ -971,11 +971,11 @@ describe("request body enum-variant contract", () => {
       },
       {
         population: 291,
-        resolved: 108,
-        skipped: 183,
-        enumCandidates: 45,
+        resolved: 109,
+        skipped: 182,
+        enumCandidates: 46,
         enumResolved: 19,
-        enumSkipped: 26,
+        enumSkipped: 27,
       },
     );
     assert.deepEqual(report.registerFindings, []);
@@ -2194,11 +2194,11 @@ describe("live request body census", () => {
     const report = evaluateRequestBodyContract({ repoRoot });
 
     assert.equal(report.population, 291);
-    assert.equal(report.resolved, 108);
-    assert.equal(report.skipped, 183);
-    assert.equal(report.enumCandidates, 45);
+    assert.equal(report.resolved, 109);
+    assert.equal(report.skipped, 182);
+    assert.equal(report.enumCandidates, 46);
     assert.equal(report.enumResolved, 19);
-    assert.equal(report.enumSkipped, 26);
+    assert.equal(report.enumSkipped, 27);
     assert.deepEqual(report.findings, []);
     assert.deepEqual(report.unresolvedAnchors, []);
     assert.deepEqual(report.unresolvedLiteralAnchors, []);
