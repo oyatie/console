@@ -108,7 +108,27 @@ fn empty_object() -> serde_json::Value {
     serde_json::json!({})
 }
 
+/// Wire values for `POST .../approvals/decide`. Matches the published OpenAPI
+/// enum. `ApprovalDecision::Pending` is persistence state for an open request
+/// and is not a legal decision on this body (the store already rejects it).
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum DecideApprovalDecision {
+    Approved,
+    Rejected,
+}
+
+impl From<DecideApprovalDecision> for ApprovalDecision {
+    fn from(value: DecideApprovalDecision) -> Self {
+        match value {
+            DecideApprovalDecision::Approved => Self::Approved,
+            DecideApprovalDecision::Rejected => Self::Rejected,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct DecideApprovalRequest {
     request_ref: Uuid,
     kind: String,
@@ -118,7 +138,7 @@ struct DecideApprovalRequest {
     /// name the person the approver is supposedly distinct from.
     #[allow(dead_code)]
     requested_by: Uuid,
-    decision: ApprovalDecision,
+    decision: DecideApprovalDecision,
 }
 
 #[derive(Debug, Deserialize)]
@@ -224,7 +244,7 @@ async fn decide_approval(
             approver: principal.user_id,
             request_ref: body.request_ref,
             kind: body.kind,
-            decision: body.decision,
+            decision: body.decision.into(),
             trace: TraceContext::generate(),
             occurred_at: time::OffsetDateTime::now_utc(),
         })
