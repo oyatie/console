@@ -37,13 +37,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "PATCH /api/v1/notices/{id}",
-      "rust_file": "backend/crates/notices/rest/src/lib.rs",
-      "handler": "update_draft",
-      "body_type": "UpdateDraftBody",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "PATCH /api/v1/sales/inquiries/{id}",
       "rust_file": "backend/crates/sales/rest/src/lib.rs",
       "handler": "update_inquiry_status",
@@ -1256,6 +1249,14 @@
     }
   ],
   "enum": [
+    {
+      "operation": "PATCH /api/v1/notices/{id}",
+      "wire_field": "category",
+      "rust_file": "backend/crates/notices/rest/src/lib.rs",
+      "body_type": "UpdateDraftBody",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
     {
       "operation": "PATCH /api/v1/policy/roles/{id}/status",
       "wire_field": "status",

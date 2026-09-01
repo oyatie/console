@@ -89,6 +89,7 @@ struct CreateDraftBody {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct UpdateDraftBody {
     title: Option<String>,
     body: Option<String>,
