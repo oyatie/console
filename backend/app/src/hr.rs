@@ -563,6 +563,7 @@ struct HrAttendanceReadinessSummary {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct CreateEmployeeLifecycleEventRequest {
     event_type: String,
     #[serde(default)]

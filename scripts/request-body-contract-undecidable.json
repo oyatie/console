@@ -429,13 +429,6 @@
       "reason": "no_direct_json_binding"
     },
     {
-      "operation": "POST /api/v1/employees/{id}/lifecycle-events",
-      "rust_file": "backend/app/src/hr.rs",
-      "handler": "create_employee_lifecycle_event",
-      "body_type": "CreateEmployeeLifecycleEventRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/equipment",
       "rust_file": "backend/crates/registry/rest/src/lib.rs",
       "handler": "create_equipment",
@@ -1418,6 +1411,22 @@
       "wire_field": "employment_type",
       "rust_file": "backend/app/src/hr.rs",
       "body_type": "CreateEmployeeRequest",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
+    {
+      "operation": "POST /api/v1/employees/{id}/lifecycle-events",
+      "wire_field": "event_type",
+      "rust_file": "backend/app/src/hr.rs",
+      "body_type": "CreateEmployeeLifecycleEventRequest",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
+    {
+      "operation": "POST /api/v1/employees/{id}/lifecycle-events",
+      "wire_field": "to_status",
+      "rust_file": "backend/app/src/hr.rs",
+      "body_type": "CreateEmployeeLifecycleEventRequest",
       "rust_type": "String",
       "reason": "string_backed_spec_enum"
     },
