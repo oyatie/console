@@ -765,13 +765,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/object-links",
-      "rust_file": "backend/app/src/objects.rs",
-      "handler": "create_object_link",
-      "body_type": "CreateObjectLinkRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/office/callback",
       "rust_file": "backend/app/src/office.rs",
       "handler": "callback_handler",

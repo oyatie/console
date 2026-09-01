@@ -214,6 +214,7 @@ pub fn router(state: ObjectState) -> Router {
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct CreateObjectLinkRequest {
     src_kind: String,
     src_id: String,
