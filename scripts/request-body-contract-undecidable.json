@@ -856,13 +856,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/policy/roles",
-      "rust_file": "backend/crates/identity/rest/src/lib.rs",
-      "handler": "create_policy_role",
-      "body_type": "CreatePolicyRoleRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/policy/roles/{id}/status-preview",
       "rust_file": "backend/crates/identity/rest/src/lib.rs",
       "handler": "preview_policy_role_status",

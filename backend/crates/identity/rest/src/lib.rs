@@ -735,6 +735,7 @@ struct PolicyConditionResponse {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct CreatePolicyRoleRequest {
     role_key: String,
     display_name: String,
