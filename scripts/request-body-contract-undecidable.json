@@ -1304,13 +1304,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "PUT /api/v1/policy/drafts/{draft_id}",
-      "rust_file": "backend/crates/platform/authz-rest/src/lib.rs",
-      "handler": "update_draft",
-      "body_type": "UpdateDraftBody",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "PUT /api/v1/policy/users/{id}/assignments",
       "rust_file": "backend/crates/identity/rest/src/lib.rs",
       "handler": "replace_policy_assignments",
