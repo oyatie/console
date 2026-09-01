@@ -625,13 +625,6 @@
       "reason": "no_direct_json_binding"
     },
     {
-      "operation": "POST /api/v1/hr/exit-cases/{id}/approval-draft",
-      "rust_file": "backend/app/src/hr.rs",
-      "handler": "draft_employee_exit_approval",
-      "body_type": "DraftEmployeeExitApprovalRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/hr/exit-cases/{id}/confirm",
       "rust_file": "backend/app/src/hr.rs",
       "handler": "confirm_employee_exit_case",
