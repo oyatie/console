@@ -768,6 +768,7 @@ struct PolicyStepUpAssertionRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct UpdatePolicyRoleStatusRequest {
     status: String,
     #[serde(default)]
