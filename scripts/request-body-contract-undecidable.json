@@ -58,13 +58,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "PATCH /api/v1/users/me",
-      "rust_file": "backend/crates/identity/rest/src/lib.rs",
-      "handler": "update_me",
-      "body_type": "UpdateSelfRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "PATCH /api/v1/workflow-studio/definitions/{id}",
       "rust_file": "backend/app/src/workflow_studio.rs",
       "handler": "update_definition",

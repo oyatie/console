@@ -355,6 +355,7 @@ struct UpdateUserRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct UpdateSelfRequest {
     #[serde(default)]
     display_name: Option<String>,
