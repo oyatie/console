@@ -625,13 +625,6 @@
       "reason": "no_direct_json_binding"
     },
     {
-      "operation": "POST /api/v1/hr/exit-cases/{id}/confirm",
-      "rust_file": "backend/app/src/hr.rs",
-      "handler": "confirm_employee_exit_case",
-      "body_type": "ConfirmEmployeeExitCaseRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/inspections/schedules",
       "rust_file": "backend/crates/inspection/rest/src/lib.rs",
       "handler": "create_schedule",

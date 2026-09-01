@@ -705,6 +705,7 @@ struct ReportEmployeeExitCaseRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ConfirmEmployeeExitCaseRequest {
     #[serde(default)]
     decision: Option<String>,
