@@ -660,13 +660,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/lifecycles/{objectType}/{objectId}/transition",
-      "rust_file": "backend/app/src/lifecycle.rs",
-      "handler": "transition_lifecycle",
-      "body_type": "TransitionLifecycleRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/location-consent/grant",
       "rust_file": "backend/crates/compliance/rest/src/lib.rs",
       "handler": "grant_consent",

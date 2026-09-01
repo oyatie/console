@@ -351,7 +351,7 @@ async fn unlock_period_lock(
 // ===========================================================================
 
 #[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct TransitionLifecycleRequest {
     to_state: String,
     reason: String,
