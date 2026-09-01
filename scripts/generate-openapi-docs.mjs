@@ -6,10 +6,11 @@
 //
 // Chesterton: extend the OpenAPI regen+diff pattern. Do not replace compose.
 // This generator reads committed `backend/openapi/openapi.yaml` and emits one
-// static HTML artifact. Schema *names* reuse the existing 21-name roster;
-// property *shapes*, links (including operationId), actions (including
-// permissions), operation permissions, and operations come from the composed
-// document. Not published.
+// static HTML artifact. Schema *names* reuse the existing 21-name roster plus
+// every `#/components/schemas/*` $ref published on `paths` (and that set's
+// $ref closure). Property *shapes*, links (including operationId), actions
+// (including permissions), operation permissions, and operations come from the
+// composed document. Not published. Do not hand-catalog Palantir-class names.
 //
 // Totality: js-yaml load + own-property walks of components.schemas and paths.
 // A walker that visits nothing emits nothing, so the check's HEAD/INPUT floors
@@ -22,12 +23,11 @@ import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 
 import {
-  GENERATED_SCHEMA_NAMES,
   HEAD_SCHEMA_NAMES,
   INPUT_SCHEMA_NAMES,
   NESTED_INPUT_SCHEMAS,
 } from "./check-openapi-semantic-generate.mjs";
-import { OPENAPI_REL, schemaRefName } from "./generate-openapi-ts-sdk.mjs";
+import { OPENAPI_REL, namesToEmit, schemaRefName } from "./generate-openapi-ts-sdk.mjs";
 import { isPlainObject, own } from "./own-property.mjs";
 
 export { OPENAPI_REL };
@@ -60,40 +60,6 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-}
-
-function collectRefNames(node, acc) {
-  if (Array.isArray(node)) {
-    for (const item of node) collectRefNames(item, acc);
-    return;
-  }
-  if (!isPlainObject(node)) return;
-  const ref = schemaRefName(own(node, "$ref"));
-  if (ref) acc.add(ref);
-  const properties = own(node, "properties");
-  if (isPlainObject(properties)) {
-    for (const value of Object.values(properties)) collectRefNames(value, acc);
-  }
-  collectRefNames(own(node, "items"), acc);
-  collectRefNames(own(node, "additionalProperties"), acc);
-  for (const key of ["oneOf", "anyOf", "allOf", "not"]) {
-    collectRefNames(own(node, key), acc);
-  }
-}
-
-function namesToEmit(published) {
-  const seen = new Set();
-  const queue = [...GENERATED_SCHEMA_NAMES];
-  while (queue.length > 0) {
-    const name = queue.shift();
-    if (seen.has(name)) continue;
-    seen.add(name);
-    const refs = new Set();
-    collectRefNames(own(published, name), refs);
-    for (const ref of refs) queue.push(ref);
-  }
-  const extras = [...seen].filter((name) => !GENERATED_SCHEMA_NAMES.includes(name)).sort();
-  return [...GENERATED_SCHEMA_NAMES, ...extras];
 }
 
 function schemaKind(name) {
@@ -358,7 +324,7 @@ export function generateDocsFiles(document) {
   const version = typeof own(info, "version") === "string" ? own(info, "version") : "";
   const published = own(own(document, "components"), "schemas");
   const schemas = isPlainObject(published) ? published : {};
-  const names = namesToEmit(schemas);
+  const names = namesToEmit(document);
   const operations = collectOperations(document);
 
   const schemaHtml = [];

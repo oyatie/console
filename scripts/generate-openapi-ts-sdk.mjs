@@ -7,8 +7,10 @@
 //
 // Chesterton: read committed `backend/openapi/openapi.yaml` (compose output).
 // Do not invent a second OpenAPI writer. Do not hand-catalog Head/Input fields.
-// Schema *names* come from the existing 21-name roster; property *shapes* come
-// from the composed document. One language (TypeScript). Not published to npm.
+// Schema *names* come from the existing 21-name roster plus every
+// `#/components/schemas/*` $ref published on `paths` (and that set's $ref
+// closure). Property *shapes* come from the composed document. One language
+// (TypeScript). Not published to npm. Do not hand-catalog Palantir-class names.
 //
 // Totality: js-yaml load + own-property walks of components.schemas. A walker
 // that visits nothing emits nothing, so the check's HEAD/INPUT floors lock
@@ -119,6 +121,52 @@ function collectRefNames(node, acc) {
   for (const key of ["oneOf", "anyOf", "allOf", "not"]) {
     collectRefNames(own(node, key), acc);
   }
+}
+
+/**
+ * Deep own-property walk. Path items nest `$ref` under
+ * `requestBody` / `responses` / `parameters`; the schema-body walker above
+ * does not visit those keys.
+ *
+ * @param {unknown} node
+ * @param {Set<string>} acc
+ */
+export function collectRefNamesDeep(node, acc) {
+  if (Array.isArray(node)) {
+    for (const item of node) collectRefNamesDeep(item, acc);
+    return;
+  }
+  if (!isPlainObject(node)) return;
+  const ref = schemaRefName(own(node, "$ref"));
+  if (ref) acc.add(ref);
+  for (const value of Object.values(node)) collectRefNamesDeep(value, acc);
+}
+
+/**
+ * Schema names `$ref`'d from composed `paths`, plus the $ref closure through
+ * `components.schemas`. Does not invent names.
+ *
+ * @param {unknown} document
+ * @returns {string[]}
+ */
+export function composedPathSchemaNames(document) {
+  const published = own(own(document, "components"), "schemas");
+  const schemas = isPlainObject(published) ? published : {};
+  const seen = new Set();
+  const queue = [];
+  collectRefNamesDeep(own(document, "paths"), seen);
+  for (const name of seen) queue.push(name);
+  while (queue.length > 0) {
+    const name = queue.shift();
+    const refs = new Set();
+    collectRefNames(own(schemas, name), refs);
+    for (const ref of refs) {
+      if (seen.has(ref)) continue;
+      seen.add(ref);
+      queue.push(ref);
+    }
+  }
+  return [...seen].filter((name) => isPlainObject(own(schemas, name))).sort();
 }
 
 function tsIdent(name) {
@@ -270,15 +318,17 @@ function emitHeadDefinition(name, schema) {
   return `export const ${name}Definition = ${tsLiteral(definition, "")} as const;\n`;
 }
 
-function namesToEmit(published) {
+export function namesToEmit(document) {
+  const published = own(own(document, "components"), "schemas");
+  const schemas = isPlainObject(published) ? published : {};
   const seen = new Set();
-  const queue = [...GENERATED_SCHEMA_NAMES];
+  const queue = [...GENERATED_SCHEMA_NAMES, ...composedPathSchemaNames(document)];
   while (queue.length > 0) {
     const name = queue.shift();
     if (seen.has(name)) continue;
     seen.add(name);
     const refs = new Set();
-    collectRefNames(own(published, name), refs);
+    collectRefNames(own(schemas, name), refs);
     for (const ref of refs) queue.push(ref);
   }
   const extras = [...seen].filter((name) => !GENERATED_SCHEMA_NAMES.includes(name)).sort();
@@ -288,7 +338,7 @@ function namesToEmit(published) {
 export function generateSdkFiles(document) {
   const published = own(own(document, "components"), "schemas");
   const schemas = isPlainObject(published) ? published : {};
-  const names = namesToEmit(schemas);
+  const names = namesToEmit(document);
   const chunks = [
     `/**\n * ${GENERATED_HEADER}\n */\n`,
   ];
