@@ -793,6 +793,7 @@ async fn transition_object_type_lifecycle(
 /// silent failure no post-hoc test can see. Deriving both makes it
 /// unrepresentable, and is less code than accepting them.
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct AttachObjectPolicyRequest {
     effect: Effect,
     #[serde(default)]
@@ -3406,6 +3407,19 @@ mod tests {
         let err =
             serde_json::from_str::<LifecycleRequest>(r#"{"to_state":"draft","invented":true}"#)
                 .unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("unknown field"), "{msg}");
+    }
+
+    #[test]
+    fn attach_object_policy_request_denies_unknown_fields() {
+        let ok: AttachObjectPolicyRequest = serde_json::from_str(r#"{"effect":"permit"}"#).unwrap();
+        assert_eq!(ok.effect, Effect::Permit);
+        assert!(ok.conditions.is_empty());
+        let err = serde_json::from_str::<AttachObjectPolicyRequest>(
+            r#"{"effect":"permit","invented":true}"#,
+        )
+        .unwrap_err();
         let msg = err.to_string();
         assert!(msg.contains("unknown field"), "{msg}");
     }

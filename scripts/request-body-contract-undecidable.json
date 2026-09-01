@@ -863,13 +863,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/ontology/object-types/{key}/policies",
-      "rust_file": "backend/crates/ontology/rest/src/lib.rs",
-      "handler": "attach_object_policy",
-      "body_type": "AttachObjectPolicyRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/p1-dispatches/{dispatchId}/force-assign",
       "rust_file": "backend/crates/dispatch/rest/src/lib.rs",
       "handler": "force_assign",

@@ -248,7 +248,7 @@
     "backend/crates/ontology/canonical-adapter-postgres/tests/receipt_owner_widening.rs": 4,
     "backend/crates/ontology/canonical-domain/src/lib.rs": 11,
     "backend/crates/ontology/domain/src/lib.rs": 14,
-    "backend/crates/ontology/rest/src/lib.rs": 29,
+    "backend/crates/ontology/rest/src/lib.rs": 30,
     "backend/crates/ontology/rest/tests/action_execute_as_runtime_role.rs": 16,
     "backend/crates/ontology/rest/tests/canonical_dispatch_audit_as_runtime_role.rs": 2,
     "backend/crates/ontology/rest/tests/canonical_replay.rs": 5,
