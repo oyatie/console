@@ -122,6 +122,7 @@ struct DecideApprovalRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ConfigureTransitionRequest {
     object_type_id: Uuid,
     from_state: LifecycleState,

@@ -611,13 +611,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/governance/lifecycle/transitions",
-      "rust_file": "backend/crates/governance/rest/src/lib.rs",
-      "handler": "configure_transition",
-      "body_type": "ConfigureTransitionRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/governance/overrides",
       "rust_file": "backend/crates/governance/rest/src/lib.rs",
       "handler": "open_override",
