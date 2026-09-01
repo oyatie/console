@@ -314,6 +314,7 @@ pub fn router(state: IdentityRestState) -> Router {
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct CreateUserRequest {
     display_name: String,
     #[serde(default)]

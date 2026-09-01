@@ -982,13 +982,6 @@
       "reason": "no_direct_json_binding"
     },
     {
-      "operation": "POST /api/v1/users",
-      "rust_file": "backend/crates/identity/rest/src/lib.rs",
-      "handler": "create_user",
-      "body_type": "CreateUserRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/work-orders/{workOrderId}/p1-dispatch",
       "rust_file": "backend/crates/dispatch/rest/src/lib.rs",
       "handler": "start_dispatch",
