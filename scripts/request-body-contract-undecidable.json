@@ -842,13 +842,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/policy/users/{id}/assignment-preview",
-      "rust_file": "backend/crates/identity/rest/src/lib.rs",
-      "handler": "preview_policy_assignments",
-      "body_type": "ReplacePolicyRoleAssignmentsRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/production/plans",
       "rust_file": "backend/crates/production/rest/src/lib.rs",
       "handler": "create_plan",
@@ -1245,13 +1238,6 @@
       "rust_file": "backend/crates/ontology/rest/src/lib.rs",
       "handler": "stage_object_type_revision",
       "body_type": "CreateObjectTypeDraft",
-      "reason": "rust_struct_not_strict"
-    },
-    {
-      "operation": "PUT /api/v1/policy/users/{id}/assignments",
-      "rust_file": "backend/crates/identity/rest/src/lib.rs",
-      "handler": "replace_policy_assignments",
-      "body_type": "ReplacePolicyRoleAssignmentsRequest",
       "reason": "rust_struct_not_strict"
     },
     {

@@ -809,6 +809,7 @@ struct PolicyRoleAssignmentResponse {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ReplacePolicyRoleAssignmentsRequest {
     /// Custom-role replacement set. For account/person role-or-scope previews,
     /// omitting this field preserves the target's current custom-role set;
