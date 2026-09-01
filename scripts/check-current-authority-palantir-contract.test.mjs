@@ -44,9 +44,9 @@ const ARTIFACT_BODIES = Object.freeze({
   [GENERATOR_ARTIFACTS[1]]: "// generated\n",
   [GENERATOR_ARTIFACTS[2]]: "export type Company = {};\n",
   [GENERATOR_ARTIFACTS[3]]: "<html></html>\n",
-  [BODY_GATE_REL]: `const RESOLVED_FLOOR = 75;
+  [BODY_GATE_REL]: `const RESOLVED_FLOOR = 76;
 const CENSUS_FLOOR = 291;
-const BODY_UNDECIDABLE_MAX = 206;
+const BODY_UNDECIDABLE_MAX = 205;
 `,
 });
 
@@ -61,7 +61,7 @@ ${HOLD_BLOCK}
 
 function landedRoadmap() {
   return `# Roadmap
-The current body-gate floor is 75 resolved of 291 census; BODY_UNDECIDABLE_MAX is 206.
+The current body-gate floor is 76 resolved of 291 census; BODY_UNDECIDABLE_MAX is 205.
 `;
 }
 
@@ -69,9 +69,9 @@ describe("check-current-authority-palantir-contract", () => {
   it("reads live body-gate constants from the gate source", () => {
     const constants = bodyGateConstants(ARTIFACT_BODIES[BODY_GATE_REL]);
     assert.deepEqual(constants, {
-      resolvedFloor: 75,
+      resolvedFloor: 76,
       censusFloor: 291,
-      undecidableMax: 206,
+      undecidableMax: 205,
     });
   });
 
@@ -104,7 +104,7 @@ describe("check-current-authority-palantir-contract", () => {
       JSON.stringify(result.findings, null, 2),
     );
     assert.ok(
-      result.findings.some((finding) => /75 resolved of 291/.test(finding.message)),
+      result.findings.some((finding) => /76 resolved of 291/.test(finding.message)),
       JSON.stringify(result.findings, null, 2),
     );
   });

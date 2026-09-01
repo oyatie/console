@@ -870,13 +870,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/ontology/object-types/{key}/lifecycle",
-      "rust_file": "backend/crates/ontology/rest/src/lib.rs",
-      "handler": "transition_object_type_lifecycle",
-      "body_type": "ObjectTypeLifecycleRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/ontology/object-types/{key}/policies",
       "rust_file": "backend/crates/ontology/rest/src/lib.rs",
       "handler": "attach_object_policy",

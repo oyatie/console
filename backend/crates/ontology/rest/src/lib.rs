@@ -736,6 +736,7 @@ async fn stage_object_type_revision(
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ObjectTypeLifecycleRequest {
     to_state: SchemaLifecycleState,
 }
@@ -3381,6 +3382,19 @@ mod tests {
             uuid::Uuid::from_u128(1),
             "the opaque strong validator is parsed exactly once at the REST boundary"
         );
+    }
+
+    #[test]
+    fn object_type_lifecycle_request_denies_unknown_fields() {
+        let ok: ObjectTypeLifecycleRequest =
+            serde_json::from_str(r#"{"to_state":"draft"}"#).unwrap();
+        assert_eq!(ok.to_state, SchemaLifecycleState::Draft);
+        let err = serde_json::from_str::<ObjectTypeLifecycleRequest>(
+            r#"{"to_state":"draft","reason":"nope"}"#,
+        )
+        .unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("unknown field"), "{msg}");
     }
 
     #[test]
