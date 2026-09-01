@@ -146,6 +146,7 @@ struct SimulateBody {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct AuthorizeBody {
     request: SimRequest,
     /// Scope the live decision to the policies attached to one object type (row
