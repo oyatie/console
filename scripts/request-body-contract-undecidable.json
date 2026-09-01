@@ -737,13 +737,6 @@
       "reason": "no_direct_json_binding"
     },
     {
-      "operation": "POST /api/v1/notices",
-      "rust_file": "backend/crates/notices/rest/src/lib.rs",
-      "handler": "create_draft",
-      "body_type": "CreateDraftBody",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/object-actions/execute",
       "rust_file": "backend/crates/registry/rest/src/lib.rs",
       "handler": "execute_object_action",
@@ -1396,6 +1389,14 @@
       "wire_field": "currencyCode",
       "rust_file": "backend/crates/logistics/rest/src/lib.rs",
       "body_type": "SettleBody",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
+    {
+      "operation": "POST /api/v1/notices",
+      "wire_field": "category",
+      "rust_file": "backend/crates/notices/rest/src/lib.rs",
+      "body_type": "CreateDraftBody",
       "rust_type": "String",
       "reason": "string_backed_spec_enum"
     },

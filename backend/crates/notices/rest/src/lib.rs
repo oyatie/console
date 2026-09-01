@@ -80,6 +80,7 @@ pub fn router(state: NoticeRestState) -> Router {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct CreateDraftBody {
     title: String,
     body: String,
