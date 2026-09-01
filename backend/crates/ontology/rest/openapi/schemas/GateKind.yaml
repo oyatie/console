@@ -1,0 +1,6 @@
+type: string
+enum:
+  - authority
+  - self_checklist
+  - four_eyes
+  - egress_dlp

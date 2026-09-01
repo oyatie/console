@@ -1,0 +1,12 @@
+oneOf:
+- $ref: '#/components/schemas/GateStatusNotRequired'
+- $ref: '#/components/schemas/GateStatusSatisfied'
+- $ref: '#/components/schemas/GateStatusPending'
+- $ref: '#/components/schemas/GateStatusDenied'
+discriminator:
+  propertyName: status
+  mapping:
+    not_required: '#/components/schemas/GateStatusNotRequired'
+    satisfied: '#/components/schemas/GateStatusSatisfied'
+    pending: '#/components/schemas/GateStatusPending'
+    denied: '#/components/schemas/GateStatusDenied'

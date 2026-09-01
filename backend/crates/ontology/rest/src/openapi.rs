@@ -394,6 +394,34 @@ const SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../openapi/schemas/GateChainOutcome.yaml"),
     },
     NamedYaml {
+        name: "GateKind",
+        body: include_str!("../openapi/schemas/GateKind.yaml"),
+    },
+    NamedYaml {
+        name: "GateOutcome",
+        body: include_str!("../openapi/schemas/GateOutcome.yaml"),
+    },
+    NamedYaml {
+        name: "GateStatus",
+        body: include_str!("../openapi/schemas/GateStatus.yaml"),
+    },
+    NamedYaml {
+        name: "GateStatusDenied",
+        body: include_str!("../openapi/schemas/GateStatusDenied.yaml"),
+    },
+    NamedYaml {
+        name: "GateStatusNotRequired",
+        body: include_str!("../openapi/schemas/GateStatusNotRequired.yaml"),
+    },
+    NamedYaml {
+        name: "GateStatusPending",
+        body: include_str!("../openapi/schemas/GateStatusPending.yaml"),
+    },
+    NamedYaml {
+        name: "GateStatusSatisfied",
+        body: include_str!("../openapi/schemas/GateStatusSatisfied.yaml"),
+    },
+    NamedYaml {
         name: "InstanceHead",
         body: include_str!("../openapi/schemas/InstanceHead.yaml"),
     },

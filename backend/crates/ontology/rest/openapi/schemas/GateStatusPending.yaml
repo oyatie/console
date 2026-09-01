@@ -1,0 +1,5 @@
+type: object
+required: [status, reason]
+properties:
+  status: { type: string, enum: [pending] }
+  reason: { type: string }

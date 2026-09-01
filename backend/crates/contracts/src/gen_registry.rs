@@ -6521,6 +6521,34 @@ const ONTOLOGY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
         body: include_str!("../../ontology/rest/openapi/schemas/GateChainOutcome.yaml"),
     },
     NamedYaml {
+        name: "GateKind",
+        body: include_str!("../../ontology/rest/openapi/schemas/GateKind.yaml"),
+    },
+    NamedYaml {
+        name: "GateOutcome",
+        body: include_str!("../../ontology/rest/openapi/schemas/GateOutcome.yaml"),
+    },
+    NamedYaml {
+        name: "GateStatus",
+        body: include_str!("../../ontology/rest/openapi/schemas/GateStatus.yaml"),
+    },
+    NamedYaml {
+        name: "GateStatusDenied",
+        body: include_str!("../../ontology/rest/openapi/schemas/GateStatusDenied.yaml"),
+    },
+    NamedYaml {
+        name: "GateStatusNotRequired",
+        body: include_str!("../../ontology/rest/openapi/schemas/GateStatusNotRequired.yaml"),
+    },
+    NamedYaml {
+        name: "GateStatusPending",
+        body: include_str!("../../ontology/rest/openapi/schemas/GateStatusPending.yaml"),
+    },
+    NamedYaml {
+        name: "GateStatusSatisfied",
+        body: include_str!("../../ontology/rest/openapi/schemas/GateStatusSatisfied.yaml"),
+    },
+    NamedYaml {
         name: "InstanceHead",
         body: include_str!("../../ontology/rest/openapi/schemas/InstanceHead.yaml"),
     },

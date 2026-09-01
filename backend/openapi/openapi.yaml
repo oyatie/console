@@ -27044,7 +27044,55 @@ components:
         allow: { type: boolean }
         gates:
           type: array
-          items: { type: object, additionalProperties: true }  # per-gate { gate, status }
+          items: { $ref: '#/components/schemas/GateOutcome' }
+    GateKind:
+      type: string
+      enum:
+        - authority
+        - self_checklist
+        - four_eyes
+        - egress_dlp
+    GateOutcome:
+      type: object
+      required: [gate, status]
+      properties:
+        gate: { $ref: '#/components/schemas/GateKind' }
+        status: { $ref: '#/components/schemas/GateStatus' }
+    GateStatus:
+      oneOf:
+      - $ref: '#/components/schemas/GateStatusNotRequired'
+      - $ref: '#/components/schemas/GateStatusSatisfied'
+      - $ref: '#/components/schemas/GateStatusPending'
+      - $ref: '#/components/schemas/GateStatusDenied'
+      discriminator:
+        propertyName: status
+        mapping:
+          not_required: '#/components/schemas/GateStatusNotRequired'
+          satisfied: '#/components/schemas/GateStatusSatisfied'
+          pending: '#/components/schemas/GateStatusPending'
+          denied: '#/components/schemas/GateStatusDenied'
+    GateStatusDenied:
+      type: object
+      required: [status, reason]
+      properties:
+        status: { type: string, enum: [denied] }
+        reason: { type: string }
+    GateStatusNotRequired:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [not_required] }
+    GateStatusPending:
+      type: object
+      required: [status, reason]
+      properties:
+        status: { type: string, enum: [pending] }
+        reason: { type: string }
+    GateStatusSatisfied:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [satisfied] }
     GovernanceConfigureTransitionRequest:
       type: object
       required:

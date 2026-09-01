@@ -1,0 +1,5 @@
+type: object
+required: [gate, status]
+properties:
+  gate: { $ref: '#/components/schemas/GateKind' }
+  status: { $ref: '#/components/schemas/GateStatus' }

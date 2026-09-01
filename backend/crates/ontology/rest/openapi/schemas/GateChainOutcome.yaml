@@ -4,4 +4,4 @@ properties:
   allow: { type: boolean }
   gates:
     type: array
-    items: { type: object, additionalProperties: true }  # per-gate { gate, status }
+    items: { $ref: '#/components/schemas/GateOutcome' }
