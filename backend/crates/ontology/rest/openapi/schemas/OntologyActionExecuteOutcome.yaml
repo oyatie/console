@@ -7,11 +7,9 @@ properties:
     type: string
     enum: [instance_revision, projected_usecase]
   gates:
-    type: object
-    additionalProperties: true
+    $ref: '#/components/schemas/GateChainOutcome'
   instance:
-    type: object
-    additionalProperties: true
+    $ref: '#/components/schemas/InstanceState'
   projected:
     type: object
     additionalProperties: true

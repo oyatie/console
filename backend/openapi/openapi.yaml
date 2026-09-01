@@ -31357,11 +31357,9 @@ components:
           type: string
           pattern: '^[a-f0-9]{64}$'
         instance:
-          type: object
-          additionalProperties: true
+          $ref: '#/components/schemas/InstanceState'
         gates:
-          type: object
-          additionalProperties: true
+          $ref: '#/components/schemas/GateChainOutcome'
     OntologyActionExecuteOutcome:
       type: object
       required:
@@ -31372,11 +31370,9 @@ components:
           type: string
           enum: [instance_revision, projected_usecase]
         gates:
-          type: object
-          additionalProperties: true
+          $ref: '#/components/schemas/GateChainOutcome'
         instance:
-          type: object
-          additionalProperties: true
+          $ref: '#/components/schemas/InstanceState'
         projected:
           type: object
           additionalProperties: true

@@ -12,8 +12,6 @@ properties:
     type: string
     pattern: '^[a-f0-9]{64}$'
   instance:
-    type: object
-    additionalProperties: true
+    $ref: '#/components/schemas/InstanceState'
   gates:
-    type: object
-    additionalProperties: true
+    $ref: '#/components/schemas/GateChainOutcome'
