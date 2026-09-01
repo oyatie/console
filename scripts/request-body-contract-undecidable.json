@@ -660,13 +660,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/lifecycles/{objectType}/{objectId}/hold",
-      "rust_file": "backend/app/src/lifecycle.rs",
-      "handler": "set_lifecycle_hold",
-      "body_type": "SetLifecycleHoldRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/lifecycles/{objectType}/{objectId}/transition",
       "rust_file": "backend/app/src/lifecycle.rs",
       "handler": "transition_lifecycle",

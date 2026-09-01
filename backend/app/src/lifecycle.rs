@@ -358,7 +358,7 @@ struct TransitionLifecycleRequest {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct SetLifecycleHoldRequest {
     legal_hold: bool,
     #[serde(default)]
