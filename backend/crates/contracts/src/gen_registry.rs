@@ -6952,6 +6952,16 @@ const ORGCHANGE_FRAGMENT_PATHS: &[PathItem] = &[
 
 const ORGCHANGE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
+        name: "AbsenceExitDashboardResponse",
+        body: include_str!(
+            "../../orgchange/rest/openapi/schemas/AbsenceExitDashboardResponse.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "AbsenceExitSummary",
+        body: include_str!("../../orgchange/rest/openapi/schemas/AbsenceExitSummary.yaml"),
+    },
+    NamedYaml {
         name: "AttendanceImportApplyReport",
         body: include_str!("../../orgchange/rest/openapi/schemas/AttendanceImportApplyReport.yaml"),
     },
@@ -7032,6 +7042,12 @@ const ORGCHANGE_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "Employee",
         body: include_str!("../../orgchange/rest/openapi/schemas/Employee.yaml"),
+    },
+    NamedYaml {
+        name: "EmployeeAbsenceAlertResponse",
+        body: include_str!(
+            "../../orgchange/rest/openapi/schemas/EmployeeAbsenceAlertResponse.yaml"
+        ),
     },
     NamedYaml {
         name: "EmployeeAttendanceRecord",

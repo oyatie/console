@@ -1,0 +1,27 @@
+type: object
+required:
+- open_absence_alerts
+- exit_cases_pending_hr
+- settlement_needs_source
+- settlement_ready
+- approval_drafts
+- submitted
+properties:
+  open_absence_alerts:
+    type: integer
+    format: int64
+  exit_cases_pending_hr:
+    type: integer
+    format: int64
+  settlement_needs_source:
+    type: integer
+    format: int64
+  settlement_ready:
+    type: integer
+    format: int64
+  approval_drafts:
+    type: integer
+    format: int64
+  submitted:
+    type: integer
+    format: int64

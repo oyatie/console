@@ -306,6 +306,14 @@ const PATHS: &[PathItem] = &[
 
 const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
+        name: "AbsenceExitDashboardResponse",
+        body: include_str!("../openapi/schemas/AbsenceExitDashboardResponse.yaml"),
+    },
+    NamedYaml {
+        name: "AbsenceExitSummary",
+        body: include_str!("../openapi/schemas/AbsenceExitSummary.yaml"),
+    },
+    NamedYaml {
         name: "AttendanceImportApplyReport",
         body: include_str!("../openapi/schemas/AttendanceImportApplyReport.yaml"),
     },
@@ -376,6 +384,10 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "Employee",
         body: include_str!("../openapi/schemas/Employee.yaml"),
+    },
+    NamedYaml {
+        name: "EmployeeAbsenceAlertResponse",
+        body: include_str!("../openapi/schemas/EmployeeAbsenceAlertResponse.yaml"),
     },
     NamedYaml {
         name: "EmployeeAttendanceRecord",

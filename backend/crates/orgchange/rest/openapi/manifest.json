@@ -107,6 +107,8 @@
     ]
   },
   "schemas": [
+    "AbsenceExitDashboardResponse",
+    "AbsenceExitSummary",
     "AttendanceImportApplyReport",
     "AttendanceImportColumn",
     "AttendanceImportDryRunSummary",
@@ -125,6 +127,7 @@
     "CreateEmployeeRequest",
     "CreateOrgChangeRequest",
     "Employee",
+    "EmployeeAbsenceAlertResponse",
     "EmployeeAttendanceRecord",
     "EmployeeAttendanceRecordPage",
     "EmployeeDetail",

@@ -1,0 +1,16 @@
+type: object
+required:
+- summary
+- alerts
+- exit_cases
+properties:
+  summary:
+    $ref: '#/components/schemas/AbsenceExitSummary'
+  alerts:
+    type: array
+    items:
+      $ref: '#/components/schemas/EmployeeAbsenceAlertResponse'
+  exit_cases:
+    type: array
+    items:
+      $ref: '#/components/schemas/EmployeeExitCaseResponse'
