@@ -136,6 +136,7 @@ struct ConfigureTransitionRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct PreflightRequest {
     object_type_id: Uuid,
     from_state: LifecycleState,

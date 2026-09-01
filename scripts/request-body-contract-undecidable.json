@@ -604,13 +604,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/governance/lifecycle/preflight",
-      "rust_file": "backend/crates/governance/rest/src/lib.rs",
-      "handler": "lifecycle_preflight",
-      "body_type": "PreflightRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/governance/overrides",
       "rust_file": "backend/crates/governance/rest/src/lib.rs",
       "handler": "open_override",
