@@ -47,11 +47,11 @@ const ENUM_ANCHORS = [
   "POST /api/v1/inventory/cycle-counts/{count_id}/decision#decision",
 ];
 
-const RESOLVED_FLOOR = 82;
+const RESOLVED_FLOOR = 83;
 const CENSUS_FLOOR = 291;
 const ENUM_RESOLVED_FLOOR = 18;
-const BODY_UNDECIDABLE_MAX = 199;
-const ENUM_UNDECIDABLE_MAX = 22;
+const BODY_UNDECIDABLE_MAX = 198;
+const ENUM_UNDECIDABLE_MAX = 23;
 const REGISTER_VERSION = 1;
 const REGISTER_PATH = "scripts/request-body-contract-undecidable.json";
 const HTTP_METHODS = ["get", "put", "post", "delete", "options", "head", "patch", "trace"];

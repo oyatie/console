@@ -463,6 +463,7 @@ struct AttendanceSelfRecordsQuery {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct CreateEmployeeAttendanceRecordRequest {
     kind: String,
     idempotency_key: String,

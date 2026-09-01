@@ -632,13 +632,6 @@
       "reason": "no_direct_json_binding"
     },
     {
-      "operation": "POST /api/v1/hr/attendance-records/me",
-      "rust_file": "backend/app/src/hr.rs",
-      "handler": "create_my_attendance_record",
-      "body_type": "CreateEmployeeAttendanceRecordRequest",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/hr/exit-cases/{id}/approval-draft",
       "rust_file": "backend/app/src/hr.rs",
       "handler": "draft_employee_exit_approval",
@@ -1473,6 +1466,14 @@
       "wire_field": "decision",
       "rust_file": "backend/crates/facilities/rest/src/lib.rs",
       "body_type": "AcceptanceBody",
+      "rust_type": "String",
+      "reason": "string_backed_spec_enum"
+    },
+    {
+      "operation": "POST /api/v1/hr/attendance-records/me",
+      "wire_field": "kind",
+      "rust_file": "backend/app/src/hr.rs",
+      "body_type": "CreateEmployeeAttendanceRecordRequest",
       "rust_type": "String",
       "reason": "string_backed_spec_enum"
     },
