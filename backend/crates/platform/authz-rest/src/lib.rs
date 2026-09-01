@@ -137,6 +137,7 @@ struct ReviewBody {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct SimulateBody {
     request: SimRequest,
     /// Optional what-if: include this draft's generated policy text on top of the
