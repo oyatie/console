@@ -870,13 +870,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/policy/drafts/{draft_id}/review",
-      "rust_file": "backend/crates/platform/authz-rest/src/lib.rs",
-      "handler": "review_draft",
-      "body_type": "ReviewBody",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/policy/roles",
       "rust_file": "backend/crates/identity/rest/src/lib.rs",
       "handler": "create_policy_role",

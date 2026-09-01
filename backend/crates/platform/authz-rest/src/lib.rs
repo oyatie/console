@@ -129,6 +129,7 @@ struct UpdateDraftBody {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ReviewBody {
     decision: ReviewDecision,
     #[serde(default)]
