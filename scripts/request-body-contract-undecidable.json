@@ -856,13 +856,6 @@
       "reason": "rust_struct_not_strict"
     },
     {
-      "operation": "POST /api/v1/policy/authorize/bulk",
-      "rust_file": "backend/crates/platform/authz-rest/src/lib.rs",
-      "handler": "authorize_bulk",
-      "body_type": "BulkAuthorizeBody",
-      "reason": "rust_struct_not_strict"
-    },
-    {
       "operation": "POST /api/v1/policy/roles",
       "rust_file": "backend/crates/identity/rest/src/lib.rs",
       "handler": "create_policy_role",

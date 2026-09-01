@@ -168,6 +168,7 @@ struct DecisionResponse {
 /// round-trip. Evaluated over the org's enforced set through the SAME fail-closed
 /// evaluator as `/authorize`, so every check is deny-by-omission.
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct BulkAuthorizeBody {
     subject: SimSubject,
     checks: Vec<BulkCheck>,
