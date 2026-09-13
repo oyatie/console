@@ -1,0 +1,32 @@
+{
+  "candidate_sha": "d19d5a133180f0b2c1dc00df643b1ce3f5418dc8",
+  "reviews": [
+    {
+      "reviewer": "/root/fresh29_workflows",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "P2 Missing PENDING/no material readback after start",
+        "P2 CompanyActor absence not rechecked after GET",
+        "P2 Cross-Account refusals omit other Account/ceremony effects"
+      ]
+    },
+    {
+      "reviewer": "/root/fresh29_security",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "P2 Swapped userHandle target is PENDING, needs ACTIVE positive control",
+        "P2 Cookie security attribute duplicates pass oracle",
+        "P2 Error message/arbitrary headers can echo literal fixture secrets"
+      ]
+    },
+    {
+      "reviewer": "/root/fresh29_operations",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "P2 Nested test module absent from generated Buck source map, generator misclassifies standalone target"
+      ],
+      "execution_readback": "42tests22pass20fail=15schema+4config+1route; deep new assertions not reached"
+    }
+  ],
+  "disposition": "All findings accepted and corrected before next immutable review; no tests removed, skipped or weakened. New source reorganized inline and two independent oracle tests added."
+}
