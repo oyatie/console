@@ -96,7 +96,8 @@
     ],
     "403": [
       "request_origin_denied",
-      "csrf_invalid"
+      "csrf_invalid",
+      "terms_acceptance_required"
     ],
     "404": [
       "not_found"

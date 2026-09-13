@@ -1,0 +1,11 @@
+BW31 amendment decisions — proposed
+
+Reuse existing high-level WebAuthn registration/verifier with one typed resident-request adjustment. Direct core construction would enlarge crypto custody and require raw Credential conversion without proving residency; Google-only and attested-resident paths change device/attestation policy. Browser discovery is separately proven, not inferred from SoftPasskey.
+
+Keep head and receipts as narrow native Account-global relations. Add exact nullable legacy-preserving acceptance tuple and an explicit ControlEvidence union variant; do not stuff fields into existing closed SecurityEvent or Company receipt types. Operator approval custody is outside public/runtime authority and is explicitly typed; digest integrity alone is not authorization.
+
+First acceptance per version is immutable. New acknowledgments, if later admitted, append security events and cannot rewrite first consent. Unknown historical evidence fails closed without creating a replacement Account. Current publication does not retroactively revoke valid historic consent; mandatory reacceptance has its own future reviewed flow.
+
+Historical artifacts stay retained while referenced; browser ceremonies expire and can be reclaimed without erasing permanent Account migration fences. Enrollment artifact failure is isolated from eligible established sessions. Single-key maintenance rotation is explicit; zero-downtime rollover is not invented.
+
+Cedar field omission preserves an otherwise disclosed usable context without a denied label. Generic local labeling contains no hidden metadata.
