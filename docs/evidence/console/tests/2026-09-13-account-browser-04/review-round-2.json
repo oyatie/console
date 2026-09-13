@@ -1,0 +1,27 @@
+{
+  "candidate_sha": "8d951f128c593367e3b66c6a48a2d865bb20b867",
+  "reviews": [
+    {
+      "reviewer": "/root/fresh29_workflows",
+      "verdict": "ACCEPT",
+      "findings": [],
+      "readbacks": "Exactoldprefix and4embeddedapprovedfiles;3priorfindingsclosed"
+    },
+    {
+      "reviewer": "/root/fresh29_operations",
+      "verdict": "ACCEPT_SOURCE",
+      "findings": [],
+      "readbacks": "Exactoldprefix,4approvedembeddedfiles,isolatedtempownership;44discovered",
+      "verification_limit": "Reviewer saw pre-freeze clippy-r2 errors and pending runtime/fullgate; later exact-candidate verification separately recorded"
+    },
+    {
+      "reviewer": "/root/fresh29_security",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "P2 Trim cookie attribute name/value before duplicate detection; whitespace variants bypass current oracle"
+      ],
+      "closures": "ACTIVEtarget andliteral-echo priorfindingsclosed"
+    }
+  ],
+  "disposition": "Whitespace normalization and4negative vectors added for final review. Final exact-SHA lint/runtime needed; prior exploratory lint log not claimed current success."
+}

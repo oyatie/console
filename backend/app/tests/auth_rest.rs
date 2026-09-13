@@ -3948,7 +3948,9 @@ mod account_browser {
                         .split_once('=')
                         .map_or((part, None), |(k, v)| (k, Some(v)));
                     assert!(
-                        attrs.insert(key.to_ascii_lowercase(), value).is_none(),
+                        attrs
+                            .insert(key.trim().to_ascii_lowercase(), value.map(str::trim))
+                            .is_none(),
                         "duplicate cookie attribute"
                     );
                 }
@@ -5045,6 +5047,10 @@ mod account_browser {
         parse(&valid);
         for extra in [
             "; SameSite=None",
+            "; SameSite = None",
+            "; Max-Age = 999999",
+            "; Domain = example.com",
+            "; Path = /other",
             "; samesite=Lax",
             "; Path=/other",
             "; Max-Age=999999",
