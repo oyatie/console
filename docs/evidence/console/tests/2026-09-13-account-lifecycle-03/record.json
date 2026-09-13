@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "Reviewed partial legacy-fence test candidate; full Account coverage incomplete",
+  "owner": "/root",
+  "base_sha": "138bba668aa6c2b4daedb2d265adce6866492511",
+  "tested_source_sha": "13dda7b08dfc641a1553b3c52a2adc583b16ace0",
+  "approved_design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "scope": "Eight additive tests: legacy-fence states,recovery,outstanding OTP,positive/oracle controls. Test-only; no product implementation.",
+  "source": {
+    "path": "backend/app/tests/auth_rest.rs",
+    "git_blob": "e98c69723d70ace7d6a3579c3ad334616a27db8d",
+    "sha256": "ab5c6a1eb439f53149c2296a98ec1393cd2c9282de473b54b1fdcf1d5048b300",
+    "existing_source_is_exact_prefix": true
+  },
+  "command": "DOCKER_CONTEXT=colima-console-design30 RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --only app-auth-rest-pg --runner cargo --num-threads 1",
+  "exit_code": 1,
+  "environment": {
+    "rust": "1.98.1",
+    "node": "24.16.0",
+    "postgres": "18.4",
+    "disposable_context": "colima-console-design30",
+    "task_vm": "stopped after tests; container readback empty"
+  },
+  "counts": {
+    "discovered": 30,
+    "executed": 30,
+    "passed": 20,
+    "failed": 10,
+    "ignored": 0,
+    "filtered": 0,
+    "new_tests": 8,
+    "new_passed": 2,
+    "new_schema_prerequisite_failures": 6,
+    "existing_behavioral_failures": 4
+  },
+  "interpretation": [
+    "Only HTTP target rerun this phase:30tests. Other19 prior target tests are unchanged and were not rerun; do not describe49 current executions.",
+    "All17 inherited HTTP flows remain passing; existing config positive passes and4negative cases still fail.",
+    "Six new tests execute successful real legacy authentication controls then stop at missing accounts/account_security schema. No post-fence rejection, recoveredACTIVE, credential-preservation or unfenced-after-cutover assertions are claimed executed.",
+    "New unmigrated transport positive control and denial-oracle control pass. The latter exercises7response vectors; it is test-oracle coverage, not production information-flow proof.",
+    "Data fixtures do not implement or prove production migration/backfill/drain,legacy import,Account recovery authority or v2 lifecycle. They create no tables,roles or grants.",
+    "Body/header checks cover selected literal known secrets and nested token fields, not encoded/covert/general information flow.",
+    "Registration/navigation route contracts exist, but concrete terms and wire/transport details remain unapproved refinements. contract-gaps.json preserves the distinction and narrows the first browser success slice."
+  ],
+  "verification": [
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest -- --list",
+      "exit_code": 0,
+      "discovered": 30
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo clippy --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest -- -D warnings",
+      "exit_code": 0
+    },
+    {
+      "command": "fnm exec --using=24.16.0 node scripts/check-test-credentials.mjs",
+      "exit_code": 0
+    },
+    {
+      "command": "fnm exec --using=24.16.0 node tools/ci/check-postgres-cargo-map.mjs",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check 138bba668aa6c2b4daedb2d265adce6866492511 13dda7b08dfc641a1553b3c52a2adc583b16ace0",
+      "exit_code": 0
+    }
+  ],
+  "review_history": [
+    {
+      "candidate_sha": "4f8a26db47b64835859111807cbdbe32d07671dd",
+      "reviewer": "/root/fresh29_security",
+      "result": "CHANGES_REQUESTED",
+      "findings": [
+        "Preservation omitted lookup credential_id",
+        "Loose cookie check and nonJSON/nested token response bypass",
+        "Recovery fixture did not prove actualACTIVE persisted"
+      ]
+    },
+    {
+      "candidate_sha": "13dda7b08dfc641a1553b3c52a2adc583b16ace0",
+      "reviewer": "/root/fresh29_security",
+      "result": "ACCEPT source; all3findings resolved"
+    },
+    {
+      "candidate_sha": "13dda7b08dfc641a1553b3c52a2adc583b16ace0",
+      "reviewer": "/root/fresh29_operations",
+      "result": "ACCEPT source and runtime classification30/20/10; no ignored/filtered; deep assertions behind schema prerequisite not reached"
+    },
+    {
+      "candidate_sha": "13dda7b08dfc641a1553b3c52a2adc583b16ace0",
+      "reviewer": "/root/fresh29_workflows",
+      "result": "Gap recommendations correctly unapproved; narrow first browser slice to release terms artifact,enrollment/session wire,me/empty-context schema",
+      "applied_evidence_refinements": [
+        "No new terms service required",
+        "Populated entitlements not prerequisite for empty contexts",
+        "Broader native/refresh/mutation transport remains later acceptance requirement"
+      ]
+    }
+  ],
+  "previous_run": {
+    "source_sha": "4f8a26db47b64835859111807cbdbe32d07671dd",
+    "executed": 29,
+    "passed": 19,
+    "failed": 10,
+    "classification": "4configuration failures;6schema prerequisites; oracle controls not yet added",
+    "artifact": "artifacts/console-account-lifecycle-execution.log.gz"
+  },
+  "pre_mortem": "Expired/reused tokens or global authentication shutdown falsely satisfy rejection tests; absent schema hides protocol assertions; unspecified public wire details silently become tests",
+  "blast_radius": "Isolated tests and evidence; sole writer root; main94stagedfiles preserved",
+  "detection": "Named positive control and each security state; exact status/subject/key/body/cookie checks; discovery/runtime classification; independent source/evidence review",
+  "rollback": "Preserve immutable prior candidate and failure logs; no shared Git reset",
+  "stop_conditions": [
+    "Fixture fabricates Account schema or auth grants",
+    "Product stub needed to compile",
+    "Unexpected setup failure",
+    "Independent blocking finding"
+  ],
+  "remaining_holds": [
+    "Complete Account tests and exact test-SHA approval",
+    "Registration terms/browser transport wire refinement review",
+    "Production cutover/drain/recovery and all-transport closure proof",
+    "Account implementation and activation"
+  ],
+  "next_step": "Bounded exact browser wire refinement: release-owned terms artifact,registration nonce/session cookies,start/finish DTOs,me/empty-context envelopes. Review material changes before complete Company-free lifecycle test.",
+  "artifacts": [
+    {
+      "path": "artifacts/console-account-lifecycle-clippy-v2.log.gz",
+      "raw_bytes": 422,
+      "raw_sha256": "7253907c280349b5a8f507257a1f57fbd7ea99693af8fafed9ab5efb00d3e7e5",
+      "compressed_bytes": 305,
+      "compressed_sha256": "cc515a769fa5edabffeadca5eac3ca6dddb77697a7d7bd1bef47dd803fc6db1a"
+    },
+    {
+      "path": "artifacts/console-account-lifecycle-clippy.log.gz",
+      "raw_bytes": 422,
+      "raw_sha256": "3f6c389ea93494b205724bc1da5755332c718118a16e1f093e8743055b850ebb",
+      "compressed_bytes": 305,
+      "compressed_sha256": "3d658bdce133558736246ef9d3c471202741af0f6a963dfb493215bf5c9847d3"
+    },
+    {
+      "path": "artifacts/console-account-lifecycle-container-readback.log.gz",
+      "raw_bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compressed_bytes": 20,
+      "compressed_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+    },
+    {
+      "path": "artifacts/console-account-lifecycle-counts.json.gz",
+      "raw_bytes": 4810,
+      "raw_sha256": "c4befc4a6f1ae0b038632c8fb801350aeea6f2221d1ae391b2a8ac09855b78c4",
+      "compressed_bytes": 1003,
+      "compressed_sha256": "928bbbae78538536f645686f7a883c933e40bccd7aabc2736c91cf74cd0cbd97"
+    },
+    {
+      "path": "artifacts/console-account-lifecycle-credentials.log.gz",
+      "raw_bytes": 233,
+      "raw_sha256": "5d80846b73d3c74cf1c5f164831943a1ccb221797f74bd97c05a64e040192f01",
+      "compressed_bytes": 171,
+      "compressed_sha256": "a4d017a801d8a38780ef252cfde2a3fe454ff3056239736e3cff2c4a5a8a0fcf"
+    },
+    {
+      "path": "artifacts/console-account-lifecycle-discovery-v2.log.gz",
+      "raw_bytes": 2709,
+      "raw_sha256": "2234c36b518f068b24d70201d05adad4374829a3ed3ce7a801a757cde3bfa455",
+      "compressed_bytes": 1168,
+      "compressed_sha256": "6013cd5f0f3b30705729aee6a1abf139cdf2e08ee5f0cef97758a3e7f6ece8ba"
+    },
+    {
+      "path": "artifacts/console-account-lifecycle-discovery.log.gz",
+      "raw_bytes": 2724,
+      "raw_sha256": "6c059e4d9a06ce3351bc7bb928b28629bf302f2275f80f80d6d8b87c32d8d8f0",
+      "compressed_bytes": 1182,
+      "compressed_sha256": "fa3cca9fe9a31884526597c0b82bab43527a37baf1c1919791ad5d3cd525cb54"
+    },
+    {
+      "path": "artifacts/console-account-lifecycle-execution-v2.log.gz",
+      "raw_bytes": 25404,
+      "raw_sha256": "dc81071827efc7c48eb38c61d45044f6c2adbaf16f065d8113406b641b2f699a",
+      "compressed_bytes": 4797,
+      "compressed_sha256": "e7f731397b9f2af4ec2e935e8ac41173e1d4c54739d31a273c66dcce847fb5f6"
+    },
+    {
+      "path": "artifacts/console-account-lifecycle-execution.log.gz",
+      "raw_bytes": 25211,
+      "raw_sha256": "d62dda625a516640e3e39044965a4cce4ea3281decadcea81f6e56c2e3d5ab45",
+      "compressed_bytes": 4741,
+      "compressed_sha256": "04e06f45f78ab096d858ed92cdf5af6b0aceb072a641479e7c2ecd7f9c1c083f"
+    },
+    {
+      "path": "artifacts/console-account-lifecycle-reachability.log.gz",
+      "raw_bytes": 123,
+      "raw_sha256": "3660e46c58e667a12a790b66bc3c67776e4276ee159eede125348eef27ba0956",
+      "compressed_bytes": 126,
+      "compressed_sha256": "99ff98a50724bfa669b321a7a9961a3ef7f422a3c719b82c09bafb4d34792cce"
+    },
+    {
+      "path": "artifacts/console-account-lifecycle-vm-start.log.gz",
+      "raw_bytes": 3844,
+      "raw_sha256": "9f0b26c228ca1bd241502fa2372fe17e9b6648c3e6abce67e3d2fdf3b52fe605",
+      "compressed_bytes": 943,
+      "compressed_sha256": "07ab5ee419943a29fb67999a119180012b1f539f2400e316a3f636cf57fcee5a"
+    },
+    {
+      "path": "artifacts/console-account-lifecycle-vm-stop.log.gz",
+      "raw_bytes": 1653,
+      "raw_sha256": "8a15e15ce640e723b065e0cbe4b5023811a4354cbfefa53d09dc86807bd4ace3",
+      "compressed_bytes": 439,
+      "compressed_sha256": "39ed252b2b65c67fe977901217e01793f2da88c47963dfcc016362a6e5874b05"
+    }
+  ],
+  "publication": "Local test/evidence only; no complete test approval,Account implementation,merge,push,deploy or production/legal claims"
+}
