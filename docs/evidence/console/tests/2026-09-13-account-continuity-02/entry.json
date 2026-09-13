@@ -29,7 +29,8 @@
     "Preserve crypto,subject,replay,expiry and successful business-operation assertions",
     "Keep legacy compatibility distinct from migrated Account acceptance",
     "No test-created auth roles,grants,memberships,LOGIN or ownership changes",
-    "No product source edits; all new tests and semantic changes independently reviewed before approval"
+    "No product source edits; all new tests and semantic changes independently reviewed before approval",
+    "HTTP fixtures provision only an empty marked SQLx database container to console_app, then invoke actual run_migrations before seeds; no product table/grant/role repair"
   ],
   "pre_mortem": "A denial-only suite can break login; owner session can mask privilege errors; legacy behavior can conflict with Account enrollment; topology failure can be mislabeled behavioral RED",
   "blast_radius": "Test sources and disposable test transport only; staged main remains unchanged",
