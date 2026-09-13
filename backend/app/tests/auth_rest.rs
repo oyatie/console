@@ -5595,4 +5595,380 @@ mod account_browser {
         );
         response.private();
     }
+
+    // B04/B05/B12 fixture data transition ONLY. This models sequential release
+    // states; it neither invokes nor proves publisher custody, privileges or CAS.
+    async fn seed_next_terms_head(pool: &PgPool, digest: &str) -> (Uuid, i64) {
+        let mut tx = pool.begin().await.unwrap();
+        let prior: i64 =
+            sqlx::query_scalar("SELECT revision FROM account_terms_head WHERE id=1 FOR UPDATE")
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+        let revision = prior.checked_add(1).unwrap();
+        let receipt = Uuid::new_v4();
+        let approval = serde_json::to_vec(&json!({
+            "kind":"ACCOUNT_TERMS_PUBLICATION_APPROVAL", "approval_id":Uuid::new_v4(),
+            "manifest_sha256":digest, "expected_revision":prior.to_string(), "next_revision":revision.to_string(),
+            "fixture_only":true, "approved_by":"test_only.operator", "approved_at":"2026-09-13T00:00:00Z",
+            "content_authority_refs":[hex::encode(Sha256::digest(b"TEST_ONLY content authority, never legal proof"))]
+        })).unwrap();
+        sqlx::query("INSERT INTO account_terms_release_receipts (id,previous_revision,revision,manifest_sha256,approved_release_ref,approval_bytes,recorded_at) VALUES ($1,$2,$3,$4,$5,$6,now())")
+            .bind(receipt).bind(prior).bind(revision).bind(hex::decode(digest).unwrap())
+            .bind(json!({"kind":"OPERATOR_RELEASE_APPROVAL","approval_sha256":hex::encode(Sha256::digest(&approval))}))
+            .bind(approval).execute(&mut *tx).await.unwrap();
+        let rows = sqlx::query("UPDATE account_terms_head SET manifest_sha256=$1,revision=$2,release_receipt_ref=$3,updated_at=now() WHERE id=1")
+            .bind(hex::decode(digest).unwrap()).bind(revision).bind(receipt).execute(&mut *tx).await.unwrap().rows_affected();
+        assert_eq!(rows, 1);
+        tx.commit().await.unwrap();
+        (receipt, revision)
+    }
+
+    async fn identity_population(pool: &PgPool) -> (i64, i64) {
+        sqlx::query_as(
+            "SELECT (SELECT count(*) FROM accounts),(SELECT count(*) FROM company_actors)",
+        )
+        .fetch_one(pool)
+        .await
+        .unwrap()
+    }
+
+    async fn assert_retained_artifacts(router: &axum::Router) {
+        let index: Value =
+            serde_json::from_slice(fixture_file("fixtures/artifact-index.json")).unwrap();
+        let mut entries = vec![index["manifest"].clone()];
+        entries.extend(index["content"].as_array().unwrap().clone());
+        for entry in entries {
+            let digest = entry["sha256"].as_str().unwrap();
+            let manifest = digest == MANIFEST_DIGEST;
+            let path = format!(
+                "/api/v2/auth/terms/{}/{digest}",
+                if manifest { "manifests" } else { "content" }
+            );
+            let response = request(router, "GET", &path, &Cookies::default(), None, &[]).await;
+            assert_eq!(response.status, StatusCode::OK);
+            assert!(response.bytes == fixture_file(entry["path"].as_str().unwrap()));
+            assert_eq!(hex::encode(Sha256::digest(&response.bytes)), digest);
+            assert!(!response.headers.contains_key(header::SET_COOKIE));
+            assert!(!response.headers.contains_key(header::LOCATION));
+            assert_eq!(
+                response.headers.get(header::CONTENT_TYPE).unwrap(),
+                if manifest {
+                    "application/json; charset=utf-8"
+                } else {
+                    "text/plain; charset=utf-8"
+                }
+            );
+            if !manifest {
+                assert_eq!(
+                    response.headers.get("x-content-type-options").unwrap(),
+                    "nosniff"
+                );
+            }
+        }
+    }
+
+    async fn assert_current_terms(router: &axum::Router, revision: i64) {
+        let response = request(
+            router,
+            "GET",
+            "/api/v2/auth/terms",
+            &Cookies::default(),
+            None,
+            &[],
+        )
+        .await;
+        let value = response.json(StatusCode::OK);
+        response.private();
+        exact_keys(&value, &["terms_version", "terms_revision", "manifest_url"]);
+        assert_eq!(value["terms_version"], MANIFEST_DIGEST);
+        assert_eq!(value["terms_revision"], revision.to_string());
+        assert_eq!(
+            value["manifest_url"],
+            format!("/api/v2/auth/terms/manifests/{MANIFEST_DIGEST}")
+        );
+    }
+
+    async fn assert_existing_session_during_terms_outage(
+        router: &Fixture,
+        attempt: &Attempt,
+        mut cookies: Cookies,
+    ) {
+        let before = snapshot(&router.pool, attempt.account).await;
+        let me = request(router, "GET", "/api/v2/accounts/me", &cookies, None, &[]).await;
+        projection(&me.json(StatusCode::OK), attempt.account);
+        me.private();
+        let csrf = proof(router, &cookies).await;
+        assert!(snapshot(&router.pool, attempt.account).await == before);
+        let refreshed = request(
+            router,
+            "POST",
+            "/api/v2/auth/token/refresh",
+            &cookies,
+            Some(json!({})),
+            &[("X-Console-CSRF", &csrf)],
+        )
+        .await;
+        session(&refreshed, StatusCode::OK, attempt.account, &mut cookies);
+        let rotated = snapshot(&router.pool, attempt.account).await;
+        assert!(rotated["families"] == before["families"]);
+        assert!(rotated["terms"] == before["terms"]);
+        let logout = request(
+            router,
+            "POST",
+            "/api/v2/auth/logout",
+            &cookies,
+            Some(json!({})),
+            &[("X-Console-CSRF", &csrf)],
+        )
+        .await;
+        assert_eq!(logout.json(StatusCode::OK), json!({"outcome":"COMMITTED"}));
+        logout.private();
+        let revoked_cookies = cookies.clone();
+        cookies.absorb(&logout.headers);
+        assert!(cookies.0.is_empty());
+        request(
+            router,
+            "GET",
+            "/api/v2/accounts/me",
+            &revoked_cookies,
+            None,
+            &[],
+        )
+        .await
+        .error(StatusCode::UNAUTHORIZED, "authentication_invalid");
+        let after = snapshot(&router.pool, attempt.account).await;
+        assert!(after["terms"] == before["terms"]);
+        assert!(
+            after["families"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|f| !f["revoked_at"].is_null())
+        );
+        assert_no_company_identity(&router.pool, attempt.account).await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn same_digest_new_release_refuses_old_attempt_and_binds_new_receipt(pool: PgPool) {
+        let router = fixture(&pool).await;
+        let old = start(&router).await;
+        let before = snapshot(&pool, old.account).await;
+        let population = identity_population(&pool).await;
+        let old_receipt: Value = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM account_terms_release_receipts r WHERE id=$1",
+        )
+        .bind(Uuid::parse_str(RECEIPT).unwrap())
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        let (receipt, revision) = seed_next_terms_head(&pool, MANIFEST_DIGEST).await;
+        assert_eq!(revision, 2);
+        assert_current_terms(&router, revision).await;
+        finish(&router, &old)
+            .await
+            .error(StatusCode::CONFLICT, "terms_changed");
+        assert!(snapshot(&pool, old.account).await == before);
+        assert_eq!(identity_population(&pool).await, population);
+        assert_no_company_identity(&pool, old.account).await;
+        let fresh = start(&router).await;
+        assert_ne!(fresh.account, old.account);
+        let result = finish(&router, &fresh).await;
+        session(
+            &result,
+            StatusCode::CREATED,
+            fresh.account,
+            &mut fresh.cookies.clone(),
+        );
+        let committed = snapshot(&pool, fresh.account).await;
+        assert_eq!(committed["security"]["security_state"], "ACTIVE");
+        assert_eq!(committed["keys"].as_array().unwrap().len(), 1);
+        assert_eq!(committed["families"].as_array().unwrap().len(), 1);
+        assert_eq!(committed["terms"].as_array().unwrap().len(), 2);
+        for term in committed["terms"].as_array().unwrap() {
+            assert_eq!(term["terms_version"], MANIFEST_DIGEST);
+            assert_eq!(term["terms_release_receipt_id"], receipt.to_string());
+            assert_eq!(term["terms_release_revision"], revision);
+            assert_eq!(
+                term["terms_manifest_sha256"],
+                format!("\\x{MANIFEST_DIGEST}")
+            );
+            let event = committed["events"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|event| event["id"] == term["security_event_id"])
+                .unwrap();
+            assert_eq!(event["account_id"], fresh.account.to_string());
+            assert_eq!(event["kind"], "TERMS_ACCEPTED");
+            let expected = json!({"kind":"ACCOUNT_TERMS_RELEASE", "receipt_id":receipt, "revision":revision.to_string(), "manifest_sha256":MANIFEST_DIGEST});
+            assert_eq!(event["evidence_ref"], expected);
+            assert_eq!(event["payload"]["evidence"], expected);
+        }
+        let retained: Value = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM account_terms_release_receipts r WHERE id=$1",
+        )
+        .bind(Uuid::parse_str(RECEIPT).unwrap())
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(retained == old_receipt);
+        assert!(snapshot(&pool, old.account).await == before);
+        assert_no_company_identity(&pool, fresh.account).await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn unsupported_current_terms_preserve_retained_consent_login_and_sessions(pool: PgPool) {
+        let (mut router, key) = signed_fixture(&pool).await;
+        let (mut established, cookies) = enrolled(&router).await;
+        assert_committed(&pool, &established).await;
+        let pending = start(&router).await;
+        let established_before = snapshot(&pool, established.account).await;
+        let pending_before = snapshot(&pool, pending.account).await;
+        let population = identity_population(&pool).await;
+        let mut unavailable_manifest = manifest();
+        unavailable_manifest["items"][0]["title"] = json!("다음 발행의 테스트 전용 제목");
+        let digest = hex::encode(Sha256::digest(
+            serde_json::to_vec(&unavailable_manifest).unwrap(),
+        ));
+        assert_ne!(digest, MANIFEST_DIGEST);
+        // Models a replica whose release bundle lacks the new current manifest.
+        // Old registered bytes remain intact. Publisher authorization is not tested.
+        seed_next_terms_head(&pool, &digest).await;
+        router.service = router_with_key(&pool, router._artifacts.root.clone(), &key).await;
+        request(
+            &router,
+            "GET",
+            "/api/v2/auth/terms",
+            &Cookies::default(),
+            None,
+            &[],
+        )
+        .await
+        .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+        request(
+            &router,
+            "POST",
+            "/api/v2/auth/registration/start",
+            &Cookies::default(),
+            Some(json!({"terms_version":MANIFEST_DIGEST})),
+            &[],
+        )
+        .await
+        .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+        finish(&router, &pending)
+            .await
+            .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+        assert_retained_artifacts(&router).await;
+        assert!(snapshot(&pool, established.account).await == established_before);
+        assert!(snapshot(&pool, pending.account).await == pending_before);
+        assert_eq!(identity_population(&pool).await, population);
+        assert_existing_session_during_terms_outage(&router, &established, cookies).await;
+        let restored = fresh_login(&router, &mut established).await;
+        projection(
+            &request(&router, "GET", "/api/v2/accounts/me", &restored, None, &[])
+                .await
+                .json(StatusCode::OK),
+            established.account,
+        );
+        let after = snapshot(&pool, established.account).await;
+        assert!(after["terms"] == established_before["terms"]);
+        let old_term_events: Vec<_> = established_before["events"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|e| e["kind"] == "TERMS_ACCEPTED")
+            .collect();
+        let new_term_events: Vec<_> = after["events"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|e| e["kind"] == "TERMS_ACCEPTED")
+            .collect();
+        assert!(old_term_events == new_term_events);
+        assert!(snapshot(&pool, pending.account).await == pending_before);
+        assert_eq!(identity_population(&pool).await, population);
+        assert_no_company_identity(&pool, established.account).await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn registered_artifact_loss_is_503_and_restore_preserves_same_attempt(pool: PgPool) {
+        let (mut router, key) = signed_fixture(&pool).await;
+        let (established, cookies) = enrolled(&router).await;
+        let pending = start(&router).await;
+        let before = snapshot(&pool, pending.account).await;
+        let established_before = snapshot(&pool, established.account).await;
+        let population = identity_population(&pool).await;
+        assert_retained_artifacts(&router).await;
+        let lost_path = router._artifacts.root.join("fixtures/privacy.txt");
+        assert_eq!(std::fs::read(&lost_path).unwrap(), PRIVACY_TEXT.as_bytes());
+        std::fs::remove_file(&lost_path).unwrap(); // Only this fixture-owned file.
+        router.service = router_with_key(&pool, router._artifacts.root.clone(), &key).await;
+        let digest = manifest()["items"][1]["content_sha256"]
+            .as_str()
+            .unwrap()
+            .to_owned();
+        request(
+            &router,
+            "GET",
+            &format!("/api/v2/auth/terms/content/{digest}"),
+            &Cookies::default(),
+            None,
+            &[],
+        )
+        .await
+        .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+        request(
+            &router,
+            "GET",
+            "/api/v2/auth/terms",
+            &Cookies::default(),
+            None,
+            &[],
+        )
+        .await
+        .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+        request(
+            &router,
+            "POST",
+            "/api/v2/auth/registration/start",
+            &Cookies::default(),
+            Some(json!({"terms_version":MANIFEST_DIGEST})),
+            &[],
+        )
+        .await
+        .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+        finish(&router, &pending)
+            .await
+            .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+        assert!(snapshot(&pool, pending.account).await == before);
+        assert!(snapshot(&pool, established.account).await == established_before);
+        assert_eq!(identity_population(&pool).await, population);
+        assert_existing_session_during_terms_outage(&router, &established, cookies).await;
+        std::fs::write(&lost_path, PRIVACY_TEXT.as_bytes()).unwrap();
+        router.service = router_with_key(&pool, router._artifacts.root.clone(), &key).await;
+        assert_retained_artifacts(&router).await;
+        assert_current_terms(&router, 1).await;
+        let completed = finish(&router, &pending).await;
+        session(
+            &completed,
+            StatusCode::CREATED,
+            pending.account,
+            &mut pending.cookies.clone(),
+        );
+        assert_committed(&pool, &pending).await;
+        finish(&router, &pending)
+            .await
+            .error(StatusCode::UNAUTHORIZED, "enrollment_invalid");
+        assert_eq!(identity_population(&pool).await, population);
+        let established_after = snapshot(&pool, established.account).await;
+        assert!(established_after["terms"] == established_before["terms"]);
+        assert!(
+            established_after["families"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|f| !f["revoked_at"].is_null())
+        );
+    }
 }
