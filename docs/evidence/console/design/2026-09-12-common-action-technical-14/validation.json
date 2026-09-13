@@ -1,0 +1,46 @@
+{
+  "recorded_at": "2026-09-12T19:48:13.347842+00:00",
+  "reviewed_sha": "598710b69bb7207dd4d5b5e0e8fbd60d7701dc45",
+  "environment": {
+    "python": "3.14.7",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "worktree": "/private/tmp/console-design-review-20260912"
+  },
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-common-action-technical-14/verify-packet.py",
+      "exit_code": 0,
+      "result": {
+        "result": "PASS",
+        "reviewed_sha": "598710b69bb7207dd4d5b5e0e8fbd60d7701dc45",
+        "core_files_verified": 13,
+        "source_blobs_verified": 24,
+        "proposed_tables": 4,
+        "registration_mappings": 10,
+        "participant_contracts": 12,
+        "operation_contracts": 12,
+        "nonexecutable_cases_discovered": 34,
+        "encoding_witnesses_verified": 10,
+        "decoder_refusal_candidates_discovered": 7,
+        "reader_links_verified": 10,
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "record_manifest_checked": false
+      }
+    },
+    {
+      "command": "git diff --check a27211a164716abc4473cc1c98b13bf5eaf61fac 598710b69bb7207dd4d5b5e0e8fbd60d7701dc45 -- docs/evidence/console/design/2026-09-12-common-action-technical-14",
+      "exit_code": 0
+    }
+  ],
+  "product_tests_written": 0,
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "limitations": [
+    "Byte identity/structure and independent synthetic encoding witnesses only; no Rust/DB roundtrip or production decoder proof",
+    "34CSV scenarios and7refusal cases are non-executable candidates, not passing product tests",
+    "No whole-repository documentation gate rerun; historical candidate05 diagnostics remain unresolved",
+    "Source nested DTOs, workflow/Group, actual DDL/ACL/adoption/retention/recovery/harness still open",
+    "No approved integrated design/test SHA or implementation authorization"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "recorded_at": "2026-09-13T05:48:28.110971+00:00",
+  "status": "SCOPED_BINDING_ADOPTION_IDENTITY_AND_LIFETIME_ACCEPTANCE_ONLY",
+  "reviewed_candidate_sha": "48349e4d5fe0f3f462ab46a037779e6b938e2aac",
+  "reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "candidate_sha": "48349e4d5fe0f3f462ab46a037779e6b938e2aac",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Full11file review retained; final5file correction reviewed. One-time binding, reciprocal mandatory source adoption, source-protocol publication linkage and lifetime separation accepted within stated structural scope.",
+      "independently_verified_static_sha": "48349e4d5fe0f3f462ab46a037779e6b938e2aac",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "candidate_sha": "48349e4d5fe0f3f462ab46a037779e6b938e2aac",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Full11file review retained; final5file correction reviewed. One-time binding, reciprocal mandatory source adoption, source-protocol publication linkage and lifetime separation accepted within stated structural scope.",
+      "independently_verified_static_sha": "48349e4d5fe0f3f462ab46a037779e6b938e2aac",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "counts_as_final_integrated_round": false,
+  "remaining_holds": [
+    "Actual governed unit/purpose/obligation schemas and canonical metadata/command projection validation",
+    "Complete per-action required-evidence inventory/cardinality/bytes/lock budget and independent domain protection",
+    "All seal/publication/pin/hold/quarantine/disposal lifecycle mutation bodies and final owning SQL/Rust signatures/ACL/provenance",
+    "Full native source/head semantic/caller integration",
+    "F05-F08 migration/provider/journal/recovery/executable harness contracts",
+    "Current-authority scope alignment;4 integrated design reviews/exact design approval; executable test approval; RED implementation admission",
+    "Actual SQL/catalog/concurrency/load/Verus validation not performed; separate release/production/payment/legal authority"
+  ]
+}

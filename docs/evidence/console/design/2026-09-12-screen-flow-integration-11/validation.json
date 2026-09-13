@@ -1,0 +1,49 @@
+{
+  "recorded_at": "2026-09-12T18:15:14.742923+00:00",
+  "reviewed_sha": "aee9ceb3168c59cc25486cceeedf2219e82e223d",
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-screen-flow-integration-11/verify-packet.py",
+      "exit_code": 0,
+      "result": {
+        "result": "PASS",
+        "reviewed_sha": "aee9ceb3168c59cc25486cceeedf2219e82e223d",
+        "core_files_verified": 10,
+        "source_blobs_verified": 14,
+        "surfaces": 16,
+        "logical_commands": 37,
+        "matrix_rows": 160,
+        "input_overlays": 7,
+        "journeys_discovered": 13,
+        "journey_steps": 65,
+        "product_tests_executed": 0,
+        "reader_data_parity": true,
+        "reader_links_verified": 5,
+        "record_manifest_checked": false
+      }
+    },
+    {
+      "command": "node --check /private/tmp/console-screen-contract-reader11.js",
+      "exit_code": 0,
+      "scope": "JavaScript extracted from exact candidate reader; syntax only"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "scope": "Final J03 correction before local commit"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0,
+      "scope": "Final J03 correction before local commit"
+    }
+  ],
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "limitations": [
+    "Evidence integrity, data references, reader data parity, local links and reader JavaScript syntax only",
+    "13 walkthroughs and 160 state rows are non-executable design oracles; no browser, accessibility or backend verification",
+    "No new whole-repository documentation gate run; prior candidate05 document-link diagnostic remains unresolved",
+    "Exact wire/SQL/ACL/migration/lock/numeric/runtime proof and final integrated design/test approvals pending"
+  ]
+}

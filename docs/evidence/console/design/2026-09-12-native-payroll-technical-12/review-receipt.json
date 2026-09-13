@@ -1,0 +1,42 @@
+{
+  "reviewed_candidate_sha": "fa3187a0a61cd1cbde5a296a83c426d7dc7946af",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "2fbeb621e269ed5edef78db5b51dffdbb888724b",
+  "writer": "/root",
+  "reviewers": [
+    {
+      "identity": "/root/payroll_contract_review",
+      "verdict": "SCOPED_ACCEPT",
+      "scope": "Native population/input/temporal/source/calculation/batch protocol and independent synthetic numeric expectations",
+      "resolved": [
+        "Versioned authoritative population scope and reservations",
+        "Tagged blocked Employment population slots",
+        "Negative-net typed identifier alignment"
+      ],
+      "product_tests_executed": 0,
+      "edits": 0
+    },
+    {
+      "identity": "/root/continuity_review",
+      "verdict": "SCOPED_ACCEPT",
+      "scope": "Participating-owner transaction, replay, direct route parity, lock and rollback obligations",
+      "resolved": [
+        "Authoritative receipt recheck precedes new-effect permission rejection after concurrent success"
+      ],
+      "product_tests_executed": 0,
+      "edits": 0
+    }
+  ],
+  "w04a_status": "BOUNDED_NATIVE_PROTOCOL_AND_COMPOSITION_PROPOSAL_ACCEPTED",
+  "w04_complete": false,
+  "whole_design_consensus": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "remaining_gaps": [
+    "W04b-01..05 exact identity/Cedar/source/attempt/workflow/Group/publication DTO/SQL/ACL/lock/migration/harness dependencies in remaining-work.csv",
+    "W05 required current-authority alignment and final integrated4review consensus/explicit design SHA approval",
+    "W06 executable tests reviewed and explicit test SHA approval before valid RED lane admission",
+    "Pilot production/legal/operational proof and full Console scope remain separate"
+  ]
+}

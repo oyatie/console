@@ -1,0 +1,39 @@
+{
+  "reviews": [
+    {
+      "candidate_sha": "5e50670a799899a7fe7f8f8da96d23ea3e151a0c",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        {
+          "id": "FD-B01",
+          "reviewer": "/root/payroll_contract_review",
+          "finding": "Payload CAS alone admits old intent after A -> B -> A; require originating editing context generation."
+        },
+        {
+          "id": "DR1",
+          "reviewer": "/root/continuity_review",
+          "finding": "Immutable schema binding contradicts same-draft upgrade; distinguish initial provenance and revision current schema."
+        },
+        {
+          "id": "DR2",
+          "reviewer": "/root/continuity_review",
+          "finding": "Hidden-dependent continuation leaks revision existence/volume; require explicit metadata right or nondisclosing path."
+        }
+      ]
+    },
+    {
+      "candidate_sha": "ff914047e1ff163297f6a6fff30bf1315086241a",
+      "verdict": "ACCEPT_SCOPED",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "oracles": [
+        "F42",
+        "F49",
+        "F50"
+      ],
+      "notes": "Both reviewers read corrected delta and context. No whole-design approval."
+    }
+  ]
+}

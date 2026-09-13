@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_structural_effect_manifest_sql_spec",
+  "recorded_at": "2026-09-13T04:03:01.580952+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "4c1640867e26af4ebacb19634641beda262ed50f",
+  "reviewed_contract_sha": "9386af20a7fbd3c17f0608fc12e115668dc67136",
+  "predecessor_record": "../2026-09-12-source-persistence-contract-21/record.json",
+  "predecessor_record_sha256": "0642766ae0cd5d9524404eb197a9e2530460d04cc538dc9a8b6346ca3940bb83",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "files": [
+    {
+      "path": "effect-manifest.sql.txt",
+      "bytes": 11270,
+      "sha256": "5a666884fcedb30627e6210e5591acd313b058650580de8d91c09268bc666603"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 1801,
+      "sha256": "d4f251faadb400d34f1ec3e3c32f3606803bb8012a08ac49d265245b0e0b4381"
+    },
+    {
+      "path": "implementation-closure-map.json",
+      "bytes": 9153,
+      "sha256": "f28e210b63c5c4bd5867e7f5a789820d09d4af73a68ac1665fbeeb10669d4d8a"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 2910,
+      "sha256": "782a1c851fbe67ec52e3a13b196ccba6bdef7d2b0549a68f0f8a8dde076e27d8"
+    },
+    {
+      "path": "readiness.json",
+      "bytes": 638,
+      "sha256": "cb20e37c0eeb6e14861cf37be76b78a470486ffa2436a64e07035293cc1c91b2"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1238,
+      "sha256": "e7259288684dd254ba8cf8847c7a196123adf596de962a75fcd8f8787b2d3ff5"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 2522,
+      "sha256": "be9f583b522cb3e76b569c88bc4ad8653f85b19ff9300ebb763e10a3b6c3b25a"
+    },
+    {
+      "path": "review.html",
+      "bytes": 1999,
+      "sha256": "169c7dc3744ecc90a54bf65a3cc915f2f3dd76e808441b8b3b4202d9f9077235"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 545,
+      "sha256": "d195c0a45ace2d9544d727dfbed172ecd964b8b01bbf66fa82cf93510027e5a9"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 6010,
+      "sha256": "fea5046229829e7d3ea25a70216dfc273d0b7ffb543f7703c74c9a682b8c4193"
+    },
+    {
+      "path": "transaction-contract.txt",
+      "bytes": 7185,
+      "sha256": "3f5719ee40562c7a351b66a27771e79b0ba7ff6d18661052312fd775f54f8be8"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1394,
+      "sha256": "33b2a70581e3cb9fd9cdb4d378c393a9a5a120603b09322fdbb2d2ea686c99c4"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 4921,
+      "sha256": "a3997017d774303ff5c77c2dba47eab48d3c3194c03217cc36517d86539a72b2"
+    }
+  ],
+  "remaining_holds": [
+    "W01-W03 final workflow/input-screen/self-disclosure reconciliation and current PRODUCT/ROADMAP scope alignment",
+    "F01-F08 full technical contracts;22 closes only structural effect-manifest SQL specification",
+    "Source action/Account/CCF1 provenance, legacy-shape refusal, reciprocal source/head/claim integrity and all adoption/gate/attempt/work participants",
+    "F04 sanitized errors/logs/DB diagnostics and actual cross-customer information-flow boundaries; no executed Verus proof",
+    "Migration/enrollment, independent journal/custody provider choice and current-authority recovery contracts",
+    "Four independent integrated design reviews and explicit exact design SHA approval, then independently reviewed and approved executable test SHA and named RED lane admission",
+    "Runtime measurements, actual provider deployment, release/production/payment/legal authority remain later separate evidence"
+  ]
+}

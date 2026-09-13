@@ -1,0 +1,34 @@
+{
+  "classification": "evidence",
+  "messages": [
+    {
+      "timestamp": "2026-09-13T21:57:35.035Z",
+      "role": "user",
+      "text": "다음"
+    },
+    {
+      "timestamp": "2026-09-13T21:59:24.656Z",
+      "role": "user",
+      "text": "하나씩 승인받지 말고 실행까지 필요한 모든 준비를 마치고 독립검증까지 마친후 알려줘"
+    },
+    {
+      "timestamp": "2026-09-13T22:00:03.581Z",
+      "role": "user",
+      "text": "Everything should be enterprise production standards. And I don't mean legacy enterprise on the boring legacy technology, but trailblazing idiomatic rust best practice."
+    },
+    {
+      "timestamp": "2026-09-13T22:01:05.195Z",
+      "role": "user",
+      "text": "Tests should be ready for TDD in production standards. not a thin, and overclaiming test coverage"
+    },
+    {
+      "timestamp": "2026-09-13T22:04:11.809Z",
+      "role": "user",
+      "text": "Everything from how we approach a problem to what we do to address it should be approached from multiple lenses like first principles, cartesian doubt decision making, design thinking, systems thinking, and other development philosophies"
+    }
+  ],
+  "source_file": "rollout-2026-09-11T16-59-27-01a09244-a53e-7c83-b38a-73150cfa02dd.jsonl",
+  "source_prefix_bytes": 143166045,
+  "source_prefix_sha256": "2a5a1772f9140ab30ee9644da51cf1411be2a4b20886594c27708538c3f36014",
+  "application": "Complete all first-vertical implementation preparation and independent review in one batch; no individual test approval pauses. Enterprise production TDD and idiomatic Rust; multi-lens problem framing, alternatives and verification. No production/payment/legal authority inferred."
+}

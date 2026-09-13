@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_design_candidate",
+  "recorded_at": "2026-09-12T17:30:13.435004+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "e3712a2cbf485c197e0769c20789800c825863e9",
+  "reviewed_contract_sha": "61f8ed96f760fed287a52d4f31f0886346db9c06",
+  "predecessor_record": "../2026-09-12-implementation-readiness-08/record.json",
+  "predecessor_record_sha256": "6c099a047190bf8b25d1f94f74a05153825559e5d31693dcafa95c2dcd738cdd",
+  "whole_design_approved": false,
+  "files": [
+    {
+      "path": "acceptance-plan.csv",
+      "bytes": 8764,
+      "sha256": "c267e28552fd025cee04e1071a3b7a1ef8a6b80096821fb1ae6496757bda5eed"
+    },
+    {
+      "path": "assignment-contract.txt",
+      "bytes": 35371,
+      "sha256": "79e9bc3e344e2736aab88ad3a1c533e147d6679e5d3827e2ae2497dd84776637"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 2326,
+      "sha256": "3fe3c29e389067cf69b031df1259de9753ce930e01b1a172dd29c455048b279c"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 726,
+      "sha256": "b0e41990928a13a2f7263baf469b75c804c994a7eb86a94890029d789bdf3124"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1284,
+      "sha256": "abfadd5de96b8626031de428653810afe6894699e7d6f993ae95daa34f23eab9"
+    },
+    {
+      "path": "review.html",
+      "bytes": 39761,
+      "sha256": "cf7592f08e6004955aceaf12a026e698637ac0f5b591497a8e727a635da1fd45"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 972,
+      "sha256": "60361f5a1185694b1c0997450bcf0baf1189ccec8937c8030ac82695d4e3e2a6"
+    },
+    {
+      "path": "screen-states.csv",
+      "bytes": 2614,
+      "sha256": "1e9ce338340accb18b15a6264c221be82624d43969f8c37876b2f563200a1293"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 4112,
+      "sha256": "9c25da74f97fce6c72a6de21d35a322a63d84054fc4d64f629fb04122ebc0dae"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1290,
+      "sha256": "9921601037b254a39ea67dae505dc0a32132d8223a020cde013c29eeb80b76ee"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 3282,
+      "sha256": "bfeabc12a36576c8dfb518d2361b2dd346c4d94654819a36d2cf9d72533e7407"
+    }
+  ],
+  "remaining_holds": [
+    "W04 exact SQL/ACL/API and all-route owner/lock/migration integration",
+    "W02 integrated V01\u2013V10",
+    "W03 monetary self-service publication and correction",
+    "Whole-design consensus and explicit design/test SHA approval",
+    "Current authority alignment; qualified production/source and operational evidence"
+  ]
+}

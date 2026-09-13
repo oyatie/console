@@ -1,0 +1,24 @@
+{
+  "status": "PENDING_SCOPED_REVIEW",
+  "closed_if_accepted": [
+    "One-time preparation/seal/publication binding identity structure and guards",
+    "Mandatory per-effect submitted-intent adoption reciprocal keys on existing common adoption owner",
+    "Once-at-publication exact live bytes validator, distinct from durable history and current protection",
+    "Shared-unit/current-obligation lifecycle and manual recovery invariants"
+  ],
+  "remaining": [
+    "Actual governed unit/purpose/obligation schemas and canonical metadata/command projection validation",
+    "Complete per-action required-evidence inventory/cardinality/bytes/lock budget and independent domain protection",
+    "All seal/publication/pin/hold/quarantine/disposal lifecycle mutation bodies and final owning SQL/Rust signatures/ACL/provenance",
+    "Full native source/head semantic/caller integration",
+    "F05-F08 migration/provider/journal/recovery/executable harness contracts",
+    "Current-authority scope alignment;4 integrated design reviews/exact design approval; executable test approval; RED implementation admission"
+  ],
+  "next": "Close complete per-action evidence/pin inventory and live-protection transition contract under existing owners, then remaining integration outputs on22 finite map.",
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "w04_complete": false,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "verus_proofs_executed": 0
+}

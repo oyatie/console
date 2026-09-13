@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_design_candidate",
+  "recorded_at": "2026-09-12T18:15:14.743305+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "fb8172bc92c4606fd1acdda38fc475899324179a",
+  "reviewed_contract_sha": "aee9ceb3168c59cc25486cceeedf2219e82e223d",
+  "predecessor_record": "../2026-09-12-own-payroll-review-10/record.json",
+  "predecessor_record_sha256": "2b57e62d0a54cf76381215c4fdfb4dac88e338c69b953d56f80f46ff7d2fdf2b",
+  "whole_design_approved": false,
+  "files": [
+    {
+      "path": "command-map.json",
+      "bytes": 16909,
+      "sha256": "b0343e9855a32f73d867f8e170b21cbe0a9f412032584e10a4c6e3578578c794"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 2049,
+      "sha256": "d85c9caca9b98e0e8938f024ae431f45c8497ed165af6b3ea7ac09c7f8decda3"
+    },
+    {
+      "path": "input-overlays.json",
+      "bytes": 4096,
+      "sha256": "67668fffb69204aa53432531532e15af9e1842b0b7e8802969904a913fc3cd0b"
+    },
+    {
+      "path": "journeys.json",
+      "bytes": 15197,
+      "sha256": "ffa56b0db3ec3f6a929548cc1a4fde10c9bdf8e858b9175af37d1374cb7c00a8"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1112,
+      "sha256": "276c38b706d32a40dff4a33231407b1b96794c16d8a1e0163461e909cb02d77e"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1647,
+      "sha256": "5ba019ba1e6c90a4aa5ea5f093f8b89cb748bbcf83d4ca84865ff8f2530e9a2e"
+    },
+    {
+      "path": "review.html",
+      "bytes": 167807,
+      "sha256": "0fb4ce518c235811aadc64473be8ab94682b1b4497a4ddd08ff807b319c71e79"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 1099,
+      "sha256": "05607ec83cc2aeb9dabbcd89fc875f913be696ac7149a1165c5a241b16ec4b9b"
+    },
+    {
+      "path": "screen-contract.txt",
+      "bytes": 23622,
+      "sha256": "1e6f33eafe14226a999fab50edd9e9d298a89e3ffcb365af710b7ec723eec7bd"
+    },
+    {
+      "path": "screen-map.json",
+      "bytes": 17263,
+      "sha256": "309d797c018ac38f1362cf9e789f2b33cf6545050e7da7b28ec44d5c1c657bb5"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 4161,
+      "sha256": "d0e9c5cb5ebf54458cf09594db705d1499e7f8aae30fca99703e8ec6d55a3ec5"
+    },
+    {
+      "path": "state-matrix.csv",
+      "bytes": 70151,
+      "sha256": "ec793d3c5025c81154e5ea81bd7107003f4a1f79e9cdeaa6b198db2e0b957af7"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1821,
+      "sha256": "89ba1fe6ad20b26b0e8b1c1e8aa00f1641f9989bd6a622c0b3e2e30bb74069f2"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 4676,
+      "sha256": "649d818c4af63cb7511abfcbe996bb99b7fcde93a7dbe5ce21723d22d77d9e23"
+    }
+  ],
+  "remaining_holds": [
+    "W04 exact transport/DTO/schema/owner SQL ACL migration/lock/source/numeric/runtime contracts",
+    "W05 current authority alignment + final integrated four-review consensus and explicit design SHA approval",
+    "W06 executable tests independently reviewed and explicit test SHA approval; valid RED admission",
+    "Pilot production proof and legal/payment/external capability authority",
+    "Full Console stories/common communications/sheets and Foundry leaf inventory remain separate work"
+  ]
+}

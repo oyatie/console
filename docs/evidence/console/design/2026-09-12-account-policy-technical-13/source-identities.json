@@ -1,0 +1,262 @@
+{
+  "sources": [
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/identity/adapter-postgres/src/lib.rs",
+      "git_blob": "c056b938bcf7558eb3100b4e3287f544c2e39605",
+      "sha256": "ef620495a547484ededbb8b2e080222b47a63119534ff6f48f722116c9edd32a"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/identity/rest/src/lib.rs",
+      "git_blob": "120123fa3e2e9e5c2f06fcd1c7c4b0d8fa903a07",
+      "sha256": "34a7a9a7e81ef0cdbd6b364b8e8a011aa0a4b96fec0515d480f1e5824f4144b6"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/ontology/adapter-postgres/src/instances.rs",
+      "git_blob": "9dd1450773dc051a85b26f36c30d259417f6335a",
+      "sha256": "c68640056994e2b8f96e7ab31522a77bbb4a64d0276355e735b956612f693463"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/ontology/canonical-adapter-postgres/src/employment.rs",
+      "git_blob": "e4dc45073be9e7a61e85244643ff021689715159",
+      "sha256": "914bf56b60182068a80c87f891f56740582352111eb81ab68077a8a7bb48da92"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/ontology/canonical-adapter-postgres/src/org_unit.rs",
+      "git_blob": "84ac477f7a1cff76f5052f06c3d7a45b23897799",
+      "sha256": "08ddf639038f0941ca0e53292c198f0be0846126d542ec6b9e0b5e46c34b649d"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/ontology/rest/src/lib.rs",
+      "git_blob": "628995399c59e200620a25a36628b4a916241cc5",
+      "sha256": "b51fb6929cba515d8961f6b6c4479e2c9037502c82276944a613d2e41c87f0a9"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/auth-rest/src/lib.rs",
+      "git_blob": "fa3fe201c1c22918e69eb44f111e9200f1ad631b",
+      "sha256": "b5baedb7f5e349863a02620ab1b595fb0ee4310f266ea6f484e0d272475afd82"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/auth/src/jwt.rs",
+      "git_blob": "da0f69897a6acdec3aaf16e36ab5920c687a29da",
+      "sha256": "a67e2204bdbe8b3dfe1cbf96851e38ce3b331c760939e697136fa97528ed367f"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/auth/src/refresh.rs",
+      "git_blob": "ec753e9681db084b8c220220da64dcbe3541160b",
+      "sha256": "429402bb25a003481b15ca30abbd1847f558720c9db1c7741ab64856bfa0fc38"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/auth/src/webauthn.rs",
+      "git_blob": "1e4c970a4192d0588ea5ca27a6ad575db818ae18",
+      "sha256": "4ecaa2656040482112872b795daecee16b2d15ee1ad7d6052018410755672b57"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/authz-rest/src/lib.rs",
+      "git_blob": "36dc07a55dc7250c42f914c488862373b7610aab",
+      "sha256": "8eb110243ea3c8ed2c9f34a29297fd707fce241d20c827762b331cb36e311d16"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/authz-rest/src/store.rs",
+      "git_blob": "49739a2618bbb8b2f14abdfbe09b14cc38ff0ecf",
+      "sha256": "bd7653fd507e56e095a5809c9fd95493c3700348ea11192c4fb79fbd33221d9a"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/authz/src/cedar_pbac.rs",
+      "git_blob": "9e90a0f138bb171100a08a4cb5a9f31755cbaadb",
+      "sha256": "edfa49add7699810ec894d9098a65bbb57bd08bcb82d4902c4d8e89a69fd824c"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/authz/src/cedar_pbac/authoring.rs",
+      "git_blob": "9b1db3a07bf36f63faead4097d5db1a772cd40b1",
+      "sha256": "6ccaf74f1de8e8dd370b09650cb25740509998a1c196ef5dd4f5fcbd483eaa70"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/authz/src/cedar_pbac/engine.rs",
+      "git_blob": "71d79d70e3072abe2662d524ec5073bc78bb2988",
+      "sha256": "fe088dfaa25f03f0ed0761a1e76dca1d09150d01a1991fe25b1803938844c19a"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/authz/src/cedar_pbac/residual.rs",
+      "git_blob": "f674d723142737108e1b2629153ab117ada6e885",
+      "sha256": "b2f54a705d0f6317e5389ed5014714036315a836adb5a297544bea9a08fa93ed"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/authz/src/lib.rs",
+      "git_blob": "fa343e2cbd5d23a8a0649b9ab2d2a7b72ca7a081",
+      "sha256": "1e663e5ef898c129b9e6cdfc1a5eb16574b57c7e0dab1e8ab1ade8dbd9e0f65d"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0002_create_users.sql",
+      "git_blob": "01ad800e7e1ef69bd281362497448e68ff712012",
+      "sha256": "a0e4eb8807b2e5e135d07c1023cc9ab46cb7b6147758c5155233633ccbc7e49e"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0003_create_audit_events.sql",
+      "git_blob": "5a8c64cfec37d56a1d597d1fff40503edb9eae9e",
+      "sha256": "bc1b55eeb4579b7d86f440923b525a6e4c3230b84c7c9fcf53c9feedc979ed5e"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0004_create_auth.sql",
+      "git_blob": "7331a81c76491321298c7b61a44247f171284493",
+      "sha256": "e46f3a5ebe8502df66efca0e12aab2a3d4ab80af45499c511d776704d2ce6111"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0006_create_provisioning.sql",
+      "git_blob": "608a43ca1b1d26407c68b55b9b8d777ea4f5833a",
+      "sha256": "6a9b50252046fe8271722547c979255ce5122443c6c0573a7d1714cc7cae18a7"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0034_enforce_org_id_rollout.sql",
+      "git_blob": "15ace98786d9065dfbbdee98a13e7ad610712a61",
+      "sha256": "9d8854c695d8df9b4a28871e009f462e8139a40cd03312336e57f3484bd695af"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0035_enable_rls_rollout.sql",
+      "git_blob": "8510c72d447dc84580b40e78c7601f8ff409e124",
+      "sha256": "3a73c7e3f107aa185df33ba112ecb420d3c43b117e39bf3d9798480dddbc284a"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0036_platform_onboarding.sql",
+      "git_blob": "ecdf4f3a3b43297fa7452d5668ece9cd4485db05",
+      "sha256": "0db125de6f76569fe0c02b5c59bf163474947cc34cb7c657a07451c66f57680c"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0038_auth_preauth_org_resolvers.sql",
+      "git_blob": "aa3f4a19be0f6cafb6c44074557d4b358ddb9838",
+      "sha256": "41d37125db45ff0ffa8d119e9aee63729f8e79716c9f73dc59ef2efdf0b49ac4"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0065_create_policy_roles.sql",
+      "git_blob": "4222f804c82ea2a1ff559701e97fbfec91b68466",
+      "sha256": "efafb0aa1b2829fd9139eb137397c0c8fd0056555f37888adc0afaf1d7c618d7"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0067_auth_device_login_handoff.sql",
+      "git_blob": "5e8b2496f84841fc4fd7aed289a7754ad8dc9b15",
+      "sha256": "e7320f62498807d5df8a28eb9739e202cafb49c71c9bb811ba7e6e919172bb04"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0096_create_subject_authz_versions.sql",
+      "git_blob": "ff904e6cfcf12fd9cb1286461bdc6f0ba57ddb87",
+      "sha256": "37e32d51ee3bf1861b10f168ca62cc6b4a9802fdde0a48c1e86f5152b11a2de8"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0144_auth_webauthn_ceremony_bindings.sql",
+      "git_blob": "db3968648af549eb1b59bae6bd5e72e57035f050",
+      "sha256": "47a272548bcd39a8f714ab42d99701bd67c4bf9dd4fd1c08c78fec8ff6a390e8"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0150_create_cedar_policy_staging.sql",
+      "git_blob": "0e8fedc9ef3b14c274ae117cb9c5609c73a260d0",
+      "sha256": "e225fab1adc551dc3f3aad5fae9cea3113379748113d6ffbc0d639e9dc989f17"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0154_create_cedar_object_property_policies.sql",
+      "git_blob": "4d5e667cdb75fb6fb25012b9f9c3dc630f45057b",
+      "sha256": "5f4f44ec5f11a19780122c37f848ff2ad9a6fa7c7ca345684c10452a4c95a2ef"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql",
+      "git_blob": "fe8e6f8c6ebe936a0ebefff4bdca980fd531aa40",
+      "sha256": "1bf3bb5f45c56b4c91bc6b105d6810cd94b2f3da557784a8532f3dc40a471ff2"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0196_platform_force_command_and_fk_closure.sql",
+      "git_blob": "4d6136c907296c35c51254a35bbaacbbfff5b0cb",
+      "sha256": "63088204bcbfcd1922674e0f0a9eec3eb6518a26edcf0a9bdc2a6448201b7f9c"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0205_ont_policy_api_attach_writer.sql",
+      "git_blob": "61fecb5ff59c9b881a1753caae93a6166a731f0e",
+      "sha256": "78fd55fa2947518ce6c8971f685d9e0a5a5271dfe5114f0b29bfe68037b9d469"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0206_ont_policy_api_attach_command_role.sql",
+      "git_blob": "0c850783825ad457e25667ae5885eab940d3b931",
+      "sha256": "4122d505e57e032d44ccf53c40cad9a23a6eef2495603b5c03341531ad8ae0b5"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0208_force_remove_maintenance_history_ordering.sql",
+      "git_blob": "521707833cd3eef1cfd9a46bca7c14e22fe8921f",
+      "sha256": "ed013bed3ca07a64409f3be58e103207d4ecf3312ed5f1c39594311eb8e4e6f7"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/provisioning/src/lib.rs",
+      "git_blob": "3ad29e1dc2b1a4d2c5730d8ce963c5bf2e362633",
+      "sha256": "e4892c3e83014cbde9a7432810af61a5f32f8b678f2e4f7342dcc22e29d53815"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/request-context/src/lib.rs",
+      "git_blob": "ec5419c2e92e7928bed2747185a0b6d91e7c1004",
+      "sha256": "83ca8ec103174d2e706da28b39515aa1852316de2c5d24faef0c56105dc05e63"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/workflow/runtime/src/authz_guard.rs",
+      "git_blob": "adcbc46a17383a7a6f3dd210fef681db0b2cb921",
+      "sha256": "9384899bc153e98feccf622385747b4be0f8c6dff7b1f8e28da82705f92c5b4a"
+    },
+    {
+      "commit": "a3e5a0333f20f50a60de326eeddf422c2b6c4ac2",
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/actor-and-identity.txt",
+      "git_blob": "743b777a0e774c0062a0cdcfc227f3977fbebc1f",
+      "sha256": "2a487dafb1255fbdd3e81b38085d8216bc056066fc13f89789888b170725bdee"
+    },
+    {
+      "commit": "a3e5a0333f20f50a60de326eeddf422c2b6c4ac2",
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/access-model.txt",
+      "git_blob": "3a52291f483032d53c93d8b6f9752a56295201e6",
+      "sha256": "9d32e0d3fe8a7f033ab6dfac6ac3fe92b542d5f4f831a5b2fb43ee60a11342e0"
+    },
+    {
+      "commit": "a3e5a0333f20f50a60de326eeddf422c2b6c4ac2",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/execution-contract.txt",
+      "git_blob": "eca5781d09b7b82c07926cc3ecf0b2fc1a923a43",
+      "sha256": "31bb997397930864df193de1021f0e7c480d4eb5e941d86cefcd5bffa3c1b17e"
+    },
+    {
+      "commit": "a3e5a0333f20f50a60de326eeddf422c2b6c4ac2",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/remaining-work.csv",
+      "git_blob": "262264d84fc5c5a8b180d17fd2a97b80d66766ce",
+      "sha256": "29e75c4f2b1c116bd33b959bff204e1b032759045a65700afe0f849e6a4158b5"
+    }
+  ]
+}

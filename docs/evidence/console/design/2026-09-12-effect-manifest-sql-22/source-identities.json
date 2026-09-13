@@ -1,0 +1,118 @@
+{
+  "sources": [
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0031_runtime_role_and_immutable_org.sql",
+      "git_blob": "14d8ed330de4d779067de50e158dbc15b293605f",
+      "sha256": "f2b9537ef1c063f55fcbfe7519a4769690bfd3f613eb8704c6cd36dbda062329"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0152_create_ontology_registry.sql",
+      "git_blob": "73418f1c37b9af67525aa3bf551134201319d487",
+      "sha256": "f5e8b9d101c256bfe49239bf51ee74825a7a28ef1c8206848a3e9b0441e13484"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql",
+      "git_blob": "fe8e6f8c6ebe936a0ebefff4bdca980fd531aa40",
+      "sha256": "1bf3bb5f45c56b4c91bc6b105d6810cd94b2f3da557784a8532f3dc40a471ff2"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0166_leave_exact_charge_and_home_branch.sql",
+      "git_blob": "2c7edee4d3df10d881c9bf9a64ed6cf9a8785846",
+      "sha256": "ec392fd637fab3629bf1435ff3a4333aa7326fa08c7bdb1ffc04f40a324dca35"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0177_ontology_action_command_receipts.sql",
+      "git_blob": "477fbc4fe47c7e9374cffa6fd117e2a98d397c19",
+      "sha256": "c4ef36f24582b1d3034c7212877103bb72724138bef1d66dabbef24410fa40ba"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0206_ont_policy_api_attach_command_role.sql",
+      "git_blob": "0c850783825ad457e25667ae5885eab940d3b931",
+      "sha256": "4122d505e57e032d44ccf53c40cad9a23a6eef2495603b5c03341531ad8ae0b5"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0219_canonical_projected_audit_dedup.sql",
+      "git_blob": "6df2aa3d4eb6c1705bb97ec3165794fb0a56ec04",
+      "sha256": "51abd7941c4299ef6fc89c0e104d1c335246f6c3f469bb680435414326ff645c"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0223_ont_action_command_receipts_owner_target.sql",
+      "git_blob": "c0298785fcf82cda0bd323074729593e6acf330b",
+      "sha256": "5879bfa87f1b5b14b824a05ba7f69dd77a78e03b218858ec5625bba2521c4e2f"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "ops/compose.dev-deps.yml",
+      "git_blob": "094f4fb2bf90bb31058cd205a724b5e5501d7de1",
+      "sha256": "48ae5daa9daaf6db9b770379f35ac2dff793805bc7d07293deb06b99fe1a78ce"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/DELIVERY.md",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4"
+    },
+    {
+      "commit": "4c1640867e26af4ebacb19634641beda262ed50f",
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/result-membership.json",
+      "git_blob": "b95cbf5e91e3680ec337fd07a5aa779411b10d8d",
+      "sha256": "68d8061dcb64bd65a0469e77f77d69e99929e54415677173e26bb88066295bfc"
+    },
+    {
+      "commit": "4c1640867e26af4ebacb19634641beda262ed50f",
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/membership-witnesses.json",
+      "git_blob": "b0f27e4f021f09119b8a79d70935b0bba4204676",
+      "sha256": "dcc12c1119da8010323c5c1a36c709193832913e30c9205657700f0776b028d9"
+    },
+    {
+      "commit": "4c1640867e26af4ebacb19634641beda262ed50f",
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/persistence-contract.txt",
+      "git_blob": "400b4ed48226580890fb2bca6681a65091366b46",
+      "sha256": "4c3907f6335dd21d9d94a43549e9fff50a0be79191aea311a14d9404e2089cc9"
+    },
+    {
+      "commit": "4c1640867e26af4ebacb19634641beda262ed50f",
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/source-key-matrix.json",
+      "git_blob": "73683c9762c1e7d3fd73eee34eaf930a1237f94f",
+      "sha256": "5dc5aecb3510b92f9226653e5bfec234f3f75d5303dd20a34eeaa4d9b9a5fd0c"
+    },
+    {
+      "commit": "4c1640867e26af4ebacb19634641beda262ed50f",
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/information-flow.txt",
+      "git_blob": "9377868b07ff614a3035a995d520cea267cd3611",
+      "sha256": "58e5d378abac3ae742b160baa0c8dc646fdead657d466300137eae10c991748d"
+    },
+    {
+      "commit": "4c1640867e26af4ebacb19634641beda262ed50f",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/closure-register.json",
+      "git_blob": "ff57cbb8521a78dd89f534d1d1cc24adcc9de795",
+      "sha256": "89aab9b3678686e2baa484358204649dcedf1c5a3290a28b47bf86c98b07ead1"
+    },
+    {
+      "commit": "4c1640867e26af4ebacb19634641beda262ed50f",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/draft-attempt-contract.txt",
+      "git_blob": "3a1b036ba3975b98550e5adfbd0c77c39374d6d4",
+      "sha256": "347cd09acb93cfc907bfa855f24496b2d4689dd73ed72c3c865bcf075ed0ac83"
+    },
+    {
+      "commit": "4c1640867e26af4ebacb19634641beda262ed50f",
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/execution-contract.txt",
+      "git_blob": "53bd4d767eb554804008bac84e90bc49b59da727",
+      "sha256": "d71b303bfecc59534e11cfc5850f9e383791c560913cab756ba8a380f5ba6ea0"
+    },
+    {
+      "commit": "4c1640867e26af4ebacb19634641beda262ed50f",
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/work-packages.csv",
+      "git_blob": "c0a3dc04eeb043c22c3c2b5827ee00c29d6bcc25",
+      "sha256": "9417508b59d90118f99972f38fc0f143a3412e4c29748b9db18356dd84d1cb08"
+    }
+  ]
+}

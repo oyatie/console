@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "class": "evidence",
+  "status": "frozen_scoped_design_candidate",
+  "recorded_at": "2026-09-12T15:57:59.309356+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "37e561482cf5010eb5cfe3f041b3d909ef5dc160",
+  "reviewed_contract_sha": "175813e042c9240b329214046da3bb953a141890",
+  "predecessor_record": "../2026-09-12-draft-retention-recovery-06/record.json",
+  "predecessor_record_sha256": "d7a8360d25ef8f4fb1185c040a02f3a2a5dc1e7e640f3839442a28211f23220d",
+  "whole_design_approved": false,
+  "files": [
+    {
+      "path": "acceptance-plan.csv",
+      "bytes": 8152,
+      "sha256": "868e582cc2497a9ecd1baddc297ab7e74a1753afdf28c7476067ce442f793a9f"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 2130,
+      "sha256": "8d822d64fec9fd879b8f322950baf6c8b6b0b7db2cb18f320290e9e2bb174365"
+    },
+    {
+      "path": "group-contract.txt",
+      "bytes": 30850,
+      "sha256": "309a96f5f5cc2ed331a83399d8acb70f9ca88727e3c466340c0484101b56c605"
+    },
+    {
+      "path": "organization-steering.txt",
+      "bytes": 1108,
+      "sha256": "1ba71917ebf060da7866451f05e0808870e004f65a089b56cc2e1e75d7ebdc7e"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 956,
+      "sha256": "7cba6592f8b177365da28d0723fa8c7282bce5018058fe150151387be6418e65"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1348,
+      "sha256": "89bc50accd6a170e596f87e1d8b161f2d8850729c58c28089c9f29e25bd0ad35"
+    },
+    {
+      "path": "review.html",
+      "bytes": 8729,
+      "sha256": "71715b05f108b4593db8474446ed6755cb0c93e241f5b6cc1c62d2c52934c899"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 1067,
+      "sha256": "318041e299786b845e63925890d8827497b790ed317ee22d2f29b4902fb0abf6"
+    },
+    {
+      "path": "screen-states.csv",
+      "bytes": 1675,
+      "sha256": "6f19f9ad005bce509dff774b9dbafdbe677c27abd701ab8bbbaa7f6c2ea9c816"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 3031,
+      "sha256": "79f18a9edf87bdb2f3df696703c67e5d97e2528475893e85c9ad3116e5ed09de"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1609,
+      "sha256": "cfa8f9a9f1163baf4616af28d71e421bf118ffafe44fe7fee02bd15a9d30e49e"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 3373,
+      "sha256": "65f462d84237064eb2ecf36cfca2ef974fe8a4fef92d221487d8a34c8c0e830d"
+    }
+  ],
+  "remaining_holds": [
+    "Exact SQL/ACL/current-policy/helper migration and runtime proof",
+    "Worker session/fencing/owner deadline performance proof",
+    "B04 work coverage assignment lifecycle, general automatic matching/handover and autonomous workload identity",
+    "B07 remaining full application screen matrix",
+    "B08 monetary publication/disputes",
+    "Whole-design consensus and explicit design/test SHA approval",
+    "Current authority amendment; legal/payment/production authority",
+    "Prior repository doc-link failure remains unresolved evidence"
+  ]
+}

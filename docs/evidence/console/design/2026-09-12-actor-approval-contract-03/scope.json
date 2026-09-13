@@ -1,0 +1,29 @@
+{
+  "status": "scoped_decisions_reviewed_whole_design_incomplete",
+  "predecessor_evidence_sha": "04ec346bf1f565176c7883b49459a81b636f7f64",
+  "target_gaps": [
+    "B01",
+    "B09",
+    "B02",
+    "B05"
+  ],
+  "user_confirmed_addition": "One durable Account; unified internal/external resource-scoped Cedar access; no preset occupational roles/ranks or title-driven navigation; account-only applicant entry and post-exit certificates.",
+  "partial_related_gap": "B08 historical self-service/certificate path specified; monetary payroll publication/dispute contract remains open.",
+  "remaining_gaps": [
+    "B02/B07 partial-visibility preparation/review coverage and nonleaking full-run readiness",
+    "B03 durable Group operation",
+    "B04 automatic takeover/unknown attempt",
+    "B06 private form-draft lifecycle",
+    "B07 complete screen state matrix",
+    "B08 monetary statement publication and disputes"
+  ],
+  "non_executable_scenarios": 56,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "whole_design_approved": false,
+  "future_only": "Vendor/partner business modules; foundation considered, implementation not included",
+  "scoped_resolution": "B01/B09 Account/actor direction, B02 S/D/Q/G distinction, B05 correction proposed; not all target gaps closed.",
+  "new_access_detail": "Composable company-defined permission bundles, correlated assignments, resource/field exceptions, forbids, derived data and Cedar diagnostic fail-closed boundary.",
+  "access_path_inventory_rows": 16,
+  "scoped_review_sha": "f8f504c1bc20f5bf7934bf09f2775198a329ea50"
+}

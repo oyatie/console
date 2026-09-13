@@ -1,0 +1,35 @@
+{
+  "recorded_at": "2026-09-12T17:46:50.499441+00:00",
+  "reviewed_sha": "c4871c8b1e5baa55b476c50b06bdbb646a62d1ad",
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-own-payroll-review-10/verify-packet.py",
+      "exit_code": 0,
+      "result": {
+        "result": "PASS",
+        "reviewed_sha": "c4871c8b1e5baa55b476c50b06bdbb646a62d1ad",
+        "core_files_verified": 8,
+        "source_blobs_verified": 12,
+        "scenarios_discovered": 67,
+        "product_scenarios_executed": 0,
+        "screen_states": 17,
+        "contract_sections": 14,
+        "reader_links_verified": 4,
+        "record_manifest_checked": false
+      }
+    },
+    {
+      "command": "git diff --cached --check",
+      "stage": "Before initial and remediation design commits",
+      "exit_code": 0
+    }
+  ],
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "limitations": [
+    "Evidence integrity/CSV references/local HTML links only; no browser or product verification",
+    "67 scenarios are non-executable oracles",
+    "No new whole-repository documentation gate run; prior candidate05 document-link diagnostic remains unresolved",
+    "Actual SQL/ACL/DTO/API/migration/runtime/numeric proof and final integrated design/test approvals pending"
+  ]
+}

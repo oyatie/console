@@ -1,0 +1,28 @@
+{
+  "rounds": [
+    {
+      "candidate_sha": "17fbace8e23ea4daf041029017fff69547c1cdf4",
+      "verdict": "CHANGES_REQUIRED",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "findings": [
+        "Legacy Company JWT may bypass Account suspension on non-enrolled routes and revive after recovery",
+        "Unsupported existing JWKS reuse claim",
+        "Company cursor schema cannot own Account-only context continuation",
+        "Lookahead authorization/expiry and cardinality-before-LIMIT require explicit refinement"
+      ]
+    },
+    {
+      "candidate_sha": "1c99fafdd6012ec3d043668cd6e2acae4f58b5d6",
+      "verdict": "SCOPED_ACCEPT",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "scope": "Bounded13 only; full Account context discovery still required in W04b-04"
+    }
+  ],
+  "whole_design_approval": false
+}

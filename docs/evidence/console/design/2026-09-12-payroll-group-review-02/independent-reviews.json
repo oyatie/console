@@ -1,0 +1,172 @@
+{
+  "format": "author transcription of actual independent reviewer findings, not verbatim transcript",
+  "reviews": [
+    {
+      "round": 1,
+      "reviewer": "/root/design_round1",
+      "reviewed_sha": "6eda7d7cecc982ef500206d836d23051da19f0b2",
+      "verdict": "CHANGES_REQUIRED",
+      "read_only": true,
+      "product_tests_executed": 0,
+      "findings": [
+        {
+          "id": "R1-1",
+          "title": "Same-effective-date correction impossible under existing append-only unique wage rows",
+          "source": "backend/crates/platform/db/migrations/0210_payroll_statutory_rates_and_contract_wages.sql:238",
+          "disposition": "Proposed D03 correction chain; requires re-review."
+        },
+        {
+          "id": "R1-2",
+          "title": "Immutable input membership, CAS and selection semantics missing",
+          "source": "backend/crates/payroll/adapter-postgres/src/roster.rs:30",
+          "disposition": "Proposed D02 revision-scoped membership and transaction."
+        },
+        {
+          "id": "R1-3",
+          "title": "Tax evidence verification creation and applicability contract missing",
+          "source": "backend/crates/payroll/domain/src/lib.rs:1347",
+          "disposition": "Proposed D04 source admission/verification; exact evidence owner/approval reference still must be reviewed."
+        },
+        {
+          "id": "R1-4",
+          "title": "Full-month eligibility not deterministic and kernel ignores arbitrary applicability refs",
+          "source": "backend/crates/payroll/adapter-postgres/src/payslip_draft.rs:109",
+          "disposition": "Proposed D04 explicit supported-case gate; statutory qualification remains HOLD."
+        },
+        {
+          "id": "R1-5",
+          "title": "Reopen/correction state transitions undefined",
+          "source": "backend/crates/payroll/adapter-postgres/src/lifecycle.rs:1016",
+          "disposition": "Proposed D05 transitions; approved-state correction remains separately scoped."
+        },
+        {
+          "id": "R1-6",
+          "title": "Positive acceptance permits permanently blocked native workflow",
+          "source": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/acceptance-cases.csv:5",
+          "disposition": "D10 separates mandatory positive exact calculation from negatives."
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "reviewer": "/root/design_round2",
+      "reviewed_sha": "6eda7d7cecc982ef500206d836d23051da19f0b2",
+      "verdict": "REQUEST_CHANGES",
+      "read_only": true,
+      "product_tests_executed": 0,
+      "findings": [
+        {
+          "id": "R2-1",
+          "title": "Cross-company natural-person proof has no identity owner",
+          "source": "backend/crates/platform/request-context/src/lib.rs:383",
+          "disposition": "D07 remains blocking; alternatives recorded without inventing a global identity registry."
+        },
+        {
+          "id": "R2-2",
+          "title": "Business submission decision conflated with configurable action-execution gate",
+          "source": "backend/crates/ontology/application/src/prepared.rs:205",
+          "disposition": "D05/D06 snapshot and atomic consumption proposed; distinct-person pair and gate semantics need further review."
+        },
+        {
+          "id": "R2-3",
+          "title": "Company-scoped workflow does not own durable Group operations",
+          "source": "backend/crates/workflow/runtime/src/engine.rs:34",
+          "disposition": "D08 control-record extension recommended; exact policy/worker/transaction contract remains blocking."
+        },
+        {
+          "id": "R2-4",
+          "title": "Retry cannot distinguish spent approval, unknown commit and replacement operator",
+          "source": "backend/crates/ontology/rest/src/lib.rs:1874",
+          "disposition": "D06 proposes atomic owner consumption; D08 must settle actor takeover and authoritative attempt resolution."
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "reviewer": "/root/design_round3",
+      "reviewed_sha": "999ef4f513f7a78d6aca3c76c275886d536242b2",
+      "verdict": "CHANGES_REQUIRED",
+      "read_only": true,
+      "product_tests_executed": 0,
+      "findings": [
+        {
+          "id": "R3-1",
+          "title": "Business decision vs action gate roles ambiguous",
+          "source": "backend/crates/ontology/application/src/prepared.rs:205",
+          "disposition": "D12 remains blocking; exact S/D/Q/G matrix must be designed."
+        },
+        {
+          "id": "R3-2",
+          "title": "Replay after source revocation conflicts with current-source guard",
+          "source": "resolution-contract.txt:23",
+          "disposition": "D11 clarification proposed after this reviewed SHA; not yet independently closed."
+        },
+        {
+          "id": "R3-3",
+          "title": "Approved incorrect draft has no operational supersession path",
+          "source": "resolution-contract.txt:36",
+          "disposition": "D12 explicitly records incomplete fallback; cannot treat safe refusal as full correction."
+        },
+        {
+          "id": "R3-4",
+          "title": "Server monetary form-draft lifecycle undefined",
+          "source": "resolution-contract.txt:59",
+          "disposition": "D12 remains blocking: private draft identity/CAS/retention/permission/takeover."
+        },
+        {
+          "id": "R3-5",
+          "title": "Concrete screen state/recovery matrix absent",
+          "source": "resolution-contract.txt:60",
+          "disposition": "D12 remains blocking: per-screen states, actions/errors and focus."
+        },
+        {
+          "id": "R3-6",
+          "title": "Employee journey scope/positive DTO not selected",
+          "source": "resolution-contract.txt:58",
+          "disposition": "D09/D12 remain blocking: readiness-only vs monetary statement cannot be ambiguous."
+        }
+      ],
+      "positive_assessment": "D02/D03 materially improve membership/CAS and same-date correction; D04 supported-case gate, D10 positive oracle and D06 atomic consumption direction improved, without consensus."
+    },
+    {
+      "round": 4,
+      "reviewer": "/root/design_round4",
+      "reviewed_sha": "c2d5dd43df11af789e3a3a413a4aaf8b48221605",
+      "verdict": "INVENTORY_AMENDMENTS_REQUIRED; PRODUCT_DESIGN_CHANGES_REQUIRED",
+      "read_only": true,
+      "product_tests_executed": 0,
+      "findings": [
+        {
+          "id": "R4-1",
+          "title": "Cross-company actor persistence distinct from natural-person proof",
+          "source": "backend/crates/platform/db/migrations/0177_ontology_action_command_receipts.sql:12",
+          "disposition": "Added B09, D13 and positive owning-write O27; actor model remains OPEN_DESIGN."
+        },
+        {
+          "id": "R4-2",
+          "title": "Replay after source revocation needs explicit regression oracle",
+          "source": "test-oracle-plan.csv:9",
+          "disposition": "Added O26: historical receipt after revoked/newer source, current disclosure permission and no new effect."
+        },
+        {
+          "id": "R4-3",
+          "title": "B05 mapped oracle only covers submitted cancellation, not approved correction",
+          "source": "gap-register.csv:6",
+          "disposition": "Added separately blocked O28 approved-draft supersession and B05 mapping."
+        }
+      ],
+      "assessment": "D11 resolves replay-ordering contradiction at contract level, not implemented safety. Positive O01 requires native successful calculation without import; negative O07 cannot pass it. Current-state indicator is independently permission filtered; may be unavailable/undisclosable. No design consensus."
+    }
+  ],
+  "inventory_readbacks": [
+    {
+      "reviewer": "/root/design_round4",
+      "reviewed_sha": "2b427464505e0518ee94e78e537e52677de5a12f",
+      "inventory_verdict": "B09/D13/O27 and B05/O28 accepted; O26 clarification requested",
+      "design_verdict": "CHANGES_REQUIRED",
+      "finding": "Explicitly require a NEW command against revoked/superseded input to fail current guards with no effect, receipt or approval consumption.",
+      "author_response": "O26 amended to include new-command denial separately from historical replay.",
+      "product_tests_executed": 0
+    }
+  ]
+}

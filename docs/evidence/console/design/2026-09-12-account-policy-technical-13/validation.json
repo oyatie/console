@@ -1,0 +1,42 @@
+{
+  "recorded_at": "2026-09-12T19:10:20.968843+00:00",
+  "reviewed_sha": "1c99fafdd6012ec3d043668cd6e2acae4f58b5d6",
+  "environment": {
+    "python": "3.14.7",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "worktree": "/private/tmp/console-design-review-20260912"
+  },
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-account-policy-technical-13/verify-packet.py",
+      "exit_code": 0,
+      "result": {
+        "result": "PASS",
+        "reviewed_sha": "1c99fafdd6012ec3d043668cd6e2acae4f58b5d6",
+        "core_files_verified": 11,
+        "source_blobs_verified": 43,
+        "proposed_tables": 18,
+        "api_boundaries": 11,
+        "writer_source_surfaces": 22,
+        "nonexecutable_cases_discovered": 29,
+        "reader_links_verified": 8,
+        "product_tests_executed": 0,
+        "record_manifest_checked": false
+      }
+    },
+    {
+      "command": "git diff --check a3e5a0333f20f50a60de326eeddf422c2b6c4ac2 1c99fafdd6012ec3d043668cd6e2acae4f58b5d6 -- docs/evidence/console/design/2026-09-12-account-policy-technical-13",
+      "exit_code": 0
+    }
+  ],
+  "product_tests_written": 0,
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "limitations": [
+    "Verifier proves evidence byte/source identity, structural counts/keys and local links only; 29 CSV cases are non-executable proposals",
+    "No product/browser/a11y/Cedar-runtime/database/migration/benchmark execution",
+    "No whole-repository documentation gate rerun; earlier candidate05 historical diagnostics unresolved",
+    "Account navigation/discovery/continuation remains blocking W04b-04; unified physical owner/schema/ACL/transport/harness proof remains open",
+    "No final whole-design consensus or approved design/test SHA; no implementation or production authorization"
+  ]
+}

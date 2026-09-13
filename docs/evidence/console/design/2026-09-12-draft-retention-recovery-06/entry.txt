@@ -1,0 +1,10 @@
+Candidate06 — Draft retention, pinned submission and recovery
+Writer: /root only. Evidence base: 5688c8fde92cb78fd57995a168c631041927aa85, clean isolated worktree /private/tmp/console-design-review-20260912. Product source: 05200e43af13b527ce031b04369e05852862f1d6. Exact immutable review SHA supplied after candidate commit.
+Allowed writes: this new directory only; preserve candidate05 and all earlier evidence. No code, migrations, deploy, authority, generated files, tests or remote changes. Orchestrator-owned design; not an implementation lane.
+Mechanical guide: trace revision/erasure/backup owners -> distinguish draft history, submitted evidence and disposal facts -> specify pin/disposal/restore races and bounded work -> exact-SHA independent review -> evidence consistency/freeze.
+Lenses: Systems Thinking, Chesterton's Fence, Red Team, Zero-trust, Operability, Blast-radius, FinOps.
+Pre-mortem: submission pins all private drafts forever; general DELETE bypass destroys business chains; a SQL selector in erasure ledger becomes executable injection; restored old DB forgets both deletion and its receipt; a 35-day setting is mistaken for proven destruction; an external hash witness detects loss but cannot reconstruct it; a hold races a purge batch.
+Blast radius: evidence only now; future common object revision owner, domain attempt evidence, erasure ledger, storage and recovery admission.
+Detection: exact source identities; no-business-change disposal oracles; pin/hold/batch/recovery crash matrices; independently held intent/result receipts; derived-store/backup inventory.
+Rollback: disable new purge requests while maintaining quarantines, tombstones and reconstruction blockers; never restore deleted payload as a rollback. Recovery requires current authority and independently held journal readback.
+Stop: concrete retention/recovery design and bounded non-executable oracles reviewed. Runtime/migration/provider proof and qualified retention policy remain activation HOLDs. Whole-design consensus and explicit design/test SHAs still required.

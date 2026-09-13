@@ -1,0 +1,56 @@
+{
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "sources": [
+    {
+      "path": "backend/crates/policy/adapter-postgres/src/lib.rs",
+      "git_blob": "b90e88d4d3fe735a5e11d998526f232fb48dc4e9",
+      "sha256": "73a486ad16ce3276bc4406e79f70421fae5f5b147c9e22a9f7a563411bbf95a9"
+    },
+    {
+      "path": "backend/crates/ontology/application/src/lib.rs",
+      "git_blob": "531919daffdb679227e936040aca534fc304bc47",
+      "sha256": "8803150e2bf9c5c4cea5def03740844a6dd69312f2c416a54ec6a1f320a13df6"
+    },
+    {
+      "path": "backend/crates/ontology/application/src/prepared.rs",
+      "git_blob": "5c4ec8cd030b463bdf6364a3110c8f84b7c58757",
+      "sha256": "82b2bb5c13ae7cbf0b2f5127f496eaae31a0a336ce8d048f4757a0f6e0890117"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0177_ontology_action_command_receipts.sql",
+      "git_blob": "477fbc4fe47c7e9374cffa6fd117e2a98d397c19",
+      "sha256": "c4ef36f24582b1d3034c7212877103bb72724138bef1d66dabbef24410fa40ba"
+    },
+    {
+      "path": "backend/crates/payroll/ui/src/lib.rs",
+      "git_blob": "1b91e2011178a7db4427295168f7e38568b93f4e",
+      "sha256": "b981c8d186c8b6ce366f154bad57896ead19437ff585544a018fd629e458e78c"
+    },
+    {
+      "path": "backend/crates/workflow/domain/src/lib.rs",
+      "git_blob": "91851416714106e4d0bece113baa2627f2b65ae6",
+      "sha256": "4915f68f4b0a9818abe89a9fdea61c043a3e92a0011943a6488853057163244a"
+    },
+    {
+      "path": "backend/crates/ontology/adapter-postgres/src/instances.rs",
+      "git_blob": "9dd1450773dc051a85b26f36c30d259417f6335a",
+      "sha256": "c68640056994e2b8f96e7ab31522a77bbb4a64d0276355e735b956612f693463"
+    },
+    {
+      "path": "backend/crates/ontology/rest/src/lib.rs",
+      "git_blob": "628995399c59e200620a25a36628b4a916241cc5",
+      "sha256": "b51fb6929cba515d8961f6b6c4479e2c9037502c82276944a613d2e41c87f0a9"
+    },
+    {
+      "path": "backend/crates/ontology/domain/src/lib.rs",
+      "git_blob": "a5a48eec59d59e636d16d50ddeff9c3fc8693559",
+      "sha256": "3abd25c9700fe363de76d0fce464c2fadd7d23106542a50f58f81d9091e710c6"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0155_create_ontology_instances.sql",
+      "git_blob": "fa789dcba967c1af10cb6076879c30a7bdff770a",
+      "sha256": "bed9b9af5592814d5008cd8e06236b5ee57dfd604a8ed399cc9f0aff0078e1cf"
+    }
+  ],
+  "search_scope": "Source trace establishes reusable common instance revisions and upstream action CAS/receipts; draft-specific typed validation, field/history privacy and lifecycle/retention closure remain required changes."
+}

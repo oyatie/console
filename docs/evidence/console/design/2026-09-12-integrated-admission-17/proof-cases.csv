@@ -1,0 +1,36 @@
+id,contract,trigger,expected,status
+P01,C01,foreign-Company child UUID accepted,composite PK/UNIQUE plus org_id-bearing FK and FORCE RLS USING/WITH CHECK,PROPOSED_NOT_EXECUTED
+P02,C02,head points to absent/wrong-root revision,composite FK; guarded CAS; deferrable constraint for atomic mutually dependent head creation,PROPOSED_NOT_EXECUTED
+P03,C03,generic JSON object passes with missing source fields,reject unknown/missing/forbidden keys before owner insert; immutable trigger and exact schema/digest binding,PROPOSED_NOT_EXECUTED
+P04,C04,0031 gives runtime DML on newly created control,same-creation-tx REVOKE; exact grants; private SECURITY DEFINER helper ACL; real-role catalog proof,PROPOSED_NOT_EXECUTED
+P05,C05,BLOCKED slot has fabricated amount or resolved digest,composite keys/FKs; owner slot completeness constraint; RESOLVED/BLOCKED CHECK and registered source-slot multiplicity,PROPOSED_NOT_EXECUTED
+P06,C06,orphan legacy line contributes to result,composite FK and owning completion constraint over authoritative immutable population; all-blocked batch still appended,PROPOSED_NOT_EXECUTED
+P07,C07,two corrections advance same predecessor,"UNIQUE(org_id,base_wage_id,predecessor_revision), same-root predecessor and head CAS",PROPOSED_NOT_EXECUTED
+P08,C08,current job alone represents entire earning month,effective half-open bounds CHECK plus owner coverage/overlap checks under source-family guard; typed ambiguity blocks,PROPOSED_NOT_EXECUTED
+P09,C09,late wage write slips between source snapshot and commit,preinitialized family guards; writer EXCLUSIVE plus generation change; reader SHARE to final transaction outcome,PROPOSED_NOT_EXECUTED
+P10,C10,cycle and basis disagree about approval request,basis one-time NULL to exact request CAS; same-Company FK; cycle membership basis_id only,PROPOSED_NOT_EXECUTED
+P11,C11,Generic review route attempts standalone governance append,"Owning payroll transaction required: exact request decision, work outcome, receipt and conditional full-cycle coverage evaluation commit or roll back together.",PROPOSED_NOT_EXECUTED
+P12,C12,concurrent overlapping runs both reserve,native daterange exclusion on exact Company/subject/purpose live reservation; owner transitions release/replace atomically,PROPOSED_NOT_EXECUTED
+P13,C13,new correction starts with stale calculated inputs,unique predecessor successor; composite FK; STAGED successor with no current input; publication slot CAS,PROPOSED_NOT_EXECUTED
+P14,C14,reason type permits ambiguous shared task accountability,"unique current assignment epoch, guarded task CAS; exact selected task set for partial workload",PROPOSED_NOT_EXECUTED
+P15,C15,child effect committed but charge rolled back,narrow protected Group counter/charge helper on same selected Company transaction; inherited total lock order,PROPOSED_NOT_EXECUTED
+P16,C16,lease expiry implies no effect,durable attempt and receipt fence; UNKNOWN retains charge and pin; reconcile exact target before transition,PROPOSED_NOT_EXECUTED
+P17,C17,child upgrades parent lock or arms Group RLS,class6 Group command fence before parent; Company child takes parent SHARE without updating Group receipt,PROPOSED_NOT_EXECUTED
+P18,C18,invisible grant changes while stale cursor continues,"guarded hint set plus generation, whole-scan stable-until across allow/deny/future transitions; pre-serialization projection",PROPOSED_NOT_EXECUTED
+P19,C19,lineage-only FK either blocks cleanup forever or deletes required evidence,retained identity FK; exact independently readable snapshot adoption and draft-pin release in same transaction,PROPOSED_NOT_EXECUTED
+P20,C20,new dependency created after disposal manifest freezes,unit guard EXCLUSIVE for eligibility/quarantine/pin mutation; any active chain pin blocks prepare,PROPOSED_NOT_EXECUTED
+P21,C21,pool-owning audit append commits despite deleted batch rollback,registered exact targets plus delete/checkpoint/borrowed ledger append in one Company transaction; journal ACK before next batch,PROPOSED_NOT_EXECUTED
+P22,C22,stale INTENT ACK revives cancelled job,same job generation guard; CANCEL_PENDING prohibits deletion; zero batches and no unknown provider effect; independent ACK then terminal,PROPOSED_NOT_EXECUTED
+P23,C23,latest-key 404 proves historical version removed,"durable provider intent, exact immutable version identity, readback saga and UNKNOWN quarantine",PROPOSED_NOT_EXECUTED
+P24,C24,orphan upload or old signed tip counted as accepted current event,immutable bytes plus linearizable CAS head; signed nonce freshness/current key lineage and idempotent identity,PROPOSED_NOT_EXECUTED
+P25,C25,old passkey mints fresh session or old payload becomes readable,"independent deployment fence; current authority recovery, typed disposition replay and dependency-scoped readmission receipt",PROPOSED_NOT_EXECUTED
+P26,C26,per-adapter default pools exceed max_connections,actual login pool limits plus max replicas including surge/workers/reserved connections; measured whole-command deadlines,PROPOSED_NOT_EXECUTED
+P27,F05,Backfill stops after batch commit before checkpoint response,Same identity resumes exactly; source = mapped + quarantined; no new authority,PROPOSED_NOT_EXECUTED
+P28,F04,Direct runtime RESET ROLE and private helper call,session_user remains low privilege; forbidden call denied; no owner fallback,PROPOSED_NOT_EXECUTED
+P29,F08,1800-subject calculation races self-clock peak,Both exact consistency and declared tail/error criteria met; otherwise stop enrollment,PROPOSED_NOT_EXECUTED
+P30,F07,Restore contains revoked passkey and missing newer receipt,No fresh login/effect replay; independent current recovery or quarantine,PROPOSED_NOT_EXECUTED
+P31,F03,Adopted domain snapshot loses source draft payload,Required notes/evidence still exactly readable under current Cedar,PROPOSED_NOT_EXECUTED
+P32,F06,Journal provider uploads event then crashes before CAS,Orphan not accepted; deterministic idempotent recovery from live head,PROPOSED_NOT_EXECUTED
+P33,F08,Rolling surge plus workers and maintenance,"60 total cap including reserve and actual pool census, no hidden defaults",PROPOSED_NOT_EXECUTED
+P34,F08,All-blocked or empty payroll roster load,Blocked immutable batch exists; empty required population cannot close; no invented positive line,PROPOSED_NOT_EXECUTED
+P35,C11,First valid decision in a cycle with two required obligations,Decision/work outcome/receipt commit; run remains REVIEWING with no whole-cycle completion. Second valid decision creates the sole exact-cycle completion only if full current R/C coverage passes.,PROPOSED_NOT_EXECUTED

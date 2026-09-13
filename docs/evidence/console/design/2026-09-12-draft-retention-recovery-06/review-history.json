@@ -1,0 +1,29 @@
+{
+  "reviews": [
+    {
+      "candidate_sha": "51c8a74f2230ff7474e9c09b690ec2385bf671ea",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        {
+          "id": "RR-C01",
+          "reviewer": "/root/continuity_review",
+          "finding": "External cancellation may outlive rollback of local no-effect fence; old INTENT still authorizes deletion."
+        },
+        {
+          "id": "RR-B01",
+          "reviewer": "/root/payroll_contract_review",
+          "finding": "Same cancellation crash gap independently found; require committed CANCEL_PENDING before external publication."
+        }
+      ]
+    },
+    {
+      "candidate_sha": "ab7efa258e37871ab75330c8daa9d0d192252cad",
+      "verdict": "ACCEPT_SCOPED",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "resolution": "Durable local fence -> external cancel readback -> local finalization; restore applies terminal veto. R37-R39 cover crash cuts and cancel/first-batch race."
+    }
+  ]
+}

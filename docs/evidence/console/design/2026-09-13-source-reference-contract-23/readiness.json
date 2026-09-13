@@ -1,0 +1,24 @@
+{
+  "status": "PENDING_SCOPED_REVIEW",
+  "closes_if_accepted": [
+    "F02 source/result reciprocal identity constraints for7 source families",
+    "F02 structural19 admission event identity chain and3 revoked-claim/head relationships",
+    "W02 existing11 source form/recovery mapping updated against these storage invariants"
+  ],
+  "not_closed": [
+    "F01 full source custody/adoption/Account and batch input envelope",
+    "F02 complete seven source/head/domain projections and owner bodies; current head completeness, subjects, roster/legacy downgrade and final participant integration",
+    "F03 retention/adoption/provider; F04 actual identity/Cedar/log/egress information-flow proof boundaries",
+    "F05-F08 migration/journal/recovery/harness final contracts",
+    "W01-W03 final integration reconciliation, current-authority alignment, four final integrated rounds and explicit design/test SHA approvals"
+  ],
+  "next": "Consolidate full native source payload/custody/actor/adoption schema and owning finalizer signatures using23 keys; complete semantic source/head/projection guards without creating another identity store. Use22 finite closure map; no new broad workstream.",
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "w04_complete": false,
+  "final_integrated_rounds_counted": 0,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "verus_proofs_executed": 0
+}

@@ -1,0 +1,15 @@
+id,concern,path_from_backend_crates,symbol,observed,proposed
+OWN01,Wage facts,payroll/adapter-postgres/src/payslip_draft.rs,contract_wage_in_force_in_tx; insert_contract_wage_in_tx,Existing SQL owner,Add correction resolver/chain; upgrade all readers
+OWN02,Native header,payroll/adapter-postgres/src/pay_run.rs,stage_draft_run_returning_id_in_tx; stage_draft_run_inner,Existing owner coupled to import roster,Split native header branch from legacy import materialization
+OWN03,Roster/source inputs,payroll/adapter-postgres/src/roster.rs,materialise_roster_in_tx,Existing APPLIED-import roster only,Same owner adds immutable native manifest/membership
+OWN04,Close/calculation/results,payroll/adapter-postgres/src/lifecycle.rs,close_preflight_in_tx; close_attendance_in_tx; calculate_run_in_tx; latest_calc_summary_in_tx,Existing run lifecycle,Guarded manifest input and batch membership; retain one arithmetic kernel
+OWN05,Arithmetic,payroll/domain/src/lib.rs,build_line_calculation; build_statutory_insurance_draft; check_minimum_wage,Existing pure kernel,Native eligibility/pension/net wrapper; no new calculator
+OWN06,Employment,ontology/canonical-adapter-postgres/src/employment.rs,PgEmploymentPort get/list; write_in_tx,Existing history owner; get/list current-open only,Owner-backed full-period historical resolver required
+OWN07,Attendance,../app/src/hr.rs,create_my_attendance_record,Existing event/material/audit writer,Source guard participation and scheduled completeness/historical clock harness
+OWN08,Direct REST,payroll/rest/src/lifecycle.rs,submit_run; decide_run; calculate_run,Existing direct transaction route,Enrolled routes invoke guarded owner or explicitly refuse incompatible old flow
+OWN09,Common Action,ontology/rest/src/lib.rs,execute_action projected branch,Existing preconsume and postcommit work,Mandatory owner participant path; bind action/type inside owner
+OWN10,Gate owner,governance/adapter-postgres/src/lib.rs,four_eyes_check_conn; four_eyes_consume_conn,"Existing borrowed PgConnection seam, kind/target binding",Extend exact payload/revision/current identity binding; same tx consume
+OWN11,Composition precedent,orgchange/adapter-postgres/src/lib.rs,EmploymentTransferPort,Existing consumer-declared borrowing trait,Reuse pattern for PayRunParticipants
+OWN12,Composition root,../app/src/lib.rs,PgEmploymentTransferPort,Existing SQL-free owner wiring,Wire mandatory participant implementations without new authority logic
+OWN13,Cedar,platform/authz/src/cedar_pbac/engine.rs,Authorizer::is_authorized,Existing actual evaluator,Current enforced enrolled action/field facts and writer freshness required
+OWN14,Workflow policy caller,workflow/runtime/src/authz_guard.rs,CedarEvaluation::NotConfigured,Existing LegacyOnly coexistence,No global flip or legacy escape; exact enrolled wiring W04b

@@ -1,0 +1,26 @@
+{
+  "status": "PROPOSED_PENDING_INDEPENDENT_REVIEW",
+  "scope": "W04b-02 common registration/control/attempt/receipt/encoding technical proposal",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "a27211a164716abc4473cc1c98b13bf5eaf61fac",
+  "proposed_tables": 4,
+  "np1_registration_mappings": 10,
+  "participant_contracts": 12,
+  "operation_contracts": 12,
+  "nonexecutable_proof_cases": 34,
+  "encoding_witnesses": 10,
+  "source_blobs": 24,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "remaining": [
+    "W04b-03 actual source/qualification/artifact/temporal codecs and10NP1 nested DTO/digest closure",
+    "W04b-04 workflow/capacity/Group/review/publication physical ports and Account navigation",
+    "W04b-05 applied DDL/ACL/retention/adoption/recovery/migration/harness and measured workloads",
+    "W05 authority alignment and final4integratedreviews/explicit design SHA",
+    "W06 executable tests/review/explicit test SHA and RED admission",
+    "Production/legal/payment and full Console scope remain separate"
+  ]
+}

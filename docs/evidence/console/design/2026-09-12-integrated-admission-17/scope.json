@@ -1,0 +1,24 @@
+{
+  "status": "SCOPED_PROPOSAL_PENDING_REVIEW",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+  "owner": "/root",
+  "conceptual_inherited_records": 71,
+  "shared_custody_records": 9,
+  "admission_control_records": 2,
+  "open_closure_items": 8,
+  "constraints": 26,
+  "nonexecutable_proof_cases": 35,
+  "source_blobs": 83,
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "remaining": [
+    "F01-F08 exact mutually consistent design artifacts",
+    "W05 authority alignment and four final independent rounds; explicit design SHA approval",
+    "W06 independently reviewed executable tests and explicit test SHA approval; actual RED admission",
+    "Actual implementation, runtime/recovery/performance proof and separate production/legal authority"
+  ]
+}

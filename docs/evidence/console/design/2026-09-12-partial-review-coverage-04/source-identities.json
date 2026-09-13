@@ -1,0 +1,38 @@
+{
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "sources": [
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/lifecycle.rs",
+      "git_blob": "5d356d3479a3847506e976be86e360ef7a961f70",
+      "sha256": "070c1da569abd4dab31326f2d21953b480dd39d59b21cd5eed3df92b4aa401ae"
+    },
+    {
+      "path": "backend/crates/payroll/rest/src/lifecycle.rs",
+      "git_blob": "33bf65ac2d3975bf41f888461082e0afb0903c6c",
+      "sha256": "49ad599ed56162070b9430a35cce3c34c4f2e18743767c6f5c28587aba834aed"
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/roster.rs",
+      "git_blob": "54d6cbbb6c1711e65afd57a27134a527ecf8f374",
+      "sha256": "26a04d1aad4bb59cfeab1ee5545e89cd7f06dd90f82c3efb0fbb3f7821b2009f"
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "git_blob": "e4f580c348aa2360985040d51e74994313e641df",
+      "sha256": "adfa4d1b1395f03af2853b412e9a65c64966f9a573f16e1b50e29cdaea2135e3"
+    },
+    {
+      "path": "backend/crates/payroll/domain/src/lib.rs",
+      "git_blob": "d2143ea831717fc307f23b2c04e17b637e6eb62c",
+      "sha256": "34176ef3b404ee744edf1da8ea233e5a7fa909192707143356df2ef65adb4a92"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0186_payroll_run_lifecycle.sql",
+      "git_blob": "333c2ab95a06d8df22a6a62c2c3a0c717b4a04de",
+      "sha256": "3d58043039d7512a6790bc5f57a81bb59ace27d886c4114f28197d51becb3143"
+    }
+  ],
+  "failed_discovery": [
+    "payroll/application/src and payroll/contracts/src do not exist; corrected owner description to current domain/adapter/rest structure."
+  ]
+}

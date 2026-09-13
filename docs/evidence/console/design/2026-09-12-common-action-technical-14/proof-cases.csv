@@ -1,0 +1,35 @@
+id,topic,setup,required_outcome
+CA01,REUSE_OWNER,Save a wage proposal,Only common revision/control/ACK changes; employee wage/payroll/work unaffected
+CA02,PRIVATE_ACCOUNT,Roleless Account owns a Company-targeted private draft,Current own-custody read/save succeeds without Employment; Company admin alone denied
+CA03,ACTIVE_INTENT_RACE,Two tabs start same Company/custody/action/target/slot,One active draft; same start command recovers exact identity
+CA04,TYPED_PARTIAL,Save incomplete minus numeric editor; then seal,Save permitted only declared partial cell; seal blocks incomplete value
+CA05,UNKNOWN_NESTED,Supply unknown nested field/duplicate key/unresolved ref,Reject before mutation; no shallow validate_params escape
+CA06,OMITTED_CLEAR,Patch one allowed field while another hidden; explicit clear separately,Omitted fields unchanged; unauthorized supplied field rejects; clear follows schema
+CA07,NOOP_CAS,Unchanged value with current head then stale expected head,Current ACK no append; stale fails before no-op; original ACK never rolls head back
+CA08,TAB_CONFLICT,Two same-head saves; coupled groups overlap or disjoint,One CAS winner; only independent retained-base groups can rebase max2
+CA09,EPOCH_ABA,A to B to A handover or seal-cancel cycle with unchanged cells,Old context rejected despite equal payload; successful old ACK remains historical
+CA10,RESTORE,Restore selected authorized cells from older schema/revision,Append new validated revision; preserve unselected/hidden fields; no domain effect
+CA11,SCHEMA_UPGRADE,Old schema is readable but current owner unsupported,Read through safe historical renderer; new seal/execute refused; no implicit latest cast
+CA12,GENERIC_CREATE_ESCAPE,"Registry auto-create, raw stage/lifecycle or export reaches draft type",Guarded owner path or uniform refusal; cannot skip draft controls
+CA13,PAYLOAD_COPIES,Save draft with sensitive amount/note and inspect audit/ACK,No raw attrs/narrative/hash in generic immutable audit/receipt; normalized seal snapshot explicitly inventory-governed
+CA14,SEALED_DEFAULTS,Source defaults change after seal before execute/replay,No rewritten input/digest; current freshness can reject new effect; historical success preserved
+CA15,ATOMIC_EFFECT,Valid authorized wage attempt executes,Gate/effect/receipt/required audit/attempt/control and applicable work changes commit once together
+CA16,GATE_ROLLBACK,Owner effect fails after gate consume,Whole transaction rollback; no consumed approval without effect; pending state truthful
+CA17,DIRECT_ALIAS,Repeat same enrolled attempt through common Action/direct REST/SSR,Same owner normalized binding/command fence and result; no wrapper preconsume
+CA18,OUTER_CONFLICT,Outer/nested reason command gate target differ,422; no silent dropped outer reason
+CA19,RACED_RECEIPT,Initial miss; concurrent success; execution/assignment permission lost,Authoritative fenced recheck returns permitted historical receipt before new-effect rejection
+CA20,CANCEL_RACE,Cancel races execute; ordinary SELECT initially empty,Shared fence decides success or terminal no-effect; empty SELECT alone insufficient
+CA21,UNKNOWN_HANDOVER,Worker timeout then reassignment/discard/purge requested,Unknown pins preserved until owner reconciliation; no successor duplicate effect
+CA22,READY_HANDOVER,Definitively unexecuted old-actor attempt transferred,Cancel old attempt then new assignment/epoch; successor explicitly seals new command
+CA23,CROSS_COMMAND,Same Company command reused for another action/target/actor,Conflict/withheld under current discovery; no second effect
+CA24,CROSS_COMPANY,Same command UUID in different Companies,Independent full receipt keys and scoped fence; no cross-cell visibility
+CA25,JSONB_FIXITY,Permute nested key order and roundtrip new draft through PostgreSQL,Literal CCF1 digest unchanged; compare bytes not Value equality
+CA26,TIME_QUANTUM,Two accepted saves within same observed microsecond,Strict +1us sequence; actual normalized recorded_at preserved; no rounding mismatch
+CA27,LEGACY_FIXITY,Read existing legacy digest after new protocol enrollment,No rewrite/reseal or new algorithm applied; legacy uncertainty reported accurately
+CA28,HASH_VERSION_TAMPER,Attempt to mutate integrity_protocol or hashed metadata,Append-only guard rejects; legacy marker cannot downgrade new row integrity
+CA29,HISTORY_DISCLOSURE,Current object read but no whole-chain metadata permission,Uniform nondisclosing timeline; separately granted pinned revision still accessible
+CA30,ADOPTION_DISPOSAL,Domain adopts complete sealed input then eligible old editor chain removed,Domain snapshot/evidence receipt retained; optional pin released safely; lineage preserved without pretending payload exists
+CA31,ROLE_SQL_BYPASS,Runtime SQL/old helper attempts draft full overwrite by Company GUC,Restricted ownership/ACL and current draft control deny; proof required before real enrollment
+CA32,FORMAT_ROLLBACK,New CCF1 attempts exist while old effects paused,Compatible readers/reconciliation/security survive; no old writer ignoring controls
+CA33,OPTIONAL_ATTEMPT_OMISSION,Cancel attempt A/command C on PERMITTED action; resubmit C via direct alias without attempt; also race binding reservation with direct lookup,Server provenance refuses omission/terminal attempt; after-fence new binding rolls back/replans earlier locks; no new effect from missing receipt
+CA34,JSONB_NUL,Submit decoded U+0000 through escaped JSON versus literal backslash-u-0000 text,Reject decoded NUL before save/seal; literal printable text remains typed valid and roundtrips without reinterpretation

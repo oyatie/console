@@ -1,0 +1,51 @@
+id,scenario,given,required_outcome,contract_refs
+F01,저장과 업무 사실 분리,허용된 wage form에서 미완성값 자동저장,draftrevision/receipt만증가; wage/Employment/PayRun/application/task/approval 변화없음,"FD1.3,FD1.4"
+F02,완전한 양성 입력→실행,정상월급 입력·저장 ACK·seal·명시execute,같은domain owner로단한번write/receipt; attemptSUCCEEDED+draftCONSUMED와원자commit; SSR허용값만,FD1.7
+F03,Account-only 지원자,업무role/Employee없는Account; 게시공고의targetCompany,자기inputdraft작성/재개; 관리자개인초안읽기불가; fakeEmployment불필요,"FD1.1,FD1.2,FD1.10"
+F04,두 탭 같은 그룹 수정,samebase amount/currency그룹을서로다르게변경,한save만commit; 다른입력보존·허용diff/명시선택; lastwriterwins없음,FD1.5
+F05,독립 그룹 자동 병합,retainedsamebase의서로독립schema그룹변경,serverthreeway 검증후새CAS save; 양쪽값보존; 최대2rebase·noLLM,FD1.5
+F06,의미상 결합 그룹,서로다른field지만periodstart/end한그룹,자동merge안함; 기간의미검토/재검증후명시save,FD1.5
+F07,보존 중인 오래된 기준,다른 탭의 base 이후 25개 revision 존재; 보존 기간 내,공통 이력에서 정확한 base 조회; 독립 그룹만 CAS 병합; 20개 제한으로 소실시키지 않음,"FD1.5,FD1.11,FD1.16"
+F08,save 응답 유실·순서 역전,savecommit후timeout; laterdirty변경 및oldACK도착,samecommandidreceipt확인; oldACK가새head/dirty상태되돌리지않음; alldirtyACK전저장됨금지,FD1.4
+F09,오프라인 및 창 종료,연결끊김·새input은RAM·serverlastACK존재,unsaved명확; 복귀시currentpolicy/head와reconcile; 새창은lastserverACK까지만복구; rawbrowserdisk없음,FD1.6
+F10,내부 이동과 법인 전환,A초안dirty; B화면선택; A늦은save응답,A원scopeflush/오류선택; B에는Bdraft만; oldpayload를B로retarget하지않음,"FD1.2,FD1.6"
+F11,권한회수와 draftsave,field/action/workassignment 회수중 oldtabsave,currentguard로거부; revokedprops/RAMclear; oldpermission으로save/read/history우회없음,"FD1.4,FD1.10"
+F12,숨긴 필드 보존,successor는일부savedfields만볼수있음,허용patch는hiddenfields유지; omitted는clear아님; hiddenvalues/conflictmetadata/SSR미노출,"FD1.4,FD1.9,FD1.10"
+F13,미완성 셀·명시clear,declarednumericfield에-; requiredunset;별도clear,boundededitorstate저장가능; businesssealed값으로통과불가; arbitrarykey/credential/HTMLexec거부,FD1.3
+F14,원천 변경과 사용자 입력,linkeddefaultsource변경;별도userauthoredamount존재,untoucheddefault는허용된변경표시; typed입력보존및stale; sealedpayload자동변경없음,FD1.3
+F15,seal 이전 최신입력 flush,localdirty가serverrevision보다앞섬,모든선택입력ACK후정확revisionseal; saving을submitted로표시않음,"FD1.4,FD1.7"
+F16,sealcommit 후 browsercrash,attemptREADY·draftSEALED; 실행요청미도착,readyintent로재개; 아직제출안됨; 현재권한으로같은attempt명시execute; 자동대리실행없음,FD1.7
+F17,business commit 후 응답 유실,owner효과+receipt+SUCCEEDED원자commit,현재허용원결과replay; 두번째효과없음; draft만READY로남는성공gap없음,"FD1.7,FD1.8"
+F18,중복 execute,동일sealedattempt로두요청동시실행,같은guard에서serialize; 하나효과·receipt; 다른것원결과,FD1.8
+F19,cancel vs execute,READYattempt의취소/실행경합,cancel먼저면delayedexecute거부; execute먼저면cancel효과취소불가·owner정정경로,FD1.8
+F20,오래된 preflight/게이트,seal후resource/policy/source변경,executecurrentguard로무효과; preflightsnapshot/grantedbutton만으로실행불가; gate미소비,FD1.7
+F21,직접 business route 우회,CANCELLEDattempt의domaincommandid를legacyAPI에직접전달,sharedowner가attemptprovenance/terminalguard검사해거부; 별도경로중복효과없음,FD1.12
+F22,업무초안 인계,EDITABLEworkdraft; currentassignment A→B원자변경,originalcreatorA보존; B현재허용input재개; A늦은save/execute가newcustody차지불가,FD1.9
+F23,SEALED 업무 인계,A의READYsealedattempt가있는task를B에게이전,samebarrier로noeffectcancel후Beditable; B가새identity/intent로명시seal; A명령이식없음,FD1.9
+F24,완료/불명 결과 인계,별도AeffectSUCCEEDED 또는실행중unknown,성공은원actorreceipt유지·B후속task; unknown은serialize결과확인전unstarted취급금지,"FD1.8,FD1.9"
+F25,퇴사 전 개인 신청 초안,Account-owned PTO/application작성중;퇴사또는상사열람요청,개인intent자동인계/공개없음; Account유지·현policyownaccess평가; workdraft와다른custody,"FD1.2,FD1.9"
+F26,staged 첨부,pending scan/권한회수ref 또는정상immutableevidence,save참조가공유grant아님; required불완전시seal거부; discard가domain참조파일삭제하지않음,FD1.10
+F27,기한만료 vs 저장/실행,expiry/purge와save 또는SEALEDattempt경합,sameownerfence; expiredID재생성없음; unknown/sealedauto삭제없음; 제출된domainrecord철회없음,FD1.11
+F28,payload bounds,64KiB초과draft/16KiB초과patch/undeclaredschema,명확한입력오류·기존saved보존; 비밀payload로그없음; 무한save재시도없음,"FD1.3,FD1.11"
+F29,후임의 필수정보 부족,Bedit허용부분있으나실행의mandatoryreviewfields제한,부분draft작업보존; blindsubmit금지; 다른적격자/허용정정경로; admin비밀우회없음,FD1.9
+F30,새초안 중복과 재개,같은intent_slot에서두탭동시start/resume,activeintent하나/현재허용같은draft; 명시newrequest만별도intent; GETdraft생성없음,FD1.2
+F31,알려진 무효과와 DB불명 구분,domainvalidation 실패 vsDBcommit응답불명,전자terminalNO_EFFECT해당명령다시실행안함; 후자receipt/rollback확인전failure단정없음,"FD1.7,FD1.8"
+F32,롤백 및 복원,새draft/attempt/receipt존재후기능disable/backuprestore,읽기/reconcile/terminalguards보존; currentpolicy적용전oldpayload공개없음; fakelegacy효과없음,"FD1.11,FD1.12"
+F33,공통 엔진 재사용,초안 시작 후 두 번 의미 있는 저장,동일 instance ID와 공통 revision chain; 별도 editable history store 없음; PayRun 불변,"FD1.13,FD1.14"
+F34,저장 시점과 업무 효력,다음 달 효력의 변경안을 오늘 연속 저장; 서버 시계 역행,revision 순서 유지; 관찰 시간 별도; intended date 유지; 업무 effective head 불변,FD1.13
+F35,중복·무변경 저장,같은 기준과 동일 cells/provenance; 응답 유실 후 재시도,revision 추가 없이 ACK receipt; 변경된 기반 ref는 새 revision; stale base는 충돌,FD1.14
+F36,재시작 후 과거 입력,과거 revision ID와 보존된 schema/source refs; 프로세스 재시작,정확한 저장 입력 재구성; missing ref를 live head로 대체 안함,FD1.15
+F37,허용 부분 복원,과거 금액 필드 선택; 현재의 다른 숨긴 필드 존재,선택 허용 셀만 새 revision; hidden/current other 보존; owner business effect 없음,FD1.15
+F38,복원과 자동저장 경합,같은 head 기준 restore/save 동시,한 CAS만 성공; 다른 작업은 허용 conflict; 과거 head로 되감기 없음,"FD1.14,FD1.15"
+F39,제출 revision 고정,SEALED input에 restore 요청; domain source 이후 변경,취소 확정 전 restore 금지; exact attempt input 불변; current effect validation,"FD1.7,FD1.15"
+F40,제출 전 비공개 이력,수신자는 제출된 객체 현재 내용만 허용; 개인 draft revision 존재,과거 필드/metadata/count/hash/SSR 공개 안함; full chain verifier는 내부 별도,"FD1.15,FD1.17"
+F41,후임의 과거 필드 제한,인계 후 현재 객체 read 가능; 과거 급여 field 권한 없음,history/diff/restore/receipt에서 해당 값·field name·digest 미노출,"FD1.9,FD1.15"
+F42,이력 존재 권한과 페이지,같은 허용 revision 집합; 숨긴 revision이 0개 vs 201개; 별도 이력 존재 권한 없음,두 경우 동일 timeline unavailable; hidden-dependent continuation 없음; 허용 pinned revision read/compare는 가능; metadata 권한자는 최대 50개 keyset page,FD1.15
+F43,스키마 변경과 복원,옛 enum 제거 또는 ref type 변경; 저장값 보존,등록된 lossless mapping만 자동; ambiguous 값은 명시 수정; 옛 renderer 코드 실행 없음,FD1.15
+F44,일반 API 우회,초안에 generic lifecycle/property/history/graph/audit route 호출,draft-aware guard/projection 또는 type deny; SEALED/hidden/history 우회 없음,"FD1.14,FD1.17"
+F45,보존 pin과 삭제 경합,terminal draft chain purge와 submission/evidence pin 동시,같은 fence; pin 승리면 purge 거부; purge 승리면 pin 실패; tombstone으로 재생성 없음,FD1.16
+F46,보존 소실·손상,승인된 retention으로 chain 없음 또는 retained row checksum 불일치,전자는 unavailable; 후자는 integrity failure로 restore/seal 차단; blank/live 값 대체 없음,"FD1.15,FD1.16"
+F47,미완성 참조와 graph,reference 검색 중 text 또는 권한 없는 target,불완전값은 edge 아님; 검증된 제안 edge도 유효 업무 관계·집계·자동 실행 아님,FD1.14
+F48,업무 시작과 인계 경합,WorkItem에 새 draft start와 담당자 변경 동시,동일 assignment fence로 draft set 확정; old actor 생성이 인계 집합을 회피하지 못함,"FD1.9,FD1.14"
+F49,편집 권한 세대 ABA,A→B→A 또는 seal→unseal; payload revision 그대로; A의 옛 save/seal/restore/upgrade/discard,옛 editing context 거부·무효과; 자동 rebase 금지; 새 resume와 명시 갱신 의도만 허용; committed receipt는 역사적 확인,"FD1.9,FD1.14"
+F50,현재 schema와 초기 provenance,같은 초안 schema v1→v2 명시 upgrade,ID/action/target/initial schema 유지; revision별 schema 기록; ordinary save schema 교체 거부; v1 read 보존·restore mapping,"FD1.2,FD1.15"

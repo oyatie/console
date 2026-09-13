@@ -1,0 +1,36 @@
+{
+  "reviewed_candidate_sha": "175813e042c9240b329214046da3bb953a141890",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "author": "/root",
+  "reviewers": [
+    {
+      "identity": "/root/continuity_review",
+      "verdict": "ACCEPT_SCOPED",
+      "scope": "Group/Company metadata and field privacy, frozen memberships, original actor/session, shared/remote staffing and nonhierarchical policy",
+      "resolved_findings": [],
+      "edits": 0,
+      "product_tests_executed": 0
+    },
+    {
+      "identity": "/root/payroll_contract_review",
+      "verdict": "ACCEPT_SCOPED_REMEDIATION",
+      "scope": "Preparation/activation, Company owner execution, cancellation, lease/receipt and successor recovery",
+      "resolved_findings": [
+        "GO-B01"
+      ],
+      "edits": 0,
+      "product_tests_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "implementation_authorized": false,
+  "remaining_gaps": [
+    "Exact SQL/ACL/current-policy/helper migration and runtime proof",
+    "Worker session/fencing/owner deadline performance proof",
+    "B04 work coverage assignment lifecycle, general automatic matching/handover and autonomous workload identity",
+    "B07 remaining full application screen matrix",
+    "B08 monetary publication/disputes"
+  ]
+}

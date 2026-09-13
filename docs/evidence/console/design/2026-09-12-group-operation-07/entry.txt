@@ -1,0 +1,10 @@
+Candidate07 — Durable Group operation and partial Company outcomes
+Writer /root only. Clean evidence base 37e561482cf5010eb5cfe3f041b3d909ef5dc160 in /private/tmp/console-design-review-20260912. Product source 05200e43af13b527ce031b04369e05852862f1d6. Exact candidate commit sent to read-only independent reviewers after authoring.
+Allowed writes: this new evidence directory only; no changes to older frozen evidence, authority, code, tests, migrations, deploy, generated files or remote state. Orchestrator design, not an implementation lane.
+Mechanical guide: trace platform/group and Company domain owners -> select protected Group control storage -> freeze exact child manifests -> define staging/activation/current actor/claim/effect/cancel/readback -> independent scoped review -> non-executable oracle custody.
+Lenses: Systems Thinking, Shared-nothing/eventual consistency, Essentialism, Red Team, Zero-trust, Operability, Blast-radius, FinOps.
+Pre-mortem: global coordinator leaks salary/counts; Group grant becomes Company execution privilege; lost child ACK doubles payroll; expired worker resumes after cancel; added Company silently joins old batch; session or assignment ABA resurrects intent; all-or-nothing label hides partial commits; user must retype all six Companies after one failure.
+Blast radius: design evidence now; future Group-owned control metadata and per-Company intent/receipt transitions. No cross-Company business transaction or seventh employer.
+Detection: exact manifest/receipt identity, current guarded policy, duplicate/cancel/lease races, per-target readback, partial visibility comparison, source facts and independent review.
+Rollback: stop new activation/dispatch; preserve Company receipts, parent cancellation fences, partial/unknown readback and actor-compatible reconciliation; never undo successful business effects by parent status change.
+Stop: B03 bounded first payroll calculation operation and explicit repair/partial-view behavior reviewed. General autonomous actor takeover B04, remaining B07/B08, runtime/SQL/ACL/migration proof and full design/test approvals remain open.

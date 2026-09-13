@@ -1,0 +1,11 @@
+Design inspiration: facts versus recommendations
+
+Cedar official source: https://docs.cedarpolicy.com/auth/authorization.html
+Readback: public-sources/cedar.txt, authorization algorithm/discussion. Facts: default deny; forbid overrides permit; skip-on-error diagnostics. Console recommendation: exact scoped evaluation plus required-fact and diagnostic checks reject affected requests on error. This is an application decision, not Cedar default behavior.
+
+Discord official source: https://docs.discord.com/developers/topics/permissions
+Readback: public-sources/discord.txt, Role Hierarchy / Permission Overwrites. Facts: multi-role allowed permissions combine; a role-level channel allow can prevail over another role's channel deny; Administrator bypasses channel overwrites. Console recommendation: use composable bundle/scope interaction patterns, but retain Cedar forbid semantics and no administrator confidentiality bypass. We are not copying Discord's algorithm.
+
+MMO clan/officer analogy comes from the user, not an independently surveyed game implementation. Recommended interaction ideas: separate rank label from granted capabilities, explain effective authority, delegate bounded tasks, show responsibility and next action. No assertion that games provide payroll-grade isolation, derived-data security or legal approval controls.
+
+Fetched primary pages are retrieval-time evidence, not a dated industry consensus survey. Exact URL/time/source-byte hashes are in adjacent JSON; extracted text is a convenience view. These sources support only the specific comparison above.

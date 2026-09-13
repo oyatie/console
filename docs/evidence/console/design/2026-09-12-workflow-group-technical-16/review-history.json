@@ -1,0 +1,28 @@
+{
+  "rounds": [
+    {
+      "candidate_sha": "5760cbf73585394907c1f88daef6e398cc608299",
+      "verdict": "RETURN_FOR_REVISION",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "findings": [
+        "Candidate hint/Group expansion enumeration must capture generation in same guarded snapshot",
+        "Navigation temporal checks must cover denied/future candidates, not only returned/lookahead allow expiry",
+        "Correction successor must retain NP1 STAGED/revision1/null-input initialization",
+        "Remove duplicate immutable cycle request_ref; ordinary submission/completion must use sole authoritative basis link"
+      ]
+    },
+    {
+      "candidate_sha": "aa2b2a52c2627f2e10a04e666d9d43aa9ecedef7",
+      "verdict": "SCOPED_ACCEPT",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "findings": []
+    }
+  ],
+  "note": "These are scoped technical review cycles, not final four integrated design rounds. Original Git candidates preserved."
+}

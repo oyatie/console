@@ -1,0 +1,32 @@
+{
+  "rounds": [
+    {
+      "candidate_sha": "f9e97f59bb375c0ba375758523f9bb1126d6bb53",
+      "stage": "Initial local evidence, not independently reviewed",
+      "finding": "CSV CRLF caused24trailing whitespace diagnostics; corrected in subsequent commit, no history rewrite"
+    },
+    {
+      "candidate_sha": "2f8ccf7db02dc1c762f5ba5a35c09bd13d1b16b4",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "Authoritative server population vs caller-filtered exact refs ambiguous",
+        "Blocked Employment cases cannot supply one qualifying Employment ref",
+        "New-effect permission loss could reject historical receipt after initial miss",
+        "Negative-net code spelling inconsistent"
+      ]
+    },
+    {
+      "candidate_sha": "6e811c7d019e0f6bc9c1f0961fd3f6b4986ca323",
+      "stage": "Substantive remediation, then participant signature names aligned"
+    },
+    {
+      "candidate_sha": "fa3187a0a61cd1cbde5a296a83c426d7dc7946af",
+      "verdict": "SCOPED_ACCEPT",
+      "reviewers": [
+        "/root/payroll_contract_review",
+        "/root/continuity_review"
+      ]
+    }
+  ],
+  "whole_design_approval": false
+}

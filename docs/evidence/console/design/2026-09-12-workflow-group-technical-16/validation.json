@@ -1,0 +1,45 @@
+{
+  "recorded_at": "2026-09-12T21:52:24.216435+00:00",
+  "reviewed_sha": "aa2b2a52c2627f2e10a04e666d9d43aa9ecedef7",
+  "environment": {
+    "python": "3.14.7",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "worktree": "/private/tmp/console-design-review-20260912"
+  },
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-workflow-group-technical-16/verify-packet.py",
+      "exit_code": 0,
+      "result": {
+        "result": "PASS",
+        "reviewed_sha": "aa2b2a52c2627f2e10a04e666d9d43aa9ecedef7",
+        "core_files_verified": 13,
+        "source_blobs_verified": 37,
+        "proposed_tables": 30,
+        "existing_extensions": 5,
+        "participating_ports": 16,
+        "action_bindings": 16,
+        "nonexecutable_cases_discovered": 70,
+        "group_encoding_witnesses_verified": 2,
+        "reader_links_verified": 12,
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "record_manifest_checked": false
+      }
+    },
+    {
+      "command": "git diff --check 6cec05629a645f32de0efd5bb9875fb8415e04c9 aa2b2a52c2627f2e10a04e666d9d43aa9ecedef7 -- docs/evidence/console/design/2026-09-12-workflow-group-technical-16",
+      "exit_code": 0
+    }
+  ],
+  "product_tests_written": 0,
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "limitations": [
+    "Evidence bytes/key ownership structure and2synthetic Group encoding witnesses only; no compiled DTO, SQL, authz, concurrent database or runtime proof",
+    "70CSV scenarios are non-executable candidates, not passing product tests",
+    "No whole-repository documentation gate rerun; historical candidate05 diagnostics remain unresolved",
+    "Physical SQL/ACL/index/retention/custody/adoption/recovery/provisioning/runtime/migration/workload proof remains b05 and approved tests",
+    "General common actions are proposed; broad new modules/production/legal/payment and certificate issuance are not implemented or authorized by this packet"
+  ]
+}

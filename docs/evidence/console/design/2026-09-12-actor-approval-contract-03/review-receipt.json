@@ -1,0 +1,41 @@
+{
+  "reviewed_candidate_sha": "f8f504c1bc20f5bf7934bf09f2775198a329ea50",
+  "review_scope": "Scoped design decisions and correction remediation only; not full design readiness or authorization",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "writer": "/root",
+  "independent_reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "prior_review_sha": "942372f52eb29dc99428f64f91a675d5ce2c04d2",
+      "prior_verdict": "CHANGES_REQUIRED",
+      "established_blocker": "AI1 blanket active workforce/Group requirement contradicted Account-only applicants and specifically authorized external effects; anchor admission could require identity administration.",
+      "final_verdict": "ACCEPT_SCOPED_DESIGN_DECISIONS",
+      "final_review_method": "Exact 942372f5..f8f504c1 delta and immediate context readback after full bounded decision review.",
+      "resolution": "CompanyActor attribution separated from scoped eligibility; owner-controlled ensure-attribution under current exact entitlement; workforce/Group requirements only when authorization relies on them.",
+      "product_tests_executed": 0
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "prior_review_sha": "e34596a4c2c284e558719212787eedf05f9eb079",
+      "prior_verdict": "CHANGES_REQUIRED",
+      "established_blocker": "Existing create/drain replay materializes roster and may rewrite superseded history.",
+      "final_verdict": "ACCEPT_SCOPED_REMEDIATION",
+      "final_review_method": "AC1.5/N33 accepted at 942372f5; exact delta readback at f8f504c1.",
+      "resolution": "All restage/materialize paths share owner fence; historical replay no mutation; successor allocation separated from materialization; AC1.4 authority wording remains specific to payroll effect.",
+      "product_tests_executed": 0
+    }
+  ],
+  "remaining_design_gaps": [
+    "B02/B07 partial-visibility preparation/review coverage and nonleaking full-run readiness",
+    "B03 durable Group operation",
+    "B04 automatic takeover/unknown attempt",
+    "B06 private form-draft lifecycle",
+    "B07 complete screen state matrix",
+    "B08 monetary statement publication and disputes"
+  ],
+  "whole_design_approved": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "product_tests_written": 0,
+  "implementation_authorized": false
+}

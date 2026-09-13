@@ -1,0 +1,209 @@
+{
+  "status": "PROPOSED_LOGICAL_RECORDS_NOT_FINAL_SQL",
+  "common_records": [
+    {
+      "name": "retained_units",
+      "proposed_key": [
+        "org_id",
+        "unit_id"
+      ],
+      "required_fields": [
+        "owner_kind",
+        "schema_ref",
+        "unit_selector",
+        "identity_digest",
+        "payload_state",
+        "revision"
+      ],
+      "invariant": "Minimal immutable identity survives disposal; state/revision guarded; no Account root. Exact selector DTO F03.",
+      "owner": "shared custody with registered owning adapters",
+      "cell": "COMPANY",
+      "physical_closure": "F02,F03"
+    },
+    {
+      "name": "retained_payload_locations",
+      "proposed_key": [
+        "org_id",
+        "unit_id",
+        "location_id"
+      ],
+      "required_fields": [
+        "adapter_kind",
+        "exact_target_ref",
+        "expected_digest",
+        "expected_size",
+        "inventory_revision"
+      ],
+      "invariant": "Exact physical copy identity; no arbitrary table, SQL selector or latest-key-only target.",
+      "owner": "shared custody with registered owning adapters",
+      "cell": "COMPANY",
+      "physical_closure": "F02,F03"
+    },
+    {
+      "name": "content_pins",
+      "proposed_key": [
+        "org_id",
+        "pin_id"
+      ],
+      "required_fields": [
+        "unit_id",
+        "pinner_ref",
+        "purpose_ref",
+        "created_receipt_ref",
+        "released_receipt_ref"
+      ],
+      "invariant": "Acquire/release under unit guard. Immutable release evidence; any active chain pin retains all revisions.",
+      "owner": "shared custody with registered owning adapters",
+      "cell": "COMPANY",
+      "physical_closure": "F02,F03"
+    },
+    {
+      "name": "domain_adoptions",
+      "proposed_key": [
+        "org_id",
+        "adoption_id"
+      ],
+      "required_fields": [
+        "owner_result_ref",
+        "snapshot_unit_id",
+        "required_evidence_refs",
+        "obligation_ref",
+        "receipt_ref"
+      ],
+      "invariant": "Unique owner result/adoption purpose; exact submitted snapshot and required notes independently retained before pin release.",
+      "owner": "shared custody with registered owning adapters",
+      "cell": "COMPANY",
+      "physical_closure": "F02,F03"
+    },
+    {
+      "name": "disposal_jobs",
+      "proposed_key": [
+        "org_id",
+        "job_id"
+      ],
+      "required_fields": [
+        "revision",
+        "unit_id",
+        "manifest_digest",
+        "state",
+        "cancel_generation",
+        "next_batch",
+        "intent_ack_ref"
+      ],
+      "invariant": "One live disposal per unit; current guards and exact frozen manifest; terminal classes F03.",
+      "owner": "shared custody with registered owning adapters",
+      "cell": "COMPANY",
+      "physical_closure": "F02,F03"
+    },
+    {
+      "name": "disposal_manifest_items",
+      "proposed_key": [
+        "org_id",
+        "job_id",
+        "ordinal"
+      ],
+      "required_fields": [
+        "location_ref",
+        "schema_ref",
+        "expected_digest",
+        "expected_size",
+        "adapter_step"
+      ],
+      "invariant": "Immutable ordered closed typed target; journal-bound digest; bounded batches.",
+      "owner": "shared custody with registered owning adapters",
+      "cell": "COMPANY",
+      "physical_closure": "F02,F03"
+    },
+    {
+      "name": "disposal_batch_receipts",
+      "proposed_key": [
+        "org_id",
+        "job_id",
+        "batch_id"
+      ],
+      "required_fields": [
+        "manifest_range",
+        "effect_status",
+        "exact_outcome_digest",
+        "ledger_ref",
+        "committed_at"
+      ],
+      "invariant": "Same batch identity cannot change content. SQL committed effect receipt atomic with delete; provider evidence separately typed.",
+      "owner": "shared custody with registered owning adapters",
+      "cell": "COMPANY",
+      "physical_closure": "F02,F03"
+    },
+    {
+      "name": "journal_acknowledgements",
+      "proposed_key": [
+        "org_id",
+        "stream_id",
+        "sequence"
+      ],
+      "required_fields": [
+        "event_id",
+        "event_digest",
+        "predecessor_hash",
+        "accepted_head",
+        "key_ref",
+        "signature"
+      ],
+      "invariant": "Local verified receipt cache only. Current independent holder remains authority; does not prove freshness by itself.",
+      "owner": "shared custody with registered owning adapters",
+      "cell": "COMPANY",
+      "physical_closure": "F02,F03"
+    },
+    {
+      "name": "recovery_admission_receipts",
+      "proposed_key": [
+        "org_id",
+        "recovery_id"
+      ],
+      "required_fields": [
+        "serving_generation",
+        "image_schema_manifest",
+        "journal_tip",
+        "applied_watermark",
+        "authority_state_digest",
+        "unknown_target_refs",
+        "proof_manifest"
+      ],
+      "invariant": "Immutable receipt; verified current sources and dependency closure before admission; no Boolean recovery bypass.",
+      "owner": "shared custody with registered owning adapters",
+      "cell": "COMPANY",
+      "physical_closure": "F02,F03"
+    }
+  ],
+  "admission_records": [
+    {
+      "name": "deployment_admission_generations",
+      "proposed_key": [
+        "control_kind",
+        "control_id"
+      ],
+      "required_fields": [
+        "generation",
+        "manifest_digest",
+        "state"
+      ],
+      "invariant": "Protected tagged Account/Group/Company subject; no Group sentinel org_id; exact tag/FK implementation F02/F05; local state is not independent fence."
+    },
+    {
+      "name": "admission_events",
+      "proposed_key": [
+        "event_id"
+      ],
+      "required_fields": [
+        "control_kind",
+        "control_id",
+        "generation",
+        "transition",
+        "manifest_digest",
+        "receipt_ref"
+      ],
+      "invariant": "Append only; composite subject-generation target and transition CAS F02/F05."
+    }
+  ],
+  "topology_history": "F05 must reuse/enumerate existing topology lineage or select minimal missing storage before claiming total DDL count.",
+  "lifetime": "Minimal identity/control metadata retains purpose-bound evidence; not permission for unlimited personal metadata retention. Full lawful retention schedule remains qualified authority input."
+}

@@ -1,0 +1,56 @@
+{
+  "owner": "/root",
+  "base_sha": "d99dad7b78b7ca95c0df0c3dc6e614594669df74",
+  "immutable_target": "Complete consolidated W01-W04/F01-F08 first-vertical implementation preparation: executable tests/oracles/fault/load/proof harnesses, exact source/owner interfaces, build closure and meaningful RED admissions; independent final review",
+  "scope_authority": [
+    "README.md",
+    "docs/current/PRODUCT.md",
+    "docs/current/ROADMAP.md",
+    "docs/current/DELIVERY.md"
+  ],
+  "approved_design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "approved_browser_refinement_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "latest_approved_test_sha": "1e2ea6d2060a3d875e531a9a9e8f749984d0a171",
+  "allowed_preparation_paths": [
+    "docs/evidence/console/design",
+    "docs/evidence/console/preparation/2026-09-13-production-tdd",
+    "docs/evidence/console/approvals/2026-09-13-terms06",
+    "backend/app/tests",
+    "backend/crates/platform/test-support",
+    "backend/crates/platform/db/tests",
+    "backend/crates/platform/auth/tests",
+    "backend/crates/identity/adapter-postgres/tests",
+    "backend/crates/governance/adapter-postgres/tests",
+    "backend/crates/payroll",
+    "backend/crates/ontology",
+    "backend/crates/workflow",
+    "tools/lanes",
+    "tools/ci",
+    "tools/buck",
+    "third-party/rust/fixups"
+  ],
+  "mutation_boundary": "Tests/design/evidence only by default. Any tooling implementation, generated/lockfile change requires separately recorded exact clean RED admission and serialized owner; no product implementation without an admitted lane. Main94 staged paths preserved.",
+  "pre_mortem": "Test counts substitute for reached behavior; synthetic fixture proves itself; deferred failures admitted as behavioral RED; green static specs mislabeled product tests; privileged fixture bypasses actual owner boundary; legacy architectures followed without evidence.",
+  "detection": [
+    "Requirement-to-real-entry-point and oracle matrix",
+    "Positive/isolated-negative/side-effect/replay/concurrency/recovery proof",
+    "Known-bad mutations rejected by the designated oracle",
+    "Distinct authored/compiled/discovered/fixture-reached/owner-reached/assertion-passed evidence",
+    "Exact Git source identities and failure classifications",
+    "Independent security/workflows/operations reviews with fixes and final exactSHA"
+  ],
+  "blast_radius": "One preparation writer and independent read-only reviewers; isolated disposable runtime; serial shared/generated/authority records.",
+  "rollback": "Retain all approved/superseded commits and raw evidence; no destructive shared-workspace Git; stop owned runtime after use.",
+  "stop_conditions": [
+    "Unresolved material contradiction requires design reconciliation before dependent changes",
+    "Environment failure cannot be implementation RED",
+    "No fabricated policy grants, publisher custody, legal or deployment proof",
+    "Finish only when consolidated preparation acceptance is independently reviewed, with later runtime/deployment proof explicitly bounded"
+  ],
+  "later_proof_not_prep_completion": [
+    "Implemented owner behavior GREEN and mutation resistance",
+    "Measured production-scale capacity and failure-domain recovery",
+    "Real deployment keys/provider custody/legal content authority",
+    "Protected integration/production promotion approvals"
+  ]
+}

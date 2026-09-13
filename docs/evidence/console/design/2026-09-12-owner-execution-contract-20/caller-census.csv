@@ -1,0 +1,22 @@
+id,path,line,surface,current_fact,proposed_enrollment_rule
+clock,backend/app/src/hr.rs,1800,POST attendance-records/me,own with_audits and direct event/material INSERT,extract to attendance owning executor; preserve idempotency; source/period guard and common receipt
+clock_acl,backend/crates/platform/db/migrations/0091_create_employee_attendance_records.sql,103,raw runtime INSERT,rt event/material insert allowed,DB refuse enrolled raw INSERT; no app-only owner claim
+attendance,backend/crates/attendance/adapter-postgres/src/lib.rs,426,close_month/amend_close/resolve_exception,pool-owned and month-before-period order,borrowed owner private routines; all aliases share LO20
+leave_calendar,backend/crates/leave/application/src/lib.rs,110,WorkCalendarPort::resolve_charge,no transaction witness,consumer-owned borrowed calendar seam in adapter; pure application no SQLx
+leave_create,backend/crates/leave/adapter-postgres/src/lib.rs,457,create_request,calendar pre-read before separate command,same guarded owner resolution; no production ManualReferenceCalendar fallback
+leave_decide,backend/crates/leave/adapter-postgres/src/lib.rs,897,decide,pre-read command-pool call separate readback,one source-aware owner transaction; historical receipt when readback fails
+leave_alias,backend/crates/leave/rest/src/lib.rs,409,v1 decide,no expected version,enrolled428 precondition_required; v2 also exact attempt/command
+leave_sql,backend/crates/platform/db/migrations/0217_leave_time_change_consult_mechanics.sql,71,leave_api.decide_request and alternate/resolve aliases,active definer + legacy actor + request-before-day locks,Account/CAS common receipt/source witness participation or refuse enrolled target
+implicit_locks,backend/crates/platform/db/migrations/0189_employee_day_eligibility_coordination.sql,27,leave/exception triggers,implicit employee/day acquisition,pre-acquire exact keys and make trigger reentrant; no reverse order alias
+docs_write,backend/crates/docs/adapter-postgres/src/lib.rs,185,create_object/register_copy/private tx helpers,"public pool-owned, private Transaction helpers",stage before final publish; borrowed PgConnection owner routines + confined SQL participants
+docs_verify,backend/crates/docs/rest/src/lib.rs,324,evidence verify,key-only HEAD then audit-only write,not source attestation; source exact version owner route required
+storage,backend/crates/platform/storage/src/lib.rs,388,get_bytes/get_object,key-only GET; version HEAD/DELETE exist,version-addressed bounded GET/readback extension; no latest fallback
+worm,backend/crates/platform/db/migrations/0195_docs_gaps.sql,35,copy verified projection,does not bind provider/bucket/version,"15 attestation required, preserve old label as legacy"
+generic_instance,backend/crates/ontology/rest/src/lib.rs,2414,instance_revision_writeback,already one transaction but no source owner discriminator,reuse common mechanics; source bound types private draft/domain entry only
+projected_action,backend/crates/ontology/rest/src/lib.rs,1873,projected Action dispatch,gate before domain commit and audit after,native owner finalizer owns gate/effect/required audit; wrapper projection only
+payroll_port,backend/crates/payroll/adapter-postgres/src/pay_run.rs,579,PgPayRunPort::write,own pool begin/commit and sync block_on wrapper,"native async owner branch reuses in_tx helpers, never nested port write"
+generic_acl,backend/crates/platform/db/migrations/0155_create_ontology_instances.sql,166,generic instance heads/revisions/links,runtime INSERT/UPDATE grants,DB owner binding guard plus restricted source writer functions
+receipt,backend/crates/platform/db/migrations/0177_ontology_action_command_receipts.sql,4,receipt insert/replay,legacy actor and runtime INSERT,13/14/22xx exact owner/action/Account roster and protected insert
+receipt_roster,backend/crates/platform/db/migrations/0223_ont_action_command_receipts_owner_target.sql,35,owner/target labels,"closed partial roster, not authority",explicit source/native roster extension; not fake PayRun
+money_insert,backend/crates/platform/db/migrations/0222_payroll_payable_runtime_write_revoked.sql,38,higher-version money INSERT,runtime append remains possible,native18 sealed membership/current-owner protocol plus DB-denied bypass
+pool,backend/app/src/lib.rs,1597,AppState command pools,each max2; runtime max6,same singleton ontology command pool with declared shared-holder trust

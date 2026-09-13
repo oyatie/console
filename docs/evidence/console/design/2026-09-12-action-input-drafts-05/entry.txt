@@ -1,0 +1,11 @@
+Candidate05 — Action input drafts, save/conflict/recovery/continuity
+Revision notice: entity-versioning-direction.txt preserves the user clarification; draft-contract.txt and entity-revision-contract.txt now select common instance revisions, with reconciled non-executable scenarios. This packet is not frozen or approved.
+Writer /root only. Clean evidence base b0569a87ea63d6686fd8e884411cc7f07c0f406d in /private/tmp/console-design-review-20260912. Product source base 05200e43af13b527ce031b04369e05852862f1d6. Immutable review target will be the exact local Git SHA sent to read-only reviewers.
+Allowed writes: this new evidence directory only; previous frozen evidence, current authority, code, tests, schemas, generated files, lockfiles and CI unchanged. No implementer or fanout lane.
+Mechanical guide: trace real draft/prepare/receipt owners -> choose input-intent boundary -> define save/merge/seal/execute/transfer/purge -> independent scoped review -> concrete non-executable oracles -> custody.
+Selected lenses: Systems Thinking, Essentialism, Red Team, Zero-trust, Operability, Blast-radius, FinOps.
+Pre-mortem: autosave changes payroll facts; last writer loses another tab's edits; private application becomes employer-readable; old assignee submits after handover; browser retries mint duplicate effects; redacted fields are nulled; expired draft replay executes a business action; hidden SSR fields leak through conflict/history.
+Blast radius now: design evidence only. Future owner boundaries: ontology action-intent persistence, domain Actions, identity/resource policy, task-assignment owner.
+Detection: two-tab/revocation/transfer/response-loss races; explicit no-business-effect oracle for every save; saved-vs-unsaved UX; no payload in raw SSR/cache/logs; source-backed independent review.
+Rollback: preserve frozen evidence. Future writes disabled while retaining draft/attempt-aware readers and reconciliation; no dropping unknown attempts or replay guards.
+Stop: B06 input-intent semantics and limited B07 recovery states reviewed. B03 general Group dispatch, B04 automatic assignment/unknown actor takeover, remaining B07 and B08 still open. No executable product tests before exact approved design/test gates.

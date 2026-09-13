@@ -1,0 +1,19 @@
+{
+  "status": "PROPOSED_PENDING_INDEPENDENT_SCOPED_REVIEW",
+  "owner": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "a4ef7eaa7dd4db3ded386e1854194c0d51e2e57b",
+  "source_blobs": 54,
+  "caller_rows": 21,
+  "constraint_rows": 14,
+  "operations": 11,
+  "nonexecutable_proof_cases": 34,
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "verus_proofs_executed": 0,
+  "rust_pin_change": "Separate user-authorized six-file configuration lane; not a source/product implementation authorized by this design"
+}
