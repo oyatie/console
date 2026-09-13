@@ -1,0 +1,43 @@
+{
+  "status": "Bounded initial browser HTTP/crypto test candidate; NOT full Account/BW31 acceptance",
+  "new_tests": 12,
+  "test_target": "console-app/auth_rest",
+  "test_module": "account_browser",
+  "internal_wiring": {
+    "key": "CONSOLE_ACCOUNT_TERMS_ARTIFACT_ROOT",
+    "layout": "trusted release root containing fixtures/artifact-index.json whose paths are relative to that root",
+    "authorization": "ordinary internal composition choice under BW31 artifact configuration; independently advised as no material design change",
+    "proof": "positive exact-byte artifact HTTP checks and missing-root503, never config parsing alone"
+  },
+  "covered_candidates": {
+    "B01": "Full Company-free HTTP/crypto signup/me/empty contexts and durable evidence assertions",
+    "B02": "Missing/swapped nonce, duplicate foreign Origin, changed signed challenge input and5invalid acknowledgment sets with positive completion control",
+    "B03": "Client credential before any finish; concurrent direct-router requests onecommit; consumed replay; dropped completed response cookies and fresh signed login sameAccount; no actual network/crash injection",
+    "B05": "Missing head503 and configured missing artifact503/no Account creation",
+    "B06": "Duplicate cookie, native Authorization on browser read, CSRF as access/proof-parser no-downgrade, access as CSRF, closed selected response fields",
+    "B07": "Read-only CSRF via access/refresh-only, per-tab proofs across samefamily rotation, missing/crossAccount proof denial, logout revocation",
+    "B08": "Actual authorized empty contexts and noCompanyActor; no populated fixture",
+    "B14": "Assert actual HTTP serialized residentRequired and conditional mediation; synthetic SoftPasskey client-only accommodations explicitly disclosed"
+  },
+  "remaining_required_families": {
+    "B04": "Publication/finish races,ABA,exacttuple mismatch and overflow",
+    "B05": "Historical artifacts retention and outage isolation with unchanged session signing material",
+    "B06": "Complete issuer/algorithm/time/canary tracing/body capture matrix",
+    "B07": "Proof expiry/security generation,sameAccount different families and keyrollover",
+    "B08": "Navigation unavailable and populated currentpolicy/cursor/field omission",
+    "B09": "Real browser cross-tab cookie races,external-link bootstrap and networking failures",
+    "B10": "Runtime role/FK/function closure,publisher authorization/CAS and migration rollback",
+    "B11": "Load/abuse quotas,cleanup and hotrow operating envelope",
+    "B12": "Reconstructable versus unknown historical consent with real retained keys",
+    "B13": "Deployment readiness,drain/revocation/key replacement and rollback",
+    "B14": "Actual resident-capable browser/authenticator compatibility, no injected allow-list"
+  },
+  "crypto_fixture_limits": [
+    "SoftPasskey::new(true) synthetically reports UV; not physical user verification",
+    "Client-only resident fields changed after asserting original server-required settings",
+    "Client-only known credential allow-list and unsigned userHandle for synthetic login; actual signatures and server ceremony stay unchanged",
+    "No claim of resident storage,conditional browser UX or discoverable browser recovery"
+  ],
+  "implementation_admission": false,
+  "user_test_sha_approval": false
+}

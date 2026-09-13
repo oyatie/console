@@ -1,0 +1,40 @@
+{
+  "owner": "/root",
+  "base_sha": "19299cfdd5f3b808667155901257225b1d769eee",
+  "approved_design_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "immutable_target": "Executable Company-free browser HTTP/crypto acceptance candidate; no product implementation",
+  "allowed_paths": [
+    "backend/app/tests/auth_rest.rs",
+    "backend/app/tests/auth_rest/account_browser.rs",
+    "docs/evidence/console/tests/2026-09-13-account-browser-04",
+    "docs/evidence/console/approvals/2026-09-13-wire31"
+  ],
+  "forbidden": "Product sources,migrations,lockfiles,generated files,OpenAPI,CI,current authority,main staged tree",
+  "mechanical_guide": [
+    "Root solewriter; review agents read-only",
+    "Reuse actual production migration/config/router and narrow LOGIN transport",
+    "Only approved terms receipt/head fixture data; no schema/role/grant DDL, fake handlers or product stubs",
+    "Explicit test-only SoftPasskey accommodations, no browser-residency claim",
+    "Existing30 HTTP tests remain intact; independently review exact test SHA before approval/admission"
+  ],
+  "pre_mortem": "Absent route/schema masks deeper assertions; synthetic crypto fixture mistaken for browser assurance; fixture writer falsely proves publisher authority; failed negative vectors accidentally consume valid attempt",
+  "blast_radius": "Isolated test root and own disposable VM/database; main94stagedfiles preserved",
+  "detection": "Positive controls, no-partial-effects database checks, oracle self-tests, exact compile/discovery/runtime classification, independent review",
+  "rollback": "Preserve frozen candidates/evidence; remove only disposable runtime by owning harness; no shared Git reset",
+  "stop_conditions": [
+    "Product/DDL implementation needed to compile",
+    "Unexpected setup failures unclassified",
+    "Independent material review finding"
+  ],
+  "reviewers": [
+    "/root/fresh29_security",
+    "/root/fresh29_operations",
+    "/root/fresh29_workflows"
+  ],
+  "remaining_holds": [
+    "Test-SHA approval",
+    "Full Account browser/runtime/operating-envelope proof",
+    "Implementation admission",
+    "Production/legal authority"
+  ]
+}
