@@ -3394,12 +3394,13 @@ async fn account_fence_recovery_required_rejects_legacy_sessions(pool: PgPool) {
 #[sqlx::test(migrations = false)]
 async fn account_fence_recovery_to_active_does_not_restore_legacy_sessions(pool: PgPool) {
     let fixture = legacy_fence_fixture(&pool).await;
+    let keys_before = fence_credential_snapshot(&pool, fixture.subject).await;
     insert_account_fence(&pool, fixture.subject, "RECOVERY_REQUIRED").await;
     // Reserve BOTH unspent refresh tokens until after ACTIVE, so a refusal's
     // revocation side effect cannot hide a state-dependent authentication fence.
     let before = legacy_read_responses(&fixture.router, &fixture.access).await;
     assert_legacy_reads(&fixture.router, fixture.control, &fixture.control_access).await;
-    sqlx::query(
+    let updated = sqlx::query(
         "UPDATE account_security SET security_state = 'ACTIVE', \
          security_generation = security_generation + 1, revision = revision + 1, \
          updated_at = now() WHERE account_id = $1",
@@ -3408,9 +3409,18 @@ async fn account_fence_recovery_to_active_does_not_restore_legacy_sessions(pool:
     .execute(&pool)
     .await
     .expect("seed persisted recovered state; not a production recovery command");
+    assert_eq!(updated.rows_affected(), 1);
+    let recovered: (String, i64, i64) = sqlx::query_as(
+        "SELECT security_state, security_generation, revision FROM account_security WHERE account_id = $1",
+    ).bind(fixture.subject.as_uuid()).fetch_one(&pool).await.unwrap();
+    assert_eq!(recovered, ("ACTIVE".to_owned(), 2, 2));
     let after = legacy_session_responses(&fixture).await;
+    assert!(
+        keys_before == fence_credential_snapshot(&pool, fixture.subject).await,
+        "recovered-state refusal must preserve credential ID and serialized passkey"
+    );
     assert_legacy_reads(&fixture.router, fixture.control, &fixture.control_access).await;
-    assert_legacy_denials(before.into_iter().chain(after)).await;
+    assert_legacy_denials(before.into_iter().chain(after), &fixture.known_secrets()).await;
 }
 
 #[sqlx::test(migrations = false)]
@@ -3465,7 +3475,7 @@ async fn account_fence_outstanding_employer_otp_cannot_create_a_session(pool: Pg
             .await
             .unwrap();
     assert_eq!(families, 0, "fenced employer OTP cannot mint a family");
-    assert_legacy_denials([rejected]).await;
+    assert_legacy_denials([rejected], &[issue.token.as_str()]).await;
 }
 
 struct LegacyFenceFixture {
@@ -3570,13 +3580,7 @@ async fn insert_account_fence(pool: &PgPool, subject: UserId, state: &str) {
 
 async fn assert_legacy_fence_state(pool: &PgPool, state: &str) {
     let fixture = legacy_fence_fixture(pool).await;
-    let before: Vec<(Uuid, Value)> = sqlx::query_as(
-        "SELECT id, passkey_json FROM auth_webauthn_credentials WHERE user_id = $1 ORDER BY id",
-    )
-    .bind(fixture.subject.as_uuid())
-    .fetch_all(pool)
-    .await
-    .unwrap();
+    let before = fence_credential_snapshot(pool, fixture.subject).await;
     insert_account_fence(pool, fixture.subject, state).await;
     // Same router: a cached successful old-session lookup must not survive.
     let responses = legacy_session_responses(&fixture).await;
@@ -3590,18 +3594,12 @@ async fn assert_legacy_fence_state(pool: &PgPool, state: &str) {
         active,
         "Company deactivation must not manufacture this rejection"
     );
-    let after: Vec<(Uuid, Value)> = sqlx::query_as(
-        "SELECT id, passkey_json FROM auth_webauthn_credentials WHERE user_id = $1 ORDER BY id",
-    )
-    .bind(fixture.subject.as_uuid())
-    .fetch_all(pool)
-    .await
-    .unwrap();
+    let after = fence_credential_snapshot(pool, fixture.subject).await;
     assert!(
         before == after,
         "legacy refusal must preserve existing passkey bytes"
     );
-    assert_legacy_denials(responses).await;
+    assert_legacy_denials(responses, &fixture.known_secrets()).await;
 }
 
 async fn get_legacy_raw(router: &axum::Router, path: &str, access: &str) -> http::Response<Body> {
@@ -3662,29 +3660,130 @@ async fn legacy_session_responses(fixture: &LegacyFenceFixture) -> Vec<http::Res
     responses
 }
 
-async fn assert_legacy_denials(responses: impl IntoIterator<Item = http::Response<Body>>) {
-    let mut statuses = Vec::new();
+impl LegacyFenceFixture {
+    fn known_secrets(&self) -> [&str; 3] {
+        [&self.access, &self.body_refresh, &self.cookie_refresh]
+    }
+}
+
+async fn fence_credential_snapshot(pool: &PgPool, subject: UserId) -> Vec<(Uuid, String, String)> {
+    sqlx::query_as("SELECT id, credential_id, passkey_json::text FROM auth_webauthn_credentials WHERE user_id = $1 ORDER BY id")
+        .bind(subject.as_uuid()).fetch_all(pool).await.unwrap()
+}
+
+async fn assert_legacy_denials(
+    responses: impl IntoIterator<Item = http::Response<Body>>,
+    known_secrets: &[&str],
+) {
     for response in responses {
-        statuses.push(response.status());
-        for cookie in set_cookie_values(&response) {
-            let value = cookie.split(';').next().unwrap().split_once('=').unwrap().1;
-            assert!(
-                value.is_empty() || cookie.contains("Max-Age=0"),
-                "refusal must not issue a credential cookie"
-            );
-        }
-        let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
-        if let Ok(value) = serde_json::from_slice::<Value>(&body) {
-            assert!(
-                value.get("access_token").is_none() && value.get("refresh_token").is_none(),
-                "refusal must not return a session token"
-            );
+        assert!(
+            legacy_denial_is_safe(response, known_secrets).await,
+            "legacy refusal must be401 with v1 error JSON, no credential cookie/token fields or known secret echoes"
+        );
+    }
+}
+
+async fn legacy_denial_is_safe(response: http::Response<Body>, secrets: &[&str]) -> bool {
+    if response.status() != StatusCode::UNAUTHORIZED {
+        return false;
+    }
+    for value in response.headers().values() {
+        let Ok(text) = value.to_str() else {
+            return false;
+        };
+        if secrets
+            .iter()
+            .any(|secret| !secret.is_empty() && text.contains(secret))
+        {
+            return false;
         }
     }
-    assert!(
-        statuses
-            .iter()
-            .all(|status| *status == StatusCode::UNAUTHORIZED),
-        "permanent legacy fence requires401 on every selected transport; observed {statuses:?}"
-    );
+    for cookie in set_cookie_values(&response) {
+        let Some((_, value)) = cookie.split(';').next().unwrap().split_once('=') else {
+            return false;
+        };
+        if !value.is_empty() {
+            return false;
+        }
+    }
+    let Ok(body) = to_bytes(response.into_body(), 64 * 1024).await else {
+        return false;
+    };
+    let Ok(text) = std::str::from_utf8(&body) else {
+        return false;
+    };
+    if secrets
+        .iter()
+        .any(|secret| !secret.is_empty() && text.contains(secret))
+    {
+        return false;
+    }
+    let Ok(value) = serde_json::from_slice::<Value>(&body) else {
+        return false;
+    };
+    if !value["error"]["code"].is_string() || !value["error"]["message"].is_string() {
+        return false;
+    }
+    let mut pending = vec![&value];
+    while let Some(value) = pending.pop() {
+        match value {
+            Value::Object(object) => {
+                for (key, child) in object {
+                    let key = key.replace(['_', '-'], "").to_ascii_lowercase();
+                    if matches!(
+                        key.as_str(),
+                        "accesstoken" | "refreshtoken" | "token" | "otp"
+                    ) {
+                        return false;
+                    }
+                    pending.push(child);
+                }
+            }
+            Value::Array(array) => pending.extend(array),
+            _ => {}
+        }
+    }
+    true
+}
+
+// Exercise the denial oracle even while Account-schema prerequisites keep the
+// product fence assertions unreachable. These are oracle controls, not HTTP
+// product coverage or a general information-flow proof.
+#[tokio::test]
+async fn account_fence_denial_oracle_rejects_credential_leaks_and_malformed_errors() {
+    let error = r#"{"error":{"code":"unauthorized","message":"denied"}}"#;
+    let safe = http::Response::builder()
+        .status(StatusCode::UNAUTHORIZED)
+        .header(header::SET_COOKIE, "console_refresh=; Max-Age=0; Path=/")
+        .body(Body::from(error))
+        .unwrap();
+    assert!(legacy_denial_is_safe(safe, &["secret-canary"]).await);
+    for cookie in [
+        "console_refresh=secret-canary; Max-Age=01",
+        "console_refresh=other; Path=/Max-Age=0",
+    ] {
+        let response = http::Response::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .header(header::SET_COOKIE, cookie)
+            .body(Body::from(error))
+            .unwrap();
+        assert!(!legacy_denial_is_safe(response, &["secret-canary"]).await);
+    }
+    for body in [
+        "not JSON",
+        r#"{"error":{"code":"unauthorized","message":"secret-canary"}}"#,
+        r#"{"error":{"code":"unauthorized","message":"denied"},"data":{"refresh_token":"different-token"}}"#,
+    ] {
+        let response = http::Response::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .body(Body::from(body))
+            .unwrap();
+        assert!(!legacy_denial_is_safe(response, &["secret-canary"]).await);
+    }
+    let header_echo = http::Response::builder()
+        .status(StatusCode::UNAUTHORIZED)
+        .header("x-debug", "secret-canary")
+        .body(Body::from(error))
+        .unwrap();
+    assert!(!legacy_denial_is_safe(header_echo, &["secret-canary"]).await);
 }
