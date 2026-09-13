@@ -1,0 +1,79 @@
+{
+  "source_sha": "b50f9e0aea42952aed4c5ebb4d399abfde915214",
+  "source_paths": {
+    "backend/app/tests/auth_rest.rs": "fe50829af7396b143e6dd0341a2fe6672b4fdcb83ca760ab0ed0cbae7af8ecd1",
+    "backend/app/tests/auth_rest/account_storage.rs": "6f847ee8a957809a5b7b1a8ca7a62cc0649a94acc4fa1527cd22a55d674289e5",
+    "backend/app/tests/auth_rest/actor-migration.csv": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392"
+  },
+  "command": "DOCKER_CONTEXT=colima-console-design30 RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --only app-auth-rest-pg --runner cargo --num-threads 1",
+  "discovered": 59,
+  "executed": 59,
+  "passed": 25,
+  "failed": 34,
+  "ignored": 0,
+  "filtered": 0,
+  "prior53_names_and_outcomes_unchanged": true,
+  "new_tests": [
+    {
+      "name": "account_storage::account_custody_has_no_company_ownership_or_destructive_foreign_keys",
+      "result": "FAIL",
+      "fixture_database_reached": true,
+      "catalog_query_reached": true,
+      "owner_business_reached": false,
+      "decisive_assertion_reached": false,
+      "classification": "MISSING_CATALOG_PREREQUISITE",
+      "details": "6Account relations absent; downstream role/constraint/storage assertions unreached"
+    },
+    {
+      "name": "account_storage::account_custody_owners_and_effective_column_grants_are_separate_from_business",
+      "result": "FAIL",
+      "fixture_database_reached": true,
+      "catalog_query_reached": true,
+      "owner_business_reached": false,
+      "decisive_assertion_reached": false,
+      "classification": "MISSING_CATALOG_PREREQUISITE",
+      "details": "6Account relations absent; downstream role/constraint/storage assertions unreached"
+    },
+    {
+      "name": "account_storage::all_46_enrolled_actor_references_use_exact_account_or_company_actor_keys",
+      "result": "FAIL",
+      "fixture_database_reached": true,
+      "catalog_query_reached": true,
+      "owner_business_reached": false,
+      "decisive_assertion_reached": true,
+      "classification": "CATALOG_ASSERTION_RED",
+      "details": "46 expected actor constraints evaluated against actual migrated catalog"
+    },
+    {
+      "name": "account_storage::company_login_cannot_read_or_mutate_account_custody_even_with_company_context",
+      "result": "FAIL",
+      "fixture_database_reached": true,
+      "catalog_query_reached": true,
+      "owner_business_reached": false,
+      "decisive_assertion_reached": false,
+      "classification": "MISSING_CATALOG_PREREQUISITE",
+      "details": "6Account relations absent; downstream role/constraint/storage assertions unreached"
+    },
+    {
+      "name": "account_storage::handoff_target_storage_accepts_an_account_without_company_or_employer_user",
+      "result": "FAIL",
+      "fixture_database_reached": true,
+      "catalog_query_reached": true,
+      "owner_business_reached": false,
+      "decisive_assertion_reached": false,
+      "classification": "MISSING_CATALOG_PREREQUISITE",
+      "details": "6Account relations absent; downstream role/constraint/storage assertions unreached"
+    },
+    {
+      "name": "account_storage::terms_head_acceptance_and_event_references_bind_complete_immutable_tuples",
+      "result": "FAIL",
+      "fixture_database_reached": true,
+      "catalog_query_reached": true,
+      "owner_business_reached": false,
+      "decisive_assertion_reached": false,
+      "classification": "MISSING_CATALOG_PREREQUISITE",
+      "details": "6Account relations absent; downstream role/constraint/storage assertions unreached"
+    }
+  ],
+  "approval": "NOT_APPROVED: known candidate cascade overconstraint unchanged after automaticreview denial; no product implementation admission"
+}

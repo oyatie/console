@@ -339,6 +339,43 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
         for required in ("tests/auth_rest/account_storage.rs", "tests/auth_rest/actor-migration.csv"):
             self.assertTrue((crate / required).is_file(), "real candidate input must exist")
             self.assertIn(required, materialized, "Cargo-readable test input is missing from Buck materialization")
+        roots = GENERATOR.discovered_test_resource_keys(str(crate), "console-app")
+        self.assertIn(("console-app", "test.integration", "tests/auth_rest.rs"), roots)
+        self.assertNotIn(("console-app", "test.integration", "tests/auth_rest/account_storage.rs"), roots,
+                         "nested module tests must execute through their Cargo root, not an invalid duplicate crate")
+
+    def test_native_cargo_roots_include_module_only_and_directory_main(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            crate = Path(directory)
+            (crate / "Cargo.toml").write_text('[package]\nname="fixture"\nversion="0.0.0"\nedition="2024"\n')
+            (crate / "tests/cases").mkdir(parents=True)
+            (crate / "tests/native").mkdir()
+            (crate / "tests/suite.rs").write_text('#[path="cases/scenarios.rs"] mod scenarios;\n')
+            (crate / "tests/cases/scenarios.rs").write_text('#[test] fn nested_case() {}\n')
+            (crate / "tests/native/main.rs").write_text('#[test] fn directory_case() {}\n')
+            roots = GENERATOR.discovered_test_resource_keys(str(crate), "fixture")
+            self.assertEqual(roots, {
+                ("fixture", "test.integration", "tests/suite.rs"),
+                ("fixture", "test.integration", "tests/native/main.rs"),
+            })
+            _, helpers = GENERATOR.integration_test_sources(str(crate))
+            self.assertEqual(helpers, ["tests/cases/scenarios.rs"])
+            self.assertEqual(GENERATOR.integration_test_name("tests/native/main.rs"), "native")
+
+    def test_custom_cargo_test_discovery_and_name_collisions_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            crate = Path(directory)
+            base = '[package]\nname="fixture"\nversion="0.0.0"\nedition="2024"\n'
+            for override in ('autotests=false\n', 'autotests=true\n', '\n[[test]]\nname="custom"\npath="custom.rs"\n'):
+                (crate / "Cargo.toml").write_text(base + override)
+                with self.subTest(override=override), self.assertRaisesRegex(ValueError, "custom Cargo test discovery"):
+                    GENERATOR.integration_test_sources(str(crate))
+            (crate / "Cargo.toml").write_text(base)
+            (crate / "tests/same").mkdir(parents=True)
+            (crate / "tests/same.rs").write_text('#[test] fn file_case() {}\n')
+            (crate / "tests/same/main.rs").write_text('#[test] fn directory_case() {}\n')
+            with self.assertRaisesRegex(ValueError, "colliding Cargo integration test names"):
+                GENERATOR.integration_test_sources(str(crate))
 
     def test_cross_package_path_modules_are_explicit_mapped_inputs(self) -> None:
         expected = {
