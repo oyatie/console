@@ -17,7 +17,8 @@
       "name": "Binding and item refusal",
       "steps": [
         "Valid start then missing/swapped nonce,wrongOrigin/RP,wrong challenge or false/missing/duplicate/unknown item",
-        "No activation,key,family or acceptance partial commit; valid control completes"
+        "No activation,key,family or acceptance partial commit; valid control completes",
+        "Keep valid assertion signature/credential but swap unsigned userHandle to another Account: owner correlation rejects under Account guard, no writes"
       ]
     },
     {
@@ -28,7 +29,9 @@
         "Retry does not remint201 credentials or duplicate effects",
         "me if cookies arrived, otherwise fresh matching passkey login restores sameAccount",
         "Preserve expected Account from creation user.id; me/recovery-login for another Account must not mark enrollment recovered",
-        "Resident authenticator fresh discovery has no injected allowCredentials; nonresident-only device fails creation without activation; actual serialized request permits mediation conditional"
+        "Resident authenticator fresh discovery has no injected allowCredentials; nonresident-only device fails creation without activation; actual serialized request permits mediation conditional",
+        "Drop finish before delivery/before transaction commit: retry SAME valid unconsumed ceremony succeeds201 once; simultaneous retries one commit then401",
+        "Expired/stale attempt requires explicit new attempt and fresh acknowledgments; no automatic re-registration after uncertainty"
       ]
     },
     {
