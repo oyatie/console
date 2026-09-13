@@ -34,6 +34,9 @@ const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 const TEST_ORIGIN: &str = "https://auth.example.com";
 
+#[path = "auth_rest/account_storage.rs"]
+mod account_storage;
+
 #[derive(Debug, Deserialize)]
 struct RegisterStartResponse {
     ceremony_id: Uuid,
