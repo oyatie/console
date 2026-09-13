@@ -318,7 +318,7 @@ requireIncludes(
   "image release regressions execute in production-hardening suite",
 );
 requireIncludes(".github/workflows/release-please.yml", "RELEASE_PLEASE_TOKEN", "release-please branch transport token documented");
-requireIncludes("backend/rust-toolchain.toml", "channel = \"1.97.1\"", "Rust toolchain pinned to 1.97.1");
+requireIncludes("backend/rust-toolchain.toml", "channel = \"1.98.1\"", "Rust toolchain pinned to 1.98.1");
 
 // Enterprise UX benchmark matrices stay repo-owned even though the browser
 // shell they were written against now lives outside this repository.

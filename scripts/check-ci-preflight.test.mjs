@@ -63,7 +63,7 @@ const preflightRustToolchainSetup = `      - name: Install Rust toolchain for Ca
         if: \${{ !cancelled() && steps.checkout.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
-          toolchain: "1.97.1"
+          toolchain: "1.98.1"
 
 `;
 const runHeavyIf = "${{ needs.preflight.outputs.run_heavy == 'true' }}";
