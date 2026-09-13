@@ -5,15 +5,15 @@
     {
       "id": "TERMS",
       "fact": "Account terms kind/version/digest evidence required, but no client discovery route, registered version fixture or content registry ownership/materialization specified",
-      "recommendation": "Expose public immutable Account terms manifests with exact version, required item kinds and content digests. Start/finish echo that exact version. Resolve bytes from an Account-owned versioned content registry; do not use Company audit or infer historic consent.",
+      "recommendation": "For the first browser slice, prefer one release-pinned, Company-independent immutable public terms manifest with registered version, required kinds, exact bytes/digests and client-visible location. Reuse Account acceptance/event storage. No new content service or runtime publication workflow is required.",
       "alternatives": [
-        "Prefer Account-owned immutable terms content and current-version head when existing object engine supports this custody",
-        "Release-pinned immutable public artifact is simpler initially, but loses runtime governed publication unless explicitly integrated"
+        "Prefer release-pinned immutable public artifact for initial enrollment; operator owns version and custody",
+        "Later governed publication through an Account-owned content object only when justified; Company-scoped storage is not reusable without custody proof"
       ],
       "settle_before_test": [
-        "Exact GET manifest/content routes and response schema",
-        "Content owner/storage, current-version publication and stale-in-flight registration policy",
-        "Test-only registered content bytes and digest; no production/legal acceptance claim"
+        "Exact client-visible manifest/content location and response schema",
+        "Authoritative release artifact, unknown/stale version rejection and version change during enrollment",
+        "Test-only registered content bytes/digests; no production/legal acceptance claim"
       ]
     },
     {
@@ -86,5 +86,21 @@
     "No full Account test approval",
     "No material contract refinement approved by this evidence",
     "No Account enrollment/implementation/production/legal authority"
-  ]
+  ],
+  "first_browser_slice": {
+    "scope": "Real registration -> finish -> cookie-authenticated me -> empty contexts; actual ACTIVE guard and exact terms evidence; no CompanyActor",
+    "prerequisites": [
+      "Release-owned terms artifact/client availability/staleness",
+      "Exact start/finish schemas/status/WebAuthn wrapper",
+      "Pre-auth Origin/nonce protection and authenticated session-cookie transport",
+      "Exact me assurance/action encoding and empty contexts/error envelope"
+    ],
+    "separate_followups": [
+      "Native bearer negotiation",
+      "Authenticated-mutation CSRF and refresh/reload/multiple-tab compatibility",
+      "Populated navigation with genuine owner-issued entitlements,revocation and continuation",
+      "Recovery,cutover/drain and all-transport closure"
+    ],
+    "independent_review": "/root/fresh29_workflows narrowed registry and fixture requirements; recommendations remain unapproved"
+  }
 }
