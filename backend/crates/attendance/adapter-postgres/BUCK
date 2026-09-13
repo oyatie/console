@@ -60,7 +60,7 @@ rust_test(
 
 rust_test(
     name = "console-attendance-adapter-postgres-itest-cancel_substitution",
-    mapped_srcs = repo_mapped_srcs("backend/crates/attendance/adapter-postgres", ["tests/cancel_substitution.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/attendance/adapter-postgres", ["tests/cancel_substitution.rs", "tests/concurrency/open_loop.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "cancel_substitution",
@@ -90,7 +90,7 @@ rust_test(
 
 rust_test(
     name = "console-attendance-adapter-postgres-itest-concurrency",
-    mapped_srcs = repo_mapped_srcs("backend/crates/attendance/adapter-postgres", ["tests/concurrency.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/attendance/adapter-postgres", ["tests/concurrency.rs", "tests/concurrency/open_loop.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "concurrency",
@@ -120,7 +120,7 @@ rust_test(
 
 rust_test(
     name = "console-attendance-adapter-postgres-itest-self_service",
-    mapped_srcs = repo_mapped_srcs("backend/crates/attendance/adapter-postgres", ["tests/self_service.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/attendance/adapter-postgres", ["tests/concurrency/open_loop.rs", "tests/self_service.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "self_service",

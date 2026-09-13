@@ -1,0 +1,13 @@
+{
+  "base_sha": "0dac266707787a8afa86cfbb9b0be3a2533dc42c",
+  "owner": "/root",
+  "reviewer": "/root/fresh29_operations",
+  "verdict": "ACCEPT_SOURCE",
+  "source_path": "backend/crates/attendance/adapter-postgres/BUCK",
+  "source_sha256": "c18cb99ad7fd5d8922e729113f00345f963a4e257cf5d2b1a9b7ca6265109aec",
+  "change": "Exactly3helper mapped-input additions; each preceding testlabel/dependency unchanged",
+  "actual_red": "Immutable firstparty generatedoutputdrift after377testtargetcensus; not prerequisitefailure",
+  "admission": "tools/lanes/fanout.py admit accepted exactsameprobe on cleanbase; freshlog reviewed before generation",
+  "not_claimed": "377targets are not executedtests; helper included as sharedinput but only concurrency imports/executes it",
+  "next": "Freeze exact generatedsource; same immutableprobe mustPASS; retain sourceSHA/result/evidence custody; no productadmission"
+}
