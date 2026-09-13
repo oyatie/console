@@ -30,6 +30,10 @@ use webauthn_authenticator_rs::prelude::WebauthnAuthenticator;
 use webauthn_authenticator_rs::softpasskey::SoftPasskey;
 use webauthn_rs::prelude::{CreationChallengeResponse, RequestChallengeResponse};
 
+// BW31 acceptance: actual HTTP/crypto continuity, not resident-browser proof.
+#[path = "auth_rest/account_browser.rs"]
+mod account_browser;
+
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 const TEST_ORIGIN: &str = "https://auth.example.com";
