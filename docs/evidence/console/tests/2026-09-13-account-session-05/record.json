@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "BOUNDED_RED_TEST_CANDIDATE_AWAITING_USER_TEST_SHA_APPROVAL",
+  "owner": "/root",
+  "base_sha": "3457cda7bf9452cb2fcfcc1eea826e1347a81b13",
+  "tested_source_sha": "3305cd3fdce03a04d4b5d354617dd911d9da49ca",
+  "approved_design_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "inherited_approved_test_sha": "2b1a7d3494e6545fa5ee63597a3e285143435505",
+  "inherited_approval_receipt": "../../approvals/2026-09-13-browser04/test-approval.json",
+  "source_worktree": "/private/tmp/console-account-session-tests-20260913",
+  "scope": "6 additive B06/B07 CSRF/session tests; existing44 test bodies preserved. Test fixture router extends its own signer input; production configuration unchanged.",
+  "counts": {
+    "discovered": 50,
+    "executed": 50,
+    "passed": 25,
+    "failed": 25,
+    "ignored": 0,
+    "filtered": 0,
+    "new_passed_oracle": 1,
+    "new_terms_prerequisite_failures": 5,
+    "inherited_passed": 24,
+    "inherited_failed": 20
+  },
+  "commands": [
+    {
+      "command": "DOCKER_CONTEXT=colima-console-design30 RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --only app-auth-rest-pg --runner cargo --num-threads 1",
+      "exit_code": 1,
+      "artifact": "artifacts/execution-final.log.gz"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest -- --list",
+      "exit_code": 0,
+      "artifact": "artifacts/discovery-final.log.gz"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo clippy --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest -- -D warnings",
+      "exit_code": 0,
+      "artifact": "artifacts/clippy-final.log.gz"
+    },
+    {
+      "command": "fnm exec --using=24.16.0 node scripts/check-test-credentials.mjs",
+      "exit_code": 0,
+      "artifact": "artifacts/credentials-r2.log.gz"
+    },
+    {
+      "command": "fnm exec --using=24.16.0 node tools/ci/check-postgres-cargo-map.mjs",
+      "exit_code": 0,
+      "artifact": "artifacts/reachability.log.gz"
+    },
+    {
+      "command": "PATH=\"/private/tmp/console-authority30-dotslash:$PATH\" RUSTUP_TOOLCHAIN=1.98.1 fnm exec --using=24.16.0 tools/buck/preflight.sh --full-generated-faces",
+      "exit_code": 1,
+      "artifact": "artifacts/generated-final.log.gz"
+    },
+    {
+      "command": "colima start --profile console-design30",
+      "exit_code": 0,
+      "artifact": "artifacts/vm-start.log.gz"
+    },
+    {
+      "command": "DOCKER_CONTEXT=colima-console-design30 docker ps -a --format '{{.Names}}'",
+      "exit_code": 0,
+      "artifact": "artifacts/container-readback.log.gz"
+    },
+    {
+      "command": "colima stop --profile console-design30",
+      "exit_code": 0,
+      "artifact": "artifacts/vm-stop.log.gz"
+    }
+  ],
+  "artifacts_manifest": "artifacts.json",
+  "execution": "execution.json",
+  "source_identities": "source-identities.json",
+  "coverage": "coverage.json",
+  "review": "review-final.json",
+  "environment": {
+    "rust": "1.98.1",
+    "node_checks": "24.16.0",
+    "postgres": "18.4 pinned harness image",
+    "dedicated_vm": "console-design30 stopped; no remaining containers"
+  },
+  "initial_environment_failure": "Credential gate first failed missing Node package. Exact-lock offline npm ci --ignore-scripts --cache /private/tmp/console-browser04-npm-cache succeeded; same credential command then passed. Both logs retained.",
+  "build_gate": "First-party generated PASS; full gate FAIL, same12 missing reviewed buildscript fixups as unchanged19299 baseline. No generated-file or gate change.",
+  "pre_mortem": "Incorrect wire type or simultaneous bad fields can make rejection tests misleading; all new DB assertions remain prerequisite-blocked until real schema exists.",
+  "blast_radius": "Only isolated test/evidence files and owned disposable runtime; main source/index unchanged.",
+  "detection": "Canonical string and signature oracle controls, signed positive control, one-cause negative cases, preserved-source comparison, exact50 names, independent reviews.",
+  "rollback": "Immutable base and superseded review/runtime logs retained; own VM stopped; no destructive shared Git operation.",
+  "stop_conditions": [
+    "New independent blocking finding",
+    "Unclassified failure",
+    "Product implementation without exact test approval and RED lane admission"
+  ],
+  "remaining_holds": [
+    "User approval for this6-test candidate SHA",
+    "Remaining full Account/BW31 coverage; see coverage.json and prior browser04 inventory",
+    "12 pre-existing buildscript fixups",
+    "Actual product schema/owner implementation and RED lane admission",
+    "Real browser, absolute-family deadline/clock boundary, logs/traces, key deployment, publisher/migration and workload verification",
+    "Production/payment/legal authority"
+  ],
+  "publication": "Unpublished local test/evidence. Main import is frozen regular evidence blobs only, no test source or index changes."
+}
