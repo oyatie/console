@@ -1,0 +1,3 @@
+# Preserve upstream compiler and target detection and Cargo build metadata.
+[buildscript]
+run = true

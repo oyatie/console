@@ -1,0 +1,6 @@
+{
+  "released_source": "cargo:rustc-env=SCHEMA_FILE_HASH=8427143144775135195\n",
+  "ambient_git_control": "cargo:rustc-env=SCHEMA_FILE_HASH=8427143144775135195\ncargo:rustc-env=WBG_VERSION=193075e0f\n",
+  "schema_mutation_control": "cargo:rustc-env=SCHEMA_FILE_HASH=4497102361075259245\n",
+  "scope": "Standalone upstream build.rs on Rust1.98.1; actual generated host outputs separately executed. No wasm target execution claim."
+}
