@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "BOUNDED_RED_TEST_CANDIDATE_AWAITING_USER_TEST_SHA_APPROVAL",
+  "owner": "/root",
+  "base_sha": "db2bd358000d049251a7d4cddab4b8f8063f9ae5",
+  "tested_source_sha": "1e2ea6d2060a3d875e531a9a9e8f749984d0a171",
+  "approved_design_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "inherited_approved_test_sha": "3305cd3fdce03a04d4b5d354617dd911d9da49ca",
+  "approval_receipt": "../../approvals/2026-09-13-session05/test-approval.json",
+  "source_worktree": "/private/tmp/console-account-terms-tests-20260913",
+  "scope": "Three additive B04/B05/B12 tests; all50 existing test/helper source unchanged. No product source, DDL, grants, build/lock/CI/current-authority changes.",
+  "counts": {
+    "discovered": 53,
+    "executed": 53,
+    "passed": 25,
+    "failed": 28,
+    "ignored": 0,
+    "filtered": 0,
+    "inherited50_outcomes_preserved": true,
+    "new3_schema_prerequisite_failures": 3,
+    "new_deep_behaviors_executed": 0
+  },
+  "commands": [
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest -- --list",
+      "exit_code": 0,
+      "artifact": "artifacts/discovery-r1.log.gz"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo clippy --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest -- -D warnings",
+      "exit_code": 0,
+      "artifact": "artifacts/clippy-r1.log.gz"
+    },
+    {
+      "command": "DOCKER_CONTEXT=colima-console-design30 RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --only app-auth-rest-pg --runner cargo --num-threads 1",
+      "exit_code": 1,
+      "artifact": "artifacts/execution-final.log.gz"
+    },
+    {
+      "command": "fnm exec --using=24.16.0 node scripts/check-test-credentials.mjs",
+      "exit_code": 0,
+      "artifact": "artifacts/credentials.log.gz"
+    },
+    {
+      "command": "fnm exec --using=24.16.0 node tools/ci/check-postgres-cargo-map.mjs",
+      "exit_code": 0,
+      "artifact": "artifacts/reachability.log.gz"
+    },
+    {
+      "command": "PATH=\"/private/tmp/console-authority30-dotslash:$PATH\" RUSTUP_TOOLCHAIN=1.98.1 fnm exec --using=24.16.0 tools/buck/preflight.sh",
+      "exit_code": 0,
+      "artifact": "artifacts/generated-r1.log.gz"
+    },
+    {
+      "command": "npm ci --offline --ignore-scripts --cache /private/tmp/console-browser04-npm-cache",
+      "exit_code": 0,
+      "artifact": "artifacts/npm-ci.log.gz"
+    },
+    {
+      "command": "colima start --profile console-design30",
+      "exit_code": 0,
+      "artifact": "artifacts/vm-start.log.gz"
+    },
+    {
+      "command": "DOCKER_CONTEXT=colima-console-design30 docker ps -a --format '{{.Names}}'",
+      "exit_code": 0,
+      "artifact": "artifacts/container-readback.log.gz"
+    },
+    {
+      "command": "colima stop --profile console-design30",
+      "exit_code": 0,
+      "artifact": "artifacts/vm-stop.log.gz"
+    }
+  ],
+  "source_identities": "source-identities.json",
+  "execution": "execution.json",
+  "coverage": "coverage.json",
+  "review": "review-final.json",
+  "artifacts_manifest": "artifacts.json",
+  "environment": {
+    "rust": "1.98.1",
+    "node_checks": "24.16.0",
+    "postgres": "18.4 pinned harness image",
+    "owned_vm": "console-design30 stopped; container readback empty"
+  },
+  "build_gate": "Fresh cheap first-party preflightPASS. Full generated not rerun: previous3305 exact12fixup failure evidence retained with unchanged-input proof in generated-gate-provenance.json; full gate remains HOLD before merge.",
+  "pre_mortem": "Revision ignored when digest unchanged; terms outage coupled to all authentication; fallback fabricates consent; file/issuer changes misclassified as outage; original attempt consumed by failed finish.",
+  "blast_radius": "Isolated additive test/evidence changes and own disposable DB/fixture files; main staged index preserved.",
+  "detection": "Exact receipt/evidence tuples, retained bytes and consent/state snapshots, same signing key, original attempt retry, inherited50 outcomes and all53names reconciled, independent review.",
+  "rollback": "Frozen base and approvals retained; only fixture-owned file removed/restored; own VM stopped; no shared Git reset.",
+  "stop_conditions": [
+    "Independent material finding",
+    "Unclassified runtime failure",
+    "Implementation without approved test SHA and actual RED lane admission"
+  ],
+  "remaining_holds": [
+    "User approval of this3-test SHA",
+    "Publisher custody/authority/ACL/CAS/ABA/overflow/races",
+    "Unknown historical consent/refusal and unavailable resolver",
+    "Remaining Account/BW31 browser, migration, policy/navigation, key/operating-envelope tests",
+    "12 existing full-generated fixups",
+    "Product owner implementation and RED admission",
+    "Production/payment/legal authority"
+  ],
+  "publication": "Local unpublished evidence. Main import only frozen regular evidence blobs, no product/test source or index change."
+}
