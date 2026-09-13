@@ -1,0 +1,4 @@
+# Compute SCHEMA_FILE_HASH from the released source. Prevent the enclosing
+# Console Git revision from replacing the crates.io WBG_VERSION fallback.
+[buildscript.run.env]
+GIT_DIR = ""
