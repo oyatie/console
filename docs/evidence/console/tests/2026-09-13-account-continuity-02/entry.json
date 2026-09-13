@@ -1,0 +1,56 @@
+{
+  "owner": "/root",
+  "base_sha": "ffabd26ba2043abeaae9493fd7568fac5399f8ce",
+  "design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "phase": "Test candidate construction; no product implementation admission",
+  "target": "Compile and review credential custody plus real authentication transport continuity before Account enrollment",
+  "allowed_paths": [
+    "backend/app/tests/auth_rest.rs",
+    "backend/crates/platform/auth/tests/refresh_tokens.rs",
+    "backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs",
+    "backend/crates/platform/db/tests/rls_isolation.rs",
+    "backend/crates/platform/test-support/src/lib.rs",
+    "backend/app/Cargo.toml",
+    "backend/crates/platform/auth/Cargo.toml",
+    "backend/crates/platform/provisioning/Cargo.toml",
+    "backend/Cargo.lock",
+    "backend/app/BUCK",
+    "backend/crates/platform/auth/BUCK",
+    "backend/crates/platform/provisioning/BUCK",
+    "tools/ci/cargo_needs_postgres.sh",
+    "tools/ci/cargo-needs-postgres-args.test.mjs",
+    "docs/evidence/console/tests/2026-09-13-account-continuity-02",
+    "backend/crates/platform/test-support/Cargo.toml",
+    "backend/crates/platform/test-support/BUCK"
+  ],
+  "mechanical_guide": [
+    "Reuse AppConfig::from_pairs and AppState::from_config; proposed AUTH_DATABASE_URL is test input to existing parser, no production stub",
+    "Real LOGIN transports; never owner SET ROLE as HTTP/auth execution",
+    "Preserve crypto,subject,replay,expiry and successful business-operation assertions",
+    "Keep legacy compatibility distinct from migrated Account acceptance",
+    "No test-created auth roles,grants,memberships,LOGIN or ownership changes",
+    "No product source edits; all new tests and semantic changes independently reviewed before approval"
+  ],
+  "pre_mortem": "A denial-only suite can break login; owner session can mask privilege errors; legacy behavior can conflict with Account enrollment; topology failure can be mislabeled behavioral RED",
+  "blast_radius": "Test sources and disposable test transport only; staged main remains unchanged",
+  "detection": "Existing four-suite33-test baseline, actual role identities, positive authentication and business controls, distinct prerequisite vs protocol failures, named discovery/execution",
+  "rollback": "Discard unpublished candidate through separately reviewed forward change; preserve frozen prior worktrees/evidence",
+  "reviewers": [
+    "/root/fresh29_security",
+    "/root/fresh29_workflows",
+    "/root/fresh29_operations"
+  ],
+  "stop_conditions": [
+    "Product API stubs required merely to compile",
+    "Fixture fabricates Account schema/roles/grants",
+    "Unknown lifecycle semantic replacement",
+    "Missing discovery or real execution",
+    "Independent blocker"
+  ],
+  "remaining_holds": [
+    "Complete Account coverage including company-free enrollment,terms,session generation,legacy fence,offboarding,recovery,races,navigation",
+    "Complete executable test SHA approval",
+    "Account implementation and enrollment",
+    "Hosted authority adoption,production/payment/legal authorization"
+  ]
+}

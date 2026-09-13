@@ -46,6 +46,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -75,6 +76,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -105,6 +107,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -137,6 +140,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -169,6 +173,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -201,6 +206,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -233,6 +239,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",
@@ -263,6 +270,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:openssl",
         "//third-party/rust:p256",

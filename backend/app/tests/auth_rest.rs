@@ -2,7 +2,7 @@
 
 use axum::body::{Body, to_bytes};
 use axum::extract::ConnectInfo;
-use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_app::{AppConfig, AppRole, AppState, build_router};
 use console_financial_adapter_postgres::PgFinancialStore;
 use console_financial_application::{
     CreatePurchaseRequestCommand, FinancialConfigSnapshot, PrepareExpenditureCommand,
@@ -13,6 +13,7 @@ use console_kernel_core::{
     BranchId, EquipmentId, EvidenceId, OrgId, PurchaseRequestId, TraceContext, UserId, WorkOrderId,
 };
 use console_platform_provisioning::BootstrapCredentialStore;
+use console_platform_test_support::{TestDatabaseLogin, login_test_database_url};
 use http::{Request, StatusCode, header};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
@@ -120,6 +121,7 @@ async fn otp_first_signin_then_passkey_enrollment_then_usernameless_login(pool: 
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -279,6 +281,7 @@ async fn mobile_bound_step_up_start_gates_mobile_approval_and_poll_vote(pool: Pg
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
     let admin_access = admin_session_via_otp(&service, &pool, admin_id).await;
@@ -595,6 +598,7 @@ async fn financial_purchase_sensitive_actions_require_fresh_passkey_step_up(pool
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
     let admin_access = admin_session_via_otp(&service, &pool, admin_id).await;
@@ -905,6 +909,7 @@ async fn refresh_keeps_zero_passkey_user_in_setup_mode_until_enrolled(pool: PgPo
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -992,6 +997,7 @@ async fn approve_session_rejects_generic_desktop_handoff_without_target(pool: Pg
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1075,6 +1081,7 @@ async fn first_passkey_enrollment_requires_privacy_terms(pool: PgPool) {
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1175,6 +1182,7 @@ async fn otp_is_consumed_on_passkey_registration_not_on_redeem(pool: PgPool) {
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1272,6 +1280,7 @@ async fn admin_issue_otp_rejects_non_admin(pool: PgPool) {
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1321,6 +1330,7 @@ async fn admin_issue_otp_rejects_cross_branch_target(pool: PgPool) {
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1386,6 +1396,7 @@ async fn admin_issue_otp_rejects_privileged_target(pool: PgPool) {
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1432,6 +1443,7 @@ async fn admin_issue_otp_allows_in_branch_subordinate(pool: PgPool) {
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1477,6 +1489,7 @@ async fn admin_credential_reset_recovers_in_branch_subordinate(pool: PgPool) {
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1563,6 +1576,7 @@ async fn otp_redeem_rate_limit_wires_up_on_real_clock_path(pool: PgPool) {
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1658,6 +1672,7 @@ async fn cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh(pool: Pg
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1726,6 +1741,7 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1837,6 +1853,7 @@ async fn cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id(pool: 
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -1911,6 +1928,7 @@ async fn body_mode_without_header_is_unchanged_and_sets_no_cookie(pool: PgPool) 
             private_key_pem.to_string(),
             public_key_pem.clone(),
         )
+        .await
         .unwrap(),
     );
 
@@ -2784,12 +2802,12 @@ async fn body_json(response: http::Response<Body>) -> Value {
     serde_json::from_slice(&bytes).unwrap()
 }
 
-fn app_state_with_trusted_proxy(
+async fn app_state_with_trusted_proxy(
     pool: PgPool,
     private_key_pem: String,
     public_key_pem: String,
 ) -> Result<AppState, console_app::AppError> {
-    let config = AppConfig::from_pairs([
+    let mut pairs = vec![
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -2801,17 +2819,19 @@ fn app_state_with_trusted_proxy(
         ("CONSOLE_WEBAUTHN_RP_NAME", "Console".to_owned()),
         ("CONSOLE_TRUSTED_PROXY_COUNT", "1".to_owned()),
         ("CONSOLE_TRUSTED_PROXY_CIDRS", "10.0.0.0/8".to_owned()),
-    ])?;
+    ];
+    pairs.extend(account_transport_urls(&pool));
+    let config = AppConfig::from_pairs(pairs)?;
 
-    AppState::new(config, DatabaseDependency::Postgres(pool))
+    AppState::from_config(config).await
 }
 
-fn app_state(
+async fn app_state(
     pool: PgPool,
     private_key_pem: String,
     public_key_pem: String,
 ) -> Result<AppState, console_app::AppError> {
-    let config = AppConfig::from_pairs([
+    let mut pairs = vec![
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -2821,9 +2841,11 @@ fn app_state(
         ("CONSOLE_WEBAUTHN_RP_ID", "example.com".to_owned()),
         ("CONSOLE_WEBAUTHN_RP_ORIGIN", TEST_ORIGIN.to_owned()),
         ("CONSOLE_WEBAUTHN_RP_NAME", "Console".to_owned()),
-    ])?;
+    ];
+    pairs.extend(account_transport_urls(&pool));
+    let config = AppConfig::from_pairs(pairs)?;
 
-    AppState::new(config, DatabaseDependency::Postgres(pool))
+    AppState::from_config(config).await
 }
 
 async fn seed_branch(pool: &PgPool, region_name: &str, branch_name: &str) -> BranchId {
@@ -3085,4 +3107,168 @@ async fn assert_audit_count(pool: &PgPool, action: &str, expected: i64) {
         .await
         .unwrap();
     assert_eq!(count, expected, "unexpected audit count for {action}");
+}
+
+// AS1.2 test candidate: exercise the public production configuration parser.
+// These synthetic URLs are never connected by these configuration-only tests.
+fn account_transport_config_pairs() -> Vec<(&'static str, String)> {
+    let signing_key = SigningKey::random(&mut OsRng);
+    vec![
+        ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        (
+            "DATABASE_URL",
+            "postgresql://console_rt:runtime-fixture@localhost:5544/console".to_owned(),
+        ),
+        (
+            "LEAVE_COMMAND_DATABASE_URL",
+            "postgresql://console_leave_cmd:leave-fixture@localhost:5544/console".to_owned(),
+        ),
+        (
+            "ONTOLOGY_COMMAND_DATABASE_URL",
+            "postgresql://console_ontology_cmd:ontology-fixture@localhost:5544/console".to_owned(),
+        ),
+        (
+            "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+            "postgresql://console_platform_force_cmd:force-fixture@localhost:5544/console"
+                .to_owned(),
+        ),
+        ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+        ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        (
+            "CONSOLE_JWT_PRIVATE_KEY_PEM",
+            signing_key
+                .to_pkcs8_pem(LineEnding::LF)
+                .unwrap()
+                .to_string(),
+        ),
+        (
+            "CONSOLE_JWT_PUBLIC_KEY_PEM",
+            signing_key
+                .verifying_key()
+                .to_public_key_pem(LineEnding::LF)
+                .unwrap(),
+        ),
+        ("CONSOLE_WEBAUTHN_RP_ID", "example.com".to_owned()),
+        ("CONSOLE_WEBAUTHN_RP_ORIGIN", TEST_ORIGIN.to_owned()),
+        ("CONSOLE_WEBAUTHN_RP_NAME", "Console".to_owned()),
+    ]
+}
+
+fn assert_account_transport_config_rejected(auth_url: Option<&str>, secret: Option<&str>) {
+    let mut pairs = account_transport_config_pairs();
+    if let Some(url) = auth_url {
+        pairs.push(("AUTH_DATABASE_URL", url.to_owned()));
+    }
+    let result = AppConfig::from_pairs(pairs);
+    assert!(
+        result.is_err(),
+        "the API must reject invalid or missing auth-pool configuration"
+    );
+    let error = result.unwrap_err().to_string();
+    assert!(
+        error.contains("AUTH_DATABASE_URL"),
+        "diagnostic must identify the rejected configuration key"
+    );
+    if let Some(secret) = secret {
+        assert!(
+            !error.contains(secret),
+            "configuration errors must not echo auth credentials"
+        );
+    }
+}
+
+#[test]
+fn account_auth_database_requires_explicit_configuration() {
+    assert_account_transport_config_rejected(None, None);
+    assert_account_transport_config_rejected(Some(""), None);
+    assert_account_transport_config_rejected(Some("   "), None);
+}
+
+#[test]
+fn account_auth_database_accepts_distinct_narrow_identity() {
+    let mut pairs = account_transport_config_pairs();
+    pairs.push((
+        "AUTH_DATABASE_URL",
+        "postgresql://console_auth_rt:auth-fixture@localhost:5544/console".to_owned(),
+    ));
+    let config = AppConfig::from_pairs(pairs).expect("separate configured auth transport is valid");
+    assert_eq!(
+        config.database_url.as_deref(),
+        Some("postgresql://console_rt:runtime-fixture@localhost:5544/console")
+    );
+    assert!(
+        config.auth_rest.is_some(),
+        "control must exercise enabled authentication"
+    );
+}
+
+#[test]
+fn account_auth_database_rejects_other_database_identities() {
+    for role in [
+        "console_app",
+        "console_rt",
+        "console_leave_cmd",
+        "console_ontology_cmd",
+        "console_platform_force_cmd",
+        "other_auth_role",
+    ] {
+        let url = format!("postgresql://{role}:auth-secret-canary@localhost:5544/console");
+        assert_account_transport_config_rejected(Some(&url), Some("auth-secret-canary"));
+    }
+}
+
+#[test]
+fn account_auth_database_requires_nonempty_distinct_password() {
+    for url in [
+        "postgresql://console_auth_rt@localhost:5544/console",
+        "postgresql://console_auth_rt:@localhost:5544/console",
+        "postgresql://console_auth_rt:auth-fixture@localhost:5544/console?password=",
+        "postgresql://console_auth_rt:runtime-fixture@localhost:5544/console",
+        "postgresql://console_auth_rt:leave-fixture@localhost:5544/console",
+        "postgresql://console_auth_rt:ontology-fixture@localhost:5544/console",
+        "postgresql://console_auth_rt:force-fixture@localhost:5544/console",
+        "postgresql://console_auth_rt:runtime%2Dfixture@localhost:5544/console",
+    ] {
+        assert_account_transport_config_rejected(Some(url), None);
+    }
+}
+
+#[test]
+fn account_auth_database_rejects_identity_overrides_without_leaking_secrets() {
+    for query in [
+        "options=-c%20role%3Dconsole_app",
+        "options=-crole%3Dconsole_app",
+        "options%5Brole%5D=console_app",
+        "user=console_app",
+    ] {
+        let url = format!(
+            "postgresql://console_auth_rt:auth-secret-canary@localhost:5544/console?{query}"
+        );
+        assert_account_transport_config_rejected(Some(&url), Some("auth-secret-canary"));
+    }
+}
+
+// Owner pool supplies only the per-test database name; every serving URL comes
+// from a distinct real LOGIN credential provisioned by the disposable harness.
+fn account_transport_urls(owner_pool: &PgPool) -> Vec<(&'static str, String)> {
+    [
+        ("DATABASE_URL", TestDatabaseLogin::Business),
+        ("AUTH_DATABASE_URL", TestDatabaseLogin::Auth),
+        (
+            "LEAVE_COMMAND_DATABASE_URL",
+            TestDatabaseLogin::LeaveCommand,
+        ),
+        (
+            "ONTOLOGY_COMMAND_DATABASE_URL",
+            TestDatabaseLogin::OntologyCommand,
+        ),
+        (
+            "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+            TestDatabaseLogin::PlatformForceCommand,
+        ),
+    ]
+    .into_iter()
+    .map(|(key, login)| (key, login_test_database_url(owner_pool, login)))
+    .collect()
 }
