@@ -680,7 +680,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "6a3992e258d7eecf4d2cd11422ee01d521a01017",
+      "blob_sha": "fa5b0cf1963cd92b1d859ff94e05e75d52583da7",
       "archive_tag": null
     },
     {
@@ -690,7 +690,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "a9167cee191dd79304086027b05523b675f7fbbe",
+      "blob_sha": "6eb1b60f2048ab9795b51ba0d4655e0ed563525b",
       "archive_tag": null
     },
     {
