@@ -1,0 +1,20 @@
+{
+  "format_version": 1,
+  "fixture_only": true,
+  "items": [
+    {
+      "terms_kind": "test.account.service",
+      "title": "테스트 서비스 약관",
+      "locale": "ko-KR",
+      "content_sha256": "d58e7fdecdb5cf68640ae805ede9ce5613ace72bf9f92b9b9ccd0d2729646f2c",
+      "required": true
+    },
+    {
+      "terms_kind": "test.account.privacy",
+      "title": "테스트 개인정보 안내",
+      "locale": "ko-KR",
+      "content_sha256": "4254fa64b821906ac2995f0829590ca151540929b05594a023afc99d228c23d2",
+      "required": true
+    }
+  ]
+}

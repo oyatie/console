@@ -1,0 +1,232 @@
+{
+  "claim": "Structural examples only; no cryptographic or product execution proof",
+  "valid": [
+    {
+      "name": "terms",
+      "schema": "TermsCurrent",
+      "value": {
+        "terms_version": "3643e74a128a2fb3facce194264bcb40487dc79548b4d3b734b1de90be76fe52",
+        "terms_revision": "1",
+        "manifest_url": "/api/v2/auth/terms/manifests/3643e74a128a2fb3facce194264bcb40487dc79548b4d3b734b1de90be76fe52"
+      }
+    },
+    {
+      "name": "manifest",
+      "schema": "TermsManifest",
+      "value": {
+        "format_version": 1,
+        "fixture_only": true,
+        "items": [
+          {
+            "terms_kind": "test.account.service",
+            "title": "테스트 서비스 약관",
+            "locale": "ko-KR",
+            "content_sha256": "d58e7fdecdb5cf68640ae805ede9ce5613ace72bf9f92b9b9ccd0d2729646f2c",
+            "required": true
+          },
+          {
+            "terms_kind": "test.account.privacy",
+            "title": "테스트 개인정보 안내",
+            "locale": "ko-KR",
+            "content_sha256": "4254fa64b821906ac2995f0829590ca151540929b05594a023afc99d228c23d2",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "start",
+      "schema": "RegistrationStartInput",
+      "value": {
+        "terms_version": "3643e74a128a2fb3facce194264bcb40487dc79548b4d3b734b1de90be76fe52"
+      }
+    },
+    {
+      "name": "start_response_structural_only",
+      "schema": "RegistrationStart",
+      "value": {
+        "ceremony_id": "22222222-2222-4222-8222-222222222222",
+        "public_key_options": {
+          "publicKey": {
+            "challenge": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        }
+      }
+    },
+    {
+      "name": "finish_structural_only",
+      "schema": "RegistrationFinishInput",
+      "value": {
+        "ceremony_id": "22222222-2222-4222-8222-222222222222",
+        "credential": {
+          "id": "structural-only",
+          "rawId": "structural-only",
+          "type": "public-key",
+          "response": {
+            "attestationObject": "not-a-valid-attestation",
+            "clientDataJSON": "not-a-valid-client-data"
+          }
+        },
+        "accept_terms_version": "3643e74a128a2fb3facce194264bcb40487dc79548b4d3b734b1de90be76fe52",
+        "accept_items": [
+          {
+            "terms_kind": "test.account.service",
+            "accepted": true
+          },
+          {
+            "terms_kind": "test.account.privacy",
+            "accepted": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "session",
+      "schema": "SessionEstablished",
+      "value": {
+        "account": {
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "session": {
+            "assurance": "PASSKEY_PRIMARY",
+            "expires_at": "2026-09-13T20:15:00Z"
+          },
+          "permitted_self_actions": [
+            {
+              "action_key": "account.session.logout",
+              "registration_revision": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "me",
+      "schema": "AccountProjection",
+      "value": {
+        "account_id": "11111111-1111-4111-8111-111111111111",
+        "session": {
+          "assurance": "PASSKEY_PRIMARY",
+          "expires_at": "2026-09-13T20:15:00Z"
+        },
+        "permitted_self_actions": [
+          {
+            "action_key": "account.session.logout",
+            "registration_revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty_contexts",
+      "schema": "Contexts",
+      "value": {
+        "contexts": []
+      }
+    },
+    {
+      "name": "company_context_structural_only",
+      "schema": "Contexts",
+      "value": {
+        "contexts": [
+          {
+            "kind": "COMPANY",
+            "context_ref": {
+              "org_id": "33333333-3333-4333-8333-333333333333"
+            },
+            "label": "허가된 회사",
+            "entry_ref": {
+              "kind": "WORKSPACE"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "error",
+      "schema": "Error",
+      "value": {
+        "error": {
+          "code": "navigation_unavailable",
+          "message": "업무 목록을 불러올 수 없습니다."
+        }
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "company_selector_on_start",
+      "schema": "RegistrationStartInput",
+      "value": {
+        "terms_version": "3643e74a128a2fb3facce194264bcb40487dc79548b4d3b734b1de90be76fe52",
+        "org_id": "33333333-3333-4333-8333-333333333333"
+      }
+    },
+    {
+      "name": "unaccepted_item",
+      "schema": "TermsAcknowledgment",
+      "value": {
+        "terms_kind": "test.account.service",
+        "accepted": false
+      }
+    },
+    {
+      "name": "company_action_ref",
+      "schema": "AccountActionRef",
+      "value": {
+        "action_key": "account.session.logout",
+        "registration_revision": "1",
+        "org_id": "33333333-3333-4333-8333-333333333333"
+      }
+    },
+    {
+      "name": "null_cursor",
+      "schema": "Contexts",
+      "value": {
+        "contexts": [],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "group_company_mismatch",
+      "schema": "Context",
+      "value": {
+        "kind": "GROUP",
+        "context_ref": {
+          "org_id": "33333333-3333-4333-8333-333333333333"
+        },
+        "label": "bad",
+        "entry_ref": {
+          "kind": "WORKSPACE"
+        }
+      }
+    },
+    {
+      "name": "token_in_session_body",
+      "schema": "SessionEstablished",
+      "value": {
+        "account": {
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "session": {
+            "assurance": "PASSKEY_PRIMARY",
+            "expires_at": "2026-09-13T20:15:00Z"
+          },
+          "permitted_self_actions": [
+            {
+              "action_key": "account.session.logout",
+              "registration_revision": "1"
+            }
+          ]
+        },
+        "access_token": "must-not-leak"
+      }
+    },
+    {
+      "name": "hidden_count",
+      "schema": "Contexts",
+      "value": {
+        "contexts": [],
+        "total": 10
+      }
+    }
+  ]
+}

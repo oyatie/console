@@ -1,0 +1,123 @@
+{
+  "status": "proposed",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/v2/auth/terms",
+      "input": null,
+      "result": "TermsCurrent",
+      "success_status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v2/auth/registration/start",
+      "input": "RegistrationStartInput",
+      "result": "RegistrationStart",
+      "success_status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v2/auth/registration/finish",
+      "input": "RegistrationFinishInput",
+      "result": "SessionEstablished",
+      "success_status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v2/auth/passkey/login/start",
+      "input": "LoginStartInput",
+      "result": "LoginStart",
+      "success_status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v2/auth/passkey/login/finish",
+      "input": "LoginFinishInput",
+      "result": "SessionEstablished",
+      "success_status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v2/accounts/me",
+      "input": null,
+      "result": "AccountProjection",
+      "success_status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v2/accounts/me/contexts",
+      "input": null,
+      "result": "Contexts",
+      "success_status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v2/auth/csrf",
+      "input": null,
+      "result": "CsrfProof",
+      "success_status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v2/auth/token/refresh",
+      "input": "LogoutInput",
+      "result": "SessionEstablished",
+      "success_status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v2/auth/logout",
+      "input": "LogoutInput",
+      "result": "LogoutResult",
+      "success_status": 200
+    }
+  ],
+  "public_immutable_routes": [
+    {
+      "path": "/api/v2/auth/terms/manifests/{sha256}",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": "exact registered manifest"
+    },
+    {
+      "path": "/api/v2/auth/terms/content/{sha256}",
+      "status": 200,
+      "content_type": "text/plain; charset=utf-8",
+      "bytes": "exact registered content"
+    }
+  ],
+  "errors": {
+    "400": [
+      "ambiguous_credentials"
+    ],
+    "401": [
+      "authentication_invalid",
+      "enrollment_invalid"
+    ],
+    "403": [
+      "request_origin_denied",
+      "csrf_invalid"
+    ],
+    "404": [
+      "not_found"
+    ],
+    "409": [
+      "already_authenticated",
+      "terms_changed",
+      "stale_cursor"
+    ],
+    "413": [
+      "request_too_large"
+    ],
+    "422": [
+      "invalid_request"
+    ],
+    "429": [
+      "rate_limited"
+    ],
+    "503": [
+      "authority_unavailable",
+      "navigation_unavailable"
+    ]
+  }
+}

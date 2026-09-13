@@ -1,0 +1,95 @@
+{
+  "status": "Experiments specified, not executed; no capacity claim",
+  "baseline_user_fact": {
+    "pilot_tenants": 1,
+    "companies_within_tenant": 6,
+    "people": 2000,
+    "operator": "Console owner"
+  },
+  "validation_environment_assumption": {
+    "app_cpu": 4,
+    "app_memory_gib": 8,
+    "postgres_cpu": 4,
+    "postgres_memory_gib": 8,
+    "postgres_version": "18.4",
+    "note": "Dedicated load-validation fixture assumption, not production deployment decision"
+  },
+  "workloads": [
+    {
+      "id": "PILOT_READ",
+      "population": 2000,
+      "concurrency": [
+        1,
+        8,
+        32,
+        128
+      ],
+      "request_mix": "me+empty contexts+CSRF issue across distinct Accounts",
+      "target": "Measure p50/p95/p99,CPU,pool wait,signing cost,DBqueries/bytes; no cross-Account leakage or new sessions onGET"
+    },
+    {
+      "id": "ENROLLMENT_BURST",
+      "population": 2000,
+      "arrival_per_second": [
+        1,
+        10,
+        50,
+        200
+      ],
+      "target": "Measure complete server path excluding human authenticator time; bounded queue+explicit429/503; retain login/read capacity under signup saturation"
+    },
+    {
+      "id": "TERMS_HOT_ROW",
+      "concurrency": [
+        1,
+        32,
+        128,
+        512
+      ],
+      "target": "Concurrent finish head SHARE versus one CAS publisher; measure head wait/lock hold/deadlocks; every receipt one coherent head revision; A/B/A stale attempts refused"
+    },
+    {
+      "id": "ABUSE",
+      "arrival_per_second": [
+        50,
+        200,
+        1000
+      ],
+      "payloads": [
+        "max64KiB finish",
+        "malformed/deep JSON",
+        "unknown nonce",
+        "abandoned starts"
+      ],
+      "target": "Find admission/pending-retention thresholds; bound memory/DB growth and request duration; no per-request unbounded scan/content fetch; cap queues before activation"
+    },
+    {
+      "id": "FUTURE_POPULATION",
+      "population": [
+        50000,
+        1000000
+      ],
+      "concurrency": [
+        32,
+        128,
+        512
+      ],
+      "target": "Account population independent of active concurrency. Explain index/cache/pool/head contention, quantify thresholds before future admission; no linear Company scan on identity entry"
+    }
+  ],
+  "integrity_checks": [
+    "No partial activation/terms/family commit oncancel/crash",
+    "Readiness mismatch/current artifact outage ->503 not staleaccept",
+    "Current-head CAS one winner and immutable audit",
+    "Request proof generation read-only; expired/revoked denied",
+    "Lost response cannot create second Account/family perattempt"
+  ],
+  "required_measurements": [
+    "Admission-rate and concurrent-request limits with topology-aware enforcement",
+    "Pending ceremony quota/cleanup retention after committed outcomes",
+    "Pool/queue timeouts and bounded429/503 behavior",
+    "p95/p99 bystage,bytes,queries,head contention,CPU/signingcost",
+    "Recovery replay,rollout and rollback underload"
+  ],
+  "stop_rule": "No Account activation/capacity claim until measured budgets/admission values meet reviewed operating envelope. These experiments need not all precede writingRED functional tests."
+}
