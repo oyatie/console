@@ -721,3 +721,6 @@ async fn seed_employee(pool: &PgPool, branch: BranchId, actor: UserId, name: &st
     tx.commit().await.unwrap();
     employee
 }
+
+#[path = "concurrency/open_loop.rs"]
+mod open_loop;

@@ -960,3 +960,107 @@ mod tests {
         Ok(())
     }
 }
+#[cfg(test)]
+mod diagnostic_nondisclosure_tests {
+    // Exercise the real HTTP error boundary. These paired inputs establish
+    // diagnostic-text noninterference only, not SQL origin, timing, or logs.
+    use super::*;
+    use axum::body::to_bytes;
+
+    async fn observe(error: &RequestContextError) -> (StatusCode, HeaderMap, Vec<u8>) {
+        let response = error_response_for(error);
+        let status = response.status();
+        let headers = response.headers().clone();
+        let body = to_bytes(response.into_body(), 4096)
+            .await
+            .expect("error body must be bounded")
+            .to_vec();
+        (status, headers, body)
+    }
+
+    async fn assert_same_public_failure(
+        wrap: fn(String) -> RequestContextError,
+        expected_status: StatusCode,
+    ) {
+        let first = observe(&wrap("PRIVATE-DIAGNOSTIC-A".to_owned())).await;
+        let second = observe(&wrap("PRIVATE-DIAGNOSTIC-B: 급여 20000000".to_owned())).await;
+        assert_eq!(first.0, expected_status);
+        assert_eq!(second.0, expected_status);
+        assert_eq!(
+            first.1, second.1,
+            "private diagnostic must not affect headers"
+        );
+        assert!(
+            first.2 == second.2,
+            "same error class must have diagnostic-independent body bytes"
+        );
+        assert!(
+            !first.2.is_empty(),
+            "failure still needs a public explanation"
+        );
+        assert!(
+            std::str::from_utf8(&first.2).is_ok(),
+            "public explanation is valid UTF-8"
+        );
+        assert!(
+            !first
+                .2
+                .windows(b"PRIVATE-DIAGNOSTIC".len())
+                .any(|bytes| bytes == b"PRIVATE-DIAGNOSTIC")
+        );
+    }
+
+    #[tokio::test]
+    async fn branch_resolution_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            RequestContextError::BranchScope,
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn policy_resolution_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            RequestContextError::EffectivePolicy,
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn internal_access_scope_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            |message| RequestContextError::AccessScope(KernelError::internal(message)),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn forbidden_access_scope_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            |message| RequestContextError::AccessScope(KernelError::forbidden(message)),
+            StatusCode::FORBIDDEN,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn fixed_public_failure_classes_keep_actionable_statuses() {
+        for (error, expected) in [
+            (RequestContextError::InvalidToken, StatusCode::UNAUTHORIZED),
+            (RequestContextError::WrongTokenTier, StatusCode::FORBIDDEN),
+            (
+                RequestContextError::VerifierUnavailable,
+                StatusCode::SERVICE_UNAVAILABLE,
+            ),
+        ] {
+            let first = observe(&error).await;
+            let second = observe(&error).await;
+            assert_eq!(first.0, expected);
+            assert_eq!(first, second);
+            assert!(!first.2.is_empty());
+        }
+    }
+}
