@@ -1048,9 +1048,10 @@ const requiredJobRunContracts = Object.freeze({
     proofDigest("Boot smoke — migrate + serve + /readyz", "d51d75f8cd49be1557c5b5c1f5f641345bc82f842d2384e9608e9872b0714d79", { if: backendLegTopologyCondition("cargo") }),
     proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { if: backendLegTopologyCondition("buck-dev-auth"), workingDirectory: "." }),
     proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
-    proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
-    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
-    proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { if: backendLegTopologyCondition("buck-app"), workingDirectory: "." }),
+    proofRun("Cargo console-app unit suite", "env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
+    proofRun("Cargo console-app OpenAPI drift suite", "env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test openapi_drift", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
+    proofRun("Cargo console-app inline PostgreSQL suite", "export DATABASE_URL=\"${CONSOLE_BUCK_ADMIN_DATABASE_URL:?missing test bootstrap URL}\"\ncargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-postgres -- --test-threads=1\n", { if: backendLegTopologyCondition("buck-app"), workingDirectory: "." }),
+    proofRun("Cargo console-app dev-auth PostgreSQL suite", "export DATABASE_URL=\"${CONSOLE_BUCK_ADMIN_DATABASE_URL:?missing test bootstrap URL}\"\ncargo test --locked --manifest-path backend/Cargo.toml -p console-app --test dev_auth_persona_guard_feature --features dev-auth -- --test-threads=1\n", { if: backendLegTopologyCondition("buck-app"), workingDirectory: "." }),
     proofRun("Collect failures", "node scripts/ci-collect-failures.mjs", { if: collectFailuresCondition, workingDirectory: "." }),
   ],
   // Split out of `backend` 2026-08-18: this single gate was 445s of a 1176s job.
@@ -2762,8 +2763,8 @@ export function evaluateCiPreflight(
           if: backendLegCondition("buck-app"),
         },
         {
-          name: "Buck2 console-app unit suite",
-          run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit",
+          name: "Cargo console-app unit suite",
+          run: "env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib",
           workingDirectory: ".",
           if: backendLegCondition("buck-app"),
         },
@@ -2774,18 +2775,20 @@ export function evaluateCiPreflight(
           // check:request-body-contract closed H-1's request-body half but reads no route
           // inventory, so nothing else in CI covers what this step covers — a gate one line from
           // silent removal is the meta-finding this file exists to refuse.
-          name: "Buck2 console-app OpenAPI drift suite",
-          run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift",
+          name: "Cargo console-app OpenAPI drift suite",
+          run: "env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test openapi_drift",
           workingDirectory: ".",
           if: backendLegCondition("buck-app"),
         },
         {
-          name: "Buck2 console-app inline PostgreSQL suites",
-          run: [
-            "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
-            "//tools/buck:app-inline-postgres \\",
-            "//tools/buck:app-dev-auth-persona-guard-postgres",
-          ].join("\n"),
+          name: "Cargo console-app inline PostgreSQL suite",
+          run: "export DATABASE_URL=\"${CONSOLE_BUCK_ADMIN_DATABASE_URL:?missing test bootstrap URL}\"\ncargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-postgres -- --test-threads=1",
+          workingDirectory: ".",
+          if: backendLegTopologyCondition("buck-app"),
+        },
+        {
+          name: "Cargo console-app dev-auth PostgreSQL suite",
+          run: "export DATABASE_URL=\"${CONSOLE_BUCK_ADMIN_DATABASE_URL:?missing test bootstrap URL}\"\ncargo test --locked --manifest-path backend/Cargo.toml -p console-app --test dev_auth_persona_guard_feature --features dev-auth -- --test-threads=1",
           workingDirectory: ".",
           if: backendLegTopologyCondition("buck-app"),
         },

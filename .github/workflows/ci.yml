@@ -1386,11 +1386,12 @@ jobs:
         working-directory: .
         run: env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit
 
-      - name: Buck2 console-app unit suite
+      # Cargo resolves the app's Leptos dependency; preserve the four source/feature selections.
+      - name: Cargo console-app unit suite
         id: app-unit
         if: ${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
-        run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit
+        run: env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib
 
       # openapi.yaml is the single source of truth for the REST surface and is
       # include_str!-ed into the binary. This suite is the only thing that
@@ -1399,20 +1400,27 @@ jobs:
       # unnoticed; `check:platform-contract-drift` does not cover this (it only
       # regexes /api/platform/ paths). The byte-compare of the served document
       # against the file was deleted: include_str! made it tautological.
-      - name: Buck2 console-app OpenAPI drift suite
+      - name: Cargo console-app OpenAPI drift suite
         id: openapi-drift
         if: ${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
-        run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift
+        run: env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test openapi_drift
 
-      - name: Buck2 console-app inline PostgreSQL suites
+      - name: Cargo console-app inline PostgreSQL suite
         id: app-inline-pg
         if: ${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
         run: |
-          tools/buck/test_needs_postgres.sh --num-threads=1 \
-            //tools/buck:app-inline-postgres \
-            //tools/buck:app-dev-auth-persona-guard-postgres
+          export DATABASE_URL="${CONSOLE_BUCK_ADMIN_DATABASE_URL:?missing test bootstrap URL}"
+          cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-postgres -- --test-threads=1
+
+      - name: Cargo console-app dev-auth PostgreSQL suite
+        id: app-dev-auth-pg
+        if: ${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}
+        working-directory: .
+        run: |
+          export DATABASE_URL="${CONSOLE_BUCK_ADMIN_DATABASE_URL:?missing test bootstrap URL}"
+          cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test dev_auth_persona_guard_feature --features dev-auth -- --test-threads=1
 
       - name: Collect failures
         if: ${{ !cancelled() }}

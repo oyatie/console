@@ -196,12 +196,13 @@ const PLAN = new Map([
   // residual-lowering and authoring logic. Mirrored locally because it is the
   // only place the row-visibility safety properties execute at all.
   ["Buck2 platform-authz unit suite", { tier: "fast" }],
-  ["Buck2 console-app unit suite", { tier: "fast" }],
+  ["Cargo console-app unit suite", { tier: "fast" }],
   // Unsets DATABASE_URL, so it is a no-Docker step despite living among the
   // PostgreSQL suites. It is the only inventory of mounted routes against
   // openapi.yaml, so a local miss here is a client-contract miss.
-  ["Buck2 console-app OpenAPI drift suite", { tier: "fast" }],
-  ["Buck2 console-app inline PostgreSQL suites", { tier: "db" }],
+  ["Cargo console-app OpenAPI drift suite", { tier: "fast" }],
+  ["Cargo console-app inline PostgreSQL suite", { tier: "db" }],
+  ["Cargo console-app dev-auth PostgreSQL suite", { tier: "db" }],
 
   // ---- repo-gates --------------------------------------------------------
   // Pure `npm run` gate binaries: no Docker, no Rust toolchain, no network.
