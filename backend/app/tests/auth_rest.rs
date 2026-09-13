@@ -2,7 +2,7 @@
 
 use axum::body::{Body, to_bytes};
 use axum::extract::ConnectInfo;
-use console_app::{AppConfig, AppRole, AppState, build_router};
+use console_app::{AppConfig, AppRole, AppState, build_router, run_migrations};
 use console_financial_adapter_postgres::PgFinancialStore;
 use console_financial_application::{
     CreatePurchaseRequestCommand, FinancialConfigSnapshot, PrepareExpenditureCommand,
@@ -98,8 +98,9 @@ struct PrivacyConsentStatusResponse {
 /// enrolls a passkey from that authenticated session, and then signs in again
 /// usernamelessly (discoverable) with no user_id. Refresh reuse still revokes the
 /// family.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn otp_first_signin_then_passkey_enrollment_then_usernameless_login(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -222,8 +223,9 @@ async fn otp_first_signin_then_passkey_enrollment_then_usernameless_login(pool: 
     assert_audit_count(&pool, "auth.login", 1).await; // usernameless login
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mobile_bound_step_up_start_gates_mobile_approval_and_poll_vote(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -542,8 +544,9 @@ async fn mobile_bound_step_up_start_gates_mobile_approval_and_poll_vote(pool: Pg
     assert_audit_count(&pool, "collaboration.poll.vote", 2).await;
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn financial_purchase_sensitive_actions_require_fresh_passkey_step_up(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -886,8 +889,9 @@ async fn financial_purchase_sensitive_actions_require_fresh_passkey_step_up(pool
 /// OTP-minted session before enrollment completes. Refresh must keep carrying the
 /// setup flag, otherwise a hard reload recreates a normal session and lets the
 /// user into the app without registering a passkey.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn refresh_keeps_zero_passkey_user_in_setup_mode_until_enrolled(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -974,8 +978,9 @@ async fn refresh_keeps_zero_passkey_user_in_setup_mode_until_enrolled(pool: PgPo
 /// where the desktop handoff is pinned to the OTP user/org. Generic desktop QR
 /// logins must still require a fresh WebAuthn assertion through
 /// `/device-login/approve`; a normal bearer session is not enough.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn approve_session_rejects_generic_desktop_handoff_without_target(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1058,8 +1063,9 @@ async fn approve_session_rejects_generic_desktop_handoff_without_target(pool: Pg
 /// service-terms agreements. A freshly OTP-authenticated user can read the
 /// required version, cannot start enrollment until both required boxes are true,
 /// and can proceed after acceptance is recorded.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn first_passkey_enrollment_requires_privacy_terms(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1157,8 +1163,9 @@ async fn first_passkey_enrollment_requires_privacy_terms(pool: PgPool) {
 /// only mints a session, so a failed/incomplete enrollment never burns the code —
 /// the user can re-redeem (within the TTL) until a passkey actually sticks. Once a
 /// passkey is registered the code is consumed atomically and can never be reused.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn otp_is_consumed_on_passkey_registration_not_on_redeem(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1254,8 +1261,9 @@ async fn otp_is_consumed_on_passkey_registration_not_on_redeem(pool: PgPool) {
 }
 
 /// The admin issue-OTP endpoint is authz-gated: a non-admin session is forbidden.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_issue_otp_rejects_non_admin(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1309,8 +1317,9 @@ async fn admin_issue_otp_rejects_non_admin(pool: PgPool) {
 /// IDOR: a branch-A admin must NOT be able to mint a sign-in OTP for a user who
 /// belongs only to branch B. Authorization is bound to the TARGET's real branch
 /// scope, not the client-supplied branch_id.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_issue_otp_rejects_cross_branch_target(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1360,8 +1369,9 @@ async fn admin_issue_otp_rejects_cross_branch_target(pool: PgPool) {
 
 /// IDOR: a branch admin must NOT be able to mint a sign-in OTP for a privileged
 /// (SUPER_ADMIN or EXECUTIVE) target. Only a SUPER_ADMIN caller may do so.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_issue_otp_rejects_privileged_target(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1423,8 +1433,9 @@ async fn admin_issue_otp_rejects_privileged_target(pool: PgPool) {
 
 /// The happy path still works: a branch admin issues a code for an in-branch
 /// subordinate (a non-privileged user whose only branch is the admin's).
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_issue_otp_allows_in_branch_subordinate(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1464,8 +1475,9 @@ async fn admin_issue_otp_allows_in_branch_subordinate(pool: PgPool) {
 /// Lost-device recovery: a branch admin can reset an in-branch subordinate that
 /// already has a passkey. The old passkey is revoked and the fresh one-time code
 /// redeems so the user can enroll a replacement device.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_credential_reset_recovers_in_branch_subordinate(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1561,8 +1573,9 @@ async fn admin_credential_reset_recovers_in_branch_subordinate(pool: PgPool) {
 /// requests through the actual HTTP path must behave normally, proving
 /// `OffsetDateTime::now_utc()` still wires into `rate_limit` end-to-end, and
 /// that per-IP buckets stay independent.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn otp_redeem_rate_limit_wires_up_on_real_clock_path(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1655,8 +1668,9 @@ async fn otp_redeem_rate_limit_wires_up_on_real_clock_path(pool: PgPool) {
 /// sets the refresh token as an HttpOnly `console_refresh` cookie and OMITS it from
 /// the JSON body, while the access token stays in the body. The cookie carries
 /// the CSRF-safe attributes (HttpOnly, SameSite=Strict, Path=/api/v1/auth).
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1724,8 +1738,9 @@ async fn cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh(pool: Pg
 /// WEB dual-transport: passkey login finish in cookie mode sets the cookie and
 /// nulls the body refresh token; the cookie value then authorizes a refresh that
 /// reads the token from the cookie (no body token) and rotates the cookie.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1830,8 +1845,9 @@ async fn cookie_mode_login_then_refresh_reads_and_rotates_cookie(pool: PgPool) {
 /// session from the HttpOnly refresh cookie on each document load. That normal
 /// pattern must have a wider refresh budget than OTP/passkey credential
 /// submission, while still retaining a bounded per-device refresh limiter.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -1911,8 +1927,9 @@ async fn cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id(pool: 
 /// MOBILE (no transport header) is unchanged: refresh and logout read the token
 /// from the request BODY, the response carries the refresh token in the body, and
 /// NO Set-Cookie header is emitted.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn body_mode_without_header_is_unchanged_and_sets_no_cookie(pool: PgPool) {
+    prepare_http_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -3271,4 +3288,79 @@ fn account_transport_urls(owner_pool: &PgPool) -> Vec<(&'static str, String)> {
     .into_iter()
     .map(|(key, login)| (key, login_test_database_url(owner_pool, login)))
     .collect()
+}
+
+/// SQLx supplies an empty disposable database; the production migration entry
+/// owns both numbered migrations and Apalis initialization before any fixtures.
+/// Runtime pools never receive this directly authenticated migration-owner URL.
+async fn prepare_http_database(pool: &PgPool) {
+    let mut connection = pool.acquire().await.expect("disposable admin connection");
+    let identity: (String, String, String, bool, bool) = sqlx::query_as(
+        r#"
+        SELECT session_user::text, current_user::text, current_database(),
+            current_setting('console.sqlx_test_bootstrap', true) = 'buck-sqlx-superuser-v1'
+            AND (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname = current_user)
+            AND (SELECT pg_get_userbyid(datdba) = current_user
+                 FROM pg_catalog.pg_database WHERE datname = current_database()),
+            NOT EXISTS (
+                SELECT 1 FROM pg_catalog.pg_class c
+                JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+                WHERE n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
+            )
+        "#,
+    )
+    .fetch_one(&mut *connection)
+    .await
+    .expect("inspect empty disposable HTTP test database");
+    assert_eq!(identity.0, "console_buck_admin");
+    assert_eq!(identity.1, "console_buck_admin");
+    assert!(
+        identity.3 && identity.4,
+        "requires marked empty SQLx database"
+    );
+    let suffix = identity
+        .2
+        .strip_prefix("_sqlx_test_")
+        .expect("SQLx database");
+    assert!(
+        suffix.len() == 52
+            && suffix
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'_')
+    );
+
+    let owner_binding = std::env::var("CONSOLE_APALIS_OWNER_DATABASE_URL")
+        .expect("missing disposable migration-owner transport");
+    let mut owner_url = Url::parse(&owner_binding).expect("valid migration-owner URL");
+    assert!(matches!(owner_url.scheme(), "postgres" | "postgresql"));
+    assert_eq!(owner_url.username(), "console_app");
+    assert!(owner_url.password().is_some_and(|p| !p.is_empty()));
+    assert!(owner_url.query().is_none() && owner_url.fragment().is_none());
+    let options = pool.connect_options();
+    assert_eq!(Some(identity.2.as_str()), options.get_database());
+    assert_eq!(owner_url.host_str(), Some(options.get_host()));
+    assert_eq!(owner_url.port().unwrap_or(5432), options.get_port());
+    owner_url.set_path(&identity.2);
+
+    // Provision only the empty database container. Product tables, grants and
+    // queue schema are created by the existing production migration boundary.
+    let transfer: String = sqlx::query_scalar(
+        "SELECT format('ALTER DATABASE %I OWNER TO console_app', current_database())",
+    )
+    .fetch_one(&mut *connection)
+    .await
+    .expect("quote disposable database identifier");
+    sqlx::query(&transfer)
+        .execute(&mut *connection)
+        .await
+        .expect("assign empty test database to its real migration owner");
+    drop(connection);
+    let config = AppConfig::from_pairs([
+        ("CONSOLE_APP_ROLE", AppRole::Migrate.to_string()),
+        ("DATABASE_URL", owner_url.to_string()),
+    ])
+    .expect("production migration configuration");
+    run_migrations(&config)
+        .await
+        .expect("complete production schema migration before HTTP fixtures");
 }
