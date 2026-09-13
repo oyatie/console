@@ -1463,3 +1463,100 @@ fn gate_rejects_a_reused_or_vacant_pre_freeze_migration_number()
     );
     Ok(())
 }
+
+const CLASSIFIED_INDEXED_STAFF: &str = "
+    CREATE TABLE staff (id UUID PRIMARY KEY);
+    COMMENT ON COLUMN staff.id IS 'pd:personal — surrogate key of a person row';
+    CREATE INDEX staff_idx ON staff (id);
+";
+
+#[test]
+fn drop_index_preserves_the_classified_column_inventory() -> Result<(), Box<dyn std::error::Error>>
+{
+    for statement in [
+        "DROP INDEX staff_idx;",
+        "DROP INDEX IF EXISTS staff_idx;",
+        "DROP INDEX CONCURRENTLY IF EXISTS public.staff_idx;",
+    ] {
+        let dir = tree(
+            "drop-index",
+            &format!("{CLASSIFIED_INDEXED_STAFF}{statement}"),
+        )?;
+        let result = check_tree(&dir, &empty_baseline())?;
+        assert!(
+            result.passed(),
+            "column-neutral {statement}: {:#?}",
+            result.violations
+        );
+        assert_eq!(result.total_tables, 1);
+        assert_eq!(result.total_columns, 1);
+    }
+    Ok(())
+}
+
+#[test]
+fn drop_index_does_not_hide_an_adjacent_unclassified_column()
+-> Result<(), Box<dyn std::error::Error>> {
+    let dir = tree(
+        "drop-index-then-column",
+        &format!(
+            "{CLASSIFIED_INDEXED_STAFF} DROP INDEX IF EXISTS staff_idx; ALTER TABLE staff ADD COLUMN secret TEXT;"
+        ),
+    )?;
+    let result = check_tree(&dir, &empty_baseline())?;
+    assert!(!result.passed());
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::UnclassifiedColumn
+                && v.detail.contains("staff.secret")),
+        "the adjacent column must still be classified: {:#?}",
+        result.violations
+    );
+    assert_eq!(result.total_columns, 2);
+    Ok(())
+}
+
+#[test]
+fn drop_index_does_not_short_circuit_opaque_ddl_inspection()
+-> Result<(), Box<dyn std::error::Error>> {
+    let dir = tree(
+        "drop-index-opaque-column",
+        &format!(
+            "{CLASSIFIED_INDEXED_STAFF} DO $$ BEGIN EXECUTE 'DROP INDEX IF EXISTS staff_idx; ALTER TABLE staff ADD COLUMN secret TEXT'; END $$;"
+        ),
+    )?;
+    let result = check_tree(&dir, &empty_baseline())?;
+    assert!(!result.passed());
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::UnsupportedDdl && v.detail.contains("alter table")),
+        "opaque table alteration must remain rejected: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn drop_index_does_not_admit_unknown_drop_statements() -> Result<(), Box<dyn std::error::Error>> {
+    let dir = tree(
+        "drop-index-unknown-drop",
+        &format!(
+            "{CLASSIFIED_INDEXED_STAFF} DROP INDEX IF EXISTS staff_idx; DROP TYPE unknown_type;"
+        ),
+    )?;
+    let result = check_tree(&dir, &empty_baseline())?;
+    assert!(!result.passed());
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::UnsupportedDdl && v.detail.contains("drop type")),
+        "unknown DROP must remain rejected: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
