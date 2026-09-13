@@ -1,0 +1,12 @@
+{
+  "candidate_sha": "3305cd3fdce03a04d4b5d354617dd911d9da49ca",
+  "base_sha": "3457cda7bf9452cb2fcfcc1eea826e1347a81b13",
+  "path": "backend/app/tests/auth_rest.rs",
+  "git_blob": "ba0a6a7abe73026afa8768aa956bd5bbb8153ace",
+  "sha256": "f2a8f2a47822ceeebc5f921bbd6802e818156f74036396be6bd83eec848d786e",
+  "bytes": 202389,
+  "original44_test_bodies_byte_preserved": true,
+  "only_prior_helper_change": "router delegates same config constructor to router_with_key, using fresh random key as before",
+  "addition": "6 tests plus owning test helpers inside existing account_browser module",
+  "no_product_changes": true
+}

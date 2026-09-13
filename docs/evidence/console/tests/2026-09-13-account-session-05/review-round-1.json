@@ -1,0 +1,26 @@
+{
+  "candidate_sha": "63c2c987d7d2cbb663dcfb793f84ac9a897c54db",
+  "verdict": "CHANGES_REQUIRED",
+  "reviews": [
+    {
+      "reviewer": "/root/fresh29_security",
+      "findings": [
+        "Generation number contradicts canonical string schema",
+        "Expired proof also has invalid time ordering",
+        "Producer-only valid control cannot prove fixture re-signed tokens accepted",
+        "Old proof on new login also wrong family; add only-lower-generation current-family proof"
+      ]
+    },
+    {
+      "reviewer": "/root/fresh29_workflows",
+      "findings": [
+        "Canonical positive i64-string generation required; compare exact stored current generation after login"
+      ]
+    },
+    {
+      "reviewer": "/root/fresh29_operations",
+      "verdict": "ACCEPT_SOURCE",
+      "evidence_limit": "Initial credentials invocation failed missing Node dependency; later exact-lock offline npm ci and credential gate rerun required"
+    }
+  ]
+}

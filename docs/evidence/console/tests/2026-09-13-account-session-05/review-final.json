@@ -1,0 +1,24 @@
+{
+  "candidate_sha": "3305cd3fdce03a04d4b5d354617dd911d9da49ca",
+  "reviews": [
+    {
+      "reviewer": "/root/fresh29_security",
+      "verdict": "ACCEPT_SOURCE",
+      "findings": [],
+      "conclusion": "All4securityfindings closed: canonical generation, coherent expiry, re-signed positive, current-family stale generation."
+    },
+    {
+      "reviewer": "/root/fresh29_workflows",
+      "verdict": "ACCEPT_SOURCE",
+      "findings": [],
+      "conclusion": "Approved wire types and current generation readback matched; no remaining workflow blockers."
+    },
+    {
+      "reviewer": "/root/fresh29_operations",
+      "verdict": "ACCEPT_SOURCE_AND_EVIDENCE",
+      "findings": [],
+      "conclusion": "44inherited tests/outcomes preserved;50name reconciliation25PASS25FAIL;5newschema prerequisites unreached; final checks and14compressedlogs verified; ownVMstopped."
+    }
+  ],
+  "limit": "Independent test source/evidence review only. User test-SHA approval and implementation admission remain separate."
+}
