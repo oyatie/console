@@ -894,6 +894,7 @@ fn apply_statement(statement: &[Tok], file: &Path, schema: &mut Schema) {
         | ["create", "view", ..]
         | ["alter", "function", ..]
         | ["alter", "default", "privileges", ..]
+        | ["drop", "index", ..]
         | ["drop", "function", ..]
         | ["drop", "trigger", ..]
         | ["grant", ..]

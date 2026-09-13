@@ -1,0 +1,33 @@
+{
+  "owner": "/root",
+  "base_sha": "e2e592eabeae0733ecc6ff69b39122c35ecb2eee",
+  "allowed_paths": [
+    "backend/ci/gates/personal-data-classification/src/lib.rs",
+    "docs/evidence/console/verification/2026-09-13-repair-01/parser-entry.json"
+  ],
+  "test_sha": "e2e592eabeae0733ecc6ff69b39122c35ecb2eee",
+  "reviewer": "/root/fresh29_security ACCEPT tests and exact prospective arm",
+  "probe": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --locked --manifest-path backend/Cargo.toml -p console-gate-personal-data-classification --test gate_detects_violation drop_index -- --nocapture > /private/tmp/console-repair30-checks/parser-probe.log 2>&1",
+  "admission": "fanout.py admit exit0 with1 actual UnsupportedDdl failure;3 hostile-DDL tests pass",
+  "mechanical_guide": [
+    "Add only [drop,index,..] to existing column-neutral dispatcher",
+    "Leave mandatory quoted-body scan, unknown-DDL rejection, baseline and migrations unchanged",
+    "Same probe GREEN plus entire parser suite and actual corpus gate"
+  ],
+  "pre_mortem": "Overbroad DROP exemption hides new columns or mistaken for migration-safety approval",
+  "blast_radius": "Classification gate lexical dispatch; no database execution or product authorization",
+  "detection": "Inventory assertions, adjacent and opaque hostileDDL regressions, fullgate, independent review",
+  "rollback": "Reviewed forward reversal of one dispatcher arm; preserve tests/evidence",
+  "stop_conditions": [
+    "New waiver",
+    "Changed scanner or migration",
+    "Unknown-DDL acceptance",
+    "Review rejection"
+  ],
+  "remaining_holds": [
+    "CI app build repair",
+    "Authority final validation",
+    "Account test approval/implementation",
+    "Separate migration-safety/legal authority"
+  ]
+}
