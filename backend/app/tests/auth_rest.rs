@@ -3360,3 +3360,331 @@ async fn prepare_http_database(pool: &PgPool) {
         .await
         .expect("complete production schema migration before HTTP fixtures");
 }
+
+// AS1.3 selected legacy-fence acceptance. These owner fixtures install only
+// approved data rows into real migrations; they do not emulate production
+// cutover/drain, Account enrollment, security recovery authority, or DDL.
+#[sqlx::test(migrations = false)]
+async fn account_fence_unmigrated_transport_positive_control(pool: PgPool) {
+    let fixture = legacy_fence_fixture(&pool).await;
+    assert_legacy_reads(&fixture.router, fixture.subject, &fixture.access).await;
+    assert_legacy_reads(&fixture.router, fixture.control, &fixture.control_access).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_pending_enrollment_rejects_legacy_sessions(pool: PgPool) {
+    assert_legacy_fence_state(&pool, "PENDING_ENROLLMENT").await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_active_rejects_legacy_sessions(pool: PgPool) {
+    assert_legacy_fence_state(&pool, "ACTIVE").await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_security_suspended_rejects_legacy_sessions(pool: PgPool) {
+    assert_legacy_fence_state(&pool, "SECURITY_SUSPENDED").await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_recovery_required_rejects_legacy_sessions(pool: PgPool) {
+    assert_legacy_fence_state(&pool, "RECOVERY_REQUIRED").await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_recovery_to_active_does_not_restore_legacy_sessions(pool: PgPool) {
+    let fixture = legacy_fence_fixture(&pool).await;
+    insert_account_fence(&pool, fixture.subject, "RECOVERY_REQUIRED").await;
+    // Reserve BOTH unspent refresh tokens until after ACTIVE, so a refusal's
+    // revocation side effect cannot hide a state-dependent authentication fence.
+    let before = legacy_read_responses(&fixture.router, &fixture.access).await;
+    assert_legacy_reads(&fixture.router, fixture.control, &fixture.control_access).await;
+    sqlx::query(
+        "UPDATE account_security SET security_state = 'ACTIVE', \
+         security_generation = security_generation + 1, revision = revision + 1, \
+         updated_at = now() WHERE account_id = $1",
+    )
+    .bind(fixture.subject.as_uuid())
+    .execute(&pool)
+    .await
+    .expect("seed persisted recovered state; not a production recovery command");
+    let after = legacy_session_responses(&fixture).await;
+    assert_legacy_reads(&fixture.router, fixture.control, &fixture.control_access).await;
+    assert_legacy_denials(before.into_iter().chain(after)).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_outstanding_employer_otp_cannot_create_a_session(pool: PgPool) {
+    let fixture = legacy_fence_fixture(&pool).await;
+    let branch = seed_branch(&pool, "Fence OTP Region", "Fence OTP Branch").await;
+    let subject =
+        seed_user_with_branch(&pool, "Fence OTP", "010-8900-0003", "MECHANIC", branch).await;
+    let control =
+        seed_user_with_branch(&pool, "Control OTP", "010-8900-0004", "MECHANIC", branch).await;
+    let issue = BootstrapCredentialStore
+        .issue_for_zero_credential_user(
+            &pool,
+            *subject.as_uuid(),
+            OrgId::knl(),
+            OffsetDateTime::now_utc(),
+            Duration::hours(24),
+        )
+        .await
+        .unwrap();
+    let control_issue = BootstrapCredentialStore
+        .issue_for_zero_credential_user(
+            &pool,
+            *control.as_uuid(),
+            OrgId::knl(),
+            OffsetDateTime::now_utc(),
+            Duration::hours(24),
+        )
+        .await
+        .unwrap();
+    insert_account_fence(&pool, subject, "ACTIVE").await;
+    let rejected = post_raw(
+        fixture.router.clone(),
+        "/api/v1/auth/otp/redeem",
+        None,
+        json!({"otp": issue.token.as_str()}),
+    )
+    .await;
+    let accepted: OtpRedeemResponse = post_json(
+        fixture.router.clone(),
+        "/api/v1/auth/otp/redeem",
+        None,
+        json!({"otp": control_issue.token.as_str()}),
+        StatusCode::OK,
+    )
+    .await;
+    assert!(!accepted.access_token.is_empty());
+    let families: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM auth_refresh_token_families WHERE user_id = $1")
+            .bind(subject.as_uuid())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(families, 0, "fenced employer OTP cannot mint a family");
+    assert_legacy_denials([rejected]).await;
+}
+
+struct LegacyFenceFixture {
+    router: axum::Router,
+    subject: UserId,
+    access: String,
+    body_refresh: String,
+    cookie_refresh: String,
+    control: UserId,
+    control_access: String,
+}
+
+async fn legacy_fence_fixture(pool: &PgPool) -> LegacyFenceFixture {
+    prepare_http_database(pool).await;
+    let key = SigningKey::random(&mut OsRng);
+    let private = key.to_pkcs8_pem(LineEnding::LF).unwrap();
+    let public = key
+        .verifying_key()
+        .to_public_key_pem(LineEnding::LF)
+        .unwrap();
+    let branch = seed_branch(pool, "Fence Region", "Fence Branch").await;
+    let subject =
+        seed_user_with_branch(pool, "Fence Subject", "010-8900-0001", "MECHANIC", branch).await;
+    let control =
+        seed_user_with_branch(pool, "Fence Control", "010-8900-0002", "MECHANIC", branch).await;
+    let router = build_router(
+        app_state(pool.clone(), private.to_string(), public)
+            .await
+            .unwrap(),
+    );
+    let setup = admin_session_via_otp(&router, pool, subject).await;
+    let mut authenticator = WebauthnAuthenticator::new(SoftPasskey::new(true));
+    let credential = enroll_passkey(&router, &mut authenticator, &setup).await;
+    let login = usernameless_login(&router, &mut authenticator, &credential).await;
+    assert_legacy_reads(&router, subject, &login.access_token).await;
+    let expected_key: Uuid =
+        sqlx::query_scalar("SELECT id FROM auth_webauthn_credentials WHERE user_id = $1")
+            .bind(subject.as_uuid())
+            .fetch_one(pool)
+            .await
+            .unwrap();
+    let keys: Value = get_legacy_raw(&router, "/api/v1/auth/passkeys", &login.access_token)
+        .await
+        .into_json(StatusCode::OK)
+        .await;
+    assert_eq!(keys.as_array().unwrap().len(), 1);
+    assert_eq!(keys[0]["id"], json!(expected_key));
+    let rotated: TokenPairResponse = post_json(
+        router.clone(),
+        "/api/v1/auth/token/refresh",
+        None,
+        json!({"refresh_token": login.refresh_token.unwrap()}),
+        StatusCode::OK,
+    )
+    .await;
+    let cookie_login =
+        cookie_mode_usernameless_login(&router, &mut authenticator, &credential).await;
+    assert_eq!(cookie_login.status(), StatusCode::OK);
+    let cookie = console_refresh_set_cookie(&cookie_login).unwrap();
+    let cookie_rotation = post_cookie_mode(
+        router.clone(),
+        "/api/v1/auth/token/refresh",
+        Some(cookie_token(&cookie)),
+        json!({}),
+    )
+    .await;
+    assert_eq!(cookie_rotation.status(), StatusCode::OK);
+    let cookie_rotation = console_refresh_set_cookie(&cookie_rotation).unwrap();
+    let control_access = admin_session_via_otp(&router, pool, control).await;
+    assert_legacy_reads(&router, control, &control_access).await;
+    LegacyFenceFixture {
+        router,
+        subject,
+        access: rotated.access_token,
+        body_refresh: rotated.refresh_token.unwrap(),
+        cookie_refresh: cookie_token(&cookie_rotation).to_owned(),
+        control,
+        control_access,
+    }
+}
+
+async fn insert_account_fence(pool: &PgPool, subject: UserId, state: &str) {
+    let exists: bool = sqlx::query_scalar(
+        "SELECT to_regclass('public.accounts') IS NOT NULL AND to_regclass('public.account_security') IS NOT NULL",
+    ).fetch_one(pool).await.unwrap();
+    assert!(
+        exists,
+        "Account schema prerequisite missing; legacy-fence assertions not reached"
+    );
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("INSERT INTO accounts (id, created_at) VALUES ($1, now())")
+        .bind(subject.as_uuid())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO account_security (account_id, security_state, security_generation, revision, updated_at, context_generation) \
+         VALUES ($1, $2, 1, 1, now(), 1)",
+    ).bind(subject.as_uuid()).bind(state).execute(&mut *tx).await.unwrap();
+    tx.commit().await.unwrap();
+}
+
+async fn assert_legacy_fence_state(pool: &PgPool, state: &str) {
+    let fixture = legacy_fence_fixture(pool).await;
+    let before: Vec<(Uuid, Value)> = sqlx::query_as(
+        "SELECT id, passkey_json FROM auth_webauthn_credentials WHERE user_id = $1 ORDER BY id",
+    )
+    .bind(fixture.subject.as_uuid())
+    .fetch_all(pool)
+    .await
+    .unwrap();
+    insert_account_fence(pool, fixture.subject, state).await;
+    // Same router: a cached successful old-session lookup must not survive.
+    let responses = legacy_session_responses(&fixture).await;
+    assert_legacy_reads(&fixture.router, fixture.control, &fixture.control_access).await;
+    let active: bool = sqlx::query_scalar("SELECT is_active FROM users WHERE id = $1")
+        .bind(fixture.subject.as_uuid())
+        .fetch_one(pool)
+        .await
+        .unwrap();
+    assert!(
+        active,
+        "Company deactivation must not manufacture this rejection"
+    );
+    let after: Vec<(Uuid, Value)> = sqlx::query_as(
+        "SELECT id, passkey_json FROM auth_webauthn_credentials WHERE user_id = $1 ORDER BY id",
+    )
+    .bind(fixture.subject.as_uuid())
+    .fetch_all(pool)
+    .await
+    .unwrap();
+    assert!(
+        before == after,
+        "legacy refusal must preserve existing passkey bytes"
+    );
+    assert_legacy_denials(responses).await;
+}
+
+async fn get_legacy_raw(router: &axum::Router, path: &str, access: &str) -> http::Response<Body> {
+    router
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri(path)
+                .header(header::AUTHORIZATION, format!("Bearer {access}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap()
+}
+
+async fn legacy_read_responses(router: &axum::Router, access: &str) -> Vec<http::Response<Body>> {
+    let mut responses = Vec::new();
+    for path in ["/api/v1/users/me", "/api/v1/auth/passkeys"] {
+        responses.push(get_legacy_raw(router, path, access).await);
+    }
+    responses
+}
+
+async fn assert_legacy_reads(router: &axum::Router, subject: UserId, access: &str) {
+    let me: Value = get_legacy_raw(router, "/api/v1/users/me", access)
+        .await
+        .into_json(StatusCode::OK)
+        .await;
+    assert_eq!(me["id"], json!(subject));
+    let keys: Value = get_legacy_raw(router, "/api/v1/auth/passkeys", access)
+        .await
+        .into_json(StatusCode::OK)
+        .await;
+    assert!(keys.is_array());
+}
+
+async fn legacy_session_responses(fixture: &LegacyFenceFixture) -> Vec<http::Response<Body>> {
+    let mut responses = legacy_read_responses(&fixture.router, &fixture.access).await;
+    responses.push(
+        post_raw(
+            fixture.router.clone(),
+            "/api/v1/auth/token/refresh",
+            None,
+            json!({"refresh_token": fixture.body_refresh}),
+        )
+        .await,
+    );
+    responses.push(
+        post_cookie_mode(
+            fixture.router.clone(),
+            "/api/v1/auth/token/refresh",
+            Some(&fixture.cookie_refresh),
+            json!({}),
+        )
+        .await,
+    );
+    responses
+}
+
+async fn assert_legacy_denials(responses: impl IntoIterator<Item = http::Response<Body>>) {
+    let mut statuses = Vec::new();
+    for response in responses {
+        statuses.push(response.status());
+        for cookie in set_cookie_values(&response) {
+            let value = cookie.split(';').next().unwrap().split_once('=').unwrap().1;
+            assert!(
+                value.is_empty() || cookie.contains("Max-Age=0"),
+                "refusal must not issue a credential cookie"
+            );
+        }
+        let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        if let Ok(value) = serde_json::from_slice::<Value>(&body) {
+            assert!(
+                value.get("access_token").is_none() && value.get("refresh_token").is_none(),
+                "refusal must not return a session token"
+            );
+        }
+    }
+    assert!(
+        statuses
+            .iter()
+            .all(|status| *status == StatusCode::UNAUTHORIZED),
+        "permanent legacy fence requires401 on every selected transport; observed {statuses:?}"
+    );
+}

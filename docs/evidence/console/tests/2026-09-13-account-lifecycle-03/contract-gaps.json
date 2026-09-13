@@ -1,0 +1,90 @@
+{
+  "classification": "Evidence and proposed refinements; NOT an approved contract amendment",
+  "design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "findings": [
+    {
+      "id": "TERMS",
+      "fact": "Account terms kind/version/digest evidence required, but no client discovery route, registered version fixture or content registry ownership/materialization specified",
+      "recommendation": "Expose public immutable Account terms manifests with exact version, required item kinds and content digests. Start/finish echo that exact version. Resolve bytes from an Account-owned versioned content registry; do not use Company audit or infer historic consent.",
+      "alternatives": [
+        "Prefer Account-owned immutable terms content and current-version head when existing object engine supports this custody",
+        "Release-pinned immutable public artifact is simpler initially, but loses runtime governed publication unless explicitly integrated"
+      ],
+      "settle_before_test": [
+        "Exact GET manifest/content routes and response schema",
+        "Content owner/storage, current-version publication and stale-in-flight registration policy",
+        "Test-only registered content bytes and digest; no production/legal acceptance claim"
+      ]
+    },
+    {
+      "id": "SESSION_WIRE",
+      "fact": "Finish result names Account session but no exact body envelope or successful status; start fields are specified",
+      "recommendation": "Reuse WebAuthn library publicKey serialization exactly. Propose start200; registration finish201; login finish200; explicit Account projection envelope. Browser response contains Account projection only plus session cookies; native bearer response may contain access/refresh credentials under explicit transport negotiation.",
+      "settle_before_test": [
+        "Exact response JSON Schema and additionalProperties policy",
+        "Native transport selector, omitted-selector behavior and mixed-cookie/bearer conflict rules",
+        "Typed assurance values and permitted_self_actions ActionRef codec"
+      ]
+    },
+    {
+      "id": "BROWSER_TRANSPORT",
+      "fact": "Secure HttpOnly host-only cookies plus Origin and session-bound CSRF required; cookie names,path,proof acquisition and middleware are expressly deferred",
+      "recommendation": "Separate v2 Account cookies from legacy console_refresh; prefer __Host- names, Secure,HttpOnly,Path=/, no Domain, SameSite=Strict. Require same-origin mutation policy and session-bound CSRF. Preserve hash-only enrollment nonce custody.",
+      "alternatives": [
+        "Random synchronizer proof with owner-managed hash/state: familiar but needs refresh/reload/multiple-tab lifetime contract",
+        "Signed CSRF proof with separate audience/kind, bound to current family+generation using existing ES256 keys: avoids a second secret/store but needs strict parser separation and cookie-authenticated proof acquisition"
+      ],
+      "settle_before_test": [
+        "Choose CSRF mechanism and specify issuance/refresh/reload/multiple-tab behavior",
+        "Exact cookie names/max-age/clearing and logout/duplicate-cookie parsing",
+        "Origin,Sec-Fetch/CORS,reverse-proxy trust and missing-header behavior",
+        "Enrollment nonce cookie binding and expiration; concurrent registration behavior"
+      ]
+    },
+    {
+      "id": "GN16_CODEC",
+      "fact": "GN16 already admits contexts route, page_size1..100/default25,5minute cursors,401/409stale_cursor/503navigation_unavailable; earlier AS1 deferral is superseded",
+      "recommendation": "Fix one closed envelope for COMPANY/GROUP contexts and exact context_ref/entry_ref/label codecs. No hidden count; choosing context grants nothing; GET cannot create CompanyActor.",
+      "settle_before_test": [
+        "Exact context/result/error JSON schemas and typed refs",
+        "Empty vs denied vs unavailable results with zero contexts",
+        "Genuine owner-issued entitlement fixture plus candidate hints; hints alone cannot make success"
+      ]
+    }
+  ],
+  "order": [
+    "Freeze and independently review exact public wire/storage/transport refinement against approved invariants",
+    "Obtain revision-bound approval for material contract changes together, not individual cosmetic choices",
+    "Add real Company-free enrollment\u2192me\u2192contexts\u2192login positive path and negative/race cases",
+    "Complete remaining Account tests, independently review and approve exact test SHA",
+    "Only then admit implementation through a named RED command"
+  ],
+  "already_executable_scope": "Selected legacy-fence data fixtures and known v1 routes require no invented v2 wire fields; missing migrated schema is separately classified",
+  "sources": [
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/boundary-api.json",
+      "git_blob": "436c5129e2a63739da583938b77441c04ec3fcf0",
+      "sha256": "36e39f63920c79be1e951b16db53478d7ddb103e0825d2aef20db032b988eab8"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/account-contract.txt",
+      "git_blob": "09e0dca1ec52aff72bbea91e3af23e1af8bc342b",
+      "sha256": "e1eee7c38884e2d71290973fda97a4770f958899bd4023efa85774c28b9d4011"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/action-inputs.json",
+      "git_blob": "0d6675bc1dfe228d4d759f2553be99f3f836de8b",
+      "sha256": "ac215c0eeaaaa20f4f443d6a1937cd48dff2812e9ea730e3b35f418444cf0ab9"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/storage-mapping.json",
+      "git_blob": "3893c8bc92cf307baa389029ce4d636d18a8eb90",
+      "sha256": "09fff6540daaf9f97b3b302c8bee102059327ab604886866feb6b64fef8c1ce4"
+    }
+  ],
+  "remaining_holds": [
+    "No full Account test approval",
+    "No material contract refinement approved by this evidence",
+    "No Account enrollment/implementation/production/legal authority"
+  ]
+}

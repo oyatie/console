@@ -1,0 +1,39 @@
+{
+  "owner": "/root",
+  "base_sha": "138bba668aa6c2b4daedb2d265adce6866492511",
+  "design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "target": "Executable selected legacy-session permanent-fence tests and explicit enrollment wire gaps",
+  "allowed_paths": [
+    "backend/app/tests/auth_rest.rs",
+    "docs/evidence/console/tests/2026-09-13-account-lifecycle-03"
+  ],
+  "forbidden": "Product sources,migrations,lockfiles,generated files,main staged source",
+  "mechanical_guide": [
+    "Reuse actual run_migrations/from_config/router and SoftPasskey protocol",
+    "Fixture only inserts approved Account/security rows into real migration-created schema; never creates tables or roles",
+    "Same router before/after root fence; independent never-consumed refresh families per transport; unchanged Company status; unmigrated positive control",
+    "Do not label missing Account schema as observed token-rejection behavior",
+    "No implementation admission or existing-test removal"
+  ],
+  "pre_mortem": "Expired/reused tokens or global authentication shutdown falsely satisfy rejection tests; absent schema hides protocol assertions; unspecified public wire details silently become tests",
+  "blast_radius": "Isolated tests and evidence; sole writer root; main94stagedfiles preserved",
+  "detection": "Named positive control and each security state; exact status/subject/key/body/cookie checks; discovery/runtime classification; independent source/evidence review",
+  "rollback": "Preserve immutable prior candidate and failure logs; no shared Git reset",
+  "stop_conditions": [
+    "Fixture fabricates Account schema or auth grants",
+    "Product stub needed to compile",
+    "Unexpected setup failure",
+    "Independent blocking finding"
+  ],
+  "reviewers": [
+    "/root/fresh29_security",
+    "/root/fresh29_operations",
+    "/root/fresh29_workflows"
+  ],
+  "remaining_holds": [
+    "Complete Account tests and exact test-SHA approval",
+    "Registration terms/browser transport wire refinement review",
+    "Production cutover/drain/recovery and all-transport closure proof",
+    "Account implementation and activation"
+  ]
+}
