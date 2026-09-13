@@ -1,0 +1,781 @@
+{
+  "status": "PROPOSED_KEYS_AND_OWNERS_NOT_APPLIED_DDL",
+  "tables": [
+    {
+      "name": "workflow_work_controls",
+      "owner": "workflow",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "task_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "task_id": "UUID",
+        "revision": "positive i64",
+        "assignment_epoch": "positive i64",
+        "definition_ref": "ExactCommonRevisionRef",
+        "coverage_ref": "ExactCommonRevisionRef",
+        "target_ref": "RegisteredObjectRef",
+        "protocol": "EnrolledProtocolId"
+      },
+      "constraints": [
+        "FK existing workflow_waiting_tasks",
+        "One current assignment; control cannot grant business permission"
+      ],
+      "lock": "class5 task",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "workflow_assignment_revisions",
+      "owner": "workflow",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "task_id",
+        "epoch"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "task_id": "UUID",
+        "epoch": "positive i64",
+        "assignee_account_id": "UUID nullable",
+        "state": "UNASSIGNED|ACTIVE|PAUSED|TERMINAL",
+        "basis": "ClosedAssignmentBinding",
+        "validity": "half-open UTC interval",
+        "charge_ref": "ExactGroupWorkChargeRef nullable",
+        "receipt_ref": "CompanyCommandRef"
+      },
+      "constraints": [
+        "Same task/Company; monotonic epoch",
+        "One accountable assignee for ACTIVE/PAUSED; unknown work stays charged",
+        "Actor/assignee CompanyActor refs; old authors preserved"
+      ],
+      "lock": "class4 controls before class5 task",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "workflow_transfer_controls",
+      "owner": "workflow",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "plan_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "plan_id": "UUID",
+        "content_revision_ref": "ExactCommonRevisionRef",
+        "content_digest": "BYTEA32",
+        "control_epoch": "positive i64",
+        "state": "DRAFT|REQUESTED|AUTHORIZED|ACTIVE|STOPPED|COMPLETE",
+        "original_actor": "CompanyActorRef",
+        "mandate_ref": "ExactMandateRef nullable"
+      },
+      "constraints": [
+        "Active content immutable; plan stop no synchronous task traversal",
+        "Reasons are refs/context only, not subtype columns"
+      ],
+      "lock": "class5 plan SHARE effects/EXCLUSIVE stop",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "workflow_transfer_targets",
+      "owner": "workflow",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "plan_id",
+        "task_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "plan_id": "UUID",
+        "task_id": "UUID",
+        "expected_assignment_epoch": "positive i64",
+        "selection": "AccountRef|RoutingRuleRef",
+        "responsibility_intent": "TEMPORARY|PERMANENT",
+        "interval": "bounded task obligation plus responsibility validity",
+        "outcome_receipt_ref": "CompanyCommandRef nullable"
+      },
+      "constraints": [
+        "Immutable activated selection; each task has own actual outcome",
+        "No all-plan atomicity claim; no new task added after activation"
+      ],
+      "lock": "class5 plan then task",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "group_capacity_profile_revisions",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "primary_key": [
+        "group_id",
+        "account_id",
+        "revision"
+      ],
+      "columns": {
+        "group_id": "UUID",
+        "account_id": "UUID",
+        "revision": "positive i64",
+        "limit_units": "positive i64",
+        "validity": "finite half-open interval",
+        "governing_receipt": "ExactGroupReceiptRef"
+      },
+      "constraints": [
+        "No infinity/missing defaults; profile change separate from transfer"
+      ],
+      "lock": "class1 Group then2 Account then4 routing",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "group_availability_revisions",
+      "owner": "platform/group with owning source participant",
+      "cell": "GROUP",
+      "primary_key": [
+        "group_id",
+        "account_id",
+        "revision"
+      ],
+      "columns": {
+        "group_id": "UUID",
+        "account_id": "UUID",
+        "revision": "positive i64",
+        "intervals": "bounded typed AVAILABLE|UNAVAILABLE|UNKNOWN with source refs",
+        "source_watermarks": "closed source versions"
+      },
+      "constraints": [
+        "No medical reason/narrative; conflict UNKNOWN; synchronous invalidation fence",
+        "No eventual outbox as current authority"
+      ],
+      "lock": "class1/2/4 before source owner locks",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "group_routing_accounts",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "primary_key": [
+        "group_id",
+        "account_id"
+      ],
+      "columns": {
+        "group_id": "UUID",
+        "account_id": "UUID",
+        "revision": "positive i64",
+        "capacity_revision": "positive i64",
+        "availability_revision": "positive i64",
+        "used_units": "nonnegative i64",
+        "fairness_sequence": "nonnegative i64",
+        "integrity": "READY|UNAVAILABLE|OVER_CAPACITY|INTEGRITY_HOLD"
+      },
+      "constraints": [
+        "used_units equals active charge sum",
+        "Missing control refuses; no TTL release"
+      ],
+      "lock": "class4 sorted Group/Account",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "group_work_charges",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "primary_key": [
+        "group_id",
+        "target_org_id",
+        "task_id"
+      ],
+      "columns": {
+        "group_id": "UUID",
+        "target_org_id": "UUID",
+        "task_id": "UUID",
+        "assignment_epoch": "positive i64",
+        "account_id": "UUID",
+        "units": "positive i64",
+        "state": "ACTIVE|RELEASED",
+        "membership_incarnation": "UUID",
+        "assignment_receipt": "CompanyCommandRef"
+      },
+      "constraints": [
+        "Exact task/current epoch binding; reused key updates only atomically with assignment",
+        "Historical release-only does not require current membership; no positive admission from retired incarnation"
+      ],
+      "lock": "class4 before Company task",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "group_work_charge_events",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "primary_key": [
+        "group_id",
+        "event_id"
+      ],
+      "columns": {
+        "group_id": "UUID",
+        "event_id": "UUID",
+        "command_binding": "CompanyCommandRef or GroupCommandRef",
+        "task_ref": "CompanyTaskRef",
+        "old_epoch": "i64 nullable",
+        "new_epoch": "i64 nullable",
+        "old_account": "UUID nullable",
+        "new_account": "UUID nullable",
+        "units_delta": "checked i64",
+        "source_receipt": "ExactOwnerReceiptRef"
+      },
+      "constraints": [
+        "Append once per exact command charge effect; no business payload",
+        "Reconciliation preserves events, never guessed destructive repair"
+      ],
+      "lock": "same4 locked charge mutation",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "group_operations",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "primary_key": [
+        "group_id",
+        "operation_id"
+      ],
+      "columns": {
+        "group_id": "UUID",
+        "operation_id": "UUID",
+        "manifest_digest": "BYTEA32",
+        "creator_account_id": "UUID",
+        "action_ref": "ExactRegisteredActionRef",
+        "control_epoch": "positive i64",
+        "dispatch_epoch": "positive i64",
+        "state": "PREPARING|ACTIVE|STOPPED|COMPLETE",
+        "session_binding": "AS1 sid/generation/valid_until; never token"
+      },
+      "constraints": [
+        "Immutable selection/creator; exact resume scope",
+        "No Company payload or magic global atomic result"
+      ],
+      "lock": "class6 parent after applicable work",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "group_operation_slots",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "primary_key": [
+        "group_id",
+        "operation_id",
+        "slot_id"
+      ],
+      "columns": {
+        "group_id": "UUID",
+        "operation_id": "UUID",
+        "slot_id": "UUID",
+        "org_id": "UUID",
+        "membership_incarnation": "UUID",
+        "target_ref": "RegisteredObjectRef",
+        "child_id": "UUID",
+        "attempt_ref": "CompanyAttemptRef",
+        "command_id": "UUID",
+        "observation": "typed verified Company receipt ref/status"
+      },
+      "constraints": [
+        "Unique fixed slot; max6/one admitted actionfamily pilot",
+        "Observations rebuildable; no latest opaque ACK as effect truth"
+      ],
+      "lock": "class6 parent",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "group_operation_command_receipts",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "primary_key": [
+        "group_id",
+        "command_id"
+      ],
+      "columns": {
+        "group_id": "UUID",
+        "command_id": "UUID",
+        "actor_account_id": "UUID",
+        "action_ref": "RegisteredActionRef",
+        "fingerprint": "BYTEA32 CCF1 group-control namespace",
+        "result_refs": "closed minimal control refs"
+      },
+      "constraints": [
+        "Immutable exact binding; parent creation commands need serialized namespace absence",
+        "No Company command/Group key collision; no payload salary"
+      ],
+      "lock": "class6 parent/control command fence",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "workflow_group_children",
+      "owner": "workflow",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "child_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "child_id": "UUID",
+        "group_id": "UUID",
+        "operation_id": "UUID",
+        "slot_id": "UUID",
+        "attempt_ref": "CompanyAttemptRef",
+        "claim_generation": "positive i64",
+        "claim_owner": "WorkloadPrincipalRef nullable",
+        "status": "PREPARED|CLAIMED|SUCCEEDED|TERMINAL_NO_EFFECT|UNKNOWN",
+        "receipt_ref": "CompanyCommandRef nullable"
+      },
+      "constraints": [
+        "Unique Company/Group/operation/slot",
+        "Parent provenance cannot be omitted through direct command",
+        "Claim fencing never substitutes for original human permission"
+      ],
+      "lock": "class7 after draft controls before attempts",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "account_context_candidates",
+      "owner": "identity",
+      "cell": "ACCOUNT",
+      "primary_key": [
+        "account_id",
+        "source_key",
+        "context_kind",
+        "context_id"
+      ],
+      "columns": {
+        "account_id": "UUID",
+        "source_key": "RegisteredSourceRootKey",
+        "context_kind": "COMPANY|GROUP",
+        "context_id": "UUID",
+        "source_revision": "positive i64",
+        "incarnation": "UUID nullable",
+        "state": "CURRENT|HISTORICAL"
+      },
+      "constraints": [
+        "Overapproximate hints; no labels/salary/authority",
+        "Same-tx source update and context_generation fence; source enrollment proves completeness"
+      ],
+      "lock": "class2 Account before Company source",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "account_context_cursors",
+      "owner": "identity",
+      "cell": "ACCOUNT",
+      "primary_key": [
+        "account_id",
+        "cursor_hash"
+      ],
+      "columns": {
+        "account_id": "UUID",
+        "cursor_hash": "BYTEA32",
+        "query": "ClosedContextQuery",
+        "context_generation": "positive i64",
+        "authority_vector": "bounded Group+Company versions",
+        "last_key": "authorized kind/UUID",
+        "expires_at": "UTC microsecond",
+        "decision_stable_until": "Earliest whole-scan allow/deny/Group temporal transition nullable only when certified timeless"
+      },
+      "constraints": [
+        "Random token hash; current Account only; TTL5min",
+        "No Company cursor reused; no cached allow verdict"
+      ],
+      "lock": "Group then Account then Company authority validation",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "gov_request_bindings",
+      "owner": "governance",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "request_ref"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "request_ref": "UUID",
+        "purpose": "REVIEW_DECISION|EXECUTION_GATE",
+        "owner_action": "ExactRegisteredActionRef",
+        "target_basis": "ClosedOwnerBasisRef",
+        "evidence_contract": "ExactCommonRevisionRef",
+        "command_binding": "ExactCommandRef/digest for EXECUTION_GATE",
+        "proposal_digest": "BYTEA32",
+        "proof_refs": "ExactIdentityPolicyRefs",
+        "validity": "half-open UTC interval"
+      },
+      "constraints": [
+        "FK existing gov_approval_requests; immutable one request binding",
+        "Gate and decision are distinct requests; no consumption of review decision",
+        "No client-selected weaker owner/evidence contract",
+        "REVIEW_DECISION uniquely bound to one registered owner/exact immutable basis; reciprocal Company/digest/request linkage validated by same owner tx"
+      ],
+      "lock": "class10 after domain heads",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "gov_request_controls",
+      "owner": "governance",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "request_ref"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "request_ref": "UUID",
+        "revision": "positive i64",
+        "state": "OPEN|DECIDED|WITHDRAWN|SUPERSEDED|INTEGRITY_HOLD",
+        "current_event_id": "UUID"
+      },
+      "constraints": [
+        "Current disposition separate immutable original request/decision",
+        "No current-session requirement for past valid decision composition"
+      ],
+      "lock": "class10",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "gov_request_control_events",
+      "owner": "governance",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "event_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "event_id": "UUID",
+        "request_ref": "UUID",
+        "expected_revision": "positive i64",
+        "effect": "WITHDRAW|SUPERSEDE|INVALIDATE",
+        "cause_ref": "ExactOwnerReceiptRef",
+        "reason_ref": "ExactEvidenceOrReasonRef"
+      },
+      "constraints": [
+        "Append only; event/cas/owner correction same tx",
+        "Withdrawal cannot undo a committed business effect"
+      ],
+      "lock": "class10",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_review_cycles",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "cycle_id",
+        "revision"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "cycle_id": "UUID",
+        "revision": "positive i64",
+        "run_id": "UUID",
+        "scope_basis": "ExactScopeBasisRef",
+        "source_manifest": "ExactInputCalculationRef",
+        "derivation": "RegisteredVersion"
+      },
+      "constraints": [
+        "Nonempty server-derived R, finite C; immutable cycle",
+        "Current cycle head extension on existing run control"
+      ],
+      "lock": "class9 run then cycle",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_review_bases",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "basis_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "basis_id": "UUID",
+        "run_id": "UUID",
+        "target": "UNIT coverage key or COMMON obligationref",
+        "basis_digest": "BYTEA32",
+        "source_refs": "ClosedExactSourceRefs",
+        "evidence_contract": "ExactCommonRevisionRef",
+        "governance_request_ref": "UUID nullable"
+      },
+      "constraints": [
+        "No duplicate human request/decision lifecycle",
+        "Source/evidence basis immutable; submission linkage permits only one NULL->exact governance request CAS in same owner transaction",
+        "Same-run exact basis reuse only"
+      ],
+      "lock": "class9 run then basis",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_review_cycle_members",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "cycle_id",
+        "cycle_revision",
+        "obligation_key"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "cycle_id": "UUID",
+        "cycle_revision": "positive i64",
+        "obligation_key": "ClosedUnitOrCommonKey",
+        "basis_id": "UUID"
+      },
+      "constraints": [
+        "Exact set membership not counts; same Company/run",
+        "Current map revisions append via new cycle; hidden obligations retained",
+        "Resolve sole submission link via member basis; never duplicate nullable request link in cycle snapshot"
+      ],
+      "lock": "class9",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_review_completions",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "completion_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "completion_id": "UUID",
+        "cycle_id": "UUID",
+        "cycle_revision": "positive i64",
+        "decision_refs": "ExactGovernanceDecisionManifestRef",
+        "composition_digest": "BYTEA32",
+        "causal_command": "CompanyCommandRef"
+      },
+      "constraints": [
+        "Unique exact cycle completion; no synthetic global human",
+        "Current composition integrity distinct historical facts"
+      ],
+      "lock": "class9 then10 decisions",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_period_reservations",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "reservation_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "reservation_id": "UUID",
+        "employee_id": "UUID",
+        "run_id": "UUID",
+        "period": "daterange half-open",
+        "status": "ACTIVE|RELEASED",
+        "predecessor_ref": "UUID nullable"
+      },
+      "constraints": [
+        "EXCLUDE overlapping active Company/employee regular ranges",
+        "Exact correction transfers reservation atomically; legacy census before enrollment"
+      ],
+      "lock": "class9 sorted period keys before families/runs",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_run_correction_edges",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "predecessor_run_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "predecessor_run_id": "UUID",
+        "successor_run_id": "UUID",
+        "affected_units": "ExactOwnerDerivedUnitMap",
+        "receipt_ref": "CompanyCommandRef",
+        "reason_evidence": "ExactRefs"
+      },
+      "constraints": [
+        "Unique successor; immutable nonpayable lineage",
+        "No crossCompany or paid/issued reset"
+      ],
+      "lock": "class9 sorted old/new run",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_review_publications",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "publication_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "publication_id": "UUID",
+        "subject_ref": "HistoricalPersonEmploymentRef",
+        "source_ref": "ExactApprovedUnitCompletionRef",
+        "projection_ref": "ExactCommonRevisionRef",
+        "purpose": "NONPAYABLE_REVIEW",
+        "content": "ImmutableClosedAuthorizedSnapshot",
+        "release_proof": "ExactRecipientDisclosureRef"
+      },
+      "constraints": [
+        "Unique exact sourceunit/subject/projection/purpose",
+        "No overwrite; actual labels/amounts frozen under permitted schema"
+      ],
+      "lock": "class9 run then publication slot",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_publication_slots",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "subject_key",
+        "lineage_key",
+        "purpose"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "subject_key": "ExactSubjectKey",
+        "lineage_key": "ExactOwnerCorrectionLineageKey",
+        "purpose": "RegisteredPublicationPurpose",
+        "current_publication_id": "UUID nullable",
+        "generation": "positive i64"
+      },
+      "constraints": [
+        "One CURRENT per semantic lineage regardless projection version",
+        "Owner-verified predecessor edge; no arbitrary recipient retarget"
+      ],
+      "lock": "class9 sorted stable slots",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_publication_controls",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "publication_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "publication_id": "UUID",
+        "revision": "positive i64",
+        "disclosure": "ALLOWED|ACCESS_SUSPENDED",
+        "currentness": "CURRENT|CORRECTION_PENDING|SUPERSEDED",
+        "successor_id": "UUID nullable"
+      },
+      "constraints": [
+        "Disclosure independent currentness; restore never currentness rollback",
+        "Current Cedar still applies even ALLOWED"
+      ],
+      "lock": "class9 same slot",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_publication_events",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "event_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "event_id": "UUID",
+        "publication_id": "UUID",
+        "kind": "SOURCE_CORRECTION|PROJECTION_CORRECTION|SUSPEND|RESTORE",
+        "successor_ref": "UUID nullable",
+        "source_receipt": "CompanyCommandRef"
+      },
+      "constraints": [
+        "Append exact old/new revision/edge; no medical/salary audit mirror"
+      ],
+      "lock": "class9 same slot",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_review_request_controls",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "request_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "request_id": "UUID",
+        "requester_account_id": "UUID",
+        "subject_ref": "HistoricalSubjectRef",
+        "target_ref": "PublicationRef or EmploymentPeriodRef",
+        "submitted_content_ref": "ExactCommonRevisionRef",
+        "current_issue_revision": "positive i64",
+        "task_id": "UUID",
+        "state": "OPEN|IN_REVIEW|WAITING_REQUESTER|CORRECTION_PENDING|RESOLVED|WITHDRAWN"
+      },
+      "constraints": [
+        "Immutable submission via common store; exact source/issue coverage",
+        "Task creation same tx, no eligible handler still durable case"
+      ],
+      "lock": "class5 task then9 case",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    },
+    {
+      "name": "payroll_review_response_records",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "primary_key": [
+        "org_id",
+        "response_id"
+      ],
+      "columns": {
+        "org_id": "UUID",
+        "response_id": "UUID",
+        "request_id": "UUID",
+        "issue_revision": "positive i64",
+        "issue_dispositions": "ClosedPerItemDispositionRefs",
+        "content_ref": "ExactCommonRevisionRef",
+        "corrected_publication_ref": "UUID nullable",
+        "causal_receipt": "CompanyCommandRef"
+      },
+      "constraints": [
+        "Subject-visible complete explanation; no-change and corrected predicates PR1",
+        "Corrected outcome needs actual permitted publication; case/task/charge same tx"
+      ],
+      "lock": "class4/5 then9 publication/case",
+      "access": "Company tables FORCE RLS/composite refs; Group and Account control tables owner-only narrow typed helpers, no raw PUBLIC/runtime access or sentinel Company. Immutable facts append only; controls mutate only by owning CAS. Exact ACL/DDL b05."
+    }
+  ],
+  "extensions": [
+    {
+      "target": "account_security",
+      "change": "Add positive context_generation; same Account guard, not duplicate account guard table"
+    },
+    {
+      "target": "group_memberships and protected provisioning functions",
+      "change": "Add immutable membership_incarnation + append topology history; retain prior anchors, no created_at surrogate"
+    },
+    {
+      "target": "payroll_runs/native current control",
+      "change": "Current review cycle ref/protocol/status constraints; composed actor scalar null not fabricated; existing legacy rows preserved"
+    },
+    {
+      "target": "gov_approval_requests/gov_approvals/gov_approval_consumptions",
+      "change": "Reuse immutable facts, actor FKs AS1; typed purpose binding; consumption only EXECUTION_GATE"
+    },
+    {
+      "target": "workflow_waiting_tasks/runs/nodes/outbox and common ontology instances",
+      "change": "Reuse task/run/node identity, config/draft revisions and delivery; migrate actor FKs; enrolled owner-only paths"
+    }
+  ],
+  "note": "Counted tables are proposed responsibility/key records, not executable SQL or authorization to add them. W04b-05 consolidates compatible physical migration/ACL/index/retention/DDL proof without duplicating existing owners."
+}

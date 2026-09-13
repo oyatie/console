@@ -1,0 +1,40 @@
+{
+  "reviewed_candidate_sha": "ab7efa258e37871ab75330c8daa9d0d192252cad",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "author": "/root",
+  "reviewers": [
+    {
+      "identity": "/root/continuity_review",
+      "verdict": "ACCEPT_SCOPED",
+      "scope": "Submission evidence privacy/pins, hold and disposal crash consistency, journal and restored authority",
+      "resolved_findings": [
+        "RR-C01"
+      ],
+      "edits": 0,
+      "product_tests_executed": 0
+    },
+    {
+      "identity": "/root/payroll_contract_review",
+      "verdict": "ACCEPT_SCOPED_REMEDIATION",
+      "scope": "Domain adoption/pin release, restricted common owner deletion, atomic erasure and cancellation/recovery",
+      "resolved_findings": [
+        "RR-B01"
+      ],
+      "edits": 0,
+      "product_tests_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "implementation_authorized": false,
+  "remaining_gaps": [
+    "Exact restricted SQL/ACL migration and runtime proof",
+    "Independent journal provider/credentials/custody/fencing conformance",
+    "Qualified retention/hold policy and actual backup inventory/prune/restore evidence",
+    "B03 durable Group operation",
+    "B04 general autonomous assignment",
+    "B07 remaining screen matrix",
+    "B08 monetary publication/disputes"
+  ]
+}

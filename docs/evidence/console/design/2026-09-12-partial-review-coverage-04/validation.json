@@ -1,0 +1,74 @@
+{
+  "recorded_at": "2026-09-12T08:15:48.118551+00:00",
+  "reviewed_contract_sha": "208c2b9893c4dc2cb7b11d71509d18547ee67741",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "scope": "Evidence integrity checks only; no product/runtime tests",
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "checks": [
+    {
+      "check": "JSON parse",
+      "files": 4,
+      "result": "pass"
+    },
+    {
+      "check": "Non-executable scenario and screen-state shape/refs",
+      "scenarios": 39,
+      "screen_states": 15,
+      "result": "pass",
+      "product_test_execution": false
+    },
+    {
+      "check": "Exact Git source identity",
+      "sources": 6,
+      "result": "pass"
+    },
+    {
+      "check": "Current core files byte-equal reviewed SHA",
+      "identities": {
+        "coverage-contract.txt": "cbd2bee32916648e3ba43a38536f0d517d3cf73d2f08ff89389c2da1236cfb60",
+        "acceptance-plan.csv": "9d7af5657ae9f6ed63dbea8a9f0cb1c9b0c46119b3af33a7954ac9da7b1b695c",
+        "screen-states.csv": "e71e45d9c3fb886b756e382344d93886c688841c77157f641b8c22cc348674ef",
+        "source-identities.json": "61ed3159ef5a96dd2da26205fbf92393018540715434de99b79dc9d3dc1956c1",
+        "entry.txt": "5b29e70ffba1afa9c4af9565fd5971b120f0da21f69fd450f25abef835030dcb"
+      },
+      "result": "pass"
+    },
+    {
+      "check": "Packet authored whitespace including untracked reader/receipts",
+      "result": "pass"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "d21603a1890d910cee3a851188f397c3f331fe2e",
+        "208c2b9893c4dc2cb7b11d71509d18547ee67741",
+        "--",
+        "docs/evidence/console/design/2026-09-12-partial-review-coverage-04"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "scripts/check-doc-links.mjs"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "docs/documentation-index.json: cannot establish exact Git index-tree custody\n"
+    },
+    {
+      "check": "Reader local links (validation generated in this command)",
+      "links": 9,
+      "result": "pass",
+      "visual_browser_review": "not performed"
+    }
+  ],
+  "remaining_validation_limits": [
+    "Whole repository doc-link gate retains prior frozen evidence classification/missing-link failures; no merge-ready claim.",
+    "New packet diff/shape/source checks do not prove payroll arithmetic, authorization, concurrency, migration, UI rendering or production performance."
+  ],
+  "post_review_changes": "Only reader, scope/status index, review receipt, validation and freeze metadata; core files verified byte-equal exact reviewed Git SHA."
+}

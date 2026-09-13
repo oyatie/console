@@ -1,0 +1,29 @@
+{
+  "status": "scoped_review_accepted_whole_design_incomplete",
+  "target": "B02/B07 partial-information preparation/review completion",
+  "inherited_evidence_sha": "d21603a1890d910cee3a851188f397c3f331fe2e",
+  "pilot": {
+    "tenant_groups": 1,
+    "companies": 6,
+    "people": 2000,
+    "operator": "Console team"
+  },
+  "scenarios": 39,
+  "screen_states": 15,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "whole_design_approved": false,
+  "remaining_gaps": [
+    "B03 durable Group execution",
+    "B04 general automatic assignment and actor takeover",
+    "B06 server input drafts",
+    "B07 remaining whole-application screen matrix",
+    "B08 monetary publication/disputes"
+  ],
+  "not_claimed": [
+    "Complete HR/payroll supported-case coverage",
+    "Implemented cross-person private approval",
+    "Legal/payment/production readiness"
+  ],
+  "reviewed_contract_sha": "208c2b9893c4dc2cb7b11d71509d18547ee67741"
+}

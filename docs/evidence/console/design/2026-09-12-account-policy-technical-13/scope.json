@@ -1,0 +1,26 @@
+{
+  "status": "PROPOSED_PENDING_INDEPENDENT_REVIEW",
+  "scope": "W04b-01 bounded Account/session and Cedar authority/field projection schema and boundary proposal",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "a3e5a0333f20f50a60de326eeddf422c2b6c4ac2",
+  "proposed_tables": 18,
+  "api_boundary_routes": 11,
+  "source_writer_surfaces": 22,
+  "nonexecutable_proof_cases": 29,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "whole_design_approved": false,
+  "remaining": [
+    "Applied catalog/writer closure, exact DDL/DB grants/pool setup, auth transport compatibility and runtime proof still pending",
+    "W04b-02 common action/schema/draft/attempt/receipt exact owner contracts",
+    "W04b-03 source/evidence/temporal guards and input harness",
+    "BLOCKING W04b-04 Account-only context discovery/navigation/continuation owner; no /me/contexts route specified or admitted by13",
+    "W04b-04 workflow/capacity/Group/PC1/AC1/PR1 SQL/API/ports",
+    "W04b-05 unified migration/harness/resource/workload validation plan",
+    "W05 current authority+final4reviews/explicit design SHA; W06 executable tests/review/explicit test SHA",
+    "Pilot and full Console scope remain separate"
+  ],
+  "deferred_api_boundaries": 1
+}

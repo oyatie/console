@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "class": "evidence",
+  "status": "frozen_design_candidate",
+  "base_head_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "owner": "Codex /root; one writer",
+  "frozen_utc": "2026-09-12T00:31:58.897998+00:00",
+  "entry": "candidate.html",
+  "authority": "Unapplied PRODUCT/ROADMAP patch and proposed design only; no approved design/test commit or implementation lane",
+  "review_identities": {
+    "author": "Codex /root",
+    "independent": []
+  },
+  "mechanical_guide": "entry.txt",
+  "validation": "validation.json",
+  "files": [
+    {
+      "path": "acceptance-cases.csv",
+      "bytes": 4618,
+      "sha256": "37728bf3b1eedc37a3af72d6eb143d73cd52a2f38ac9880bed114c85928bb00f"
+    },
+    {
+      "path": "action-contracts.json",
+      "bytes": 7499,
+      "sha256": "007bc16a9d55e2b189937798e5103180228369b1fc5e6375163d8978b0ed5d02"
+    },
+    {
+      "path": "authority-candidate/docs/current/PRODUCT.md",
+      "bytes": 15073,
+      "sha256": "fb90ab36fc063a722ff15742d0d15ee883e84190132473a724b4482ff29a8dd3"
+    },
+    {
+      "path": "authority-candidate/docs/current/ROADMAP.md",
+      "bytes": 10490,
+      "sha256": "76c304c1be565f640a29836bb204ce8c7d3c5df91d1d821a7ee4959daac14a0c"
+    },
+    {
+      "path": "authority.patch",
+      "bytes": 9714,
+      "sha256": "364e3b12218eb2c7626af7ec4afd55e705e727731e88f2962653148999ba82df"
+    },
+    {
+      "path": "candidate.html",
+      "bytes": 32460,
+      "sha256": "3784af64de372aa1c60a5140bd4b31f837fb53b379ceaa4bcd2e6a54192c0d91"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 3932,
+      "sha256": "7e56b498b5189f3d3647aedf619db41e575985d8fcc19c7d9b8ba825aad99fb6"
+    },
+    {
+      "path": "implementation-gaps.csv",
+      "bytes": 2122,
+      "sha256": "8e8857203fe45ca74ea12db2ce0a0adf2c59240ea0b14c66acbeb2858f270662"
+    },
+    {
+      "path": "native-input-contract.txt",
+      "bytes": 3595,
+      "sha256": "ea277dff6b2ea9ac9f983ca7591d4fad9d37619ce3e249a2451ffd02fc93933c"
+    },
+    {
+      "path": "screen-contracts.json",
+      "bytes": 12297,
+      "sha256": "82124154bd4363751b99d59e760ec60d349030b386bd11dff9daca30ba3349b6"
+    },
+    {
+      "path": "source-trace.json",
+      "bytes": 113874,
+      "sha256": "1036c83812b49016e304404a63f60a6842bbe201623f46ca4bedbb427354e532"
+    },
+    {
+      "path": "state-transitions.csv",
+      "bytes": 1432,
+      "sha256": "cb08e477ff61ba966710b310fa2e9ed3c77337ee28993e7bf91619eb3b56014b"
+    },
+    {
+      "path": "validation-input.json",
+      "bytes": 195,
+      "sha256": "4099ccfc31a76280ca23040cb1a1d13af7a15fbe2530caa1d4edf67b30141fb7"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 892,
+      "sha256": "856f08e3a59b0c3415526952d246e5894a7c9779d2e734a00a1e1882fcb1493a"
+    }
+  ]
+}

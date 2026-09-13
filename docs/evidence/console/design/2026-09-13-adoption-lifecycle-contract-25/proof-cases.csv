@@ -1,0 +1,22 @@
+id,setup,oracle,status
+A01,insert binding already contains seal/publication fields,reject prebound insertion; preparation must be independently established,PROPOSED_NOT_EXECUTED
+A02,partial seal tuple or partial snapshot tuple,NULL-safe CHECK refuses,PROPOSED_NOT_EXECUTED
+A03,preparation->seal preserves preparation bytes/digest/input,allow exact one-time binding only after current owner validation,PROPOSED_NOT_EXECUTED
+A04,bound attempt cancelled then tuple cleared/retargeted,reject; history remains; new attempt needs new unit,PROPOSED_NOT_EXECUTED
+A05,sealed->published exact24snapshot row,allow structural phase after current guards/protections; receipt commit still required,PROPOSED_NOT_EXECUTED
+A06,publish without live byte row/wrong actor/input/fingerprint/size,deferred validator or exact FK refuses,PROPOSED_NOT_EXECUTED
+A07,source effect exists with zero mandatory adoption,effect->adoption FK refuses,PROPOSED_NOT_EXECUTED
+A08,adoption all-null legacy or other effect/unit/command substituted,cannot satisfy mandatory exact slot1 tuple,PROPOSED_NOT_EXECUTED
+A09,attempt change or adoption source variant reset,immutable guard/exact references refuse,PROPOSED_NOT_EXECUTED
+A10,1024 effects share one exact snapshot,one byte copy/validation with1024 distinct mandatory adoption relationships,PROPOSED_NOT_EXECUTED
+A11,early SET CONSTRAINTS then release protection or quarantine,lifecycle mutation/final owner guard must refuse unsafe sequence; FK alone insufficient,PROPOSED_NOT_EXECUTED
+A12,one shared result obligation expires but another remains,retain shared payload; require complete current protection inventory,PROPOSED_NOT_EXECUTED
+A13,new adoption/pin races quarantine,same unit guard serializes; quarantined unit refuses new dependency,PROPOSED_NOT_EXECUTED
+A14,missing/over-limit evidence inventory,"block before effect, preserve acknowledged input; no truncation",PROPOSED_NOT_EXECUTED
+A15,binding retained after future authorized payload disposal,identity graph survives; current reads show permitted unavailable content; no replay,PROPOSED_NOT_EXECUTED
+A16,private draft cleanup after domain adoption,only independently retained domain copy/evidence survives; private cleanup cannot delete it,PROPOSED_NOT_EXECUTED
+A17,cancelled/unsealed orphan preparation cleanup,use existing retention owner after no-effect/unknown checks; preserve required tombstones,PROPOSED_NOT_EXECUTED
+A18,lost COMMIT ack or restored old protections,reconcile exact command and independently current authority/journal before effects/readmission,PROPOSED_NOT_EXECUTED
+A19,source variant obligation_ref nonnull but wrong governed type,typed common owner rejects; SQL not-null is not semantic/qualified retention proof,PROPOSED_NOT_EXECUTED
+A20,raw SQL diagnostic/snapshot from different customer context,server current tenant/field/error projection refuses; same-tenant Company grant not cross-customer authority,PROPOSED_NOT_EXECUTED
+A21,published binding backed only by legacy-shaped or missing receipt,indexed protocol check refuses;22nonempty manifest and25reciprocity required; full action/actor validation still separate,PROPOSED_NOT_EXECUTED

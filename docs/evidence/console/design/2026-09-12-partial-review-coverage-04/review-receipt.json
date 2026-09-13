@@ -1,0 +1,35 @@
+{
+  "reviewed_candidate_sha": "208c2b9893c4dc2cb7b11d71509d18547ee67741",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "author": "/root",
+  "reviewers": [
+    {
+      "identity": "/root/payroll_contract_review",
+      "verdict": "ACCEPT_SCOPED_REMEDIATION",
+      "scope": "PC1 owner transitions, exact coverage, correction/reuse and completion triggers",
+      "established_findings_resolved": 3,
+      "method": "Initial exact12dba1c4 review plus6df1e4b5 and208c2b98 delta/current-context readback",
+      "edits": 0,
+      "product_tests_executed": 0
+    },
+    {
+      "identity": "/root/continuity_review",
+      "verdict": "ACCEPT_SCOPED_AUTHORIZATION_AND_CONTINUITY",
+      "scope": "AM1/AI1 consistency; current actor vs historical decision; confidentiality and scope",
+      "method": "Initial exact12dba1c4 review plus6df1e4b5 and208c2b98 delta/current-context readback",
+      "edits": 0,
+      "product_tests_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "implementation_authorized": false,
+  "remaining_gaps": [
+    "B03 durable Group execution",
+    "B04 general automatic assignment and actor takeover",
+    "B06 server input drafts",
+    "B07 remaining whole-application screen matrix",
+    "B08 monetary publication/disputes"
+  ]
+}

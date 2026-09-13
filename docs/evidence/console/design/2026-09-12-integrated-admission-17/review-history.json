@@ -1,0 +1,23 @@
+{
+  "initial_candidate_sha": "6babf2c96e4e12a4b0a0fef56405a6e07ec95396",
+  "initial_reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "verdict": "SCOPED_ACCEPT",
+      "qualification": "Provider issuance race remains F03; not certified solved."
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "verdict": "CHANGES_REQUIRED",
+      "finding": "C11/P11 conflated one obligation decision with whole-cycle completion."
+    }
+  ],
+  "correction_commit": "83b07970260587ad3b4ec07893721b299a40d555",
+  "corrections": [
+    "C11/P11 enforce decision per request and completion per exact cycle only after full R/C coverage",
+    "P35 specifies first-of-two decision success while REVIEWING; nonexecutable",
+    "RR17/F03 explicitly prohibit external deletion enrollment before provider issuance fence contract closes"
+  ],
+  "final_candidate_sha": "83b07970260587ad3b4ec07893721b299a40d555",
+  "counts_as_final_integrated_round": false
+}

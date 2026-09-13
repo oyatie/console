@@ -1,0 +1,96 @@
+{
+  "status": "SYNTHETIC_FRAME_ARITHMETIC_ONLY",
+  "vectors": [
+    {
+      "id": "single_calendar",
+      "org_id": "00000000-0000-0000-0000-000000000001",
+      "command_id": "00000000-0000-0000-0000-000000000002",
+      "members": [
+        {
+          "family_code": 1,
+          "effect_kind": 1,
+          "root_id": "00000000-0000-0000-0000-00000000000a",
+          "revision": "1",
+          "custody_digest": "abababababababababababababababababababababababababababababababab",
+          "successor_root_id": null,
+          "successor_revision": null,
+          "successor_custody_digest": null
+        }
+      ],
+      "frame_hex": "636f6e736f6c652e736f7572636532312e656666656374730000000000000000000000000000000001000000000000000000000000000000020000000101010000000000000000000000000000000a0000000000000001abababababababababababababababababababababababababababababababab000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "frame_bytes": 176,
+      "sha256": "967b18ae81021cf87ddf719772388072d78734362780f31ab90ed044e2d657d7"
+    },
+    {
+      "id": "verify_and_supersede",
+      "org_id": "00000000-0000-0000-0000-000000000001",
+      "command_id": "00000000-0000-0000-0000-000000000002",
+      "members": [
+        {
+          "family_code": 5,
+          "effect_kind": 1,
+          "root_id": "00000000-0000-0000-0000-00000000000a",
+          "revision": "3",
+          "custody_digest": "abababababababababababababababababababababababababababababababab",
+          "successor_root_id": null,
+          "successor_revision": null,
+          "successor_custody_digest": null
+        },
+        {
+          "family_code": 5,
+          "effect_kind": 1,
+          "root_id": "00000000-0000-0000-0000-00000000000b",
+          "revision": "2",
+          "custody_digest": "abababababababababababababababababababababababababababababababab",
+          "successor_root_id": null,
+          "successor_revision": null,
+          "successor_custody_digest": null
+        }
+      ],
+      "frame_hex": "636f6e736f6c652e736f7572636532312e656666656374730000000000000000000000000000000001000000000000000000000000000000020000000205010000000000000000000000000000000a0000000000000003abababababababababababababababababababababababababababababababab00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005010000000000000000000000000000000b0000000000000002abababababababababababababababababababababababababababababababab000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "frame_bytes": 291,
+      "sha256": "d2419901f45c6bdd6051377864a3dc61d4c76eab044b3aaf7e4c0ab25e697f03"
+    },
+    {
+      "id": "verify_and_revoked_claim",
+      "org_id": "00000000-0000-0000-0000-000000000001",
+      "command_id": "00000000-0000-0000-0000-000000000002",
+      "members": [
+        {
+          "family_code": 5,
+          "effect_kind": 2,
+          "root_id": "00000000-0000-0000-0000-00000000000a",
+          "revision": "3",
+          "custody_digest": "abababababababababababababababababababababababababababababababab",
+          "successor_root_id": "00000000-0000-0000-0000-00000000000b",
+          "successor_revision": "2",
+          "successor_custody_digest": "abababababababababababababababababababababababababababababababab"
+        },
+        {
+          "family_code": 5,
+          "effect_kind": 1,
+          "root_id": "00000000-0000-0000-0000-00000000000b",
+          "revision": "2",
+          "custody_digest": "abababababababababababababababababababababababababababababababab",
+          "successor_root_id": null,
+          "successor_revision": null,
+          "successor_custody_digest": null
+        }
+      ],
+      "frame_hex": "636f6e736f6c652e736f7572636532312e656666656374730000000000000000000000000000000001000000000000000000000000000000020000000205020000000000000000000000000000000a0000000000000003abababababababababababababababababababababababababababababababab010000000000000000000000000000000b0000000000000002abababababababababababababababababababababababababababababababab05010000000000000000000000000000000b0000000000000002abababababababababababababababababababababababababababababababab000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "frame_bytes": 291,
+      "sha256": "9a6e81ca23395beba2dd1566f2d1bd9155ba3c3c7109c35b34d2422c3270743d"
+    }
+  ],
+  "boundary_counts": [
+    1,
+    2,
+    732,
+    1024
+  ],
+  "invalid_counts": [
+    0,
+    1025
+  ],
+  "limitations": "No source row existence, correct original digest/event, SQL execution, tenant isolation, performance or Verus proof implied"
+}

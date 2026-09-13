@@ -1,0 +1,444 @@
+[
+  {
+    "id": "J01",
+    "name": "Native first positive",
+    "preconditions": "Two independently verified authorized humans; one Company supported numeric profile; source-verification fixture through actual owning procedure; exact amounts/fixture W04 still required",
+    "steps": [
+      {
+        "surface": "V01",
+        "command": "NAV_SCOPE",
+        "expected": "scope current allowed Company/period"
+      },
+      {
+        "surface": "V03",
+        "command": "CREATE_RUN",
+        "expected": "real draft_run_id receipt not correlation ID"
+      },
+      {
+        "surface": "V04",
+        "command": "NAV_WAGE",
+        "expected": "existing subject/context opens V05"
+      },
+      {
+        "surface": "V05",
+        "command": "SAVE_WAGE",
+        "expected": "native wage fact revision"
+      },
+      {
+        "surface": "V04",
+        "command": "VERIFY_SOURCE",
+        "expected": "real qualified source evidence receipt"
+      },
+      {
+        "surface": "V04",
+        "command": "PREPARE_INPUT",
+        "expected": "fixed roster/input revision"
+      },
+      {
+        "surface": "V06",
+        "command": "CLOSE_ATTENDANCE",
+        "expected": "closed receipt with explicit attestation"
+      },
+      {
+        "surface": "V07",
+        "command": "CALCULATE",
+        "expected": "persisted deterministic payable=false result"
+      },
+      {
+        "surface": "V07",
+        "command": "OPEN_REVIEW_CYCLE",
+        "expected": "PC1 current nonempty R/C cycle and DRAFT proposals created; separate owner receipt; no submitted money"
+      },
+      {
+        "surface": "V07",
+        "command": "SUBMIT_REVIEW",
+        "expected": "exact proposal/submission"
+      },
+      {
+        "surface": "V08",
+        "command": "DECIDE_REVIEW",
+        "expected": "independent human receipt/PC1 coverage; no payment"
+      }
+    ],
+    "counterexample": "No fake import/verified SQL seeding, zero-test or always-blocked case can satisfy this journey",
+    "status": "Non-executable design walkthrough; numeric oracle and actual fixtures pending W04"
+  },
+  {
+    "id": "J02",
+    "name": "Configured additional gate",
+    "preconditions": "Same exact D decision with policy-required gate",
+    "steps": [
+      {
+        "surface": "V08",
+        "command": "REQUEST_GATE",
+        "expected": "payroll unchanged; exact gate request"
+      },
+      {
+        "surface": "S01",
+        "command": "DECIDE_GATE",
+        "expected": "permission receipt only"
+      },
+      {
+        "surface": "V08",
+        "command": "DECIDE_REVIEW",
+        "expected": "D explicitly executes exact current command"
+      }
+    ],
+    "counterexample": "A gate approval toast alone must not produce payroll APPROVED",
+    "status": "Non-executable design walkthrough; numeric oracle and actual fixtures pending W04"
+  },
+  {
+    "id": "J03",
+    "name": "Partial confidential work",
+    "preconditions": "A sees unit1; B sees unit2; both policy qualified; business inputs already prepared and calculated; PC1 cycle already explicitly opened with DRAFT Unit/Common proposals; this walkthrough makes no source or calculation input changes",
+    "steps": [
+      {
+        "surface": "V08",
+        "command": "SUBMIT_REVIEW",
+        "expected": "Each authorized preparer submits exact required Unit/Common proposal before its independent decision"
+      },
+      {
+        "surface": "V08",
+        "command": "DECIDE_REVIEW",
+        "expected": "A completes exact unit1 coverage"
+      },
+      {
+        "surface": "V08",
+        "command": "DECIDE_REVIEW",
+        "expected": "B independently reviews unit2"
+      },
+      {
+        "surface": "V07",
+        "command": "REFRESH",
+        "expected": "global completion only via authorized PC1 coverage projection"
+      }
+    ],
+    "counterexample": "No hidden wages/counts/inferred totals or blind global approval",
+    "status": "Non-executable design walkthrough; numeric oracle and actual fixtures pending W04"
+  },
+  {
+    "id": "J04",
+    "name": "Six-Company calculation response loss",
+    "preconditions": "All chosen inputs ready; exact fixedGO1 manifest",
+    "steps": [
+      {
+        "surface": "V02",
+        "command": "LAUNCH_GROUP_CALC",
+        "expected": "durable parent/children"
+      },
+      {
+        "surface": "V09",
+        "command": "RESULT_RECONCILE",
+        "expected": "one succeeded; one unknown; no new command"
+      },
+      {
+        "surface": "V09",
+        "command": "STOP_GROUP",
+        "expected": "new dispatch stopped; original receipts remain"
+      },
+      {
+        "surface": "V09",
+        "command": "REFRESH",
+        "expected": "truthful permitted partial outcome"
+      }
+    ],
+    "counterexample": "A timeout is not rollback; cancellation not group undo",
+    "status": "Non-executable design walkthrough; numeric oracle and actual fixtures pending W04"
+  },
+  {
+    "id": "J05",
+    "name": "Own publication and monetary correction",
+    "preconditions": "Approved nonpayable run and exact subject entitlement",
+    "steps": [
+      {
+        "surface": "V07",
+        "command": "OPEN_RELEASE",
+        "expected": "S02 exact disclosure preview"
+      },
+      {
+        "surface": "S02",
+        "command": "RELEASE_REVIEW",
+        "expected": "immutable own review publication"
+      },
+      {
+        "surface": "V10",
+        "command": "OPEN_OWN_REQUEST",
+        "expected": "selected item and original basis"
+      },
+      {
+        "surface": "S03",
+        "command": "SUBMIT_OWN_REQUEST",
+        "expected": "case/task receipt"
+      },
+      {
+        "surface": "S04",
+        "command": "RESPOND_CASE",
+        "expected": "correction linked; pending not resolved"
+      },
+      {
+        "surface": "V07",
+        "command": "CORRECT_APPROVED",
+        "expected": "AC1 successor"
+      },
+      {
+        "surface": "V05",
+        "command": "SAVE_WAGE",
+        "expected": "Owning wage correction commits corrected effective source revision; case text alone is not a fact write"
+      },
+      {
+        "surface": "V04",
+        "command": "PREPARE_INPUT",
+        "expected": "corrected owner facts"
+      },
+      {
+        "surface": "V06",
+        "command": "CLOSE_ATTENDANCE",
+        "expected": "new eligible close proof"
+      },
+      {
+        "surface": "V07",
+        "command": "CALCULATE",
+        "expected": "new fixed calculation"
+      },
+      {
+        "surface": "V07",
+        "command": "OPEN_REVIEW_CYCLE",
+        "expected": "PC1 current nonempty R/C cycle and DRAFT proposals created; separate owner receipt; no submitted money"
+      },
+      {
+        "surface": "V07",
+        "command": "SUBMIT_REVIEW",
+        "expected": "new proposal"
+      },
+      {
+        "surface": "V08",
+        "command": "DECIDE_REVIEW",
+        "expected": "new independent approval"
+      },
+      {
+        "surface": "S02",
+        "command": "RELEASE_REVIEW",
+        "expected": "successor publication current slot"
+      },
+      {
+        "surface": "S04",
+        "command": "RESPOND_CASE",
+        "expected": "complete item response and actual publication => corrected resolution"
+      },
+      {
+        "surface": "V10",
+        "command": "REFRESH",
+        "expected": "own corrected result/response surfaced"
+      }
+    ],
+    "counterexample": "Do not resolve on a wage save or merely creating a successor",
+    "status": "Non-executable design walkthrough; numeric oracle and actual fixtures pending W04"
+  },
+  {
+    "id": "J06",
+    "name": "Busy worker and instruction handover",
+    "preconditions": "Everyone present; current request handler needs redistribution",
+    "steps": [
+      {
+        "surface": "S04",
+        "command": "HANDOVER_PLAN",
+        "expected": "S05 exact tasks/request or scoped instruction"
+      },
+      {
+        "surface": "S05",
+        "command": "HANDOVER_PLAN",
+        "expected": "WA2 plan/task receipts or pending request honestly shown"
+      },
+      {
+        "surface": "S04",
+        "command": "REFRESH",
+        "expected": "new eligible worker sees permitted response draft and narrative"
+      },
+      {
+        "surface": "S05",
+        "command": "STOP_HANDOVER",
+        "expected": "remaining plan effects blocked, committed transfers preserved"
+      }
+    ],
+    "counterexample": "Rank/busy prose never grants transfer rights; private draft not transferred",
+    "status": "Non-executable design walkthrough; numeric oracle and actual fixtures pending W04"
+  },
+  {
+    "id": "J07",
+    "name": "Former worker follow-up",
+    "preconditions": "Employment ended, Account preserved, current own historical entitlement",
+    "steps": [
+      {
+        "surface": "V10",
+        "command": "REFRESH",
+        "expected": "allowed old issuer records without Manage"
+      },
+      {
+        "surface": "S03",
+        "command": "OWN_CASE_UPDATE",
+        "expected": "append evidence or linked follow-up under current case state"
+      }
+    ],
+    "counterexample": "Work-token loss must not erase personal credentials or own case history",
+    "status": "Non-executable design walkthrough; numeric oracle and actual fixtures pending W04"
+  },
+  {
+    "id": "J08",
+    "name": "Two tabs and draft restore",
+    "preconditions": "Both started same editable context; required old revision retained",
+    "steps": [
+      {
+        "surface": "V05",
+        "command": "DRAFT_SAVE",
+        "expected": "first CAS succeeds, second conflict preserves permitted input"
+      },
+      {
+        "surface": "V05",
+        "command": "OPEN_HISTORY",
+        "expected": "current form preserved"
+      },
+      {
+        "surface": "S06",
+        "command": "DRAFT_RESTORE",
+        "expected": "authorized selected fields append revision after local reconciliation"
+      },
+      {
+        "surface": "V05",
+        "command": "REFRESH",
+        "expected": "new draft revision, no wage effect until explicit save action"
+      }
+    ],
+    "counterexample": "Hidden prior fields/counts not exposed; no live-value fallback",
+    "status": "Non-executable design walkthrough; numeric oracle and actual fixtures pending W04"
+  },
+  {
+    "id": "J09",
+    "name": "SSR fallback and mutation failure",
+    "preconditions": "WASM unavailable; current session/policy; same use-case manual form",
+    "steps": [
+      {
+        "surface": "V05",
+        "command": "DRAFT_SAVE",
+        "expected": "manual SSR save uses stable command/CAS/CSRF"
+      },
+      {
+        "surface": "V05",
+        "command": "SAVE_WAGE",
+        "expected": "response lost => unknown, no blind POST retry"
+      },
+      {
+        "surface": "V05",
+        "command": "RESULT_RECONCILE",
+        "expected": "exact original receipt establishes actual effect"
+      },
+      {
+        "surface": "V04",
+        "command": "REFRESH",
+        "expected": "authorized parent context restored"
+      }
+    ],
+    "counterexample": "No false autosave or required client-only authority",
+    "status": "Non-executable design walkthrough; numeric oracle and actual fixtures pending W04"
+  },
+  {
+    "id": "J10",
+    "name": "Projection-only correction",
+    "preconditions": "Source wages correct; approved published label wrong",
+    "steps": [
+      {
+        "surface": "S02",
+        "command": "REPLACE_PROJECTION",
+        "expected": "same-source/subject atomic current-slot successor"
+      },
+      {
+        "surface": "V10",
+        "command": "REFRESH",
+        "expected": "new display + authorized immutable predecessor"
+      }
+    ],
+    "counterexample": "No new wage calculation/approval or recipient retarget",
+    "status": "Non-executable design walkthrough; numeric oracle and actual fixtures pending W04"
+  },
+  {
+    "id": "J11",
+    "name": "Selective same-run rejected unit correction",
+    "preconditions": "Current REVIEWING cycle; U1 approved, U2 rejected; no CoverageCompletion. Exact common dependencies and current rights defined.",
+    "steps": [
+      {
+        "surface": "V08",
+        "command": "NAV_WAGE",
+        "expected": "U2 rejection task opens its owning wage input with exact affected unit; original U1 approval retained"
+      },
+      {
+        "surface": "V05",
+        "command": "SAVE_WAGE",
+        "expected": "Committed U2 source correction receipt; old affected proposal stale"
+      },
+      {
+        "surface": "V08",
+        "command": "REVISE_REVIEW_CYCLE",
+        "expected": "Owner recalculates dependency-affected units, activates new immutable cycle; U1 unchanged calculation/proposal/approval retained only if full dependency-equal; affected common obligations refreshed"
+      },
+      {
+        "surface": "V08",
+        "command": "SUBMIT_REVIEW",
+        "expected": "New U2 and affected Common proposals submitted by authorized S"
+      },
+      {
+        "surface": "V08",
+        "command": "DECIDE_REVIEW",
+        "expected": "Independent D decides exact new proposal; current R/C completion may set APPROVED; no demand to reapprove unchanged U1"
+      }
+    ],
+    "counterexample": "No legacy withdraw/reclose/full-run calculate shortcut; equal net amount alone does not justify retaining evidence",
+    "status": "Non-executable walkthrough; no test run"
+  },
+  {
+    "id": "J12",
+    "name": "Successful own read keeps correction entry",
+    "preconditions": "Former worker current Account/own-publication entitlement; test both hydrated and SSR-only surfaces later",
+    "steps": [
+      {
+        "surface": "V10",
+        "command": "REFRESH",
+        "expected": "Successful authorized load retains keyboard-reachable OPEN_OWN_REQUEST without second refresh"
+      },
+      {
+        "surface": "V10",
+        "command": "OPEN_OWN_REQUEST",
+        "expected": "S03 receives exact permitted publication/item context; denied fields and unpublished run state absent"
+      }
+    ],
+    "counterexample": "SUCCESS must not collapse actions to REFRESH only",
+    "status": "Non-executable walkthrough; no browser test run"
+  },
+  {
+    "id": "J13",
+    "name": "Required recovery actions remain present",
+    "preconditions": "Four independent fixtures; each command guard satisfied and no uncertain earlier effect",
+    "steps": [
+      {
+        "surface": "V07",
+        "command": "CALCULATE",
+        "expected": "EMPTY results after valid close still offers first calculation"
+      },
+      {
+        "surface": "V08",
+        "command": "REQUEST_GATE",
+        "expected": "INCOMPLETE because extra gate required offers exact permission request"
+      },
+      {
+        "surface": "V07",
+        "command": "CORRECT_APPROVED",
+        "expected": "STALE approved revoked-source run still permits AC1 correction start without validating old bad source"
+      },
+      {
+        "surface": "V09",
+        "command": "RESUME_GROUP",
+        "expected": "STALE solely from renew-able original Account context offers explicit GO1 renewal after login"
+      }
+    ],
+    "counterexample": "Generic repair link cannot replace these defined in-place actions; other stale causes still fail exact guards",
+    "status": "Non-executable state fixtures, not a sequential single-run business journey"
+  }
+]

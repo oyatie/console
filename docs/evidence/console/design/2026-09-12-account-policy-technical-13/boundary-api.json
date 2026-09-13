@@ -1,0 +1,148 @@
+{
+  "status": "Proposed versioned Account and policy boundary subset; no generated OpenAPI or executable implementation",
+  "routes": [
+    {
+      "method": "POST",
+      "route": "/api/v2/auth/registration/start",
+      "input": "{terms_version:RegisteredVersion}",
+      "result": "{ceremony_id:UUID, public_key_options:WebAuthnOptions}; protected enrollment nonce cookie",
+      "guard": "No Account/Company selector; pending Account only, no business token"
+    },
+    {
+      "method": "POST",
+      "route": "/api/v2/auth/registration/finish",
+      "input": "{ceremony_id:UUID, credential:WebAuthnRegistration, accept_terms_version:RegisteredVersion}",
+      "result": "Authenticated Account session after verified key/terms and Account transition",
+      "guard": "Single-use browser/ceremony/Account/RP binding; normal bearer unavailable before success"
+    },
+    {
+      "method": "POST",
+      "route": "/api/v2/auth/passkey/login/start",
+      "input": "{}",
+      "result": "{ceremony_id:UUID,public_key_options:WebAuthnOptions}",
+      "guard": "Discoverable credential flow, no Company/role or email enumeration"
+    },
+    {
+      "method": "POST",
+      "route": "/api/v2/auth/passkey/login/finish",
+      "input": "{ceremony_id:UUID, assertion:WebAuthnAssertion}",
+      "result": "ACCOUNT_V1 session and minimal own Account projection",
+      "guard": "Account/family/key state rechecked; no home Company"
+    },
+    {
+      "method": "POST",
+      "route": "/api/v2/auth/token/refresh",
+      "input": "Opaque refresh credential via approved transport",
+      "result": "Rotated same-family session",
+      "guard": "Exact Account family/protocol/generation; absolute lifetime/reuse enforced"
+    },
+    {
+      "method": "POST",
+      "route": "/api/v2/auth/logout",
+      "input": "Current authenticated family reference from server context",
+      "result": "{outcome:COMMITTED}; no token returned",
+      "guard": "Account/family guard and idempotent own family revoke"
+    },
+    {
+      "method": "GET",
+      "route": "/api/v2/accounts/me",
+      "input": "none",
+      "result": "{account_id:UUID,session:{assurance,expires_at},permitted_self_actions:ActionRef[]}",
+      "guard": "No Company needed; no all-tenant directory or identity evidence"
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/v2/accounts/me/passkeys/{credential_id}",
+      "input": "{command_id:UUID,expected_security_revision:Revision,step_up_ref:ExactProofRef}",
+      "result": "Current-authorized security receipt",
+      "guard": "Self only, Account EXCLUSIVE before current last-key floor; both legacy aliases delegate/refuse"
+    },
+    {
+      "method": "POST",
+      "route": "/api/v1/policy/roles/{role_id}/revisions/preview",
+      "input": "{expected_role_revision:Revision,expected_authority_epoch:Revision,typed_clauses:Clause[],scope/field_refs:VersionRef[]}",
+      "result": "{basis_refs:VersionRef[],preview_digest:Sha256,valid_until:Instant,authorized_impact:Projection,blockers:VisibleBlockers}",
+      "guard": "Nonmutating derived preview, no newly minted stored preview entity/receipt. Digest is not authority; publish reloads saved draft/basis and current guards."
+    },
+    {
+      "method": "POST",
+      "route": "/api/v1/policy/roles/{role_id}/revisions/publish",
+      "input": "{command_id:UUID,expected_role_revision:Revision,expected_authority_epoch:Revision,prepared_draft_ref:VersionRef,gate_ref?:VersionRef}",
+      "result": "Exact policy revision+catalog/epoch receipt",
+      "guard": "Current publish authority and ceiling; exact compile/list-plan validation, same tx owner participation"
+    },
+    {
+      "method": "POST",
+      "route": "/api/v1/policy/assignments/{assignment_id}/revisions",
+      "input": "{command_id:UUID,expected_revision:Revision,expected_authority_epoch:Revision,account_id:UUID,bundle_ref:VersionRef,scope_ref:VersionRef,field_narrowing_ref?:VersionRef,valid_from:Instant,valid_until?:Instant,ceiling_ref:VersionRef,gate_ref?:VersionRef}",
+      "result": "Exact assignment revision+epoch receipt",
+      "guard": "Subject/Company from owning root cannot retarget on revision; new root creation separate typed Action; never flattened union"
+    }
+  ],
+  "internal_participants": [
+    {
+      "name": "resolve_account_session",
+      "owner": "identity/auth",
+      "result": "AccountPrincipal{account_id,sid,security_generation,auth_time,assurance,expires_at}; no Company roles"
+    },
+    {
+      "name": "lock_account_session_facts",
+      "owner": "identity/auth",
+      "result": "FencedAccountSessionFacts from supplied transaction; no credential blobs"
+    },
+    {
+      "name": "resolve_actor_context",
+      "owner": "request-context + current resource/identity owners",
+      "result": "AccountScope|CompanyScope|GroupControlScope; server-verified object scope/attribution and current proof"
+    },
+    {
+      "name": "lock_company_authority",
+      "owner": "identity authority helper",
+      "result": "Guard{org_id,epoch}; missing unavailable; SHARE/EXCLUSIVE based on owned operation"
+    },
+    {
+      "name": "load_effective_capabilities_in_conn",
+      "owner": "identity + Cedar owning participants",
+      "result": "Complete correlated assignment/clause/forbid/entity manifest on same borrowed connection"
+    },
+    {
+      "name": "authorize_and_project_in_conn",
+      "owner": "owning application/adapter with platform/authz evaluator",
+      "result": "AuthorizedObjectProjection or typed denial; no raw entity escape"
+    },
+    {
+      "name": "publish_policy_in_conn",
+      "owner": "identity coordinates; Cedar catalog SQL stays ont_policy_api/PgCedarPolicyStore",
+      "result": "Exact policy/source revisions,current authority epoch,audit and receipt atomically"
+    }
+  ],
+  "browser_transport": "Secure HttpOnly host-only Account session/refresh cookies; SameSite protection plus server-validated Origin and session-bound CSRF proof for mutations. Cookie names/path and concrete middleware integration require auth transport compatibility proof. Native approved bearer flow uses same ACCOUNT_V1/session checks; never raw token in SSR HTML, logs or localStorage. No auth-grade transition based on client persona.",
+  "scalars": "UUID canonical; positive BIGINT revisions/epochs as decimal strings; UTC RFC3339 instants; immutable owner refs schema-validated. User-controlled role/title/person identity/generation does not enter trusted context.",
+  "errors": [
+    "401 invalid/expired/security-revoked authentication",
+    "404 undiscoverable object/context/receipt, no sensitive distinctions",
+    "403 known action denied where discovery permits distinction",
+    "409 stale_revision/stale_authority/stale_cursor/command_conflict",
+    "428 enrolled legacy route requires Account-aware witness/protocol",
+    "422 typed schema/condition or publication prerequisite invalid",
+    "503 authority_unavailable/projection_plan_invalid; fail closed without hidden diagnostic payload"
+  ],
+  "compatibility": "New tokens cannot enter legacy parsers. Migrated legacy aliases delegate same owner or reject. Enrolled object/data scope closes old list/detail/history/export/action access too. Employer OTP/reset disabled for migrated Accounts before creation; existing employer bootstrap revoked. No new auth API claims applicant/business functionality already implemented. For every migrated subject with account_security, all legacy access/refresh are permanently refused on every successful authentication path, including non-enrolled data and after recovery. Fresh primary authentication required; no legacy-family/generation invention.",
+  "deferred_boundaries": [
+    {
+      "name": "Account context discovery/navigation and continuation",
+      "proposed_route": "/api/v2/accounts/me/contexts",
+      "status": "UNSPECIFIED_NOT_ADMITTED_BLOCKING_W04b_04",
+      "reason": "Company-owned authorized_query_cursors cannot own AccountScope discovery. Do not add a second cursor store before its candidate discovery/freshness owner contract is specified.",
+      "required_invariants": [
+        "Account-only entry without selected/home/sentinel Company; choosing context does not grant actions",
+        "Server-owned candidate discovery across Company/Group/task contexts; no client identity attributes as authority",
+        "Current per-context disclosure, no hidden context counts or unauthenticated Company directory",
+        "New relationship and revocation freshness including hidden-to-visible transitions",
+        "Bounded continuation with explicit owner/storage and current authorization; no silent truncation or fetch_all/postfilter escape",
+        "Owner integration and positive/negative/race proof before integrated design approval"
+      ],
+      "not_a_fallback": "No usable no-pagination version is promised. Navigation remains required first-slice work; Company cursor must not be reused for it."
+    }
+  ]
+}

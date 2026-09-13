@@ -1,0 +1,49 @@
+{
+  "classification": "evidence",
+  "source_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "reason": "Exact historical CSV/public-source bytes contain pre-existing whitespace. Preserve original bytes in deterministic compressed artifacts; do not normalize originals or weaken diff checks. Source originals remain in approved Git tree and main evidence. Only newly copied duplicates in this sole-writer root are replaced by archives.",
+  "files": [
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/acceptance-cases.csv",
+      "original_git_blob": "4d8cbb6f97d64f4ae7ec16a74a1ead05222cbd54",
+      "raw_sha256": "37728bf3b1eedc37a3af72d6eb143d73cd52a2f38ac9880bed114c85928bb00f",
+      "archive": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/4d8cbb6f97d64f4ae7ec16a74a1ead05222cbd54.gz"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority.patch",
+      "original_git_blob": "b89786c4a18fa1199189c452441ced5bfbd085e2",
+      "raw_sha256": "364e3b12218eb2c7626af7ec4afd55e705e727731e88f2962653148999ba82df",
+      "archive": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/b89786c4a18fa1199189c452441ced5bfbd085e2.gz"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/implementation-gaps.csv",
+      "original_git_blob": "429be8c4234c947c05800c4e26623b89c85d9e58",
+      "raw_sha256": "8e8857203fe45ca74ea12db2ce0a0adf2c59240ea0b14c66acbeb2858f270662",
+      "archive": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/429be8c4234c947c05800c4e26623b89c85d9e58.gz"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/state-transitions.csv",
+      "original_git_blob": "3875a87dc1efc2295b6cac917d84c37dbf091532",
+      "raw_sha256": "cb08e477ff61ba966710b310fa2e9ed3c77337ee28993e7bf91619eb3b56014b",
+      "archive": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/3875a87dc1efc2295b6cac917d84c37dbf091532.gz"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/public-sources/cedar.html",
+      "original_git_blob": "ff22e93326800f26f70844b60cbed18993cf71e4",
+      "raw_sha256": "2a136e83e4e09862697e87f217ec5f9e147d9633d4e5d52daffb3fe57b576208",
+      "archive": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/ff22e93326800f26f70844b60cbed18993cf71e4.gz"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/public-sources/cedar.txt",
+      "original_git_blob": "e6069cde1659580ac992262e04a11d95406533ee",
+      "raw_sha256": "d4a3ad1879f6ede492e9c212021e7b2381dd55dee74bec0c3ffa9440af23e73f",
+      "archive": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/e6069cde1659580ac992262e04a11d95406533ee.gz"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/public-sources/discord.html",
+      "original_git_blob": "2d0b2f0df3df956f66dcb6e88296fd67dba08358",
+      "raw_sha256": "b695e5115df5315b29748091303d7f51b33a660ce43aab780702636713448f29",
+      "archive": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/2d0b2f0df3df956f66dcb6e88296fd67dba08358.gz"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+screen,state,trigger,render,next,focus
+초안 시작/재개,loading,authorizeddraft조회중,skeleton;oldscope값없음,재시도,formheading
+입력,dirty/saving,localedit미ACK,저장중/저장안됨; currenteditableinput,입력계속·단일savequeue,입력focus유지
+입력,saved,모든현재localedit ACK,서버에저장됨·허용lastsave정보,이동·검증·제출,불필요focus이동없음
+입력,validation partial,required빈값/unfinishednumeric,저장은가능·해당입력미완료,수정;seal불가,실제입력field
+입력,conflict,samegroup변경/oldbase없음,내입력·현재서버허용diff; 임의우선선택없음,명시선택/편집·다시save,첫충돌그룹
+입력,offline,network/ACK없음,RAMunsaved·lastserverACK구분,재연결·stay/명시leave,입력focus유지
+검토,source/schema stale,base/definition변경,허용된변경근거·입력보존,새schema검토/현재preflight,변경요약
+인증,expired/revoked,session또는fieldpolicy회수,sensitivepropsclear·nondisclosing안내,로그인/허용context로돌아가기,안내heading
+제출,sealed ready,sealACK·effect아직없음,입력확정·아직제출안됨,sameattempt명시execute/취소,exactintent검토
+제출,unknown,execute결과불명,처리결과확인중·새ID금지,sameattemptreceipt조회,결과aria-live
+제출,rejected no effect,확정validation/authority실패,업무반영안됨·허용이유,unseal/수정→newattempt,blockinginput
+제출,consumed,ownerreceipt+SUCCEEDED,해당업무결과·다음owner상태,현재허용결과/정정경로,receiptheading
+인계,ownership changed,taskassignmentgeneration변경,oldeditor편집종료; successor허용입력,담당업무복귀/후임새intent,taskheading
+보존,expired/discarded,owner정책에의한확정종료,초안없음/만료(존재공개허용시),명시새intent,entryheading
+이력,authorized history,이력 보기,허용 변경·저장자·시간만; 현재 폼 보존,버전 비교·추가 페이지,이력 heading
+복원,preview,허용 과거 필드 선택,선택 변경·누락 입력 미리보기,복원 저장·취소,첫 변경 필드
+이력,unavailable,보존 종료/지원 안되는 schema,허용 범위의 이용불가 안내; live 값 대체 없음,현재 초안으로 복귀,안내 heading
+초안,integrity failure,retained payload 검증 불일치,초안 사용 중단·허용 담당자 경로,수동 조사·원본 복구 절차,오류 heading

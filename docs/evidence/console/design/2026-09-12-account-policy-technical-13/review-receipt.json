@@ -1,0 +1,49 @@
+{
+  "reviewed_candidate_sha": "1c99fafdd6012ec3d043668cd6e2acae4f58b5d6",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "a3e5a0333f20f50a60de326eeddf422c2b6c4ac2",
+  "writer": "/root",
+  "reviewers": [
+    {
+      "identity": "/root/continuity_review",
+      "verdict": "SCOPED_ACCEPT",
+      "scope": "Account/security/credential custody, legacy cutover, migration boundary and continuity",
+      "resolved": [
+        "Permanent legacy-token refusal for migrated Account on every successful authentication path including non-enrolled data, recovery and rollback",
+        "Pause/drain prior legacy admissions at cutover; fresh Account primary authentication",
+        "Correct configured PEM-backed ES256 source claim"
+      ],
+      "edits": 0,
+      "product_tests_executed": 0
+    },
+    {
+      "identity": "/root/payroll_contract_review",
+      "verdict": "SCOPED_ACCEPT",
+      "scope": "Correlated Cedar policy, authority guards, field/query projection and bounded pagination",
+      "resolved": [
+        "Under-specified Account context API withdrawn from specified routes into blocking W04b-04 owner dependency; no dropped product requirement",
+        "Company cursor only for Company queries",
+        "Lookahead current discovery/query/expiry checks",
+        "Distinct identities before LIMIT through semijoin/dedup"
+      ],
+      "edits": 0,
+      "product_tests_executed": 0
+    }
+  ],
+  "w04b_01_status": "BOUNDED_ACCOUNT_SECURITY_AND_CEDAR_BOUNDARY_PROPOSAL_ACCEPTED",
+  "w04_complete": false,
+  "whole_design_consensus": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "remaining_gaps": [
+    "Applied catalog/writer closure, exact DDL/DB grants/pool setup, auth transport compatibility and runtime proof still pending",
+    "W04b-02 common action/schema/draft/attempt/receipt exact owner contracts",
+    "W04b-03 source/evidence/temporal guards and input harness",
+    "BLOCKING W04b-04 Account-only context discovery/navigation/continuation owner; no /me/contexts route specified or admitted by13",
+    "W04b-04 workflow/capacity/Group/PC1/AC1/PR1 SQL/API/ports",
+    "W04b-05 unified migration/harness/resource/workload validation plan",
+    "W05 current authority+final4reviews/explicit design SHA; W06 executable tests/review/explicit test SHA",
+    "Pilot and full Console scope remain separate"
+  ]
+}

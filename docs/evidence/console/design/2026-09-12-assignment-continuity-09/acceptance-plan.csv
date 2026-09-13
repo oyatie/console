@@ -1,0 +1,65 @@
+id,contract_refs,trigger,expected
+A01,WA1.1,Six Companies assign same Account concurrently,Committed active charge sum never exceeds limit; losing transactions retry or queue without assignment
+A02,WA1.1,Assignment transaction crashes between charge and draft update,All assignment charge custody receipt changes roll back together; no expiring reservation
+A03,WA1.1,Target A worker is legally employed at B,A task changes under A RLS and original Account; no B business write or fake A Employment
+A04,WA1.2,Role queued OPEN legacy task has no worker,UNASSIGNED and supervisor route; role key never converted into assignee or grant
+A05,WA1.2,One task requested as partial sharing,Refuse ambiguous assignment; only definition-supported disjoint work units can be split
+A06,WA1.2,Provider department belongs to another Company,Composite reference preserved; no cross-company OrgUnit reparent
+A07,WA1.3,Same title two people different field grants,Eligibility differs by exact policy tuples; title supplies no right
+A08,WA1.3,Employee broader authorized scope than CEO,Employee may qualify and CEO may fail; no rank ceiling
+A09,WA1.3,Assigned-to-me policy initially denies unassigned recipient,Only authorized trusted exact proposed relation may satisfy conditional policy; actual final policy rechecked in transaction
+A10,WA1.3,Client supplies arbitrary proposed assignment to eligibility probe,No client-controlled authority or arbitrary impersonation; reject
+A11,WA1.3,Routing principal tries to seal or approve payroll,Deny human business effect; routing mandate only changes allowed metadata
+A12,WA1.3,Recipient offline but otherwise eligible,Assignment may succeed; actual new human action waits for their valid session
+A13,WA1.3,No supervisor or recovery channel configured,Routing activation blocked or unavailable; restricted operator alarm grants no repair/business access
+A14,WA1.4,No capacity profile or work unit definition,CONFIGURATION_REQUIRED; no infinite or zero-charge assignment
+A15,WA1.4,Account has 9 units used of10; new work costs2,Reject positive admission; existing work retained
+A16,WA1.4,Limit reduced below existing used units,OVER_CAPACITY; preserve charges; allow release and transfer out only
+A17,WA1.4,Source records sick absence but notification delayed,Synchronous availability fence blocks stale new effects; durable event eventually drives routing
+A18,WA1.4,External availability source stale or conflicting,UNKNOWN blocks dependent assignment/effect; owner manual typed correction with provenance
+A19,WA1.4,Missing clock event,No inferred unauthorized absence or discipline
+A20,WA1.4,Leave approved but no substitute,Operational exception only; leave decision unchanged
+A21,WA1.4,Assignment waiting for external evidence or unknown execution,Charge remains; no TTL release
+A22,WA1.5,First candidate page has no eligible candidate but later page does,Continue full version-bound scan; never claim NO_ELIGIBLE from first page
+A23,WA1.5,Candidate count exceeds2000 or provider membership changes while scanning,MATCHING_INCOMPLETE/restart; no no-candidate or full-coverage claim
+A24,WA1.5,Two equal feasible candidates with same load,Stable precedence fairness sequence and Account ID decide; record rule/proof version
+A25,WA1.5,Nominated person lacks required salary fields,Nomination cannot override eligibility; sanitized repair path
+A26,WA1.5,Chosen recipient load changes before commit,Recheck under control lock; retry at most3 then durable exception
+A27,WA1.5,New person now has lower load than current assignee,No automatic reshuffle solely for lower load
+A28,WA1.5,Duplicate overlapping absence events arrive,Source/version and routing generation deduplicate; no duplicate transfer/charges
+A29,WA1.6,Same transfer command replay after response lost,Current disclosure plus exact receipt returns original result; no second debit/credit
+A30,WA1.6,Same command ID with changed recipient,Payload conflict; no transfer
+A31,WA1.6,Task completes while handover races,Ordered control/task/attempt locks yield one terminal outcome and one exact release; no transfer of completed work
+A32,WA1.6,Charge counter differs from active charges,Pause new admission and owner repair; never rewrite task truth from counter
+A33,WA1.6,Business effect completes a charged task,Acquire capacity EXCLUSIVE before task from start; no late lock upgrade
+A34,WA1.6,Public helper called with forged Company or arbitrary charge,Reject server context/armed Company/owner binding mismatch
+A35,WA1.7,Original worker returns while successor is editing,Existing task stays successor within validity; future responsibility returns; no involuntary theft
+A36,WA1.7,Authorized scheduled handback of unsealed work to eligible original worker,New guarded epoch and charge/custody transfer; no old-context resurrection
+A37,WA1.7,Temporary assignment expires with unfinished sealed attempt,No new effect on expired authority; reconcile then authorized renewal/transfer; no silent extension
+A38,WA1.7,A to B to A and A first tab saves,Reject obsolete assignment/editing epoch
+A39,WA1.7,Permanent responsibility change races old temporary return,CAS responsibility/task versions prevents old plan pulling work back
+A40,WA1.8,Absent worker has Account-private draft,Do not transfer or reveal it
+A41,WA1.8,EDITABLE work-bound draft transferred,Same draft/revision history; new custody/editing epoch; creator attribution preserved
+A42,WA1.8,Draft slot added while transfer enumerates,Common task guard serializes; no omitted slot; exceeding32 raises exception
+A43,WA1.8,READY old actor attempt has proven no effect,Cancel terminally under fence; successor explicitly seals fresh actor command later
+A44,WA1.8,Successful effect response lost then actor departs,Read authorized historical receipt; no repeated effect or rewritten actor
+A45,WA1.8,In-flight lock or owner state inaccessible,Reconciliation required; no new effect and charge retained
+A46,WA1.8,Successor cannot see optional linked document,Do not expose payload or link existence absent discovery right; preserve hidden input
+A47,WA1.8,Successor cannot see mandatory decision evidence,Candidate ineligible for that atomic decision; no blind approval
+A48,WA1.8,Author-only workflow finalize requires absent original actor,No initiated_by rewrite; explicit admitted continuation or unsupported-transfer exception
+A49,WA1.9,Group child prepared but ACK lost and handover requested,Immutable from Company commit; stop and confirmed cleanup required
+A50,WA1.9,Local reassignment manager lacks Group stop authority,HANDOVER_REQUIRES_GROUP_STOP; no automatic global stop
+A51,WA1.9,Group executor races parent stop and task handover,Executor finishes before STOPPED; stop holds no task lock; later handover sees final owner outcome
+A52,WA1.9,Handover code requests parent stop while holding task lock,Forbidden ordering; release/rollback before separate stop transaction
+A53,WA1.9,Some Group children succeeded and affected child cancelled before effect,Preserve successful receipts; new actor explicitly creates successor affected subset
+A54,WA1.10,Task list with confidential workload and medical reason,Only authorized DTO; no hidden counts/causes in SSR hydration search notification
+A55,WA1.10,Manual preview becomes stale before confirm,Preserve exact selection; sanitized conflict and refresh; no silently substituted recipient
+A56,WA1.10,New recipient receives work notification,Current disclosure and linked context; delivery/read marker not task completion
+A57,WA1.11,Restored database predates current availability or assignment proof,Quarantine dependent tasks until current readmission evidence and unknown outcomes reconciled
+A58,WA1.11,Migrated legacy claimed work exceeds new profile,Preserve claimed worker and history; visible over-capacity; no new admissions
+A59,WA1.11,Enrolled task sent to old direct claim/execute endpoint,Shared enforced guards apply or route disabled; no request-selected legacy fallback
+A60,WA1.11,Cedar bundle unavailable on enrolled action,Fail closed; inert legacy shadow is not acceptable proof
+A61,WA1.11,Routing worker retry and queue budget exhausted,Durable actionable exception; no silent drop or busy retry loop
+A62,WA1.11,Feature rolled back after transfers committed,Disable new routing but keep current fencing receipts capacity and recovery
+A63,WA1.6,Company removed/reminted after task charge created,Exact original Group charge may release only after proven terminal/safe no-effect cleanup with both historical control and current Company owner recovery authority; no new assignment grant
+A64,WA1.6,Removed Company owner inaccessible or outcome unknown,Keep historical charge quarantined; no TTL release or forged current membership; restricted recovery case

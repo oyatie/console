@@ -1,0 +1,8 @@
+Choice25
+1 Reuse without change:24has a byte holder but lacks preseal/one-time seal identity and required reverse result adoption; insufficient.
+2 Extend responsible17owners: SELECTED. One source binding subtype, existing common adoption projections and native FKs/guards. Generic units keep lifecycle; native source/command truth unchanged.
+3 Widen generic retained_units with allsource-only command/attempt bytes: rejected; creates nullable protocol fields for every kind and mixes source seal identity with common availability.
+4 Permanent effect/adoption FK to24byte row: rejected; prevents lawful later byte disposal while histories remain.
+5 Only check adoptions procedurally: insufficient structural completeness; reverse FK makes missing mandatory relationship impossible to commit. Semantic/current-protection guards remain necessary.
+6 Treat adoption as forever-active protection: rejected; historic adoption and current retention obligation have different lifetimes. One expired purpose also cannot release a shared snapshot.
+Cost: one subtype relation, additional exact composite indexes/FKs and one bounded byte-row validation per published submission. Internal FK row locks and complete evidence enumeration require later race/load tests. No new cleanup service or per-family retention table.

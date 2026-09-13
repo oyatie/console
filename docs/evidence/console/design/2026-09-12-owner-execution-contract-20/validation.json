@@ -1,0 +1,39 @@
+{
+  "recorded_at": "2026-09-13T02:28:12.207834+00:00",
+  "candidate_sha": "a498ea95f4bd38647cce4f31aeda75b2fef74af0",
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-owner-execution-contract-20/verify-packet.py --commit a498ea95f4bd38647cce4f31aeda75b2fef74af0",
+      "result": "PASS",
+      "output": {
+        "candidate_sha": "a498ea95f4bd38647cce4f31aeda75b2fef74af0",
+        "core_files": 20,
+        "source_blobs": 54,
+        "local_schema_definitions": 4,
+        "operations": 11,
+        "caller_rows": 21,
+        "constraint_rows": 14,
+        "nonexecutable_proof_cases": 34,
+        "synthetic_witnesses": 3,
+        "maximum_witness_depth": 7,
+        "calendar_period_bound": 14,
+        "calendar_start_dates_checked": 146097,
+        "reader_links": 14,
+        "validation_scope": "Static identities/refs/limited fixture shapes/budgets/calendar arithmetic only; no SQL/Cedar/runtime execution or Verus proof",
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "sql_executed": false,
+        "verus_proofs_executed": 0,
+        "separate_rust_lane": "2fbe2684155808a88fbc83636d5d27900e09c931",
+        "implementation_authorized": false
+      }
+    },
+    {
+      "command": "git diff --check 2fa88b81722998edd62bc5568bab02abd0e1f0eb a498ea95f4bd38647cce4f31aeda75b2fef74af0",
+      "result": "PASS"
+    }
+  ],
+  "official_retrieval_check": "8 local pinned Verus originals matched recorded byte counts/SHA256/excerpts; this is retrieval integrity, no verifier execution",
+  "separate_rust_pin_receipt": "rust-pin-receipt.json",
+  "limits": "Candidate20 static evidence only. Separate Rust lane tests73/73 and fmt/check/gates pass; pre-existing Clippy warnings remain. No product runtime or formal proof from20."
+}

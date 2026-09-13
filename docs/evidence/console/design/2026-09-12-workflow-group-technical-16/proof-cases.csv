@@ -1,0 +1,71 @@
+id,contract,scenario,required_oracle,status
+P01,CA16,"Same transfer initiated from task, inbox or automation",Same registered owner/input/receipt/authority; no entry-route bypass,NONEXECUTABLE_CANDIDATE
+P02,CA16,New reason label configured,No new API/transition; reason cannot grant permission,NONEXECUTABLE_CANDIDATE
+P03,CA16,Workload reason with Account AVAILABLE,Transfer checks real capacity without marking person absent,NONEXECUTABLE_CANDIDATE
+P04,CA16,Caller claims instruction from a chief executive,Only current correlated action permission matters,NONEXECUTABLE_CANDIDATE
+P05,CA16,Unknown industry uses registered WorkDefinition,Common operation unchanged; unsupported domain invariant blocks owner activation,NONEXECUTABLE_CANDIDATE
+P06,WC16,Two assignees nominated for one atomic work item,Choose one actual assignee or explicit permitted task split,NONEXECUTABLE_CANDIDATE
+P07,WC16,Parsed legacy claim idempotency key lost,Enrolled alias delegates command identity or refuses,NONEXECUTABLE_CANDIDATE
+P08,WC16,Legacy SUPER_ADMIN self-approval exception,Cannot bypass new independent-human requirement,NONEXECUTABLE_CANDIDATE
+P09,WC16,Absent source effect vs manual transfer concurrent,Same task epoch/capacity guards; one ordered winner,NONEXECUTABLE_CANDIDATE
+P10,WC16,Two Companies compete for final account capacity,Single Group control enforces one feasible admission,NONEXECUTABLE_CANDIDATE
+P11,WC16,Paused task or unknown effect lease expires,Charge stays active; no TTL release,NONEXECUTABLE_CANDIDATE
+P12,WC16,Limit reduced below current used units,"Block positive net admission, preserve tasks/release path",NONEXECUTABLE_CANDIDATE
+P13,WC16,Changing assignment is a policy operand,Company authority EXCLUSIVE acquired before task mutation,NONEXECUTABLE_CANDIDATE
+P14,WC16,Candidate only permitted when assigned,Trusted proposed-assignment probe then real-policy recheck; no arbitrary assumed grant,NONEXECUTABLE_CANDIDATE
+P15,WC16,Recipient cannot see required decision evidence,No assignment that pretends they can decide it,NONEXECUTABLE_CANDIDATE
+P16,WC16,Reason says permanent but intent is temporary,Typed intent authoritative; reason label no branch,NONEXECUTABLE_CANDIDATE
+P17,WC16,Stop after one task of plan commits,"Keep one real result; later tasks fenced, no rollback fiction",NONEXECUTABLE_CANDIDATE
+P18,WC16,Work-bound sealed intent has UNKNOWN effect,Reconcile; never retarget author or release capacity,NONEXECUTABLE_CANDIDATE
+P19,WC16,Private draft exists beside transferred task,Not auto-transferred; original authorship preserved,NONEXECUTABLE_CANDIDATE
+P20,WC16,Group-bound child transferred while parent preparing,Stop Group parent separately before cleanup; no lock inversion,NONEXECUTABLE_CANDIDATE
+P21,WC16,Old Company removed then re-added with same UUID,New incarnation cannot revive pending old work,NONEXECUTABLE_CANDIDATE
+P22,WC16,Old Group charge after Company remint,Exact conclusive historical release-only; no active membership required,NONEXECUTABLE_CANDIDATE
+P23,WC16,Temporary interval ends with original worker ineligible,Reevaluate common transfer; no automatic return/rights revival,NONEXECUTABLE_CANDIDATE
+P24,WC16,Candidate scan reaches supported bound,"MATCHING_INCOMPLETE, not no eligible worker",NONEXECUTABLE_CANDIDATE
+P25,GN16,Company two unavailable during consolidated read,Other authorized results retained; no global simultaneous snapshot claim,NONEXECUTABLE_CANDIDATE
+P26,GN16,Initial selected child not prepared,Parent remains PREPARING; no child executes,NONEXECUTABLE_CANDIDATE
+P27,GN16,Prepared child acknowledgement lost,"Exact owner receipt lookup, no new child/command",NONEXECUTABLE_CANDIDATE
+P28,GN16,Source changes after Group activation,Each Company owner current revalidation; no worker privilege escalation,NONEXECUTABLE_CANDIDATE
+P29,GN16,Parent stop races child holding SHARE,"Admitted effect first, then stop fences later effects",NONEXECUTABLE_CANDIDATE
+P30,GN16,Worker reclaimed while old worker returns,Claim generation and same command receipt fence prevent repeat,NONEXECUTABLE_CANDIDATE
+P31,GN16,Original session expires before remaining child,Explicit same-account resume; no implicit session substitution,NONEXECUTABLE_CANDIDATE
+P32,GN16,Company child already succeeded but Group observation missing,"Repair progress from receipt, no new payroll effect",NONEXECUTABLE_CANDIDATE
+P33,GN16,Two parent creates same Group command changed body,One exact receipt; changed binding conflicts,NONEXECUTABLE_CANDIDATE
+P34,GN16,Company CCF1 command supplied to Group control,Scope/protocol validation refuses; Group never Company RLS,NONEXECUTABLE_CANDIDATE
+P35,GN16,Group membership appended after fixed selection,Old manifest never silently expands,NONEXECUTABLE_CANDIDATE
+P36,GN16,Applicant Account has zero contexts,Own Account settings usable; no invented employer/role,NONEXECUTABLE_CANDIDATE
+P37,GN16,Former worker has historical own-record entitlement,Context may be discoverable without present Employment,NONEXECUTABLE_CANDIDATE
+P38,GN16,Hidden context becomes visible by Company policy change,Authority vector mismatch restarts cursor,NONEXECUTABLE_CANDIDATE
+P39,GN16,New relation created after first context page,Account context_generation catches added candidate,NONEXECUTABLE_CANDIDATE
+P40,GN16,Group member removed/re-added during navigation,Topology/incarnation check discards stale page,NONEXECUTABLE_CANDIDATE
+P41,GN16,Forged Account cursor from another Account,"Uniform refusal, no hidden target ID disclosure",NONEXECUTABLE_CANDIDATE
+P42,GN16,More candidate contexts than navigation budget,Uniform unavailable/known-object path; no truncation or hidden count,NONEXECUTABLE_CANDIDATE
+P43,GN16,One owner projection fails while building context list,"Unavailable, not false complete empty/partial list",NONEXECUTABLE_CANDIDATE
+P44,GN16,Permission expires after row projection before final release,Current clock/minimum validity check discards response,NONEXECUTABLE_CANDIDATE
+P45,GN16,Broad capability has no candidate hint-producing owner,Enrollment blocked before it can create undiscoverable authorized context,NONEXECUTABLE_CANDIDATE
+P46,RP16,Payrun review request and generic approval UI,Same governance request/decision; payroll owns completion predicate,NONEXECUTABLE_CANDIDATE
+P47,RP16,Execution permit is approved,No payroll unit decision/effect until explicit owning action,NONEXECUTABLE_CANDIDATE
+P48,RP16,Direct governance decides payroll review outside owner transaction,Delegate to registered payroll coordinator or refuse,NONEXECUTABLE_CANDIDATE
+P49,RP16,Last two different review units approved concurrently,"One exact completion under run fence, no duplicate global actor",NONEXECUTABLE_CANDIDATE
+P50,RP16,Cycle revision reuses all valid unchanged coverage,Derive completion on revision without artificial new reviewer,NONEXECUTABLE_CANDIDATE
+P51,RP16,Reviewer offboards after completed valid decision,Keep historical composition unless explicit current integrity invalidation,NONEXECUTABLE_CANDIDATE
+P52,RP16,Same person uses separate Accounts to approve own proposal,AI1 human identity refuses,NONEXECUTABLE_CANDIDATE
+P53,RP16,Hidden rejected worker omitted by new UI filter,Required population/reservation remains; no completion,NONEXECUTABLE_CANDIDATE
+P54,RP16,Two overlapping regular payroll scopes created,Exclusion/period fence rejects active overlap,NONEXECUTABLE_CANDIDATE
+P55,RP16,Approved successor retains identical displayed money,"New run requires new decisions, no cross-run reuse",NONEXECUTABLE_CANDIDATE
+P56,RP16,Publication controller cannot see salary but valid explicit release authority,Publish exact permitted approved subject projection with mandatory metadata,NONEXECUTABLE_CANDIDATE
+P57,RP16,Selected publication subject has no verified entitlement,Block exact selection; no silent skip or current-user alias guess,NONEXECUTABLE_CANDIDATE
+P58,RP16,Two release commands choose different projection revisions same lineage,One current slot; second requires explicit permitted replacement,NONEXECUTABLE_CANDIDATE
+P59,RP16,Projection-only replacement changes monetary value or subject,Refuse; owning source correction/identity repair required,NONEXECUTABLE_CANDIDATE
+P60,RP16,Security suspension then restoration after supersession,Access restoration does not restore old currentness,NONEXECUTABLE_CANDIDATE
+P61,RP16,Own request submitted with no eligible handler,Durable unassigned supervised task; submission succeeds if other inputs valid,NONEXECUTABLE_CANDIDATE
+P62,RP16,New evidence added after handler response preview,Issue/content CAS stale; preserve response input,NONEXECUTABLE_CANDIDATE
+P63,RP16,Case marked corrected before actual subject publication,Remain CORRECTION_PENDING,NONEXECUTABLE_CANDIDATE
+P64,RP16,Case resolution races publication suspension,Same fenced current publication entitlement check; no false corrected delivery,NONEXECUTABLE_CANDIDATE
+P65,RP16,Legacy issue/payable path reaches enrolled review run,"Delegate/refuse, never PAID/ISSUED/payable by review publication",NONEXECUTABLE_CANDIDATE
+P66,GN16,Hint insertion occurs between candidate enumeration and generation read,Same guarded hint+generation snapshot or restart; never new generation with old list,NONEXECUTABLE_CANDIDATE
+P67,GN16,Hidden context becomes visible when time-bound forbid expires during projection,Whole-scan deny/allow future-transition bound forces restart despite unchanged epochs,NONEXECUTABLE_CANDIDATE
+P68,GN16,Future-start entitlement becomes active between context pages,Stored whole-scan stability bound expires cursor and restarts complete list,NONEXECUTABLE_CANDIDATE
+P69,RP16,Fresh open cycle has unsubmitted basis; ordinary submit then last decision,Sole basis request link resolves completion without artificial cycle revision,NONEXECUTABLE_CANDIDATE
+P70,RP16,Approved nonpayable correction creates fresh successor,NP1 STAGED run_revision1 and null current input; no DRAFT alias,NONEXECUTABLE_CANDIDATE

@@ -1,0 +1,33 @@
+{
+  "reviewed_candidate_sha": "61f8ed96f760fed287a52d4f31f0886346db9c06",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "writer": "/root",
+  "reviewers": [
+    {
+      "identity": "/root/continuity_review",
+      "verdict": "ACCEPT_SCOPED",
+      "scope": "Policy/current eligibility/coverage/custody/temporary return/field disclosure and release-only historical charge delta",
+      "edits": 0,
+      "product_tests_executed": 0
+    },
+    {
+      "identity": "/root/payroll_contract_review",
+      "verdict": "ACCEPT_SCOPED",
+      "scope": "Capacity/one-Company transaction/lock order, unknown effect, draft and Group fences, historical charge retirement",
+      "edits": 0,
+      "product_tests_executed": 0
+    }
+  ],
+  "b04_status": "BOUNDED_BEHAVIOR_DESIGN_ACCEPTED",
+  "whole_design_consensus": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "implementation_authorized": false,
+  "remaining_gaps": [
+    "W04 exact SQL/ACL/API and all-route owner/lock/migration integration",
+    "W02 integrated V01\u2013V10",
+    "W03 monetary self-service publication and correction",
+    "Whole-design consensus and explicit design/test SHA approval",
+    "Current authority alignment; qualified production/source and operational evidence"
+  ]
+}

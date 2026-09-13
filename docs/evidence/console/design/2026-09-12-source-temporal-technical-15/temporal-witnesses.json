@@ -1,0 +1,58 @@
+{
+  "status": "SYNTHETIC_TEMPORAL_ARITHMETIC_NOT_RUNTIME_PROOF",
+  "earning_window": {
+    "zone": "Asia/Seoul",
+    "start_local": "2026-07-01T00:00:00+09:00",
+    "end_exclusive_local": "2026-08-01T00:00:00+09:00",
+    "start_utc": "2026-06-30T15:00:00+00:00",
+    "end_exclusive_utc": "2026-07-31T15:00:00+00:00",
+    "start_us": "1782831600000000",
+    "end_us": "1785510000000000"
+  },
+  "witnesses": [
+    {
+      "id": "T01_EXIT_AFTER_MONTH",
+      "employment_start_us": "1782831600000000",
+      "employment_end_us": "1785510000000000",
+      "pay_date": "2026-08-10",
+      "expected": "EARNING_EMPLOYMENT_COVERED; later pay date alone is not employment blocker"
+    },
+    {
+      "id": "T02_OVERNIGHT_BOUNDARY",
+      "clock_in": "2026-07-31T23:00:00+09:00",
+      "clock_out": "2026-08-01T01:00:00+09:00",
+      "expected_full_seconds": "7200",
+      "expected_earning_seconds": "3600",
+      "profile_note": "Correct clipping does not itself prove no night premium; NP1 remains blocked without supported classification"
+    },
+    {
+      "id": "T03_NEW_WAGE_BEFORE_PAY",
+      "base_effective": "2026-07-01",
+      "new_base_effective": "2026-08-01",
+      "pay_date": "2026-08-10",
+      "selected_span_end_exclusive": "2026-08-11",
+      "expected": "WAGE_IDENTITY_CHANGED even if amount equal"
+    },
+    {
+      "id": "T04_SEGMENTED_ONE_EMPLOYMENT",
+      "split_at": "2026-07-15T00:00:00+09:00",
+      "segment_count": "2",
+      "employment_count": "1",
+      "expected": "One identity may cover month through multiple eligible revisions; scope allocation assessed separately"
+    },
+    {
+      "id": "T05_UNRELATED_CLOCK",
+      "old_family_generation": "3",
+      "new_family_generation": "4",
+      "same_exact_unit_basis": true,
+      "expected": "SAME_BASIS current revalidation; unaffected review retained"
+    },
+    {
+      "id": "T06_EMPTY_CLOCK",
+      "required_duty_count": "23",
+      "clock_events": "0",
+      "attest": true,
+      "expected": "ATTENDANCE_COVERAGE_MISSING"
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_technical_proposal",
+  "recorded_at": "2026-09-12T21:03:52.867600+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "6626c3976f4a668b11dda2f67c3ec1945f065781",
+  "reviewed_contract_sha": "c7dca44f03522fa0aae976d2f57c72a6ff3449a8",
+  "predecessor_record": "../2026-09-12-common-action-technical-14/record.json",
+  "predecessor_record_sha256": "b9c2f6146303070a216a0a179737d58af295fc80888f2468e81826724c29083f",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "files": [
+    {
+      "path": "entry.txt",
+      "bytes": 2035,
+      "sha256": "7cf4b77321bf9a5dccb1ad5d29e05839bbb8050c9182c810126fa61ba4905479"
+    },
+    {
+      "path": "evidence-assessment-contract.txt",
+      "bytes": 17076,
+      "sha256": "e5f4c504633276feb841bca1515444bf85a80e518a6c43bcf8f48ff2d00badee"
+    },
+    {
+      "path": "historical-attendance-contract.txt",
+      "bytes": 10101,
+      "sha256": "8167e8928f4817823f23c30b747c4f75502c5f28db8ba8acb14b9dbc14a66191"
+    },
+    {
+      "path": "integration-and-readiness.txt",
+      "bytes": 3803,
+      "sha256": "13bec336e947a470b8ea0682c59e48337ef0577ea2444797df13135ed277bc8b"
+    },
+    {
+      "path": "np1-command-vectors.json",
+      "bytes": 71038,
+      "sha256": "f564c0c144a15c173c783c12df0f78a8c528309cfd1420ac1ffc1089476f0050"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 6540,
+      "sha256": "56281333eed1db4e670c7198fe94326bc81138a63e89b25514a7916ec8287b79"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1371,
+      "sha256": "6e52a2f84800a069595eff46157edcdfb6496e716f373736e4a09b7c128806d1"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1883,
+      "sha256": "2e85c7891ff519c2fb22ad3f178e33256593d3231867081b8de5bac4de99dd43"
+    },
+    {
+      "path": "review.html",
+      "bytes": 3080,
+      "sha256": "d9dcf20b61674c0f351a764155186d188c1c17fab30e53645ebd2928e45c4dc8"
+    },
+    {
+      "path": "schema-candidate.json",
+      "bytes": 22012,
+      "sha256": "3198b1380551e1103afb4bcb8c2805b000944ffcc004ffd337fa5b46b03921a7"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 1178,
+      "sha256": "63f7335ee652c8da4878628bc4c507cd30fed8ef5a5d3908ca0a7ff20bc52687"
+    },
+    {
+      "path": "source-actions.json",
+      "bytes": 6005,
+      "sha256": "3a4eaf593a0962ec07f717565afabc5990f7b6709fea8c913daaa7d76503d53e"
+    },
+    {
+      "path": "source-guard-contract.txt",
+      "bytes": 6148,
+      "sha256": "636d7cb67f76115947eecc225b77177135bed6e7ac05801650e3c005c9414dd0"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 8101,
+      "sha256": "f7be78d81672f24bfd4f904d491618e519192f62c51ce41eb5011f2fc629492c"
+    },
+    {
+      "path": "synthetic-tax-source.csv",
+      "bytes": 165,
+      "sha256": "0d622f398c3b5558fbca3fd8f35d62bc8f6e4a43d7cf6290c9c2d62035822aa5"
+    },
+    {
+      "path": "temporal-witnesses.json",
+      "bytes": 2023,
+      "sha256": "ce2785b0f9d6bf6a850d9204d27cc3b152831a5d1b4c1f6ec7fda0d3d0fa5044"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 2270,
+      "sha256": "0ee89cfc58e4830f1937ad24d3adad462a5a6535063bba01bed72fc33b2a2933"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 10088,
+      "sha256": "fd6486d1df32fcde877a8e47d7991ac70ee9fe86230413f660f8a930a3178ef6"
+    },
+    {
+      "path": "wire-types.json",
+      "bytes": 12867,
+      "sha256": "1889da14b09dfb040581da37c12ec28d4d25d26e46ea15b8eeaeba86f26fc96f"
+    },
+    {
+      "path": "writer-enrollment.csv",
+      "bytes": 2930,
+      "sha256": "94db353d71c8ef2f275af1ad304d0aa242ec8391772cf637a2f1cd1c3a509441"
+    }
+  ],
+  "remaining_holds": [
+    "W04b-04 workflow/capacity/Group/PC1/AC1/PR1 physical ports and Account navigation",
+    "W04b-05 consolidated DDL/ACL/migration/retention/adoption/recovery/harness/workload proposal",
+    "W05 authority alignment plus four final integrated design reviews and explicit design SHA approval",
+    "W06 executable tests / independent review / explicit test SHA approval / RED admission",
+    "Qualified production source-supply and legal/payment/production authority remain separate"
+  ]
+}

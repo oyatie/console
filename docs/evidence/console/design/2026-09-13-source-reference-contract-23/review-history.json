@@ -1,0 +1,21 @@
+{
+  "initial_candidate_sha": "3d919db789bb55a9726e53016dfc5b00f77033c1",
+  "source_advice_status": "Independent advice from continuity_review and payroll_contract_review incorporated before candidate; not acceptance",
+  "correction_commits": [
+    "596356ec5c4778a6d835900d657f6a96b03ef9e4"
+  ],
+  "corrections": [
+    "Two CSV CRLF line endings normalized to LF; no semantic/SQL change"
+  ],
+  "initial_validation": {
+    "static_packet": "PASS",
+    "diff_check": "FAIL:33 trailing CR lines across two CSV files; corrected without skipping or weakening checks"
+  },
+  "final_candidate_sha": "596356ec5c4778a6d835900d657f6a96b03ef9e4",
+  "final_scoped_reviewers": [
+    "/root/continuity_review",
+    "/root/payroll_contract_review"
+  ],
+  "blocking_content_findings": [],
+  "counts_as_final_integrated_round": false
+}

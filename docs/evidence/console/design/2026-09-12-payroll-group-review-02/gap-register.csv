@@ -1,0 +1,16 @@
+id,topic,review_findings,proposal,status,required_closure,oracle_refs
+B01,전사 자연인 식별,R2-1,D07,OPEN_DESIGN,신뢰할 식별 소유자·법인 간 동일인 증명·등록/정정/회수·재결재 규칙,"O09,O10,O18"
+B02,급여 결정과 실행허가 분리,"R2-2,R3-1","D06,D12",OPEN_DESIGN,제출자/급여 결정자/실행허가 요청자/허가자의 역할과 독립성·화면 전이,"O11,O14"
+B03,전사 묶음의 영속 소유자,R2-3,D08,OPEN_DESIGN,Group 제어 메타데이터 정책·Company child 의도 등록·lease/fencing·큐 제한,"O15,O16,O17"
+B04,담당 교체와 미확정 실행 복구,R2-4,"D06,D08",OPEN_DESIGN,기존 actor 명령 최종상태 확정 후 successor 명령/권한/승인 관계,"O13,O17,O18"
+B05,승인 완료 초안 정정,R3-3,"D05,D12",OPEN_DESIGN,원 결정 보존·새 초안 연결·단일 current successor·새 검토·경쟁 제어,"O14,O28"
+B06,입력 초안의 저장/복원,R3-4,"D09,D12",OPEN_DESIGN,업무 사실과 분리된 서버 초안 소유자·CAS·보존기간·권한 회수·인계,O21
+B07,화면별 상태/오류/복구,R3-5,"D09,D12",OPEN_DESIGN,V01–V10 정상/빈/거부/부분/오래됨/실패/미확정의 정보·허용액션·포커스,"O20,O21"
+B08,직원 화면의 정상 경로,R3-6,"D09,D12",OPEN_DESIGN,본인 DTO·공개 시점·과거 고용 접근·정정 요청; 준비상태만이면 미완료 범위 명시,O20
+P01,동일 효력일 급여 정정,R1-1,D03,PROPOSED_NOT_APPROVED,append-only correction chain과 모든 reader의 동일 해석; migration 검증 필요,"O02,O24"
+P02,불변 입력 및 대상 목록,R1-2,D02,PROPOSED_NOT_APPROVED,revision별 활성 membership·CAS·receipt/head 원자성·원천 삽입 경쟁 검증,"O01,O03,O04,O05"
+P03,세액 검증 및 계산 지원 조건,"R1-3,R1-4",D04,PROPOSED_NOT_APPROVED,검증 소유 action·근거 결속·회수·정확한 지원 profile; 실제 법률 source 별도 HOLD,"O01,O06,O07"
+P04,재준비/재마감/재계산,R1-5,D05,PROPOSED_NOT_APPROVED,상태별 guards와 취소/결정 경쟁; B05 승인 이후 정정은 아직 미완료,"O05,O14"
+P05,정상 계산의 필수 oracle,R1-6,D10,PROPOSED_NOT_APPROVED,반드시 계산 성공하는 양성 사례와 차단 음성 사례 분리; 숫자 oracle 독립 검토,"O01,O02,O07"
+P06,승인 소비 원자성과 replay 순서,"R2-4,R3-2","D06,D11",PROPOSED_NOT_APPROVED,owner transaction 원자화; 현재 인가 후 과거 receipt 반환·현재 stale 별도; B04 별개,"O08,O12,O13"
+B09,법인 간 실행자의 저장·귀속,R4-1,D13,OPEN_DESIGN,자연인 동일성 외에 target Company 사용자 FK를 만족하는 신뢰 실행·귀속 모델; 가짜 계정/권한 상승 금지,"O10,O27"

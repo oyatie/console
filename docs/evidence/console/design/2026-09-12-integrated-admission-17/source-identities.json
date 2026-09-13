@@ -1,0 +1,502 @@
+{
+  "sources": [
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "git_blob": "bee4da9b1e5aac4b9e2907dd1706787b95e8a9ca",
+      "sha256": "b90fc33ad97191af147fbae8c87b6833c577359ea3ef259226455ce6e1d28f75"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "git_blob": "5ca655e24b73882cbb14943af37697fa46373150",
+      "sha256": "531b300818f5328de6b47b3e1ab04761784f5c087824c36f984fef3d3ed9d928"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "git_blob": "53eae8f5184e890b06ba91d7131c25a2dcd3299f",
+      "sha256": "3198b1380551e1103afb4bcb8c2805b000944ffcc004ffd337fa5b46b03921a7"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "git_blob": "dbebca11200d0f01862e10a391c91b0efe47fdcb",
+      "sha256": "cfbf02b629e719cc884e668e1e7755abee10cac35f1e182975bbf0a873a77813"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/migration-and-proof.txt",
+      "git_blob": "aff340c2dfde3b58bb5c05ef44e8640e33f291ed",
+      "sha256": "eb3a9d21cfe9fa111f47f7f30ddaf410da515aa2902ef4d18c76e156e425b60a"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/entry.txt",
+      "git_blob": "66dcdabfaf00257fa0e28dbc7929de77fc781110",
+      "sha256": "5e9e80f9486e2812f640cc084663e6fd790f373bccb7ada52738be939c6ea512"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/execution-contract.txt",
+      "git_blob": "eca5781d09b7b82c07926cc3ecf0b2fc1a923a43",
+      "sha256": "31bb997397930864df193de1021f0e7c480d4eb5e941d86cefcd5bffa3c1b17e"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/native-contract.txt",
+      "git_blob": "58ea22fc435d8890cdaa8a5ab7a419e8c2b87077",
+      "sha256": "cd579d50ca833015cfc69e0e1bc353deae5f3e81300a44c2108c494bfd339049"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/numeric-oracles.json",
+      "git_blob": "347fa531335de58729ecceb3d0a41076701be09d",
+      "sha256": "13415cdcd923824be7dc375f46e3a189de8cc766fdab274a27933560498c843a"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/owner-map.csv",
+      "git_blob": "1d3b76d5e4607657638d1089a36c5c12a26aff65",
+      "sha256": "95ada325729f46bfb471589f0bb3541e1209c89e8afb60a539d136b71c3e7e85"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/record.json",
+      "git_blob": "0ea3e32ac6da91de791fbf5478f9e12d7dae0e55",
+      "sha256": "06d032555c21ddfb0aa63f6940dec4e8eeb1935fb7130cf1cf5ecaca29466779"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/remaining-work.csv",
+      "git_blob": "262264d84fc5c5a8b180d17fd2a97b80d66766ce",
+      "sha256": "29e75c4f2b1c116bd33b959bff204e1b032759045a65700afe0f849e6a4158b5"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/scope.json",
+      "git_blob": "5b8803285137da0a10c31dbfddb74754d4a592c1",
+      "sha256": "aeb8967652ff32ad9f35f8bdadc20cc1f609f81b787b56386b7fc0bfc80292f6"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/wire-candidate.json",
+      "git_blob": "48069703d0a68566379153471ec604e0eed9413b",
+      "sha256": "28e16342cb0e3d05d77006a74a3696196bdda0fb4a08908731c734bed872c862"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/account-contract.txt",
+      "git_blob": "09e0dca1ec52aff72bbea91e3af23e1af8bc342b",
+      "sha256": "e1eee7c38884e2d71290973fda97a4770f958899bd4023efa85774c28b9d4011"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/boundary-api.json",
+      "git_blob": "436c5129e2a63739da583938b77441c04ec3fcf0",
+      "sha256": "36e39f63920c79be1e951b16db53478d7ddb103e0825d2aef20db032b988eab8"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/entry.txt",
+      "git_blob": "fdabb51ce703be647fac63251d208bdca65cc4a4",
+      "sha256": "e413a99755a341df9c0378c2056be453f1bde08df01fdd5f234f5b0838a930f5"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/migration-and-proof.txt",
+      "git_blob": "37c65fde59a919993c701bf57cff61dca1c2c22b",
+      "sha256": "bf730839a8c9feb25c44452a82db9d3e0250f8b6da6fcffce7c7933397ea503a"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/policy-contract.txt",
+      "git_blob": "ee07a8fd90c87e13d5b809fbfe08159d49ec1c89",
+      "sha256": "f6a0054d0f6adc220a433f587ca1897e7e9e4b90571fc16459ff298fb5b82692"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/proof-cases.csv",
+      "git_blob": "c1ad07211914a2848e6b76352c9a2a91a5f95790",
+      "sha256": "616a7729e4cfd3988c0e41c43d441a9dfe12ff8d37ed1ec72d248530ef56fc96"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/record.json",
+      "git_blob": "b7388ef03132e2cc32ddda74f9b9119b82ba68d1",
+      "sha256": "45c11c6ae5901588b0e67d561b78dd5b9ef4c6d72b7cc207c7f6fe28f30a77ab"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/scope.json",
+      "git_blob": "31cad2764a329d4a4d887ee3fc7e25d48794b87b",
+      "sha256": "03cc9a41f477867dea7b84627424c96e2efd8eb78cd3f38795ae9534acae5ed2"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/writer-enrollment.csv",
+      "git_blob": "8dff9f46a2d0d89beed1a819245ef4e96d06a210",
+      "sha256": "18003250ed6430eaf54cdff4fa968610ef419f1ebeb06467e23a32f5e0a53aa4"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/boundary-ports.json",
+      "git_blob": "ccc9a888296fef9c0dc62e36de73e8400c774781",
+      "sha256": "9b695429c8e1c73c02fd683eaa4d0c2c0fa2a07a0225c3d58f400153a807fc92"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/draft-attempt-contract.txt",
+      "git_blob": "3a1b036ba3975b98550e5adfbd0c77c39374d6d4",
+      "sha256": "347cd09acb93cfc907bfa855f24496b2d4689dd73ed72c3c865bcf075ed0ac83"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/encoding-contract.txt",
+      "git_blob": "097b837bb42ce916d9e15777eadf5b5125a15d3d",
+      "sha256": "02e5afb1a706892e571eb39f954e14c4c232feb2a4f69da9ddf147f2a278fefe"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/entry.txt",
+      "git_blob": "eedf12227161bda7a3fce34f36738c1cfc2720fd",
+      "sha256": "ef855f40b2b9484e352db058fe0321726fdaab144a61a9bab6f157ee5ef20a0d"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/fingerprint-vectors.json",
+      "git_blob": "dc0143093dcbc51971f77dd95393af92ec0283ad",
+      "sha256": "02c804d2a82600e013a3a122752f9d82ce5f733e6adffa466e88aec082848711"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/migration-and-proof.txt",
+      "git_blob": "82f97aff421c52e5ae4d1a63670f5476dd86b549",
+      "sha256": "54a665ce9703dd25949f9ad73641d88134e43f131555953ed516eb956b655a2d"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/proof-cases.csv",
+      "git_blob": "1e6735521270fda29eb395d28e9a20b39cfd91b1",
+      "sha256": "f246799efdc0f2872970fc90d15255d54d52ff7516ba002d9354d75688621a65"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/record.json",
+      "git_blob": "894251a602b8d05929ab1101815d488207c97b8d",
+      "sha256": "b9c2f6146303070a216a0a179737d58af295fc80888f2468e81826724c29083f"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/registration-contract.txt",
+      "git_blob": "0378c1d159849106e3c9e6ff34fac51c59e13646",
+      "sha256": "19d53204eb859b19c037974adeced39b0b3e90302d1ee7a634ff1336a704d59c"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/registration.csv",
+      "git_blob": "a03df6ea25d8e785b344dd7a9fee0ef1b40db0b3",
+      "sha256": "50bce656da13a558cfd0e8dd0845379290c0ba5d4b65a0466a322f61b24fe0fe"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/scope.json",
+      "git_blob": "1373a1181028f8d5b8c447c1f25aa71ffbad79b6",
+      "sha256": "79b00f02baa114af5d862f84d2fef28c713f0c7f9685d78e87b4205d34cf25b8"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/entry.txt",
+      "git_blob": "f36f47fbdcfe37c9db64bb991ad1778794d51fbb",
+      "sha256": "7cf4b77321bf9a5dccb1ad5d29e05839bbb8050c9182c810126fa61ba4905479"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/evidence-assessment-contract.txt",
+      "git_blob": "5fd38acf5c97dc491c10580097bbf9bfcadc025e",
+      "sha256": "e5f4c504633276feb841bca1515444bf85a80e518a6c43bcf8f48ff2d00badee"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/historical-attendance-contract.txt",
+      "git_blob": "ba91e5f2c9fb69b919f9a56147a27a0248ab6b85",
+      "sha256": "8167e8928f4817823f23c30b747c4f75502c5f28db8ba8acb14b9dbc14a66191"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/integration-and-readiness.txt",
+      "git_blob": "c3844f59ac5327948a4052fcd964e8bdfcaa9a5c",
+      "sha256": "13bec336e947a470b8ea0682c59e48337ef0577ea2444797df13135ed277bc8b"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/np1-command-vectors.json",
+      "git_blob": "f516562c5e92b7d7ab04c48af73705d2dc450b3b",
+      "sha256": "f564c0c144a15c173c783c12df0f78a8c528309cfd1420ac1ffc1089476f0050"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/proof-cases.csv",
+      "git_blob": "75d44762c5f6550f0bb9728f603dd355a2c2ca1d",
+      "sha256": "56281333eed1db4e670c7198fe94326bc81138a63e89b25514a7916ec8287b79"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/record.json",
+      "git_blob": "ab4a61e34fdd53a695bf2883da369435a409f2f7",
+      "sha256": "39a6afc11bd7ec901a7be62986230ae34fa34f1a64e1e14062352c8c0bd3f1b7"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/scope.json",
+      "git_blob": "22d8c3c9db8eee074fcf538d5b5165261cea4b7b",
+      "sha256": "63f7335ee652c8da4878628bc4c507cd30fed8ef5a5d3908ca0a7ff20bc52687"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/source-actions.json",
+      "git_blob": "4199bfc99e9f467d39a1fb34c984cc38f54688c3",
+      "sha256": "3a4eaf593a0962ec07f717565afabc5990f7b6709fea8c913daaa7d76503d53e"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/source-guard-contract.txt",
+      "git_blob": "47c92a19d4b7c50416787289647208ba1c62c715",
+      "sha256": "636d7cb67f76115947eecc225b77177135bed6e7ac05801650e3c005c9414dd0"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/synthetic-tax-source.csv",
+      "git_blob": "ef0e42e158a091d73cc1d3896bbbddf82eb681e5",
+      "sha256": "0d622f398c3b5558fbca3fd8f35d62bc8f6e4a43d7cf6290c9c2d62035822aa5"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/temporal-witnesses.json",
+      "git_blob": "7e050cad832903ff3834dbdb0811a894dc094061",
+      "sha256": "ce2785b0f9d6bf6a850d9204d27cc3b152831a5d1b4c1f6ec7fda0d3d0fa5044"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/wire-types.json",
+      "git_blob": "6db92ae3a5a8c33021e75c828f076e99e742ed6f",
+      "sha256": "1889da14b09dfb040581da37c12ec28d4d25d26e46ea15b8eeaeba86f26fc96f"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/writer-enrollment.csv",
+      "git_blob": "4159a06d952c59336effcd0163047cf2036c966c",
+      "sha256": "94db353d71c8ef2f275af1ad304d0aa242ec8391772cf637a2f1cd1c3a509441"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/action-inputs.json",
+      "git_blob": "0d6675bc1dfe228d4d759f2553be99f3f836de8b",
+      "sha256": "ac215c0eeaaaa20f4f443d6a1937cd48dff2812e9ea730e3b35f418444cf0ab9"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/common-action-principle.txt",
+      "git_blob": "80ac63af596389fcdc5e1b4c9670377326dfcc9a",
+      "sha256": "95fa01089c78cf67d13d2b027533ffedd658b07f5cbdfe075c82e67cd56b43d3"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/entry.txt",
+      "git_blob": "e89a195f1dc5db632a69aeb8b0dc92057792d354",
+      "sha256": "910ee713f0568e8c712b7fe857a96c10f30ab8bcd9d2e8b9ab9ab5a942475107"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/group-and-navigation.txt",
+      "git_blob": "548661e4db5a1c2643d6132fb7a98627514e5ae8",
+      "sha256": "1e881e73650e65df99c12b539db9f9bfc4944023c6374a7836a97cce71236c8b"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/group-command-witnesses.json",
+      "git_blob": "a30dae53d033450032367c3a77cf77c6e5a4695c",
+      "sha256": "8e387f032bcf22d2f79edb6df78c3eaebf74dc130faa76bb879ff5098a917624"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/participating-ports.json",
+      "git_blob": "3af784206df60b3847c77e73216db619a46d9c69",
+      "sha256": "81a00add9639e6804e086fa271c297e0e1b460cf9737b0b91bade063a31a8cf6"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/proof-cases.csv",
+      "git_blob": "586d2472251d3b91e2375dccd1cdd66f78f1ec31",
+      "sha256": "631442ed099e2940b3cb5bec518668e2a25fcf027d0d9bcd573742867f57a41f"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/record.json",
+      "git_blob": "53ac6c0e290564b0712b7a57023a1a90ef1de8a2",
+      "sha256": "0f897966057a9dd334e72048835660ef8f1c24d8082b487ac6f4c2ffbe57b162"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/review-and-publication.txt",
+      "git_blob": "2dadc097bec3e5fd1e5aec97fcf99338b4c96fd7",
+      "sha256": "7a05edb7b8ea62a8707fa4e65b346ba0d8e0ce08e7117e02d1eb55c0f0d8629c"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/scope.json",
+      "git_blob": "7c5e58e7b74697dee42df8af6fd00de4526726e4",
+      "sha256": "bf17ae66c7afd2b0b6d8748fe52b5beb233245a778e089bbf323d670785c0b40"
+    },
+    {
+      "commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/work-and-capacity.txt",
+      "git_blob": "6446044da5e7594c433c9e852c93d448be1a03ca",
+      "sha256": "0131548013bd6bb98baee6fbaa48ecc167961957aef0f9d4af0a01562e236ffd"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "README.md",
+      "git_blob": "8a50185d68f400007c39ef3f31fe752a50847aed",
+      "sha256": "1122d61fbf4f0f6df3fa2ce412ca127ea02b730c68edba90795c9f31ad30ea43"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/PRODUCT.md",
+      "git_blob": "6a3992e258d7eecf4d2cd11422ee01d521a01017",
+      "sha256": "d9740519950695c0b09bcd173b3a8bac2ff52f41f16eee9cb6984f3ca67e3979"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/ROADMAP.md",
+      "git_blob": "a9167cee191dd79304086027b05523b675f7fbbe",
+      "sha256": "eccba4cb8f0ea3a684ab125967eddc20c98be5807f24b6905e4bad8599adcc57"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/DELIVERY.md",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0031_runtime_role_and_immutable_org.sql",
+      "git_blob": "14d8ed330de4d779067de50e158dbc15b293605f",
+      "sha256": "f2b9537ef1c063f55fcbfe7519a4769690bfd3f613eb8704c6cd36dbda062329"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0206_ont_policy_api_attach_command_role.sql",
+      "git_blob": "0c850783825ad457e25667ae5885eab940d3b931",
+      "sha256": "4122d505e57e032d44ccf53c40cad9a23a6eef2495603b5c03341531ad8ae0b5"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0060_create_groups_and_membership.sql",
+      "git_blob": "680808ff2cdecdb61ee890d5759d387df8b225f6",
+      "sha256": "96ba3f2dd50fcceaa76c0dde4d3809f98f2a0d81c3bb5d4f246d0498d947852c"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql",
+      "git_blob": "8b11fcb989d474c72822368b0ad7c6b9c2c68a64",
+      "sha256": "90ded6b338aa92907dc98bf74bc1fa563e05a4a8acb5d748aa24a44e237ff720"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0155_create_ontology_instances.sql",
+      "git_blob": "fa789dcba967c1af10cb6076879c30a7bdff770a",
+      "sha256": "bed9b9af5592814d5008cd8e06236b5ee57dfd604a8ed399cc9f0aff0078e1cf"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0167_serving_role_transaction_timeouts.sql",
+      "git_blob": "0adce695a231b95822270eae83169b796c86c47e",
+      "sha256": "f4cae160b6cacb53870b48368158f21521e0641c2588c85f603ee708d389d3f9"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/test-support/src/lib.rs",
+      "git_blob": "c8ca6f50a6577e5a27e0745dc321e12168134056",
+      "sha256": "3a8773084adb443faf8c119fba8c407ae58b3e6b9a809f93744e3f934feaa3e9"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/ci/gates/tenant-isolation/tests/owner_only_acl_postgres18.rs",
+      "git_blob": "61568823511945a995cb03747b73b9b6a68496ec",
+      "sha256": "3bb3d46f5fbede83bd8cb431d676c708285b1f0f145900ef14552a3d6d61b416"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/ci/gates/tenant-isolation/Cargo.toml",
+      "git_blob": "55f782e02d27dec8c04ac011c0346634ec91afb1",
+      "sha256": "25f5cc85f8c2e1f8a85f87044596ef4813175537a1b0accf2e93a9d012c6b646"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": ".github/workflows/ci.yml",
+      "git_blob": "b4d39c76009f767ae77e3181401ece57fe126988",
+      "sha256": "e952107e2b17906f3ba5d0d65d5855d352bc64d8823411c3caeee48e1817f5e8"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/app/src/lib.rs",
+      "git_blob": "63291ecb5b1b3c1e6ba8a910777b4eebdd6cae82",
+      "sha256": "73fef04629d297f07d7b01e1cd86880692df86bad019fb34136fab7693baad35"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "ops/compose.yml",
+      "git_blob": "e66fd3212f4875f002a89626ff7b72294c73037c",
+      "sha256": "769a8d9d80ded7861790b12e78c0229b24daeb71afebc612e2ca2338372802d9"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "deploy/apps/console/base/database.yaml",
+      "git_blob": "a79f8c60e6a0c1a0210dcbd3940e49fc72d1e660",
+      "sha256": "55f9abc54e9f55fb34920101682b7d06bea006e1ac9f558127fbd906aad72ede"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "deploy/apps/object-store/README.md",
+      "git_blob": "3842e0613a165eff27ba94d065dc12f7950415a7",
+      "sha256": "0cca7846d220d79e0335768b622e85e2c832d2b31bf7e147746299a603ba7a41"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "deploy/apps/console/components/governed-command-database/README.md",
+      "git_blob": "9c0d12d0413c977095b1bdae5f8110f07d5c6c31",
+      "sha256": "eae4cbe3f495fdc8626992d2ebae6c817e8b5296e90cd361b5e1e825f8d156f1"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "ops/dr/prerequisite-checklists/t_81d5480c-20260709T212739Z.md",
+      "git_blob": "9757ab30dac4af43816d4d96cbcba9b1ae9572fe",
+      "sha256": "21227133ad8fb9b03aebebba415bd2ff30c35773f656f298575a1421cacb969b"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/docs/adapter-postgres/src/lib.rs",
+      "git_blob": "434a6124d69435c94f2693b14c00b1daa635b4e8",
+      "sha256": "dd10df5dd995eedb808246a9e208d4ec91f8d3e4f8c386e7296f20c5888e4d55"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/storage/src/lib.rs",
+      "git_blob": "4bc39e991d67f9e10c8a3d17ccb6b394528fbfe8",
+      "sha256": "4da3d50595afaabcbe2b42bd3118656f1485560d814fee5085de44b80ababf69"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/erasure-ledger/src/lib.rs",
+      "git_blob": "74f529ec260c33b32f4af8186e29e69702bcfef0",
+      "sha256": "719b524b7afc6679599dee2e16b4ce76cc58b835f6619f0d07f075b537e122bf"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/audit-chain/src/external.rs",
+      "git_blob": "242c91dacc1a33fa8e3bca0fde2b5ad327b793e4",
+      "sha256": "1df62a83469e87d0cb965cac59a20452417accb94e230159d74911660bcfc207"
+    }
+  ]
+}

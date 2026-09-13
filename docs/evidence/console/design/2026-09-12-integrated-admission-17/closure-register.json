@@ -1,0 +1,86 @@
+{
+  "status": "OPEN_DESIGN_CONTRACTS_NOT_EXTERNAL_PERMISSION_REQUESTS",
+  "gate": "W04 remains incomplete; close and independently review mutually consistent outputs before W05 final integrated review",
+  "items": [
+    {
+      "id": "F01",
+      "title": "Closed owner payloads and codecs",
+      "owner": "domain owners with common registry",
+      "required_artifacts": "nested-source-contract.json; source-slot-cardinality.json; normalization-vectors.json",
+      "closure_rule": "List every source/eligibility/calendar/coverage/tax/assignment/adoption nested field, type, range, null/absence rule, forbidden key, schema version, limits, reference mapping, canonical encoding and independently derived valid/invalid vectors. No TypedRef or generic payload placeholder at an enrolled boundary.",
+      "depends_on": "12 wire-candidate; 14 registry; 15 wire-types",
+      "status": "OPEN",
+      "blocks": "W04 completion and final integrated design candidacy"
+    },
+    {
+      "id": "F02",
+      "title": "Consolidated physical schema and enforcement",
+      "owner": "one platform/db schema writer with domain owners",
+      "required_artifacts": "physical-contract.sql.txt; constraint-owner-matrix.csv; lock-order-and-index-plan.json",
+      "closure_rule": "Exact columns, key targets, FK delete behavior, uniqueness/exclusion predicates, deferrability, guard/helper signatures and statement order for every used record/extension. Map each C01-C26 to all callers including aliases, native owner tables and common-store invariants. Specify finite scan/index plans; no migration number or applied DDL.",
+      "depends_on": "F01",
+      "status": "OPEN",
+      "blocks": "W04 completion and final integrated design candidacy"
+    },
+    {
+      "id": "F03",
+      "title": "Payload adoption and disposal adapters",
+      "owner": "common object/Docs/domain custody owners",
+      "required_artifacts": "payload-copy-inventory.json; retention-adapter-contract.json; retention-schema.sql.txt",
+      "closure_rule": "Every persisted revision/snapshot/evidence/derived copy and its FK/lifetime; exact pin acquisition/release/adoption protocol; closed delete/readback scope per adapter, metadata minimization and backup inventory; preserve independent submitted evidence. Resolve all retention-records fields, lock slots and terminal enums. Select exact provider-step issuance serialization against hold/cancel/recovery fences, including stale workers after durable intent, in-flight send/readback and unknown outcome. SQL intent is not an external fence.",
+      "depends_on": "F01,F02",
+      "status": "OPEN",
+      "blocks": "W04 completion and final integrated design candidacy"
+    },
+    {
+      "id": "F04",
+      "title": "Trusted execution and real credential topology",
+      "owner": "auth/Cedar and platform command owners",
+      "required_artifacts": "credential-pool-map.json; command-entrypoints.csv; trusted-parameter-contract.txt",
+      "closure_rule": "Actual process/service/role membership, whole-command credential and borrowed helper ACL per action, actor/Company provenance and fresh Cedar boundary, no allowed=true or direct alias bypass. Enumerate compromise boundary, login settings, secret delivery and credential rotation without disclosing secrets. Responsibility pool names are not invented deployed roles.",
+      "depends_on": "F02",
+      "status": "OPEN",
+      "blocks": "W04 completion and final integrated design candidacy"
+    },
+    {
+      "id": "F05",
+      "title": "Migration and enrollment dependency closure",
+      "owner": "serialized platform/db migration owner",
+      "required_artifacts": "migration-phase-contract.json; legacy-census-spec.json; enrollment-manifest-schema.json",
+      "closure_rule": "Exact existing dependency/actor-FK/default-ACL inventory queries and expected catalog, backfill mapping/restart/quarantine/count contracts, Account cutover drain, Group topology history/reincarnation reuse, compatible binary/readers and M0-M6 transitions, rollback matrix. Topology history storage is undecided until existing mechanism is mapped.",
+      "depends_on": "F02,F03,F04",
+      "status": "OPEN",
+      "blocks": "W04 completion and final integrated design candidacy"
+    },
+    {
+      "id": "F06",
+      "title": "Independent journal capability and custody",
+      "owner": "storage/signer and independent custody operator",
+      "required_artifacts": "journal-api-contract.json; provider-options-and-selection.txt; serving-fence-contract.json",
+      "closure_rule": "Choose concrete independent holder/provider and compare native immutable log/CAS options; exact append/idempotency/current-head freshness/signature/rollover APIs, serialization and canonical hash rules, crash matrix and independently enforced serving-generation fence. Existing sign/S3 methods do not close this. Design capability selection precedes deployment; actual provider proof later.",
+      "depends_on": "F03,F04",
+      "status": "OPEN",
+      "blocks": "W04 completion and final integrated design candidacy"
+    },
+    {
+      "id": "F07",
+      "title": "Current authority and business recovery admission",
+      "owner": "identity/policy/domain and recovery owners",
+      "required_artifacts": "recovery-source-matrix.json; readmission-contract.json",
+      "closure_rule": "For Account credentials/revocations, grants, topology, commands/effects, work epochs/charges, gates and publications: exact independent source, freshness/completeness rule, restore reconciliation and unknown fallback. No old passkey bootstrap. Partial admission dependency closure, operator authority, external fencing and lossless facts vs ordinary RPO.",
+      "depends_on": "F04,F05,F06",
+      "status": "OPEN",
+      "blocks": "W04 completion and final integrated design candidacy"
+    },
+    {
+      "id": "F08",
+      "title": "Executable-test design and deployment mapping",
+      "owner": "verification and operations owners",
+      "required_artifacts": "harness-spec.json; measurement-schema.json; deployment-envelope-map.json",
+      "closure_rule": "Exact harness target plan/feature/clock/fixtures/barriers/fault points, real-login bootstrap, clean+upgrade catalogs, load schedule and p95/p99/error denominators, seed manifest, pool/rollout settings and accepted diagnostics. Write specification now; runnable product tests only W06 after approved design, actual measurements after approved implementation.",
+      "depends_on": "F01-F07",
+      "status": "OPEN",
+      "blocks": "W04 completion and final integrated design candidacy"
+    }
+  ]
+}

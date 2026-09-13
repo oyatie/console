@@ -1,0 +1,14 @@
+{
+  "status": "PROPOSED_PENDING_INDEPENDENT_SCOPED_REVIEW",
+  "owner": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "3f9da4b668a232eee77310a4d4704591d904c5d6",
+  "source_blobs": 55,
+  "schema_definitions": 89,
+  "nonexecutable_proof_cases": 40,
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "product_tests_written": 0,
+  "product_tests_executed": 0
+}

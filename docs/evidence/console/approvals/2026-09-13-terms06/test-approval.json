@@ -1,0 +1,22 @@
+{
+  "classification": "evidence",
+  "status": "USER_BOUNDED_TEST_SHA_APPROVED_BY_CONTEXTUAL_ASSENT",
+  "approved_test_sha": "1e2ea6d2060a3d875e531a9a9e8f749984d0a171",
+  "packet_sha": "d99dad7b78b7ca95c0df0c3dc6e614594669df74",
+  "user_message": {
+    "timestamp": "2026-09-13T21:57:35.035Z",
+    "role": "user",
+    "text": "다음"
+  },
+  "preceding_approval_request": {
+    "timestamp": "2026-09-13T21:49:38.766Z",
+    "role": "assistant",
+    "text": "약관 발행 변경·자료 유실·복구 테스트 **3개를 추가하고 독립 검토를 완료**했습니다.\n\n- 총 **53개 실행: 25개 통과·28개 실패**, 제외 없음.\n- 기존 50개 결과는 유지됐습니다.\n- 새 3개는 미구현 스키마에서 중단되어 후속 동작 검증은 미실행입니다.\n- 기존 빌드 생성 오류 12개는 유지하며, 인터뷰 50차까지 기록했습니다.\n\n[승인 자료](/Users/jasonlee/Developer/console/docs/evidence/console/tests/2026-09-13-account-terms-06/approval-request.txt)의 테스트 SHA `1e2ea6d2060a3d875e531a9a9e8f749984d0a171`를 승인하시겠습니까?\n\n[DELIVERY.md:26](/Users/jasonlee/Developer/console/docs/current/DELIVERY.md:26)에 따른 추가 테스트 승인 요청입니다. 기존 승인들은 유지되며, 전체 Account 검증 완료나 구현 착수 승인은 아닙니다."
+  },
+  "binding": "다음 follows exact bounded test-SHA request. Contextual assent; subsequent user directives replace piecemeal approval checkpoints with consolidated preparation and independent review.",
+  "implementation_admitted": false,
+  "production_authorized": false,
+  "source_file": "rollout-2026-09-11T16-59-27-01a09244-a53e-7c83-b38a-73150cfa02dd.jsonl",
+  "source_prefix_bytes": 143166045,
+  "source_prefix_sha256": "2a5a1772f9140ab30ee9644da51cf1411be2a4b20886594c27708538c3f36014"
+}

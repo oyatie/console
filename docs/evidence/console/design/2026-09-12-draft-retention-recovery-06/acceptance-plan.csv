@@ -1,0 +1,40 @@
+id,scenario,given,required_outcome,contract_refs
+R01,초안·제출 증거 분리,성공한 submission snapshot에 모든 필수 입력/첨부가 보존,owner adoption+pin release 원자성; draft chain 폐기해도 snapshot read 가능; private abandoned 값 공개 없음,RR1.2
+R02,필수 증거가 초안에만 존재,required submitted note 또는 첨부가 snapshot에서 빠짐,pin release 거부; eligibility false; 필드 누락으로 폐기 유도 못함,RR1.2
+R03,unknown attempt,SEALED/READY 또는 commit 결과 불명,chain/attempt pin 유지; 자동 expiry/delete 안함,"RR1.2,RR1.3"
+R04,개인·업무 보존,개인 idle draft와 동료 부재 중 active work draft,개인은 제안 정책 시계로 expiry; active work는 idle만으로 삭제 안함; Account 유지,RR1.3
+R05,정책 변경,prepare 후 보존 기간 연장/hold 적용,다음 batch가 현재 정책/obligation 다시 검사해 중단; 원래 정책으로 우회 없음,"RR1.3,RR1.5"
+R06,신규 pin 경합,pin 생성과 prepare 동시에,같은 fence; pin 먼저면 prepare 거부; prepare 먼저면 신규 pin 거부·target 재생성 없음,"RR1.2,RR1.4"
+R07,일반 경로 수정 우회,prepared target에 old tab/generic write/restore/seal,editing epoch와 type owner guard로 무효과; submitted artifact는 유지,RR1.4
+R08,독립 journal 장애,INTENT 외부 write/readback 실패 또는 응답 불명,known accepted receipt 전 delete 없음; 같은 disposal identity로 조회; log를 영수증으로 취급 안함,RR1.4
+R09,외부 tip 경쟁,두 job의 같은 predecessor tip CAS,한 tip만 commit; 다른 record는 재검증 후 연결; orphan object가 journal authority 되지 않음,RR1.4
+R10,DB rollback과 journal,INTENT accepted 뒤 DB effect 없음/rollback,intent는 삭제 사실 아님; restore target quarantine; 증거 없이 commit/cancel 추정 없음,"RR1.4,RR1.7"
+R11,runtime 삭제 우회,app role이 direct DELETE/function/SET ROLE/GUC plan spoof 시도,ordinary/business revisions 삭제 거부; 좁은 executor외 실행 불가; trigger disable 필요 없음,RR1.5
+R12,forged queue scope,job에 business type/cross Company/확대 selector 삽입,executor 등록 type/manifest/policy independently 검증; 고정 범위 밖 무효과,RR1.5
+R13,batch 원자성,행 삭제 후 ledger append 실패 또는 timeout,그 batch row/checkpoint/receipt 모두 rollback; 삭제 사실 선기록 없음,RR1.5
+R14,batch 응답 유실,delete+ledger+receipt commit 후 client timeout,동일 batch reconcile; 실제 count 한 번; journal export 확인 전 다음 batch 없음,RR1.5
+R15,대용량 이력,500행 또는 4MiB를 넘는 보존 chain,여러 bounded batch; quarantine 동안 단축 chain read 없음; timeout은 해당 batch rollback,RR1.5
+R16,hold before batch,hold가 batch lock보다 먼저 commit,해당 batch 무삭제; held status 허용범위 표시,RR1.5
+R17,hold after partial delete,첫 batch commit 이후 hold가 다음 batch보다 먼저,remaining bytes 보존·추가 삭제중단; 부분 소실 사실 보존; complete history로 렌더 안함,RR1.5
+R18,hold 해제,partial held job에서 권한자 hold release,current policy와 범위 새 eligibility; 예전 job 권한만으로 자동 통과 안함,RR1.5
+R19,폐기 취소,첫 batch 전 vs 일부 batch 후 cancel,전자는 no-effect 증거+journal cancel 이후 새epoch; 후자는 payload 복구/재개로 위장 안함,RR1.5
+R20,audit/receipt 복사 누출,generic raw attributes copy 경로가 아직 존재,실제 민감 draft 활성화 거부; broad audit 삭제로 은폐하지 않음,RR1.6
+R21,공유 첨부,draft와 adopted domain snapshot이 같은 file version 참조,draft ref만 release; domain/hold ref 존재 시 파일 삭제 안함,RR1.6
+R22,versioned storage,key DELETE가 delete marker만 생성,version별 확인 전 모든 사본 삭제 claim 금지; lock/실패는 pending,RR1.6
+R23,backup에만 데이터 잔존,live removal 완료; WAL/base/replica에 payload 남음,live removed와 archive recoverable 구별; deleted+35d로 destroyed 계산 안함,"RR1.6,RR1.8"
+R24,복원된 old DB,old data와 old empty erasure ledger 함께 복원,independent fresh journal 조회 전 ingress/workers/exports 비활성; empty ledger로 건강 판정 안함,RR1.7
+R25,확정 삭제 재적용,external batch receipt와 typed scope 존재; 복원 DB에는 row 존재,exact owner replay idempotent; live deadline/policy가 과거여도 이미 확정 삭제 되돌리지 않음,RR1.7
+R26,old ledger SQL injection,legacy erased_selector가 임의 SQL/불명 범위,free text 실행 안함; trusted typed mapping 전 affected admission 차단,"RR1.1,RR1.7"
+R27,INTENT-only 복구,external intent 있지만 restored receipt 없음,unknown target/dependencies 격리; empty receipt로 cancel/new effect/delete 추정 없음,RR1.7
+R28,서명된 오래된 tip,유효 서명이나 independent current head보다 오래된 witness,fresh authoritative head comparison으로 admission 거부; 서명만으로 최신성 인정 안함,"RR1.4,RR1.7"
+R29,현재 권한 소실,backup 속 grant/session/assignment가 현 상태보다 오래됨,current authority 검증/재수립 전 admission 안함; old session invalid; 업무 명령 자동 replay 없음,RR1.7
+R30,복구 중 tip 갱신,reconcile 도중 독립 journal에 새 committed batch,admission 전 catch-up 또는 fence; 오래된 watermark로 서비스 시작 안함,RR1.7
+R31,구 writer 경합,복원 cluster와 예전 worker 동시 활성 시도,old serving generation fence 확인 전 새 writer 실행 불가,RR1.7
+R32,백업 pruning 실패,35d 설정 존재하지만 오래된 dependency/version이 남음,inventory는 recoverable로 기록; 설정만으로 비복원 claim 안함; shared WAL surgery 없음,RR1.8
+R33,손상 snapshot,보존해야 하는 submitted input hash/source 검증 불일치,해당 evidence 사용/복원 차단; 재해시로 무결성 위장 안함; verified source 또는 loss receipt,RR1.8
+R34,키 순환·signer 불가,old signed receipt 검증키 유지; active signer unreachable,기존 검증 가능; 새 external record는 failclosed; in-process self-sign fallback 없음,"RR1.4,RR1.8"
+R35,운영 롤백,부분 폐기 이후 feature disable/구버전 deploy 요청,new purge 중단·quarantine/receipt/reapply 유지; pre-delete backup serving 안함,RR1.9
+R36,법인별 작업,6개 Company 중 2개 권한만 허용 또는 1개 실패,허용 Company별 job/receipt만; Group GUC/교차삭제 없음; 다른 Company 실패를 전부완료로 안함,RR1.2
+R37,취소와 첫 batch 경합,no-effect cancel과 첫 delete batch 동시에,cancel fence 먼저면 delete 무효과; batch 먼저면 CANCELLED publish 금지·partial 경로,RR1.5
+R38,내부 취소 fence 후 장애,CANCEL_PENDING commit; 외부 acceptance 전 crash,재시작시 delete 거부; 동일 cancel identity로 journal reconcile; PREPARED 자동 복귀 없음,RR1.5
+R39,외부 취소 확인 후 장애,journal CANCELLED commit; local finalize 전 crash 또는 PREPARED backup restore,executor/recovery가 terminal cancel guard 유지/재적용; old INTENT로 삭제 못함; 현재 정책·new epoch 후 허용 접근,"RR1.5,RR1.7"

@@ -1,0 +1,10 @@
+Partial-information payroll preparation and review coverage — candidate04
+Writer: /root only. Exact clean evidence base d21603a1890d910cee3a851188f397c3f331fe2e in /private/tmp/console-design-review-20260912. Product source base 05200e43af13b527ce031b04369e05852862f1d6. Immutable review target is the later explicit local Git SHA.
+Allowed writes: this new evidence directory only. No schema, product code, executable product tests, authority, generated files, lockfiles or previous frozen packets. Read-only independent design reviewers only; no implementers/fanout lane.
+Mechanical guide: source owner/state trace -> alternatives -> exact work/decision coverage and disclosure contracts -> independent review/fix/readback -> non-executable oracles and frozen custody.
+Selected lenses: Systems Thinking, Essentialism, Red Team, Zero-trust, Operability, Blast-radius.
+Pre-mortem: filtered screen approves unseen people; omission counted as completion; two units overlap; stale decisions survive correction; duplicate actor bypasses SoD; automatic completion impersonates last reviewer; aggregate/progress leaks confidential pay; legacy route bypasses unit gate.
+Blast radius now: additive design evidence. Proposed implementation spans payroll-owned lifecycle/record projection, identity/policy guards and narrow UI adapters.
+Detection: positive disjoint-scope completion, exact-cover equality, per-unit signed intent, stale/concurrent/cross-tenant denial and raw SSR payload checks; independent source-based review.
+Rollback: supersede design evidence without editing frozen records. Future rollout retains new-format readers/history after first new record; disable new effects, never fabricate one legacy human decider or drop evidence.
+Stop: bounded B02/B07 partial-review contract and scenarios independently assessed; keep whole-design and remaining B03/B04/B06/B07/B08 open. No design/test approval is requested while whole candidate is incomplete.

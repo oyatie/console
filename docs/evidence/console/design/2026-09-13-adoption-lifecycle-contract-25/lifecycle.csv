@@ -1,0 +1,8 @@
+fact,evidence,transition,owner_and_limit,screen_behavior
+preparation exists,binding no seal tuple,record actual unit + preparation receipt,existing common preparation owner; no source effect,existing authorized prepare/save screen
+seal bound,complete immutable attempt/command tuple,one-time bind current unit/attempt under fences,common draft owner; domain source still not committed,submitted intent ready; permission/gate state separate
+publication provisional,snapshot digest/size recorded in current transaction,bytes + mandatory adoptions + current independent protections,whole domain transaction; deferred/live checks and final time then commit,do not show durable success before commit
+publication committed,original command receipt resolves,project current allowed effects/content,historical identity distinct from current source/field rights,show durable outcome and current next action
+payload quarantined,retention lifecycle owner fences content,no new source dependency/pin while disposal unresolved,current unit guards/holds/independent journal,authorized unavailable/pending status; no automatic retry as new
+payload removed later,binding/adoption identities remain,return permitted history; no byte reconstruction/reexecute,separately authorized confined disposal not implemented here,submitted content no longer available; Account survives
+orphan/cancelled preparation,no source result; no unresolved outcome,eligible policy cleanup through existing owner,receipt/reservation tombstones remain for required horizon,preserve truthful cancel/no-effect state

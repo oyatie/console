@@ -1,0 +1,12 @@
+{
+  "status": "proposed_pending_independent_review",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "8bd6a37d9d295adaac62a8358a4b18dfcd060ffb",
+  "scope": "Readiness map and open B04 next-design brief; not B04 contract closure",
+  "work_packages": 16,
+  "first_implementation_packages": 6,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "whole_design_approved": false,
+  "implementation_authorized": false
+}

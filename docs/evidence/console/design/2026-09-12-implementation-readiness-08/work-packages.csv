@@ -1,0 +1,17 @@
+id,readiness_level,status,outcome,evidence,depends_on,exit_criterion,gap_mapping
+W01,FIRST_IMPLEMENTATION,OPEN_DESIGN,업무 배정·인계,03;05;07,없음,결정적 후보 선택·capacity 경합·업무/draft/attempt fence·수동 복구의 독립 수락,B04
+W02,FIRST_IMPLEMENTATION,PARTIAL_DESIGN,입력·화면 완주,01;03–07,W01;W03 결정 반영,V01–V10 상태/명령/DTO/입력 보존/다음 담당/포커스에 미결정 없음,B07
+W03,FIRST_IMPLEMENTATION,OPEN_SCOPE_AND_DESIGN,본인 공개·정정 요청,01;03,없음,첫 범위 명시와 본인 금액/공개/과거고용/정정 계약; 제외 결과는 미완료로 유지,B08;G07
+W04,FIRST_IMPLEMENTATION,PARTIAL_PROPOSALS,통합 owner·API·계산·호환 계약,01–07;research baseline,W01;W02;W03 통합,native 정상 계산 oracle·모든 route guards·transaction/SQL/ACL/migration 계획·성능 가정 정합·정확한 harness,G01–G08;P01–P06
+W05,FIRST_IMPLEMENTATION,NO_FINAL_CONSENSUS_OR_APPROVAL,통합 설계 검토·권한 정합,DELIVERY;03–07 receipts,W01;W02;W03;W04,필요 current-authority 정합 및 필수 gates; 네 독립 설계 검토 consensus; 명시적 design SHA 승인,WHOLE_DESIGN
+W06,FIRST_IMPLEMENTATION,NOT_STARTED_FOR_INTEGRATED_DESIGN,실행 테스트·검토·승인,DELIVERY,W05,독립 검토/명시적 test SHA 승인; exact commit의 유효한 RED probe와 lane admission,TEST_APPROVAL
+PILOT01,PILOT_PRODUCTION,OPEN_SCOPE,실제 첫 오픈 업무와 전환,사용자 pilot 규모,업무별 설계,지원 사람/업무/profile와 수동 대체 운영 확정,OPERATIONS
+PILOT02,PILOT_PRODUCTION,DESIGN_PARTIAL_PROOF_PENDING,배포·복구·보존,06;operational baseline,구현;환경 선택,독립 custody와 실제 복구/readmission 증거,RECOVERY
+PILOT03,PILOT_PRODUCTION,TARGETS_PROPOSED_NOT_MEASURED,보안·성능·격리,03–07;operational baseline,구현;재현 fixture,실제 runtime/SSR/경합/편중 부하/합성 cross-Group 검증,SECURITY_PERFORMANCE
+PILOT04,PILOT_PRODUCTION,OPEN_OPERATIONS,지원·온콜·비용·수동 복구,operational baseline,운영 범위;구현,담당자·진단·incident·rollback 훈련과 비용 기준,DAY2
+PILOT05,PILOT_PRODUCTION,SEPARATE_AUTHORITY_HOLDS,법률·외부 공급자·노출 승인,PRODUCT;06,적용 업무별 증거,qualified review와 해당 공급자/지급/신고/go-live authority,LEGAL_EXTERNAL
+FULL01,FULL_CONSOLE,PARTIAL_FOUNDATION_DESIGN,공통 객체·Actions·정책·연속성,03–07;F05–F07;F16,기능별 순서,재사용 owner와 기능별 계약/증거; 급여 전용 모델 금지,FOUNDATION
+FULL02,FULL_CONSOLE,STORY_INVENTORY_INCOMPLETE,HR·근태·노무·급여 상세 stories,사용자 인터뷰;F19,공통 기반;법률 증거,각 story 입력→결정→효과→정정 수락,HR_STORIES
+FULL03,FULL_CONSOLE,DESIGN_INCOMPLETE,업무공간·연락·캘린더,사용자 인터뷰;F10;F18,공통 기반;권한 정합,탐색/연락 분리·native 관계·공유/인계와 UX walkthrough,COMMON_UX
+FULL04,FULL_CONSOLE,DISCOVERY_BASELINE,기업용 협업 시트,F09,객체/정책;coedit 설계,셀/수식/객체/Action 연동·협업 충돌·호환·성능 지원 범위,SHEETS
+FULL05,FULL_CONSOLE,NO_COMPLETE_LEAF_INVENTORY,Foundry 전체 세부 기능·단계별 수락,F01–F17 baseline,버전/조사 경계,leaf별 owner/의존/대체/증거/단계; 명시적 차이 검토,FOUNDRY_SUITE

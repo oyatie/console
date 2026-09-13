@@ -1,0 +1,58 @@
+{
+  "kind": "design_evidence_consistency_not_product_tests",
+  "candidate_sha": "ff914047e1ff163297f6a6fff30bf1315086241a",
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "docs/evidence/console/design/2026-09-12-action-input-drafts-05/verify-packet.py"
+      ],
+      "exit_code": 0,
+      "result": {
+        "result": "PASS",
+        "reviewed_sha": "ff914047e1ff163297f6a6fff30bf1315086241a",
+        "core_files_verified": 8,
+        "source_blobs_verified": 10,
+        "scenarios_discovered": 50,
+        "product_scenarios_executed": 0,
+        "screen_states": 18,
+        "contract_sections": 17,
+        "reader_links_verified": 9,
+        "json_files_parsed": 5,
+        "record_manifest_checked": false
+      }
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check",
+        "b0569a87ea63d6686fd8e884411cc7f07c0f406d",
+        "--",
+        "docs/evidence/console/design/2026-09-12-action-input-drafts-05"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "scripts/check-doc-links.mjs"
+      ],
+      "exit_code": 1,
+      "diagnostic": "doc-link-diagnostic.json",
+      "finding": "Earlier candidate01 evidence authority-candidate Markdown is unclassified and has missing DELIVERY links. Existing failure retained."
+    }
+  ],
+  "remediated_local_check_failure": "An intermediate git diff --check rejected newly written CSV CRLF line endings; both candidate05 CSVs normalized to LF and scoped check passed. No test semantics changed for that repair.",
+  "scenarios_discovered": 50,
+  "product_scenarios_executed": 0,
+  "screen_states": 18,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "verification_limits": [
+    "No runtime, migration, browser, performance or production proof",
+    "No whole-design/test SHA approval",
+    "Repository doc gate red; not merge-ready"
+  ]
+}

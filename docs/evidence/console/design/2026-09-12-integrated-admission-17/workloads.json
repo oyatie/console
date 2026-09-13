@@ -1,0 +1,136 @@
+{
+  "status": "UNMEASURED_TEST_ACCEPTANCE_CANDIDATE",
+  "pilot_user_facts": {
+    "groups": 1,
+    "companies": 6,
+    "people_total": 2000,
+    "operator": "Console"
+  },
+  "fixtures": {
+    "balanced": [
+      334,
+      334,
+      333,
+      333,
+      333,
+      333
+    ],
+    "skew": [
+      1800,
+      40,
+      40,
+      40,
+      40,
+      40
+    ],
+    "history_months": 12,
+    "monthly_subject_units": 24000,
+    "duty_events": 1056000,
+    "duty_formula": "2000 * 22 * 2 * 12",
+    "extra_group": "separate isolation negative only"
+  },
+  "editing": {
+    "editors": 40,
+    "typing_duty_fraction": 0.25,
+    "save_interval_seconds": 10,
+    "hours_per_day": 8,
+    "days": 22,
+    "average_saves_per_second": 1,
+    "revisions": 633600,
+    "payload_bytes_average": 8192,
+    "raw_payload_bytes": 5190451200,
+    "payload_bytes_boundary": 65536,
+    "boundary_raw_payload_bytes": 41523609600,
+    "excludes": [
+      "indexes",
+      "TOAST overhead/compression",
+      "WAL",
+      "backups",
+      "other objects"
+    ]
+  },
+  "schedule": {
+    "interactive_sessions": 80,
+    "warm_mixed_seconds": 1800,
+    "clock_burst_submissions": 2000,
+    "clock_burst_seconds": 60,
+    "clock_arrival_schedule": "F08 must specify deterministic arrivals and worst-case clustering, no uniform assumption",
+    "company_calculations_total_max": 2,
+    "company_calculations_each_max": 1,
+    "retention_jobs_total_max": 2,
+    "retention_jobs_each_company_max": 1
+  },
+  "pool_budget": {
+    "per_serving_replica": {
+      "runtime": 8,
+      "auth": 2,
+      "ontology_command": 2,
+      "policy_command": 1,
+      "payroll_command": 2,
+      "workflow_command": 1,
+      "group_command": 1,
+      "docs_command": 1,
+      "governance_command": 1,
+      "retention_command": 1
+    },
+    "max_replicas_including_surge": 2,
+    "additional_workers": 4,
+    "migrator": 2,
+    "monitoring": 2,
+    "operators": 4,
+    "reserve": 8,
+    "max_connections": 60,
+    "status": "responsibility budgets; actual credential/service binding F04/F08"
+  },
+  "thresholds": {
+    "authorized_own_context_read": {
+      "p95_ms": 250,
+      "p99_ms": 1000
+    },
+    "draft_save": {
+      "p95_ms": 500,
+      "p99_ms": 2000
+    },
+    "self_clock": {
+      "p95_ms": 500,
+      "p99_ms": 2000
+    },
+    "task_transfer": {
+      "p95_ms": 1000,
+      "p99_ms": 5000
+    },
+    "review_attempt_deadline_ms": 5000,
+    "company_owner_execution_deadline_ms": 30000,
+    "group_completion_target_ms": 300000,
+    "retention_statement_deadline_ms": 2000,
+    "valid_interactive_error_timeout_rate_max": 0.001,
+    "measurement": "End-to-end server ingress to complete response, including queue/lock/commit; timeout/error requests reported in denominator and not silently removed. Exact histogram/scheduler F08. Business denial and induced fault cases separately counted."
+  },
+  "existing_migration_0167_settings": {
+    "statement_timeout_ms": 30000,
+    "idle_in_transaction_session_timeout_ms": 30000,
+    "transaction_timeout_ms": 45000,
+    "note": "Current source settings, verify actual login/database overrides. Owner deadlines are separate proposed tighter bounds."
+  },
+  "benchmark_envelope": {
+    "postgres_version": "18.4",
+    "db_vcpu": 4,
+    "db_ram_gib": 4,
+    "db_usable_volume_gib": 100,
+    "serving_total_vcpu": 4,
+    "serving_total_ram_gib": 4,
+    "host_min_vcpu": 8,
+    "host_min_ram_gib": 16,
+    "status": "disposable synthetic benchmark; actual deployment-equivalent rerun required"
+  },
+  "recovery_hypotheses": {
+    "ordinary_data_rpo_seconds": 300,
+    "readmission_rto_seconds": 14400,
+    "lossless_required": [
+      "confirmed dispositions",
+      "current serving generation"
+    ],
+    "not_sla": true
+  },
+  "product_tests_executed": 0
+}

@@ -1,0 +1,99 @@
+{
+  "status": "INTEGRATED_REVIEW_CANDIDATE_NOT_APPROVED",
+  "owner": "/root",
+  "base_sha": "6c8cbd4e182665217fb8c4e120e7f72df72e82b2",
+  "scope": "W01-W04/F01-F08 first complete nonpayable payroll vertical and common dependencies;full-suite later commitments preserved",
+  "whole_design_approved": false,
+  "test_candidate_approved": false,
+  "implementation_authorized": false,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "load_experiments_executed": 0,
+  "verus_proofs_executed": 0,
+  "integrated_reviews": [],
+  "items": [
+    {
+      "id": "W01",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "screen-integration.txt"
+    },
+    {
+      "id": "W02",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "action-bindings.csv"
+    },
+    {
+      "id": "W03",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "action-types.schema.json"
+    },
+    {
+      "id": "W04",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "physical-contract.txt"
+    },
+    {
+      "id": "F01",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "types.schema.json"
+    },
+    {
+      "id": "F02",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "storage-mapping.json"
+    },
+    {
+      "id": "F03",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "object-owner-custody-contract.txt"
+    },
+    {
+      "id": "F04",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "operations-recovery-information-flow.txt"
+    },
+    {
+      "id": "F05",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "actor-migration.csv"
+    },
+    {
+      "id": "F06",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "journal-types.schema.json"
+    },
+    {
+      "id": "F07",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "operations-recovery-information-flow.txt"
+    },
+    {
+      "id": "F08",
+      "status": "PROPOSED_FOR_INTEGRATED_REVIEW",
+      "artifact": "concurrency-protocol.txt"
+    }
+  ],
+  "remaining_before_approval": [
+    "four independent integrated review rounds on exact candidate SHA;resolve material findings",
+    "owner explicit exact design SHA approval including proposed scope alignment"
+  ],
+  "after_design_approval": [
+    "execute required authority-adoption document gates in serialized authority candidate",
+    "write independently reviewable executable test/proof/harness candidate bound to design",
+    "obtain exact test SHA approval",
+    "real RED command thenfanout admission for implementation"
+  ],
+  "deployment_evidence_later": [
+    "provisioned independent holder/operator keys/provider conformance",
+    "runtime catalog/RLS/sink/Verus execution and measured load/recovery",
+    "qualified retention/profile/legal authority and production exposure approval"
+  ],
+  "known_limits": [
+    "schemas are decoded internal shapes;CCF1 wire conversion still requires executable tests",
+    "SQL shapes/owner contracts not executed migrations",
+    "source/sink and actor census bounded;actual catalog and reached-call proof required during tests/implementation",
+    "candidate hardware/latency bounds unprovisioned/unmeasured",
+    "no claim all employment/pay profiles or50k/1m capacity supported"
+  ]
+}

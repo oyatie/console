@@ -1,0 +1,51 @@
+{
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "sources": [
+    {
+      "path": "backend/crates/platform/db/migrations/0155_create_ontology_instances.sql",
+      "git_blob": "fa789dcba967c1af10cb6076879c30a7bdff770a",
+      "sha256": "bed9b9af5592814d5008cd8e06236b5ee57dfd604a8ed399cc9f0aff0078e1cf"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0207_create_erasure_ledger.sql",
+      "git_blob": "173b079891df18756d59e15bb780ff86a514daa9",
+      "sha256": "1cebd4a81dfd578174ed28f3cfb8a812c72b5712cb1c59e1932d7f6815662581"
+    },
+    {
+      "path": "backend/crates/platform/erasure-ledger/src/lib.rs",
+      "git_blob": "74f529ec260c33b32f4af8186e29e69702bcfef0",
+      "sha256": "719b524b7afc6679599dee2e16b4ce76cc58b835f6619f0d07f075b537e122bf"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0100_create_audit_chain_seals.sql",
+      "git_blob": "a8b72f5823b855ffa55a33a8a8006589cd06c779",
+      "sha256": "55bd75cac25e787985709e18fa3c5a474fe73f7214d67b9beb01fec7920c09bf"
+    },
+    {
+      "path": "backend/crates/platform/audit-chain/src/external.rs",
+      "git_blob": "242c91dacc1a33fa8e3bca0fde2b5ad327b793e4",
+      "sha256": "1df62a83469e87d0cb965cac59a20452417accb94e230159d74911660bcfc207"
+    },
+    {
+      "path": "backend/crates/platform/storage/src/lib.rs",
+      "git_blob": "4bc39e991d67f9e10c8a3d17ccb6b394528fbfe8",
+      "sha256": "4da3d50595afaabcbe2b42bd3118656f1485560d814fee5085de44b80ababf69"
+    },
+    {
+      "path": "deploy/apps/console/base/database.yaml",
+      "git_blob": "a79f8c60e6a0c1a0210dcbd3940e49fc72d1e660",
+      "sha256": "55f9abc54e9f55fb34920101682b7d06bea006e1ac9f558127fbd906aad72ede"
+    },
+    {
+      "path": "deploy/apps/console/overlays/prod/kustomization.yaml",
+      "git_blob": "a5ddac0b6d657b359d91a30f4da5d788f82b1d7d",
+      "sha256": "b591c81ad5a34e0568fbc9c50119db7e8f4470104134f2ee507a9bf5c9ea8cfa"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0151_create_docs_evidence_objects.sql",
+      "git_blob": "1b087a3c2f710d81134aa9ab417c020459af10c9",
+      "sha256": "bd3373b7a047e9d13e22fabd9cb9cd62b88b6ef90b7fbbcf90da445834b060de"
+    }
+  ],
+  "scope": "Exact source facts, not deployed-state evidence; stale erasure-ledger comments are checked against current database manifest."
+}

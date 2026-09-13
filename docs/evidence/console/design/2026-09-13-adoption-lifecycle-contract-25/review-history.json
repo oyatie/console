@@ -1,0 +1,14 @@
+{
+  "initial_candidate_sha": "4216e778f3f759a2d7d784d33bfaadbce5f602ab",
+  "initial_review_status": "Both independent reviewers completed full11files; no additional findings after agreeing root-identified receipt-protocol strengthening",
+  "root_finding": "24byte row receipt FK alone permits legacy-shaped receipt supporting published binding without source effects",
+  "correction_commits": [
+    "48349e4d5fe0f3f462ab46a037779e6b938e2aac"
+  ],
+  "corrections": [
+    "Once-publication validator performs indexed receipt lookup requiring SOURCE_EFFECTS21; missing/null/wrong protocol refused",
+    "A21negative proposed case and exact static assertions; full owner/protection/type checks explicitly remain OPEN"
+  ],
+  "final_candidate_sha": "48349e4d5fe0f3f462ab46a037779e6b938e2aac",
+  "counts_as_final_integrated_round": false
+}

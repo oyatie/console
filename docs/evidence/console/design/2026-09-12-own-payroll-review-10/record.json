@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_design_candidate",
+  "recorded_at": "2026-09-12T17:46:50.500051+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "0c2e1541c91d1c5f6f5bed740114b44c16006135",
+  "reviewed_contract_sha": "c4871c8b1e5baa55b476c50b06bdbb646a62d1ad",
+  "predecessor_record": "../2026-09-12-assignment-continuity-09/record.json",
+  "predecessor_record_sha256": "a3a2b4e913c2b6d1366f62c94322ffb8b3bcffface77d2fb11178da0c8326066",
+  "whole_design_approved": false,
+  "files": [
+    {
+      "path": "acceptance-plan.csv",
+      "bytes": 8701,
+      "sha256": "83884b1092fabd6fcea924562af677893d82e0a8083de81bd597fe8b0cae5891"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 2101,
+      "sha256": "8348a8a5957caa02d3ea492399e4862517052d2625d26524aed8ddc49d6247cb"
+    },
+    {
+      "path": "handover-triggers.txt",
+      "bytes": 9748,
+      "sha256": "7cceee99c6067f5cc1a1e95aa93949e7d0ceca4b5a268af507ce410b2fa14e77"
+    },
+    {
+      "path": "own-result-contract.txt",
+      "bytes": 30986,
+      "sha256": "d5322773ce16b459234ed823eae1cadce1be5d7bc0f44e53a5f200119dd088b2"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 752,
+      "sha256": "7224d31c0aa7a82ad5412b0e8abb906fa5ae65a48e6f6a3a2a34d61f0ee49ce7"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1470,
+      "sha256": "0834fd5b0c00c00e2da36c529cc6574daa5dad60ac63f811ec415303f27b4979"
+    },
+    {
+      "path": "review.html",
+      "bytes": 43679,
+      "sha256": "7fd4b7573fefced9a8603e5a58f8f49bc2a4c103bbc41de107f8e05e9a5638d8"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 833,
+      "sha256": "6ed7419580ceb38676eec0b5199c60888aef3b07fbddb5ae1b7959e913722332"
+    },
+    {
+      "path": "screen-states.csv",
+      "bytes": 2767,
+      "sha256": "1b2f1b2eaa1a3e9e2c3bef12908834244b8415babf97f7119cf1dde70b028187"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 3498,
+      "sha256": "37d5d32f76601a88466e9d70a98b5925781f95db125b7e82eebf98f0aecfd0ea"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1291,
+      "sha256": "0a0c587583f08a24bb4b949ce1691bf8b38b65e29923ba77281710ae920adf05"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 3366,
+      "sha256": "f58429c5fb6687e1e4b49292c4134e47156c54bd237c1a143fd9c4a506a5a4b1"
+    }
+  ],
+  "remaining_holds": [
+    "W02 integrated V01\u2013V10/input recovery matrix",
+    "W04 exact APIs/DTO/SQL/ACL/migration/lock and numeric/runtime proof",
+    "Current authority scope alignment; whole-design consensus and explicit design/test SHA approvals",
+    "Legal issuance/payment/export/external sharing and production authority remain separate"
+  ]
+}

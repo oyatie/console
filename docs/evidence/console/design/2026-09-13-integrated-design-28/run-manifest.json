@@ -1,0 +1,88 @@
+{
+  "classification": "UNEXECUTED_HARNESS_CANDIDATE",
+  "run_id": null,
+  "design_sha": null,
+  "test_sha": null,
+  "implementation": {
+    "binary_sha": null,
+    "storage_versioning": null,
+    "conflict_control": null,
+    "scheduling": null,
+    "replication": null,
+    "projection_adapter": null,
+    "config_sha": null
+  },
+  "environment": {
+    "candidate_fixture": "3 database nodes each8vCPU32GiB1TiB SSD;2 app nodes each4vCPU8GiB;1 independent holder4vCPU8GiB256GiB;generator separate8vCPU16GiB",
+    "status": "PROPOSED_TEST_RESOURCES_NOT_PROVISIONED",
+    "network_rtt_ms": {
+      "client_app": 20,
+      "app_db": 2,
+      "db_sync_replica": 10,
+      "holder": 20
+    },
+    "loss_percent": 0,
+    "cache_state": "warm and cold separate runs",
+    "observed_hardware_ids": null
+  },
+  "dataset": {
+    "people": [
+      2000,
+      50000,
+      1000000
+    ],
+    "companies_pilot": 6,
+    "customer_groups_pilot": 1,
+    "seed": 280913,
+    "trace_sha": null,
+    "topologies": [
+      "oneCompany",
+      "six90percentSkew",
+      "manyCompanies",
+      "independentGroups"
+    ],
+    "growth_is_discovery": true
+  },
+  "limits": {
+    "interactive_queue_total": 4096,
+    "interactive_queue_per_company": 1024,
+    "queue_bytes_total": 67108864,
+    "queue_max_age_ms": 30000,
+    "active_small_commands_per_company": 32,
+    "automatic_no_effect_retries": 3,
+    "deadline_success_ratio_min": 0.99,
+    "capacity_rejection_ratio_max": 0.001,
+    "unresolved_at_recovery_end": 0,
+    "correctness_violations": 0,
+    "sensitive_disclosures": 0,
+    "neighbor_p99_ratio_max": 1.25,
+    "steady_backlog_drift_count_max": 32,
+    "recovery_deadline_seconds": 14400,
+    "recovery_normal_windows": 2,
+    "status": "PROPOSED_THRESHOLDS_NOT_MEASURED;semantic-conflict fixtures override expected outcomes explicitly",
+    "bulk_prepare_deadline_seconds": 1800,
+    "bulk_publish_deadline_seconds": 60,
+    "sql_statement_ms": 2000,
+    "worker_rss_bytes": 8589934592,
+    "db_connections_per_app": 32,
+    "retained_store_fill_fraction_max": 0.8,
+    "bulk_status": "candidate bounds for<=2000-person complete native scope;growth uses same bounded command size across larger datasets;not capacity promise"
+  },
+  "phases": {
+    "steady_seconds": 3600,
+    "burst_seconds": 600,
+    "hot_seconds": 600,
+    "sample_seconds": 1,
+    "window_seconds": 300,
+    "repeats": 3,
+    "interactive_sample_min": 10000,
+    "offered_load_continues_during_recovery": true
+  },
+  "history": {
+    "format": "one JSON record per intent/attempt/read/predicate/transition/fault/receipt;synthetic values",
+    "causal_order_required": true,
+    "generator_saturation_invalidates_comparison": true
+  },
+  "readiness": "NOT_EXECUTABLE: exact implementations, traces, binaries and actual resources unbound",
+  "result": "NOT_ASSESSABLE"
+}

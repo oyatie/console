@@ -1,0 +1,30 @@
+id,topic,setup_or_interleaving,required_outcome
+AP01,ZERO_COMPANY_ACCOUNT,"Register pending Account, satisfy own terms/key ceremony, login with0Company/users/roles/Employment","ACTIVE Account/session, no implicit work permission"
+AP02,EXIT_CONTINUITY,Terminate only CompanyA Employment/relationship while Account has CompanyB grant and historicalA ownership,"Account session survives; A work denied, B and independently authorizedA historical access preserved"
+AP03,EMPLOYER_TAKEOVER,Company UserManage invokes old admin OTP/reset/deactivate aliases on migrated Account,No credential deletion or sign-in token; Company relationship mutation only through its guarded action
+AP04,LEGACY_OTP,Redeem employer-minted pre-migration bootstrap after Account migration,"No ACCOUNT_V1/session; revoked or refused, never converted to invitation authentication"
+AP05,PURGE_CUSTODY,Direct and catalog-driven Company force remove tries to reach migrated Account/key/family,Refused/preserved under Company archive boundary; no cascade deletion
+AP06,LAST_KEY_RACE,Two concurrent self-key deletes through different aliases after same initial count,"Account guard serializes; at least required last key preserved, no count/delete race"
+AP07,REGISTRATION_RACE,Register/finish ceremony races Account suspension and other enrollment,One serialization outcome; no key usable after winning suspend; proof cannot bind other Account
+AP08,REFRESH_REUSE,"Reused refresh token, family/account mismatch and forged higher generation",Reuse/family generation checks refuse or revoke as existing rule requires; no cross-Account session
+AP09,TOKEN_CONFUSION,"ACCOUNT_V1 supplied to legacy org parser, changed aud/kind or missing sid",Reject; no sentinel/defaultCompany/SUPER_ADMIN
+AP10,AUTH_TERMS,Zero-Company Account enrollment has no employer audit row,Own acceptance current version required; valid Account acceptance permits; unknown version requires acceptance
+AP11,CORRELATED_ASSIGNMENTS,A-site approve+payroll fields; B-site discover+basic fields; try B-site approve,Deny; no action/scope/field cross product
+AP12,NO_JOB_TITLES,Same exact scoped grants under renamed/no job titles across2Companies,Same policy results; labels/rank never authority
+AP13,ALLOW_WITH_ERROR,Applicable permit allows while another relevant Cedar policy raises evaluation error,Deny/unavailable before effect or protected DTO; diagnostic not leaked
+AP14,MISSING_GUARD,Enrolled Company has no authority guard row,Enrollment/request unavailable; no0baseline or rowless FOR UPDATE
+AP15,ATTACH_RACE,Cedar attach/revoke takes CompanyEXCLUSIVE against domainSHARE and changes policy,"One serialized policy snapshot; same tx epoch/catalog/audit, no prewrite gap"
+AP16,HIERARCHY_SCOPE,Move employee/object/OrgUnit outside granted scope through owning writer during preview,Current guarded scope changes authorization; stale preview cannot retain old scope
+AP17,FIELD_PROJECTION,"Person row visible, compensation/medical fields hidden; detail/list/history/SSR/hydration/errors",No hidden value/key/marker unless field-existence disclosure; no raw attribute bag
+AP18,QUERY_DISCLOSURE,Filter/sort/group by unreadable salary; compare aggregate/count across queries,Reject query operation; no rank/group/difference leakage or unsafe full total
+AP19,CURSOR_FRESHNESS,Reuse opaque cursor after policy epoch or Account/Company/query changes,"stale/invalid cursor under current policy, no replayed data; cursor not grant"
+AP20,RESIDUAL_COMPLETENESS,Relevant forbid cannot lower or final Cedar disagrees with SQL plan,"Unavailable/invalid plan, no dropped forbid or fetch_all fallback; required list plan publish blocked"
+AP21,RACED_RECEIPT,Receipt initially absent; concurrent same command commits then execute permission lost but receipt read remains,Authoritative recheck returns historical success under current disclosure before new-effect verdict
+AP22,HUMAN_ALIAS,Two accounts bound to same human; merge changes pending independence proof,High-risk independence denied/stale; no fake distinct person by account UUID
+AP23,BOOTSTRAP_RECOVERY,First two verifiers or suspended registry attempt self-certification,Only explicit supervised root/recovery proof; no tenant magic verified flag or payroll privilege
+AP24,GUARD_EXPIRY,Grant/session valid at transaction start expires before final effect/DTO authorization,Final authoritative clock check denies/rolls back new effect; no now()-snapshot expiry bypass
+AP25,LEGACY_READ_ESCAPE,Legacy manage/read endpoint requests same enrolled protected salary/resource,Uses current projection or refuses; old route not alternate visibility
+AP26,COMPATIBLE_ROLLBACK,New Account-only and correlated assignment records exist; new effects paused,Account sign-in/recovery and current revocations/history remain; no mandatory users/Company downgrade
+AP27,LEGACY_GLOBAL_FENCE,"Unexpired legacy Company JWT reaches non-enrolled data before cutover, after Account creation, during suspension and after recovery/rollback; include in-flight request at cutover","Only unmigrated guarded compatibility may succeed; cutover drains old admissions, all migrated legacy tokens always rejected, no sid/generation synthesis; fresh Account authentication required"
+AP28,LOOKAHEAD_DISCLOSURE,First page_size objects pass but lookahead Cedar disagrees or its discovery grant expires before DTO release,No has_more or successful page from invalid lookahead; same final discovery/query/validity checks and expiry bound cover returned objects and lookahead
+AP29,MEMBERSHIP_CARDINALITY,One object matches multiple assignment clauses and hierarchy paths at page boundary,"Exactly one row per authorized object before LIMIT; no duplicates, skipped object or false has_more"
