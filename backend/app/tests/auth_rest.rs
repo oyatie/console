@@ -4118,7 +4118,10 @@ mod account_browser {
     }
 
     async fn router(pool: &PgPool, root: PathBuf) -> axum::Router {
-        let signing_key = SigningKey::random(&mut OsRng);
+        router_with_key(pool, root, &SigningKey::random(&mut OsRng)).await
+    }
+
+    async fn router_with_key(pool: &PgPool, root: PathBuf, signing_key: &SigningKey) -> axum::Router {
         let mut pairs = vec![
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -5104,5 +5107,434 @@ mod account_browser {
         cookie.no_literal_echo();
         cookie.headers.insert("x-debug", canary.parse().unwrap());
         assert!(std::panic::catch_unwind(|| cookie.no_literal_echo()).is_err());
+    }
+
+    // B06/B07: this signer is fixture-owned and uses the same real configured
+    // ES256 key as the router. Correct signatures isolate claim-validation bugs.
+    async fn signed_fixture(pool: &PgPool) -> (Fixture, SigningKey) {
+        prepare_http_database(pool).await;
+        seed_terms(pool).await;
+        let artifacts = Artifacts::new();
+        let key = SigningKey::random(&mut OsRng);
+        let service = router_with_key(pool, artifacts.root.clone(), &key).await;
+        (
+            Fixture {
+                service,
+                _artifacts: artifacts,
+                pool: pool.clone(),
+            },
+            key,
+        )
+    }
+
+    fn sign_proof_claims(claims: &Value, key: &SigningKey) -> String {
+        let pem = key.to_pkcs8_pem(LineEnding::LF).unwrap();
+        jsonwebtoken::encode(
+            &jsonwebtoken::Header::new(jsonwebtoken::Algorithm::ES256),
+            claims,
+            &jsonwebtoken::EncodingKey::from_ec_pem(pem.as_bytes()).unwrap(),
+        )
+        .unwrap()
+    }
+
+    // Signature-only decoding is deliberate: invalid time/issuer values must
+    // remain inspectable by the oracle. Production validation stays untouched.
+    fn signed_claims(token: &str, key: &SigningKey) -> Result<Value, jsonwebtoken::errors::Error> {
+        let pem = key
+            .verifying_key()
+            .to_public_key_pem(LineEnding::LF)
+            .unwrap();
+        let mut validation = jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::ES256);
+        validation.required_spec_claims.clear();
+        validation.validate_exp = false;
+        validation.validate_nbf = false;
+        validation.validate_aud = false;
+        jsonwebtoken::decode::<Value>(
+            token,
+            &jsonwebtoken::DecodingKey::from_ec_pem(pem.as_bytes()).unwrap(),
+            &validation,
+        )
+        .map(|data| data.claims)
+    }
+
+    async fn fresh_login(router: &Fixture, attempt: &mut Attempt) -> Cookies {
+        let (mut cookies, input) = login_attempt(router, attempt).await;
+        let response = request(
+            router,
+            "POST",
+            "/api/v2/auth/passkey/login/finish",
+            &cookies,
+            Some(input),
+            &[],
+        )
+        .await;
+        session(&response, StatusCode::OK, attempt.account, &mut cookies);
+        cookies
+    }
+
+    #[test]
+    fn signed_claim_oracle_rejects_other_keys_and_payload_tampering() {
+        let key = SigningKey::random(&mut OsRng);
+        let claims = json!({"sub":Uuid::new_v4(), "exp":1, "iss":"invalid-for-production"});
+        let token = sign_proof_claims(&claims, &key);
+        assert!(signed_claims(&token, &key).unwrap() == claims);
+        assert!(signed_claims(&token, &SigningKey::random(&mut OsRng)).is_err());
+        let parts: Vec<_> = token.split('.').collect();
+        let changed = format!(
+            "{}.{}.{}",
+            parts[0],
+            URL_SAFE_NO_PAD.encode(br#"{"sub":"tampered","exp":1}"#),
+            parts[2]
+        );
+        assert!(signed_claims(&changed, &key).is_err());
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn csrf_issued_claims_are_signed_short_lived_and_read_only(pool: PgPool) {
+        let (router, key) = signed_fixture(&pool).await;
+        let (attempt, cookies) = enrolled(&router).await;
+        let before = snapshot(&pool, attempt.account).await;
+        let mut refresh_only = cookies.clone();
+        refresh_only.0.remove(ACCESS);
+        for credential in [&cookies, &refresh_only] {
+            let started = OffsetDateTime::now_utc().unix_timestamp();
+            let response = request(
+                &router,
+                "GET",
+                "/api/v2/auth/csrf",
+                credential,
+                None,
+                &[("X-Console-CSRF", "fetch")],
+            )
+            .await;
+            let completed = OffsetDateTime::now_utc().unix_timestamp();
+            let body = response.json(StatusCode::OK);
+            response.private();
+            exact_keys(&body, &["csrf_proof", "expires_at"]);
+            assert!(!response.headers.contains_key(header::SET_COOKIE));
+            let claims = signed_claims(body["csrf_proof"].as_str().unwrap(), &key).unwrap();
+            assert_eq!(claims["iss"], TEST_ISSUER);
+            assert_eq!(claims["aud"], "console.account.csrf.v1");
+            assert_eq!(claims["token_kind"], "account_csrf_v1");
+            assert_eq!(claims["sub"], attempt.account.to_string());
+            assert_eq!(claims["sid"], before["families"][0]["id"]);
+            assert_eq!(
+                claims["security_generation"],
+                before["security"]["security_generation"]
+            );
+            let iat = claims["iat"].as_i64().unwrap();
+            let nbf = claims["nbf"].as_i64().unwrap();
+            let exp = claims["exp"].as_i64().unwrap();
+            assert!(started <= iat && iat <= completed);
+            assert!(nbf <= completed && nbf <= exp);
+            assert!(exp > completed && exp <= iat + 300);
+            let expires = OffsetDateTime::parse(
+                body["expires_at"].as_str().unwrap(),
+                &time::format_description::well_known::Rfc3339,
+            )
+            .unwrap();
+            assert_eq!(expires.unix_timestamp(), exp);
+            assert!(snapshot(&pool, attempt.account).await == before);
+        }
+        assert_no_company_identity(&pool, attempt.account).await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn csrf_correctly_signed_invalid_claims_do_not_consume_refresh(pool: PgPool) {
+        let (router, key) = signed_fixture(&pool).await;
+        let (attempt, mut cookies) = enrolled(&router).await;
+        let issued = proof(&router, &cookies).await;
+        let claims = signed_claims(&issued, &key).unwrap();
+        let before = snapshot(&pool, attempt.account).await;
+        let now = OffsetDateTime::now_utc().unix_timestamp();
+        let generation = claims["security_generation"].as_u64().unwrap();
+        let cases = [
+            ("iss", json!("untrusted-issuer")),
+            ("aud", json!("console-api")),
+            ("token_kind", json!("account_access_v1")),
+            ("sub", json!(Uuid::nil())),
+            ("sid", json!(Uuid::nil())),
+            (
+                "security_generation",
+                json!(generation.checked_add(1).unwrap()),
+            ),
+            ("exp", json!(now - 1)),
+            ("iat", json!(now + 120)),
+            ("nbf", json!(now + 120)),
+        ];
+        for (field, value) in cases {
+            let mut invalid = claims.clone();
+            invalid[field] = value;
+            let signed = sign_proof_claims(&invalid, &key);
+            assert!(signed_claims(&signed, &key).unwrap() == invalid);
+            request(
+                &router,
+                "POST",
+                "/api/v2/auth/token/refresh",
+                &cookies,
+                Some(json!({})),
+                &[("X-Console-CSRF", &signed)],
+            )
+            .await
+            .error(StatusCode::FORBIDDEN, "csrf_invalid");
+            assert!(
+                snapshot(&pool, attempt.account).await == before,
+                "invalid proof changed Account state"
+            );
+        }
+        for field in [
+            "iss",
+            "aud",
+            "token_kind",
+            "sub",
+            "sid",
+            "security_generation",
+            "iat",
+            "nbf",
+            "exp",
+        ] {
+            let mut invalid = claims.clone();
+            invalid.as_object_mut().unwrap().remove(field);
+            let signed = sign_proof_claims(&invalid, &key);
+            assert!(signed_claims(&signed, &key).unwrap() == invalid);
+            request(
+                &router,
+                "POST",
+                "/api/v2/auth/token/refresh",
+                &cookies,
+                Some(json!({})),
+                &[("X-Console-CSRF", &signed)],
+            )
+            .await
+            .error(StatusCode::FORBIDDEN, "csrf_invalid");
+            assert!(snapshot(&pool, attempt.account).await == before);
+        }
+        let valid = proof(&router, &cookies).await;
+        let response = request(
+            &router,
+            "POST",
+            "/api/v2/auth/token/refresh",
+            &cookies,
+            Some(json!({})),
+            &[("X-Console-CSRF", &valid)],
+        )
+        .await;
+        session(&response, StatusCode::OK, attempt.account, &mut cookies);
+        assert!(snapshot(&pool, attempt.account).await["families"] == before["families"]);
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn csrf_wrong_key_and_hmac_algorithm_are_rejected(pool: PgPool) {
+        let (router, key) = signed_fixture(&pool).await;
+        let (attempt, mut cookies) = enrolled(&router).await;
+        let issued = proof(&router, &cookies).await;
+        let claims = signed_claims(&issued, &key).unwrap();
+        let other_key = SigningKey::random(&mut OsRng);
+        let wrong_key = sign_proof_claims(&claims, &other_key);
+        assert!(signed_claims(&wrong_key, &other_key).unwrap() == claims);
+        assert!(signed_claims(&wrong_key, &key).is_err());
+        let public = key
+            .verifying_key()
+            .to_public_key_pem(LineEnding::LF)
+            .unwrap();
+        let wrong_algorithm = jsonwebtoken::encode(
+            &jsonwebtoken::Header::new(jsonwebtoken::Algorithm::HS256),
+            &claims,
+            &jsonwebtoken::EncodingKey::from_secret(public.as_bytes()),
+        )
+        .unwrap();
+        assert_eq!(
+            jsonwebtoken::decode_header(&wrong_algorithm).unwrap().alg,
+            jsonwebtoken::Algorithm::HS256
+        );
+        let before = snapshot(&pool, attempt.account).await;
+        for invalid in [wrong_key, wrong_algorithm] {
+            request(
+                &router,
+                "POST",
+                "/api/v2/auth/token/refresh",
+                &cookies,
+                Some(json!({})),
+                &[("X-Console-CSRF", &invalid)],
+            )
+            .await
+            .error(StatusCode::FORBIDDEN, "csrf_invalid");
+            assert!(snapshot(&pool, attempt.account).await == before);
+        }
+        let valid = proof(&router, &cookies).await;
+        let response = request(
+            &router,
+            "POST",
+            "/api/v2/auth/token/refresh",
+            &cookies,
+            Some(json!({})),
+            &[("X-Console-CSRF", &valid)],
+        )
+        .await;
+        session(&response, StatusCode::OK, attempt.account, &mut cookies);
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn csrf_same_account_distinct_families_do_not_share_authority(pool: PgPool) {
+        let (router, key) = signed_fixture(&pool).await;
+        let (mut attempt, first) = enrolled(&router).await;
+        let mut second = fresh_login(&router, &mut attempt).await;
+        let first_proof = proof(&router, &first).await;
+        let second_proof = proof(&router, &second).await;
+        let a = signed_claims(&first_proof, &key).unwrap();
+        let b = signed_claims(&second_proof, &key).unwrap();
+        assert_eq!(a["sub"], b["sub"]);
+        assert_ne!(a["sid"], b["sid"]);
+        let before = snapshot(&pool, attempt.account).await;
+        assert_eq!(before["families"].as_array().unwrap().len(), 2);
+        for (cookies, foreign) in [(&first, &second_proof), (&second, &first_proof)] {
+            for path in ["/api/v2/auth/token/refresh", "/api/v2/auth/logout"] {
+                request(
+                    &router,
+                    "POST",
+                    path,
+                    cookies,
+                    Some(json!({})),
+                    &[("X-Console-CSRF", foreign)],
+                )
+                .await
+                .error(StatusCode::FORBIDDEN, "csrf_invalid");
+                assert!(snapshot(&pool, attempt.account).await == before);
+            }
+        }
+        let mut mixed = first.clone();
+        mixed
+            .0
+            .insert(REFRESH.to_owned(), second.0[REFRESH].clone());
+        request(
+            &router,
+            "GET",
+            "/api/v2/auth/csrf",
+            &mixed,
+            None,
+            &[("X-Console-CSRF", "fetch")],
+        )
+        .await
+        .error(StatusCode::BAD_REQUEST, "ambiguous_credentials");
+        assert!(snapshot(&pool, attempt.account).await == before);
+        let response = request(
+            &router,
+            "POST",
+            "/api/v2/auth/logout",
+            &first,
+            Some(json!({})),
+            &[("X-Console-CSRF", &first_proof)],
+        )
+        .await;
+        assert_eq!(
+            response.json(StatusCode::OK),
+            json!({"outcome":"COMMITTED"})
+        );
+        response.private();
+        let after = snapshot(&pool, attempt.account).await;
+        let family = |state: &Value, id: &Value| {
+            state["families"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|f| &f["id"] == id)
+                .unwrap()
+                .clone()
+        };
+        assert!(!family(&after, &a["sid"])["revoked_at"].is_null());
+        assert!(family(&after, &b["sid"]) == family(&before, &b["sid"]));
+        request(&router, "GET", "/api/v2/accounts/me", &first, None, &[])
+            .await
+            .error(StatusCode::UNAUTHORIZED, "authentication_invalid");
+        projection(
+            &request(&router, "GET", "/api/v2/accounts/me", &second, None, &[])
+                .await
+                .json(StatusCode::OK),
+            attempt.account,
+        );
+        let response = request(
+            &router,
+            "POST",
+            "/api/v2/auth/token/refresh",
+            &second,
+            Some(json!({})),
+            &[("X-Console-CSRF", &second_proof)],
+        )
+        .await;
+        session(&response, StatusCode::OK, attempt.account, &mut second);
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn csrf_security_generation_change_denies_old_session_and_proof(pool: PgPool) {
+        let (router, key) = signed_fixture(&pool).await;
+        let (mut attempt, old) = enrolled(&router).await;
+        let old_proof = proof(&router, &old).await;
+        let old_claims = signed_claims(&old_proof, &key).unwrap();
+        // Fixture-owned state transition; not proof of security-command authority.
+        let affected = sqlx::query("UPDATE account_security SET security_generation=security_generation+1, revision=revision+1, updated_at=now() WHERE account_id=$1 AND security_state='ACTIVE'").bind(attempt.account).execute(&pool).await.unwrap().rows_affected();
+        assert_eq!(affected, 1);
+        let before = snapshot(&pool, attempt.account).await;
+        let mut refresh_only = old.clone();
+        refresh_only.0.remove(ACCESS);
+        for cookies in [&old, &refresh_only] {
+            request(
+                &router,
+                "GET",
+                "/api/v2/auth/csrf",
+                cookies,
+                None,
+                &[("X-Console-CSRF", "fetch")],
+            )
+            .await
+            .error(StatusCode::UNAUTHORIZED, "authentication_invalid");
+            request(
+                &router,
+                "POST",
+                "/api/v2/auth/token/refresh",
+                cookies,
+                Some(json!({})),
+                &[("X-Console-CSRF", &old_proof)],
+            )
+            .await
+            .error(StatusCode::UNAUTHORIZED, "authentication_invalid");
+            assert!(snapshot(&pool, attempt.account).await == before);
+        }
+        request(&router, "GET", "/api/v2/accounts/me", &old, None, &[])
+            .await
+            .error(StatusCode::UNAUTHORIZED, "authentication_invalid");
+        assert!(snapshot(&pool, attempt.account).await == before);
+        let current = fresh_login(&router, &mut attempt).await;
+        let current_proof = proof(&router, &current).await;
+        let claims = signed_claims(&current_proof, &key).unwrap();
+        assert!(
+            claims["security_generation"].as_u64().unwrap()
+                > old_claims["security_generation"].as_u64().unwrap()
+        );
+        let restored = snapshot(&pool, attempt.account).await;
+        request(
+            &router,
+            "POST",
+            "/api/v2/auth/logout",
+            &current,
+            Some(json!({})),
+            &[("X-Console-CSRF", &old_proof)],
+        )
+        .await
+        .error(StatusCode::FORBIDDEN, "csrf_invalid");
+        assert!(snapshot(&pool, attempt.account).await == restored);
+        let response = request(
+            &router,
+            "POST",
+            "/api/v2/auth/logout",
+            &current,
+            Some(json!({})),
+            &[("X-Console-CSRF", &current_proof)],
+        )
+        .await;
+        assert_eq!(
+            response.json(StatusCode::OK),
+            json!({"outcome":"COMMITTED"})
+        );
+        response.private();
     }
 }
