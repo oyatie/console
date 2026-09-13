@@ -1,0 +1,15 @@
+{
+  "scope": "ACCOUNT",
+  "registrations": [
+    {
+      "action_key": "account.session.logout",
+      "registration_revision": "1",
+      "owner": "identity/auth",
+      "route": "POST /api/v2/auth/logout",
+      "resource": "own current session family",
+      "authority": "Current independently verified session plus exact CSRF/Origin; reference grants nothing",
+      "immutable": true
+    }
+  ],
+  "scope_rule": "Different from Company ActionRef and GroupActionRef; no generic registry service or arbitrary route dispatch"
+}

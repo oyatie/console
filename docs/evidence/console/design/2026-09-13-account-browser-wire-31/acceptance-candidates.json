@@ -1,0 +1,104 @@
+{
+  "status": "Non-executable candidates; not product tests or implementation authority",
+  "cases": [
+    {
+      "id": "B01",
+      "name": "Company-free success",
+      "steps": [
+        "Fetch registered TEST_ONLY terms bytes/digests",
+        "POST start ->200 with nonce cookie/no session",
+        "Real SoftPasskey registration ->finish201 with exact accepted item set",
+        "Read actual ACTIVE guard,onekey,onefamily,exact per-item evidence",
+        "Cookie me200 sameAccount;contexts200 empty/no cursor; no Company/userprofile/Actor invented"
+      ]
+    },
+    {
+      "id": "B02",
+      "name": "Binding and item refusal",
+      "steps": [
+        "Valid start then missing/swapped nonce,wrongOrigin/RP,wrong challenge or false/missing/duplicate/unknown item",
+        "No activation,key,family or acceptance partial commit; valid control completes"
+      ]
+    },
+    {
+      "id": "B03",
+      "name": "Replay/lost response",
+      "steps": [
+        "Drop finish response after commit",
+        "Retry does not remint201 credentials or duplicate effects",
+        "me if cookies arrived, otherwise fresh matching passkey login restores sameAccount"
+      ]
+    },
+    {
+      "id": "B04",
+      "name": "Terms atomicity and ABA",
+      "steps": [
+        "StartA/rev1,publishB/rev2,publishA/rev3",
+        "Old ceremony remains stale despite same digest",
+        "Publisher-vs-finish race leaves coherent exact head receipt in accepted terms"
+      ]
+    },
+    {
+      "id": "B05",
+      "name": "Artifact/authority outage",
+      "steps": [
+        "Unsupported current digest,missing head,missing content,DBunavailable",
+        "503 and no activation; no local staleversion fallback",
+        "Safe currentterms/read readiness recovery"
+      ]
+    },
+    {
+      "id": "B06",
+      "name": "Parser and cookie isolation",
+      "steps": [
+        "Access token as CSRF,CSRF as Account/legacy token,wrongissuer/aud/kind/alg,expired/future/generation mismatch",
+        "Duplicate or mixed credentials rejected; no tokens inbody/SSR/logs"
+      ]
+    },
+    {
+      "id": "B07",
+      "name": "CSRF lifecycle",
+      "steps": [
+        "Proof issuance via valid access or strictly valid refresh read-only",
+        "No rotation/consumption/newfamily onGET",
+        "Same proof acrosssamefamily rotation,per-tab proofs coexist; generation/revocation denies"
+      ]
+    },
+    {
+      "id": "B08",
+      "name": "Navigation semantics",
+      "steps": [
+        "Empty authorized contexts200 differs from navigationunavailable503",
+        "No CompanyActor onGET",
+        "Populated hint-only denial,currentrevocation/temporal freshness and boundedcontinuation separately exercised"
+      ]
+    },
+    {
+      "id": "B09",
+      "name": "External link and cookie races",
+      "steps": [
+        "ExpiredLaxaccess+initially absentStrictrefresh neutralSSR",
+        "Same-origin bootstraprefresh then current-authorized target",
+        "Concurrent refresh/logout/login and lostresponse cannot leak/execute or silently merge Accounts"
+      ]
+    },
+    {
+      "id": "B10",
+      "name": "Storage and role closure",
+      "steps": [
+        "Actual fixed-schema owner helpers and noCompanybusinesscredentialaccess",
+        "Genesis/CAS/headreceipt/monotonicity and Account->head->auth lockorder",
+        "Existinglegacytables/rows retain compatible separate path without bypassing permanentfence"
+      ]
+    },
+    {
+      "id": "B11",
+      "name": "Operational limits",
+      "steps": [
+        "Execute experiments.json; record real thresholds and expected/worstload",
+        "Pendingattempt growth bounded; cleanup preserves completedAccount/evidence",
+        "No activation until required measured operating envelope"
+      ]
+    }
+  ]
+}

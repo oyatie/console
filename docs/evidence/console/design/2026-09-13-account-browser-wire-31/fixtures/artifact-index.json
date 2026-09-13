@@ -1,0 +1,17 @@
+{
+  "manifest": {
+    "path": "fixtures/manifest.json",
+    "sha256": "3643e74a128a2fb3facce194264bcb40487dc79548b4d3b734b1de90be76fe52"
+  },
+  "content": [
+    {
+      "path": "fixtures/service.txt",
+      "sha256": "d58e7fdecdb5cf68640ae805ede9ce5613ace72bf9f92b9b9ccd0d2729646f2c"
+    },
+    {
+      "path": "fixtures/privacy.txt",
+      "sha256": "4254fa64b821906ac2995f0829590ca151540929b05594a023afc99d228c23d2"
+    }
+  ],
+  "publication": "TEST_ONLY; cannot be production content authority"
+}

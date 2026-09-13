@@ -1,0 +1,624 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://console.invalid/design/account-browser-wire31",
+  "title": "Proposed browser Account wire wrappers; not OpenAPI or crypto proof",
+  "$defs": {
+    "UUID": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "Positive": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,18}$",
+      "description": "Parse as i64 and reject >9223372036854775807; regex alone is not range proof."
+    },
+    "Digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "Instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "Key": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]{0,63}$"
+    },
+    "Opaque": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "TermsItem": {
+      "type": "object",
+      "properties": {
+        "terms_kind": {
+          "$ref": "#/$defs/Key"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "locale": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 32
+        },
+        "content_sha256": {
+          "$ref": "#/$defs/Digest"
+        },
+        "required": {
+          "const": true
+        }
+      },
+      "required": [
+        "terms_kind",
+        "title",
+        "locale",
+        "content_sha256",
+        "required"
+      ],
+      "additionalProperties": false
+    },
+    "TermsManifest": {
+      "type": "object",
+      "properties": {
+        "format_version": {
+          "const": 1
+        },
+        "fixture_only": {
+          "type": "boolean"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TermsItem"
+          },
+          "minItems": 1,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "format_version",
+        "fixture_only",
+        "items"
+      ],
+      "additionalProperties": false
+    },
+    "TermsCurrent": {
+      "type": "object",
+      "properties": {
+        "terms_version": {
+          "$ref": "#/$defs/Digest"
+        },
+        "terms_revision": {
+          "$ref": "#/$defs/Positive"
+        },
+        "manifest_url": {
+          "type": "string",
+          "pattern": "^/api/v2/auth/terms/manifests/[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "terms_version",
+        "terms_revision",
+        "manifest_url"
+      ],
+      "additionalProperties": false
+    },
+    "RegistrationStartInput": {
+      "type": "object",
+      "properties": {
+        "terms_version": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "terms_version"
+      ],
+      "additionalProperties": false
+    },
+    "PublicKeyOptions": {
+      "type": "object",
+      "properties": {
+        "publicKey": {
+          "type": "object",
+          "required": [
+            "challenge"
+          ],
+          "properties": {
+            "challenge": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 512
+            }
+          },
+          "additionalProperties": true,
+          "description": "Pinned WebAuthn serde shape and actual crypto validation required; this schema does not substitute for it."
+        }
+      },
+      "required": [
+        "publicKey"
+      ],
+      "additionalProperties": false
+    },
+    "RegistrationStart": {
+      "type": "object",
+      "properties": {
+        "ceremony_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "public_key_options": {
+          "$ref": "#/$defs/PublicKeyOptions"
+        }
+      },
+      "required": [
+        "ceremony_id",
+        "public_key_options"
+      ],
+      "additionalProperties": false
+    },
+    "WebAuthnRegistration": {
+      "type": "object",
+      "required": [
+        "id",
+        "rawId",
+        "type",
+        "response"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rawId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "const": "public-key"
+        },
+        "response": {
+          "type": "object",
+          "required": [
+            "attestationObject",
+            "clientDataJSON"
+          ],
+          "properties": {
+            "attestationObject": {
+              "type": "string",
+              "minLength": 1
+            },
+            "clientDataJSON": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "description": "Delegated pinned webauthn-rs type; schema examples are not authentic credentials."
+    },
+    "TermsAcknowledgment": {
+      "type": "object",
+      "properties": {
+        "terms_kind": {
+          "$ref": "#/$defs/Key"
+        },
+        "accepted": {
+          "const": true
+        }
+      },
+      "required": [
+        "terms_kind",
+        "accepted"
+      ],
+      "additionalProperties": false
+    },
+    "RegistrationFinishInput": {
+      "type": "object",
+      "properties": {
+        "ceremony_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "credential": {
+          "$ref": "#/$defs/WebAuthnRegistration"
+        },
+        "accept_terms_version": {
+          "$ref": "#/$defs/Digest"
+        },
+        "accept_items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TermsAcknowledgment"
+          },
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "ceremony_id",
+        "credential",
+        "accept_terms_version",
+        "accept_items"
+      ],
+      "additionalProperties": false
+    },
+    "AccountActionRef": {
+      "type": "object",
+      "properties": {
+        "action_key": {
+          "$ref": "#/$defs/Key"
+        },
+        "registration_revision": {
+          "$ref": "#/$defs/Positive"
+        }
+      },
+      "required": [
+        "action_key",
+        "registration_revision"
+      ],
+      "additionalProperties": false
+    },
+    "AccountProjection": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "session": {
+          "type": "object",
+          "properties": {
+            "assurance": {
+              "enum": [
+                "PASSKEY_PRIMARY"
+              ]
+            },
+            "expires_at": {
+              "$ref": "#/$defs/Instant"
+            }
+          },
+          "required": [
+            "assurance",
+            "expires_at"
+          ],
+          "additionalProperties": false
+        },
+        "permitted_self_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AccountActionRef"
+          },
+          "minItems": 0,
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "account_id",
+        "session",
+        "permitted_self_actions"
+      ],
+      "additionalProperties": false
+    },
+    "SessionEstablished": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "#/$defs/AccountProjection"
+        }
+      },
+      "required": [
+        "account"
+      ],
+      "additionalProperties": false
+    },
+    "Context": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "COMPANY"
+            },
+            "context_ref": {
+              "type": "object",
+              "properties": {
+                "org_id": {
+                  "$ref": "#/$defs/UUID"
+                }
+              },
+              "required": [
+                "org_id"
+              ],
+              "additionalProperties": false
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "entry_ref": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "WORKSPACE"
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "kind",
+            "context_ref",
+            "label",
+            "entry_ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "GROUP"
+            },
+            "context_ref": {
+              "type": "object",
+              "properties": {
+                "group_id": {
+                  "$ref": "#/$defs/UUID"
+                }
+              },
+              "required": [
+                "group_id"
+              ],
+              "additionalProperties": false
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "entry_ref": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "WORKSPACE"
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "kind",
+            "context_ref",
+            "label",
+            "entry_ref"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Contexts": {
+      "type": "object",
+      "properties": {
+        "contexts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Context"
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "next_cursor": {
+          "$ref": "#/$defs/Opaque"
+        }
+      },
+      "required": [
+        "contexts"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "contexts": {
+                "maxItems": 0
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "next_cursor"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "CsrfProof": {
+      "type": "object",
+      "properties": {
+        "csrf_proof": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Instant"
+        }
+      },
+      "required": [
+        "csrf_proof",
+        "expires_at"
+      ],
+      "additionalProperties": false
+    },
+    "LogoutInput": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "LogoutResult": {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "const": "COMMITTED"
+        }
+      },
+      "required": [
+        "outcome"
+      ],
+      "additionalProperties": false
+    },
+    "LoginStartInput": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "LoginStart": {
+      "$ref": "#/$defs/RegistrationStart"
+    },
+    "LoginFinishInput": {
+      "type": "object",
+      "properties": {
+        "ceremony_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "assertion": {
+          "type": "object",
+          "required": [
+            "id",
+            "rawId",
+            "type",
+            "response"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "rawId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "public-key"
+            },
+            "response": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "ceremony_id",
+        "assertion"
+      ],
+      "additionalProperties": false
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "enum": [
+                "invalid_request",
+                "ambiguous_credentials",
+                "request_origin_denied",
+                "csrf_invalid",
+                "enrollment_invalid",
+                "authentication_invalid",
+                "already_authenticated",
+                "terms_changed",
+                "stale_cursor",
+                "not_found",
+                "request_too_large",
+                "rate_limited",
+                "authority_unavailable",
+                "navigation_unavailable"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "CsrfClaims": {
+      "type": "object",
+      "properties": {
+        "iss": {
+          "type": "string",
+          "minLength": 1
+        },
+        "aud": {
+          "const": "console.account.csrf.v1"
+        },
+        "token_kind": {
+          "const": "account_csrf_v1"
+        },
+        "sub": {
+          "$ref": "#/$defs/UUID"
+        },
+        "sid": {
+          "$ref": "#/$defs/UUID"
+        },
+        "security_generation": {
+          "$ref": "#/$defs/Positive"
+        },
+        "iat": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nbf": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exp": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "iss",
+        "aud",
+        "token_kind",
+        "sub",
+        "sid",
+        "security_generation",
+        "iat",
+        "nbf",
+        "exp"
+      ],
+      "additionalProperties": false,
+      "description": "Verified ES256 JWS only; semantic time/equality checks in contract; never an auth credential."
+    }
+  }
+}
