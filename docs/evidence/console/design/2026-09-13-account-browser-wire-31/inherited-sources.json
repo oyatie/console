@@ -30,6 +30,16 @@
       "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/storage-mapping.json",
       "git_blob": "3893c8bc92cf307baa389029ce4d636d18a8eb90",
       "sha256": "09fff6540daaf9f97b3b302c8bee102059327ab604886866feb6b64fef8c1ce4"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/control-types.schema.json",
+      "git_blob": "187c25b9b4f38dd30de5f2ae9783bf739a105532",
+      "sha256": "56663ed3fa4af03145bdc0456fe46606695bab3a84568f6ac1e5a8bc93539330"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/source-types.schema.json",
+      "git_blob": "6e3cc7ce9dfe00d5c43d56a6be863ff6104d0dc4",
+      "sha256": "6d52b788855826e553a9e4a8e31c3e777fa80a878d03debbb1ceb2d84de7a71e"
     }
   ]
 }

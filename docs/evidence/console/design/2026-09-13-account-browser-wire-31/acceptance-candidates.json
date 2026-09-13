@@ -7,7 +7,7 @@
       "steps": [
         "Fetch registered TEST_ONLY terms bytes/digests",
         "POST start ->200 with nonce cookie/no session",
-        "Real SoftPasskey registration ->finish201 with exact accepted item set",
+        "Actual resident-capable browser/authenticator registration ->finish201; SoftPasskey alone is crypto continuity, not resident support evidence",
         "Read actual ACTIVE guard,onekey,onefamily,exact per-item evidence",
         "Cookie me200 sameAccount;contexts200 empty/no cursor; no Company/userprofile/Actor invented"
       ]
@@ -26,7 +26,9 @@
       "steps": [
         "Drop finish response after commit",
         "Retry does not remint201 credentials or duplicate effects",
-        "me if cookies arrived, otherwise fresh matching passkey login restores sameAccount"
+        "me if cookies arrived, otherwise fresh matching passkey login restores sameAccount",
+        "Preserve expected Account from creation user.id; me/recovery-login for another Account must not mark enrollment recovered",
+        "Resident authenticator fresh discovery has no injected allowCredentials; nonresident-only device fails creation without activation; actual serialized request permits mediation conditional"
       ]
     },
     {
@@ -35,7 +37,9 @@
       "steps": [
         "StartA/rev1,publishB/rev2,publishA/rev3",
         "Old ceremony remains stale despite same digest",
-        "Publisher-vs-finish race leaves coherent exact head receipt in accepted terms"
+        "Publisher-vs-finish race leaves coherent exact head receipt in accepted terms",
+        "Mismatched-but-existing receipt/revision/digest tuple rejected; overflow and bad predecessor refuse",
+        "Durable acceptance and same-Account TERMS_ACCEPTED evidence bind exact tuple even after ceremony cleanup"
       ]
     },
     {
@@ -44,7 +48,9 @@
       "steps": [
         "Unsupported current digest,missing head,missing content,DBunavailable",
         "503 and no activation; no local staleversion fallback",
-        "Safe currentterms/read readiness recovery"
+        "Safe currentterms/read readiness recovery",
+        "Prior published bytes remain available across releases; missing retained bytes503 and incident",
+        "Head/artifact outage does not disable otherwise valid established sessions or historically eligible login"
       ]
     },
     {
@@ -52,7 +58,9 @@
       "name": "Parser and cookie isolation",
       "steps": [
         "Access token as CSRF,CSRF as Account/legacy token,wrongissuer/aud/kind/alg,expired/future/generation mismatch",
-        "Duplicate or mixed credentials rejected; no tokens inbody/SSR/logs"
+        "Duplicate or mixed credentials rejected; no tokens inbody/SSR/logs",
+        "Canary X-Console-CSRF proof/header,csrf_proof body,nonce and dependency auth debug captures: none in exported logs/traces/body capture",
+        "Nil UUID and unknown wrapper fields fail, pinned owner challenge serialization succeeds"
       ]
     },
     {
@@ -70,7 +78,8 @@
       "steps": [
         "Empty authorized contexts200 differs from navigationunavailable503",
         "No CompanyActor onGET",
-        "Populated hint-only denial,currentrevocation/temporal freshness and boundedcontinuation separately exercised"
+        "Populated hint-only denial,currentrevocation/temporal freshness and boundedcontinuation separately exercised",
+        "Disclosed context with denied label remains usable without label/denied-derived sort or tooltip"
       ]
     },
     {
@@ -88,7 +97,9 @@
       "steps": [
         "Actual fixed-schema owner helpers and noCompanybusinesscredentialaccess",
         "Genesis/CAS/headreceipt/monotonicity and Account->head->auth lockorder",
-        "Existinglegacytables/rows retain compatible separate path without bypassing permanentfence"
+        "Existinglegacytables/rows retain compatible separate path without bypassing permanentfence",
+        "Unapproved but schema-valid publication bundle refused; business/runtime cannot publish",
+        "Legacy exact acceptance remains immutable with null publication tuple; v2 null tuple and cross-Account event refused"
       ]
     },
     {
@@ -97,7 +108,35 @@
       "steps": [
         "Execute experiments.json; record real thresholds and expected/worstload",
         "Pendingattempt growth bounded; cleanup preserves completedAccount/evidence",
-        "No activation until required measured operating envelope"
+        "No activation until required measured operating envelope",
+        "Cleanup at expires_at+24h in <=1000-row batches/minute preserves permanent security fences; backlog admission stops before quota exhaustion"
+      ]
+    },
+    {
+      "id": "B12",
+      "name": "Historical consent login",
+      "steps": [
+        "Valid primary assertion+ACTIVE with complete reconstructable originally accepted manifest/items/events may login despite newer published head",
+        "Missing/unknown evidence403 after primary proof, no session/counter/consumption effects; unavailable resolver503",
+        "No new Account or fabricated consent; reacceptance explicitly unavailable until separately admitted"
+      ]
+    },
+    {
+      "id": "B13",
+      "name": "Single-key deployment discipline",
+      "steps": [
+        "Mixed configured key identity fails readiness before serving; wrong-key proofs/tokens denied",
+        "Maintenance drains auth before global family revocation and atomic all-replica key replacement; restart requires same fingerprint",
+        "Rollback never restores revoked families/retired key; old proofs fail; fresh sign-in works"
+      ]
+    },
+    {
+      "id": "B14",
+      "name": "Resident owner adjustment compatibility",
+      "steps": [
+        "Serialize actual pinned owner creation/request structs, assert only residentKey and requireResidentKey changed from high-level owner creation; UV remains Required",
+        "Persist unchanged opaque verifier state; finish uses original verifier; global credential ID uniqueness and UV/origin/RP/challenge negatives remain",
+        "Real browser discovery without allow-list across supported browsers including conditional mediation; dependency upgrade revalidates state/resident assumption"
       ]
     }
   ]

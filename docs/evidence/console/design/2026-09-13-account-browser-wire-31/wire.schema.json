@@ -5,7 +5,10 @@
   "$defs": {
     "UUID": {
       "type": "string",
-      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "not": {
+        "const": "00000000-0000-0000-0000-000000000000"
+      }
     },
     "Positive": {
       "type": "string",
@@ -121,30 +124,6 @@
       ],
       "additionalProperties": false
     },
-    "PublicKeyOptions": {
-      "type": "object",
-      "properties": {
-        "publicKey": {
-          "type": "object",
-          "required": [
-            "challenge"
-          ],
-          "properties": {
-            "challenge": {
-              "type": "string",
-              "minLength": 16,
-              "maxLength": 512
-            }
-          },
-          "additionalProperties": true,
-          "description": "Pinned WebAuthn serde shape and actual crypto validation required; this schema does not substitute for it."
-        }
-      },
-      "required": [
-        "publicKey"
-      ],
-      "additionalProperties": false
-    },
     "RegistrationStart": {
       "type": "object",
       "properties": {
@@ -152,7 +131,7 @@
           "$ref": "#/$defs/UUID"
         },
         "public_key_options": {
-          "$ref": "#/$defs/PublicKeyOptions"
+          "$ref": "#/$defs/CreationOptions"
         }
       },
       "required": [
@@ -358,7 +337,6 @@
           "required": [
             "kind",
             "context_ref",
-            "label",
             "entry_ref"
           ],
           "additionalProperties": false
@@ -402,7 +380,6 @@
           "required": [
             "kind",
             "context_ref",
-            "label",
             "entry_ref"
           ],
           "additionalProperties": false
@@ -490,7 +467,20 @@
       "additionalProperties": false
     },
     "LoginStart": {
-      "$ref": "#/$defs/RegistrationStart"
+      "type": "object",
+      "properties": {
+        "ceremony_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "public_key_options": {
+          "$ref": "#/$defs/RequestOptions"
+        }
+      },
+      "required": [
+        "ceremony_id",
+        "public_key_options"
+      ],
+      "additionalProperties": false
     },
     "LoginFinishInput": {
       "type": "object",
@@ -550,7 +540,8 @@
                 "request_too_large",
                 "rate_limited",
                 "authority_unavailable",
-                "navigation_unavailable"
+                "navigation_unavailable",
+                "terms_acceptance_required"
               ]
             },
             "message": {
@@ -619,6 +610,150 @@
       ],
       "additionalProperties": false,
       "description": "Verified ES256 JWS only; semantic time/equality checks in contract; never an auth credential."
+    },
+    "CreationOptions": {
+      "type": "object",
+      "properties": {
+        "publicKey": {
+          "type": "object",
+          "required": [
+            "challenge"
+          ],
+          "properties": {
+            "challenge": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 512
+            }
+          },
+          "additionalProperties": true,
+          "description": "Pinned WebAuthn serde shape and actual crypto validation required; this schema does not substitute for it."
+        }
+      },
+      "required": [
+        "publicKey"
+      ],
+      "additionalProperties": false
+    },
+    "RequestOptions": {
+      "type": "object",
+      "properties": {
+        "publicKey": {
+          "type": "object",
+          "required": [
+            "challenge"
+          ],
+          "properties": {
+            "challenge": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 512
+            }
+          },
+          "additionalProperties": true,
+          "description": "Pinned WebAuthn serde shape and actual crypto validation required; this schema does not substitute for it."
+        },
+        "mediation": {
+          "enum": [
+            "conditional"
+          ]
+        }
+      },
+      "required": [
+        "publicKey"
+      ],
+      "additionalProperties": false
+    },
+    "TermsReleaseRef": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "ACCOUNT_TERMS_RELEASE"
+        },
+        "receipt_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/Positive"
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "kind",
+        "receipt_id",
+        "revision",
+        "manifest_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "OperatorApprovalRef": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "OPERATOR_RELEASE_APPROVAL"
+        },
+        "approval_sha256": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "kind",
+        "approval_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "TermsPublicationApproval": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "ACCOUNT_TERMS_PUBLICATION_APPROVAL"
+        },
+        "approval_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/Digest"
+        },
+        "expected_revision": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,18})$"
+        },
+        "next_revision": {
+          "$ref": "#/$defs/Positive"
+        },
+        "fixture_only": {
+          "type": "boolean"
+        },
+        "approved_by": {
+          "$ref": "#/$defs/Key"
+        },
+        "approved_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "content_authority_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Digest"
+          },
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "kind",
+        "approval_id",
+        "manifest_sha256",
+        "expected_revision",
+        "next_revision",
+        "fixture_only",
+        "approved_by",
+        "approved_at",
+        "content_authority_refs"
+      ],
+      "additionalProperties": false
     }
   }
 }
