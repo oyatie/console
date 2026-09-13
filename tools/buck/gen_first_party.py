@@ -110,6 +110,12 @@ RESOURCE_CONFIG = {
             **MIGRATION_TREE,
         },
         "itests": {
+            "tests/auth_rest.rs": {
+                "srcs": [
+                    "tests/auth_rest/account_storage.rs",
+                    "tests/auth_rest/actor-migration.csv",
+                ],
+            },
             "tests/openapi_drift.rs": {
                 "srcs": ["src/**/*.rs", "Cargo.toml"],
                 "external": OPENAPI_DRIFT_EXTERNAL,
@@ -1168,20 +1174,53 @@ def requires_postgres(package_name, test_type, test_file=None):
     return resource_requirement(package_name, test_type, test_file) == "postgres"
 
 
+def integration_test_sources(d):
+    """Use Cargo automatic crate roots; nested modules stay source inputs.
+
+    A module can contain test attributes without being a standalone test crate.
+    Custom manifest targets are not used by this workspace; refuse them rather
+    than silently guessing their source roots or resource requirements.
+    """
+    manifest_path = os.path.join(d, "Cargo.toml")
+    if os.path.isfile(manifest_path):
+        with open(manifest_path, "rb") as manifest_file:
+            manifest = tomllib.load(manifest_file)
+        if manifest.get("test") or "autotests" in manifest.get("package", {}):
+            raise ValueError("custom Cargo test discovery needs reviewed support: " + d)
+    testsdir = os.path.join(d, "tests")
+    all_rs = []
+    roots = []
+    if os.path.isdir(testsdir):
+        for dp, _, files in os.walk(testsdir):
+            for filename in files:
+                if not filename.endswith(".rs"):
+                    continue
+                source = os.path.relpath(os.path.join(dp, filename), d)
+                all_rs.append(source)
+                relative = os.path.relpath(os.path.join(dp, filename), testsdir).split(os.sep)
+                if len(relative) == 1 or (len(relative) == 2 and filename == "main.rs"):
+                    roots.append(source)
+    names = [integration_test_name(root) for root in roots]
+    if len(names) != len(set(names)):
+        raise ValueError("colliding Cargo integration test names: " + d)
+    return sorted(roots), sorted(set(all_rs) - set(roots))
+
+
+def integration_test_name(source):
+    basename = os.path.basename(source)
+    stem = os.path.basename(os.path.dirname(source)) if basename == "main.rs" and os.path.dirname(source) != "tests" else os.path.splitext(basename)[0]
+    return crate_ident(stem)
+
+
 def discovered_test_resource_keys(d, package_name):
     """Return resource keys for targets this generator will emit."""
     keys = set()
     src = os.path.join(d, "src")
     if tree_has(src, "#[cfg(test)]"):
         keys.add((package_name, "test.unit", None))
-    testsdir = os.path.join(d, "tests")
-    if os.path.isdir(testsdir):
-        for dp, _, files in os.walk(testsdir):
-            for filename in files:
-                if filename.endswith(".rs"):
-                    test_file = os.path.relpath(os.path.join(dp, filename), d)
-                    if file_has(os.path.join(d, test_file), *TEST_MARKERS):
-                        keys.add((package_name, "test.integration", test_file))
+    roots, _ = integration_test_sources(d)
+    for test_file in roots:
+        keys.add((package_name, "test.integration", test_file))
     return keys
 
 
@@ -1681,17 +1720,11 @@ def emit(d, name, deps, named, dev_deps, dev_named):
     # `mod` declarations resolve (unreferenced ones are ignored by rustc).
     testsdir = os.path.join(d, "tests")
     if os.path.isdir(testsdir):
-        all_rs = []
-        for dp, _, files in os.walk(testsdir):
-            for f in files:
-                if f.endswith(".rs"):
-                    all_rs.append(os.path.relpath(os.path.join(dp, f), d))
-        test_files = sorted(p for p in all_rs if file_has(os.path.join(d, p), *TEST_MARKERS))
-        helpers = sorted(p for p in all_rs if p not in test_files)
+        test_files, helpers = integration_test_sources(d)
         for tf in test_files:
             test_path = os.path.join(d, tf)
             contents = open(test_path, encoding="utf-8", errors="ignore").read()
-            stem = crate_ident(os.path.splitext(os.path.basename(tf))[0])
+            stem = integration_test_name(tf)
             labels = test_labels(
                 package,
                 "test.integration",
