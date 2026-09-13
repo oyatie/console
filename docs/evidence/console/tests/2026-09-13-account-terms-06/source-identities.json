@@ -1,0 +1,12 @@
+{
+  "candidate_sha": "1e2ea6d2060a3d875e531a9a9e8f749984d0a171",
+  "base_sha": "db2bd358000d049251a7d4cddab4b8f8063f9ae5",
+  "path": "backend/app/tests/auth_rest.rs",
+  "git_blob": "8bb27d07d1ee7bfd25b38271ac9365209eea5236",
+  "sha256": "2ca6832039fc3180b4e621fdde3098ad18d8585cbdff3e272c94cb3c53a35933",
+  "bytes": 218861,
+  "original50_source_preserved_except_closing_module_brace": true,
+  "new_test_count": 3,
+  "original_helper_changes": 0,
+  "product_changes": 0
+}
