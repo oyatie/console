@@ -5157,6 +5157,15 @@ mod account_browser {
         .map(|data| data.claims)
     }
 
+    fn claim_generation(claims: &Value) -> i64 {
+        let text = claims["security_generation"]
+            .as_str()
+            .expect("canonical decimal string");
+        let generation: i64 = text.parse().unwrap();
+        assert!(generation > 0 && generation.to_string() == text);
+        generation
+    }
+
     async fn fresh_login(router: &Fixture, attempt: &mut Attempt) -> Cookies {
         let (mut cookies, input) = login_attempt(router, attempt).await;
         let response = request(
@@ -5187,6 +5196,12 @@ mod account_browser {
             parts[2]
         );
         assert!(signed_claims(&changed, &key).is_err());
+        for valid in ["1", "9223372036854775807"] {
+            assert_eq!(claim_generation(&json!({"security_generation":valid})), valid.parse::<i64>().unwrap());
+        }
+        for invalid in [json!(1), json!("0"), json!("01"), json!("+1"), json!("-1"), json!("9223372036854775808"), Value::Null] {
+            assert!(std::panic::catch_unwind(|| claim_generation(&json!({"security_generation":invalid}))).is_err());
+        }
     }
 
     #[sqlx::test(migrations = false)]
@@ -5219,8 +5234,22 @@ mod account_browser {
             assert_eq!(claims["sub"], attempt.account.to_string());
             assert_eq!(claims["sid"], before["families"][0]["id"]);
             assert_eq!(
-                claims["security_generation"],
-                before["security"]["security_generation"]
+                claim_generation(&claims),
+                before["security"]["security_generation"].as_i64().unwrap()
+            );
+            exact_keys(
+                &claims,
+                &[
+                    "iss",
+                    "aud",
+                    "token_kind",
+                    "sub",
+                    "sid",
+                    "security_generation",
+                    "iat",
+                    "nbf",
+                    "exp",
+                ],
             );
             let iat = claims["iat"].as_i64().unwrap();
             let nbf = claims["nbf"].as_i64().unwrap();
@@ -5247,7 +5276,7 @@ mod account_browser {
         let claims = signed_claims(&issued, &key).unwrap();
         let before = snapshot(&pool, attempt.account).await;
         let now = OffsetDateTime::now_utc().unix_timestamp();
-        let generation = claims["security_generation"].as_u64().unwrap();
+        let generation = claim_generation(&claims);
         let cases = [
             ("iss", json!("untrusted-issuer")),
             ("aud", json!("console-api")),
@@ -5256,8 +5285,13 @@ mod account_browser {
             ("sid", json!(Uuid::nil())),
             (
                 "security_generation",
-                json!(generation.checked_add(1).unwrap()),
+                json!(generation.checked_add(1).unwrap().to_string()),
             ),
+            ("security_generation", json!(generation)),
+            ("security_generation", json!("01")),
+            ("security_generation", json!("0")),
+            ("security_generation", json!("9223372036854775808")),
+            ("unrecognized_claim", json!(true)),
             ("exp", json!(now - 1)),
             ("iat", json!(now + 120)),
             ("nbf", json!(now + 120)),
@@ -5265,6 +5299,10 @@ mod account_browser {
         for (field, value) in cases {
             let mut invalid = claims.clone();
             invalid[field] = value;
+            if field == "exp" {
+                invalid["iat"] = json!(now - 120);
+                invalid["nbf"] = json!(now - 120);
+            }
             let signed = sign_proof_claims(&invalid, &key);
             assert!(signed_claims(&signed, &key).unwrap() == invalid);
             request(
@@ -5309,7 +5347,8 @@ mod account_browser {
             .error(StatusCode::FORBIDDEN, "csrf_invalid");
             assert!(snapshot(&pool, attempt.account).await == before);
         }
-        let valid = proof(&router, &cookies).await;
+        let fresh = proof(&router, &cookies).await;
+        let valid = sign_proof_claims(&signed_claims(&fresh, &key).unwrap(), &key);
         let response = request(
             &router,
             "POST",
@@ -5361,7 +5400,8 @@ mod account_browser {
             .error(StatusCode::FORBIDDEN, "csrf_invalid");
             assert!(snapshot(&pool, attempt.account).await == before);
         }
-        let valid = proof(&router, &cookies).await;
+        let fresh = proof(&router, &cookies).await;
+        let valid = sign_proof_claims(&signed_claims(&fresh, &key).unwrap(), &key);
         let response = request(
             &router,
             "POST",
@@ -5506,11 +5546,29 @@ mod account_browser {
         let current = fresh_login(&router, &mut attempt).await;
         let current_proof = proof(&router, &current).await;
         let claims = signed_claims(&current_proof, &key).unwrap();
-        assert!(
-            claims["security_generation"].as_u64().unwrap()
-                > old_claims["security_generation"].as_u64().unwrap()
-        );
+        assert!(claim_generation(&claims) > claim_generation(&old_claims));
         let restored = snapshot(&pool, attempt.account).await;
+        assert_eq!(
+            claim_generation(&claims),
+            restored["security"]["security_generation"]
+                .as_i64()
+                .unwrap()
+        );
+        let mut stale_generation = claims.clone();
+        stale_generation["security_generation"] = old_claims["security_generation"].clone();
+        let stale_proof = sign_proof_claims(&stale_generation, &key);
+        assert!(signed_claims(&stale_proof, &key).unwrap() == stale_generation);
+        request(
+            &router,
+            "POST",
+            "/api/v2/auth/logout",
+            &current,
+            Some(json!({})),
+            &[("X-Console-CSRF", &stale_proof)],
+        )
+        .await
+        .error(StatusCode::FORBIDDEN, "csrf_invalid");
+        assert!(snapshot(&pool, attempt.account).await == restored);
         request(
             &router,
             "POST",
