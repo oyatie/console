@@ -1,0 +1,44 @@
+{
+  "owner": "/root",
+  "base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "immutable_design_target": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "allowed_paths": [
+    "docs/current/PRODUCT.md",
+    "docs/current/ROADMAP.md",
+    "docs/documentation-index.json",
+    "docs/documentation-manifest.seed.json",
+    "docs/evidence/console/approvals/2026-09-13-design30"
+  ],
+  "mechanical_guide": [
+    "Verify exact approved Git blobs and archive explicit user approval",
+    "Copy approved PRODUCT.proposed.txt and ROADMAP.proposed.txt into current authority without semantic alterations",
+    "Regenerate existing documentation projections; inspect exact allowlist",
+    "Run DELIVERY documentation-authority gates and independent exact-SHA review",
+    "No product implementation before executable test candidate review and explicit test SHA approval"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Systems Thinking",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "pre_mortem": "Approved design scope confused with completed implementation or live/legal/payment authorization; generated manifest drifts or unrelated local Rust changes imported.",
+  "blast_radius": "Two current-authority documents and generated projections plus bounded evidence only.",
+  "detection": "Exact approved source byte comparison, allowed paths, required gates and independent review.",
+  "rollback": "Revert candidate authority delta through reviewed forward change; preserve approval/design evidence.",
+  "stop_conditions": [
+    "Semantic mismatch with approved text",
+    "Unexpected source or generated mutation",
+    "Required check or independent review failure"
+  ],
+  "remaining_holds": [
+    "Exact executable test SHA approval",
+    "RED implementation admission",
+    "Hosted authority readback/merge",
+    "Production/payment/legal/provider evidence"
+  ],
+  "superseded_adoption_candidate": "f41d6840b2611a63403d83d273bfaabe91bcd0df",
+  "candidate_rebase_reason": "Isolate approved authority change from historical evidence-only design worktree with pre-existing unclassified/broken-link Markdown; preserve that worktree and its validation failures."
+}

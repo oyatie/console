@@ -1,0 +1,20 @@
+{
+  "classification": "evidence",
+  "status": "USER_DESIGN_SHA_APPROVED",
+  "approved_design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "frozen_design_commit": "ee4f22f2378e642e6bfd2f59ff2930d4f5c5fec5",
+  "design_record_sha256": "27c41950263859b826cff45ec0ae5e76502a2756ba3d070d0faf8725449764c6",
+  "user_message": {
+    "timestamp": "2026-09-13T15:48:06.924Z",
+    "text": "승인"
+  },
+  "binding": "User approval directly follows assistant request naming this exact design30 SHA and authority/test-candidate next steps.",
+  "source_file": "rollout-2026-09-11T16-59-27-01a09244-a53e-7c83-b38a-73150cfa02dd.jsonl",
+  "source_prefix_bytes": 123849172,
+  "source_prefix_sha256": "7c902d784136c09c53c9cc8f8291dd8601496902a754a4f2e1425b2b5e920615",
+  "recorded_by": "/root",
+  "recorded_at": "2026-09-13T15:49:41.070135+00:00",
+  "test_sha_approved": false,
+  "implementation_admitted": false,
+  "production_authorized": false
+}
