@@ -144,8 +144,10 @@ psql -X -v ON_ERROR_STOP=1 -U "${POSTGRES_ADMIN_USER}" -d "${POSTGRES_DB}" <<'AU
 \getenv auth_password CONSOLE_TEST_AUTH_POSTGRES_PASSWORD
 CREATE TEMP TABLE auth_transport_roles_before AS SELECT * FROM pg_catalog.pg_roles;
 CREATE TEMP TABLE auth_transport_members_before AS SELECT * FROM pg_catalog.pg_auth_members;
+-- Exclude temporary relations including their separate pg_toast_temp namespace.
+-- The snapshot table itself may allocate TOAST after its SELECT is evaluated.
 CREATE TEMP TABLE auth_transport_relations_before AS
-  SELECT oid, relowner, relacl FROM pg_catalog.pg_class WHERE relnamespace <> pg_my_temp_schema();
+  SELECT oid, relowner, relacl FROM pg_catalog.pg_class WHERE relpersistence <> 't';
 DO $check$
 DECLARE r record;
 BEGIN
@@ -178,10 +180,10 @@ BEGIN
     UNION ALL (SELECT * FROM auth_transport_roles_before EXCEPT SELECT * FROM pg_catalog.pg_roles))
     OR EXISTS ((SELECT * FROM pg_catalog.pg_auth_members EXCEPT SELECT * FROM auth_transport_members_before)
     UNION ALL (SELECT * FROM auth_transport_members_before EXCEPT SELECT * FROM pg_catalog.pg_auth_members))
-    OR EXISTS ((SELECT oid, relowner, relacl FROM pg_catalog.pg_class WHERE relnamespace <> pg_my_temp_schema()
+    OR EXISTS ((SELECT oid, relowner, relacl FROM pg_catalog.pg_class WHERE relpersistence <> 't'
       EXCEPT SELECT * FROM auth_transport_relations_before)
     UNION ALL (SELECT * FROM auth_transport_relations_before EXCEPT
-      SELECT oid, relowner, relacl FROM pg_catalog.pg_class WHERE relnamespace <> pg_my_temp_schema())) THEN
+      SELECT oid, relowner, relacl FROM pg_catalog.pg_class WHERE relpersistence <> 't')) THEN
     RAISE EXCEPTION 'account-auth-transport: topology or privileges changed during password-only setup';
   END IF;
 END
