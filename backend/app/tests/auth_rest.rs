@@ -3344,16 +3344,12 @@ async fn prepare_http_database(pool: &PgPool) {
 
     // Provision only the empty database container. Product tables, grants and
     // queue schema are created by the existing production migration boundary.
-    let transfer: String = sqlx::query_scalar(
-        "SELECT format('ALTER DATABASE %I OWNER TO console_app', current_database())",
+    sqlx::raw_sql(
+        "DO $owner$ BEGIN          EXECUTE format('ALTER DATABASE %I OWNER TO console_app', current_database());          END $owner$;",
     )
-    .fetch_one(&mut *connection)
+    .execute(&mut *connection)
     .await
-    .expect("quote disposable database identifier");
-    sqlx::query(transfer.as_str())
-        .execute(&mut *connection)
-        .await
-        .expect("assign empty test database to its real migration owner");
+    .expect("assign empty test database to its real migration owner");
     drop(connection);
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Migrate.to_string()),
