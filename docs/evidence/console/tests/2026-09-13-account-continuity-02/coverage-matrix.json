@@ -12,8 +12,8 @@
     {
       "id": "AS1.2-transport",
       "required_behavior": "Dedicated restricted auth pool, mandatory credentials, real HTTP auth plus real Company operation, credential-denial AND continuity",
-      "status": "candidate",
-      "proof_and_gap": "5 additive config tests;3 prior custody tests;17 HTTP/3refresh/8provisioning test identities retained. Current missingrole and ignoredconfig are expected failures; no Account activation."
+      "status": "executed_partial_transport_candidate",
+      "proof_and_gap": "41discovered/executed:24PASS,5behavioralRED,12missing-auth-role prerequisite failures.17legacy HTTP flows pass actual run_migrations/from_config. AUTH_DATABASE_URL remains ignored; dedicated auth-pool continuity is unproven. No Account activation."
     },
     {
       "id": "AS1.2-ownership",

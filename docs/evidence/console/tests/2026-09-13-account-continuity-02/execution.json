@@ -1,0 +1,260 @@
+{
+  "candidate_sha": "579e742c78e0536b8c76ed37d4ce2bbce6657fd2",
+  "discovered": 41,
+  "executed": 41,
+  "passed": 24,
+  "failed": 17,
+  "behavioral_red": 5,
+  "missing_auth_role_prerequisite": 12,
+  "results": [
+    {
+      "id": "app-auth-rest-pg",
+      "discovered": 22,
+      "executed": 22,
+      "passed": 18,
+      "failed": 4,
+      "ignored": 0,
+      "filtered": 0,
+      "cases": [
+        {
+          "name": "account_auth_database_accepts_distinct_narrow_identity",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "account_auth_database_rejects_identity_overrides_without_leaking_secrets",
+          "status": "FAILED",
+          "category": "behavioral_red_ignored_auth_configuration"
+        },
+        {
+          "name": "account_auth_database_rejects_other_database_identities",
+          "status": "FAILED",
+          "category": "behavioral_red_ignored_auth_configuration"
+        },
+        {
+          "name": "account_auth_database_requires_explicit_configuration",
+          "status": "FAILED",
+          "category": "behavioral_red_ignored_auth_configuration"
+        },
+        {
+          "name": "account_auth_database_requires_nonempty_distinct_password",
+          "status": "FAILED",
+          "category": "behavioral_red_ignored_auth_configuration"
+        },
+        {
+          "name": "admin_credential_reset_recovers_in_branch_subordinate",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "admin_issue_otp_allows_in_branch_subordinate",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "admin_issue_otp_rejects_cross_branch_target",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "admin_issue_otp_rejects_non_admin",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "admin_issue_otp_rejects_privileged_target",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "approve_session_rejects_generic_desktop_handoff_without_target",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "body_mode_without_header_is_unchanged_and_sets_no_cookie",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "cookie_mode_login_then_refresh_reads_and_rotates_cookie",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "financial_purchase_sensitive_actions_require_fresh_passkey_step_up",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "first_passkey_enrollment_requires_privacy_terms",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "mobile_bound_step_up_start_gates_mobile_approval_and_poll_vote",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "otp_first_signin_then_passkey_enrollment_then_usernameless_login",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "otp_is_consumed_on_passkey_registration_not_on_redeem",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "otp_redeem_rate_limit_wires_up_on_real_clock_path",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "refresh_keeps_zero_passkey_user_in_setup_mode_until_enrolled",
+          "status": "ok",
+          "category": "pass"
+        }
+      ]
+    },
+    {
+      "id": "platform-auth-refresh-tokens-pg",
+      "discovered": 3,
+      "executed": 3,
+      "passed": 0,
+      "failed": 3,
+      "ignored": 0,
+      "filtered": 0,
+      "cases": [
+        {
+          "name": "refresh_token_reuse_revokes_the_whole_family",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        },
+        {
+          "name": "rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        },
+        {
+          "name": "rotation_past_family_absolute_ttl_revokes_the_family",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        }
+      ]
+    },
+    {
+      "id": "platform-db-rls-isolation",
+      "discovered": 8,
+      "executed": 8,
+      "passed": 5,
+      "failed": 3,
+      "ignored": 0,
+      "filtered": 0,
+      "cases": [
+        {
+          "name": "account_material_is_not_directly_accessible_to_company_runtime",
+          "status": "FAILED",
+          "category": "behavioral_red_company_credential_privileges"
+        },
+        {
+          "name": "account_runtime_cannot_read_unrelated_company_business_data",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        },
+        {
+          "name": "company_runtime_cannot_assume_account_custody_roles",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        },
+        {
+          "name": "cross_org_writes_are_rejected",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "non_owner_cannot_disable_the_tenant_boundary",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "org_id_is_immutable",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "rls_isolates_two_tenants_and_fails_closed",
+          "status": "ok",
+          "category": "pass"
+        },
+        {
+          "name": "with_org_conn_sets_the_current_org_guc",
+          "status": "ok",
+          "category": "pass"
+        }
+      ]
+    },
+    {
+      "id": "platform-provisioning-rls-auth-chain",
+      "discovered": 8,
+      "executed": 8,
+      "passed": 1,
+      "failed": 7,
+      "ignored": 0,
+      "filtered": 0,
+      "cases": [
+        {
+          "name": "add_passkey_step_up_gate_as_runtime_role",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        },
+        {
+          "name": "admin_credential_reset_is_tenant_scoped_as_runtime_role",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        },
+        {
+          "name": "admin_credential_reset_revokes_passkey_and_issues_otp_as_runtime_role",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        },
+        {
+          "name": "cross_org_credential_is_isolated_as_runtime_role",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        },
+        {
+          "name": "knl_auth_chain_works_as_runtime_role",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        },
+        {
+          "name": "non_knl_admin_otp_and_redeem_work_as_runtime_role",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        },
+        {
+          "name": "open_signup_creates_member_and_redeems_as_runtime_role",
+          "status": "FAILED",
+          "category": "missing_auth_role_prerequisite_deeper_assertions_not_reached"
+        },
+        {
+          "name": "roster_import_works_as_runtime_role",
+          "status": "ok",
+          "category": "pass"
+        }
+      ]
+    }
+  ]
+}
