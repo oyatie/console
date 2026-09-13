@@ -3350,7 +3350,7 @@ async fn prepare_http_database(pool: &PgPool) {
     .fetch_one(&mut *connection)
     .await
     .expect("quote disposable database identifier");
-    sqlx::query(&transfer)
+    sqlx::query(transfer.as_str())
         .execute(&mut *connection)
         .await
         .expect("assign empty test database to its real migration owner");
