@@ -1,0 +1,17 @@
+{
+  "source_sha": "ffabd26ba2043abeaae9493fd7568fac5399f8ce",
+  "command": "DOCKER_CONTEXT=colima-console-design30 RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --only platform-db-rls-isolation,platform-provisioning-rls-auth-chain,platform-auth-refresh-tokens-pg,app-auth-rest-pg --runner cargo --num-threads 1",
+  "exit_code": 0,
+  "executed": 33,
+  "passed": 33,
+  "failed": 0,
+  "ignored": 0,
+  "filtered": 0,
+  "binaries": {
+    "app-auth-rest-pg": 17,
+    "platform-auth-refresh-tokens-pg": 3,
+    "platform-db-rls-isolation": 5,
+    "platform-provisioning-rls-auth-chain": 8
+  },
+  "discovery": "Execution reports; separate exact test-name discovery will be recorded for candidate"
+}

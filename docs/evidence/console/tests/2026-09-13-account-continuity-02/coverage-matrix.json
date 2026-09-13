@@ -1,0 +1,86 @@
+{
+  "design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "classification": "evidence",
+  "status": "Incomplete full Account test inventory; not approval or implementation authority",
+  "contract_sources": [
+    "docs/evidence/console/design/2026-09-12-account-policy-technical-13/account-contract.txt",
+    "docs/evidence/console/design/2026-09-12-account-policy-technical-13/migration-and-proof.txt",
+    "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/group-and-navigation.txt",
+    "docs/evidence/console/design/2026-09-13-integrated-design-30/storage-mapping.json"
+  ],
+  "families": [
+    {
+      "id": "AS1.2-transport",
+      "required_behavior": "Dedicated restricted auth pool, mandatory credentials, real HTTP auth plus real Company operation, credential-denial AND continuity",
+      "status": "candidate",
+      "proof_and_gap": "5 additive config tests;3 prior custody tests;17 HTTP/3refresh/8provisioning test identities retained. Current missingrole and ignoredconfig are expected failures; no Account activation."
+    },
+    {
+      "id": "AS1.2-ownership",
+      "required_behavior": "Immutable Account IDs/security guards; both legacy FK forms removed; nullable provenance; same-Account token/family FK; credential bytes preserved",
+      "status": "not_yet_executable",
+      "proof_and_gap": "Actual upgrade/catalog tests against approved storage mapping; no fixture-created product schema."
+    },
+    {
+      "id": "AS1.3-session",
+      "required_behavior": "Exact ES256 issuer/audience/kind ACCOUNT_V1; no org/roles; live Account and family checks; lower AND higher generation rejected; primary age/assurance not refreshed",
+      "status": "not_yet_executable",
+      "proof_and_gap": "Signed positive and hostile token vectors through actual resolver and HTTP/SSR transports; existing crypto reused."
+    },
+    {
+      "id": "AS1.3-cutover",
+      "required_behavior": "Permanent legacy token/refresh refusal after account_security exists in every state, including recovery/rollback/non-enrolled Company data",
+      "status": "not_yet_executable",
+      "proof_and_gap": "Migration/backfill, in-flight request/stream drain, real old access/refresh corpus and transport closure."
+    },
+    {
+      "id": "AS1.4-enrollment",
+      "required_behavior": "Company-free pending enrollment; server Account selection; nonce hash/expiry/origin/RP binding; exact terms digest; atomic verified activation/session",
+      "status": "not_yet_executable",
+      "proof_and_gap": "Complete SoftPasskey browser enrollment fixtures and concrete route/DTO mappings required;404-only checks cannot establish acceptance."
+    },
+    {
+      "id": "AS1.4-key-security",
+      "required_behavior": "Existing-key step-up, replay/expired/wrong-subject rejection, last-key race, counter/ceremony ordering and logout/revocation races",
+      "status": "partial_legacy_only",
+      "proof_and_gap": "Existing8 provisioning and3refresh tests retain cryptographic intent. Account locking/concurrency remains missing."
+    },
+    {
+      "id": "AS1.4-audit",
+      "required_behavior": "Account security/terms evidence independent of employer audit, unknown historic consent requires fresh acceptance",
+      "status": "not_yet_executable",
+      "proof_and_gap": "Assert exact durable Account evidence and forbidden employer disclosure; retained legacy audit test is not Account audit acceptance."
+    },
+    {
+      "id": "AS1.4-offboarding",
+      "required_behavior": "Company departure/grant loss does not delete Account/credentials or globally log out; employer reset/OTP/purge cannot authenticate or destroy migrated Account",
+      "status": "not_yet_executable",
+      "proof_and_gap": "Real offboarding and all aliases; explicit security suspension must still revoke. Current employer-success tests are unmigrated compatibility only."
+    },
+    {
+      "id": "AS1.5-attribution",
+      "required_behavior": "CompanyActor immutable attribution survives Employment/grants, anchor grants no access; exact actor and ordinary ownership FK census",
+      "status": "not_yet_executable",
+      "proof_and_gap": "Owning action, actualcatalog and forged-actor tests; Group human independence remains a separately correlated dependency."
+    },
+    {
+      "id": "GN16-navigation",
+      "required_behavior": "Current authorized bounded context discovery, Account-owned continuation, revocation/membership freshness, stale cursor repair with no hidden labels",
+      "status": "not_yet_executable",
+      "proof_and_gap": "GN16 supersedes the earlier Account packet deferral; use admitted /api/v2/accounts/me/contexts with actual continuation/context owner."
+    },
+    {
+      "id": "APM1-upgrade-rollback",
+      "required_behavior": "Credential/key/counter/hash preservation; ambiguous old denial stays recovery-required; no inferred account merges; compatible rollback retains permanent fence",
+      "status": "not_yet_executable",
+      "proof_and_gap": "Clean plus old-snapshot migration fixtures, byte equality, no new access and rollback/fencing tests."
+    },
+    {
+      "id": "INFOFLOW-account",
+      "required_behavior": "No auth material in business SQL, SSR/hydration, errors/logs/egress; context selectors are never authentication",
+      "status": "partial_custody_only",
+      "proof_and_gap": "Prior actualSQLSTATE tests and config secret diagnostics only; relational information-flow/transport proof remains explicit."
+    }
+  ],
+  "acceptance_rule": "This transport comparison cannot authorize full Account implementation or Account enrollment. Complete missing executable families and independent review before full test-SHA approval. Existing legacy success tests must not silently become requirements for migrated Accounts."
+}

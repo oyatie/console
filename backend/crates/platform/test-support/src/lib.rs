@@ -266,3 +266,88 @@ pub async fn seed_user(pool: &PgPool, name: &str, role: &str, branch: BranchId) 
         .unwrap();
     id
 }
+
+/// Real database login identities used only by the disposable integration harness.
+/// These are infrastructure principals, not Console user roles or job titles.
+#[derive(Clone, Copy)]
+pub enum TestDatabaseLogin {
+    Business,
+    Auth,
+    LeaveCommand,
+    OntologyCommand,
+    PlatformForceCommand,
+}
+
+impl TestDatabaseLogin {
+    fn binding(self) -> (&'static str, &'static str) {
+        match self {
+            Self::Business => ("CONSOLE_APALIS_RUNTIME_DATABASE_URL", "console_rt"),
+            Self::Auth => ("CONSOLE_TEST_AUTH_DATABASE_URL", "console_auth_rt"),
+            Self::LeaveCommand => (
+                "CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL",
+                "console_leave_cmd",
+            ),
+            Self::OntologyCommand => (
+                "CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL",
+                "console_ontology_cmd",
+            ),
+            Self::PlatformForceCommand => (
+                "CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                "console_platform_force_cmd",
+            ),
+        }
+    }
+}
+
+/// Point a harness-provisioned LOGIN URL at this sqlx test's actual database.
+/// Never derive a runtime connection from the owner URL or assume a role.
+/// Missing external credentials are a harness error, not an authorization result.
+pub fn login_test_database_url(owner_pool: &PgPool, login: TestDatabaseLogin) -> String {
+    let (key, role) = login.binding();
+    let value = std::env::var(key).unwrap_or_else(|_| panic!("missing disposable transport {key}"));
+    let mut url = url::Url::parse(&value).expect("valid disposable PostgreSQL URL");
+    assert!(matches!(url.scheme(), "postgres" | "postgresql"));
+    assert_eq!(
+        url.username(),
+        role,
+        "test transport must name its real login"
+    );
+    assert!(
+        url.password().is_some_and(|value| !value.is_empty()),
+        "test transport requires a password"
+    );
+    assert!(
+        url.query().is_none(),
+        "test transport cannot contain identity/role overrides"
+    );
+    let options = owner_pool.connect_options();
+    let database = options.get_database().expect("sqlx test database name");
+    url.set_path(database);
+    url.to_string()
+}
+
+/// Authenticate as the actual restricted login, checking both session and current
+/// user. A migration-owner session followed by SET ROLE cannot satisfy this.
+pub async fn login_test_pool(owner_pool: &PgPool, login: TestDatabaseLogin) -> PgPool {
+    let (_, role) = login.binding();
+    let pool = PgPoolOptions::new()
+        .max_connections(4)
+        .connect(&login_test_database_url(owner_pool, login))
+        .await
+        .expect(
+            "connect actual restricted test login; missing role/topology is not a crypto failure",
+        );
+    let identity: (String, String, bool, bool, bool, bool, bool) = sqlx::query_as(
+        "SELECT session_user::text, current_user::text, rolsuper, rolbypassrls, rolcreaterole, rolcreatedb, rolreplication FROM pg_catalog.pg_roles WHERE rolname = current_user",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(identity.0, role);
+    assert_eq!(identity.1, role);
+    assert!(
+        !identity.2 && !identity.3 && !identity.4 && !identity.5 && !identity.6,
+        "test execution login must not carry administrative capabilities"
+    );
+    pool
+}

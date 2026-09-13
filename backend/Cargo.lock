@@ -987,6 +987,7 @@ dependencies = [
  "console-platform-request-context",
  "console-platform-rest",
  "console-platform-storage",
+ "console-platform-test-support",
  "console-production-rest",
  "console-recruiting-adapter-postgres",
  "console-recruiting-application",
@@ -2819,6 +2820,7 @@ version = "0.1.0"
 dependencies = [
  "console-kernel-core",
  "console-platform-db",
+ "console-platform-test-support",
  "jsonwebtoken",
  "openssl",
  "p256",
@@ -2985,6 +2987,7 @@ dependencies = [
  "console-kernel-core",
  "console-platform-auth",
  "console-platform-db",
+ "console-platform-test-support",
  "serde",
  "serde_json",
  "sha2 0.11.0",
@@ -3111,6 +3114,7 @@ version = "0.1.0"
 dependencies = [
  "console-kernel-core",
  "sqlx 0.9.0",
+ "url",
  "uuid",
 ]
 
