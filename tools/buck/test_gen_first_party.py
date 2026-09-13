@@ -327,6 +327,19 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
 
         self.assertIn("src/workbench.rs", config["srcs"])
 
+    def test_auth_storage_module_and_frozen_actor_map_are_materialized(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        crate = Path(GENERATOR.REPO) / "backend/app"
+        materialized = {
+            file.relative_to(crate).as_posix()
+            for pattern in config["srcs"]
+            for file in crate.glob(pattern)
+            if file.is_file()
+        }
+        for required in ("tests/auth_rest/account_storage.rs", "tests/auth_rest/actor-migration.csv"):
+            self.assertTrue((crate / required).is_file(), "real candidate input must exist")
+            self.assertIn(required, materialized, "Cargo-readable test input is missing from Buck materialization")
+
     def test_cross_package_path_modules_are_explicit_mapped_inputs(self) -> None:
         expected = {
             ("console-dispatch-worker", "tests/timer_delivery.rs"): {
