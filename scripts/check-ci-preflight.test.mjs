@@ -931,7 +931,7 @@ describe("CI preflight contract", () => {
       preflight: 33,
       "domain-unit": 2,
       // -1: the expand/contract rehearsal moved to its own job.
-      backend: 25,
+      backend: 26,
       "migration-expand-contract": 5,
       "kubernetes-manifests": 8,
       "repo-gates": 26,
@@ -1004,9 +1004,10 @@ describe("CI preflight contract", () => {
     // 2026-08-25: +1 always-on Buck impact planner regression. This closes the
     // previously dark 13-test suite and subjects the new step to all bypasses.
     // 2026-08-28: +1 rust-fmt presubmit run step (oyatie lint analog).
-    assert.equal(runStepCount, 132, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 132*3 = 396.
-    assert.equal(mutationCount, 396, "exhaustive bypass matrix must not shrink");
+    // +1: isolate the app dev-auth feature case so an earlier failure cannot hide it.
+    assert.equal(runStepCount, 133, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 133*3 = 399.
+    assert.equal(mutationCount, 399, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
@@ -1285,11 +1286,12 @@ describe("CI preflight contract", () => {
     );
   });
 
-  it("requires backend Buck2 commands to run from the repository root", () => {
+  it("requires backend test runners to run from the repository root", () => {
     for (const stepName of [
       "Buck2 dev-auth feature PostgreSQL suites",
-      "Buck2 console-app unit suite",
-      "Buck2 console-app inline PostgreSQL suites",
+      "Cargo console-app unit suite",
+      "Cargo console-app inline PostgreSQL suite",
+      "Cargo console-app dev-auth PostgreSQL suite",
     ]) {
       expectFailure(
         mutateNamedStep(workflow, "backend", stepName, (step) =>
@@ -1894,7 +1896,7 @@ describe("CI preflight contract", () => {
     );
   });
 
-  it("locks post-preflight Buck2 reachability targets and disallows added run surfaces", () => {
+  it("locks post-preflight test reachability targets and disallows added run surfaces", () => {
     expectFailure(
       workflow.replace(" -p console-payroll-adapter-postgres", ""),
       "domain-unit must run -p console-payroll-adapter-postgres",
@@ -1938,15 +1940,15 @@ describe("CI preflight contract", () => {
     );
     expectFailure(
       workflow.replace(
-        "//tools/buck:app-inline-postgres",
-        "//backend/app:console-app-itest-inline-postgres",
+        "cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-postgres",
+        "env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-postgres",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     expectFailure(
       workflow.replace(
-        "//tools/buck:app-dev-auth-persona-guard-postgres",
-        "//backend/app:console-app-itest-dev_auth_persona_guard_feature",
+        "cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test dev_auth_persona_guard_feature --features dev-auth",
+        "env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test dev_auth_persona_guard_feature --features dev-auth",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
@@ -2286,8 +2288,8 @@ describe("CI preflight contract", () => {
     expectFailure(sourceGateDisplaced, "backend must run source-only gates immediately after clippy");
 
     const unitAfterPostgres = workflow
-      .replace("      - name: Buck2 console-app unit suite\n", "      - name: Temporary Buck2 step\n")
-      .replace("      - name: Buck2 console-app inline PostgreSQL suites\n", "      - name: Buck2 console-app unit suite\n");
+      .replace("      - name: Cargo console-app unit suite\n", "      - name: Temporary Buck2 step\n")
+      .replace("      - name: Cargo console-app inline PostgreSQL suite\n", "      - name: Cargo console-app unit suite\n");
     expectFailure(unitAfterPostgres, "backend must preserve the locked fail-fast step order");
   });
 
@@ -2385,8 +2387,8 @@ describe("CI preflight contract", () => {
     );
     expectFailure(
       workflow.replace(
-        "        run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit",
-        "        # env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit",
+        "        run: env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib",
+        "        # env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib",
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
@@ -2528,9 +2530,8 @@ describe("CI preflight contract", () => {
   // check:foundation-gates and check:doc-citations all exiting 0. check:request-body-contract closed
   // H-1's request-body half but reads no route inventory, so nothing else covers what this covers.
   it("locks the console-app OpenAPI drift suite step in backend", () => {
-    const run = "        run: env -u DATABASE_URL tools/buck2 test"
-      + " //backend/app:console-app-itest-openapi_drift\n";
-    const step = "      - name: Buck2 console-app OpenAPI drift suite\n"
+    const run = "        run: env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test openapi_drift\n";
+    const step = "      - name: Cargo console-app OpenAPI drift suite\n"
       + "        id: openapi-drift\n"
       + `        if: ${backendBuckAppLegIf}\n`
       + "        working-directory: .\n"
@@ -2545,17 +2546,36 @@ describe("CI preflight contract", () => {
     // Quieter, and the reason `run` is pinned rather than just the name: the step still reads as
     // the drift suite in the job list while executing a target that inventories no routes.
     expectFailure(
-      workflow.replace(run, "        run: env -u DATABASE_URL tools/buck2 test"
-        + " //backend/app:console-app-unit\n"),
+      workflow.replace(run, "        run: env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib\n"),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
     // Dropping the run_heavy half of the guard would let the drift suite run on thin classes.
     expectFailure(
       workflow.replace(
-        `      - name: Buck2 console-app OpenAPI drift suite\n        id: openapi-drift\n        if: ${backendBuckAppLegIf}\n`,
-        `      - name: Buck2 console-app OpenAPI drift suite\n        id: openapi-drift\n        if: \${{ !cancelled() }}\n`,
+        `      - name: Cargo console-app OpenAPI drift suite\n        id: openapi-drift\n        if: ${backendBuckAppLegIf}\n`,
+        `      - name: Cargo console-app OpenAPI drift suite\n        id: openapi-drift\n        if: \${{ !cancelled() }}\n`,
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
   });
+
+  it("locks app PostgreSQL source features and bootstrap identity in independent steps", () => {
+    for (const [name, feature] of [
+      ["Cargo console-app inline PostgreSQL suite", "test-postgres"],
+      ["Cargo console-app dev-auth PostgreSQL suite", "dev-auth"],
+    ]) {
+      for (const mutate of [
+        (step) => step.replace(` --features ${feature}`, ""),
+        (step) => step.replace('          export DATABASE_URL="${CONSOLE_BUCK_ADMIN_DATABASE_URL:?missing test bootstrap URL}"\n', ""),
+        (step) => step.replace("steps.topology.outcome == 'success' && ", ""),
+        (step) => step.replace(" -- --test-threads=1", " -- --test-threads=1 || true"),
+      ]) {
+        expectFailure(
+          mutateNamedStep(workflow, "backend", name, mutate),
+          "backend must preserve the locked fail-fast step multiset and failure semantics",
+        );
+      }
+    }
+  });
+
 });
