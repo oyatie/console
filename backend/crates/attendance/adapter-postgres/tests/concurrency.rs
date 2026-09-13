@@ -22,6 +22,180 @@ const CLOSE_MONTH: &str = "2026-07";
 const SUBSTITUTION_KEY: &str = "attendance-substitution-race-key-0001";
 const LOCK_WITNESS_POLL_INTERVAL: std::time::Duration = std::time::Duration::from_millis(10);
 
+mod local_faults {
+    //! Local owner-transaction conformance, not design30 command-receipt,
+    //! Account-policy, replicated-durability or production-capacity proof.
+    use super::*;
+    use console_platform_test_support::{TestDatabaseLogin, login_test_database_url};
+    use std::time::Duration;
+    use tokio::task::JoinSet;
+
+    enum StopPoint {
+        OwnerLock,
+        BeforeAuditInsert,
+    }
+
+    async fn restricted_pool(owner: &PgPool, name: &'static str) -> PgPool {
+        let pool = PgPoolOptions::new()
+            .max_connections(1)
+            .after_connect(move |connection, _| {
+                Box::pin(async move {
+                    sqlx::query("SELECT set_config('application_name',$1,false)")
+                        .bind(name)
+                        .execute(connection)
+                        .await?;
+                    Ok(())
+                })
+            })
+            .connect(&login_test_database_url(owner, TestDatabaseLogin::Business))
+            .await
+            .expect("real console_rt LOGIN; no owner URL or SET ROLE");
+        let identity: (String, String, bool, bool, bool, bool, bool) = sqlx::query_as(
+            "SELECT session_user::text,current_user::text,rolsuper,rolbypassrls,rolcreaterole,rolcreatedb,rolreplication FROM pg_roles WHERE rolname=current_user",
+        ).fetch_one(&pool).await.unwrap();
+        assert_eq!(identity.0, "console_rt");
+        assert_eq!(identity.1, "console_rt");
+        assert!(!identity.2 && !identity.3 && !identity.4 && !identity.5 && !identity.6);
+        pool
+    }
+
+    fn close_command(branch: BranchId) -> CloseMonth {
+        CloseMonth {
+            month: CLOSE_MONTH.to_owned(),
+            branch_scope: Some(*branch.as_uuid()),
+            attest: true,
+        }
+    }
+
+    async fn effect_counts(owner: &PgPool, branch: BranchId) -> (i64, i64) {
+        let effects: i64 = sqlx::query_scalar("SELECT count(*) FROM attendance_month_closes WHERE org_id=$1 AND branch_id=$2 AND month=DATE '2026-07-01'")
+            .bind(OrgId::knl().as_uuid()).bind(branch.as_uuid()).fetch_one(owner).await.unwrap();
+        let audits: i64 = sqlx::query_scalar("SELECT count(*) FROM audit_events WHERE org_id=$1 AND action='attendance.close.confirm'")
+            .bind(OrgId::knl().as_uuid()).fetch_one(owner).await.unwrap();
+        (effects, audits)
+    }
+
+    async fn install_audit_barrier(owner: &PgPool) {
+        // Disposable observer-owned fault fixture. It only pauses the genuine
+        // audit insert, after close_month staged its real business row in the
+        // same with_audits transaction. It manufactures no effects or receipts.
+        sqlx::query("CREATE FUNCTION console_test_pause_close_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN PERFORM pg_advisory_xact_lock(hashtextextended('console-test-close-audit-barrier',0)); RETURN NEW; END $$")
+            .execute(owner).await.unwrap();
+        sqlx::query("CREATE TRIGGER console_test_pause_close_audit BEFORE INSERT ON audit_events FOR EACH ROW WHEN (NEW.action='attendance.close.confirm') EXECUTE FUNCTION console_test_pause_close_audit()")
+            .execute(owner).await.unwrap();
+    }
+
+    async fn cancelled_close(owner: PgPool, point: StopPoint) {
+        scope_org(OrgId::knl(), async move {
+            let branch = seed_branch(&owner, "fault-close", "operations").await;
+            let actor = seed_user(&owner, "Fault fixture closer", "ADMIN", branch).await;
+            let caller = branch_caller(actor, branch);
+            let pool = restricted_pool(&owner, "console-close-cancel-test").await;
+            let contender = session(&pool).await;
+            let material = match point {
+                StopPoint::OwnerLock => format!("attendance-close-v1|{}|2026-07-01", OrgId::knl().as_uuid()),
+                StopPoint::BeforeAuditInsert => {
+                    install_audit_barrier(&owner).await;
+                    "console-test-close-audit-barrier".to_owned()
+                }
+            };
+            let mut gate = hold_exact_advisory_gate(&owner, &material).await;
+            let gate_session = transaction_session(&mut gate).await;
+            assert_ne!(gate_session.backend_pid, contender.backend_pid);
+            let mut tasks = JoinSet::new();
+            let store = PgAttendanceStore::new(pool.clone());
+            let first_caller = caller.clone();
+            tasks.spawn(async move { scope_org(OrgId::knl(), store.close_month(&first_caller, close_command(branch))).await });
+            wait_for_exact_gate_waiter(&owner, &contender, &gate_session).await;
+            if matches!(point, StopPoint::BeforeAuditInsert) {
+                let in_audit_insert: bool = sqlx::query_scalar("SELECT query ILIKE '%INSERT INTO audit_events%' AND xact_start IS NOT NULL FROM pg_stat_activity WHERE pid=$1 AND application_name=$2")
+                    .bind(contender.backend_pid).bind(&contender.application_name).fetch_one(&owner).await.unwrap();
+                assert!(in_audit_insert, "fault must be inside actual audit insertion, not before business staging");
+            }
+            assert_eq!(effect_counts(&owner, branch).await, (0, 0), "independent observer cannot see uncommitted work");
+            tasks.abort_all();
+            let result = tokio::time::timeout(Duration::from_secs(5), tasks.join_next()).await
+                .expect("owned task cancellation must terminate").expect("one owned task");
+            assert!(result.expect_err("cancelled owner call must not return success").is_cancelled());
+            assert!(tasks.is_empty());
+            // Dropping the Rust future is not a database rollback witness.
+            // Release the server barrier, drain SQLx's pending rollback, then
+            // check fresh reads and real LOGIN pool reuse independently.
+            gate.rollback().await.unwrap();
+            tokio::time::timeout(Duration::from_secs(5), async {
+                let mut connection = pool.acquire().await.unwrap();
+                let identity: (String, String) = sqlx::query_as("SELECT session_user::text,current_user::text")
+                    .fetch_one(&mut *connection).await.unwrap();
+                assert_eq!(identity, ("console_rt".to_owned(), "console_rt".to_owned()));
+            }).await.expect("pool must drain cancelled transaction and remain usable");
+            assert_eq!(effect_counts(&owner, branch).await, (0, 0), "cancelled work leaves neither business row nor audit");
+            let store = PgAttendanceStore::new(pool.clone());
+            let completed = store.close_month(&caller, close_command(branch)).await.unwrap();
+            assert_eq!(completed.branch_id, Some(*branch.as_uuid()));
+            assert_eq!(effect_counts(&owner, branch).await, (1, 1), "valid retry commits one effect and one audit");
+            pool.close().await;
+        }).await;
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn cancelled_exact_owner_lock_wait_has_no_effect_and_login_pool_retries(owner: PgPool) {
+        cancelled_close(owner, StopPoint::OwnerLock).await;
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn cancelled_staged_close_before_audit_commit_rolls_back_effect_and_audit(owner: PgPool) {
+        cancelled_close(owner, StopPoint::BeforeAuditInsert).await;
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn suppressed_postcommit_response_reconciles_real_close_without_second_effect(
+        owner: PgPool,
+    ) {
+        scope_org(OrgId::knl(), async move {
+            let branch = seed_branch(&owner, "response-loss", "operations").await;
+            let actor = seed_user(&owner, "Response fixture closer", "ADMIN", branch).await;
+            let caller = branch_caller(actor, branch);
+            let pool = restricted_pool(&owner, "console-close-response-test").await;
+            let store = PgAttendanceStore::new(pool.clone());
+            // Deliberately suppress a completed application's response. This
+            // is not a network cut during COMMIT or a replica recovery test.
+            drop(
+                store
+                    .close_month(&caller, close_command(branch))
+                    .await
+                    .unwrap(),
+            );
+            pool.close().await;
+            let reader = restricted_pool(&owner, "console-close-reconcile-test").await;
+            let restored = PgAttendanceStore::new(reader.clone());
+            let rows = restored
+                .list_closes(
+                    &caller,
+                    Some(*branch.as_uuid()),
+                    Date::from_calendar_date(2026, Month::July, 1).unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(
+                rows.len(),
+                1,
+                "fresh permitted owner read resolves the durable effect"
+            );
+            assert_eq!(rows[0].attested_by, *actor.as_uuid());
+            assert_eq!(effect_counts(&owner, branch).await, (1, 1));
+            let duplicate = restored.close_month(&caller, close_command(branch)).await;
+            assert!(
+                matches!(duplicate, Err(AttendanceStoreError::CloseBlocked)),
+                "existing close owner refuses a duplicate; it has no design30 replay receipt yet"
+            );
+            assert_eq!(effect_counts(&owner, branch).await, (1, 1));
+            reader.close().await;
+        })
+        .await;
+    }
+}
+
+
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn concurrent_branch_month_closes_commit_one_snapshot_and_one_audit(owner_pool: PgPool) {
     scope_org(OrgId::knl(), async move {

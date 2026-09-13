@@ -1,0 +1,51 @@
+{
+  "base_sha": "cf70b20d59720ff9268b308f506c63f1546c5c2b",
+  "source_path": "backend/crates/attendance/adapter-postgres/tests/concurrency.rs",
+  "source_sha256": "17529db906c66df054143cf1176097be7a225a34cd30de4a8c5591bb9ddb8d97",
+  "source_change": "one174line inline module; inherited source bytes preserved around insertion",
+  "owner": "/root",
+  "reviewer": "/root/fresh29_operations",
+  "review_verdict": "ACCEPT_SOURCE; no edits or independent reruns; checked actual names/logs and failure boundary",
+  "command": "DOCKER_CONTEXT=colima-console-design30 RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --only attendance-concurrency-postgres --runner cargo --num-threads 1",
+  "discovered": 6,
+  "executed": 6,
+  "passed": 6,
+  "failed": 0,
+  "ignored": 0,
+  "filtered": 0,
+  "new_tests": 3,
+  "inherited_tests": 3,
+  "new_boundary_assertions_reached": 3,
+  "failure_model": [
+    "exact ownerlock wait cancellation",
+    "business row staged before audit insert cancellation",
+    "application response suppressed after completed commit"
+  ],
+  "proof": "real restrictedLOGIN; exact serverlock witness; auditINSERT locality; ownedabort+join; serverbarrierrelease; max1pooldrain; independent effect/audit readback; valid same-owner retry",
+  "not_proven": [
+    "COMMIT transport ambiguity",
+    "replication/fencing/recovery",
+    "crossCompany sessionGUC reset",
+    "Account or design30 receipt/policy semantics",
+    "production-scale capacity"
+  ],
+  "premortem": "Dropped future mistaken for rollback; observer sees wrongphase; owner-role fixture masks privileges",
+  "detection": "ExactPGwitness plus fresh state/readback/retry; no syntheticbusinessowner",
+  "blast_radius": "Disposable test DB pause-only trigger; no product schema/roles altered",
+  "rollback": "Retain sourcebaseline; dispose owned testdatabase/container; no shared reset",
+  "remaining_holds": [
+    "Fullconsolidatedpreparation",
+    "Blockedstoragecandidatecorrection"
+  ],
+  "clippy": {
+    "log": "fault-clippy.log.gz",
+    "raw_sha256": "8ffae8502174273b41c3dc93988fc4c8975db0ed9f9ea6f1bbe0bde5abcb3343",
+    "result": "PASS; exact test source hash unchanged"
+  },
+  "stop_conditions": [
+    "source changes invalidate reviewed identity",
+    "database barrier not witnessed",
+    "owned task or SQL transaction remains unresolved",
+    "candidate not approved for product admission"
+  ]
+}
