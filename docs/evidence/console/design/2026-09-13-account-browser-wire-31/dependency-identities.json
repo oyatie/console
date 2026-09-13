@@ -1,0 +1,57 @@
+{
+  "candidate_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "lock_path": "backend/Cargo.lock",
+  "lock_git_blob": "8ea53dda14d5eeedf97c372950d91f08e61be712",
+  "packages": [
+    {
+      "package": "webauthn-rs",
+      "version": "0.5.5",
+      "crate_sha256": "6c548915e0e92ee946bbf2aecf01ea21bef53d974b0793cc6732ba81a03fc422",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "inspected_members": [
+        {
+          "path": "src/lib.rs",
+          "sha256": "c5299f99d8c11e4f47848b2b13408f361201065cd7118db6fbcfe8dca46703f9",
+          "registry_source_matches_locked_package": true
+        },
+        {
+          "path": "src/interface.rs",
+          "sha256": "ad1d24e3c11f1b32cc6ed18f134da79687cb737c9f1795135e95782263906c59",
+          "registry_source_matches_locked_package": true
+        }
+      ]
+    },
+    {
+      "package": "webauthn-rs-core",
+      "version": "0.5.5",
+      "crate_sha256": "296d2d501feb715d80b8e186fb88bab1073bca17f460303a1013d17b673bea6a",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "inspected_members": [
+        {
+          "path": "src/core.rs",
+          "sha256": "1d45b8e9712c2bccd4bcd81adfc0bc44be82816c6cf46f4758f934f175aeebff",
+          "registry_source_matches_locked_package": true
+        }
+      ]
+    },
+    {
+      "package": "webauthn-rs-proto",
+      "version": "0.5.5",
+      "crate_sha256": "c37393beac9c1ed1ca6dbb30b1e01783fb316ab3a45d90ecd48c99052dd7ef1e",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "inspected_members": [
+        {
+          "path": "src/auth.rs",
+          "sha256": "48a4d97e207de24b846ec91d945ebabcedb4f153e755881c7bb833edd9f74b63",
+          "registry_source_matches_locked_package": true
+        },
+        {
+          "path": "src/options.rs",
+          "sha256": "87fb235d516ab0ad0cbcb753549f2743e8f857c3ddb5db2165d7ff7ec0739784",
+          "registry_source_matches_locked_package": true
+        }
+      ]
+    }
+  ],
+  "claim": "Local registry inspection bytes match exact package checksum in candidate lock; source reasoning only, not executed WebAuthn/browser proof"
+}
