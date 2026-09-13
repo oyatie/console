@@ -1138,7 +1138,7 @@ fn skip_item(source: &str) -> &str {
     ""
 }
 
-fn skip_delimited<'a>(source: &'a str, open: char, close: char) -> Option<&'a str> {
+fn skip_delimited(source: &str, open: char, close: char) -> Option<&str> {
     if !source.starts_with(open) {
         return None;
     }
