@@ -1,0 +1,234 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "INDEPENDENTLY_REVIEWED_BOUNDED_RED_TEST_CANDIDATE_AWAITING_USER_TEST_SHA_APPROVAL",
+  "owner": "/root",
+  "base_sha": "19299cfdd5f3b808667155901257225b1d769eee",
+  "tested_source_sha": "2b1a7d3494e6545fa5ee63597a3e285143435505",
+  "approved_design_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "approval_receipt": "../../approvals/2026-09-13-wire31/design-approval.json",
+  "scope": "14additive initialbrowserHTTP/crypto tests; exact30-testbase prefix retained; fullAccount/BW31 coverage incomplete",
+  "counts": {
+    "candidate_sha": "2b1a7d3494e6545fa5ee63597a3e285143435505",
+    "discovered": 44,
+    "executed": 44,
+    "passed": 24,
+    "failed": 20,
+    "ignored": 0,
+    "filtered": 0,
+    "new_tests": 14,
+    "new_passed_test_oracles_and_fixtures": 4,
+    "new_route_behavior_red": 1,
+    "new_terms_schema_prerequisite_failures": 9,
+    "inherited_passed": 20,
+    "inherited_auth_config_failures": 4,
+    "inherited_account_schema_prerequisite_failures": 6,
+    "executed_names_equal_discovered": true
+  },
+  "commands": [
+    {
+      "command": "DOCKER_CONTEXT=colima-console-design30 RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --only app-auth-rest-pg --runner cargo --num-threads 1",
+      "exit_code": 1,
+      "artifact": "artifacts/execution-final.log.gz"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest -- --list",
+      "exit_code": 0,
+      "artifact": "artifacts/discovery-final.log.gz"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo clippy --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest -- -D warnings",
+      "exit_code": 0,
+      "artifact": "artifacts/clippy-final.log.gz"
+    },
+    {
+      "command": "fnm exec --using=24.16.0 node scripts/check-test-credentials.mjs",
+      "exit_code": 0,
+      "artifact": "artifacts/credentials-final.log.gz"
+    },
+    {
+      "command": "fnm exec --using=24.16.0 node tools/ci/check-postgres-cargo-map.mjs",
+      "exit_code": 0,
+      "artifact": "artifacts/reachability-final.log.gz"
+    },
+    {
+      "command": "PATH=\"/private/tmp/console-authority30-dotslash:$PATH\" RUSTUP_TOOLCHAIN=1.98.1 fnm exec --using=24.16.0 tools/buck/preflight.sh --full-generated-faces",
+      "exit_code": 1,
+      "artifact": "artifacts/generated-preflight-final.log.gz",
+      "result": "first-partyPASS;third-party12explicitfixupfailures also observed onexactbaseline"
+    },
+    {
+      "command": "git diff --check 19299cfdd5f3b808667155901257225b1d769eee 2b1a7d3494e6545fa5ee63597a3e285143435505",
+      "exit_code": 0
+    }
+  ],
+  "environment": {
+    "console_rust": "1.98.1",
+    "node": "24.16.0",
+    "postgres": "18.4 pinnedharnessimage",
+    "dedicated_vm": "console-design30, stoppedaftertest; emptycontainerreadback",
+    "reindeer_build_tool": "Separately installed required nightly-2026-02-28; no Console toolchain/config/source change"
+  },
+  "artifacts": [
+    {
+      "path": "artifacts/baseline.log.gz",
+      "raw_bytes": 48829,
+      "raw_sha256": "3f72a5fa9b1e5cc466ba4a5543d6aa2baf61da03fbe4174399e70f5a27a859ab",
+      "compressed_bytes": 6595,
+      "compressed_sha256": "2bf6e26bcfcae120d0243b4a15b75daf2ac88a4e3ec60b7e5ce1cdb91dad3293"
+    },
+    {
+      "path": "artifacts/discovery.log.gz",
+      "raw_bytes": 3726,
+      "raw_sha256": "23ed6e36b610c0c8fe8222a9d7d1f244a4fb8b331e77199899ca653c273437a2",
+      "compressed_bytes": 1531,
+      "compressed_sha256": "41029abbdb367a3d4ad6ab41df4dca810d30d757164bc51c820d3540870a763a"
+    },
+    {
+      "path": "artifacts/discovery-final.log.gz",
+      "raw_bytes": 3792,
+      "raw_sha256": "dcefbd38f02e93e6671a0503e1393c686f7d6cc5d4bde1c23c3611137b4aea9a",
+      "compressed_bytes": 1522,
+      "compressed_sha256": "73e61201e2728093f5c1d026daf4285368208751dc0ef4a1702cc2c4280b22a4"
+    },
+    {
+      "path": "artifacts/execution-r1.log.gz",
+      "raw_bytes": 30333,
+      "raw_sha256": "f3b9eae01e5752332dde3dea76c1f55a6a0e1b84b2ecf65387d67aedb6f81b03",
+      "compressed_bytes": 5442,
+      "compressed_sha256": "7703d4cfaa842635b26d57902a746e3b6a43a2bdb7b79ddc834013aff728e495"
+    },
+    {
+      "path": "artifacts/execution-r2.log.gz",
+      "raw_bytes": 30360,
+      "raw_sha256": "fcb364f5756d5c76b04d3983a6b0a49fc7f0c4a1570372a82cf4459a86a42b2f",
+      "compressed_bytes": 5482,
+      "compressed_sha256": "2b41b3fa1c072e039c4392a673d8ae03037a8204854c446591a72263a853911a"
+    },
+    {
+      "path": "artifacts/execution-final.log.gz",
+      "raw_bytes": 30360,
+      "raw_sha256": "ab5381b13d58ea89200f2d617dbd72adeab6d86b0ebc58f7721c027313bd33a8",
+      "compressed_bytes": 5482,
+      "compressed_sha256": "69b52a338417ed6ac678301ff297dfbddf7c36223487749cd8ca2d052e39dd06"
+    },
+    {
+      "path": "artifacts/clippy-final.log.gz",
+      "raw_bytes": 425,
+      "raw_sha256": "e4acd24127cf510cb7945693bb694cf414c86ced0c8bed748b9416eb69571592",
+      "compressed_bytes": 307,
+      "compressed_sha256": "723f22a7e797518ee80dca02a24b583f579360bbda70a99359c4be4b5298a565"
+    },
+    {
+      "path": "artifacts/credentials-final.log.gz",
+      "raw_bytes": 233,
+      "raw_sha256": "5d80846b73d3c74cf1c5f164831943a1ccb221797f74bd97c05a64e040192f01",
+      "compressed_bytes": 171,
+      "compressed_sha256": "a4d017a801d8a38780ef252cfde2a3fe454ff3056239736e3cff2c4a5a8a0fcf"
+    },
+    {
+      "path": "artifacts/reachability-final.log.gz",
+      "raw_bytes": 123,
+      "raw_sha256": "3660e46c58e667a12a790b66bc3c67776e4276ee159eede125348eef27ba0956",
+      "compressed_bytes": 126,
+      "compressed_sha256": "99ff98a50724bfa669b321a7a9961a3ef7f422a3c719b82c09bafb4d34792cce"
+    },
+    {
+      "path": "artifacts/generated-preflight.log.gz",
+      "raw_bytes": 1451,
+      "raw_sha256": "cd8a0d3dc44ba35d7b06335931ec440c0cdd1b1772e72c5e01fa6c54e865b9e4",
+      "compressed_bytes": 650,
+      "compressed_sha256": "f8ede67b101f78d31b6bea73031e06057ffa911cfb9238749004428a36c8ec17"
+    },
+    {
+      "path": "artifacts/generated-preflight-final.log.gz",
+      "raw_bytes": 19085,
+      "raw_sha256": "c0c3f0c2d842c10553461dbfd5dd63151d827702a4bf839c55359d24bac49bc6",
+      "compressed_bytes": 4823,
+      "compressed_sha256": "6bb7ed0ea9f5ea6a020995b83211012d2b0e80cf3df361934bc5b531e4af3c5a"
+    },
+    {
+      "path": "artifacts/generated-baseline.log.gz",
+      "raw_bytes": 18658,
+      "raw_sha256": "b07119e86ff7e1f3c4abe9ea1fc46b884925d8dc0092985d6d43bae3410c9756",
+      "compressed_bytes": 4737,
+      "compressed_sha256": "ca0d8a6d1f59577dc69856dacb7cbe627ea22eb6f86ed6e0b374b59802f83b65"
+    },
+    {
+      "path": "artifacts/reindeer-toolchain.log.gz",
+      "raw_bytes": 346,
+      "raw_sha256": "0b7449af166e0a7f59549b147e2c4b1d5b92a63d43cc8780b0de7f73054b3025",
+      "compressed_bytes": 198,
+      "compressed_sha256": "d88e2fd53818d77a0340120b2cc43431124c4937a119e68e93e9d008d22ec1ca"
+    },
+    {
+      "path": "artifacts/vm-start.log.gz",
+      "raw_bytes": 3598,
+      "raw_sha256": "7bfe0f3d789b0c0f3d6e584f96911cd83bf9ce878542f36d63850367a5fc9af9",
+      "compressed_bytes": 886,
+      "compressed_sha256": "a3eba0f0d9ae71669f68712af8e46a5b9aaaf905723f4bb07731df6fdbb62763"
+    },
+    {
+      "path": "artifacts/container-readback.log.gz",
+      "raw_bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compressed_bytes": 20,
+      "compressed_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+    },
+    {
+      "path": "artifacts/vm-stop.log.gz",
+      "raw_bytes": 1653,
+      "raw_sha256": "a4bacd8a2c285d0dde104441a2ba81aeaa68ef71d61f45565eedb5bcccd538cb",
+      "compressed_bytes": 443,
+      "compressed_sha256": "22116a06654850221e5bfbc4b573ff1360ed3a735d51920d5262f78c63251fac"
+    },
+    {
+      "path": "artifacts/npm-ci.log.gz",
+      "raw_bytes": 360,
+      "raw_sha256": "6b681f8f036fc06fe4c66fceec4e4e18ac0e837f9f9d30710e14c40e3a4595fb",
+      "compressed_bytes": 256,
+      "compressed_sha256": "bf8beb29712b7e9d3db5919fd5a0aad0c1adad948287b39bc95f0d6cd366856b"
+    },
+    {
+      "path": "artifacts/npm-ci-online.log.gz",
+      "raw_bytes": 437,
+      "raw_sha256": "5bbfcd16b0717193e4def0104fd4434de1bd875bbdb41017c79c75f986eaa73b",
+      "compressed_bytes": 276,
+      "compressed_sha256": "a404087f4562905e3aa6290c21ec9ff28fbe1625feddd4dad4172997cabe1734"
+    },
+    {
+      "path": "artifacts/credentials.log.gz",
+      "raw_bytes": 1064,
+      "raw_sha256": "9561b9e81985033abb55fa730a6708c000142513d51fc287d1d65c8dcea66aa1",
+      "compressed_bytes": 469,
+      "compressed_sha256": "e15f92736c1ea299cba46fe24812cf5147ac9d04dd714eea84952ef55c67bc5a"
+    }
+  ],
+  "review_record": "review-final.json",
+  "runtime_limits": [
+    "Four newpasses are fixture/test-oracle controls, notsignup/browserproof",
+    "Nine newtests stop atterms-schema prerequisite; downstreamassertionsunreached",
+    "SoftPasskey simulatesUV andneedsclient-onlynonresident/allowlist/unsignedhandleadapters;notbrowserresidencyproof",
+    "No productDDL,authrolegrant,handler,securityowner,CI,lockfileor generated file modified",
+    "Publisherdata fixtures are notpublisherauthorization/CASproof",
+    "Secret-echo oracle coversselected literalvalues only;notgeneralencoding/tracing/formalinformationflow"
+  ],
+  "pre_mortem": "PrerequisiteRED falsely calleddeepassertionproof;weakcookie/state/identityoraclepasseswrongimplementation;testresourceabsentfromhermeticbuild",
+  "blast_radius": "Isolatedsource/evidence andownedtemporaryfixtures;main94stagedfilespreserved",
+  "detection": "Exactsourceprefix/blobhash;44name reconciliation;independentreviewsandnegativeoraclecontrols;baselinegeneratedgatecomparison",
+  "rollback": "Immutableancestryandsupersededlogsretained;no sharedGit reset;ownVMstopped",
+  "stop_conditions": [
+    "Independentblockingtestfinding",
+    "ProductimplementationwithouttestSHAapprovalandREDadmission",
+    "Unclassifiedfailureorunprovedcapacity/productionclaim"
+  ],
+  "remaining_holds": [
+    "UserapprovalforthisboundedtestSHA",
+    "FullAccount/BW31testcandidatecoverageaslistedcoverage.json",
+    "12baselineReindeerbuild-scriptfixups;fullgeneratedgateNOTgreen",
+    "ActualREDimplementationadmissionandproductionownerimplementation",
+    "Browser/crypto/role/migration/concurrency/rollback/loadproof",
+    "Productionexposureandqualifiedlegal/contentauthority"
+  ],
+  "publication": "Localunpublishedsource/evidenceonly. Main receives frozen regular evidence blobs only, not product/test source or index changes."
+}

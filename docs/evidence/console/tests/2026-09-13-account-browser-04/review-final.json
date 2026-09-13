@@ -1,0 +1,24 @@
+{
+  "candidate_sha": "2b1a7d3494e6545fa5ee63597a3e285143435505",
+  "reviews": [
+    {
+      "reviewer": "/root/fresh29_security",
+      "verdict": "ACCEPT_SOURCE",
+      "findings": [],
+      "conclusion": "Whitespace-normalized cookie attributes and4newvectors close final security finding; other security closures preserved."
+    },
+    {
+      "reviewer": "/root/fresh29_workflows",
+      "verdict": "ACCEPT_SOURCE",
+      "findings": [],
+      "conclusion": "All workflow findings closed; exactpreservedprefix and4approvedembeddedfixtures verified,14testboundedHTTPscope."
+    },
+    {
+      "reviewer": "/root/fresh29_operations",
+      "verdict": "ACCEPT_SOURCE_AND_EVIDENCE",
+      "findings": [],
+      "conclusion": "Matched44finaldiscovery/executioncases;24pass20fail classification;final lint/credentials/reachability/firstpartyPASS;12fullgatefixups same onbaseline;VMstopped/containerempty."
+    }
+  ],
+  "approval_limit": "Reviewer acceptance, not user test-SHA approval, full Account acceptance or implementation admission."
+}

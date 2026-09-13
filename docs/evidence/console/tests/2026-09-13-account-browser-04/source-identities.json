@@ -1,0 +1,11 @@
+{
+  "candidate_sha": "2b1a7d3494e6545fa5ee63597a3e285143435505",
+  "path": "backend/app/tests/auth_rest.rs",
+  "git_blob": "c516893e24d69dbf6780418937d16fe07f917e17",
+  "sha256": "65925ccfcfffe659e4f01f33126b177a3377dc0154a288346c52d621c3a9021d",
+  "base_sha": "19299cfdd5f3b808667155901257225b1d769eee",
+  "base_is_exact_prefix": true,
+  "base_bytes": 130679,
+  "bytes": 182915,
+  "nested_module_absent": true
+}
