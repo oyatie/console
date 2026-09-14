@@ -1,0 +1,26 @@
+{
+  "user_clarification": [
+    "Overarching task is Console completion with HR, Payroll, Foundry, Policy and Auth",
+    "Iterative development includes Leptos SSR UI/UX and common modules: messenger, mail, electronic approvals and notifications"
+  ],
+  "authority": [
+    "docs/current/PRODUCT.md",
+    "docs/current/ROADMAP.md",
+    "docs/current/DELIVERY.md"
+  ],
+  "execution_model": "Complete usable iterations across the server and UI: discover action, enter/validate inputs, submit/approve, track, recover. Account custody is a prerequisite, not the completion target.",
+  "current_critical_path": "First complete native NONPAYABLE payroll vertical and its Account/current-context, policy, typed draft/action, source evidence, workflow/transfer and review dependencies.",
+  "parallel_ui_boundary": "Investigate and admit presentation-level Leptos typed action-composer/error/recovery tests from approved design30; mount real no-JS GET/POST routes as actual context/draft owners become available. No mock state represented as business completion.",
+  "whole_product_commitments": [
+    "HR, attendance, labor and employment lifecycle",
+    "Payroll and corrections with explicit legal/payment gates",
+    "Foundry/Ontology/Actions/Fusion equivalent capabilities and collaborative object work",
+    "Policy, authentication and authorization including external/persistent accounts",
+    "Leptos SSR screens and complete input/action flows",
+    "Shared electronic approvals, assignment/handoff and notifications",
+    "Native messenger, mail, calendar and evidence/storage",
+    "Enterprise concurrent sheets over governed objects"
+  ],
+  "completion_reporting": "Report workflow and module acceptance evidence, remaining dependencies and UI coverage; no percentage inferred from table counts or test totals.",
+  "exposure_limits": "Production, payment execution and legal claims remain separately governed."
+}
