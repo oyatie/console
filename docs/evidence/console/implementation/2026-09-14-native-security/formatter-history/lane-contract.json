@@ -1,0 +1,39 @@
+{
+  "lane": "native30-context-formatter",
+  "owner": "fanout.py run codex implementer; root imports only after independent review",
+  "worktree": "/Users/jasonlee/Developer/console-lanes/lane-native30-context-formatter",
+  "base_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "immutable_target": "backend/crates/platform/request-context/src/lib.rs public error_response_for; all test source bytes preserved",
+  "mechanical_guide": "lane-spec.json",
+  "pre_mortem": [
+    "Private diagnostic remains in a sibling route",
+    "Overbroad error masking changes actionable status",
+    "Evidence accepts infrastructure failure as RED"
+  ],
+  "blast_radius": "Shared tenant/platform HTTP formatter; no database writes or policy decision changes",
+  "detection": [
+    "Same20-test command:16pass4behavioralRED to20pass",
+    "Exact all-test-section byte equality",
+    "Review both middleware call sites and fixed public classes"
+  ],
+  "rollback": "Scoped source revert; no data restore required",
+  "stop_conditions": [
+    "Unclassified prerequisite failure",
+    "Test semantic changes",
+    "Outside allowed source path",
+    "Material interface change"
+  ],
+  "remaining_holds": [
+    "Exact FK test patch explicit approval",
+    "Dependent owner implementation and full slice acceptance",
+    "Hosted merge/release/production/payment/legal authority"
+  ],
+  "review_identities": {
+    "preparation": [
+      "/root/review_completeness",
+      "/root/finish_browser",
+      "/root/finish_migration"
+    ],
+    "implementation": "Pending exact-candidate independent review"
+  }
+}

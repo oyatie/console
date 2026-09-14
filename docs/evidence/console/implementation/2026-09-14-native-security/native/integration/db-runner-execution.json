@@ -1,0 +1,14 @@
+{
+  "candidate_sha": "d2cd4c47975afec364d3e2baeba8100db6281d90",
+  "command": [
+    "bash",
+    "tools/lanes/pgtest.sh",
+    "/private/tmp/console-production-tdd-preparation-20260913",
+    "python3",
+    "/private/tmp/console-native30-native-execution-20260914/run-integrated-db-checks.py"
+  ],
+  "exit_code": 1,
+  "elapsed_seconds": 21.91,
+  "log": "db-runner.log",
+  "database": "Pinned disposablePG18.6; existing runner owns secret environment and cleanup"
+}

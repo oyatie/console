@@ -1,0 +1,22 @@
+{
+  "changed_files": [
+    "tools/lanes/fanout.py"
+  ],
+  "outside_allowlist": [],
+  "test_sources_unchanged": true,
+  "commands": [
+    {
+      "command": "python3 tools/lanes/test_status_custody.py",
+      "exit_code": 0,
+      "log_sha256": "e4a818fa8c89c9ebeb9b24ffb6846e0253003161bc8ba1fe1bccff59aa9dbeb5",
+      "pass_lines": 0
+    },
+    {
+      "command": "python3 tools/lanes/fanout.test.py",
+      "exit_code": 0,
+      "log_sha256": "0ab54857e71bf0b70878c935887298d97534f4002d0f9f159212fa2277fa5d13",
+      "pass_lines": 24
+    }
+  ],
+  "original_fanout_result": "INVALID_FALSE_BREACH: process had old helper loaded before implementation; original result retained"
+}
