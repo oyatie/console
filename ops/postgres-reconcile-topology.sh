@@ -400,6 +400,33 @@ SELECT format(
 ) WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'console_ontology_writer') \gexec
 ALTER ROLE console_ontology_writer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
 
+
+-- Global Account and terms custody has no role membership edges. Keep the
+-- historical two-edge migration topology unchanged, including for other DBs.
+SELECT 'CREATE ROLE console_account_owner NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION'
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'console_account_owner') \gexec
+SELECT 'CREATE ROLE console_terms_owner NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION'
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'console_terms_owner') \gexec
+DO $account_owners$
+BEGIN
+  IF (SELECT count(*) FROM pg_catalog.pg_roles
+      WHERE rolname IN ('console_account_owner', 'console_terms_owner')
+        AND NOT rolcanlogin AND NOT rolsuper AND NOT rolbypassrls
+        AND NOT rolinherit AND NOT rolcreatedb AND NOT rolcreaterole
+        AND NOT rolreplication) <> 2
+     OR EXISTS (
+       SELECT 1 FROM pg_catalog.pg_auth_members membership
+       JOIN pg_catalog.pg_roles member ON member.oid = membership.member
+       JOIN pg_catalog.pg_roles granted ON granted.oid = membership.roleid
+       WHERE member.rolname IN ('console_account_owner', 'console_terms_owner')
+          OR granted.rolname IN ('console_account_owner', 'console_terms_owner')
+     ) THEN
+    -- Refuse drift before existing topology reconciliation can conceal it.
+    RAISE EXCEPTION 'account_custody.owner_topology_mismatch';
+  END IF;
+END
+$account_owners$;
+
 -- Migration 0031 owns fresh-database timing. A guarded legacy rename may leave
 -- its table default ACL attached to the renamed bootstrap administrator OID.
 -- Skip only when that legacy table ACL is absent, transfer only its exact known

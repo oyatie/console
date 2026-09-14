@@ -1,0 +1,52 @@
+{
+  "base_sha": "7b3d24944c6511b36e8343e37c43dae704e0a9da",
+  "owner": "/root",
+  "source_sha256": {
+    "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql": "3f03683d7f117cf094c58e1230283de1dfa816be33de5573aa55e761985a8afc",
+    "ops/postgres-reconcile-topology.sh": "4ebd04841ce334edbb32e3b424150c4c5898b2bd89d1c6cc727f6fb0d9ee52e8"
+  },
+  "reviewer": "/root/review_completeness",
+  "command_record": "catalog-admission.json",
+  "red": {
+    "executed": 1,
+    "failed": 1,
+    "filtered": 60,
+    "reason": "ACCOUNT_CATALOG_ABSENT"
+  },
+  "green": {
+    "executed": 1,
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 60
+  },
+  "logs": {
+    "catalog-red.log": {
+      "path": "/private/tmp/console-account-lifecycle-execution-20260914/catalog-red.log",
+      "sha256": "b8fcac8a5434fe0ec072a0c3dd8119c86e88e0e80c5d9512a62612fceaeb10e8"
+    },
+    "catalog-green.log": {
+      "path": "/private/tmp/console-account-lifecycle-execution-20260914/catalog-green.log",
+      "sha256": "91c45508c78aec4daf12c67dc9fcdccfacde410d84e28a5a3bf64f099968afb8"
+    },
+    "classification-gate.log": {
+      "path": "/private/tmp/console-account-lifecycle-execution-20260914/classification-gate.log",
+      "sha256": "503482b53e20391747afd39d5d97acadb88c5fab96bcfc0bf4ff866b72f1028f"
+    },
+    "migration-safety-gate.log": {
+      "path": "/private/tmp/console-account-lifecycle-execution-20260914/migration-safety-gate.log",
+      "sha256": "5082acf80c5e27a47c5b1c9e9cc79be7642e2453b51058f714e8e7779aae5662"
+    }
+  },
+  "checks": [
+    "migration safety PASS",
+    "personal-data classification PASS",
+    "bash -n PASS",
+    "git diff --check PASS"
+  ],
+  "result": "dormant catalog and complete immutable FK tuple boundary passed",
+  "holds": [
+    "Final custody, startup admission and enrollment remain unimplemented",
+    "No full Account, browser, Console or production acceptance claim"
+  ]
+}
