@@ -48,6 +48,44 @@ SNAPSHOT = """SELECT jsonb_agg(jsonb_build_object(
  WHERE n.nspname='public' AND c.relname IN (%s)""" % ','.join("'"+t+"'" for t in TABLES)
 
 
+def complete_case_roster(results):
+    names = [item['name'] for item in results]
+    return (len(names) == len(CASES) and len(set(names)) == len(CASES)
+            and set(names) == set(CASES) and all(item['status'] == 'PASS' for item in results))
+
+
+def source_snapshot(root, paths):
+    files = {}
+    for name in sorted(set(paths)):
+        path = root / name
+        if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(root.resolve()):
+            raise AssertionError('nonregular source: '+name)
+        files[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+    head = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
+    return {'head': head, 'files': files}
+
+
+def cleanup_containers(containers, run):
+    failures = []
+    for container in reversed(containers):
+        try:
+            run(['docker', 'rm', '-f', container], required=False)
+        except Exception:
+            # A lost reply is not proof of absence. Still inspect this resource
+            # and continue with every other pre-registered intended resource.
+            pass
+        try:
+            code, text = run(['docker', 'container', 'inspect', container], required=False)
+            absent = code != 0 and any(line.strip() in (
+                'Error: No such container: '+container,
+                'Error: No such object: '+container) for line in text.splitlines())
+        except Exception:
+            absent = False
+        if not absent:
+            failures.append(container)
+    return failures
+
+
 class Prerequisite(Exception):
     pass
 
@@ -67,6 +105,7 @@ class Suite:
             'CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD', 'CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD')}
         self.sequence = 0
         self.provenance = {}
+        self.frozen_sources = None
 
     def run(self, argv, *, env=None, stdin=None, required=True, timeout=240):
         self.sequence += 1
@@ -100,7 +139,19 @@ class Suite:
         path.chmod(0o600)
         return path
 
+    def assert_sources_unchanged(self):
+        if self.frozen_sources is not None:
+            current = source_snapshot(ROOT, self.frozen_sources['files'])
+            if current != self.frozen_sources:
+                raise AssertionError('source custody changed after pre-build freeze')
+
     def copy(self, container, source, target):
+        source = Path(source)
+        if self.frozen_sources is not None and source.is_relative_to(ROOT):
+            name = str(source.relative_to(ROOT))
+            expected = self.frozen_sources['files'].get(name)
+            if expected is None or source.is_symlink() or hashlib.sha256(source.read_bytes()).hexdigest() != expected:
+                raise AssertionError('copy source differs from pre-build freeze: '+name)
         self.run(['docker', 'cp', str(source), f'{container}:{target}'])
 
     def psql(self, container, database, sql, *, role='wrapper_admin', password=None, required=True):
@@ -152,9 +203,10 @@ class Suite:
                    POSTGRES_PASSWORD=self.passwords['POSTGRES_ADMIN_PASSWORD'], POSTGRES_DB='postgres',
                    POSTGRES_HOST='localhost')
         file = self.private_file('cluster.env', ''.join(k+'='+v+'\n' for k,v in env.items()))
+        # Register intent before Docker can create a resource and lose its ACK.
+        self.containers.append(container)
         self.run(['docker','run','-d','--rm','--name',container,'--env-file',str(file),
                   '-p','127.0.0.1::5432',IMAGE])
-        self.containers.append(container)
         for _ in range(60):
             code, _ = self.run(['docker','exec',container,'sh','-c',
                 'test "$(cat /proc/1/comm)" = postgres && pg_isready -U wrapper_admin -d postgres'], required=False)
@@ -244,10 +296,18 @@ class Suite:
         self.results.append({'name':name,'status':'PASS','commands':[start,len(self.commands)]})
 
     def execute(self):
+        tracked = subprocess.check_output(['git', '-C', str(ROOT), 'ls-files', '-z',
+            'backend', 'ops', 'rust-toolchain.toml', '.cargo']).decode().split('\0')
+        paths = [name for name in tracked if name]
+        paths += ['ops/'+name for name in ASSETS]
+        paths += [str(path.relative_to(ROOT)) for path in (ROOT/'backend/crates/platform/db/migrations').glob('*.sql')]
+        self.frozen_sources = source_snapshot(ROOT, paths)
+        self.provenance['prebuild_sources'] = self.frozen_sources
         self.run(['docker','image','inspect',IMAGE])
         build_env=dict(self.env,RUSTUP_TOOLCHAIN='1.98.1',RUSTC_WRAPPER='',CARGO_INCREMENTAL='1')
         self.run(['cargo','build','--locked','--manifest-path',str(ROOT/'backend/Cargo.toml'),
                   '-p','console-app','--bin','console-app'],env=build_env,timeout=900)
+        self.assert_sources_unchanged()
         target=Path(build_env.get('CARGO_TARGET_DIR',str(ROOT/'backend/target')))
         if not target.is_absolute():
             target=ROOT/target
@@ -313,21 +373,124 @@ class Suite:
                POSTGRES_HOST='127.0.0.1',ACCOUNT_CUSTODY_EXPECTED_TLS_HOST='127.0.0.1')
 
     def cleanup(self):
-        failures=[]
-        for container in reversed(self.containers):
-            code,_=self.run(['docker','rm','-f',container],required=False)
-            if code: failures.append(container)
-        self.temp.cleanup()
-        return failures
+        try:
+            return cleanup_containers(self.containers, self.run)
+        finally:
+            self.temp.cleanup()
+
+
+def machinery_tests():
+    """Tests this evidence machinery only, not fake application implementations."""
+    import unittest
+
+    class Machinery(unittest.TestCase):
+        def test_exact_unique_roster_positive(self):
+            self.assertTrue(complete_case_roster([{'name':n,'status':'PASS'} for n in CASES]))
+
+        def test_duplicate_cannot_replace_omitted_case(self):
+            rows=[{'name':n,'status':'PASS'} for n in CASES]
+            rows[-1]=dict(rows[0])
+            self.assertFalse(complete_case_roster(rows))
+
+        def test_missing_unknown_and_failed_case_refuse(self):
+            rows=[{'name':n,'status':'PASS'} for n in CASES]
+            self.assertFalse(complete_case_roster(rows[:-1]))
+            for replacement in ({'name':'unregistered','status':'PASS'},
+                                {'name':CASES[-1],'status':'FAIL'}):
+                self.assertFalse(complete_case_roster(rows[:-1]+[replacement]))
+
+        def test_lost_create_reply_still_registers_cleanup_intent(self):
+            with tempfile.TemporaryDirectory() as directory:
+                suite=Suite(Path(directory))
+                def lost_reply(argv, **kwargs):
+                    self.assertEqual(argv[:2], ['docker','run'])
+                    self.assertEqual(len(suite.containers),1)
+                    raise TimeoutError('created resource, reply lost')
+                suite.run=lost_reply
+                try:
+                    with self.assertRaises(TimeoutError):
+                        suite.cluster()
+                    self.assertEqual(len(suite.containers),1)
+                finally:
+                    suite.temp.cleanup()
+
+        def test_cleanup_attempts_all_after_lost_reply(self):
+            calls=[]
+            def execute(argv, **kwargs):
+                calls.append(argv)
+                if argv[:3]==['docker','rm','-f']:
+                    raise TimeoutError('reply lost')
+                return 1,'Error: No such container: '+argv[-1]+'\n'
+            self.assertEqual(cleanup_containers(['first','second'],execute),[])
+            self.assertEqual([a[-1] for a in calls],['second','second','first','first'])
+
+        def test_unavailable_inspection_is_not_absence(self):
+            calls=[]
+            def execute(argv, **kwargs):
+                calls.append(argv)
+                return 1,'Cannot connect to Docker daemon'
+            self.assertEqual(cleanup_containers(['first','second'],execute),['second','first'])
+            self.assertEqual(len(calls),4)
+
+        def test_private_cleanup_runs_despite_inspection_exception(self):
+            with tempfile.TemporaryDirectory() as directory:
+                suite=Suite(Path(directory))
+                private=suite.private
+                suite.containers=['intended']
+                def fail(argv, **kwargs):
+                    raise OSError('unavailable')
+                suite.run=fail
+                self.assertEqual(suite.cleanup(),['intended'])
+                self.assertFalse(private.exists())
+
+        def test_real_source_change_missing_and_symlink_refuse(self):
+            with tempfile.TemporaryDirectory() as directory:
+                root=Path(directory)
+                def git(*args):
+                    return subprocess.check_output(['git','-C',str(root),
+                        '-c','user.name=Wrapper Machinery','-c','user.email=wrapper@test.invalid',
+                        '-c','core.hooksPath=/dev/null','-c','commit.gpgsign=false',*args],stderr=subprocess.STDOUT)
+                git('init','-q')
+                source=root/'source'
+                source.write_text('original source\n')
+                git('add','source');git('commit','-qm','fixture')
+                before=source_snapshot(root,['source'])
+                self.assertEqual(source_snapshot(root,['source']),before)
+                source.write_text('changed source\n')
+                self.assertNotEqual(source_snapshot(root,['source']),before)
+                source.unlink()
+                with self.assertRaises(AssertionError): source_snapshot(root,['source'])
+                other=root/'other';other.write_text('original source\n');source.symlink_to(other)
+                with self.assertRaises(AssertionError): source_snapshot(root,['source'])
+
+        def test_real_head_change_refuses_even_when_selected_bytes_same(self):
+            with tempfile.TemporaryDirectory() as directory:
+                root=Path(directory)
+                def git(*args):
+                    return subprocess.check_output(['git','-C',str(root),
+                        '-c','user.name=Wrapper Machinery','-c','user.email=wrapper@test.invalid',
+                        '-c','core.hooksPath=/dev/null','-c','commit.gpgsign=false',*args],stderr=subprocess.STDOUT)
+                git('init','-q');(root/'source').write_text('fixed\n')
+                git('add','source');git('commit','-qm','first')
+                before=source_snapshot(root,['source'])
+                git('commit','--allow-empty','-qm','second')
+                after=source_snapshot(root,['source'])
+                self.assertEqual(before['files'],after['files'])
+                self.assertNotEqual(before,after)
+
+    result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(Machinery))
+    return 0 if result.wasSuccessful() else 1
 
 
 def main():
+    if sys.argv[1:]==['--self-test']:
+        return machinery_tests()
     if sys.argv[1:]==['--list']:
         print('\n'.join(CASES))
         print(f'{len(CASES)} cases discovered; 0 executed')
         return 0
     if sys.argv[1:]:
-        raise SystemExit('usage: integration.test.sh [--list]')
+        raise SystemExit('usage: integration.test.sh [--list|--self-test]')
     output=Path(tempfile.mkdtemp(prefix='console-account-wrapper-evidence-'))
     report={'discovered':len(CASES),'executed':0,'passed':0,'failed':0,'blocked':len(CASES),
             'status':'PREREQUISITE','cases':[],'commands':[],
@@ -340,6 +503,7 @@ def main():
             raise Prerequisite('missing real additive Account migration')
         suite=Suite(output)
         suite.execute()
+        suite.assert_sources_unchanged()
         report['status']='PASS'
     except Prerequisite as error:
         report['reason']=str(error)
@@ -360,8 +524,13 @@ def main():
         report.update(executed=len(report['cases']),passed=sum(x['status']=='PASS' for x in report['cases']),
                       failed=sum(x['status']=='FAIL' for x in report['cases']),
                       blocked=len(CASES)-len(report['cases']))
-        if report['status']=='PASS' and (report['passed']!=len(CASES) or report['blocked']):
+        if report['status']=='PASS' and not complete_case_roster(report['cases']):
             report['status']='FAIL';report['reason']='incomplete case roster'
+        if suite and suite.frozen_sources is not None:
+            try:
+                suite.assert_sources_unchanged()
+            except Exception as error:
+                report['status']='FAIL'; report['reason']=str(error)
         report['candidate_head']=subprocess.check_output(['git','-C',str(ROOT),'rev-parse','HEAD'],text=True).strip()
         report['changed_paths']=subprocess.check_output(['git','-C',str(ROOT),'status','--porcelain=v1','-z']).decode('utf-8')
         report['source_sha256']={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest()
