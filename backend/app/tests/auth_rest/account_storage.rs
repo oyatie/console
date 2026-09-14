@@ -179,6 +179,21 @@ async fn account_custody_has_no_company_ownership_or_destructive_foreign_keys(po
             "{table}: Company provenance must not be mandatory custody ownership"
         );
     }
+    // Proposed exact ephemeral edge exception; every retained custody edge
+    // continues to require non-destructive delete/update behavior.
+    let ephemeral_binding = |key: &ForeignKey| {
+        key.source_table == "auth_webauthn_ceremony_bindings"
+            && key.target_table == "auth_webauthn_ceremonies"
+            && key.source_columns == ["ceremony_id"]
+            && key.target_columns == ["id"]
+            && key.validated
+    };
+    assert!(
+        keys.iter().any(|key| ephemeral_binding(key)
+            && key.delete_action == "c"
+            && matches!(key.update_action.as_str(), "a" | "r")),
+        "missing validated ephemeral ceremony binding DELETE CASCADE / UPDATE NO ACTION or RESTRICT"
+    );
     for key in &keys {
         if ACCOUNT_RELATIONS.contains(&key.source_table.as_str()) {
             assert!(
@@ -191,7 +206,11 @@ async fn account_custody_has_no_company_ownership_or_destructive_foreign_keys(po
                 key.target_table
             );
             assert!(
-                matches!(key.delete_action.as_str(), "a" | "r"),
+                if ephemeral_binding(key) {
+                    key.delete_action == "c"
+                } else {
+                    matches!(key.delete_action.as_str(), "a" | "r")
+                },
                 "{} -> {} may erase or detach retained custody",
                 key.source_table,
                 key.target_table
