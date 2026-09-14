@@ -2831,12 +2831,12 @@ dependencies = [
 name = "console-platform-audit-chain"
 version = "0.1.0"
 dependencies = [
+ "aws-lc-rs",
  "console-kernel-core",
  "console-platform-db",
  "console-platform-request-context",
  "futures",
  "hex",
- "ring",
  "serde",
  "serde_json",
  "sha2 0.11.0",
