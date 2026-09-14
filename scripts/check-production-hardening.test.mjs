@@ -25,6 +25,17 @@ import {
   evaluateWorkflowHardeningChecks,
 } from "./check-production-hardening.mjs";
 
+describe("Account custody deployment", () => {
+  it("executes orchestration and local provisioning security controls", () => {
+    const result = spawnSync(process.execPath, ["--test",
+      "scripts/account-custody-orchestration.test.mjs",
+      "scripts/lib/dev-account-custody.test.mjs"], {
+      cwd: fileURLToPath(new URL("..", import.meta.url)), encoding: "utf8", timeout: 60_000,
+    });
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  });
+});
+
 describe("production authority blocked observation static integration", () => {
   it("requires the explicit-SHA evaluator package wiring and focused hardening suite inclusion", () => {
     const pkg = JSON.parse(

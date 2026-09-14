@@ -40,17 +40,26 @@ services:
     restart: unless-stopped
 
   postgres:
-    image: postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56
+    image: postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280
     entrypoint:
       - bash
       - -ceu
       - |
         mkdir -p /var/lib/postgresql/wal-archive
         chown -R postgres:postgres /var/lib/postgresql/wal-archive
+        install -d -o postgres -g postgres -m 0700 /tmp/console-postgres-tls
+        install -o postgres -g postgres -m 0600 /run/postgres-tls/server.key /tmp/console-postgres-tls/server.key
+        install -o postgres -g postgres -m 0644 /run/postgres-tls/server.crt /tmp/console-postgres-tls/server.crt
         exec docker-entrypoint.sh "$@"
       - docker-entrypoint-wrapper
     command:
       - postgres
+      - -c
+      - ssl=on
+      - -c
+      - ssl_cert_file=/tmp/console-postgres-tls/server.crt
+      - -c
+      - ssl_key_file=/tmp/console-postgres-tls/server.key
       - -c
       - wal_level=replica
       - -c
@@ -73,6 +82,7 @@ services:
       POSTGRES_PASSWORD: ${CONSOLE_POSTGRES_ADMIN_PASSWORD:?set the cluster-admin database password}
     volumes:
       - postgres-data:/var/lib/postgresql
+      - ${ACCOUNT_CUSTODY_PG_TLS_DIR:?supply PostgreSQL server TLS directory}:/run/postgres-tls:ro
       - postgres-wal-archive:/var/lib/postgresql/wal-archive
       # Shared only with the one-shot topology reconciler. This local socket is
       # the guarded recovery path for legacy volumes whose sole superuser is
@@ -93,7 +103,7 @@ services:
     restart: unless-stopped
 
   postgres-topology:
-    image: postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56
+    image: postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280
     depends_on:
       postgres:
         condition: service_healthy
@@ -123,6 +133,30 @@ services:
     depends_on:
       postgres-topology:
         condition: service_completed_successfully
+    restart: "no"
+
+  account-finalize:
+    build:
+      context: ..
+      dockerfile: ops/account-custody.Dockerfile
+    image: console-account-custody:local
+    user: "${ACCOUNT_CUSTODY_RUN_UID:-0}:${ACCOUNT_CUSTODY_RUN_GID:-0}"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    env_file:
+      - ${ACCOUNT_CUSTODY_TARGET_ENV_FILE:?supply independent target inventory}
+    environment:
+      POSTGRES_ADMIN_PASSWORD_FILE: /run/operator/password
+      PGSSLROOTCERT: /run/operator/ca
+    volumes:
+      - ${ACCOUNT_CUSTODY_PASSWORD_FILE:?supply operator password file}:/run/operator/password:ro
+      - ${ACCOUNT_CUSTODY_CA_FILE:?supply trusted CA file}:/run/operator/ca:ro
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
     restart: "no"
 
   seaweedfs:
@@ -184,7 +218,7 @@ services:
       CONSOLE_HTTP_ADDR: 0.0.0.0:8080
       OTEL_SERVICE_NAME: console-app-api
     depends_on:
-      migrate:
+      account-finalize:
         condition: service_completed_successfully
       otel-collector:
         condition: service_healthy
@@ -214,7 +248,7 @@ services:
       CONSOLE_HTTP_ADDR: 0.0.0.0:8080
       OTEL_SERVICE_NAME: console-app-worker
     depends_on:
-      migrate:
+      account-finalize:
         condition: service_completed_successfully
       otel-collector:
         condition: service_healthy

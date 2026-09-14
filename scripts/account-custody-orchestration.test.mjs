@@ -305,12 +305,13 @@ function assertSmokeBoundary(step) {
   const mounts = [];
   for (let i = 2; i < words.length - 1; ++i) {
     if (['--rm', '--read-only'].includes(words[i])) continue;
-    assert.ok(['--env-file', '--env', '--volume', '--network'].includes(words[i]), `unexpected docker option ${words[i]}`);
+    assert.ok(['--env-file', '--env', '--volume', '--network', '--tmpfs'].includes(words[i]), `unexpected docker option ${words[i]}`);
     const flag = words[i++]; const value = words[i]; assert.ok(value);
     if (flag === '--volume') mounts.push(value);
     else if (flag === '--env') { const at = value.indexOf('='); assert.ok(at > 0); assert.ok(!pairs.has(value.slice(0, at))); pairs.set(value.slice(0, at), value.slice(at + 1)); }
     else { assert.ok(!pairs.has(flag)); pairs.set(flag, value); }
   }
+  assert.equal(pairs.get('--tmpfs'), '/tmp:rw,noexec,nosuid,size=16m', 'fixed bounded private temporary storage required by wrapper');
   assert.equal(pairs.get('--env-file'), '${ACCOUNT_CUSTODY_DESCRIPTOR_FILE}');
   assert.equal(pairs.get('POSTGRES_DB'), '${PROBE_DATABASE}');
   for (const key of descriptorKeys) assert.ok(!pairs.has(key), 'expected identity must come from independent descriptor, not current probe overrides');
@@ -347,7 +348,7 @@ function nominalSmoke() {
     ACCOUNT_CUSTODY_DESCRIPTOR_FILE: '/protected/probe-target.env',
     ACCOUNT_CUSTODY_PASSWORD_FILE: '/protected/operator-password',
     ACCOUNT_CUSTODY_CA_FILE: '/protected/ca.pem', PROBE_DATABASE: 'console_release_probe',
-  }, run: 'docker run --rm --read-only --network host --env-file "${ACCOUNT_CUSTODY_DESCRIPTOR_FILE}" --env "POSTGRES_DB=${PROBE_DATABASE}" --env POSTGRES_ADMIN_PASSWORD_FILE=/run/operator/password --env PGSSLROOTCERT=/run/operator/ca --volume "${ACCOUNT_CUSTODY_PASSWORD_FILE}:/run/operator/password:ro" --volume "${ACCOUNT_CUSTODY_CA_FILE}:/run/operator/ca:ro" "${ACCOUNT_CUSTODY_OPERATOR_IMAGE}"' };
+  }, run: 'docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --network host --env-file "${ACCOUNT_CUSTODY_DESCRIPTOR_FILE}" --env "POSTGRES_DB=${PROBE_DATABASE}" --env POSTGRES_ADMIN_PASSWORD_FILE=/run/operator/password --env PGSSLROOTCERT=/run/operator/ca --volume "${ACCOUNT_CUSTODY_PASSWORD_FILE}:/run/operator/password:ro" --volume "${ACCOUNT_CUSTODY_CA_FILE}:/run/operator/ca:ro" "${ACCOUNT_CUSTODY_OPERATOR_IMAGE}"' };
 }
 const nominalDockerfile = `FROM postgres:18.6@sha256:${'a'.repeat(64)}
 COPY ops/postgres-finalize-account-custody.sh /some/fixed/path/
@@ -469,3 +470,59 @@ test('LC07 machinery: Kubernetes serving secret alias via projected volume is re
   unsafe.spec.template.spec.volumes = [{ name: 'innocent', projected: { sources: [{ secret: { name: 'operator-only' } }] } }];
   assert.throws(() => assertKubernetesServingIsolation(nominalArgo(), [unsafe]), { name: 'AssertionError' });
 });
+
+
+for (const [name, replacement] of [
+  ['missing private temp', ''],
+  ['unbounded temp', '--tmpfs /tmp:rw,noexec,nosuid'],
+  ['executable temp', '--tmpfs /tmp:rw,nosuid,size=16m'],
+  ['wrong temp path', '--tmpfs /scratch:rw,noexec,nosuid,size=16m'],
+]) {
+  test(`LC07 machinery: smoke rejects ${name}`, () => {
+    const fixture = nominalSmoke();
+    fixture.run = fixture.run.replace('--tmpfs /tmp:rw,noexec,nosuid,size=16m', replacement);
+    assert.throws(() => assertSmokeBoundary(fixture), { name: 'AssertionError' });
+  });
+}
+
+for (const role of ['api', 'worker', 'migrate']) {
+  test(`dev-up actual buildAppEnv ${role} confines ambient operator environment`, () => {
+    const forbidden = [
+      'CONSOLE_POSTGRES_ADMIN_USER', 'CONSOLE_POSTGRES_ADMIN_PASSWORD',
+      'CONSOLE_POSTGRES_ADMIN_PASSWORD_FILE', 'POSTGRES_ADMIN_USER',
+      'POSTGRES_ADMIN_PASSWORD', 'POSTGRES_ADMIN_PASSWORD_FILE',
+      'ACCOUNT_CUSTODY_TARGET_ENV_FILE', 'ACCOUNT_CUSTODY_PASSWORD_FILE',
+      'ACCOUNT_CUSTODY_CA_FILE', 'ACCOUNT_CUSTODY_EXPECTED_OPERATOR',
+      'ACCOUNT_CUSTODY_EXPECTED_SYSTEM_IDENTIFIER', 'ACCOUNT_CUSTODY_EXPECTED_DATABASE',
+      'ACCOUNT_CUSTODY_EXPECTED_DATABASE_OID', 'ACCOUNT_CUSTODY_EXPECTED_TLS_HOST',
+      'PGPASSWORD', 'PGPASSFILE', 'PGSERVICE', 'PGSERVICEFILE', 'PGSYSCONFDIR',
+      'PGUSER', 'PGDATABASE', 'PGHOST', 'PGHOSTADDR', 'PGPORT', 'PGOPTIONS',
+      'PGSSLROOTCERT', 'PGSSLCERT', 'PGSSLKEY', 'PGSSLMODE', 'PGGSSENCMODE',
+    ];
+    const ambient = Object.fromEntries(forbidden.map((key) => [key, `operator-only-${key}`]));
+    Object.assign(ambient, { PATH: '/safe/bin', RUST_LOG: 'warn', CONSOLE_EMAIL_STUB_MODE: 'test', UNRELATED_APP_SETTING: 'preserve-me' });
+    const before = { ...ambient };
+    const context = {
+      process: { env: ambient },
+      ensureDevKeys: () => ({ privateKeyPem: 'app-private', publicKeyPem: 'app-public' }),
+      databaseUrl: () => 'postgres://migration-owner/selected',
+      runtimeDatabaseUrl: () => 'postgres://runtime/selected',
+      commandDatabaseUrl: (name) => `postgres://${name}/selected`,
+      LEAVE_COMMAND_POSTGRES_PASSWORD: 'leave-app', ONTOLOGY_COMMAND_POSTGRES_PASSWORD: 'ontology-app',
+      PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD: 'force-app',
+      PORTS: { backend: 8080, otel: 4317, s3: 8333, moxWebapi: 1080, office: 8090 },
+      OFFICE_ENABLED: false,
+    };
+    vm.createContext(context);
+    vm.runInContext(`${declaration(read('scripts/dev-up.mjs'), 'buildAppEnv')}\nglobalThis.run = buildAppEnv;`, context);
+    const env = context.run(role);
+    for (const key of forbidden) assert.equal(Object.hasOwn(env, key), false, `${role} inherits ${key}`);
+    assert.equal(env.PATH, '/safe/bin');
+    assert.equal(env.RUST_LOG, 'warn');
+    assert.equal(env.CONSOLE_EMAIL_STUB_MODE, 'test');
+    assert.equal(env.UNRELATED_APP_SETTING, 'preserve-me');
+    assert.equal(env.CONSOLE_APP_ROLE, role);
+    assert.equal(env.DATABASE_URL, role === 'migrate' ? 'postgres://migration-owner/selected' : 'postgres://runtime/selected');
+    assert.deepEqual(ambient, before, 'child sanitization must not mutate the operator parent environment');
+  });
+}
