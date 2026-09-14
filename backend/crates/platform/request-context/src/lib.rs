@@ -21,6 +21,10 @@
 //! tables must re-enter the scope, e.g. `CURRENT_ORG.scope(org, async { .. })`.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+// Test-first placement of the approved pure authority binding contract.
+#[cfg(test)]
+mod account;
+
 use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
 use std::sync::Arc;
