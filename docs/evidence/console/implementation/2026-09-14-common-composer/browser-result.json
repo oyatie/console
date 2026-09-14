@@ -1,0 +1,283 @@
+{
+  "browser": "151.0.7922.34",
+  "javascriptEnabled": false,
+  "cases": [
+    {
+      "fixture": "readonly",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        "no script element",
+        "no horizontal overflow; visible controls >=44 CSS px",
+        "read-only no mutation controls"
+      ],
+      "geometry": {
+        "viewport": 1280,
+        "scroll": 1280,
+        "controls": []
+      },
+      "status": "pass"
+    },
+    {
+      "fixture": "optional",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        "no script element",
+        "no horizontal overflow; visible controls >=44 CSS px",
+        "native button form association exact local POST",
+        "native FormData includes four exact tokens",
+        "optional selection clears to empty editor value; explicit submit serialization"
+      ],
+      "geometry": {
+        "viewport": 1280,
+        "scroll": 1280,
+        "controls": [
+          {
+            "tag": "SELECT",
+            "height": 44.375,
+            "width": 702
+          },
+          {
+            "tag": "BUTTON",
+            "height": 49.171875,
+            "width": 101.3125
+          },
+          {
+            "tag": "BUTTON",
+            "height": 49.171875,
+            "width": 69.6875
+          }
+        ]
+      },
+      "status": "pass"
+    },
+    {
+      "fixture": "retry",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        "no script element",
+        "no horizontal overflow; visible controls >=44 CSS px",
+        "native button form association exact local POST",
+        "native FormData includes four exact tokens",
+        "initial error focus and exact field link; no-JS correction; submit-only retry serialization"
+      ],
+      "geometry": {
+        "viewport": 1280,
+        "scroll": 1280,
+        "controls": [
+          {
+            "tag": "INPUT",
+            "height": 49.171875,
+            "width": 702
+          },
+          {
+            "tag": "BUTTON",
+            "height": 49.171875,
+            "width": 69.6875
+          }
+        ]
+      },
+      "status": "pass"
+    },
+    {
+      "fixture": "conflict",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        "no script element",
+        "no horizontal overflow; visible controls >=44 CSS px",
+        "native button form association exact local POST",
+        "native FormData includes four exact tokens",
+        "conflict preserves input; authorized recovery link; stale submit blocked"
+      ],
+      "geometry": {
+        "viewport": 1280,
+        "scroll": 1280,
+        "controls": [
+          {
+            "tag": "INPUT",
+            "height": 49.171875,
+            "width": 702
+          },
+          {
+            "tag": "BUTTON",
+            "height": 49.171875,
+            "width": 101.3125
+          },
+          {
+            "tag": "BUTTON",
+            "height": 49.171875,
+            "width": 69.6875
+          }
+        ]
+      },
+      "status": "pass"
+    },
+    {
+      "fixture": "readonly",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "checks": [
+        "no script element",
+        "no horizontal overflow; visible controls >=44 CSS px",
+        "read-only no mutation controls"
+      ],
+      "geometry": {
+        "viewport": 390,
+        "scroll": 390,
+        "controls": []
+      },
+      "status": "pass"
+    },
+    {
+      "fixture": "optional",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "checks": [
+        "no script element",
+        "no horizontal overflow; visible controls >=44 CSS px",
+        "native button form association exact local POST",
+        "native FormData includes four exact tokens",
+        "optional selection clears to empty editor value; explicit submit serialization"
+      ],
+      "geometry": {
+        "viewport": 390,
+        "scroll": 390,
+        "controls": [
+          {
+            "tag": "SELECT",
+            "height": 44.375,
+            "width": 350
+          },
+          {
+            "tag": "BUTTON",
+            "height": 49.171875,
+            "width": 169
+          },
+          {
+            "tag": "BUTTON",
+            "height": 49.171875,
+            "width": 169
+          }
+        ]
+      },
+      "status": "pass"
+    },
+    {
+      "fixture": "retry",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "checks": [
+        "no script element",
+        "no horizontal overflow; visible controls >=44 CSS px",
+        "native button form association exact local POST",
+        "native FormData includes four exact tokens",
+        "initial error focus and exact field link; no-JS correction; submit-only retry serialization"
+      ],
+      "geometry": {
+        "viewport": 390,
+        "scroll": 390,
+        "controls": [
+          {
+            "tag": "INPUT",
+            "height": 49.171875,
+            "width": 350
+          },
+          {
+            "tag": "BUTTON",
+            "height": 49.171875,
+            "width": 350
+          }
+        ]
+      },
+      "status": "pass"
+    },
+    {
+      "fixture": "conflict",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "checks": [
+        "no script element",
+        "no horizontal overflow; visible controls >=44 CSS px",
+        "native button form association exact local POST",
+        "native FormData includes four exact tokens",
+        "conflict preserves input; authorized recovery link; stale submit blocked"
+      ],
+      "geometry": {
+        "viewport": 390,
+        "scroll": 390,
+        "controls": [
+          {
+            "tag": "INPUT",
+            "height": 49.171875,
+            "width": 350
+          },
+          {
+            "tag": "BUTTON",
+            "height": 49.171875,
+            "width": 169
+          },
+          {
+            "tag": "BUTTON",
+            "height": 49.171875,
+            "width": 169
+          }
+        ]
+      },
+      "status": "pass"
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "/readonly"
+    },
+    {
+      "method": "GET",
+      "url": "/optional"
+    },
+    {
+      "method": "GET",
+      "url": "/retry"
+    },
+    {
+      "method": "GET",
+      "url": "/conflict"
+    },
+    {
+      "method": "GET",
+      "url": "/readonly"
+    },
+    {
+      "method": "GET",
+      "url": "/optional"
+    },
+    {
+      "method": "GET",
+      "url": "/retry"
+    },
+    {
+      "method": "GET",
+      "url": "/conflict"
+    }
+  ],
+  "scope": "Actual renderer HTML and browser-native presentation/FormData only; no owner, POST route, CSRF validation, persistence or successful business mutation asserted."
+}

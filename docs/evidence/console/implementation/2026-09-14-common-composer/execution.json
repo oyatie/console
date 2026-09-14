@@ -1,0 +1,51 @@
+{
+  "owner": "/root",
+  "reviewers": [
+    "/root/finish_browser",
+    "/root/finish_migration"
+  ],
+  "source_sha256": {
+    "lib.rs": "c219b7ccfe73aedfd2fcdfeb64d46f79f9c2910377633a50201fc373524b4a29",
+    "common_action_composer.rs": "c72786cea8ffdb6adedc6bc503156bbb04a3e0f601c327d8e60e094a65477499",
+    "common_action_composer.css": "b5cc332708955d8ac4cabba5254f6f103f41c13c21b541a50ca676ebe8f88a63"
+  },
+  "tests": {
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-ui",
+    "integration": 16,
+    "library": 7,
+    "failed": 0,
+    "ignored": 0,
+    "doctests": 0,
+    "clippy": "same environment, cargo clippy --locked --manifest-path backend/Cargo.toml -p console-payroll-ui --all-targets -- -D warnings: PASS"
+  },
+  "browser": {
+    "executed": 8,
+    "passed": 8,
+    "javascript_enabled": false,
+    "scope": "native form/DOM/keyboard/mobile behavior of actual rendered projections, no business POST"
+  },
+  "test_lint_correction": "Test-only unwrap/expect lint allowance follows existing payroll integration-test pattern; two needless borrows removed; all assertion semantics preserved. Final23cases rerun after this mechanical correction.",
+  "logs": {
+    "common-composer-integration-red.log": {
+      "artifact": "common-composer-integration-red.log.gz",
+      "sha256": "7ab4385bfb3a6071b37906962068d160e73a76e8450b9b87ec575e36f0d3bf4d"
+    },
+    "common-composer-ux-red.log": {
+      "artifact": "common-composer-ux-red.log.gz",
+      "sha256": "477293581fec18ad349d449f1715d45a13b15b735c513a853d2933408078c7c8"
+    },
+    "common-composer-final-tests.log": {
+      "artifact": "common-composer-final-tests.log.gz",
+      "sha256": "48d704ca895f2ca419e4d7588d63c9f5bd2c3237952cb64dec8b62e7b90598d5"
+    },
+    "common-composer-clippy2.log": {
+      "artifact": "common-composer-clippy2.log.gz",
+      "sha256": "e17fadd046c3663ab5328820cf4486826f59010be8bd054e6225af0976701f0e"
+    }
+  },
+  "holds": [
+    "Owner-backed routes, full nested schema editors, authorization/CSRF enforcement and persistence remain dependent implementation",
+    "This is a common projection renderer within existing Leptos crate, not full Console UI completion",
+    "No production exposure"
+  ]
+}

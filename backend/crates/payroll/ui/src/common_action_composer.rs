@@ -130,7 +130,11 @@ fn field_control(field: &AuthorizedField, errors: &[FieldError]) -> AnyView {
             view! {
                 <select id=id.clone() name=control_name(&field.address) required=field.required
                     aria-invalid=invalid.then_some("true") aria-describedby=described>
-                    {(!has_selection).then(|| view! { <option value="" selected>"선택해 주세요"</option> })}
+                    {(!field.required || !has_selection).then(|| view! {
+                        <option value="" selected=!has_selection>
+                            {if field.required { "선택해 주세요" } else { "선택 안 함" }}
+                        </option>
+                    })}
                     {choices.into_iter().map(|choice| {
                         let is_selected = Some(&choice.value) == selected.as_ref();
                         view! { <option value=choice.value selected=is_selected>{choice.label}</option> }
@@ -181,12 +185,10 @@ pub fn render(model: &AuthorizedComposer) -> String {
         .mutation
         .as_ref()
         .filter(|context| local_ui_path(&context.action_path) && !context.operations.is_empty());
-    let blocked = !model.errors.is_empty()
-        || model.conflict.is_some()
-        || model
-            .fields
-            .iter()
-            .any(|field| matches!(field.value, EditorValue::Incomplete(_)));
+    // A returned error describes the previous input. In a no-JS form the user
+    // must be able to correct it and retry; the owner validates the new input.
+    // Stale revision recovery, unlike validation, requires a new context first.
+    let blocked = model.conflict.is_some();
     let body = if let Some(context) = mutation {
         let save = context.operations.contains(&ComposerOperation::Save);
         let submit = context.operations.contains(&ComposerOperation::Submit);

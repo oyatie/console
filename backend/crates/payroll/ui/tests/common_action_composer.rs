@@ -4,6 +4,8 @@
 //! infer permission. Rust HTML assertions do not certify browser form behavior,
 //! focus movement, CSRF verification, persistence, or server authorization.
 #![cfg(feature = "ssr")]
+// Missing fixture controls are assertion failures, not recoverable production errors.
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use console_payroll_ui::common_action_composer::{
     AuthorizedComposer, AuthorizedField, Choice, ComposerOperation, ConflictRecovery, EditorValue,
@@ -235,11 +237,11 @@ fn repeated_item_addresses_survive_reorder_without_aliasing() {
         let id: &str = entry.0.as_str();
         let name: &String = &entry.1;
         assert_eq!(
-            attr(one_id(&before, "input", &id), "name"),
+            attr(one_id(&before, "input", id), "name"),
             Some(name.clone())
         );
         assert_eq!(
-            attr(one_id(&after, "input", &id), "name"),
+            attr(one_id(&after, "input", id), "name"),
             Some(name.clone())
         );
     }

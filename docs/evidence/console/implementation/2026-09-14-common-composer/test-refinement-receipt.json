@@ -1,0 +1,18 @@
+{
+  "candidate": "0cb43c7585d8f19f9a3db165cfbe802573610e9e",
+  "base": "df069154999e5c085037b15cc5a5726fe5276ae2",
+  "source_sha256": "cbd06f37254d0d84488bfc345c23224688ed084ec790b8e1f425112cda764782",
+  "writer": "/root/finish_migration",
+  "authorization": "Root explicitly directed preimplementation hypothesis correction following independent finish_browser review. No shipped safety test is relaxed.",
+  "changes": [
+    "Replace server-rendered disabled Submit for incomplete input with enabled retry: no JavaScript exists to enable it after user correction.",
+    "Preserve Save formnovalidate and acknowledged1..2 editor text; HTML availability does not validate business value.",
+    "Add Submit-only error recovery test so Save authority cannot be invented as workaround.",
+    "Add optional already-selected enum clearing option: selectable empty value represents Unset editor state, not business NULL.",
+    "Fix borrowed String expectation with Some(name.clone())."
+  ],
+  "authored_cases": 16,
+  "execution": "No Cargo execution; root owns lease. rustfmt and git diff --check passed. Previous API-absent RED does not verify successor assertions.",
+  "independent_review_status": "Requested root and finish_browser exact-candidate approval before import.",
+  "rollback": "Do not import successor if rejected; retain immutable prior candidate/evidence and correct through further test-only commit."
+}
