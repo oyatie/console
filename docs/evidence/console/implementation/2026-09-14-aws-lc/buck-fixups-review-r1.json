@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/finish_migration",
+  "integration_base": "31ef64bd",
+  "verdict": "HOLD until sys source-build selection is explicit; then source-review acceptable within fixed non-fips Linux/Darwin closure, subject to actual Buck proof",
+  "files": {
+    "third-party/rust/fixups/aws-lc-rs/fixups.toml": "28071f9e45a970c684d149f6a474a3270bc9a282a680fd7e233077feb96c33bd",
+    "third-party/rust/fixups/aws-lc-sys/fixups.toml": "04fa353b0b5d9e9371011d3c6af621f8bfa50b5303a0b9a7d3222c092f7e11f5",
+    "tools/buck/gen_first_party.py": "af77a550ee784ca9381d641b52b5861813993db682f7bac5aac58358231d8e88",
+    "third-party/rust/BUCK": "299261f9c0966c0a83f1ae885df3fd2445e434a753854deb150edb861ec5fc07",
+    "backend/crates/platform/audit-chain/BUCK": "44d54f559228a658275463219a194f8162ddeafa944e13a705832552124c117b"
+  },
+  "blocking_finding": {
+    "file": "third-party/rust/fixups/aws-lc-sys/fixups.toml",
+    "issue": "NUM_JOBS only does not guarantee pinned upstream C compilation. aws-lc-sys0.45 auto-discovers system library by default.",
+    "upstream": "aws-lc-sys-0.45.0/builder/main.rs get_builder lines728-777 and use_system1074-1082",
+    "fix": "Set AWS_LC_SYS_USE_SYSTEM=\"0\" in buildscript env and regenerate BUCK. Explicit SYSTEM_DIR then fails closed rather than linking host. Verify actual generatedenv and native build/link outputs."
+  },
+  "nonblocking_correction": {
+    "file": "third-party/rust/fixups/aws-lc-rs/fixups.toml",
+    "issue": "Description metadata-only omits feature exclusion checks, dev/slowtest environmentcfg, rustc-check-cfg registration and WindowsstaticCRT linkarg.",
+    "resolution": "Document deliberate omissions for fixed current nonfips Linux/Darwin closure. Re-review/restore equivalents before new features/Windows/C metadata consumers."
+  },
+  "confirmed": [
+    "Generated aws-lc-rs target uses aws-lc-sys/non-fips/prebuilt-nasm only; no fips/devtests flags found.",
+    "Generated aws-lc-sys library includes OUT_DIR and @buildscript rustc_flags; script emits platform/bindgen cfg and native link/search flags, and outputs remain consumed.",
+    "Buildscript actual upstream builder/main.rs and archive source retained; no replacement host crypto code inserted.",
+    "new13test registration resource.none matches publicAPI-only test requiring no DB/network.",
+    "NUM_JOBS4 bounds native fanout without changing cryptographic API semantics."
+  ],
+  "limits": [
+    "No Cargo/Buck/Docker execution by reviewer; root owns real proof.",
+    "No claims across unsupported target/features or external C consumers.",
+    "Native compiler/SDK/assembly/toolchain inputs and emitted libraries must be bound by actual Buck action evidence, not merely TOML source review.",
+    "Cargo/CI sourcebuild policy may also need USE_SYSTEM0 under separate review because upstream default autodetection affects those paths too."
+  ]
+}

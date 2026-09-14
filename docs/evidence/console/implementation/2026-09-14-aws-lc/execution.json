@@ -1,0 +1,135 @@
+{
+  "status": "CARGO_AND_LOCAL_DARWIN_BUCK_VERIFIED",
+  "scope": "Complete active Ring replacement with AWS-LC in the selected Console dependency graph; TLS is in prior candidate 991f8ddda14f73e56952f0a938c75bad14349056.",
+  "owner": "/root",
+  "base_sha": "31ef64bd58abe4ad8bb92820235f5346c15d3a89",
+  "candidate_sha": "69c86eee174e31dadd1332ab37e5d84e9a22d4a0",
+  "source_sha256": {
+    "backend/Cargo.lock": "1bdc253d078cbb9f671231aefcd4ee0a51829f2891bea0f37be9402f85a21f1d",
+    "backend/Cargo.toml": "a5e16e5e06d0265958106a2a7860230b4ab6ea1368e9150a225cae66377bfd42",
+    "backend/app/BUCK": "249fd8f62a55cb1c284990c767f45b4a9f16434801dca87243c28d0bb87f3fde",
+    "backend/crates/platform/audit-chain/BUCK": "44d54f559228a658275463219a194f8162ddeafa944e13a705832552124c117b",
+    "backend/crates/platform/audit-chain/Cargo.toml": "607432419f598cf7036bf73986fc8b64edbd057a2becaccff45500f99878aee6",
+    "backend/crates/platform/audit-chain/src/external.rs": "a4b417ad926609a06401f559fd850a735f52dc91d1f419dab76a266d5d9c859e",
+    "backend/crates/platform/audit-chain/src/lib.rs": "e75654eb1816743541555a189ed763e3d37f46edf40b257b60a2394c26ece615",
+    "third-party/rust/BUCK": "922956d3a8f48c59694604a5c4fade9b0c6b525020fa2b93d80708f890b11464",
+    "third-party/rust/fixups/aws-lc-rs/fixups.toml": "56649a81a9ca0dde0d143bf41be0f423eb85700d23a7357e30ed9a52a49c9d25",
+    "third-party/rust/fixups/aws-lc-sys/fixups.toml": "2da17edee351bbacb60a57dddcee69bd781e57e36984116eda531e9efdd732b2",
+    "third-party/rust/fixups/ring/fixups.toml": "deleted",
+    "tools/buck/gen_first_party.py": "af77a550ee784ca9381d641b52b5861813993db682f7bac5aac58358231d8e88"
+  },
+  "mechanical_guide": [
+    "Use the existing workspace AWS-LC dependency for audit Ed25519 signing and verification.",
+    "Route both public verifier paths through raw32/signature64 guards; preserve anchor, error, message, key reference and seal serialization contracts.",
+    "Regenerate first-party and Reindeer Buck declarations from Cargo; run pinned source native crypto build and same compatibility tests.",
+    "Do not change database schema, historical seals, external key custody or tests to conceal compatibility failures."
+  ],
+  "probe": {
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo tree --locked --offline --manifest-path backend/Cargo.toml --workspace --target all --edges normal,build --prefix none --format '{p}'",
+    "oracle": "Command exits zero, output is nonempty, no output line starts with ring v.",
+    "red": "active-dependency-tree-red.txt.gz retains pre-migration active Ring dependency",
+    "green": "no-ring-final-probe-tree.txt.gz: exact normal/build probe4002 lines, zero Ring. Additional normal/build/dev all-target probe4273 lines, zero Ring.",
+    "distinction": "Compatibility baseline13 tests was green before migration and remains green. It is conservation evidence, not manufactured RED."
+  },
+  "verification": [
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --locked --offline --manifest-path backend/Cargo.toml -p console-platform-audit-chain --lib --test ed25519_compatibility",
+      "discovered": 18,
+      "executed": 18,
+      "passed": 18,
+      "failed": 0,
+      "evidence": "audit-awslc-final-candidate-green.log.gz",
+      "candidate_sha": "69c86eee174e31dadd1332ab37e5d84e9a22d4a0"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo DOCKER_CONTEXT=colima-console-custody-20260914 SQLX_OFFLINE=true fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-account-lifecycle-execution-20260914/startup-probe-map.json --only platform-audit-chain-rls --runner cargo --num-threads 1",
+      "discovered": 24,
+      "executed": 24,
+      "passed": 24,
+      "failed": 0,
+      "evidence": "audit-awslc-pg-green.log.gz"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo clippy --locked --offline --manifest-path backend/Cargo.toml -p console-platform-audit-chain --all-targets -- -D warnings",
+      "exit_code": 0,
+      "evidence": "no-ring-clippy.log.gz"
+    },
+    {
+      "command": "python3 -m unittest discover -s tools/buck -p test_gen_first_party.py",
+      "discovered": 35,
+      "executed": 35,
+      "passed": 35,
+      "failed": 0,
+      "evidence": "no-ring-generator-tests-clean-green.log.gz",
+      "prior_failure": "34 passed/1 failed before generated files were staged: checker compares regenerated files to Git index. No assertions changed; clean candidate passes."
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo fmt --manifest-path backend/Cargo.toml -p console-platform-audit-chain -- --check",
+      "exit_code": 0
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 third-party/rust/buckify.sh",
+      "exit_code": 0,
+      "evidence": "no-ring-buckify-final.log.gz"
+    },
+    {
+      "command": "PATH=/private/tmp/console-authority30-dotslash:$PATH RUSTUP_TOOLCHAIN=1.98.1 tools/buck2 build //backend/crates/platform/audit-chain:console-platform-audit-chain-itest-ed25519_compatibility",
+      "exit_code": 0,
+      "evidence": "no-ring-buck-build-pinned.log.gz",
+      "local_actions": 2602,
+      "platform": "aarch64-apple-darwin",
+      "prior_environment_failure": "Unpinned buck2 attempt could not create daemon directory within sandbox; used repository-pinned tools/buck2 with approved local cache access."
+    },
+    {
+      "command": "Buck-produced ed25519_compatibility executable --test-threads=1; exact path/hash in no-ring-buck-binary.json.gz",
+      "discovered": 13,
+      "executed": 13,
+      "passed": 13,
+      "failed": 0,
+      "evidence": "no-ring-buck-compat-green.log.gz"
+    }
+  ],
+  "independent_reviewers": [
+    "/root/finish_browser",
+    "/root/review_completeness",
+    "/root/finish_migration"
+  ],
+  "pre_mortem": [
+    "Broader AWS DER acceptance silently widens trusted-key wire format.",
+    "Native build picks host crypto instead of pinned source.",
+    "Cargo passes while generated Buck native linking fails.",
+    "Lockfile-only Ring entries get falsely represented as active runtime code or falsely reported absent."
+  ],
+  "blast_radius": "Audit verification and development signer; workspace crypto feature selection and generated build graph. No storage migration or external private-key movement.",
+  "detection": "Independent historical-format/RFC vectors, malformed-key denial, actual PostgreSQL tamper and tenant tests, native build/run, dependency tree and generation checks.",
+  "rollback": "Revert the bounded crypto commit in a new reviewed candidate and regenerate build graphs. Data and seal wire format are unchanged; no data restore required. Prior TLS commit can remain.",
+  "stop_conditions": [
+    "Historical canonical signature or trust-anchor behavior changes.",
+    "Any active Ring edge returns.",
+    "Native build silently substitutes unpinned host crypto.",
+    "Meaningful tests fail; do not weaken them."
+  ],
+  "remaining_holds": [
+    "No Linux release image or production certification; successful native Buck build and executable test result cover local aarch64-apple-darwin only.",
+    "Verify actual historical production anchors/seals before any production migration; public/synthetic compatibility evidence is bounded.",
+    "Not FIPS validated.",
+    "Cargo.lock retains inactive optional Ring from rustls-webpki and hickory-proto, reproduced in fresh isolated locks. Literal vendor/lock elimination would require a reviewed dependency/upstream change.",
+    "Buck aws-lc-rs buildscript skip is scoped to current non-FIPS Linux/Darwin feature closure; re-review for Windows, FIPS/test features or C metadata consumers.",
+    "Broader Account combined custody probe remains33 passed/3 failed/58 filtered: legacy credential owner, Company provenance and Company privilege conversion remain unresolved. Account/whole Console is not complete."
+  ],
+  "main_worktree_preserved": {
+    "head": "05200e43af13b527ce031b04369e05852862f1d6",
+    "staged_diff_sha256": "2a4a15c33cb1db7f512654f42c26d494843c6a45e997740594de43601d6d69c3"
+  },
+  "publication": "Local isolated candidate only. No merge, audience, deployment or production exposure.",
+  "independent_native_execution": {
+    "reviewer": "/root/finish_migration",
+    "candidate_sha": "69c86eee174e31dadd1332ab37e5d84e9a22d4a0",
+    "discovered": 13,
+    "executed": 13,
+    "passed": 13,
+    "failed": 0,
+    "evidence": "buck-native-final-review.json",
+    "scope": "Same hashed Buck-produced executable; reviewer independently checked linked prefixed AWS Ed25519 symbols and static archive."
+  }
+}
