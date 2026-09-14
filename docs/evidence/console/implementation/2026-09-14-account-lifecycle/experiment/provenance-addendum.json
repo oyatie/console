@@ -1,0 +1,7 @@
+{
+  "status": "PROVENANCE_CLARIFICATION_NO_SEMANTIC_SOURCE_CHANGE",
+  "staged_schema_prefix": "-- EXPERIMENT ONLY: ownership transfer omitted; original ACL revocation retained. NOT SQLx migration evidence.",
+  "reconstruction": "Remove this first line, then invert transformation.patch to reconstruct the unchanged Account draft.",
+  "original_draft_sha256": "6e10412d1cd92274c171ffb181794d08b3f59385c95606221386c218e60b177a",
+  "limits": "Mechanism experiment only. Transfer SQL lacks production precondition/ledger/readiness controls; run.py expects topology.sh and225migrations reconstructed from sources.json exact base. Re-execution must use a new output directory to preserve original evidence."
+}

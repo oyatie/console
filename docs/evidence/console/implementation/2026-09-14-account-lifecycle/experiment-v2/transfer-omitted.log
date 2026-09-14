@@ -1,0 +1,2 @@
+psql:/experiment/check-custody.sql:16: ERROR:  wrong owner account_terms_release_receipts
+CONTEXT:  PL/pgSQL function inline_code_block line 9 at RAISE
