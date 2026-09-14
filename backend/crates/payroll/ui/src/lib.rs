@@ -2,6 +2,8 @@
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
+pub mod common_action_composer;
+
 const PKG_JS: &str = "/_ui/pkg/console_payroll_ui.js";
 const PKG_WASM: &str = "/_ui/pkg/console_payroll_ui_bg.wasm";
 const ISLAND_BOOTSTRAP: &str = concat!(
