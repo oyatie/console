@@ -260,8 +260,8 @@ async fn owner_membership_refuses_and_fixture_cleans_cluster_edge(pool: PgPool) 
     staged(&pool).await;
     let sql = account_custody_finalizer_sql();
     let before = snapshot(&pool).await;
-    let mut connection = pool.acquire().await.unwrap();
-    sqlx::raw_sql("BEGIN; GRANT console_account_owner TO console_rt WITH ADMIN FALSE, INHERIT FALSE, SET TRUE; SAVEPOINT before_finalizer")
+    let mut connection = pool.begin().await.unwrap();
+    sqlx::raw_sql("GRANT console_account_owner TO console_rt WITH ADMIN FALSE, INHERIT FALSE, SET TRUE; SAVEPOINT before_finalizer")
         .execute(&mut *connection).await.unwrap();
     let result = tokio::time::timeout(
         Duration::from_secs(70),
@@ -275,10 +275,7 @@ async fn owner_membership_refuses_and_fixture_cleans_cluster_edge(pool: PgPool) 
         .await
         .unwrap();
     let edge_preserved: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_auth_members WHERE roleid='console_account_owner'::regrole AND member='console_rt'::regrole AND NOT admin_option AND NOT inherit_option AND set_option)").fetch_one(&mut *connection).await.unwrap();
-    sqlx::raw_sql("ROLLBACK")
-        .execute(&mut *connection)
-        .await
-        .unwrap();
+    connection.rollback().await.unwrap();
     let after = snapshot(&pool).await;
     assert!(edge_preserved, "finalizer repaired a refused membership");
     let error = result.expect_err("owner membership accepted");
@@ -460,7 +457,7 @@ async fn wait_for_blocker(pool: &PgPool, blocked: i32, blocker: i32) {
 async fn concurrent_finalizers_have_complete_request_outcomes_and_one_final_state(pool: PgPool) {
     staged(&pool).await;
     let sql = account_custody_finalizer_sql();
-    let mut first = pool.acquire().await.unwrap();
+    let mut first = pool.begin().await.unwrap();
     let mut second = pool.acquire().await.unwrap();
     let first_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
         .fetch_one(&mut *first)
@@ -470,7 +467,7 @@ async fn concurrent_finalizers_have_complete_request_outcomes_and_one_final_stat
         .fetch_one(&mut *second)
         .await
         .unwrap();
-    sqlx::raw_sql("BEGIN; LOCK TABLE public.accounts IN ACCESS EXCLUSIVE MODE")
+    sqlx::raw_sql("LOCK TABLE public.accounts IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *first)
         .await
         .unwrap();
@@ -485,7 +482,7 @@ async fn concurrent_finalizers_have_complete_request_outcomes_and_one_final_stat
         .execute(&mut *first)
         .await
         .unwrap();
-    sqlx::raw_sql("COMMIT").execute(&mut *first).await.unwrap();
+    first.commit().await.unwrap();
     let second_outcome = tokio::time::timeout(Duration::from_secs(65), second_task)
         .await
         .unwrap()
@@ -506,16 +503,13 @@ async fn concurrent_finalizers_have_complete_request_outcomes_and_one_final_stat
 async fn blocked_finalizer_times_out_without_partial_transfer_and_retries(pool: PgPool) {
     staged(&pool).await;
     let before = snapshot(&pool).await;
-    let mut blocker = pool.acquire().await.unwrap();
-    sqlx::raw_sql("BEGIN; LOCK TABLE public.accounts IN ACCESS EXCLUSIVE MODE")
+    let mut blocker = pool.begin().await.unwrap();
+    sqlx::raw_sql("LOCK TABLE public.accounts IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *blocker)
         .await
         .unwrap();
     let result = finalizer(&pool).await;
-    sqlx::raw_sql("ROLLBACK")
-        .execute(&mut *blocker)
-        .await
-        .unwrap();
+    blocker.rollback().await.unwrap();
     let error = result.expect_err("held relation lock should time out");
     assert_eq!(
         error.as_database_error().unwrap().code().as_deref(),
@@ -553,12 +547,12 @@ async fn another_database_crosses_0165_while_finalization_is_in_flight(pool: PgP
         .await
         .unwrap();
     drop(owner);
-    let mut lock = pool.acquire().await.unwrap();
+    let mut lock = pool.begin().await.unwrap();
     let lock_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
         .fetch_one(&mut *lock)
         .await
         .unwrap();
-    sqlx::raw_sql("BEGIN; LOCK TABLE public.accounts IN ACCESS EXCLUSIVE MODE")
+    sqlx::raw_sql("LOCK TABLE public.accounts IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *lock)
         .await
         .unwrap();
@@ -593,7 +587,7 @@ async fn another_database_crosses_0165_while_finalization_is_in_flight(pool: PgP
         })
         .await
         .expect("second actual migrator did not cross historical0165 while finalizer was held");
-        sqlx::raw_sql("COMMIT").execute(&mut *lock).await.unwrap();
+        lock.commit().await.unwrap();
         tokio::time::timeout(Duration::from_secs(70), transfer)
             .await
             .unwrap()
