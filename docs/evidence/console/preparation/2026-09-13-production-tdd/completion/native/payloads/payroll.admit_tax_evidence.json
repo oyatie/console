@@ -1,0 +1,102 @@
+{
+  "kind": "payroll.admit_tax_evidence",
+  "body": {
+    "family": "TAX_EVIDENCE",
+    "payload": {
+      "kind": "TAX_EVIDENCE",
+      "source_qualification_ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+        "revision": "1"
+      },
+      "artifact_ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "evidence_object_id": "26b202fd-02e7-59f7-a981-c62f5fd80b08",
+        "copy_id": "5ff2ed60-4bad-520b-9662-7ecc51635cbd",
+        "attestation_id": "1a0aedba-2a2c-5ec7-b251-c380228fd64d",
+        "attestation_revision": "1"
+      },
+      "table_edition": "NONPRODUCTION_FIXTURE_V1",
+      "assessment_ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "assessment_id": "654b664c-9fe9-5df0-b45a-c705fd650028",
+        "revision": "1"
+      },
+      "employment_coverage": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "employee_id": "d4350801-44d4-54f8-a9a8-fb2867fbe19a",
+        "employment_id": "abc17824-a202-5ffc-b25c-79d53ff52fb4",
+        "binding_id": "2dc2bbb5-c5d3-5ef5-abac-95c7a396f090",
+        "binding_revision": "1",
+        "earning_start_us": "1788188400000000",
+        "earning_end_us": "1790780400000000",
+        "segments": [
+          {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "employment_id": "abc17824-a202-5ffc-b25c-79d53ff52fb4",
+            "revision_id": "a1f866da-4ae9-5b04-92e4-6bdba70e3040",
+            "revision": "1",
+            "from_us": "1788188400000000",
+            "to_us": "1790780400000000"
+          }
+        ]
+      },
+      "period": {
+        "start": "2026-09-01",
+        "end": "2026-09-30"
+      },
+      "pay_date": "2026-10-05",
+      "income_band": {
+        "lower_inclusive_won": "3000000",
+        "upper_exclusive_won": "3010000"
+      },
+      "selection": {
+        "taxable_monthly_won": "3000000",
+        "dependent_count_including_self": "1",
+        "eligible_child_count": "0",
+        "withholding_option": "P100",
+        "selection_fact_refs": [
+          {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "evidence_object_id": "26b202fd-02e7-59f7-a981-c62f5fd80b08",
+            "copy_id": "5ff2ed60-4bad-520b-9662-7ecc51635cbd",
+            "attestation_id": "1a0aedba-2a2c-5ec7-b251-c380228fd64d",
+            "attestation_revision": "1"
+          }
+        ],
+        "income_definition_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+          "revision": "1"
+        }
+      },
+      "amounts": {
+        "amount_stage": "FINAL_WITHHOLDING",
+        "income_tax_won": "0",
+        "local_tax_won": "0",
+        "income_locator": {
+          "kind": "CSV_RECORD",
+          "record_ordinal": "1",
+          "column_name": "income_tax",
+          "locator_schema_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          }
+        },
+        "local_locator": {
+          "kind": "CSV_RECORD",
+          "record_ordinal": "1",
+          "column_name": "local_tax",
+          "locator_schema_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          }
+        },
+        "rule_note_locators": []
+      }
+    },
+    "supersedes_ref": null
+  }
+}

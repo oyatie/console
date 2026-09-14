@@ -1,0 +1,142 @@
+{
+  "status": "PROPOSED_OWNER_PORT_CONTRACT_NOT_IMPLEMENTED",
+  "transaction_rule": "Methods with in_conn borrow the same PgConnection; no pool, commit, detached task or second writer; owning caller commits.",
+  "participants": [
+    {
+      "method": "load_registered_action_in_conn",
+      "owner": "ontology registry adapter",
+      "input": "Company, exact action/type/input-schema refs; caller-fenced authority",
+      "output": "Immutable RegisteredAction + current executable compatibility, typed input/result codecs"
+    },
+    {
+      "method": "prepare_draft_input",
+      "owner": "ontology application plus compiled domain codec",
+      "input": "Exact schema, partial cells/source projections or normalized owner command",
+      "output": "Typed partial validation or exact complete normalized owner input; no I/O/effect or saved authority"
+    },
+    {
+      "method": "lock_draft_context_in_conn",
+      "owner": "ontology common instance adapter",
+      "input": "Trusted Account,Company,draft/attempt ref and fenced earlier work facts",
+      "output": "Current control/attempt facts; no new-effect permission rejection before authoritative receipt recheck"
+    },
+    {
+      "method": "append_guarded_draft_in_conn",
+      "owner": "ontology common instance adapter",
+      "input": "Company command, exact context/head, typed operation patch; current disclosure/write evidence",
+      "output": "New/equal common revision + metadata-only ACK/audit atomically; does not commit"
+    },
+    {
+      "method": "seal_draft_in_conn",
+      "owner": "ontology common draft owner coordinating input/source/governance pins",
+      "input": "Current acknowledged revision/context + normalized owner preparation, exact user gate-request intent if required",
+      "output": "Immutable attempt/domain command plus source pins/control SEALED; no domain execution"
+    },
+    {
+      "method": "read_bound_receipt_in_conn",
+      "owner": "actual receipt/domain owner using common Company namespace",
+      "input": "Exact command plus server-owned Company/command attempt-provenance lookup; under fence recheck binding/receipt even if caller omitted attempt",
+      "output": "Proven receipt/provenance absence or exact bound attempt/receipt; newly discovered earlier-lock binding forces rollback/replan, never late lock/downgrade"
+    },
+    {
+      "method": "execute_registered_command",
+      "owner": "actual domain adapter, PgPayRunPort for PayRun",
+      "input": "Typed EnrolledCommandRequest including original reason/expected/schema/attempt/gate",
+      "output": "Own transaction: guards/recheck/current-authorize/gate/effect/receipt/mandatoryaudit/finalization; no wrapper preconsume"
+    },
+    {
+      "method": "finalize_attempt_in_conn",
+      "owner": "ontology common draft owner",
+      "input": "Locked READY attempt plus exact same-tx domain receipt/result refs",
+      "output": "SUCCEEDED + control CONSUMED/epoch transition; workflow completion forwarded to workflow owner"
+    },
+    {
+      "method": "cancel_attempt_in_conn",
+      "owner": "ontology common draft owner with actual domain receipt owner",
+      "input": "Current authorized cancel plus locked authoritative effect outcome",
+      "output": "CANCELLED and fresh editable epoch only after proven no effect; otherwise historical success/unknown"
+    },
+    {
+      "method": "adopt_submission_in_conn",
+      "owner": "domain submission owner + common pin owner",
+      "input": "Exact verified normalized snapshot/evidence/source pin",
+      "output": "Durable domain retention/disclosure receipt before draft pin release; physical adoption schema W04b-05"
+    },
+    {
+      "method": "project_draft_history_in_conn",
+      "owner": "common instance owner + current Cedar projection",
+      "input": "Whole-chain metadata permission or exact selected revision refs and property rights",
+      "output": "Bounded50-entry metadata page or at most2authorized revision projections; no raw chain/hash"
+    },
+    {
+      "method": "join_assignment_transition_in_conn",
+      "owner": "workflow/assignment owner; app composition forwards common draft cancellation",
+      "input": "WA2 plan/work/capacity guards + exact draft set",
+      "output": "Reconcile/cancel old attempts, rotate contexts and assign under same transaction; physical ports W04b-04"
+    }
+  ],
+  "operations": [
+    {
+      "key": "draft.start",
+      "input": "command_id, registered action, typed target, owner intent slot, authorized custody",
+      "effect": "Find/create one active intent and common v1; no task created by GET"
+    },
+    {
+      "key": "draft.resume",
+      "input": "known draft reference",
+      "effect": "Read current authorized head/context only"
+    },
+    {
+      "key": "draft.save",
+      "input": "command_id, expected_revision_id, editing_token, typed field patch",
+      "effect": "Atomic guarded append/no-op ACK"
+    },
+    {
+      "key": "draft.restore",
+      "input": "command_id, expected_revision_id, editing_token, source_revision_id, selected_field_ids",
+      "effect": "Authorized new common revision, no domain effect"
+    },
+    {
+      "key": "draft.upgrade_schema",
+      "input": "command_id, expected_revision_id, editing_token, exact compatible schema/mapping refs",
+      "effect": "New revision with mapping provenance or repair blocker"
+    },
+    {
+      "key": "draft.discard",
+      "input": "command_id, expected_revision_id, editing_token, bounded reason",
+      "effect": "Editable -> DISCARDED, epoch rotate; sealed requires conclusive cancellation"
+    },
+    {
+      "key": "draft.expire",
+      "input": "registered retention operation, expected control revision/current eligibility",
+      "effect": "EDITABLE only -> EXPIRED; never unknown/sealed timeout"
+    },
+    {
+      "key": "draft.seal",
+      "input": "command_id, expected_revision_id, editing_token, explicit gate request intent when applicable",
+      "effect": "READY attempt+sealed snapshot and source pins; not submitted business fact"
+    },
+    {
+      "key": "attempt.execute",
+      "input": "exact attempt_id/domain_command_id",
+      "effect": "Same owner business executor; immutable binding loaded server-side"
+    },
+    {
+      "key": "attempt.reconcile",
+      "input": "exact attempt or command reference",
+      "effect": "Read current-authorized durable outcome; no new effect"
+    },
+    {
+      "key": "attempt.cancel",
+      "input": "cancel_command_id, attempt_id, expected_state_revision, bounded reason",
+      "effect": "Terminal no-effect cancel or authorized historical result/unknown"
+    },
+    {
+      "key": "draft.history",
+      "input": "known draft, bounded current-policy cursor or selected revision refs",
+      "effect": "Current-authorized history/compare, no mutation"
+    }
+  ],
+  "adapters": "Proposed common action routes reuse existing Action routing with registered local keys/type; exact REST DTO/OpenAPI extraction after integrated approval. No state-changing GET; AS1 cookies/CSRF and current Cedar at every boundary.",
+  "legacy": "Non-enrolled compatible legacy routes keep legacy protocol; any alias reaching enrolled draft/source data delegates same owner or refuses. Canonical outer reason/gate/command equality mandatory."
+}

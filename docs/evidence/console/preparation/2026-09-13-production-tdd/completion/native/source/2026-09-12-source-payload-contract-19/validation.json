@@ -1,0 +1,68 @@
+{
+  "candidate_sha": "c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6",
+  "recorded_at": "2026-09-12T23:41:50.817281+00:00",
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.7",
+    "git": "git version 2.55.0"
+  },
+  "invocations": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-source-payload-contract-19/verify-packet.py --commit HEAD",
+      "resolved_head_sha": "c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6",
+      "exit_code": 0,
+      "result": {
+        "candidate_sha": "c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6",
+        "core_files": 14,
+        "source_blobs": 55,
+        "schema_definitions": 89,
+        "closed_objects": 85,
+        "resolved_schema_refs": 345,
+        "root_shapes": 15,
+        "canonical_witnesses": 13,
+        "framed_witnesses": 6,
+        "thirty_day_serialization_bytes": 82069,
+        "max_witness_container_depth": 8,
+        "nonexecutable_proof_cases": 40,
+        "reader_links": 12,
+        "validation_scope": "Static packet/reference/limited fixture shape/framing/arithmetic only; no full JSON Schema validator or runtime semantics",
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "sql_executed": false,
+        "implementation_authorized": false
+      }
+    },
+    {
+      "command": "git diff --check 3f9da4b668a232eee77310a4d4704591d904c5d6..c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6",
+      "exit_code": 0,
+      "result": "No whitespace errors"
+    },
+    {
+      "command": "git status --short",
+      "at_sha": "c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6",
+      "exit_code": 0,
+      "result": "clean before receipts"
+    }
+  ],
+  "earlier_failures": [
+    {
+      "command": "git diff --cached --check",
+      "candidate": "initial19 precommit",
+      "result": "CSV CRLF flagged as trailing whitespace; converted to LF and check passed before first commit"
+    },
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-source-payload-contract-19/verify-packet.py --commit HEAD",
+      "candidate": "e491d63e61804e35796429f14ee940952c740375",
+      "exit_code": 1,
+      "result": "Unreachable LeaveRequestRef after flattening; removed unused definition in dc13f447; checker preserved"
+    }
+  ],
+  "limits": [
+    "Static identities/reference graph, limited declared fixture shape subset, hash framing and synthetic arithmetic only",
+    "40 listed proof cases remain nonexecutable; no product tests, SQL, actual source parsing or browser/auth/restore/load verification",
+    "No full repository gate, production readiness, compliance or legal source qualification claim"
+  ],
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "sql_executed": false
+}

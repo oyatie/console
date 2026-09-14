@@ -1,0 +1,95 @@
+{
+  "status": "PROPOSED_OWNER_EXTRACTION_CATALOGUE",
+  "outputs": [
+    "RETAIN_EXACT",
+    "RECHECK_CURRENT",
+    "QUERY_WITNESS",
+    "CONTROL_LINEAGE"
+  ],
+  "templates": [
+    {
+      "id": "AUTH",
+      "owner": "Account / Group identity / CompanyActor / Cedar",
+      "derive": "Current session assurance without secrets; exact current Company membership in customer Group; CompanyActor binding and action/field/object policy revisions; immutable minimum authorized decision evidence",
+      "applicability": "All new effects and reads; no job title inference; current read projection even for replay"
+    },
+    {
+      "id": "HUMAN",
+      "owner": "AI1 / gate owner",
+      "derive": "Scoped verified natural-person binding witnesses for original proposer, actual verifier and gate participants plus independent issuer operator where needed",
+      "applicability": "Required distinct-human participants; never copy entire Group identity records into Company or infer equality from user UUID"
+    },
+    {
+      "id": "BUILD",
+      "owner": "deployment / rule registry",
+      "derive": "Exact admitted action/type/schema/codec/owner build; rule bundle and citation manifests; issuer/normalizer build/conformance when used",
+      "applicability": "Fixed registry only; no tenant SQL selector or arbitrary parser; trust terminates at pinned independently admitted root"
+    },
+    {
+      "id": "CONTROL",
+      "owner": "draft / action / task / gate owners",
+      "derive": "Acknowledged draft revision, preparation own receipt, seal tuple, attempt/reservation, task assignment and routing epoch; gate request plus actual decision and consumption evidence",
+      "applicability": "Only participants required by selected existing action registration; late decision retained atomically by its owner, not added to24 input hash"
+    },
+    {
+      "id": "HISTORY",
+      "owner": "source owner",
+      "derive": "Exact original admission and relied-on events; explicit predecessor and activated-successor slot including previously verified revoked predecessor",
+      "applicability": "Bounded explicit event references; no transitive predecessor history walk; control/adoption/receipt backedges classified as lineage"
+    },
+    {
+      "id": "SELECT",
+      "owner": "each source family owner",
+      "derive": "Closed typed query selector, scope, interval, family guard generation, observed result identities and complete count or bounded overflow marker",
+      "applicability": "Include hidden candidates in authority check; absence/ambiguity is guarded query evidence, never fake entity UUID; disclosure filtered separately"
+    },
+    {
+      "id": "EMPLOYMENT",
+      "owner": "Employment / people owner",
+      "derive": "Historical Company employee/Person/Employment and effective-dated binding segments relied on by exact earning dates",
+      "applicability": "Current employment shortcut forbidden; continued Account identity does not grant employment data"
+    },
+    {
+      "id": "CALENDAR",
+      "owner": "calendar / assignment owner",
+      "derive": "Complete assignment/publication selection for D-1 and D anchors plus the next boundary plan when validating cross-boundary overlap; retain its exact plan/assignment/rule evidence and complete selector witness. Time-zone/calendar/rule editions and clipped contributions remain exact.",
+      "applicability": "Gap/overlap/unknown are blockers; no guessed next-day plan. Boundary validation does not add a third earning-day plan contribution:19 max2 remains. Adjacent month locks follow20; exact effective range not only current head."
+    },
+    {
+      "id": "EVENTS",
+      "owner": "attendance / exception owner",
+      "derive": "Complete selected event rows including unplanned events, prior CLOCK_IN/anchor or explicit opening initialization fact/rule; notes/legacy attribution; exception resolution and unresolved query witness",
+      "applicability": "Original native rows plus exact package; unknown opening remains UNKNOWN; no duration reconstructed from rounded overtime"
+    },
+    {
+      "id": "LEAVE",
+      "owner": "leave owner",
+      "derive": "Actual current request/version, charge/resolution/version/digest and decide audit event with required before/after evidence; effective disposition and qualifications",
+      "applicability": "Missing charge/decision remains draft/blocker; UNRESOLVED pay treatment may record uncertainty only when mandatory native evidence exists"
+    },
+    {
+      "id": "NATIVE",
+      "owner": "native payroll / attendance close owners",
+      "derive": "18 exact native input units, resolved population/scope, current assessment, source/coverage, WAGE base/correction, lock/close and full amendment set",
+      "applicability": "Membership cross-check includes hidden candidates; close member file alone is insufficient; no fabricated amendment revision"
+    },
+    {
+      "id": "DOCS",
+      "owner": "Docs / shared custody",
+      "derive": "Original/derived copy lineage, exact version GET attestation/hash/size, scanner state, retained unit inventory and all purpose protections",
+      "applicability": "Link or hash is neither live protection nor authority; include both original rows and packages required by19"
+    },
+    {
+      "id": "TAX",
+      "owner": "tax / qualified source owner",
+      "derive": "For tax-evidence/employee consumption: exact verified assessment, selected employee cells and complete applicable rule-note/adjustment set. For all applicable tax-source uses: exact source edition/artifact, reviewed PDF locator map or admitted CSV normalizer, support/layout and source rule-note evidence.",
+      "applicability": "QUALIFICATION:TAX_TABLE stops at source-edition/layout/support/rule-note evidence; no dependency on employee assessment, selected employee cells or later tax evidence. No LLM semantic dependence; notes shown beside relevant decision and retained; manual located entry uses same guards."
+    },
+    {
+      "id": "PROTECTION",
+      "owner": "shared custody / registered source owner",
+      "derive": "Closed dependency inventory and actual independent purpose/obligation protection for submitted intent and each relied-on required evidence item",
+      "applicability": "All downstream obligations preserved through upstream expiry; adopted=true or root-only pin insufficient"
+    }
+  ]
+}

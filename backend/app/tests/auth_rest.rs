@@ -36,6 +36,8 @@ const TEST_ORIGIN: &str = "https://auth.example.com";
 
 #[path = "auth_rest/account_storage.rs"]
 mod account_storage;
+#[path = "auth_rest/publication_privileges.rs"]
+mod publication_privileges;
 
 #[derive(Debug, Deserialize)]
 struct RegisterStartResponse {

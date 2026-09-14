@@ -1,0 +1,38 @@
+{
+  "kind": "payroll.revise_review_cycle",
+  "body": {
+    "affected_bases": [
+      {
+        "basis_id": "30b79348-e9a7-553e-b25e-d01575c0f8ed",
+        "basis_revision": "1",
+        "basis_digest": "c823611f8d1d18185ccbb93e364f1dd3ca54ab7f2d1c786c0511372b8c295b35",
+        "obligation": {
+          "kind": "UNIT",
+          "employee_id": "d4350801-44d4-54f8-a9a8-fb2867fbe19a",
+          "employment_id": "abc17824-a202-5ffc-b25c-79d53ff52fb4",
+          "unit_id": "17b6fd79-d3a6-5829-a8c2-e5ccb3dfb590"
+        },
+        "evidence_contract": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+          "instance_id": "ec796328-4e80-5003-8a5c-977449490de3",
+          "revision_id": "a1f866da-4ae9-5b04-92e4-6bdba70e3040",
+          "version": "1",
+          "row_hash": "46c6c862799084ceb242edbcb82c10587d1161078ec3417c9c76256354608565"
+        },
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f"
+      }
+    ],
+    "committed_corrections": [
+      {
+        "kind": "COMPANY",
+        "command": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "command_id": "bb572b67-b525-5646-8b4e-351027ad4452"
+        },
+        "receipt_id": "abd00cc7-2768-5928-b5f0-fb7083cfd28a"
+      }
+    ],
+    "reason": "검토 근거를 확인했습니다."
+  }
+}

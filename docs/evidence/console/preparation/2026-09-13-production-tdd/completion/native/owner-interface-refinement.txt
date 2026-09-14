@@ -1,0 +1,48 @@
+# Proposed owner command entry and fixture interfaces
+
+This is an explicit design refinement, not invented existing code. All symbols under `action30` below are proposed. Exact source custody is58b6; current concrete paths exist for ontology/payroll/attendance/governance/workflow/docs/leave `adapter-postgres/src/lib.rs`, but the55 design30 command entry modules do not. Do not create stubs just to get these tests through compilation. Compiler missing-interface output is a prerequisite result until the exact lane/test-design admission approves that RED.
+
+Use each existing owning adapter's `action30` module. A public Rust command entry is not a public HTTP endpoint. The owning REST/composition binder calls it after resolving only authorized client inputs; the test-side composer may pass actual private typed owner inputs. Its private finalizer remains inaccessible to callers:
+
+```rust
+// Reuse existing PgPool, PgConnection, platform-authz Principal and kernel IDs.
+// Pure common metadata belongs in ontology/application::action30, generic in I;
+// concrete business inputs/results remain in their existing owner module.
+pub async fn payroll_create_run(
+    pool: &sqlx::PgPool,
+    principal: &console_platform_authz::Principal,
+    request: console_ontology_application::action30::RegisteredActionRequest<RunCreate>,
+) -> Result<RunResult, PayrollActionError>;
+
+// Inside payroll adapter/action30 only; same pattern for the other fixed owners.
+async fn resolve_current_ctx_in_conn(
+    conn: &mut sqlx::PgConnection,
+    principal: &console_platform_authz::Principal,
+    requested: &console_ontology_application::action30::RequestIdentity,
+) -> Result<OwnerCommandCtx, PayrollActionError>;
+
+async fn payroll_create_run_in_conn(
+    conn: &mut sqlx::PgConnection,
+    ctx: &OwnerCommandCtx,
+    input: &RunCreate,
+    protected: &console_ontology_application::action30::PreparedProtectionPlan,
+) -> Result<RunResult, PayrollActionError>;
+```
+
+For all55 binding names, public command-entry name is exactly finalizer with trailing `_in_conn` removed. Inputs/results are exactly the immutable owner-bindings schema pointers; the attached `owner-calls.rs` mechanically names every one. The result for an externally assembled governance+payroll operation is produced by the current owning transaction with fixed participants; composition is not two commits. `actual_bound_domain` attempt execution entry is ontology's fixed adapter, which loads/dispatches the original bound owner without changing command identity. Group entry placement is proposed `ontology/adapter-postgres::group_action30`, using separate GroupRequestIdentity/GroupCommandCtx and global Group receipts/fences. This assignment is material because there is no existing `group` crate; independent owner review must approve it before implementation. Do not silently add a new group framework or arm Company RLS for Group commands.
+
+`RegisteredActionRequest<I>` is a pure typed data struct: `{identity:RequestIdentity,input:I}`. RequestIdentity is the exact immutable registered envelope metadata already defined by contract-refinement.md, plus only the existing original attempt reference/direct command data needed to look up stored custody. No allow/verified/approved bool, private witness serialization, future receipt, transport handle or caller-provided guard snapshot enters this type. It does not grant authority. A concrete request binder must compare all duplicated fields with exact stored registration/attempt/draft and the input; never default an omitted expected head to current. The new body/envelope wire projection is codec-dispatched, not a change to legacy ActionRequest defaults.
+
+OwnerCommandCtx has private fields and no public constructor, serde Deserialize, blanket From<JSON>, or test-only bypass. Each owner creates its local context through resolve_current_ctx_in_conn using actual current Account/session/Company context, stored direct/attempt command custody and fixed registration. Context resolves identity and correlation; it is not a timeless authority proof. Every finalizer revalidates current authority/guard/source/task/gate/retention facts in the same borrowed transaction under the approved lock order before effects. A correct receipt is probed first for reconciliation. Actual typed blocked/unknown outcomes remain distinct. PreparedProtectionPlan is likewise a checked inventory/data carrier; finalization must prove its actual current closure/pins under locks. The public command entry owns begin/commit, invokes the private context issuer/fixed participants/finalizer, and returns only the actual result. Private participants never receive a pool, commit, spawn, network or caller callback.
+
+Principal is the existing platform-authz type, but accepting one does not declare the old token-only Executive or seeded SUPER_ADMIN sufficient for design30. Actual owner lookup must establish the current13/16 Account, session/context/authority/Human/credential facts. Test-side bootstrap must obtain real principal/session through the actual auth/identity owner; no fabricated current authority or issuer verification rows. Existing old company_conformance Harness's synthetic Executive with no users row is explicitly unsuitable for this purpose.
+
+## Test-side producer mechanics
+
+`native-owner-producer.rs` concretely composes the proposed actual payroll/governance entry points to create→prepare→close→calculate→review-submit→independently-decide. It rebinds each next exact expectation from the preceding actual typed owner result. It never sends private results over production HTTP and never inserts money, source verification, approvals, receipts or authority rows itself. The supplied bootstrap arguments are typed actual owner inputs/Principal; they must be produced through real existing auth/identity/docs/source19+24 workflows. They are not an opaque environment fixture or JSON assertion result. Missing bootstrap/current-source producer remains explicit; do not label the whole55 runtime fixture program complete until those owner sequences are implemented and executed.
+
+Source19 final commands require actual24 preparation+seal+attempt custody. The caller must use draft.start→draft.save (exact registered field IDs)→source.prepare_submission→draft.seal, capture the real returned attempt, and pass its original identity to the source owner entry. Source verification must come from actual issuer/evidence and independent reviewer owners. Docs request-upload→actual issuer upload→worker verify supplies retained artifact refs. Group controls need actual Group/membership owner flows and separate Group context. Artifact verification and draft expiry require real worker identity, not an ordinary user Principal with a fixture flag. These are concrete prerequisites; there is no delegated generic seed/verified switch.
+
+For source/calendar/attendance/credential bootstrap, closed PublicOutcome does not expose arbitrary internal refs. The test-side existing owner tests can inspect real typed results; production clients use common ontology action/draft binder plus account/session/context-bound CONTROL_REFERENCE resolution. Do not add a hidden-ref export HTTP endpoint for fixture convenience.
+
+The55 authored rows in action-cases.tsv specify the exact positive precondition, durable consequence and selected refusal. payloads/*.json are complete typed request payload examples validated against all55 immutable schemas. owner-calls.rs is actual source naming the proposed concrete owner functions/types rather than a dummy Owner trait. Its expected compiler prerequisite is absence of the approved implementation modules, not a fabricated assertion failure. No source-only test function count is an executed/discovered product count. The87 Python proofs remain reference-contract execution only.
