@@ -1,0 +1,78 @@
+[
+  {
+    "name": "hickory",
+    "cmd": [
+      "cargo",
+      "generate-lockfile",
+      "--offline"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "     Locking 90 packages to latest Rust 1.98.1 compatible versions\n"
+  },
+  {
+    "name": "hickory",
+    "cmd": [
+      "cargo",
+      "update",
+      "--workspace",
+      "--offline"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "     Locking 0 packages to latest Rust 1.98.1 compatible versions\n"
+  },
+  {
+    "name": "hickory",
+    "cmd": [
+      "cargo",
+      "tree",
+      "--offline",
+      "--target",
+      "all",
+      "--edges",
+      "normal,build"
+    ],
+    "exit": 0,
+    "stdout": "probe-hickory v0.1.0 (/private/tmp/console-cargo-optional-ring-5t_54pmq/hickory)\n\u2514\u2500\u2500 hickory-proto v0.26.1\n    \u251c\u2500\u2500 data-encoding v2.11.1\n    \u251c\u2500\u2500 idna v1.1.0\n    \u2502   \u251c\u2500\u2500 idna_adapter v1.2.2\n    \u2502   \u2502   \u251c\u2500\u2500 icu_normalizer v2.3.0\n    \u2502   \u2502   \u2502   \u251c\u2500\u2500 icu_collections v2.3.0\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 displaydoc v0.2.7 (proc-macro)\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 proc-macro2 v1.0.107\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 unicode-ident v1.0.24\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 quote v1.0.47\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 proc-macro2 v1.0.107 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 syn v3.0.5\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u251c\u2500\u2500 proc-macro2 v1.0.107 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u251c\u2500\u2500 quote v1.0.47 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2514\u2500\u2500 unicode-ident v1.0.24\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 potential_utf v0.1.6\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 zerovec v0.11.8\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u251c\u2500\u2500 yoke v0.8.3\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u251c\u2500\u2500 stable_deref_trait v1.2.1\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u251c\u2500\u2500 yoke-derive v0.8.2 (proc-macro)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u2502   \u251c\u2500\u2500 proc-macro2 v1.0.107 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u2502   \u251c\u2500\u2500 quote v1.0.47 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u2502   \u251c\u2500\u2500 syn v2.0.119\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u2502   \u2502   \u251c\u2500\u2500 proc-macro2 v1.0.107 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u2502   \u2502   \u251c\u2500\u2500 quote v1.0.47 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u2502   \u2502   \u2514\u2500\u2500 unicode-ident v1.0.24\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u2502   \u2514\u2500\u2500 synstructure v0.13.2\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u2502       \u251c\u2500\u2500 proc-macro2 v1.0.107 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u2502       \u251c\u2500\u2500 quote v1.0.47 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u2502       \u2514\u2500\u2500 syn v2.0.119 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502   \u2514\u2500\u2500 zerofrom v0.1.8\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502       \u2514\u2500\u2500 zerofrom-derive v0.1.7 (proc-macro)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502           \u251c\u2500\u2500 proc-macro2 v1.0.107 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502           \u251c\u2500\u2500 quote v1.0.47 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502           \u251c\u2500\u2500 syn v2.0.119 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2502           \u2514\u2500\u2500 synstructure v0.13.2 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u251c\u2500\u2500 zerofrom v0.1.8 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502       \u2514\u2500\u2500 zerovec-derive v0.11.6 (proc-macro)\n    \u2502   \u2502   \u2502   \u2502   \u2502           \u251c\u2500\u2500 proc-macro2 v1.0.107 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502           \u251c\u2500\u2500 quote v1.0.47 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502           \u2514\u2500\u2500 syn v3.0.5 (*)\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 utf8_iter v1.0.4\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 yoke v0.8.3 (*)\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 zerofrom v0.1.8 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 zerovec v0.11.8 (*)\n    \u2502   \u2502   \u2502   \u251c\u2500\u2500 icu_normalizer_data v2.3.0\n    \u2502   \u2502   \u2502   \u251c\u2500\u2500 icu_provider v2.3.1\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 displaydoc v0.2.7 (proc-macro) (*)\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 icu_locale_core v2.3.0\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 displaydoc v0.2.7 (proc-macro) (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 litemap v0.8.3\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 tinystr v0.8.4\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 displaydoc v0.2.7 (proc-macro) (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 zerovec v0.11.8 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 writeable v0.6.4\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 zerovec v0.11.8 (*)\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 writeable v0.6.4\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 yoke v0.8.3 (*)\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 zerofrom v0.1.8 (*)\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 zerotrie v0.2.5\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 displaydoc v0.2.7 (proc-macro) (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 yoke v0.8.3 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 zerofrom v0.1.8 (*)\n    \u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 zerovec v0.11.8 (*)\n    \u2502   \u2502   \u2502   \u251c\u2500\u2500 smallvec v1.16.1\n    \u2502   \u2502   \u2502   \u2514\u2500\u2500 zerovec v0.11.8 (*)\n    \u2502   \u2502   \u2514\u2500\u2500 icu_properties v2.3.0\n    \u2502   \u2502       \u251c\u2500\u2500 displaydoc v0.2.7 (proc-macro) (*)\n    \u2502   \u2502       \u251c\u2500\u2500 icu_collections v2.3.0 (*)\n    \u2502   \u2502       \u251c\u2500\u2500 icu_locale_core v2.3.0 (*)\n    \u2502   \u2502       \u251c\u2500\u2500 icu_properties_data v2.3.0\n    \u2502   \u2502       \u251c\u2500\u2500 icu_provider v2.3.1 (*)\n    \u2502   \u2502       \u251c\u2500\u2500 zerotrie v0.2.5 (*)\n    \u2502   \u2502       \u2514\u2500\u2500 zerovec v0.11.8 (*)\n    \u2502   \u251c\u2500\u2500 smallvec v1.16.1\n    \u2502   \u2514\u2500\u2500 utf8_iter v1.0.4\n    \u251c\u2500\u2500 ipnet v2.12.2\n    \u251c\u2500\u2500 jni v0.22.4\n    \u2502   \u251c\u2500\u2500 cfg-if v1.0.4\n    \u2502   \u251c\u2500\u2500 combine v4.6.8\n    \u2502   \u2502   \u251c\u2500\u2500 bytes v1.12.1\n    \u2502   \u2502   \u2514\u2500\u2500 memchr v2.8.3\n    \u2502   \u251c\u2500\u2500 jni-macros v0.22.4 (proc-macro)\n    \u2502   \u2502   \u251c\u2500\u2500 proc-macro2 v1.0.107 (*)\n    \u2502   \u2502   \u251c\u2500\u2500 quote v1.0.47 (*)\n    \u2502   \u2502   \u251c\u2500\u2500 simd_cesu8 v1.2.0\n    \u2502   \u2502   \u2502   \u2514\u2500\u2500 simdutf8 v0.1.5\n    \u2502   \u2502   \u2502   [build-dependencies]\n    \u2502   \u2502   \u2502   \u2514\u2500\u2500 rustc_version v0.4.1\n    \u2502   \u2502   \u2502       \u2514\u2500\u2500 semver v1.0.28\n    \u2502   \u2502   \u2514\u2500\u2500 syn v2.0.119 (*)\n    \u2502   \u2502   [build-dependencies]\n    \u2502   \u2502   \u2514\u2500\u2500 rustc_version v0.4.1 (*)\n    \u2502   \u251c\u2500\u2500 jni-sys v0.4.1\n    \u2502   \u2502   \u2514\u2500\u2500 jni-sys-macros v0.4.1 (proc-macro)\n    \u2502   \u2502       \u251c\u2500\u2500 quote v1.0.47 (*)\n    \u2502   \u2502       \u2514\u2500\u2500 syn v2.0.119 (*)\n    \u2502   \u251c\u2500\u2500 log v0.4.34\n    \u2502   \u251c\u2500\u2500 simd_cesu8 v1.2.0 (*)\n    \u2502   \u251c\u2500\u2500 thiserror v2.0.20\n    \u2502   \u2502   \u2514\u2500\u2500 thiserror-impl v2.0.20 (proc-macro)\n    \u2502   \u2502       \u251c\u2500\u2500 proc-macro2 v1.0.107 (*)\n    \u2502   \u2502       \u251c\u2500\u2500 quote v1.0.47 (*)\n    \u2502   \u2502       \u2514\u2500\u2500 syn v3.0.5 (*)\n    \u2502   \u2514\u2500\u2500 windows-link v0.2.1\n    \u2502   [build-dependencies]\n    \u2502   \u2514\u2500\u2500 walkdir v2.5.0\n    \u2502       \u251c\u2500\u2500 same-file v1.0.6\n    \u2502       \u2502   \u2514\u2500\u2500 winapi-util v0.1.11\n    \u2502       \u2502       \u2514\u2500\u2500 windows-sys v0.61.2\n    \u2502       \u2502           \u2514\u2500\u2500 windows-link v0.2.1\n    \u2502       \u2514\u2500\u2500 winapi-util v0.1.11 (*)\n    \u251c\u2500\u2500 once_cell v1.21.4\n    \u2502   \u251c\u2500\u2500 critical-section v1.2.0\n    \u2502   \u2514\u2500\u2500 portable-atomic v1.15.0\n    \u251c\u2500\u2500 rand v0.10.2\n    \u2502   \u251c\u2500\u2500 chacha20 v0.10.2\n    \u2502   \u2502   \u251c\u2500\u2500 cfg-if v1.0.4\n    \u2502   \u2502   \u251c\u2500\u2500 cpufeatures v0.3.0\n    \u2502   \u2502   \u2502   \u2514\u2500\u2500 libc v0.2.189\n    \u2502   \u2502   \u2514\u2500\u2500 rand_core v0.10.1\n    \u2502   \u251c\u2500\u2500 getrandom v0.4.3\n    \u2502   \u2502   \u251c\u2500\u2500 cfg-if v1.0.4\n    \u2502   \u2502   \u251c\u2500\u2500 libc v0.2.189\n    \u2502   \u2502   \u251c\u2500\u2500 r-efi v6.0.0\n    \u2502   \u2502   \u2514\u2500\u2500 rand_core v0.10.1\n    \u2502   \u2514\u2500\u2500 rand_core v0.10.1\n    \u251c\u2500\u2500 thiserror v2.0.20 (*)\n    \u251c\u2500\u2500 tinyvec v1.13.3\n    \u251c\u2500\u2500 tracing v0.1.44\n    \u2502   \u251c\u2500\u2500 pin-project-lite v0.2.17\n    \u2502   \u2514\u2500\u2500 tracing-core v0.1.36\n    \u2502       \u2514\u2500\u2500 once_cell v1.21.4 (*)\n    \u2514\u2500\u2500 url v2.5.8\n        \u251c\u2500\u2500 form_urlencoded v1.2.2\n        \u2502   \u2514\u2500\u2500 percent-encoding v2.3.2\n        \u251c\u2500\u2500 idna v1.1.0 (*)\n        \u2514\u2500\u2500 percent-encoding v2.3.2\n",
+    "stderr": ""
+  },
+  {
+    "name": "webpki",
+    "cmd": [
+      "cargo",
+      "generate-lockfile",
+      "--offline"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "     Locking 31 packages to latest Rust 1.98.1 compatible versions\n      Adding rustls-webpki v0.103.13 (available: v0.103.15)\n"
+  },
+  {
+    "name": "webpki",
+    "cmd": [
+      "cargo",
+      "update",
+      "--workspace",
+      "--offline"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "     Locking 0 packages to latest Rust 1.98.1 compatible versions\nnote: pass `--verbose` to see 1 unchanged dependencies behind latest\n"
+  },
+  {
+    "name": "webpki",
+    "cmd": [
+      "cargo",
+      "tree",
+      "--offline",
+      "--target",
+      "all",
+      "--edges",
+      "normal,build"
+    ],
+    "exit": 0,
+    "stdout": "probe-webpki v0.1.0 (/private/tmp/console-cargo-optional-ring-5t_54pmq/webpki)\n\u2514\u2500\u2500 rustls-webpki v0.103.13\n    \u251c\u2500\u2500 aws-lc-rs v1.18.1\n    \u2502   \u251c\u2500\u2500 aws-lc-sys v0.45.0\n    \u2502   \u2502   [build-dependencies]\n    \u2502   \u2502   \u251c\u2500\u2500 cc v1.4.5\n    \u2502   \u2502   \u2502   \u251c\u2500\u2500 find-msvc-tools v0.1.12\n    \u2502   \u2502   \u2502   \u251c\u2500\u2500 jobserver v0.1.35\n    \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 getrandom v0.4.3\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 cfg-if v1.0.4\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 libc v0.2.189\n    \u2502   \u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 r-efi v6.0.0\n    \u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 libc v0.2.189\n    \u2502   \u2502   \u2502   \u251c\u2500\u2500 libc v0.2.189\n    \u2502   \u2502   \u2502   \u2514\u2500\u2500 shlex v2.0.1\n    \u2502   \u2502   \u251c\u2500\u2500 cmake v0.1.58\n    \u2502   \u2502   \u2502   \u2514\u2500\u2500 cc v1.4.5 (*)\n    \u2502   \u2502   \u251c\u2500\u2500 dunce v1.0.5\n    \u2502   \u2502   \u251c\u2500\u2500 fs_extra v1.3.0\n    \u2502   \u2502   \u2514\u2500\u2500 pkg-config v0.3.34\n    \u2502   \u2514\u2500\u2500 zeroize v1.9.0\n    \u251c\u2500\u2500 rustls-pki-types v1.15.1\n    \u2502   \u2514\u2500\u2500 zeroize v1.9.0\n    \u2514\u2500\u2500 untrusted v0.9.0\n",
+    "stderr": ""
+  }
+]

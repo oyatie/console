@@ -1,0 +1,49 @@
+{
+  "reviewer": "/root/finish_migration",
+  "candidate": "69c86eee174e31dadd1332ab37e5d84e9a22d4a0",
+  "verdict": "ACCEPT native Buck compatibility proof on aarch64-apple-darwin",
+  "build_evidence": "Root Buck log ends BUILD SUCCEEDED; records2602local commands,0cache. OutputJSON maps exact audit compatibility target to hashed binary. Reviewer did not rebuild.",
+  "independent_execution": {
+    "argv": [
+      "/private/tmp/console-production-tdd-preparation-20260913/buck-out/v2/art/root/39893c7e49283da4/backend/crates/platform/audit-chain/__console-platform-audit-chain-itest-ed25519_compatibility__/ed25519_compatibility",
+      "--test-threads=1"
+    ],
+    "exit_code": 0,
+    "discovered": 13,
+    "executed": 13,
+    "passed": 13,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "log": "/private/tmp/aws-lc-buck-independent-compat-run.log"
+  },
+  "native_evidence": {
+    "library_size": 4530160,
+    "library_sha256": "58752f30c0202319b6da8e1f13af46344920894b7db7838fd5f52d45fe0ff460",
+    "rustc_flags": "--cfg=universal_prefixed\n-lstatic=aws_lc_0_45_0_crypto\n-Lnative=${__BUILDSCRIPT_OUT_DIR__}\n",
+    "binary_defined_symbols": [
+      "000000010007d9c0 T _aws_lc_0_45_0_ED25519_sign",
+      "000000010007da24 T _aws_lc_0_45_0_ED25519_sign_no_self_test",
+      "000000010007e064 T _aws_lc_0_45_0_ED25519_verify",
+      "000000010007e0c8 T _aws_lc_0_45_0_ED25519_verify_no_self_test"
+    ],
+    "source_guard": "Previously reviewed generatedBuck/fixup/generator inputs and appBUCK still byte-identical to committed69c86eee."
+  },
+  "sha256": {
+    "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-buck-build-pinned.log": "2dc04230f4e9459557532ab63dd4d1546a5acd996558e53125e455a0114043f5",
+    "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-buck-output.json": "a144b862f20a443431169f4d58093d375ab279b76ed0eabf4783db7c423cb1dc",
+    "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-buck-binary.json": "428c3d90f5a8cbe8eaf421e67f7e6ae5c29cd92ea543613ad90cb81491365777",
+    "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-buck-compat-green.log": "d9700ab061011f80636c118b01813c218d96eb91641b37550538d44a6df6b161",
+    "/private/tmp/console-production-tdd-preparation-20260913/buck-out/v2/art/root/39893c7e49283da4/backend/crates/platform/audit-chain/__console-platform-audit-chain-itest-ed25519_compatibility__/ed25519_compatibility": "4844769db76738a23970ffc1de60abda5c75416e4cf0c7fa1e4c4fe258ea2305",
+    "/private/tmp/console-production-tdd-preparation-20260913/buck-out/v2/art/root/third-party/rust/__aws-lc-sys-0.45-build-script-main-run__/output_artifacts/OUT_DIR/libaws_lc_0_45_0_crypto.a": "58752f30c0202319b6da8e1f13af46344920894b7db7838fd5f52d45fe0ff460",
+    "/private/tmp/console-production-tdd-preparation-20260913/buck-out/v2/art/root/third-party/rust/__aws-lc-sys-0.45-build-script-main-run__/output_artifacts/rustc_flags": "2a651a4254fc955642296c38aba012672e9b7045e368e50d49e72178faa610fa",
+    "/private/tmp/aws-lc-buck-independent-compat-run.log": "d9700ab061011f80636c118b01813c218d96eb91641b37550538d44a6df6b161"
+  },
+  "evidence_correction": "buck-native-library.json limit still says binary link/run pending; that historical qualifier is superseded by actual hashed binary and independently repeated13/13run. Root should reconcile current evidence summary.",
+  "limits": [
+    "Native proof is this aarch64-apple-darwin target, not Linux/release/deployment certification.",
+    "No Cargo/Buck/Docker build executed by reviewer; only exact existing binary rerun and native file/symbol inspection.",
+    "13compatibility cases do not replace full audit PostgreSQL integration, separate root42tests, or all cryptographic edge-case differential review.",
+    "No claim that all TLS/transport runtime paths are exercised by this test binary."
+  ]
+}
