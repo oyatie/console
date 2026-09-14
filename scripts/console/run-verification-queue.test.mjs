@@ -197,6 +197,14 @@ test('command construction uses exact metadata rather than a path heuristic and 
   assert.throws(() => partitionTargetsByMetadata(['//backend/crates/example:integration'], { 'root//backend/crates/example:integration': { labels: ['needs-postgres'] } }), /credential-safe/);
 });
 
+test('recovery resource cannot enter either generic queue executor', async () => {
+  const { partitionTargetsByMetadata } = await import('./run-verification-queue.mjs');
+  const target = '//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-recovery';
+  for (const labels of [['resource.postgres-recovery'], ['resource.postgres-recovery', 'needs-postgres']]) {
+    assert.throws(() => partitionTargetsByMetadata([target], { [`root${target}`]: { labels } }), /dedicated supervised two-node topology/);
+  }
+});
+
 test('execution writes a digest-bound receipt only after every combined call succeeds', async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), 'queue-receipt-'));
   try {

@@ -38,6 +38,12 @@ const runHeavyCondition = "${{ needs.preflight.outputs.run_heavy == 'true' }}";
 const skipProofCondition = "${{ needs.preflight.outputs.run_heavy != 'true' }}";
 /** Live Postgres facets: oyatie pg-gate analog, independent of run_heavy. */
 const runLivePostgresCondition = "${{ needs.preflight.outputs.run_live_postgres == 'true' }}";
+const recoveryRunCondition = "${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}";
+const recoveryImageCommand = "docker pull postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280";
+const recoveryCommands = [
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT=after-commit-response python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery lost_commit_transport_reply_replays_one_real_payroll_effect -- --exact --test-threads=1 --nocapture"
+];
 const skipLivePostgresCondition = "${{ needs.preflight.outputs.run_live_postgres != 'true' }}";
 /** Heavy proofs that are postsubmit-only (push / workflow_dispatch). */
 const postsubmitHeavyJobIf =
@@ -148,6 +154,8 @@ export function isLivePostgresPath(path) {
   if (/(^|\/)\.sqlx(\/|$)/.test(path)) return true;
   if (path.includes("postgres_bridge")) return true;
   if (path.startsWith("backend/crates/platform/db/")) return true;
+  if (path.startsWith("tools/lanes/recovery/")) return true;
+  if (path === "backend/crates/payroll/adapter-postgres/tests/recovery.rs") return true;
   if (
     path.startsWith("backend/ci/gates/writer-ownership/")
     || path.startsWith("backend/ci/gates/rls-arming/")
@@ -682,6 +690,7 @@ const postgresWrapperContracts = [
   ["app-action-inbox-api-pg", "//backend/app:console-app-itest-action_inbox_api"],
   ["app-attendance-persona-api-pg", "//backend/app:console-app-itest-attendance_persona_api"],
   ["app-audit-api-pg", "//backend/app:console-app-itest-audit_api"],
+  ["app-account-migration-pg", "//backend/app:console-app-itest-account_migration"],
   ["app-auth-rest-pg", "//backend/app:console-app-itest-auth_rest"],
   ["app-board-ack-api-pg", "//backend/app:console-app-itest-board_ack_api"],
   ["app-cedar-freshness-mint-pg", "//backend/app:console-app-itest-cedar_freshness_mint"],
@@ -1012,6 +1021,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Console fanout planner exact-M regression", "node --test scripts/console/plan-fanout.test.mjs", { if: preflightNpmCiDependentCondition }),
     proofRun("Buck PostgreSQL environment wrapper regression", "tools/buck/run_test_with_postgres_env.test.sh", { if: preflightBuckHeavyCondition }),
     proofRun("Buck disposable PostgreSQL harness regression", "tools/buck/test_needs_postgres.test.sh", { if: preflightBuckHeavyCondition }),
+    proofDigest("Preparation wiring and recovery fixture regressions", "9ceb68a7be06cac68b14d3b9b5f019d7d31e48cfeca3eb0dfc6ddd19e9345afd", { if: preflightNpmCiDependentCondition }),
     proofRun("CI preflight contract", "npm run check:ci-preflight", { if: preflightNpmCiDependentCondition }),
     proofRun("Canonical npm lockfile", "npm run check:package-lock", { if: preflightNpmCiDependentCondition }),
     proofRun("Cargo.lock consistency", "cargo metadata --manifest-path backend/Cargo.toml --locked --format-version=1 >/dev/null", { if: preflightRustHeavyCondition }),
@@ -1024,7 +1034,7 @@ const requiredJobRunContracts = Object.freeze({
   ],
   "domain-unit": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Domain crate unit tests", "a8bb301ecb82153acc05c7ee219f85cce5baf95425ec9f8c220fc9912ad35de7", { if: runHeavyCondition }),
+    proofDigest("Domain crate unit tests", "e2fd66bf8cba7f10bf54e6d4c6cf757a17f5762c1be6239261bf1a3b1054925f", { if: runHeavyCondition }),
   ],
   "backend": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
@@ -1150,7 +1160,10 @@ const requiredJobRunContracts = Object.freeze({
     // without that, this digest would look like supply-chain protection while
     // protecting nothing.
     setupDigest("Install pinned cargo-nextest", "1b9eee0f6292b56cca32c14842d9e03cff331ffcb13efc791e6efc486d5c58bb", { if: runLivePostgresCondition }),
+    setupRun("Prepare pinned recovery PostgreSQL image", recoveryImageCommand, { if: runLivePostgresCondition }),
     proofDigest("Run disposable PostgreSQL integration targets", "4ea121588589036833c7f24f19f7cc2cfdd8e146cb4b5749f31d17227f5bf861", { if: runLivePostgresCondition }),
+    proofRun("Recovery replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply", recoveryCommands[0], { if: recoveryRunCondition }),
+    proofRun("Recovery lost_commit_transport_reply_replays_one_real_payroll_effect", recoveryCommands[1], { if: recoveryRunCondition }),
   ],
   "rust-fmt": [
     proofRun("rustfmt check", "cargo fmt --all -- --check"),
@@ -1250,8 +1263,8 @@ const requiredJobActionContracts = Object.freeze({
     actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
   ],
   "postgres-reachability-domain-b": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runLivePostgresCondition }),
-    actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.98.1"}, { if: runLivePostgresCondition }),
+    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runLivePostgresCondition, id: "recovery-checkout" }),
+    actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8", {"toolchain":"1.98.1"}, { if: runLivePostgresCondition, id: "recovery-toolchain" }),
     actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
   ],
   "rust-fmt": [
@@ -2592,7 +2605,7 @@ export function evaluateCiPreflight(
     requireOnlyLockedRuns(
       steps,
       facetSetup
-        ? [pathClassSkipProofScript.join("\n"), facetSetup, command]
+        ? [pathClassSkipProofScript.join("\n"), facetSetup, ...(jobName === "postgres-reachability-domain-b" ? [recoveryImageCommand] : []), command, ...(jobName === "postgres-reachability-domain-b" ? recoveryCommands : [])]
         : [pathClassSkipProofScript.join("\n"), command],
       jobName,
       failures,
