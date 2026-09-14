@@ -34,7 +34,7 @@ COPY docs/specs /workspace/docs/specs
 
 RUN cargo build --locked --release -p console-app
 
-FROM debian:bookworm-slim@sha256:96e378d7e6531ac9a15ad505478fcc2e69f371b10f5cdf87857c4b8188404716 AS runtime
+FROM debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171 AS runtime
 
 # ffmpeg is REQUIRED by the worker role: the evidence media pipeline shells out
 # to it to transcode mechanic video to 1080p H.264/AAC MP4 and to recompress /
