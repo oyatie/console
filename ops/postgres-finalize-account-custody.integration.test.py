@@ -92,9 +92,11 @@ def cleanup_containers(containers, run):
             pass
         try:
             code, text = run(['docker', 'container', 'inspect', container], required=False)
-            absent = code != 0 and any(line.strip() in (
-                'Error: No such container: '+container,
-                'Error: No such object: '+container) for line in text.splitlines())
+            absent = code != 0 and any(
+                prefix.casefold() in ('error: no such container', 'error: no such object')
+                and separator and name == container
+                for prefix, separator, name in
+                (line.strip().rpartition(': ') for line in text.splitlines()))
         except Exception:
             absent = False
         if not absent:
@@ -450,6 +452,23 @@ def machinery_tests():
                 return 1,'Cannot connect to Docker daemon'
             self.assertEqual(cleanup_containers(['first','second'],execute),['second','first'])
             self.assertEqual(len(calls),4)
+
+        def test_docker28_lowercase_absence_is_recognized(self):
+            def execute(argv, **kwargs):
+                return 1,'[]\nerror: no such object: '+argv[-1]+'\n'
+            self.assertEqual(cleanup_containers(['Intended'],execute),[])
+
+        def test_absence_requires_failure_and_exact_resource_name(self):
+            for code, message in (
+                    (0,'error: no such object: Intended'),
+                    (1,'error: no such object: intended'),
+                    (1,'error: no such object: Intended-other'),
+                    (1,'error: no such object: Other'),
+                    (1,'daemon error: no such object: Intended')):
+                with self.subTest(code=code,message=message):
+                    def execute(argv, **kwargs):
+                        return code,message+'\n'
+                    self.assertEqual(cleanup_containers(['Intended'],execute),['Intended'])
 
         def test_private_cleanup_runs_despite_inspection_exception(self):
             with tempfile.TemporaryDirectory() as directory:
