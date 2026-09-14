@@ -1,0 +1,216 @@
+{
+  "candidate_sha": "67693004c16edd192e744529512bf8fec09ad2b1",
+  "note": "Historical and current runs retained; individual execution record determines source/result applicability.",
+  "files": [
+    {
+      "source_path": "/private/tmp/console-preparation-auth-final.log",
+      "retained_path": "execution-67693004/console-preparation-auth-final.log.gz",
+      "sha256": "dbea67a61634ceaf518f12f991f784de911a2c9ad4598db01de250e3bc01d5ab",
+      "bytes": 47854,
+      "compressed_sha256": "527d8352357a26cbeac7ac1c65431706740dd7f63ac7493da15a144b73c5bbf4"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-browser-discovery-final.log",
+      "retained_path": "execution-67693004/console-preparation-browser-discovery-final.log.gz",
+      "sha256": "6112e29990a05d847990f2cfaafb983fbbc1c633c68a5313560a5b1160434d5c",
+      "bytes": 1062,
+      "compressed_sha256": "f7caf719e5582970783d55d71534340ca3724e511574579b1f1571e5c1f44e71"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-browser-execution.log",
+      "retained_path": "execution-67693004/console-preparation-browser-execution.log.gz",
+      "sha256": "9ab40502c7c0d4392bc5e80e597fb31884e96f56b94f2ba7ff64901b71217f00",
+      "bytes": 17683,
+      "compressed_sha256": "706fe1a5a739eb1565d301f400da3a3700da811d0e4fdd893bb793b5abbb535e"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-browser-final.log",
+      "retained_path": "execution-67693004/console-preparation-browser-final.log.gz",
+      "sha256": "1205c79a1fd1a055571c6cfa6c8dc3546708cfaa5d1c2035036c1d543e97e6fa",
+      "bytes": 18936,
+      "compressed_sha256": "2adb58e9b0d27dd4fcb31399389fc56466c84a7e8b10ea4fc6c0c249c5136f7f"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-cedar-67693004.log",
+      "retained_path": "execution-67693004/console-preparation-cedar-67693004.log.gz",
+      "sha256": "6d9340b2af5c87d582de0af413a6131f2cef4e9ae3de1f9484322b46acc60725",
+      "bytes": 1766,
+      "compressed_sha256": "ea3dfbaa010400316e6c695dffe8a169849c425f274913d91048717c49bb7461"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-cedar-execution.log",
+      "retained_path": "execution-67693004/console-preparation-cedar-execution.log.gz",
+      "sha256": "137f27a2a7e4d8ad21e61dc10edabaccd2fe5e44fa46c32302bb837bc59d83c4",
+      "bytes": 1899,
+      "compressed_sha256": "bdb79b49b5ecbdb230e135a6d29c7e2ea2d210374d13885980a80f30a0d1480d"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-cedar-r2.log",
+      "retained_path": "execution-67693004/console-preparation-cedar-r2.log.gz",
+      "sha256": "277c8091a7257f78c2ce2fd1b9443edac62224bb03b0c200c22535be4594de46",
+      "bytes": 1898,
+      "compressed_sha256": "db9f9c71360538a6a04b0f75dc4b176ae956ff34e2bab97d82a3886b900cc216"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-migration-67693004.log",
+      "retained_path": "execution-67693004/console-preparation-migration-67693004.log.gz",
+      "sha256": "10748b61f63642021291a6eafdb1e982155f786f1d9c11b5f202aebea6d668a7",
+      "bytes": 2590,
+      "compressed_sha256": "63099d9f91748ce0425d9d166769d7bc08c9545ef3cfeef5866997478766b39a"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-migration-compile.log",
+      "retained_path": "execution-67693004/console-preparation-migration-compile.log.gz",
+      "sha256": "10629fb0f23f7383f694c0b82912a1d3c9b2a80616badc9c77e74f1c1dcf56e5",
+      "bytes": 1255,
+      "compressed_sha256": "f6664593891f6c3d27350c72439b422d808901f3771ae60296695c37bc90a44a"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-migration-execution.log",
+      "retained_path": "execution-67693004/console-preparation-migration-execution.log.gz",
+      "sha256": "186879a28c4558a7fa3396f304b9a882035560ace5f0818d40f0f0ebcab2e625",
+      "bytes": 2258,
+      "compressed_sha256": "55da184130db1b30907eaccdfa303ea5f97876245d0ee7bb394f9f8a5e6f38e5"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-migration-r2.log",
+      "retained_path": "execution-67693004/console-preparation-migration-r2.log.gz",
+      "sha256": "8837385d8f89f4b2860724033955f4bb463bf926523f46968d82c23f250340d5",
+      "bytes": 4144,
+      "compressed_sha256": "61c6ce86cc401bfc950c3bd4c065fb723ff99c7b3402176429777e72230dd777"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-migration-r3.log",
+      "retained_path": "execution-67693004/console-preparation-migration-r3.log.gz",
+      "sha256": "2aa1021c0977d34b83a9a2b632e4e58689318c069f520510b6dc69ce53d9e1f3",
+      "bytes": 2487,
+      "compressed_sha256": "bed76914ba04aa6fd45c7c9d8a06cbc3d9d78acfd4a1aee6dd00d271fb79a5ad"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-native-r1.log",
+      "retained_path": "execution-67693004/console-preparation-native-r1.log.gz",
+      "sha256": "7891876190fd8a4c0eff45a96b657b7c7539e6f4025b15df04e464225d2cc854",
+      "bytes": 8945,
+      "compressed_sha256": "39f01abc5f36132eb72ab9f711e6b5ff548c683a0214bf7961e291806912d9d9"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-realtime-67693004.log",
+      "retained_path": "execution-67693004/console-preparation-realtime-67693004.log.gz",
+      "sha256": "39ada7bbc343def9aee3400662a4179f7b6c6a172c62f04f68c34fa61e802fd2",
+      "bytes": 3727,
+      "compressed_sha256": "e573f082c06d7ed63d65dc80c1cc51ba87a1c7d42d43e7b89769e180e6c07bec"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-realtime-execution.log",
+      "retained_path": "execution-67693004/console-preparation-realtime-execution.log.gz",
+      "sha256": "e1cae553c6ec532296ca42f0745ee0709f32049e4e3474bab7bafcf2d096ab26",
+      "bytes": 4899,
+      "compressed_sha256": "a98b3807e15d5ef0084c1936722630164312abe2839b6769104920a6b588ca0b"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-compile.log",
+      "retained_path": "execution-67693004/console-preparation-recovery-compile.log.gz",
+      "sha256": "9bd31e16a0112e9c06be2dabd6833f634c0bdce693d3d0145f8e82d915c3b4bb",
+      "bytes": 926,
+      "compressed_sha256": "ec0a5bfbe2ec7315f6b22b6dd3f4aa49a387c83cf975a77a46b42594865e940f"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-final.log",
+      "retained_path": "execution-67693004/console-preparation-recovery-final.log.gz",
+      "sha256": "27f83b87c40a3ee3d32ff68ebaa44a53d4f16ec0f08ae0654d060fe6a33ecb26",
+      "bytes": 1859,
+      "compressed_sha256": "706c214759ec7138254b03846d34b711c950644bcd5dea08e3dd00c5ab219029"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-machinery-r2.log",
+      "retained_path": "execution-67693004/console-preparation-recovery-machinery-r2.log.gz",
+      "sha256": "abdb4fde67aae34b0a168000e160c30e3f774bad73d6665a31c4c10b5d7a50b5",
+      "bytes": 1234,
+      "compressed_sha256": "1070936d60c7a6b4dddcc0d376458531e3dfbe388ccfbadba9cbf413270f3840"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-machinery.log",
+      "retained_path": "execution-67693004/console-preparation-recovery-machinery.log.gz",
+      "sha256": "e10586d6b8b0356c34a753bc0518f1b8934f65b418335f27bb26280a80c0b684",
+      "bytes": 3133,
+      "compressed_sha256": "e1ec9381683603772ddaf5d71f4b8c1f73e9b4d67f88c9029f75271dbd1b0b91"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-sync-execution.log",
+      "retained_path": "execution-67693004/console-preparation-recovery-sync-execution.log.gz",
+      "sha256": "b26ad843907b7f6b04e8402bdf2ff64c545991101f973a429993ff84fcb2f608",
+      "bytes": 107,
+      "compressed_sha256": "c4c83387c0af637d4c731b5906054effe5798569c7b76de51d475abb21505b62"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-sync-r2.log",
+      "retained_path": "execution-67693004/console-preparation-recovery-sync-r2.log.gz",
+      "sha256": "b15fda7d63c9fb121851b89a3cf513ea9b2d39a51ab490e9d7360f57a4933574",
+      "bytes": 107,
+      "compressed_sha256": "d82ea785b8ce09a9e3cec965e5354b2e2a96366f1351f0eeb0e0187dd41a0cd7"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-sync-r3.log",
+      "retained_path": "execution-67693004/console-preparation-recovery-sync-r3.log.gz",
+      "sha256": "2f546bcc12882a17a474a7bbbb407df54f8ba099eec1d5a27eb19bba9906745c",
+      "bytes": 181,
+      "compressed_sha256": "7849a2032646f134cbdcc8311972a52c6ff2337cccbd20a5cc7b3abd32365f5f"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-sync-r4.log",
+      "retained_path": "execution-67693004/console-preparation-recovery-sync-r4.log.gz",
+      "sha256": "ef19b7291498a5fbc103415164ac2b2fd00073b11805f4600c19215015d7fcb2",
+      "bytes": 1279,
+      "compressed_sha256": "f7d3e08576e143a0bfa3b50b63b3d01963aa5d9fe4bd29451994ea695f61d2cc"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-sync-r5.log",
+      "retained_path": "execution-67693004/console-preparation-recovery-sync-r5.log.gz",
+      "sha256": "293d2cf2aeea930e851deb903b34860c8df8d783d8ce4e5024d6b7139451544e",
+      "bytes": 1589,
+      "compressed_sha256": "dd9dbda6b8e11512a99664ea6322d4e166cd0fdaf44f3fdcd1781f27ded14ebe"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-transport-r1.log",
+      "retained_path": "execution-67693004/console-preparation-recovery-transport-r1.log.gz",
+      "sha256": "21ec4c7be90892ca979dd7bdf00fa57212de09fdc18f69140683df40de897273",
+      "bytes": 759,
+      "compressed_sha256": "66d96918b944d6a97842f501c97b86cc79f8c4514e73acaafcbf5d7f31140f2c"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-telemetry-67693004.log",
+      "retained_path": "execution-67693004/console-preparation-telemetry-67693004.log.gz",
+      "sha256": "67258fd52e534afac4723f607a7675315fcb4ade2f3027385531c25cdfaaaf47",
+      "bytes": 1845,
+      "compressed_sha256": "4feba115109a2ebdf44881da4e84a28f17db7e4600bd87a003eed9965fb1d988"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-telemetry-execution.log",
+      "retained_path": "execution-67693004/console-preparation-telemetry-execution.log.gz",
+      "sha256": "7dbbf215d6cbcbbb1ff111368bdf99dda989ad52ce1133e6118795d0026906a7",
+      "bytes": 1894,
+      "compressed_sha256": "ef67316460dc40c995363c344f9ae8e7f0a438c791e584ff7ed836c601413897"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-telemetry-r2.log",
+      "retained_path": "execution-67693004/console-preparation-telemetry-r2.log.gz",
+      "sha256": "9d9217534f8d4bed7f1c58060180b54b9cb059980e8887f20446e2d9e929d21c",
+      "bytes": 1893,
+      "compressed_sha256": "44eb7c04f9e95c2172a8ecabb9e96770bf7e61cab9739ab54c10541351b2e9cd"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-test-map-check.log",
+      "retained_path": "execution-67693004/console-preparation-test-map-check.log.gz",
+      "sha256": "3660e46c58e667a12a790b66bc3c67776e4276ee159eede125348eef27ba0956",
+      "bytes": 123,
+      "compressed_sha256": "99ff98a50724bfa669b321a7a9961a3ef7f422a3c719b82c09bafb4d34792cce"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-wiring-installed-red.log",
+      "retained_path": "execution-67693004/console-preparation-wiring-installed-red.log.gz",
+      "sha256": "cc7934530944ecd8958235534b25f311a5ddcaa6fcd02605a43c9e703f5af727",
+      "bytes": 14010,
+      "compressed_sha256": "f4f4d25c8e5fbf7020e1a8d0dd84de627914013da4b054f18348236ebdad5a95"
+    }
+  ]
+}
