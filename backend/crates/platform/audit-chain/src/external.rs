@@ -30,8 +30,6 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use ring::signature::{ED25519, UnparsedPublicKey};
-
 use crate::{SealSignError, SealSigner};
 
 /// Transport to the external key-custody service that holds the seal private
@@ -116,7 +114,8 @@ impl SealSigner for ExternalSealSigner {
         let Some(public_key) = self.anchors.get(key_ref) else {
             return Ok(false);
         };
-        let peer = UnparsedPublicKey::new(&ED25519, public_key);
-        Ok(peer.verify(message, signature).is_ok())
+        Ok(super::verify_ed25519_signature(
+            public_key, message, signature,
+        ))
     }
 }

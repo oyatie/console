@@ -907,7 +907,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-account_migration",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/account_migration.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/account_migration.rs", "tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "account_migration",
@@ -1064,7 +1064,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-action_inbox_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/action_inbox_api.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/action_inbox_api.rs", "tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "action_inbox_api",
@@ -1221,7 +1221,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-attendance_persona_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/attendance_persona_api.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/attendance_persona_api.rs", "tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "attendance_persona_api",
@@ -1378,7 +1378,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-audit_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/audit_api.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/audit_api.rs", "tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "audit_api",
@@ -1535,7 +1535,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-auth_rest",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs"] + glob(["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/auth_rest/actor-migration.csv"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest.rs", "tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs"] + glob(["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/auth_rest/actor-migration.csv"]), external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "auth_rest",
@@ -1692,7 +1692,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-benefit_catalog_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/benefit_catalog_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/benefit_catalog_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "benefit_catalog_api",
@@ -1849,7 +1849,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-board_ack_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/board_ack_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/board_ack_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "board_ack_api",
@@ -2006,7 +2006,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-cedar_freshness_mint",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/cedar_freshness_mint.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/cedar_freshness_mint.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "cedar_freshness_mint",
@@ -2163,7 +2163,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-cedar_parity_shadow",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/cedar_parity_shadow.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/cedar_parity_shadow.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "cedar_parity_shadow",
@@ -2320,7 +2320,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-cedar_shadow_role_manage",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/cedar_shadow_role_manage.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/cedar_shadow_role_manage.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "cedar_shadow_role_manage",
@@ -2477,7 +2477,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-compliance_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/compliance_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/compliance_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "compliance_api",
@@ -2634,7 +2634,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-compliance_catalog_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/compliance_catalog_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/compliance_catalog_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "compliance_catalog_api",
@@ -2791,7 +2791,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-config",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/config.rs"]),
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/config.rs"]),
     crate = "config",
     edition = "2024",
     crate_root = "backend/app/tests/config.rs",
@@ -2946,7 +2946,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-console_kill_switch",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/console_kill_switch.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/console_kill_switch.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "console_kill_switch",
@@ -3103,7 +3103,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-console_route_telemetry",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/console_route_telemetry.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/console_route_telemetry.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "console_route_telemetry",
@@ -3260,7 +3260,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-consulting_engagement_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/consulting_engagement_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/consulting_engagement_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "consulting_engagement_api",
@@ -3417,7 +3417,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-dev_auth_persona_guard",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/dev_auth_persona_guard.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/dev_auth_persona_guard.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "dev_auth_persona_guard",
@@ -3574,7 +3574,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-dev_auth_persona_guard_feature",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/dev_auth_persona_guard_feature.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/dev_auth_persona_guard_feature.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "dev_auth_persona_guard_feature",
@@ -3732,7 +3732,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-dev_seed_notification_links",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/dev_seed_notification_links.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/dev_seed_notification_links.rs"], external = {
         "//scripts:dev-seed.sql": "scripts/dev-seed.sql",
     }),
     crate = "dev_seed_notification_links",
@@ -3889,7 +3889,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-dispatch_pipeline_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/dispatch_pipeline_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/dispatch_pipeline_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "dispatch_pipeline_api",
@@ -4046,7 +4046,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-equipment_3r_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/equipment_3r_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/equipment_3r_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "equipment_3r_api",
@@ -4203,7 +4203,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-evaluation_cycle_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/evaluation_cycle_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/evaluation_cycle_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "evaluation_cycle_api",
@@ -4360,7 +4360,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-facilities_pilot_story",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/facilities_pilot_story.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/facilities_pilot_story.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "facilities_pilot_story",
@@ -4517,7 +4517,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-field_visit_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/field_visit_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/field_visit_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "field_visit_api",
@@ -4674,7 +4674,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-finance_gl_voucher_sod",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/finance_gl_voucher_sod.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/finance_gl_voucher_sod.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "finance_gl_voucher_sod",
@@ -4831,7 +4831,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-health_readiness",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/health_readiness.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/health_readiness.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "health_readiness",
@@ -4988,7 +4988,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-hr_attendance_manager_scope",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/hr_attendance_manager_scope.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/hr_attendance_manager_scope.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "hr_attendance_manager_scope",
@@ -5145,7 +5145,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-hr_attendance_self_read",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/hr_attendance_self_read.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/hr_attendance_self_read.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "hr_attendance_self_read",
@@ -5302,7 +5302,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-hr_ingest_checklist_gate",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/hr_ingest_checklist_gate.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/hr_ingest_checklist_gate.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "hr_ingest_checklist_gate",
@@ -5459,7 +5459,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-hr_people_create_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/hr_people_create_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/hr_people_create_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "hr_people_create_api",
@@ -5616,7 +5616,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-intelligence_bind",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/intelligence_bind.rs"]),
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/intelligence_bind.rs"]),
     crate = "intelligence_bind",
     edition = "2024",
     crate_root = "backend/app/tests/intelligence_bind.rs",
@@ -5771,7 +5771,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-logistics_pilot_story",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/logistics_pilot_story.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/logistics_pilot_story.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "logistics_pilot_story",
@@ -5928,7 +5928,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-m2_real_engine_drive",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/m2_real_engine_drive.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/m2_real_engine_drive.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "m2_real_engine_drive",
@@ -6085,7 +6085,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-maintenance_chain_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/maintenance_chain_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/maintenance_chain_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "maintenance_chain_api",
@@ -6242,7 +6242,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-mobile_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/mobile_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/mobile_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "mobile_api",
@@ -6399,7 +6399,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-notif_routing_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/notif_routing_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/notif_routing_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "notif_routing_api",
@@ -6556,7 +6556,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-notifications_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/notifications_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/notifications_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "notifications_api",
@@ -6713,7 +6713,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-object_graph_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/object_graph_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/object_graph_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "object_graph_api",
@@ -6870,7 +6870,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-object_links_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/object_links_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/object_links_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "object_links_api",
@@ -7027,7 +7027,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-object_ontology_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/object_ontology_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/object_ontology_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "object_ontology_api",
@@ -7184,7 +7184,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-object_resolve_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/object_resolve_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/object_resolve_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "object_resolve_api",
@@ -7341,7 +7341,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-office_versions",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/office_versions.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/office_versions.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "office_versions",
@@ -7498,7 +7498,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-openapi_drift",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/openapi_drift.rs"] + glob(["src/**/*.rs", "Cargo.toml"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/openapi_drift.rs"] + glob(["src/**/*.rs", "Cargo.toml"]), external = {
         "//backend/crates/analytics-quant/rest:crate-source-tree": "backend/crates/analytics-quant/rest/src",
         "//backend/crates/attendance/rest:crate-source-tree": "backend/crates/attendance/rest/src",
         "//backend/crates/benefit/rest:crate-source-tree": "backend/crates/benefit/rest/src",
@@ -7694,7 +7694,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-openslo_files",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/openslo_files.rs"] + glob(["slos/**"])),
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/openslo_files.rs"] + glob(["slos/**"])),
     crate = "openslo_files",
     edition = "2024",
     crate_root = "backend/app/tests/openslo_files.rs",
@@ -7849,7 +7849,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-org_change_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/org_change_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/org_change_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "org_change_api",
@@ -8006,7 +8006,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-persona_ess_http",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/persona_ess_http.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/persona_ess_http.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "persona_ess_http",
@@ -8163,7 +8163,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-platform_onboarding_e2e",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/platform_onboarding_e2e.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/platform_onboarding_e2e.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "platform_onboarding_e2e",
@@ -8320,7 +8320,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-purchase_request_collection_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/purchase_request_collection_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/purchase_request_collection_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "purchase_request_collection_api",
@@ -8477,7 +8477,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-realtime_ws",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/realtime_ws.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/realtime_ws.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "realtime_ws",
@@ -8634,7 +8634,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-recruiting_pipeline_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/recruiting_pipeline_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/recruiting_pipeline_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "recruiting_pipeline_api",
@@ -8791,7 +8791,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-registry_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/registry_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/registry_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "registry_api",
@@ -8948,7 +8948,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-router_layers",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/router_layers.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/router_layers.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "router_layers",
@@ -9105,7 +9105,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-search_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/search_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/search_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "search_api",
@@ -9262,7 +9262,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-submittable_definitions_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/submittable_definitions_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/submittable_definitions_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "submittable_definitions_api",
@@ -9419,7 +9419,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-tenant_context_e2e",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/tenant_context_e2e.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/tenant_context_e2e.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "tenant_context_e2e",
@@ -9576,7 +9576,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-well_known",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/well_known.rs"]),
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/well_known.rs"]),
     crate = "well_known",
     edition = "2024",
     crate_root = "backend/app/tests/well_known.rs",
@@ -9731,7 +9731,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-workbench_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workbench_api.rs"] + glob(["src/workbench.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workbench_api.rs"] + glob(["src/workbench.rs"])),
     crate = "workbench_api",
     edition = "2024",
     crate_root = "backend/app/tests/workbench_api.rs",
@@ -9886,7 +9886,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-workbench_native_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workbench_native_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workbench_native_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "workbench_native_api",
@@ -10043,7 +10043,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-workflow_automation_triggers",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_automation_triggers.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_automation_triggers.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "workflow_automation_triggers",
@@ -10200,7 +10200,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-workflow_dynamics_branch",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_dynamics_branch.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_dynamics_branch.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "workflow_dynamics_branch",
@@ -10357,7 +10357,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-workflow_four_eyes_publish",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_four_eyes_publish.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_four_eyes_publish.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "workflow_four_eyes_publish",
@@ -10514,7 +10514,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-workflow_object_context_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_object_context_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_object_context_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "workflow_object_context_api",
@@ -10671,7 +10671,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-workflow_object_kind_dynamics",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_object_kind_dynamics.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_object_kind_dynamics.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "workflow_object_kind_dynamics",
@@ -10828,7 +10828,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-workflow_run_read_surface",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_run_read_surface.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_run_read_surface.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "workflow_run_read_surface",
@@ -10985,7 +10985,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-workflow_runtime_finalize_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_runtime_finalize_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_runtime_finalize_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "workflow_runtime_finalize_api",
@@ -11142,7 +11142,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-workflow_runtime_instance_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_runtime_instance_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workflow_runtime_instance_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "workflow_runtime_instance_api",
@@ -11299,7 +11299,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-workorder_api",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workorder_api.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/workorder_api.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "workorder_api",

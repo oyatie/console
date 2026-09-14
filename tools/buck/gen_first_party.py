@@ -790,6 +790,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
         'integration': {
             'tests/audit_chain_rls.rs': 'postgres',
+            'tests/ed25519_compatibility.rs': 'none',
         },
     },
     'console-platform-auth': {
