@@ -218,7 +218,7 @@ test('CA certificate cannot be reused as PostgreSQL TLS leaf', (t)=> {
   const ca=new crypto.X509Certificate(caCertificate);assert.equal(ca.ca,true);
   const now=Date.parse(new crypto.X509Certificate(certificate).validFrom)+60_000;
   assert.ok(Date.parse(ca.validFrom)<=now && Date.parse(ca.validTo)>now+86400_000,'negative CA fixture remains otherwise time-valid');
-  assert.ok(ca.checkHost('postgres'));assert.ok(ca.checkIP('127.0.0.1')); 
+  assert.ok(ca.checkHost('postgres'));assert.ok(ca.checkIP('127.0.0.1'));
   assert.equal(ca.checkPrivateKey(crypto.createPrivateKey(privateKey)),true,'negative fixture differs in certificate constraints, not key identity');
   fs.writeFileSync(path.join(f.directory,'tls/server.key'),privateKey,{mode:0o600});fs.writeFileSync(path.join(f.directory,'tls/server.crt'),caCertificate,{mode:0o600});
   assert.throws(f.prepare,/certificate|TLS|leaf|CA|valid/i);assert.equal(f.calls.length,0);
