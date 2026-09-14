@@ -65,6 +65,22 @@ def source_snapshot(root, paths):
     return {'head': head, 'files': files}
 
 
+def freeze_executable(source, destination):
+    if source.is_symlink() or not source.is_file():
+        raise AssertionError('nonregular migration executable')
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
+    shutil.copyfile(source, destination)
+    destination.chmod(0o500)
+    if hashlib.sha256(source.read_bytes()).hexdigest() != digest or hashlib.sha256(destination.read_bytes()).hexdigest() != digest:
+        raise AssertionError('migration executable changed while freezing')
+    return digest
+
+
+def assert_executable_unchanged(path, expected):
+    if path.is_symlink() or not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+        raise AssertionError('frozen migration executable changed')
+
+
 def cleanup_containers(containers, run):
     failures = []
     for container in reversed(containers):
@@ -249,7 +265,9 @@ class Suite:
                    '@localhost:'+port+'/'+name+'?sslmode=verify-full&sslrootcert='+quote(str(self.private/'ca.crt'),safe=''))
             env = {k:v for k,v in self.env.items() if not k.startswith(('PG','CONSOLE_','DATABASE_'))}
             env.update(CONSOLE_APP_ROLE='migrate', DATABASE_URL=url)
+            assert_executable_unchanged(binary,self.provenance['binary_sha256'])
             self.run([str(binary)],env=env,timeout=300)
+            assert_executable_unchanged(binary,self.provenance['binary_sha256'])
         state = self.snapshot(container,name)
         assert all(r['owner']=='console_app' for r in state['relations']), 'fixture not staging'
         return state
@@ -304,15 +322,16 @@ class Suite:
         self.frozen_sources = source_snapshot(ROOT, paths)
         self.provenance['prebuild_sources'] = self.frozen_sources
         self.run(['docker','image','inspect',IMAGE])
-        build_env=dict(self.env,RUSTUP_TOOLCHAIN='1.98.1',RUSTC_WRAPPER='',CARGO_INCREMENTAL='1')
+        # No other lane may replace this executable through a shared Cargo cache.
+        owned_target=self.private/'cargo-target'
+        build_env=dict(self.env,RUSTUP_TOOLCHAIN='1.98.1',RUSTC_WRAPPER='',CARGO_INCREMENTAL='1',
+                       CARGO_TARGET_DIR=str(owned_target))
         self.run(['cargo','build','--locked','--manifest-path',str(ROOT/'backend/Cargo.toml'),
                   '-p','console-app','--bin','console-app'],env=build_env,timeout=900)
         self.assert_sources_unchanged()
-        target=Path(build_env.get('CARGO_TARGET_DIR',str(ROOT/'backend/target')))
-        if not target.is_absolute():
-            target=ROOT/target
-        binary=target/'debug/console-app'
-        self.provenance['binary_sha256']=hashlib.sha256(binary.read_bytes()).hexdigest()
+        binary=self.private/'console-app-frozen'
+        self.provenance['binary_sha256']=freeze_executable(owned_target/'debug/console-app',binary)
+        self.provenance['build_target_ownership']='unique private target; no inherited shared executable'
         self.provenance['production_assets']={name:hashlib.sha256((ROOT/'ops'/name).read_bytes()).hexdigest() for name in ASSETS}
         self.provenance['migrations']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((ROOT/'backend/crates/platform/db/migrations').glob('*.sql'))}
         self.certificate()
@@ -442,6 +461,24 @@ def machinery_tests():
                 suite.run=fail
                 self.assertEqual(suite.cleanup(),['intended'])
                 self.assertFalse(private.exists())
+
+        def test_frozen_executable_survives_build_output_replacement(self):
+            with tempfile.TemporaryDirectory() as directory:
+                root=Path(directory); built=root/'built'; frozen=root/'frozen'
+                built.write_text('#!/bin/sh\nprintf reviewed\n');built.chmod(0o700)
+                digest=freeze_executable(built,frozen)
+                built.write_text('#!/bin/sh\nprintf replaced\n')
+                assert_executable_unchanged(frozen,digest)
+                self.assertEqual(subprocess.check_output([str(frozen)]),b'reviewed')
+
+        def test_frozen_executable_mutation_refuses_before_execution(self):
+            with tempfile.TemporaryDirectory() as directory:
+                root=Path(directory);built=root/'built';frozen=root/'frozen'
+                built.write_text('#!/bin/sh\nexit 0\n');built.chmod(0o700)
+                digest=freeze_executable(built,frozen)
+                frozen.chmod(0o700);frozen.write_text('#!/bin/sh\nexit 1\n')
+                with self.assertRaises(AssertionError):
+                    assert_executable_unchanged(frozen,digest)
 
         def test_real_source_change_missing_and_symlink_refuse(self):
             with tempfile.TemporaryDirectory() as directory:
