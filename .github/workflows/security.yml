@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "24"
       - name: Install checksum-pinned Trivy before candidate checkout
@@ -44,7 +44,7 @@ jobs:
           tar -xzf "$archive" -C "$install_dir" trivy
           sudo install -m 0755 "$install_dir/trivy" /usr/local/bin/trivy
           /usr/local/bin/trivy --version
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Trivy exception policy regression
         run: node --test scripts/generate-trivy-dev-codegen-exceptions.test.mjs
       - name: Verify canonical Trivy exception projection
@@ -72,7 +72,7 @@ jobs:
           tar -xzf "$archive" -C "$install_dir" trivy
           sudo install -m 0755 "$install_dir/trivy" /usr/local/bin/trivy
           /usr/local/bin/trivy --version
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Install kubectl (for kustomize renderer)
         env:
           KUBECTL_VERSION: "v1.36.2"
@@ -97,7 +97,7 @@ jobs:
     steps:
       - name: Install cargo-audit before candidate checkout
         run: cargo install cargo-audit --locked --version 0.22.2 --root "${RUNNER_TEMP}/cargo-security-tools"
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Run cargo audit
         working-directory: backend
         # RUSTSEC-2023-0071 (rsa Marvin) is accepted with the exploitability
@@ -117,7 +117,7 @@ jobs:
       # policy + accepted-advisory rationale live in backend/deny.toml).
       - name: Install cargo-deny before candidate checkout
         run: cargo install cargo-deny --locked --version 0.19.9 --root "${RUNNER_TEMP}/cargo-security-tools"
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - run: |
           printf '%s\n' 'running cargo deny through the directly installed cargo-deny binary'
           "${RUNNER_TEMP}/cargo-security-tools/bin/cargo-deny" --manifest-path backend/Cargo.toml check
@@ -127,8 +127,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "24"
           cache: npm
