@@ -1,4 +1,4 @@
--- Read-only six-table v1 metadata verdict. Caller must use search_path=pg_catalog.
+-- Read-only six-table v1 metadata verdict. Caller must use search_path=pg_catalog,pg_temp.
 -- Expected fingerprints are fixed from reviewed0226, never from this target.
 WITH expected(name, owner_name, shape_sha256) AS (VALUES
  ('accounts','console_account_owner','bf8b3a765aca8473b0bdcb977a3c2adbb2c1fe0dd775cc151faae1271427d3f9'),
