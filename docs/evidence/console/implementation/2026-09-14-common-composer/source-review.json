@@ -1,0 +1,42 @@
+{
+  "reviewer": "/root/finish_browser",
+  "base_sha": "39ae20863c5f1b599323f2ddcf72e5400311d023",
+  "candidate": "base plus uncommitted backend/crates/payroll/ui/src/common_action_composer.rs only",
+  "sha256_before_and_after": {
+    "lib.rs": "c219b7ccfe73aedfd2fcdfeb64d46f79f9c2910377633a50201fc373524b4a29",
+    "common_action_composer.rs": "c72786cea8ffdb6adedc6bc503156bbb04a3e0f601c327d8e60e094a65477499",
+    "common_action_composer.css": "b5cc332708955d8ac4cabba5254f6f103f41c13c21b541a50ca676ebe8f88a63"
+  },
+  "verdict": "APPROVE_BOUNDED_SSR_PRESENTATION_SOURCE",
+  "resolved_findings": {
+    "no_js_submit_only_recovery": "Previous field errors and Incomplete values no longer disable authorized Submit. Only stale conflict requires recovery context. No Save authority is added. Fresh POST business validation remains receiving owner responsibility.",
+    "optional_enum_clear": "Optional select includes empty choice regardless of current selection; existing authorized choice remains selected until user changes it."
+  },
+  "preserved_checks": [
+    "Leptos dynamic text and attribute escaping, no raw HTML injection",
+    "Restricted local UI URLs and readonly fallback omit mutation tokens",
+    "Stable address segment encoding and exact error linkage",
+    "No coercion of acknowledged incomplete decimal text",
+    "CSS mobile responsive sizing and explicit dark scheme remain unchanged"
+  ],
+  "evidence_reviewed": {
+    "path": "/private/tmp/common-composer-ux-green.log",
+    "reported_executed": 16,
+    "reported_passed": 16,
+    "reported_failed": 0,
+    "reported_ignored": 0,
+    "reported_filtered": 0,
+    "independently_executed_by_reviewer": 0,
+    "baseline_library_log": "/private/tmp/common-composer-lib-regression.log",
+    "baseline_library_reported_passed": 7
+  },
+  "checks": [
+    "git diff --check passed",
+    "all three source hashes remained stable across review"
+  ],
+  "blocking_findings": [],
+  "limits": [
+    "Approval covers bounded SSR source and observed test report; no mounted route, Cedar enforcement, durable save/submit or full nested-schema claim.",
+    "Browser-native evidence is assigned to independent reviewer finish_migration and was not available in this review."
+  ]
+}
