@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "ACCEPT_EXACT_DESIGN_FOR_USER_APPROVAL_AND_V2_BOUNDED_EXPERIMENT_EVIDENCE",
+  "refinement_sha256": "a3cdb0b70d52ac70a0a8f016e6b098ed5680eed2119fe4855a823caf50a4d230",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "blocking_findings": [],
+  "design_checks": [
+    "Direct authenticated SUPERUSER exception now explicit and limited to trusted one-shot operator; credential compromise accurately remains cluster-wide, distinct from intended six-table SQL effect. Original console_app/serving identity boundaries unchanged.",
+    "Protected independently supplied system_identifier/database name/OID/TLS descriptor prevents self-derived expected-target tautology. Clone/restore rebinding and wrong identical database/cluster cases explicit.",
+    "Dedicated pinned operator image provides actual psql and bound scripts/manifests. Required operator infrastructure/network admission precedes migration/finalizer PreSync; no claim later normal Sync suffices.",
+    "FutureDDL freeze explicitly blocks dependent ALTER/FK in all-at-once ordinary MIGRATOR. API/worker startup before consumers is explicit; readyz is detection/routing, not live worker-stop guarantee.",
+    "Design/test source remain distinct: LC01-LC08 obligations are not executable test admission; no Account completion or production exposure authorized."
+  ],
+  "v2_checks": [
+    "All retained result-artifact hashes and source-script hashes verified; raw result and source manifest match conclusion.225 exact migration roster retained;450 raw SQL-file applications,0 Rust tests.",
+    "Six exact console_rt|db_a|1 positive logs and six exact ERROR42501 table-name refusals independently inspected. This closes v1 connection-failure ambiguity for actual bounded runtime reads.",
+    "All20required evidence copies have checked exit0 and matching retained hashes. New runner marks failed copies FAIL and returns nonzero; cleanup failure returns nonzero.",
+    "Omitted sixth ownership transfer calls actual checker, which reports exact missing owner and transaction rollback is verified against all6source owners. Extra direct SELECT(id) grant calls actual privilege checker, reports exact role/table and rolls back before positive recheck.",
+    "Input staging copies explicit source inputs and pinned225migrations only; no v1 logs/results reused as new execution. Random private env file removed and owned container cleanup exit0.",
+    "V1 result hash remains84f98103cc6aff0ddeb82be60e8bed06cab2e1e94bb59ca664ce9cb0a15a32b9; original limited evidence preserved."
+  ],
+  "limits": [
+    "Two DB execution remains sequential, not concurrency proof.",
+    "Exact owner/ACL checker controls do not validate full tuple/schema semantics, future production wrapper, SQLx migration startup, privileged operator target verification or live admission.",
+    "No new product/runtime execution performed by this independent reviewer; verified actual recorded execution, source and oracle evidence.",
+    "Production finalizer tests/provenance, enforcing-network/secret/target inventory controls and final approval remain their explicit future gates."
+  ],
+  "source_hashes": {
+    "result.json": "9cb7a20250892962298096b74dd3ae46d18a6ff57bfdff177f85e1e7014a447c",
+    "sources.json": "288c6cdce8d56f80cf552934b6fc6220ec43b79232c9ba391a840d02dbaa9721",
+    "conclusion.json": "2b1763cbc26f0e328739681bd8593ca1d2abade3bd75d52e7ff492c05222ab81",
+    "run.py": "1279547e9d7eebb4334ebca09dc5a7ef43d2010a3b209501921bf54522d64f34",
+    "in-container.sh": "e9e694ae37759055113795b36a3bca557eb1d5470e223a6a0ef324935d0e34b8",
+    "transfer-omitted.sql": "e3dc8e0740e29077b3376173f2e51116ea1ec99be57b173b33ebd994a64c05a3",
+    "extra-column-grant.sql": "a80602606bc42d7038f0de37cd88e4798b082bdd467b639d5f0316d08b624c70",
+    "check-custody.sql": "ebf1fc73c3705d008157cea816db1a37cf4787ba0ab749cae9b257bd6e91c1d5"
+  },
+  "repository_writes": 0
+}
