@@ -1,0 +1,33 @@
+{
+  "classification": "NONPRODUCTION_SYNTHETIC_REGRESSION_NOT_LEGAL_ELIGIBILITY",
+  "source_base": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "source_path": "backend/crates/payroll/domain/src/lib.rs",
+  "source_sha256": "34176ef3b404ee744edf1da8ea233e5a7fa909192707143356df2ef65adb4a92",
+  "existing_test": "builds_employee_deduction_draft_from_effective_rates_and_supplied_nts_row",
+  "source_lines": "2211-2234",
+  "input": {
+    "pay_date": "2026-06-27",
+    "gross_won": 3000000,
+    "taxable_monthly_won": 3000000,
+    "pension_standard_monthly_income_won": 3000000,
+    "monthly_standard_hours": 209,
+    "income_tax_won": 74350,
+    "local_tax_won": 7430,
+    "tax_table_edition": "NTS-간이세액표-fixture-row-v1"
+  },
+  "expected": {
+    "gross_won": 3000000,
+    "total_deductions_won": 373300,
+    "net_won": 2626700,
+    "payable": false,
+    "deductions": {
+      "NATIONAL_PENSION": 142500,
+      "HEALTH_INSURANCE": 107850,
+      "LONG_TERM_CARE": 14170,
+      "EMPLOYMENT_INSURANCE": 27000,
+      "INCOME_TAX": 74350,
+      "LOCAL_INCOME_TAX": 7430
+    }
+  },
+  "note": "Reuse immutable independently specified existing test literals. Expected values are not obtained by invoking runtime calculator. R2 byte/schema goldens remain unchanged and are not this runtime monetary seed."
+}

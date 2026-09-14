@@ -1,0 +1,11 @@
+{
+  "initial_candidate_sha": "184f46e0b766376b86262cf1ba40edce103cd250",
+  "initial_reviews": "Both reviewers scoped accepted full11files; continuity initially misread escaped LF as literal backslash+n",
+  "correction_commits": [
+    "5648b52576090c63feed9630f27f8ebfeeb2fdaa"
+  ],
+  "correction": "Added1explicit verifier assertion; original vectors already actual LF, unchanged bytes; continuity retracted advisory after decoded readback",
+  "final_candidate_sha": "5648b52576090c63feed9630f27f8ebfeeb2fdaa",
+  "blocking_content_findings": [],
+  "counts_as_final_integrated_round": false
+}

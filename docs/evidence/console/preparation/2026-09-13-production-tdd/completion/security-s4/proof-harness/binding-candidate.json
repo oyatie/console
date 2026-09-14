@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "source_commit": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "owners": {
+    "bind_active_context": null,
+    "project_authorized_result": null,
+    "build_safe_operational_event": null,
+    "admit_bound_egress": null
+  },
+  "status": "SOURCE_PREREQUISITE_NOT_PROOF_FAILURE",
+  "original_supplied_value_proof": "Preserve production-tdd/verus-source-binding.json unchanged",
+  "toolchain_pins_reference": "production-tdd/verus-source-binding.json",
+  "required_negative_controls": [
+    "wrong Company operand accepted",
+    "missing permitted-field filter",
+    "extra sanitized secret-dependent event",
+    "unbound destination selection",
+    "known-false denial of valid A emission"
+  ],
+  "sink_inventory": "../source-sink-requirements.json",
+  "route_inventory": "backend/app/src/lib.rs::CONFIGURED_ROUTE_SURFACES and each referenced ROUTE_PATHS",
+  "sql_inventory": "root M0 live pg_proc/ACL/default/membership manifest; no second registry"
+}

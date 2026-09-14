@@ -1,0 +1,44 @@
+{
+  "classification": "REFERENCE_AND_INTERNAL_SCHEMA_ONLY",
+  "base": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "commands": [
+    {
+      "argv": [
+        "/private/tmp/console-wire31-validator/bin/python",
+        "/private/tmp/console-native28-contract-refinement-r2-20260913/project_normalized_schemas.py"
+      ],
+      "returncode": 0,
+      "projected_files": 7
+    },
+    {
+      "argv": [
+        "/private/tmp/console-wire31-validator/bin/python",
+        "/private/tmp/console-native28-contract-refinement-r2-20260913/test_reference.py"
+      ],
+      "log": "reference-r2-execution.log",
+      "discovered": 96,
+      "executed": 96,
+      "passed": 96,
+      "failed": 0,
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/private/tmp/console-wire31-validator/bin/python",
+        "/private/tmp/console-native28-contract-refinement-r2-20260913/schema_check.py"
+      ],
+      "log": "schema-r2-execution.json",
+      "discovered": 55,
+      "executed": 55,
+      "passed": 55,
+      "failed": 0,
+      "returncode": 0
+    }
+  ],
+  "source_snapshots_unchanged": 121,
+  "binary_goldens_unchanged": 9,
+  "product_owner_executed": 0,
+  "rust_source_compiled": false,
+  "runtime_fixture_installer_complete": false,
+  "note": "All-six-field CAS and real auth/owner/retention tests remain HOLD in owner-runtime-holds.md."
+}

@@ -1,0 +1,82 @@
+Draft acceptance supplement
+
+Scope: proposed source against design30/R2 and the upcoming native S2 fixture.
+R2 supersedes R1 after independent review80a9a6c6.
+These are acceptance tests and a test-only independent readback checker, not a
+new implementation, production authority or proof of implemented behavior.
+Root owns this scratch packet; no product path is changed.
+
+Proposed ordinary owner interface additions required by the source
+
+ontology/action30 read_draft_history_manifest(pool, authenticated Company context,
+draft_id) returns a read manifest binding Company, draft, current policy/context,
+control revision, head revision, complete revision/receipt counts, page budget
+and domain effects attributed to this draft's sealed original command. This is
+the same history surface the real UI needs. It does not expose other drafts or
+target-wide unrelated business effects. Authorization is evaluated currently.
+
+read_draft_history_page(pool, auth, manifest, cursor) returns that exact manifest,
+revision rows, receipt rows and an optional next cursor. All pages are immutable
+revision/control/policy bound. Mixed versions, revoked authority, cyclic or
+expired cursors refuse. The collector bounds pages, checks all counts and sends
+every row to the separate Python checker; no set conversion can hide duplicates.
+No test-only privileged production read route is added. The synthetic fixture
+actor is granted full history rights via the ordinary policy owner so these
+tests can inspect all its own retained fields. Restricted projections require
+the separate security tests.
+
+Each revision row has revision_id, version, draft_id, company_id,
+parent_revision_id, account_id, schema_revision_id and fields. Field rows expose
+a canonical collision-free address string (serialized complete FieldAddress),
+typed_address (the actual FieldAddress), state, value and optional editor_text.
+Only actual required scalar fields resolved by stable registered paths
+expected.run_revision and expected_membership_revision are used for incomplete
+input tests; schema codecs may represent Positive as a decimal string. These are plain read values, never capabilities. Receipt rows bind
+command_id, receipt_id and revision_id. A readback JSON object is an oracle input,
+not a replacement canonical on-disk object representation or a runtime schema.
+
+read_attempt_control(pool, auth, actual AttemptRef) returns state and
+state_revision under current authority. READY/CANCELLED values are compared
+using the real AttemptState enum. Reads cannot issue new intent slots or tokens.
+
+Schema lifecycle is owned by existing ontology schema governance. Proposed
+read_schema_for_administration/publish_schema_revision/publish_mapping_revision
+and retention read/publish/hold operations extend that owner; no test namespace,
+unchecked grant, alternate writer or job-title permission is introduced.
+Every mutation takes verified context plus plain UnadmittedControl and checks
+current schema/retention administrative policy. Returns contain actual persisted
+revision references and original command receipts. The native fixture must grant
+these narrow actions through normal policy configuration, not synthetic rows.
+All DTO fields referenced in lifecycle-producer.rs are explicitly part of this
+proposed contract. Closed schema fields preserve stable IDs, type and cardinality.
+An incomplete mapping may be published only as partial configuration; no draft
+with complete unmapped content can successfully upgrade under it. If the owner
+instead rejects partial configuration at publish, the negative belongs at that
+earlier boundary and requires reviewed test refinement, not generic error PASS.
+
+The one-second inactivity policy is synthetic configurable data in an isolated
+Company, never a legal retention claim or deployment default. Expiry observes
+authoritative server time; client time is not editable. Payload purge is false.
+Expiry ends editing even under a preservation hold; it must preserve held input/history and cannot dispose of its evidence chain. Unknown/sealed
+submissions remain reconciliation evidence. Policy enforcement of a longer
+minimum interval requires a real controlled clock at the owner boundary and a
+reviewed fixture revision; sleeping thirty days is not the intended test method.
+
+Execution and honesty
+
+Python checker tests are executable now; their synthetic histories exercise the
+checker only. Rust source is parser-checked and cannot compile until the ordinary
+owner interfaces and native fixture owners exist. Missing imports or fixture
+errors never admit product implementation. No fake implementation is supplied.
+History tests protect captured acknowledged snapshots and actual receipts;
+same-count self-consistent omitted histories must fail when compared with known
+acks. Complete source-to-database truth additionally requires the existing
+ordinary owner persistence/protection tests; the UI projection cannot prove its
+own database completeness alone.
+
+Still authoring outside this packet: source.prepare_submission (native author),
+real process/transport interruption paths, full revocation/field projection
+matrix (security author), attendance/calendar/leave (root next packet). This
+packet alone does not claim all eleven draft registrations or all dimensions.
+
+resolve_registered_field_address(schema_snapshot,path) is the pure existing registered-field resolver extended at the schema owner, returning exact FieldAddress, required flag and scalar classification. It cannot resolve arbitrary runtime properties or confer field permissions. Tests separately require that exact field exists COMPLETE in the observed draft. The partial schema mapping omits that actual required populated field, not array position zero. Stale-head testing uses the real retained predecessor revision from the same acknowledged history.

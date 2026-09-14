@@ -1,0 +1,42 @@
+{
+  "source_manifest_sha256": "7b1c271fda522816633dc91a1fc095daf3436abd78ce813614da9c800eb04454",
+  "verified_original_members": 5,
+  "mapping": [
+    {
+      "original": "packet-contract.md",
+      "retained": "packet-contract.txt",
+      "original_sha256": "4d8b654cee6ca42a404dfc785f5dede563aa51d3872215f81414845cba77a902",
+      "retained_sha256": "4d8b654cee6ca42a404dfc785f5dede563aa51d3872215f81414845cba77a902"
+    },
+    {
+      "original": "registration-coverage.json",
+      "retained": "registration-coverage.json",
+      "original_sha256": "de883096da0d09413e5d9d7f94b98f1512d97eceb6789c5bddbe837ff9b1abf7",
+      "retained_sha256": "de883096da0d09413e5d9d7f94b98f1512d97eceb6789c5bddbe837ff9b1abf7"
+    },
+    {
+      "original": "syntax-execution.json",
+      "retained": "syntax-execution.json",
+      "original_sha256": "c77b6b41d025c22879d5c7767ef8430facbfa0976f04a7d81b8ce0107f3b84ee",
+      "retained_sha256": "c77b6b41d025c22879d5c7767ef8430facbfa0976f04a7d81b8ce0107f3b84ee"
+    },
+    {
+      "original": "workflow-fixture.rs",
+      "retained": "workflow-fixture.rs",
+      "original_sha256": "aa0f4e36888c02e64d03718febc2d1348dfb6fdc4fe1bac5d914ff42e3b28930",
+      "retained_sha256": "aa0f4e36888c02e64d03718febc2d1348dfb6fdc4fe1bac5d914ff42e3b28930"
+    },
+    {
+      "original": "workflow-owner-tests.rs",
+      "retained": "workflow-owner-tests.rs",
+      "original_sha256": "0a4aa03e54218359a6632cbaa5f91b58a869a4a8cdf20d2a22839381c9227592",
+      "retained_sha256": "0a4aa03e54218359a6632cbaa5f91b58a869a4a8cdf20d2a22839381c9227592"
+    },
+    {
+      "original": "freeze-manifest.json",
+      "retained": "freeze-manifest.json",
+      "original_sha256": "7b1c271fda522816633dc91a1fc095daf3436abd78ce813614da9c800eb04454",
+      "retained_sha256": "7b1c271fda522816633dc91a1fc095daf3436abd78ce813614da9c800eb04454"
+    }
+  ]
+}

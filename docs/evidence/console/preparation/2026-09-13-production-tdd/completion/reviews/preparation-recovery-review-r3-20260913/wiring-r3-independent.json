@@ -1,0 +1,10 @@
+{
+  "discovered_methods": 9,
+  "executed_methods": 9,
+  "failure_records": 8,
+  "error_records": 3,
+  "skipped_methods": 0,
+  "test_sha256": "ad665d1de72bb801e509305f869a5d9ecb8a0ff23b73da556e215913fe855487",
+  "base_root": "/private/tmp/console-production-tdd-preparation-20260913",
+  "classification": "TOOLING_RED_NOT_PRODUCT_EXECUTION"
+}

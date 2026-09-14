@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/preparation_recovery",
+  "author": "/root",
+  "manifest_sha256": "e8b6678b3ff853c09938cccab0c809b89819e6bdb0c53d1f330588e8a17f236a",
+  "files_hash_length_verified": 19,
+  "independent_parser_passed": 3,
+  "parser_invocation": "rustfmt --edition 2024 --emit stdout <migration-admission-tests.rs,migration-rollback-tests.rs,postgres-snapshot-producer.rs>",
+  "owner_source_methods": 7,
+  "reviewer_owner_compile": 0,
+  "reviewer_owner_runtime": 0,
+  "author_machinery_status": "Unchanged final R1 run4 exact PostgreSQL18.6 machinery seven checks, source/log custody verified; not independently rerun",
+  "resolved_findings": [
+    "Remaining legacy users FK now requires explicit fenced writer; cannot pass as mapped with extra FK",
+    "All Company payroll_draft_runs rows now covered by retained before/after oracle; absent correlation_id query removed",
+    "PayrollActionError::Owner(common ServingEffectsPaused) wrapper declared and matched exactly",
+    "Earlier normalized catalog, actual Runtime role/config, distinct never-dispatched paused effect and independent Account M4 retained"
+  ],
+  "remaining_blocking_source_findings": [],
+  "decision": "ACCEPT_NARROW_OWNER_ASSERTION_SOURCE_AND_MACHINERY_CUSTODY; not product migration execution or full MIG source completion",
+  "remaining_holds": [
+    "Absent actual owner interface implementations and product test compilation/runtime",
+    "S4 MIG02/MIG03/MIG05 remaining explicitly assigned source obligations",
+    "Independent actual deployment operational restore/rollout authority"
+  ]
+}

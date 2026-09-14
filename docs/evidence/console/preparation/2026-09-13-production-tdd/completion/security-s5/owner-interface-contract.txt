@@ -1,0 +1,306 @@
+# Security owner assertions S4 — bounded closure candidate
+
+Author and only writer of this scratch root: `/root/readiness_final_verifier`.
+Repository integrator: `/root`. Observed integration base: `fd94667fb9133f1ecb55831f43192bdc46776dc0`.
+Target: additive acceptance sources and test fixture producers under the security preparation evidence directory. This packet is design/test preparation; it is not an admitted production implementation lane. No production module, migration, shared authority file, Cargo manifest, generated target or test registration is modified here.
+
+Mechanical integration: copy these source bytes under `completion/security/owner-assertions-s2/`; retain existing evidence. Compile registration remains a separate admission against an approved immutable test target. In `auth_rest`, mount `operator_custody_producer`, `context_owner_fixture`, `terms_publication_acceptance`, `context_discovery_acceptance` and `current_context_projection_acceptance` as ordinary modules. Mount `migration_transition_acceptance` as a child of existing `account_migration.rs`, preserving its two existing cases and every old helper. B5 Account/root/issuer/publish-then-root producer modules are copied without modification. `native_fixture::TestResult` needed by those modules is only the shared error alias, not the old native seed-file loader. No new fake fixture/owner implementation may be inserted to make these tests compile.
+
+Verification: `rustfmt --edition 2024 <six exact Rust sources>` parses and formats Rust syntax only. It does not type check, discover tests, run PostgreSQL or prove a production refusal. Explicit new app dev dependencies `openssl` and `tempfile` would require serialized Cargo/lockfile admission; they are not installed or edited by this packet. Existing `p256`, `sha2`, `sqlx`, `serde_json`, `rand`, `uuid`, `url`, WebAuthn and auth-rest setup are reused.
+
+Pre-mortem: an invented all-purpose test owner, hidden source loader, caller-created verified context, canned expected result, manually inserted approval/head, or role-only privilege oracle would make these cases vacuous. Producers create only untrusted signed bytes and old-schema fixture inputs. Ordinary owners must verify and commit authority. Blast radius is this scratch artifact root; eventual SQL fault injection is only in the existing marked disposable SQLx database. Detection is exact signature/role/custody/SQL tuple readback, positive controls, source partition and real PostgreSQL blocker IDs. Rollback is removal of an unintegrated candidate or reverting only its additive registration; existing tests/evidence remain. Stop on missing owner/catalog/config/dependency, syntax/type/setup failure, fixture validity violation, absent lock witness or unexpected source/version. Those are prerequisites, not behavioral RED. Production exposure, payment, legal content authority, historical credential recovery, production migrations and implementation admission remain HOLD. Independent review identity and exact head are recorded in the root integration receipt after review, not claimed in advance.
+
+## Ordinary publisher contract refinement
+
+Responsible existing package: `backend/crates/platform/auth`, sibling ordinary `terms_publication` module; deployment/release startup wiring in existing `backend/app`. This is the normal BW31 operator-only release command. It has no public HTTP route or tenant caller-selected config/path. There is no special acceptance/bootstrap publisher namespace.
+
+`load_deployment_custody(config_path:&Path, Environment)->DeploymentCustody` loads a deployment-owned local immutable configuration, permitted operator public keys, separately qualified content authority public keys, registered kinds, fixed local object/approval paths and dedicated publisher DB LOGIN. The caller is the privileged OS/deployment release command, not an app request. `DeploymentCustody` has private fields and no public constructor/Deserialize.
+
+`begin_operator_authentication(&DeploymentCustody, operator_key:&str)->OperatorChallenge` issues fresh bounded one-shot challenge bytes. `OperatorChallenge::signing_bytes()` exposes the exact domain-separated deployment/operator/challenge/expiry bytes to the signer; private challenge fields cannot be constructed by tests. `finish_operator_authentication(DeploymentCustody, OperatorChallenge, proof:&[u8])->AuthenticatedOperator` verifies Ed25519 against the configured key, challenge identity/time/replay and custody. `AuthenticatedOperator` is opaque and publisher-scoped; it is not an Account session or general deployment administrator.
+
+`publish_terms(&AuthenticatedOperator, OperatorApprovalRef)->PublicationReceipt`. `OperatorApprovalRef` is exact BW31 `{kind:OPERATOR_RELEASE_APPROVAL,approval_sha256:lowercase_sha256}`; Rust enum variant `ApprovalKind::OperatorReleaseApproval`. Resolve only the configured immutable `approvals/{sha256}` object and detached signature, never a caller path. Verify exact closed `TermsPublicationApproval` bytes, signed independently qualified content reference bytes, fixed approved manifest and each registered local content object. Checks include UTF-8, exact digest, all capacities, distinct required registered kinds, signed expected/next revision, TEST_ONLY exclusion in production and local-file no-symlink/escape rules. Test Ed25519 signatures use OpenSSL's actual one-shot implementation, with two independently generated keys. Signature envelope/path/qualification encoding is a proposed ordinary deployment-custody refinement, not an existing implementation claim or legal authority.
+
+`PublicationReceipt` fields used: `id:Uuid`, `previous_revision:Option<i64>`, `revision:i64`, `manifest_sha256:String`. Return only after committed ordinary publisher transaction and preserve exact approval bytes. `PublicationError` variants used: `RevisionConflict{current_revision:i64}`, `UntrustedCustody`, `InvalidArtifact`, database failure. No response-loss replay guarantee is invented for publication.
+
+SQL registration: `public.account_publish_terms(jsonb)` is the proposed sole SECURITY DEFINER mutation helper, owned by a non-login migration owner, fixed qualified `search_path`, PUBLIC revoked, EXECUTE solely the dedicated `console_terms_publisher` LOGIN. JSON input remains an untrusted approval reference: the OS custody owner must produce transaction-bound verified input without exposing a runtime-callable verified-approval constructor. A generic JSON helper cannot independently confer OS custody authority; implementation must bind its exact internal transaction proof/capability to the authenticated publisher and close direct publisher-role forgery if that role is exposed outside the one-shot release process. Tests exercise real runtime LOGIN calls with valid approval bytes and the normal authorized positive path.
+
+`CustodyFixture::new(label,database)` writes a private temporary bundle with mode0400 files and a dedicated `CONSOLE_TERMS_PUBLISHER_DATABASE_URL` targeting only the supplied marked `_sqlx_test_` database. Fixture setup must bind this URL to the same isolated PostgreSQL instance as the existing marked administrator; it never grants the role or manufactures catalog rows. `approve` signs exact BW31 bytes; `authenticate` invokes the ordinary verifier. The B5 frozen copy pins the preceding producer hash; integration must explicitly update that dependency to this packet's reviewed exact hash if it differs.
+
+## Account, topology, policy and projection interfaces
+
+Use B5 ordinary first-operator cold-start, provider-registration, supervised-root and Company-enrollment contracts, including exact signed provider revision and explicit `&JwtVerifier`. Publication commits genesis before root proof/Account enrollment. The real deployment startup auth LOGIN and identity command LOGIN are required; the helper verifies actual `session_user/current_user`. No caller-set admin flag or fabricated Account/Company row is introduced.
+
+Account `PasskeyService` and `JwtVerifier` are the real existing cryptographic types. Every Account fixture signs the actual returned WebAuthn challenge; the actual finish and `verify_account_session` validate the minted ACCOUNT_V1 plus stored refresh family. Test config must pass the same immutable issuer/verifier/terms registry into the actual owner/service instance; no process-global mutable test override is admitted. `AppState::serving_admission_binding()` returns the actual already-admitted process binding, not a DB-row-to-authority constructor.
+
+Normal Account-aware provisioning siblings used: `read_account_group_control(pool,operator,group_id)`, `update_account_group(pool,operator,GroupUpdate{command_id,group_id,expected,name})`; corresponding Company `read_account_company_control` and `update_account_company(CompanyUpdate{command_id,org_id,expected,name})`. These extend existing `PlatformProvisioner::{create_group,update_group,onboard_tenant}` at that owner. They require current operator authority and guard control, update actual labels/topology epochs atomically and return current recorded control; they cannot accept arbitrary table/field names.
+
+Identity `read_company_policy_schema` and `read_group_policy_schema` are ordinary registered-current-schema readers. Their `action(key)` and `projection(key)` lookups must resolve actual current ActionRef and GovernedRevision under the enclosing Company/Group; lookup keys do not confer permission. This source requests `context.discover`, `context.identity_only` and `context.identity_and_label` as **proposed exact registration identities** for the GN16 disclosure/field rules. They are not claimed to exist in design30's current action register. Final registry identity approval is a production schema/registration prerequisite; a test manifest cannot silently install the corresponding permit. `PolicyScope::Company` and `PolicyScope::GroupControl` are untrusted closed grant choices, never verified contexts.
+
+Use B5 `read_company_policy_control` and `apply_company_grant_plan`. `CompanyGrantReceipt{org_id,grant_id,...}` maps `grant_id` to actual design30 `policy_assignment_revisions.assignment_id`. Add ordinary `revoke_company_grant(RevokeCompanyGrant{command_id,org_id,grant_id,expected,reason})` and `restore_company_grant(RestoreCompanyGrant{...})`; restore appends a new current grant/revision from historical input, preserving old revocation evidence, and never erases a revocation. Group counterparts use `GroupGrantPlan` and `ApplyGroupGrantPlan` with the same exact current schema/expected policy guards. Candidate creation/update and generation advance occur in the same real grant/topology transaction. Discovery reads do not mint `company_actors`.
+
+R2 `resolve_company_context(pool,verifier,token,selection,serving)` returns the actual opaque `AuthenticatedCompanyContext`. `switch_company_context(pool,verifier,token,org_id,serving)->UntrustedCompanySelection` is the normal user-selected context command at the same Account/request-context owner; it verifies current disclosure and selected scope and advances context generation under the Account guard. Returned untrusted selection carries exact current context identity/generation for resolution; it is not authority. `identity::read_company_context(pool,&AuthenticatedCompanyContext,org_id)` invokes actual current authorization and projection and returns `{context_ref:{org_id},label:Option<String>,...}`. It refuses cross-active-scope, stale context or current policy revocation before disclosing even if the same Account could explicitly switch.
+
+## Migration and admission interfaces
+
+Responsible existing module owners: existing `backend/app/src/lib.rs::run_migrations` and its migration/admission lifecycle; proposed ordinary `console_app::{account_migration,serving_admission}` modules. Actual schemas are prerequisites. The fixtures never create these product tables or implement mapping/backfill themselves.
+
+Migration uses installed immutable `load_installed_manifest(config)`; `capture_source_snapshot(config,manifest)` binds actual source IDs/versions/cursor and an immutable versioned source manifest. The row/version probe in this packet is specifically old `users(id,xmin)` input; enrollment must define the exact old identity source family and dependency-version closure. `BatchRequest{manifest_digest,source_cursor,source_version,batch_id,limits:{max_rows:500,max_bytes:4194304,statement_timeout_ms:2000}}`; `migrate_batch(config,&request)->MappingReceipt` commits ordinary mapping or quarantine and durable receipt. Receipt fields used: `source_keys:Vec<(Uuid,String)>`, `source_bytes`, `statement_timeout_ms`, `next_cursor`; derives exact equality for replay. New absent relations used by independent readback are `account_migration_mappings`, `account_migration_quarantine`, `account_migration_batch_receipts`, keyed by source identity/version and manifest. Quarantine keeps exact source bytes/digest and registered reason `UNRESOLVED_IDENTITY_PROVENANCE`. These names and physical columns are explicit migration refinements requiring schema approval, not implemented catalog. Exact duplicates are rejected before conversion to sets.
+
+`pause_legacy_admission(config,manifest)->DrainRequest`, `drain_legacy_work(config,&request)->DrainedLegacyWork`, `commit_account_cutover(config,&drained)->PermanentFenceReceipt`; returned controls are opaque and require actual paused admission, drain/UNKNOWN reconciliation and generation witnesses. No manually inserted `account_security` row is the cutover owner. `legacy_authentication_fences(id,generation,permanent)` is an explicit durable global fence interface refinement. `MigrationError::SourceChanged` rejects stale snapshots; a successfully blocked old writer uses a registered SQLSTATE55000 refusal. Existing legacy refresh/OTP owner calls test the installed fence after real cutover.
+
+Serving startup uses `load_installed_release(config)`, ordinary closed `ReleaseDescriptor::parse(bytes)`, `admit_process(config,descriptor)->AdmittedProcess`, `pause_and_drain_effects(config)->DrainedEffects`, `advance_recovery_generation(config,&drained)->RecoveryGenerationReceipt`, `revalidate_serving_binding(config,&binding)`. Exact `binary_sha256/catalog_sha256/codec_sha256/projection_sha256/policy_sha256/alias_manifest_sha256` plus independent recovery generation are validated against actual current state before `command_service` is available. Types returned by admission are opaque; parsing a descriptor does not create service authority. These are not missing test helpers; their actual production module implementations are required before compiling/running.
+
+The packet's source-gap census explicitly separates the deeper unimplemented assertion bodies from these production prerequisites. Authored cases here do not close the entire prose-only original map.
+
+
+S3 ordinary owner/source integration refinements (candidate, not implemented)
+
+Sole writer /root/readiness_final_verifier owns this scratch root. Repository
+integration remains solely /root at fd94667fb9133f1ecb55831f43192bdc46776dc0.
+Immutable source target is this frozen packet; mechanical guide is copy new test
+modules/support into the roots listed in source-gap-census.json, preserving every
+historical packet. No production, schema, generated file or authority edits here.
+
+Original operator-custody-producer.rs and dependencies/bootstrap-b5 remain exact
+S2/B5 bytes. expanded-custody-producer.rs is a separate security-only producer of
+real signed TEST_ONLY approval inputs for1..8 registered kinds; native still pins
+the original producer. It does not produce AuthenticatedOperator or SQL receipts.
+
+Current-control envelope refinement: editor-control-envelope.schema.json is a
+candidate transport schema over existing DraftSave. DraftEditorSave has save and
+current_controls:Vec<SubmittedControlReference{address:FieldAddress,handle:ControlHandle}>.
+This is NOT a new action registration. draft_save_editor uses the existing same
+command/receipt/draft.save owner, resolves the handles under current authority,
+retains exact typed server control values, then applies permissible user patches.
+compile_registered_editor_patches never turns server-owned expectations into SET
+patches. Missing/duplicate/wrong bindings refuse before complete typed validation;
+raw references cannot parse as handles. Normal JSON and SSR/no-JS form encoders
+and parsers feed precisely the same binder. Proposed parse_json_editor_save,
+parse_html_editor_save and render_nojs_save_form belong to ordinary ontology REST.
+Render output includes current_controls and registered editable fields. The fixed
+RunCalculate expected.close_basis path comes from the actual closed run and schema
+resolver; no private input field or literal schema UUID is invented. Read retained
+OWNER_SUBMISSION with ordinary current authorized evidence owner, decode with
+actual registered codec; never compare expected result file to itself. Candidate
+ont_control_reference_handles storage must bind SHA256 of exact UTF8 handle,
+created_at,expires_at and full private typed/control binding; this physical name
+is an explicit review prerequisite, not an assertion that a table exists. Lifetime
+is actual15minutes; expiry gate refreshes same-family HTTP credentials during real
+server-clock wait, then obtains fresh context. Preservation checks retained actual
+draft chain; RunCalculate has no editable free-text input, so unrelated text
+preservation remains in actual draft tests and is not claimed from this case.
+
+Exact-binding unit source appends INSIDE request-context owner. It passes plain
+AuthorityBindingSnapshot operands to actual check_exact_authority_binding, never
+constructs ActiveContext or VerifiedAccountSession. Numeric equality checks:
+security/context/topology/policy/serving/recovery; Account/session/Group/Company
+identities and membership incarnation UUID separately. The actual resolver must
+use this check AFTER its current restricted-LOGIN loads. Unit operands prove the
+function boundary only; actual switch/grant-revocation fixtures prove live changes.
+No minimum-freshness legacy comparison is weakened.
+
+Security policy uses same PA1.2 PolicyScope::ExactResource{resource:ObjectRef,
+schema:GovernedRevision} and PublishFieldGroup as Workflow15 R3. New ordinary
+payroll::read_native_line_policy_resource resolves existing projected actual run
+and completed line identities/schema for real employee membership; its
+resolve_property_path([gross_won]) returns that actual PropertyRef. No projected
+row is created by readback. CompanyPolicySchema::actions_for_native_projection
+only enumerates actual registered reads/controls. Company discovery receives an
+identity-only Company grant; exact run identity and exact line gross field groups
+remain separate tuple-correlated grants. No role title or evaluator-as-user rule.
+read_native_projection_schema resolves11 fixed purposes(list/detail/history/search/
+graph/link_title/count/conflict/preflight/replay/current); read_native_authorized_
+projection performs the normal current loader/Cedar/projector and returns one
+AuthorizedObjectView per test request. encode_authorized_projection serializes
+only that authorized type. Opaque snapshot_revision is compared for syntax and
+revalidated via actual revalidate_native_projection_handle after hidden changes;
+semantic equality does not require independently randomized handles equal.
+Actual HTTP/SSR/live/cache/event adapter source closure is separately listed HOLD.
+
+Browser producer executes actual BW31 login+nonce+software-passkey assertion and
+retains real Set-Cookie values. Public RP/origin stays fixed across replica network
+listeners. It neither recreates cookies nor claims resident browser compatibility.
+Process::launch(binary,expected_sha256,environment_pairs) pins actual executable,
+forces existing127.0.0.1:0 binding and reads normal structured stdout event
+{event:http.listener.bound,process_id,binary_sha256,local_addr}. Exact PID/hash and
+nonzero loopback port verified within30seconds. Product prerequisite is reporting
+actual listener.local_addr after bind in ordinary startup diagnostics; no fake
+response process, close-and-rebind port selection or inherited-FD scheme. It drains
+normal remaining logs, not claims a telemetry observation. ready/ready_status poll
+expected status under bounded deadline. Wrong-key readiness503 is insufficient:
+account_deployment::read_process_admission must return actual current process
+admission evidence including exact binary and required/presented fingerprints and
+AccountKeyIdentityMismatch. Normal begin_key_replacement/stop_and_drain_account_
+admission/revoke_all_account_families/install_replacement_key_identity owners use
+current authenticated deployment custody, AS1 locks and persisted all-replica
+admission. No caller-supplied drained/revoked boolean. Single-key maintenance,
+not zero-downtime rotation. SigningKeyMaterial::generate_es256_test_only produces
+key bytes only; never an admitted key or process. These normal deployment owner
+signatures remain explicit implementation/design prerequisites. Root MIG06 shares
+this actual Process fixture; binary runtime cannot be replaced with expected JSON.
+
+Bound egress: ordinary platform storage provider custody owner registers exact
+TEST_ONLY loopback endpoint/provider/credential/recipient/purpose under deployment
+operator authority, returning opaque binding. Plain DestinationSelection is
+syntactically parsed then current admit_bound_egress verifies ALL binding fields;
+no selected string is already admitted authority. read_native_authorized_export
+uses the actual current payroll loader/projector and typed allowed output; no
+CSV/general sharing/presigned URL feature is enabled by these tests. BoundTransport
+accepts only actual admitted request, uses normal configured client and sends to
+real local peer. This proposed seam refines OR28D internal bound-object export;
+actual purpose/enrollment must be reviewed before production implementation. A
+new forbidden destination never contacts either peer. Exact allowed request sends
+one actual projected body. Revocation AFTER projection, BEFORE admission refuses.
+Post-admission in-flight work follows actual dispatch contract; no instant recall
+claim. Existing real SeaweedS3Storage redirect tests exercise configured original
+client separately with301/302/303/307/308, never a supplied hardened client.
+
+Logical observation checker compares exact status, duplicate-preserving headers,
+body bytes/length, SSR, cache, live count/order, public events and egress destination/
+body only after equal explicit public environment. It never deletes random/time
+fields or sanitizes secret-dependent output. Nine synthetic controls exercise ONLY
+the independent checker. logical-http-collector.rs calls actual network routes and
+records complete bytes/headers; coupled native transport/session/public-randomness
+fixture and all-live/event/cache collectors remain source HOLD, not owner-only.
+
+Pre-mortem: fictitious helper success, stale native fixture, wrong RP origin,
+expired JWT masking handle expiry, startup503 masking key mismatch, regex-only
+body validation, or incomplete readback can create false passes. Detection:
+actual ordinary producers, exact owner/SQL readbacks, strong positive controls,
+explicit source prerequisites and independent review; source parser never equals
+Cargo discovery/behavioral RED. Blast radius: isolated TEST_ONLY marked databases,
+loopback peers and private temporary files. Rollback: leave frozen packets intact;
+root excludes candidate integration or publishes reviewed successor. Stop on
+missing/green/nonexecuting lane, wrong executable/hash/DB/login, setup mismatch,
+missing exact schema, unbounded or incomplete collector, or unresolved owner
+contract; never classify those as intended RED. No skipped/weakened test. Reviewer
+identities and exact source head hashes are in manifests/review receipts; S3 review
+pending at freeze. Production operators/content/legal/deployment remain HOLD.
+
+
+## S4 additions and exact boundary
+
+Author remains /root/readiness_final_verifier; sole repository integrator /root;
+base fd94667fb9133f1ecb55831f43192bdc46776dc0. Immutable target is this packet's
+freeze-manifest.json. Copy into completion/security/owner-assertions-s4 and preserve
+S2/S3 and their review receipts. No Cargo/root/production mutation by this author.
+S4 supersedes preceding source-gap descriptions only for additions below; earlier
+text and predecessor manifests remain historical evidence, not parallel authority.
+
+Root approved the composed projection proof: two actual supported same-Company
+members, actual persisted line IDs, current ordinary opaque authorization decisions,
+exactly one varied denied scalar in plain source operands, all other input fields
+preserved, actual production projector and actual serializers, plus useful allowed
+field variation. This is explicitly NOT a complete second persisted same-line tax
+world. Do not generate fake signed tax approvals merely to make that stronger
+unrequested claim. Native S2 dependency is copied byte-for-byte under dependencies/
+native-s2 with original manifest 7e9b50db134a0f45365e210f86190dacac1626a2373980c96e55b9ab4d66424d.
+
+Native `public_field_address(PropertyRef)` returns the actual public FieldAddress
+mapping (stable field_id) from the same registered schema, never guessed JSON
+PropertyRef serialization. Source omission assertions inspect exact field_id nodes
+and positive gross nodes. `load_native_projection_operands(pool,auth,run,purpose)`
+is the actual payroll projection loader factored at the production boundary; return
+contains plain OwnerProjectionSource plus nonforgeable current field authority.
+The source's member_ids/member_line_id and resolve_scalar return existing source
+facts and an exact JSON pointer/address for the actual registered scalar. No helper
+chooses authorization outcomes. Only plain source is Clone/Serialize/Deserialize;
+`project_authorized_result(auth,&source,&authority,&public_inputs)` is the real
+ordinary pure projector and must be used by current native reads. The sibling
+read_native_authorized_projection_with_public_inputs is the same production read
+with explicit ordinary request clock/random/incident dependencies, not test-only
+behavior. Source-binding review must verify that sibling and normal read converge
+on the same loader and projector and have no test predicate. Every original source
+field, provenance and order must survive the counterfactual round trip.
+
+PublicObservationInputs::from_request_inputs is plain request environment, with
+clock, replayable random tape and incident UUID. It creates no context/permission/
+control handle. Production supplies entropy/current clock normally; immutable
+per-request dependency injection enables paired observations. No global clock
+mutation, posthoc random stripping, regex redaction or separately generated token
+comparison. The concrete collector invokes ordinary REST response renderer, Leptos
+SSR/hydration renderer, cache entry builder, live frame builder, event scheduler,
+and enabled bound-object serializer; it preserves status, headers, lengths, bytes,
+cache key/value/TTL/vary, frame opcode/count/order, event count/order and egress
+bytes. They are explicit proposed seams in existing responsible modules, not
+all-purpose capture functions. There is no new transport/public export feature.
+These functions are not implemented here. Candidate crate/module identities
+(console_app::projection/projection_cache, console_platform_realtime::projection,
+console_app::console_telemetry, ontology application/rest projection)
+require final ordinary ownership/registration integration; package alias adjustment
+is mechanical after source owner review, never permission for substitute bodies.
+Exact serializer input and transport caller bindings are mandatory at acceptance.
+Existing real HTTP/socket and local egress peer tests compose with this boundary;
+this packet does not call in-memory response serialization network/browser proof.
+Count/search purposes need not disclose salary. Useful visible-scalar change is
+required for detail/current; denied-scalar equality covers all eleven purposes.
+
+Field-only replay uses real calculated run and original immutable AttemptRef.
+`read_current_account_company_grants` returns ordinary current grants ordered by
+grant_id; non_field_inputs is exact account, assignment ID, actions, scope including
+resource/population, validity and other non-field policy inputs (excluding only
+policy revision metadata and field projection). `revise_company_grant_field_projection`
+accepts expected policy control, original grant_id, new governed field group and
+reason; same ordinary grant owner appends a revision preserving ALL other grant
+inputs and atomically advances current security/policy generation. Read actual
+registered field-group members, remove only the actual gross PropertyRef from
+every applicable grant; count>0 rules out a wildcard/mismatched fixture. No scope,
+action/discovery/receipt permit is revoked. Current controls remain present. The
+fresh context replay must complete with identical receipt, while ordinary current
+projection omits gross. It cannot pass on generic Unavailable or old-context error.
+Exact receipt row text and entire native snapshot remain unchanged; receipt count1.
+This composed owner replay plus current disclosure source must be bound to the
+actual REST replay adapter, which may never serialize private RunResult directly.
+
+Topology sibling assign_account_company_to_group/remove_account_company_from_group
+accepts CompanyMembershipChange{command_id,group_id,org_id,expected} under actual
+PlatformProvisioner operator authority. It serializes affected Account security
+guards, updates Group topology/candidates/generations atomically, and assigns a new
+membership incarnation on actual reattach. Test independently witnesses blocked PG
+PID and old state before commit. An independent direct Company grant may survive
+membership removal; source does not require false Company disappearance.
+
+Realtime open_projection_subscription loads the actual initial owner projection
+and returns an opaque normally buffered subscription. pending_len is ordinary queue
+introspection only. drain_authorized_frames revalidates current context and exact
+subscription binding before serialization/emission and discards stale buffered
+payloads. Switch test proves useful A frames, pending A buffer, actual switch,
+precise stale refusal and queue purge, wrong B binding refusal, then fresh B frames.
+Public frame builder equality and actual queue currentness are composed obligations;
+actual WebSocket adapter must call this owner under its enrollment receipt.
+
+Safe event constructor accepts only registered code, public route template, opaque
+incident ID and public result class. Registry resolutions cannot accept arbitrary
+private strings. The explicit proposed closed transport shape is four named fields
+and needs final compiled registry integration; no secret reason/free text is added.
+Actual event scheduler is invoked by the concrete collector and equality covers the
+whole sequence. Extra individually safe actual event must fail the oracle. The
+source-bound harness additionally binds the preprojection caller so secret branches
+cannot produce extra sanitized events outside the typed scheduler. All actual
+current process/request emissions must enroll or be disabled before acceptance.
+
+Source-bound proof obligations/negative recipes are authored in proof-harness.
+Absent production bodies prevent binding/execution; they do not imply missing test
+bodies. No proof success/behavioral RED is claimed. Existing supplied-value proof
+is preserved. All28 original sink rows retain identity and source location; their
+architecture/enrollment contract is in sink-enrollment-contract.md. Unavailable
+future adapters need tests before their own acceptance, not invented source now.
+
+Publisher threat boundary clarification from root: dedicated publisher DB LOGIN is
+operator-only publication TCB. Runtime/public/helper/SET/overload closure is required;
+independent SQL Ed25519 verification and a new crypto token topology are NOT an
+extra BW31 requirement. Compromised privileged publisher credentials require
+separate threat-model authority. Root publication completion packet owns challenge
+expiry/UTF8/remote alias/catalog closure. Recovery owns remaining migration source;
+draft R3 owns actual permissible text preservation. These are named composed packet
+dependencies, not unowned missing sources or claims this packet executed them.
+
+Stop on missing ordinary owner, source-bound caller gap, invalid fixture, stale
+control masking intended condition, schema mismatch, incomplete observation or
+failed positive. Reviewer must reject invented contexts or blanket error matching.
+Private scratch/marked DB/loopback blast radius; rollback preserves predecessor
+packets and excludes this additive candidate. Review identity/head/remaining HOLDs
+are frozen separately. Product compilation/Cargo discovery/execution/Verus proof,
+production exposure and legal/content authority remain separate HOLDs.
+
+S5 ownership reconciliation: existing backend/app/src/console_telemetry.rs owns safe operational event construction, scheduling and encoding. Expose only the scoped ordinary owner functions needed by integration callers; no new observability crate. Request-context binding acceptance append mounts inside the actual request_context::account owner module, not a new authority.rs.

@@ -1,0 +1,219 @@
+{
+  "owned_registration_count": 26,
+  "registered_total": 55,
+  "registrations": [
+    {
+      "registration": "artifact.request_upload",
+      "authored_assertion_bodies": [
+        "artifact_upload_request_and_worker_verification_replay_exact_receipts",
+        "artifact_wrong_declared_digest_cannot_create_verified_source",
+        "artifact_reused_ticket_cannot_verify_changed_bytes_or_location_revision"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "artifact.verify_version",
+      "authored_assertion_bodies": [
+        "artifact_upload_request_and_worker_verification_replay_exact_receipts",
+        "artifact_wrong_declared_digest_cannot_create_verified_source",
+        "artifact_reused_ticket_cannot_verify_changed_bytes_or_location_revision",
+        "artifact_parallel_worker_commands_append_one_verification",
+        "artifact_worker_boundary_refuses_account_token_before_owner_dispatch"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "eligibility.propose",
+      "authored_assertion_bodies": [
+        "eligibility_propose_recovers_actual_commit"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "eligibility.revoke",
+      "authored_assertion_bodies": [
+        "eligibility_revoke_keeps_history",
+        "eligibility_revoke_race_one_winner"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "eligibility.verify",
+      "authored_assertion_bodies": [
+        "eligibility_verify_current_and_independent"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.admit_tax_evidence",
+      "authored_assertion_bodies": [
+        "tax_propose_recovers_actual_commit"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.calculate_run",
+      "authored_assertion_bodies": [
+        "native_calculation_replay_returns_same_money_and_receipt",
+        "native_two_original_calculate_intents_have_one_current_winner",
+        "native_expected_run_id_is_not_defaulted",
+        "native_expected_run_revision_is_not_defaulted",
+        "native_expected_input_revision_is_not_defaulted",
+        "native_expected_input_revision_null_is_not_defaulted",
+        "native_expected_calculation_revision_is_not_defaulted",
+        "native_expected_close_basis_null_is_not_defaulted",
+        "native_expected_review_cycle_id_is_not_defaulted"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.cancel_review_cycle",
+      "authored_assertion_bodies": [
+        "native_cancel_review_is_explicit_and_generic_reopen_refuses"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.close_attendance",
+      "authored_assertion_bodies": [
+        "native_close_replay_does_not_unlock_or_replace_operational_basis",
+        "native_blocked_population_cannot_close"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.correct_contract_wage",
+      "authored_assertion_bodies": [
+        "contract_wage_correction_recovers_commit_and_preserves_original"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.create_contract_wage",
+      "authored_assertion_bodies": [
+        "contract_wage_create_replays_exact_subject_fact_without_duplicate"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.create_run",
+      "authored_assertion_bodies": [
+        "native_create_is_header_only_and_original_command_replays"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.open_review_cycle",
+      "authored_assertion_bodies": [
+        "native_review_open_rejects_each_wrong_nullable_expectation",
+        "native_owner_chain_produces_complete_nonpayable_review"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.prepare_inputs",
+      "authored_assertion_bodies": [
+        "native_first_prepare_is_durable_pending_before_terminal_effects",
+        "native_prepare_replay_returns_same_receipt_without_second_input",
+        "native_prepare_recovers_lost_building_ack_on_original_subject",
+        "native_owner_wage_change_after_building_prevents_old_activation"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.reopen_inputs",
+      "authored_assertion_bodies": [
+        "native_reopen_preserves_history_and_current_projection_excludes_old_money"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.revise_review_cycle",
+      "authored_assertion_bodies": [
+        "native_review_revision_preserves_only_exact_unaffected_approval"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.revoke_tax_evidence",
+      "authored_assertion_bodies": [
+        "tax_revoke_keeps_history",
+        "tax_revoke_race_one_winner"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.supersede_approved_draft",
+      "authored_assertion_bodies": [
+        "approved_successor_is_unique_staged_and_preserves_old_decisions"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "payroll.verify_tax_evidence",
+      "authored_assertion_bodies": [
+        "tax_verify_current_and_independent"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "review.decide",
+      "authored_assertion_bodies": [
+        "review_second_account_of_same_human_cannot_self_approve",
+        "native_owner_chain_produces_complete_nonpayable_review"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "review.submit",
+      "authored_assertion_bodies": [
+        "review_partial_approvals_do_not_produce_completion"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "review.withdraw",
+      "authored_assertion_bodies": [
+        "review_withdraw_keeps_immutable_decision_and_replays_control_once"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "source.prepare_submission",
+      "authored_assertion_bodies": [
+        "source_preparation_replay_retains_exact_schema_head_and_bytes",
+        "source_preparation_other_draft_unit_cannot_seal",
+        "source_preparation_changed_head_keeps_old_unit_but_cannot_seal_it"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "source.propose_qualification",
+      "authored_assertion_bodies": [
+        "qualification_propose_recovers_actual_commit"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "source.revoke_qualification",
+      "authored_assertion_bodies": [
+        "qualification_revoke_keeps_history",
+        "qualification_revoke_race_one_winner"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    },
+    {
+      "registration": "source.verify_qualification",
+      "authored_assertion_bodies": [
+        "qualification_verify_current_and_independent"
+      ],
+      "status": "AUTHORED_SOURCE_NOT_COMPILED_OR_EXECUTED"
+    }
+  ],
+  "external_owner_source": {
+    "draft9": "root draft R3",
+    "attendance_leave5": "root attendance R2",
+    "workflow15": "preparation_recovery R4 pending"
+  },
+  "rule": "Specific body mapping is not exhaustive dimension proof; Source gaps remain explicit."
+}

@@ -1,0 +1,64 @@
+{
+  "classification": "FROZEN_S1_AUTHORED_NATIVE_ASSERTIONS_NOT_PRODUCT_IMPLEMENTATION_OR_RED",
+  "base": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "r2_parent_manifest_sha256": "764e3e4454a0e059337a9d6faa7ae0c861f586ca2762f27a6a484b404582649e",
+  "author": "/root/fresh29_workflows",
+  "reviewer": "/root/preparation_recovery",
+  "review_status": "PENDING_AT_FREEZE",
+  "authored_test_methods": 17,
+  "cargo_discovered": 0,
+  "executed": 0,
+  "rust_compiled": false,
+  "registration_assignments": 55,
+  "registrations_with_partial_assertions": 11,
+  "source_gaps": "source-inventory.json/SOURCE_NOT_AUTHORED",
+  "owner_prerequisites": "source-inventory.json/OWNER_IMPLEMENTATION_PREREQUISITE",
+  "mechanical_guide": "supplement-contract.md",
+  "files": [
+    {
+      "path": "binder-sequence.rs",
+      "sha256": "6c042c54a84f9f363f5ae850bbdf74edf97c4ef8debd2c2118c461f6de0e481f",
+      "bytes": 3770
+    },
+    {
+      "path": "business-readback.sql",
+      "sha256": "21cca62c3f79a7c296b8b02864043ca8eb4b38697f9bd2f45e4092276b70dc06",
+      "bytes": 1530
+    },
+    {
+      "path": "native-fixture.rs",
+      "sha256": "940337bc35ec1cb6d0a5edd55699dff9025fd817f81f660880bb583bc7138127",
+      "bytes": 7090
+    },
+    {
+      "path": "native-owner-producer.rs",
+      "sha256": "32f7c276c349fd2c42c52bdf2216bcb9d091411e1b324cf05122a40b044abd0b",
+      "bytes": 9704
+    },
+    {
+      "path": "native-owner-tests.rs",
+      "sha256": "0850a327c479594c85c334b5ee60a83df9b6d5fc731d4259cfcbaa25a2d3727a",
+      "bytes": 17006
+    },
+    {
+      "path": "registration-coverage.json",
+      "sha256": "d0e99cdf16b4f84d2d2fab70da8097d61de732517d86b2c83fcf5fffe2f445cd",
+      "bytes": 29333
+    },
+    {
+      "path": "source-inventory.json",
+      "sha256": "094674d6f367a51cc0a7901cc28baf54779635c11dcc79e84c59a7a782b50d53",
+      "bytes": 3832
+    },
+    {
+      "path": "supplement-contract.md",
+      "sha256": "57a1b47aeefcaa50c03acb0d1044aea155bb3d94ff3e3658bd08d1ea2b483da3",
+      "bytes": 5514
+    },
+    {
+      "path": "syntax-execution.json",
+      "sha256": "30f69c54c4560aabe74816b7aa8e92070345c00045f41d87a38e09603b81e40b",
+      "bytes": 1568
+    }
+  ]
+}

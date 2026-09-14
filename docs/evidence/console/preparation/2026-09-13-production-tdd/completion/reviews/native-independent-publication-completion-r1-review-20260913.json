@@ -1,0 +1,52 @@
+{
+  "packet_manifest_sha256": "d63574fdd1ca5076d824f006f1a6791aacdf16845ff6dd9e9b480f1efbed8ee1",
+  "reviewer": "/root/fresh29_workflows",
+  "author": "/root",
+  "status": "NO_BLOCKING_SOURCE_FINDINGS",
+  "checks": [
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-publication-completion-r1-20260913/publication-completion-tests.rs"
+      ],
+      "exit_code": 0,
+      "stdout": "formatted source omitted",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/private/tmp/console-wire31-validator/bin/python",
+        "/private/tmp/console-publication-completion-r1-20260913/validate-boundary-oracles.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS 10 approved schema cases + 2 UTF8 byte vectors; not publisher execution\n",
+      "stderr": ""
+    }
+  ],
+  "reviewed_boundaries": [
+    "Actual configured TEST_ONLY custody approval/authentication production path",
+    "Unicode codepoint cardinality and exact UTF8 byte boundaries",
+    "Actual time expiry without altered stored challenge",
+    "Digest local address and finite no-request listener; static source enrollment explicitly required",
+    "Actual runtime role table/column/helper grants and escalation denial",
+    "Five real owner-body sources; no compiler/runtime evidence inferred"
+  ],
+  "limitations": [
+    "Publisher/operator deployment credential remains TCB; role denial does not claim its compromise prevention",
+    "Exact proposed challenge expires_at and typed errors require implementation",
+    "No actual Rust tests discovered or executed",
+    "Five-minute real challenge wait not run during parser/schema review"
+  ],
+  "hashes_verified": 5,
+  "rust_parser_files": 1,
+  "schema_cases_executed": 10,
+  "utf8_controls_executed": 2,
+  "rust_compiled": false,
+  "rust_executed": 0
+}

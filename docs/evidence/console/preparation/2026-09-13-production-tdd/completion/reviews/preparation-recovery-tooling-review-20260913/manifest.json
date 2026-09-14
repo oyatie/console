@@ -1,0 +1,15 @@
+{
+  "reviewer": "/root/preparation_recovery",
+  "files": [
+    {
+      "path": "review.txt",
+      "sha256": "0dad0c02c339d801df035bfebae6abe4bb887e97bee5484017ec2d8fa061f1ee",
+      "bytes": 4590
+    },
+    {
+      "path": "verification.json",
+      "sha256": "1cf240c4f73b23280032dd526cac1b917180c7006a1138ec720f1940124490b6",
+      "bytes": 976
+    }
+  ]
+}

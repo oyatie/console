@@ -1,0 +1,30 @@
+{
+  "kind": "payroll.review.request_append",
+  "body": {
+    "expected": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "case_id": "53da7ce8-0707-50fc-a954-b72c2956c54d",
+      "content_revision": "1",
+      "control_revision": "1"
+    },
+    "items": [
+      {
+        "item_id": "be398863-5464-5264-bd2f-8d1e2970defa",
+        "field_id": null,
+        "category_revision": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+          "instance_id": "ec796328-4e80-5003-8a5c-977449490de3",
+          "revision_id": "a1f866da-4ae9-5b04-92e4-6bdba70e3040",
+          "version": "1",
+          "row_hash": "5598fe7ca395b8fb600b773e08428a35a909d01b7122ddfe437254c2fc3b22ac"
+        },
+        "description": "검토 근거를 확인했습니다.",
+        "evidence": [],
+        "expected_claim": null,
+        "selected_line": null
+      }
+    ],
+    "narrative": "검토 근거를 확인했습니다."
+  }
+}

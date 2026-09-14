@@ -1,0 +1,213 @@
+{
+  "classification": "FROZEN_R3_OBLIGATION_MAPPED_OWNER_ASSERTION_SOURCE",
+  "author": "/root/preparation_recovery",
+  "reviewers": [
+    "/root",
+    "/root/fresh29_workflows",
+    "/root/readiness_final_verifier"
+  ],
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "original_base_sha": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "r2_manifest_sha256": "7e7a231afb3d02967f9ed9da075f591dda3ca8bb56caa759663db63080c2bb0c",
+  "r2_contract_manifest_sha256": "764e3e4454a0e059337a9d6faa7ae0c861f586ca2762f27a6a484b404582649e",
+  "files": [
+    {
+      "path": "assignment-readback.sql",
+      "sha256": "fdecb50669c0c8108fc327a751bcf3b64acef8cdfbdddc5f8dc8f0b2229d199f",
+      "bytes": 604
+    },
+    {
+      "path": "historical-cell-audit.json",
+      "sha256": "df12e1a9913ac0e4f9df4dae5db2d78b84d2a9fc502531a354ac89b5de23a7af",
+      "bytes": 15245
+    },
+    {
+      "path": "ordinary-interface-refinements.md",
+      "sha256": "04ac62d1464b809675f48af29a21d2e2dbeadb4c90a308341bbba1e981e033e9",
+      "bytes": 3996
+    },
+    {
+      "path": "packet-contract.md",
+      "sha256": "c909f2d18b9ed7f5c2ae6b1999cc58fffd6bfdb3e02fd61da48e070db379609c",
+      "bytes": 14682
+    },
+    {
+      "path": "parent-r1-manifest.json",
+      "sha256": "7b1c271fda522816633dc91a1fc095daf3436abd78ce813614da9c800eb04454",
+      "bytes": 1492
+    },
+    {
+      "path": "parent-r2-manifest.json",
+      "sha256": "7e7a231afb3d02967f9ed9da075f591dda3ca8bb56caa759663db63080c2bb0c",
+      "bytes": 4595
+    },
+    {
+      "path": "publication-readback.sql",
+      "sha256": "549ba07a895b4e0c7ad229f2e82f3ef010e0f2535cfa89475eda1c89e367d227",
+      "bytes": 1004
+    },
+    {
+      "path": "registration-coverage.json",
+      "sha256": "532dd28424ec7a8dc29a669d3db7913836223c7025d94cde7ac16c68df2f5cf1",
+      "bytes": 34482
+    },
+    {
+      "path": "syntax-execution.json",
+      "sha256": "4ee358a6dee31433a54f4b75fdbe67f30f0235e6e5c98452d38151eeab1d799c",
+      "bytes": 1452
+    },
+    {
+      "path": "workflow-fixture.rs",
+      "sha256": "170cc5a8b1759d0db80ec51a59cb1035059ae34f314f33decd590438d2ba557d",
+      "bytes": 26501
+    },
+    {
+      "path": "workflow-obligation-tests.rs",
+      "sha256": "8862d844b03d7a58972435be358c6d5b5516aa15d144855d6a230e0ab07476d5",
+      "bytes": 43318
+    },
+    {
+      "path": "workflow-owner-tests.rs",
+      "sha256": "8880e5edc2b61818ebe70e977f5d76e4e028a23f51ab9674a15e4c914e090dce",
+      "bytes": 35696
+    },
+    {
+      "path": "workflow-race-projection-tests.rs",
+      "sha256": "cbfd62612ae4173b5db64a488d882e775f5de9171c673a43fa061747a3829337",
+      "bytes": 8024
+    }
+  ],
+  "test_functions": [
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "publication_one_forbidden_company_target_prevents_all_local_publication"
+    },
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "own_case_request_and_withdraw_do_not_follow_general_handler_permission"
+    },
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "stale_case_handler_attempt_cannot_resolve_after_real_transfer"
+    },
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "group_create_rejects_another_members_actual_incarnation"
+    },
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "group_stop_preserves_unknown_when_authoritative_company_receipt_is_unavailable"
+    },
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "transfer_rechecks_actual_recipient_availability_after_seal"
+    },
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "transfer_nomination_never_restores_revoked_recipient_domain_authority"
+    },
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "group_command_replay_preserves_allocated_parent_and_rejects_changed_body"
+    },
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "publication_valid_same_company_forbidden_field_prevents_all_targets"
+    },
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "transfer_capacity_conflict_preserves_two_real_task_charges"
+    },
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "transfer_unknown_receipt_retains_actual_assignment_and_capacity_until_reconciled"
+    },
+    {
+      "file": "workflow-obligation-tests.rs",
+      "function": "group_resume_requires_original_account_even_for_same_human_with_group_grant"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "gate_request_binds_actual_sealed_calculation_without_effect"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "gate_decide_requires_independence_and_never_executes_business"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "publication_release_preserves_exact_source_and_is_nonpayable"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "publication_replace_preserves_history_and_rejects_stale_slot"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "case_request_retains_real_content_and_actual_accountable_task"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "case_append_preserves_prior_items_and_refuses_stale_revision"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "case_withdraw_retains_immutable_content_and_replays_once"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "case_respond_requires_complete_items_then_resolves_with_real_receipt"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "transfer_submit_retains_task_and_selection_without_assigning"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "transfer_execute_changes_one_assignment_and_charge_once"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "transfer_stop_fences_later_execution_and_keeps_assignment"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "group_create_freezes_six_actual_companies_without_calculation"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "group_activate_requires_all_prepared_original_attempts"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "group_resume_preserves_manifest_and_original_pending_commands"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "group_stop_blocks_prepared_child_without_cross_company_effect"
+    },
+    {
+      "file": "workflow-race-projection-tests.rs",
+      "function": "publication_concurrent_same_predecessor_has_one_exact_successor"
+    },
+    {
+      "file": "workflow-race-projection-tests.rs",
+      "function": "publication_replay_after_current_grant_revocation_is_not_disclosed"
+    },
+    {
+      "file": "workflow-race-projection-tests.rs",
+      "function": "transfer_stop_races_effect_preserving_one_truthful_assignment"
+    }
+  ],
+  "registration_count": 15,
+  "company_attempt_registrations": 11,
+  "group_control_registrations": 4,
+  "source_discovered": 30,
+  "parser_passed": 4,
+  "compiled": 0,
+  "cargo_discovered": 0,
+  "executed": 0,
+  "external_dependency_status": "Native two-supported S2/B6 accepted freeze and separately tracked NDJSON MIME additive amendment require pinning; no fake successful dependency assumed",
+  "review_status": "PENDING_INDEPENDENT_REVIEW",
+  "historical_census": "R2 90-cell matrix withdrawn; audit50 historical absent cells is not an acceptance denominator"
+}

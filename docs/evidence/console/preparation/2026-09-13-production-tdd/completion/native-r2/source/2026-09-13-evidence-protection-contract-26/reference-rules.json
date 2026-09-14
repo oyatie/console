@@ -1,0 +1,242 @@
+{
+  "classification": "PROPOSED_TYPED_EXTRACTION_RULES_NOT_RUNTIME_DECODERS",
+  "atomic_rules": {
+    "RuleBundleRef": {
+      "classification": "DEPLOYMENT_BUILD",
+      "owner": "rule registry",
+      "rule": "exact bundle/kernel build/citation manifests; direct qualification edges only; no bundle recursion"
+    },
+    "ProfileRef": {
+      "classification": "OWNER_VERSION",
+      "owner": "payroll profile owner",
+      "rule": "exact Company profile revision plus RuleBundleRef closure"
+    },
+    "ScopeBasisRef": {
+      "classification": "OWNER_VERSION",
+      "owner": "scope/population owner",
+      "rule": "exact selector/population snapshot; completeness/current topology checked separately"
+    },
+    "EligibilityRef": {
+      "classification": "OWNER_VERSION",
+      "owner": "payroll eligibility",
+      "rule": "exact event/admission and mode-specific current eligibility/trust"
+    },
+    "TaxEvidenceRef": {
+      "classification": "OWNER_VERSION",
+      "owner": "payroll tax evidence",
+      "rule": "exact event/admission and mode-specific current selection/trust"
+    },
+    "AttendanceCoverageRef": {
+      "classification": "OWNER_VERSION",
+      "owner": "attendance coverage",
+      "rule": "exact coverage + sealed complete dependency inventory, not root-only pin"
+    },
+    "WageFactRef": {
+      "classification": "OWNER_VERSION",
+      "owner": "payroll wage",
+      "rule": "actual base plus correction_revision including0base; no invented version"
+    },
+    "EmploymentSegmentRef": {
+      "classification": "OWNER_VERSION",
+      "owner": "Employment owner",
+      "rule": "exact historical effective segment and binding; dates never current employment shortcut"
+    },
+    "ArtifactRef": {
+      "classification": "ARTIFACT_VERSION",
+      "owner": "Docs/custody",
+      "rule": "exact original/copy/attestation/provider version/hash/size and owner inventory; protection independent from link visibility"
+    },
+    "QualificationRef": {
+      "classification": "OWNER_VERSION",
+      "owner": "source qualification",
+      "rule": "admission/event + bounded qualified credential/issuer/rule expansion selected by mode"
+    },
+    "CalendarRef": {
+      "classification": "OWNER_VERSION",
+      "owner": "attendance calendar",
+      "rule": "exact publication and paid-time qualification; preserve immutable source version"
+    },
+    "CalendarAssignmentRef": {
+      "classification": "OWNER_VERSION",
+      "owner": "attendance assignment",
+      "rule": "exact assignment and historical Employment/date/calendar correlations"
+    },
+    "DispositionRef": {
+      "classification": "OWNER_VERSION",
+      "owner": "leave owner",
+      "rule": "exact disposition + request/charge/decision snapshot; current treatment check only for new positive use"
+    },
+    "IssuerProfileRef": {
+      "classification": "DEPLOYMENT_TRUST",
+      "owner": "issuer admission owner",
+      "rule": "exact pinned trust profile/build/artifacts; terminate approved trust root; no credential recursion"
+    },
+    "NormalizerRef": {
+      "classification": "DEPLOYMENT_BUILD",
+      "owner": "normalizer admission owner",
+      "rule": "exact build and qualified conformance inventory; no arbitrary parser execution"
+    },
+    "EventRef": {
+      "classification": "NATIVE_RECORD",
+      "owner": "attendance event owner",
+      "rule": "actual attendance_record_id; preserve original record and package; no fake revision"
+    },
+    "LeaveChargeRef": {
+      "classification": "NATIVE_RECORD",
+      "owner": "leave charge owner",
+      "rule": "exact request/resolution/charge_version/server_digest plus original owner witness"
+    },
+    "OperationalCloseRef": {
+      "classification": "NATIVE_RECORD_SET",
+      "owner": "attendance close owner",
+      "rule": "actual close/period lock and complete<=256amendment UUIDset; no amendment_revision"
+    },
+    "AuditEventRef": {
+      "classification": "NATIVE_RECORD",
+      "owner": "owning audit owner",
+      "rule": "exact approved minimal event plus required before/after source evidence; UUID alone insufficient"
+    },
+    "ExceptionResolutionRef": {
+      "classification": "NATIVE_RECORD",
+      "owner": "attendance exception owner",
+      "rule": "exact resolution snapshot and complete relevant unresolved predicate"
+    },
+    "RuleBinding": {
+      "classification": "DEPLOYMENT_BUILD",
+      "owner": "compiled rule registry",
+      "rule": "purpose/id/version/bodyhash resolves exact admitted executable/citation manifest"
+    }
+  },
+  "carrier_rules": {
+    "AdmissionRef": "TAGGED_OWNER_REFERENCE",
+    "SourceRepairRef": "TAGGED_DIAGNOSTIC_REFERENCE",
+    "SourcePackageRef": "PACKAGE_REFERENCE",
+    "CoverageDaysRef": "PACKAGE_REFERENCE",
+    "ActorAttribution": "ATTRIBUTION_IDENTITY",
+    "EmploymentCoverage": "EMPLOYMENT_CONTEXT"
+  },
+  "raw_identity_rules": {
+    "CredentialPayload.subject_person_id": {
+      "classification": "IDENTITY_PROOF",
+      "owner": "identity/AI1",
+      "rule": "Company Person ref and scoped Group verified binding; no equivalence by UUID"
+    },
+    "CalendarAssignmentPayload.employment_id": {
+      "classification": "SUBJECT",
+      "owner": "Employment",
+      "rule": "exact historical subject/effective assignment"
+    },
+    "LeaveDispositionPayload.employee_id": {
+      "classification": "SUBJECT",
+      "owner": "people",
+      "rule": "legal Company employee subject"
+    },
+    "LeaveDispositionPayload.employment_id": {
+      "classification": "SUBJECT",
+      "owner": "Employment",
+      "rule": "historical Employment binding"
+    },
+    "LeaveDispositionPayload.request_id": {
+      "classification": "OWNER_RECORD",
+      "owner": "leave",
+      "rule": "exact current request_version/charge/decision before-after witness"
+    },
+    "EventWitness.employee_id": {
+      "classification": "SUBJECT",
+      "owner": "attendance",
+      "rule": "correlate package Company/employee; not new actor permission"
+    },
+    "EmploymentCoverage.org_id": {
+      "classification": "CONTEXT",
+      "owner": "Company",
+      "rule": "must match active action legal Company"
+    },
+    "EmploymentCoverage.employee_id": {
+      "classification": "SUBJECT",
+      "owner": "people",
+      "rule": "correlate exact historical binding"
+    },
+    "EmploymentCoverage.employment_id": {
+      "classification": "SUBJECT",
+      "owner": "Employment",
+      "rule": "exact historical binding"
+    },
+    "EmploymentCoverage.binding_id": {
+      "classification": "OWNER_VERSION",
+      "owner": "Employment binding",
+      "rule": "exact binding revision and effective interval supplied in carrier"
+    },
+    "CoveragePayload.employee_id": {
+      "classification": "SUBJECT",
+      "owner": "people",
+      "rule": "same package/coverage subject"
+    },
+    "CoveragePayload.employment_id": {
+      "classification": "SUBJECT",
+      "owner": "Employment",
+      "rule": "same package/coverage historical employment"
+    },
+    "CloseMember.employee_id": {
+      "classification": "SUBJECT",
+      "owner": "people",
+      "rule": "exact complete native input/coverage population"
+    },
+    "EligibilityPayload.employee_id": {
+      "classification": "SUBJECT",
+      "owner": "people",
+      "rule": "same historical earning subject"
+    },
+    "ActorAttribution.user_id": {
+      "classification": "HISTORICAL_ATTRIBUTION",
+      "owner": "identity legacy",
+      "rule": "preserve legacy user provenance, never authenticate as Account"
+    },
+    "ActorAttribution.account_id": {
+      "classification": "HISTORICAL_ATTRIBUTION",
+      "owner": "identity",
+      "rule": "Account attribution, not current session or human equivalence"
+    },
+    "EventPackageHeader.org_id": {
+      "classification": "CONTEXT",
+      "owner": "Company",
+      "rule": "exact owning cell"
+    },
+    "EventPackageHeader.employee_id": {
+      "classification": "SUBJECT",
+      "owner": "attendance",
+      "rule": "exact package subject"
+    },
+    "CloseMemberPackageHeader.org_id": {
+      "classification": "CONTEXT",
+      "owner": "Company",
+      "rule": "exact owning cell"
+    },
+    "EffectiveDayPlan.org_id": {
+      "classification": "CONTEXT",
+      "owner": "Company",
+      "rule": "exact owning cell"
+    },
+    "CoverageDayPackageHeader.org_id": {
+      "classification": "CONTEXT",
+      "owner": "Company",
+      "rule": "exact owning cell"
+    },
+    "CoverageDayPackageHeader.employee_id": {
+      "classification": "SUBJECT",
+      "owner": "attendance",
+      "rule": "exact package subject"
+    },
+    "CoverageDayPackageHeader.employment_id": {
+      "classification": "SUBJECT",
+      "owner": "Employment",
+      "rule": "exact historical employment"
+    }
+  },
+  "cross_cutting": [
+    "Actual values are decoded by closed registered source19 schema; reference site count is static coverage, not complete business evidence proof",
+    "No URL/email/message/note parsing for authority or relationships; required prose preserved/readable without LLM interpretation",
+    "Field action context selects required historical/current/diagnostic meaning; no blanket current-valid on all references",
+    "Scalar hashes/registered IDs are not evidence availability; fixed registry owner resolves explicit build/profile/selector manifests",
+    "Control/receipt/adoption backedges are lineage only, not recursively expanded business dependencies"
+  ]
+}

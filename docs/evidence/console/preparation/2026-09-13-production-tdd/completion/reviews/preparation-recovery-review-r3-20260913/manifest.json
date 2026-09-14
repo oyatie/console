@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/preparation_recovery",
+  "files": [
+    {
+      "path": "review.txt",
+      "sha256": "c6ed6f5b31799ca2f600b65261367c18635147a69729104e398bd08024b4cff4",
+      "bytes": 6170
+    },
+    {
+      "path": "wiring-r3-exact-command.log",
+      "sha256": "ef5d463ed5d371d42749f440c966e9eeecafc8e03b1f28c4151bae3914707805",
+      "bytes": 14028
+    },
+    {
+      "path": "wiring-r3-independent.json",
+      "sha256": "255897a6541c026f0c7a10cabadda5cfd6877ca35595e85f5be207c54c85ab62",
+      "bytes": 342
+    },
+    {
+      "path": "wiring-r3-independent.log",
+      "sha256": "8731fb25ec879a3303e0500728faa4e005f851dbe0a339ed8ee488b89d642d72",
+      "bytes": 13846
+    }
+  ]
+}

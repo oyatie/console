@@ -1,0 +1,51 @@
+{
+  "classification": "FROZEN_B6_ORDINARY_OWNER_BOOTSTRAP_SOURCE_NOT_EXECUTED",
+  "base": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "author": "/root/fresh29_workflows",
+  "reviewer": "/root/preparation_recovery",
+  "review_status": "PENDING",
+  "compiled": false,
+  "executed_tests": 0,
+  "files": [
+    {
+      "path": "account-enrollment-producer.rs",
+      "sha256": "a260c3b99ba1f78027d43da19b9a87ca1948ad0fbd07dd1cf84aa691c764b982",
+      "bytes": 5258
+    },
+    {
+      "path": "b5-parent-manifest.json",
+      "sha256": "ce522b7397419d422eb57fe0b366b37c55c491ee7fee734064957625b359057a",
+      "bytes": 1496
+    },
+    {
+      "path": "bootstrap-contract.md",
+      "sha256": "cf9fba5fd1e0781eacea0bda71f342619aa45778290d67bc7fdba70b887a5e3d",
+      "bytes": 12375
+    },
+    {
+      "path": "dependencies/operator-custody-producer.rs",
+      "sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03",
+      "bytes": 7953
+    },
+    {
+      "path": "deployment-root-producer.rs",
+      "sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3",
+      "bytes": 3498
+    },
+    {
+      "path": "ordinary-issuer-bootstrap.rs",
+      "sha256": "50e0fb9e77889f6acaf3111b920453f2c5c7b5e4800bdfbb848ddb63aa8ad494",
+      "bytes": 5994
+    },
+    {
+      "path": "publish-then-root-producer.rs",
+      "sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027",
+      "bytes": 1669
+    },
+    {
+      "path": "syntax-execution.json",
+      "sha256": "54cfe004a59b7237e6cb540cb4576c9823207acd5b0938a2051d76e900e53637",
+      "bytes": 1987
+    }
+  ]
+}

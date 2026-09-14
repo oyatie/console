@@ -1,0 +1,42 @@
+{
+  "source_manifest_sha256": "920a4ed7d4c1d049d7430dccac5701dacfa9f1853293455c88cd0f55fe22de58",
+  "verified_original_members": 5,
+  "mapping": [
+    {
+      "original": "attendance-owner-producer.rs",
+      "retained": "attendance-owner-producer.rs",
+      "original_sha256": "dc170bb4d70c648ff615f1a139b1fea2cd55d876a2a7bd1432eaaa6754ead6e9",
+      "retained_sha256": "dc170bb4d70c648ff615f1a139b1fea2cd55d876a2a7bd1432eaaa6754ead6e9"
+    },
+    {
+      "original": "attendance-owner-tests.rs",
+      "retained": "attendance-owner-tests.rs",
+      "original_sha256": "b08212fa66c32270dc85d1af70a5c62c3c6333d4c07920d6d85539e08f93e62f",
+      "retained_sha256": "b08212fa66c32270dc85d1af70a5c62c3c6333d4c07920d6d85539e08f93e62f"
+    },
+    {
+      "original": "execution.json",
+      "retained": "execution.json",
+      "original_sha256": "feffd996894bfe0c265f30d1c20d03af841fc17bc4041b47cc4d43c5b146b7b4",
+      "retained_sha256": "feffd996894bfe0c265f30d1c20d03af841fc17bc4041b47cc4d43c5b146b7b4"
+    },
+    {
+      "original": "leave-owner-tests.rs",
+      "retained": "leave-owner-tests.rs",
+      "original_sha256": "30e6cec033d35440a599738d6a6e31ad4f85d861808e0e91b7d1f3b0e6c279e3",
+      "retained_sha256": "30e6cec033d35440a599738d6a6e31ad4f85d861808e0e91b7d1f3b0e6c279e3"
+    },
+    {
+      "original": "owner-contract.txt",
+      "retained": "owner-contract.txt",
+      "original_sha256": "59c2248e7ac8818b83054b18c1ec41dc0f2ac163ec883f87179895e6d6da7b17",
+      "retained_sha256": "59c2248e7ac8818b83054b18c1ec41dc0f2ac163ec883f87179895e6d6da7b17"
+    },
+    {
+      "original": "freeze-manifest.json",
+      "retained": "freeze-manifest.json",
+      "original_sha256": "920a4ed7d4c1d049d7430dccac5701dacfa9f1853293455c88cd0f55fe22de58",
+      "retained_sha256": "920a4ed7d4c1d049d7430dccac5701dacfa9f1853293455c88cd0f55fe22de58"
+    }
+  ]
+}

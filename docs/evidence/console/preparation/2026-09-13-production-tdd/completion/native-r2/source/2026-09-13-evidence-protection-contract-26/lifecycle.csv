@@ -1,0 +1,17 @@
+site,owner,required_transition,failure_truth
+PREPARE_RESERVATION,custody + registered source,All member protections acquired in bounded receipt-bound preparation before completion; durable pending subset protected,Partial/UNKNOWN retains acquired pins; no source result
+PIN_ACQUIRE,custody,Exact unit admitted and complete purpose protection; EXCLUSIVE unit; quarantine refuses,No historic ADOPTED shortcut
+PIN_RELEASE,custody,This governed purpose conclusively releases; retain release receipt; reverse closure protected for all remaining purposes,Unknown obligation/reservation blocks release
+ADOPT_PUBLISH,source + custody,25 snapshot/effects/required adoptions + all independent protections same transaction; reservation transfer atomic,No async pin propagation or byte-only FK substitute
+COPY_LOCATION_ADD,Docs + custody,Exact original/copy/version/hash/size; inventory revision updates under unit guard; no hidden copy,Quarantined parent refuses resurrection
+HOLD_ADD,Docs hold + custody,Record current hold and fence subsequent batches/issuance; complete impacted unit closure,Already issued/UNKNOWN provider effect explicitly unresolved
+HOLD_RELEASE,Docs hold + custody,Authorized exact hold release receipt; re-evaluate every other protection,Not automatic disposal authorization
+POLICY_CHANGE,governed policy + custody,Current policy and purpose scopes/version; authority guard when policy operand; invalidate disposal plan if changed,No shortening pending or other purpose by stale cached expiry
+QUARANTINE_PREPARE,custody disposal,All live protections permit; exact full location inventory frozen; ordered guards; independent journal intent before deletion,Incomplete reverse inventory or unknown attempt refuses
+CANCEL_DISPOSAL,custody + journal,RR17 CANCEL_PENDING then independent cancellation ACK then local finalization only with zero batches/no unresolved effect,Partial deletion remains quarantined; no false undeletion
+SQL_BATCH_DISPOSE,registered payload owner,Current job/generation/holds and exact manifest;500 rows/4MiB; deletion+receipt+ledger same transaction,25 history survives;24 immutable byte rule not bypassed by26
+PROVIDER_ISSUE,storage owner,RR17 send linearization/stale issuer fencing/drain contract required before enrollment,UNRESOLVED_NO_EXTERNAL_DELETE_ENROLLMENT
+PROVIDER_RECONCILE,storage + custody + journal,Exact version readback and durable receipt; all replicas/versions accounted; unknown remains protected,Latest-key404 or provider success insufficient
+IMPORT_RESTORE_COPY,Docs/custody + admission,Imported payload new exact registered location; no restore past current quarantine/disposal fence,No silent reintroduction of disposed bytes
+PURGE_ALIAS_MAINTENANCE,every reached owner/DB ACL,Same guards/provenance or DB deny for legacy delete/cascade/cache cleanup/admin alias,Missing alias census remains enrollment blocker
+RECOVERY_READMIT,admission + all owners,Independent serving fence/current journal/authority and closure reconciliation before reads/workers,Old snapshot/adoption/pin never self-authorizes readmission

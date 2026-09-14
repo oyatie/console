@@ -1,0 +1,77 @@
+{
+  "manifest_sha256": "d4342b0bcf0d543bccfc6f62b866b71cbf508186445ceeacd50186233ece918a",
+  "files": [
+    {
+      "original": "bounded-process-output.rs",
+      "retained": "bounded-process-output.rs",
+      "original_sha256": "f993feab5beb08c2c68bc889259cf8eedc4506132a6313089b7e35318b9d8d62",
+      "retained_sha256": "f993feab5beb08c2c68bc889259cf8eedc4506132a6313089b7e35318b9d8d62"
+    },
+    {
+      "original": "execution.json",
+      "retained": "execution.json",
+      "original_sha256": "7957b04a121c170e17d767d79acb5ca4d3bfab61813df51e43f68e4b588c8ca4",
+      "retained_sha256": "7957b04a121c170e17d767d79acb5ca4d3bfab61813df51e43f68e4b588c8ca4"
+    },
+    {
+      "original": "legacy-transport-producer.rs",
+      "retained": "legacy-transport-producer.rs",
+      "original_sha256": "547a1ced6ce26dfdb4a9b8ec3271520501b2f3e536f628c8f3380ddc0d1f76b9",
+      "retained_sha256": "547a1ced6ce26dfdb4a9b8ec3271520501b2f3e536f628c8f3380ddc0d1f76b9"
+    },
+    {
+      "original": "machinery/Cargo.lock",
+      "retained": "machinery/Cargo.lock",
+      "original_sha256": "bc30a425e7582eb1cbf3f2f117f3683ae1194dbbadb13103b9cfb06411d776ed",
+      "retained_sha256": "bc30a425e7582eb1cbf3f2f117f3683ae1194dbbadb13103b9cfb06411d776ed"
+    },
+    {
+      "original": "machinery/Cargo.toml",
+      "retained": "machinery/Cargo.toml",
+      "original_sha256": "380f6b7dc3cd1b8b2cc8dba1103b7ede955613274cb9ab1f367fbd842c6886e7",
+      "retained_sha256": "380f6b7dc3cd1b8b2cc8dba1103b7ede955613274cb9ab1f367fbd842c6886e7"
+    },
+    {
+      "original": "machinery-execution.log",
+      "retained": "machinery-execution.log.gz",
+      "original_sha256": "7041dc0fff6ede2b7d686399bdfa1dcb662b7b01b9996f151a536fea3d0e3d03",
+      "retained_sha256": "b3b4867e20279c0634a5d06d2926a7e1ef707092dd0e52f0a103201ce6ecc3a5"
+    },
+    {
+      "original": "migrated-primary-producer.rs",
+      "retained": "migrated-primary-producer.rs",
+      "original_sha256": "ad32853ed4f339a4c5699170c3aea7e1cc07f44ea051a7730460ed63104115f3",
+      "retained_sha256": "ad32853ed4f339a4c5699170c3aea7e1cc07f44ea051a7730460ed63104115f3"
+    },
+    {
+      "original": "migration-batch-process.rs",
+      "retained": "migration-batch-process.rs",
+      "original_sha256": "d6f481faaa30b3db9a470ea93287d7c9f0c92ef5591e4984a9b4b8deed067345",
+      "retained_sha256": "d6f481faaa30b3db9a470ea93287d7c9f0c92ef5591e4984a9b4b8deed067345"
+    },
+    {
+      "original": "migration-remaining-tests.rs",
+      "retained": "migration-remaining-tests.rs",
+      "original_sha256": "fc4ff20c3b57bc4686212b4f1b311b23e1f1bb1327773d53ce9f4849d574321a",
+      "retained_sha256": "fc4ff20c3b57bc4686212b4f1b311b23e1f1bb1327773d53ce9f4849d574321a"
+    },
+    {
+      "original": "owner-interface-contract.txt",
+      "retained": "owner-interface-contract.txt",
+      "original_sha256": "377246226cecf08c7d05cb13494a5e70f5058ac95edb753e5217c7b918cf8a34",
+      "retained_sha256": "377246226cecf08c7d05cb13494a5e70f5058ac95edb753e5217c7b918cf8a34"
+    },
+    {
+      "original": "parent-manifest.json",
+      "retained": "parent-manifest.json",
+      "original_sha256": "114999efbeced6c1b1ffa4aa5625106bac2aa35d86edd091ae8f45132b0a8da6",
+      "retained_sha256": "114999efbeced6c1b1ffa4aa5625106bac2aa35d86edd091ae8f45132b0a8da6"
+    },
+    {
+      "original": "parser-checks.json",
+      "retained": "parser-checks.json",
+      "original_sha256": "ffcea8cb76179e0a402335c85a70809f30c9cf8d5377bfa56f4bb2b77f6715d7",
+      "retained_sha256": "ffcea8cb76179e0a402335c85a70809f30c9cf8d5377bfa56f4bb2b77f6715d7"
+    }
+  ]
+}

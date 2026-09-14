@@ -1,0 +1,790 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "console:design28:journal",
+  "$defs": {
+    "CustodyManifestRef": {
+      "type": "object",
+      "properties": {
+        "holder_object_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "immutable_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "content_sha256": {
+          "$ref": "types.schema.json#/$defs/Digest"
+        },
+        "encoded_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4194304
+        },
+        "encryption_key_binding_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        }
+      },
+      "required": [
+        "holder_object_id",
+        "immutable_version",
+        "content_sha256",
+        "encoded_bytes",
+        "encryption_key_binding_id"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderStep": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "unit_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "copy_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "provider_binding_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "location_revision": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "immutable_version_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "expected_sha256": {
+          "$ref": "types.schema.json#/$defs/Digest"
+        },
+        "expected_bytes": {
+          "$ref": "types.schema.json#/$defs/Count"
+        },
+        "job_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "step_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "manifest": {
+          "$ref": "#/$defs/CustodyManifestRef"
+        },
+        "serving_generation": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "cancel_generation": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "eligibility_receipt": {
+          "$ref": "types.schema.json#/$defs/CommandRef"
+        },
+        "not_after_dispatch": {
+          "$ref": "types.schema.json#/$defs/Time"
+        }
+      },
+      "required": [
+        "org_id",
+        "unit_id",
+        "copy_id",
+        "provider_binding_id",
+        "location_revision",
+        "immutable_version_id",
+        "expected_sha256",
+        "expected_bytes",
+        "job_id",
+        "step_id",
+        "manifest",
+        "serving_generation",
+        "cancel_generation",
+        "eligibility_receipt",
+        "not_after_dispatch"
+      ],
+      "additionalProperties": false
+    },
+    "JournalHead": {
+      "type": "object",
+      "properties": {
+        "stream_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "org_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "sequence": {
+          "$ref": "types.schema.json#/$defs/Count"
+        },
+        "event_hash": {
+          "$ref": "types.schema.json#/$defs/Digest"
+        },
+        "holder_generation": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "key_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        }
+      },
+      "required": [
+        "stream_id",
+        "org_id",
+        "sequence",
+        "event_hash",
+        "holder_generation",
+        "key_id"
+      ],
+      "additionalProperties": false
+    },
+    "FenceEvidence": {
+      "type": "object",
+      "properties": {
+        "scope_org_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "types.schema.json#/$defs/UUID"
+          },
+          "maxItems": 256
+        },
+        "old_generation": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "new_generation": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "credential_revocation_receipt": {
+          "$ref": "#/$defs/CustodyManifestRef"
+        },
+        "process_network_fence_receipt": {
+          "$ref": "#/$defs/CustodyManifestRef"
+        }
+      },
+      "required": [
+        "scope_org_ids",
+        "old_generation",
+        "new_generation",
+        "credential_revocation_receipt",
+        "process_network_fence_receipt"
+      ],
+      "additionalProperties": false
+    },
+    "TerminalStepEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "dispatch": {
+              "$ref": "#/$defs/DispatchRef"
+            },
+            "outcome": {
+              "const": "NOT_ISSUED"
+            },
+            "no_future_send_proof": {
+              "$ref": "#/$defs/NoFutureSendProof"
+            }
+          },
+          "required": [
+            "dispatch",
+            "outcome",
+            "no_future_send_proof"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "dispatch": {
+              "$ref": "#/$defs/DispatchRef"
+            },
+            "outcome": {
+              "enum": [
+                "CONFIRMED_RETAINED",
+                "CONFIRMED_REMOVED",
+                "IDENTITY_MISMATCH"
+              ]
+            },
+            "no_future_send_proof": {
+              "$ref": "#/$defs/NoFutureSendProof"
+            },
+            "provider_terminal_proof": {
+              "$ref": "#/$defs/ProviderProof"
+            },
+            "exact_version_observation": {
+              "$ref": "#/$defs/VersionObservation"
+            }
+          },
+          "required": [
+            "dispatch",
+            "outcome",
+            "no_future_send_proof",
+            "provider_terminal_proof",
+            "exact_version_observation"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Payload": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "INTENT"
+            },
+            "step": {
+              "$ref": "#/$defs/ProviderStep"
+            }
+          },
+          "required": [
+            "kind",
+            "step"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "DISPATCH_AUTHORIZED"
+            },
+            "dispatch": {
+              "$ref": "#/$defs/DispatchRef"
+            },
+            "eligibility_receipt": {
+              "$ref": "types.schema.json#/$defs/CommandRef"
+            },
+            "not_after_dispatch": {
+              "$ref": "types.schema.json#/$defs/Time"
+            }
+          },
+          "required": [
+            "kind",
+            "dispatch",
+            "eligibility_receipt",
+            "not_after_dispatch"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "STOP_REQUESTED"
+            },
+            "stop_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "scope_manifest": {
+              "$ref": "#/$defs/CustodyManifestRef"
+            },
+            "old_cancel_generation": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            },
+            "new_cancel_generation": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            }
+          },
+          "required": [
+            "kind",
+            "stop_id",
+            "scope_manifest",
+            "old_cancel_generation",
+            "new_cancel_generation"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "STEP_OUTCOME"
+            },
+            "evidence": {
+              "$ref": "#/$defs/TerminalStepEvidence"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "CANCELLED"
+            },
+            "job_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "stop_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "terminal_manifest": {
+              "$ref": "#/$defs/CustodyManifestRef"
+            }
+          },
+          "required": [
+            "kind",
+            "job_id",
+            "stop_id",
+            "terminal_manifest"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "BATCH_COMMITTED"
+            },
+            "job_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "batch_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "owner_receipt": {
+              "$ref": "types.schema.json#/$defs/CommandRef"
+            },
+            "exact_scope": {
+              "$ref": "#/$defs/CustodyManifestRef"
+            }
+          },
+          "required": [
+            "kind",
+            "job_id",
+            "batch_id",
+            "owner_receipt",
+            "exact_scope"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "SERVING_FENCE"
+            },
+            "fence": {
+              "$ref": "#/$defs/FenceEvidence"
+            }
+          },
+          "required": [
+            "kind",
+            "fence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "RECOVERY_ADMISSION"
+            },
+            "admission_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "manifest": {
+              "$ref": "#/$defs/CustodyManifestRef"
+            },
+            "complete_lsn": {
+              "type": "string",
+              "pattern": "^[0-9A-F]+/[0-9A-F]+$"
+            },
+            "timeline": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            }
+          },
+          "required": [
+            "kind",
+            "admission_id",
+            "manifest",
+            "complete_lsn",
+            "timeline"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "KEY_ROLLOVER"
+            },
+            "old_key_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "new_key_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "new_public_key": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "activation_sequence": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            },
+            "operator_authorization": {
+              "$ref": "#/$defs/CustodyManifestRef"
+            }
+          },
+          "required": [
+            "kind",
+            "old_key_id",
+            "new_key_id",
+            "new_public_key",
+            "activation_sequence",
+            "operator_authorization"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "JournalEvent": {
+      "type": "object",
+      "properties": {
+        "event_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "stream_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "org_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "sequence": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "previous_hash": {
+          "$ref": "types.schema.json#/$defs/Digest"
+        },
+        "serving_generation": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "cancel_generation": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "payload": {
+          "$ref": "#/$defs/Payload"
+        }
+      },
+      "required": [
+        "event_id",
+        "stream_id",
+        "org_id",
+        "sequence",
+        "previous_hash",
+        "serving_generation",
+        "cancel_generation",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "SignedAck": {
+      "type": "object",
+      "properties": {
+        "head": {
+          "$ref": "#/$defs/JournalHead"
+        },
+        "event_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "event_hash": {
+          "$ref": "types.schema.json#/$defs/Digest"
+        },
+        "key_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{128}$"
+        }
+      },
+      "required": [
+        "head",
+        "event_id",
+        "event_hash",
+        "key_id",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "CurrentHead": {
+      "type": "object",
+      "properties": {
+        "head": {
+          "$ref": "#/$defs/JournalHead"
+        },
+        "nonce": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{128}$"
+        }
+      },
+      "required": [
+        "head",
+        "nonce",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "DispatchRef": {
+      "type": "object",
+      "properties": {
+        "stream_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "step_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "dispatch_sequence": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "authorization_event_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "target_digest": {
+          "$ref": "types.schema.json#/$defs/Digest"
+        },
+        "serving_generation": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "cancel_generation": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        }
+      },
+      "required": [
+        "stream_id",
+        "step_id",
+        "dispatch_sequence",
+        "authorization_event_id",
+        "target_digest",
+        "serving_generation",
+        "cancel_generation"
+      ],
+      "additionalProperties": false
+    },
+    "NoFutureSendProof": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "NEVER_SENT"
+            },
+            "dispatch": {
+              "$ref": "#/$defs/DispatchRef"
+            },
+            "issuer_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "issuer_generation": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            },
+            "closed_at": {
+              "$ref": "types.schema.json#/$defs/Time"
+            },
+            "issuer_attestation": {
+              "$ref": "#/$defs/CustodyManifestRef"
+            }
+          },
+          "required": [
+            "kind",
+            "dispatch",
+            "issuer_id",
+            "issuer_generation",
+            "closed_at",
+            "issuer_attestation"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "FENCED"
+            },
+            "dispatch": {
+              "$ref": "#/$defs/DispatchRef"
+            },
+            "issuer_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "issuer_generation": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            },
+            "fence": {
+              "$ref": "#/$defs/FenceEvidence"
+            },
+            "closed_at": {
+              "$ref": "types.schema.json#/$defs/Time"
+            }
+          },
+          "required": [
+            "kind",
+            "dispatch",
+            "issuer_id",
+            "issuer_generation",
+            "fence",
+            "closed_at"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "DISPATCH_CLOSED"
+            },
+            "dispatch": {
+              "$ref": "#/$defs/DispatchRef"
+            },
+            "issuer_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "issuer_generation": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            },
+            "closed_at": {
+              "$ref": "types.schema.json#/$defs/Time"
+            },
+            "send_admission_head": {
+              "$ref": "#/$defs/CustodyManifestRef"
+            },
+            "accepted_send_count": {
+              "const": 1
+            },
+            "terminal_send_manifest": {
+              "$ref": "#/$defs/CustodyManifestRef"
+            },
+            "closure_attestation": {
+              "$ref": "#/$defs/CustodyManifestRef"
+            }
+          },
+          "required": [
+            "kind",
+            "dispatch",
+            "issuer_id",
+            "issuer_generation",
+            "closed_at",
+            "send_admission_head",
+            "accepted_send_count",
+            "terminal_send_manifest",
+            "closure_attestation"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ProviderProof": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "NO_REQUEST"
+            },
+            "dispatch": {
+              "$ref": "#/$defs/DispatchRef"
+            },
+            "no_send": {
+              "$ref": "#/$defs/NoFutureSendProof"
+            }
+          },
+          "required": [
+            "kind",
+            "dispatch",
+            "no_send"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "TERMINAL_REQUEST"
+            },
+            "dispatch": {
+              "$ref": "#/$defs/DispatchRef"
+            },
+            "provider_request_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "terminal": {
+              "enum": [
+                "CANCELLED",
+                "FAILED_NO_EFFECT",
+                "REMOVED"
+              ]
+            },
+            "adapter_contract_digest": {
+              "$ref": "types.schema.json#/$defs/Digest"
+            },
+            "terminal_at": {
+              "$ref": "types.schema.json#/$defs/Time"
+            },
+            "evidence": {
+              "$ref": "#/$defs/CustodyManifestRef"
+            }
+          },
+          "required": [
+            "kind",
+            "dispatch",
+            "provider_request_id",
+            "terminal",
+            "adapter_contract_digest",
+            "terminal_at",
+            "evidence"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "VersionObservation": {
+      "type": "object",
+      "properties": {
+        "dispatch": {
+          "$ref": "#/$defs/DispatchRef"
+        },
+        "provider_binding_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "immutable_version_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "state": {
+          "enum": [
+            "PRESENT_MATCH",
+            "ABSENT",
+            "IDENTITY_MISMATCH"
+          ]
+        },
+        "observed_at": {
+          "$ref": "types.schema.json#/$defs/Time"
+        },
+        "evidence": {
+          "$ref": "#/$defs/CustodyManifestRef"
+        }
+      },
+      "required": [
+        "dispatch",
+        "provider_binding_id",
+        "immutable_version_id",
+        "state",
+        "observed_at",
+        "evidence"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$comment": "Schemas describe strictly decoded internal typed values. CCF1 command/journal wire encodes every integer as a canonical decimal string, rejects JSON numeric values and duplicate/unknown fields, sorts ASCII object keys, preserves text without NFC/NFKC normalization. Numeric bounds apply after exact integer decoding. Existing18/19/24 codecs retain their explicitly distinct formats. These are design schemas, not generated OpenAPI or executed codecs."
+}

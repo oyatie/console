@@ -1,0 +1,62 @@
+{
+  "source_root": "/private/tmp/console-native28-owner-assertions-s1-20260913",
+  "manifest_sha256": "2fd88d2fcdc3edf2d985a96e8c4ef384ba65569f32aa75012a2b2f96a7a21958",
+  "verified_members": 9,
+  "status": "FROZEN_REVIEW_CANDIDATE_NOT_APPROVAL",
+  "files": [
+    {
+      "source_path": "binder-sequence.rs",
+      "retained_path": "binder-sequence.rs",
+      "raw_sha256": "6c042c54a84f9f363f5ae850bbdf74edf97c4ef8debd2c2118c461f6de0e481f",
+      "compression": null
+    },
+    {
+      "source_path": "business-readback.sql",
+      "retained_path": "business-readback.sql",
+      "raw_sha256": "21cca62c3f79a7c296b8b02864043ca8eb4b38697f9bd2f45e4092276b70dc06",
+      "compression": null
+    },
+    {
+      "source_path": "native-fixture.rs",
+      "retained_path": "native-fixture.rs",
+      "raw_sha256": "940337bc35ec1cb6d0a5edd55699dff9025fd817f81f660880bb583bc7138127",
+      "compression": null
+    },
+    {
+      "source_path": "native-owner-producer.rs",
+      "retained_path": "native-owner-producer.rs",
+      "raw_sha256": "32f7c276c349fd2c42c52bdf2216bcb9d091411e1b324cf05122a40b044abd0b",
+      "compression": null
+    },
+    {
+      "source_path": "native-owner-tests.rs",
+      "retained_path": "native-owner-tests.rs",
+      "raw_sha256": "0850a327c479594c85c334b5ee60a83df9b6d5fc731d4259cfcbaa25a2d3727a",
+      "compression": null
+    },
+    {
+      "source_path": "registration-coverage.json",
+      "retained_path": "registration-coverage.json",
+      "raw_sha256": "d0e99cdf16b4f84d2d2fab70da8097d61de732517d86b2c83fcf5fffe2f445cd",
+      "compression": null
+    },
+    {
+      "source_path": "source-inventory.json",
+      "retained_path": "source-inventory.json",
+      "raw_sha256": "094674d6f367a51cc0a7901cc28baf54779635c11dcc79e84c59a7a782b50d53",
+      "compression": null
+    },
+    {
+      "source_path": "supplement-contract.md",
+      "retained_path": "supplement-contract.txt",
+      "raw_sha256": "57a1b47aeefcaa50c03acb0d1044aea155bb3d94ff3e3658bd08d1ea2b483da3",
+      "compression": null
+    },
+    {
+      "source_path": "syntax-execution.json",
+      "retained_path": "syntax-execution.json",
+      "raw_sha256": "30f69c54c4560aabe74816b7aa8e92070345c00045f41d87a38e09603b81e40b",
+      "compression": null
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "status": "PROPOSED_NARROW_TRANSPORT_REFINEMENT_REQUIRES_CONSOLIDATED_APPROVAL",
+  "authority_sources": [
+    "design/2026-09-13-integrated-design-30/screen-integration.txt:4",
+    "design/2026-09-12-screen-flow-integration-11/screen-contract.txt:48",
+    "design/2026-09-12-screen-flow-integration-11/input-overlays.json:OFFLINE_UNACKNOWLEDGED"
+  ],
+  "path": "Same authorized registered composer pathname for HTML and hydrated saves",
+  "html": {
+    "method": "POST",
+    "operation": "save",
+    "csrf": "existing rendered csrf_proof field/current ordinary CSRF verification",
+    "success": "303 to authorized current result; underlying ordinary DraftAck receipt retained",
+    "conflict": "409 input page with original unsaved value and current-content recovery"
+  },
+  "hydrated": {
+    "method": "POST",
+    "accept": "application/json",
+    "content_type": "application/json",
+    "json_request": {
+      "operation": "save",
+      "command_id": "UUID; same exact ordinary control identity",
+      "input": "existing ordinary action30::DraftSave serialized DTO; client fields remain untrusted"
+    },
+    "csrf": "X-Console-CSRF header (body csrf_proof may be accepted only by same reviewed transport normalization)",
+    "success": {
+      "status": 200,
+      "content_type": "application/json",
+      "body": "ordinary action30::DraftAck serialized DTO, no invented success wrapper"
+    },
+    "stale_conflict": {
+      "status": 409,
+      "content_type": "application/json",
+      "body": "ordinary action30::ResultObservation::DefinitiveNoEffect serialized variant for expected-draft-revision conflict; no successful ACK/receipt",
+      "ui": "retain1234567 local input, expose current1250000 through recovery link"
+    },
+    "other_failures": "Existing typed status mapping; never classify auth/parse/unknown/error as successful autosave or as a stale conflict solely for tests"
+  },
+  "invariants": [
+    "Both transports dispatch to the same draft_save owner and preserve command, expected revision, editing token, current Account/session/policy and CSRF checks",
+    "No GET write, no client-created authority, no custom test save endpoint",
+    "200JSON negotiation is newly specified here; earlier approval of autosave behavior is not approval of this exact wire shape",
+    "Actual receipt/revision matches independently reread complete ordinary history; exactly one new save, all old history unchanged and no business effects",
+    "WASM failure injection aborts owned asset only; no API fulfillment",
+    "Reconnect test covers offline-before-ACK queue and one final saved effect; no claim of mid-COMMIT response-loss recovery"
+  ],
+  "ui_copy_candidates": [
+    "자동 저장 사용 중",
+    "자동 저장을 사용할 수 없음",
+    "미저장 입력 있음",
+    "서버에 저장됨",
+    "현재 내용 확인"
+  ]
+}

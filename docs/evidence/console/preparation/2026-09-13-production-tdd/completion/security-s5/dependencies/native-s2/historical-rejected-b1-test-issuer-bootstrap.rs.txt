@@ -1,0 +1,102 @@
+//! Proposed disposable-deployment bootstrap with real ES256 signatures.
+//! Root explicitly authorized TEST_ONLY synthetic subjects/evidence. This is a
+//! custody/configuration refinement to actual provisioning+identity owners, not
+//! an alternative business owner or legal claim about real Humans.
+use console_platform_provisioning::acceptance_bootstrap as provisioning;
+use console_identity_adapter_postgres::account13 as identity;
+use console_platform_auth::account_session::VerifiedAccountSession;
+use jsonwebtoken::{Algorithm,EncodingKey,Header};
+use serde::Serialize;
+use sqlx::PgPool;
+use uuid::Uuid;
+use crate::{account_enrollment_producer::AccountBootstrapPhase,native_fixture::TestResult};
+
+#[derive(Serialize)]
+pub struct SyntheticSubjectBinding { account_id:Uuid, issuer_subject:String }
+#[derive(Serialize)]
+pub struct TestIdentityRootClaims {
+    iss:String,aud:String,iat:i64,nbf:i64,exp:i64,jti:Uuid,
+    deployment_id:Uuid,group_id:Uuid,classification:&'static str,
+    bindings:Vec<SyntheticSubjectBinding>,
+}
+#[derive(Serialize)]
+pub struct TestCompanyEnrollmentClaims {
+    iss:String,aud:String,iat:i64,nbf:i64,exp:i64,jti:Uuid,
+    deployment_id:Uuid,group_id:Uuid,company_request_id:Uuid,
+    submitter_account_id:Uuid,reviewer_account_id:Uuid,alias_account_id:Uuid,
+    identity_root_receipt_id:Uuid,approved_acceptance_manifest_digest:String,
+    scenario:String,classification:&'static str,
+}
+pub struct TestIssuer {
+    issuer:String, key_id:String, key:EncodingKey, public_pem:Vec<u8>,
+}
+impl TestIssuer {
+    pub fn from_operator_config(issuer:String,key_id:String,private_pem:&[u8],public_pem:Vec<u8>)->TestResult<Self> {
+        // Key is test-only operator configuration, not read from a user request.
+        // Actual owner admission separately verifies public/private correspondence
+        // by verifying each produced JWS with the installed public key.
+        Ok(Self{issuer,key_id,key:EncodingKey::from_ec_pem(private_pem)?,public_pem})
+    }
+    fn sign<T:Serialize>(&self,claims:&T)->TestResult<String> {
+        let mut header=Header::new(Algorithm::ES256);header.kid=Some(self.key_id.clone());
+        Ok(jsonwebtoken::encode(&header,claims,&self.key)?)
+    }
+}
+
+pub async fn bootstrap_isolated_companies(
+    operator_pool:&PgPool,identity_pool:&PgPool,
+    bootstrap_operator:&VerifiedAccountSession,accounts:&AccountBootstrapPhase,
+    issuer:&TestIssuer,scenarios:&[String],acceptance_manifest_digest:&str,
+)->TestResult<Vec<provisioning::CompanyEnrollmentReceipt>> {
+    // Actual deployment owner verifies operator database role, empty isolated
+    // deployment control, TEST_ONLY purpose, approved manifest, and no production
+    // enrollment. This is a real guarded config command, not accepting bool=true.
+    let deployment=provisioning::begin_disposable_acceptance_deployment(
+        operator_pool,bootstrap_operator,provisioning::BeginAcceptanceDeployment {
+            request_id:Uuid::new_v4(),approved_manifest_digest:acceptance_manifest_digest.to_owned(),
+        },
+    ).await?;
+    let trust=provisioning::install_test_issuer(operator_pool,bootstrap_operator,&deployment,
+        provisioning::InstallTestIssuer {
+            issuer:issuer.issuer.clone(),key_id:issuer.key_id.clone(),public_es256_pem:issuer.public_pem.clone(),
+            allowed_audiences:vec!["console.test.identity-root.v1".into(),"console.test.company-enrollment.v1".into(),"console.test.source-evidence.v1".into()],
+        }).await?;
+    assert_eq!(trust.deployment_id,deployment.deployment_id);
+    let now=time::OffsetDateTime::now_utc().unix_timestamp();
+    let claims=TestIdentityRootClaims {
+        iss:issuer.issuer.clone(),aud:"console.test.identity-root.v1".into(),iat:now,nbf:now,exp:now+300,jti:Uuid::new_v4(),
+        deployment_id:deployment.deployment_id,group_id:deployment.group_id,classification:"TEST_ONLY_SYNTHETIC",
+        bindings:vec![
+            SyntheticSubjectBinding{account_id:accounts.submitter.account_id,issuer_subject:"SYNTHETIC_SUBJECT_A".into()},
+            SyntheticSubjectBinding{account_id:accounts.same_human_alias.account_id,issuer_subject:"SYNTHETIC_SUBJECT_A".into()},
+            SyntheticSubjectBinding{account_id:accounts.reviewer.account_id,issuer_subject:"SYNTHETIC_SUBJECT_B".into()},
+        ],
+    };
+    let signed=issuer.sign(&claims)?;
+    // Actual identity owner verifies ES256/issuer/audience/kid/time/jti replay,
+    // exact installed TEST_ONLY deployment trust and Account identities, then
+    // commits immutable root proof and binding heads under real owner locks.
+    // This owner path returns an ACTUAL receipt; tests never INSERT verified rows.
+    let root=identity::admit_test_identity_root(identity_pool,bootstrap_operator,&deployment,&signed).await?;
+    assert_eq!(root.group_id,deployment.group_id);
+    let mut companies=Vec::new();
+    for scenario in scenarios {
+        let now=time::OffsetDateTime::now_utc().unix_timestamp();
+        let enrollment=TestCompanyEnrollmentClaims {
+            iss:issuer.issuer.clone(),aud:"console.test.company-enrollment.v1".into(),iat:now,nbf:now,exp:now+300,jti:Uuid::new_v4(),
+            deployment_id:deployment.deployment_id,group_id:deployment.group_id,company_request_id:Uuid::new_v4(),
+            submitter_account_id:accounts.submitter.account_id,reviewer_account_id:accounts.reviewer.account_id,
+            alias_account_id:accounts.same_human_alias.account_id,identity_root_receipt_id:root.receipt_id,
+            approved_acceptance_manifest_digest:acceptance_manifest_digest.into(),scenario:scenario.clone(),classification:"TEST_ONLY_SYNTHETIC",
+        };
+        // Independent explicit provisioning authority: Human root alone grants
+        // zero Company/payroll permission. Owner validates the signed enrollment
+        // against the installed exact immutable acceptance permission manifest.
+        let company=provisioning::enroll_company_from_test_authority(operator_pool,bootstrap_operator,&deployment,&issuer.sign(&enrollment)?).await?;
+        assert_eq!(company.group_id,root.group_id);
+        assert_eq!(company.original_request_id,enrollment.company_request_id);
+        assert!(companies.iter().all(|c:&provisioning::CompanyEnrollmentReceipt|c.org_id!=company.org_id));
+        companies.push(company);
+    }
+    Ok(companies)
+}

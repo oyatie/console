@@ -1,0 +1,15 @@
+{
+  "kind": "calendar.assign",
+  "body": {
+    "kind": "CALENDAR_ASSIGNMENT",
+    "employment_id": "abc17824-a202-5ffc-b25c-79d53ff52fb4",
+    "calendar_ref": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "calendar_id": "8ddfa07c-2a04-5070-9985-9f99ea439cce",
+      "revision": "1"
+    },
+    "from_date": "2026-09-01",
+    "to_date_exclusive": "2026-10-01",
+    "state": "ACTIVE"
+  }
+}

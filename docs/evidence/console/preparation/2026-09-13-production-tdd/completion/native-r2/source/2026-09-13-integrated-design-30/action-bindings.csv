@@ -1,0 +1,34 @@
+ui_key,registered_owner_action,owner,input_schema,result_schema,guard,entry_screen
+DRAFT_SAVE,draft.save,ontology,DraftSave,DraftAck,EDITABLE exact custody/head/epoch,same
+DRAFT_RESTORE,draft.restore,ontology,DraftRestore,DraftAck,EDITABLE retained permitted revision;append new,S06
+CANCEL_PENDING,attempt.cancel,ontology,AttemptCancel,ResultObservation,exact receipt proves no effect;otherwise success/unknown,same
+CREATE_RUN,payroll.create_run,payroll,RunCreate,RunResult,new allocated target;scope derived on server,V03
+SAVE_WAGE:create,payroll.create_contract_wage,payroll,WageCreate,WageResult,valid employment/date;source-generation equality,V05
+SAVE_WAGE:correct,payroll.correct_contract_wage,payroll,WageCorrect,WageResult,exact base/predecessor;append correction,V05
+PREPARE_INPUT,payroll.prepare_inputs,payroll,NativePrepare,RunResult,STAGED;complete membership;current sources,V04
+REOPEN_INPUTS,payroll.reopen_inputs,payroll,RunReopen,RunResult,STAGED/ATTENDANCE_CLOSED/CALCULATED;no review/completion/external effect,"V04,V07"
+CLOSE_ATTENDANCE,payroll.close_attendance,payroll,CloseAttendance,RunResult,STAGED with complete prepared input complete scope/current exact close basis,V06
+CALCULATE,payroll.calculate_run,payroll,RunCalculate,RunResult,ATTENDANCE_CLOSED;exact complete/current input basis,V07
+OPEN_REVIEW_CYCLE,payroll.open_review_cycle,payroll,ReviewOpen,ReviewResult,CALCULATED complete supported nonempty membership,V07
+SUBMIT_REVIEW,review.submit,governance+payroll,ReviewSubmit,ReviewResult,DRAFT basis current REVIEWING cycle;mandatory evidence,V08
+DECIDE_REVIEW,review.decide,governance+payroll,ReviewDecide,ReviewResult,SUBMITTED exact basis;distinct current natural persons;optional exact gate,V08
+WITHDRAW_REVIEW_DECISION,review.withdraw,governance+payroll,ReviewWithdraw,ReviewResult,before whole-run Completion;explicit withdrawal authority,V08
+REVISE_REVIEW_CYCLE,payroll.revise_review_cycle,payroll,ReviewRevise,ReviewResult,REVIEWING no Completion;owner derives all affected dependencies,V08
+CANCEL_REVIEW_CYCLE,payroll.cancel_review_cycle,payroll,ReviewCancel,RunResult,uncompleted REVIEWING;preserve history and period freeze,V08
+CORRECT_APPROVED,payroll.supersede_approved_draft,payroll,ApprovedSupersede,SupersessionResult,APPROVED nonpayable;no issued/payment effect;one successor,"V07,V08"
+REQUEST_GATE,governance.execution_gate.request,governance,GateRequest,GateResult,exact actor decision attempt;separate permission purpose,S01
+DECIDE_GATE,governance.execution_gate.decide,governance,GateDecide,GateResult,PENDING exact request;current independent gate decider,S01
+RELEASE_REVIEW,payroll.review.release,payroll,PublicationRelease,PublicationResult,current Completion;historical subject;authorized projection,S02
+REPLACE_PROJECTION,payroll.review.replace_projection,payroll,PublicationReplace,PublicationResult,same subject/source;expected slot;projection change only,S02
+SUBMIT_OWN_REQUEST,payroll.review.request,payroll,CaseRequest,CaseResult,own current historical entitlement;submitted draft;accept no handler,S03
+OWN_CASE_UPDATE:append,payroll.review.request_append,payroll,CaseAppend,CaseResult,own open case;append content;not handler response,S03
+OWN_CASE_UPDATE:withdraw,payroll.review.request_withdraw,payroll,CaseWithdraw,CaseResult,own withdrawable case;preserve old evidence,S03
+OWN_CASE_UPDATE:followup,payroll.review.request,payroll,CaseRequest,CaseResult,closed predecessor response linked to new case,S03
+RESPOND_CASE,payroll.review.respond,payroll,CaseRespond,CaseResult,assigned current task and full current item coverage,S04
+HANDOVER_PLAN,work.transfer.submit,workflow,TransferSubmit,TransferResult,preview current then request/execute by policy;no role/reason pipes,S05
+HANDOVER_EXECUTE,work.transfer.execute,workflow,TransferExecute,TransferResult,exact plan/task/epoch;source attempt resolved;capacity and eligibility current,S05
+STOP_HANDOVER,work.transfer.stop,workflow,TransferStop,TransferResult,stop future task transitions;preserve completed/unknown,S05
+LAUNCH_GROUP_CALC:create,group.operation.create,group,GroupCreate,GroupResult,1..6 selected Companies;one calculate target each;no mixed payroll,V09
+LAUNCH_GROUP_CALC:activate,group.operation.activate,group,GroupActivate,GroupResult,all exact slots prepared+sealed;original actor current,V09
+RESUME_GROUP,group.operation.resume,group,GroupResume,GroupResult,same original Account;unchanged pending manifest;fresh session,V09
+STOP_GROUP,group.operation.stop,group,GroupStop,GroupResult,exact control;stops future dispatch;keeps receipts/unknown,V09

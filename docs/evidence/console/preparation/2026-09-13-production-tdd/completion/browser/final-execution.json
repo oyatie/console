@@ -1,0 +1,34 @@
+{
+  "status": "FINAL_SOURCE_EXECUTION_RECORD_NOT_OWNER_ACCEPTANCE",
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "historical_execution": "execution.json",
+  "source_sha256": {
+    "oracle.spec.cjs": "5e8b6ecd0d5f7c7880c94e02603dc84dd3b4470baf1000de0a66c757dc306cc9",
+    "effective-submissions.cjs": "4f0cc37c5777a29f56aeeca1dfdfa06d6331f273cf1b13dcc4348e93c69daa4d",
+    "reflow.cjs": "41e163c302aeb275ea9c6a8a07bad30425b60ed8edc2693472ac9b560e9f805a",
+    "playwright.config.cjs": "d5ead572f631ccbee50d903b455290b6c2338f1c270a1d9aed2ab751e764869b",
+    "acceptance.spec.cjs": "d4b5ef16931948aa01fc57e58cc999a15986e906ed534424da48461166596c9f",
+    "fixture-contract.txt": "05555bfd7be318e8303e3348b563ec80abb8edd10fc1a29c20468fccf6c0062c"
+  },
+  "command": "NODE_PATH=/private/tmp/console-preparation-browser/node_modules PLAYWRIGHT_BROWSERS_PATH=/private/tmp/console-preparation-browsers fnm exec --using=24.16.0 /private/tmp/console-preparation-browser/node_modules/.bin/playwright test --config docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs --project=oracle",
+  "oracle": {
+    "discovered": 8,
+    "executed": 8,
+    "passed": 8
+  },
+  "application": {
+    "discovered": 11,
+    "executed": 0,
+    "assertions_reached": 0
+  },
+  "logs_uncompressed_sha256": {
+    "console-browser-final-oracles-20260914.log.gz": "5913eacea91f0b937c209da447ad596c5baf7d18df83b298b1d7f79fc05b8bfb",
+    "console-browser-final-oracles-escalated-20260914.log.gz": "a7f5128974a6ad4f13660421bf0186d0b4e70a0e9b31c4edc3571de8ddc9aae3"
+  },
+  "limitations": [
+    "Initial sandbox Chromium bootstrap refused; authorized same local command rerun passed",
+    "JS-enabled SSR is not hydration verification",
+    "Application owner fixtures remain source-only; missing owners do not admit UI implementation",
+    "Pinned browser process-tree cleanup must be proven before application browser acceptance"
+  ]
+}

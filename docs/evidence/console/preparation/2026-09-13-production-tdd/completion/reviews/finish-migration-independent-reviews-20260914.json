@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/finish_migration",
+  "migration_r3": {
+    "manifest": "37643e436403f9e88b4a498b75f64517a0f4b20b8e3ef8f6081581b91e924bd2",
+    "verified_members": 24,
+    "disposition": "ACCEPT_BOUNDED_MECHANICAL_EXTRACTION",
+    "basis": "actual_catalog function body extracted unchanged from admission tests; admission and snapshot producer both reference shared helper; no catalog SQL/assertion change. Seven owner source methods remain unexecuted. Runtime evidence recorded in packet is not independently rerun."
+  },
+  "security_s4": {
+    "manifest": "a382c1d67c2314fd56e210e013e7052fe9618e5349c08aeb71aa9ed768f024d9",
+    "verified_members": 117,
+    "disposition": "HOLD_PROOF_EVIDENCE_MACHINERY",
+    "finding": {
+      "severity": "blocking",
+      "path": "proof-harness/source_binding_gate.py",
+      "lines": "65-76",
+      "problem": "Compiled proof_runs source/import closure is not tied to verified bound_source extraction; arbitrary separately hashed toy proofs can replace actual owner proof while owner binding check passes. Negative recipe derivation also unchecked.",
+      "fix": "Bind executed complete proof source closure to exact owner extraction and reviewed negative mutation recipes, add hostile unrelated-positive/wrong-negative controls. Sent to finish_browser for successor."
+    },
+    "limits": "Independent review focused migration and proof machinery plus manifest integrity; no claim all 58 owner source methods independently validated or executed."
+  }
+}

@@ -1,0 +1,414 @@
+{
+  "classification": "RUSTFMT_PARSER_ONLY",
+  "checks": [
+    {
+      "file": "account-enrollment-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/account-enrollment-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "artifact-owner-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/artifact-owner-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "artifact-owner-tests.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/artifact-owner-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "attendance-owner-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/attendance-owner-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "binder-sequence.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/binder-sequence.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "commit-ack-relay.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/commit-ack-relay.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "deployment-root-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/deployment-root-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "deployment-runtime-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/deployment-runtime-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "immutable-payroll-domain.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/immutable-payroll-domain.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "native-fixture.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/native-fixture.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "native-lifecycle-tests.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/native-lifecycle-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "native-money-assertions.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/native-money-assertions.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "native-owner-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/native-owner-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "native-owner-tests.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/native-owner-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "negative-assertions.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/negative-assertions.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "operator-custody-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/operator-custody-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "ordinary-issuer-bootstrap.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/ordinary-issuer-bootstrap.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "payroll-source-facts-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/payroll-source-facts-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "publish-then-root-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/publish-then-root-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "review-correction-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/review-correction-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "rust-codec-assertions.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/rust-codec-assertions.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "source-foundation-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/source-foundation-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "source-owner-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/source-owner-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "source-owner-tests.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/source-owner-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "source-preparation-tests.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/source-preparation-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "two-subject-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/two-subject-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "workforce-owner-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s2-20260913/workforce-owner-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    }
+  ],
+  "parsed_files": 27,
+  "compiled": false,
+  "discovered": 0,
+  "executed": 0
+}

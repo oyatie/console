@@ -1,0 +1,52 @@
+{
+  "records": [
+    {
+      "source": "/private/tmp/preparation-recovery-review-r3-20260913/manifest.json",
+      "retained": "reviews/preparation-recovery-review-r3-20260913/manifest.json",
+      "raw_sha256": "99459ee75d8eb2ca65a4c64db8f402fda0f0602d34aa99e77fd16a085e424908",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-review-r3-20260913/review.txt",
+      "retained": "reviews/preparation-recovery-review-r3-20260913/review.txt",
+      "raw_sha256": "c6ed6f5b31799ca2f600b65261367c18635147a69729104e398bd08024b4cff4",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-review-r3-20260913/wiring-r3-exact-command.log",
+      "retained": "reviews/preparation-recovery-review-r3-20260913/wiring-r3-exact-command.log.gz",
+      "raw_sha256": "ef5d463ed5d371d42749f440c966e9eeecafc8e03b1f28c4151bae3914707805",
+      "compression": "gzip"
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-review-r3-20260913/wiring-r3-independent.json",
+      "retained": "reviews/preparation-recovery-review-r3-20260913/wiring-r3-independent.json",
+      "raw_sha256": "255897a6541c026f0c7a10cabadda5cfd6877ca35595e85f5be207c54c85ab62",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-review-r3-20260913/wiring-r3-independent.log",
+      "retained": "reviews/preparation-recovery-review-r3-20260913/wiring-r3-independent.log.gz",
+      "raw_sha256": "8731fb25ec879a3303e0500728faa4e005f851dbe0a339ed8ee488b89d642d72",
+      "compression": "gzip"
+    },
+    {
+      "source": "/private/tmp/console-workflow-independent-completion-review-20260913/review.json",
+      "retained": "reviews/console-workflow-independent-completion-review-20260913/review.json",
+      "raw_sha256": "4e0d313cfb47dc638e07d3577a1a7cdadd0a448a2447961464b7a53b53a9c022",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/console-readiness-security-research-20260913/native28-independent-review.md",
+      "retained": "reviews/native28-independent-review.txt",
+      "raw_sha256": "1237fb7e3fbc8654e92e6b986da4943d71b61cbeefcd69d8cc5225c6b54ccc69",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/console-readiness-security-research-20260913/native28-owner-mapping-addendum.md",
+      "retained": "reviews/native28-owner-mapping-addendum.txt",
+      "raw_sha256": "b45936003b6aedbfa03efe444008a224bf6f828e8015e20a63b1dc34d1e491db",
+      "compression": null
+    }
+  ]
+}

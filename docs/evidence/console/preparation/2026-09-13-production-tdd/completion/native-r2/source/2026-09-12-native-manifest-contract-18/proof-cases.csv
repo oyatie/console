@@ -1,0 +1,31 @@
+id,invariant,trigger,expected,status
+P01,Correction0 source ref,Base exists with no correction/head,"Resolve base; conditional correction FK absent, never invented revision0 row",PROPOSED_NOT_EXECUTED
+P02,First correction concurrent CAS,Two commands expected0,Exactly one head1; loser stale; base unchanged,PROPOSED_NOT_EXECUTED
+P03,Wage lineage,Correction references other Company or employee,Composite base FK/owner rejects,PROPOSED_NOT_EXECUTED
+P04,Immutable correction,Attempt update original/correction or skip predecessor,Rejected; preserved receipt/history,PROPOSED_NOT_EXECUTED
+P05,Native line identity,Same employee second native source key,Native unique employee and canonical source key reject,PROPOSED_NOT_EXECUTED
+P06,Legacy materializer bypass,Old roster rewrites native employee mapping,Parent protocol check refuses before effect,PROPOSED_NOT_EXECUTED
+P07,Calculation foreign line,Same Company different run/employee line,Exact composite FKs reject,PROPOSED_NOT_EXECUTED
+P08,Blocked preparation,Every employee missing wage/source,Input+required slots persist; no close/batch/money,PROPOSED_NOT_EXECUTED
+P09,All kernel-blocked calculation,Valid closed resolved input; all kernel outcomes blocked,Batch + one outcome each + receipt; no money rows; version advances,PROPOSED_NOT_EXECUTED
+P10,Repeated all-blocked batch,Explicit supported reclose/recalculate after prior batch,New batch revision from headers; no reuse of MAX successes,PROPOSED_NOT_EXECUTED
+P11,Changed input/close,Source revoked or close stale before calculate,No new batch; history retained; current repair path,PROPOSED_NOT_EXECUTED
+P12,Native member completeness,Omit hidden or blocked employee,Complete owner population/deferred count+set checks refuse commit,PROPOSED_NOT_EXECUTED
+P13,Outcome completeness,Omit one required outcome or add outsider,Batch/input membership checks reject,PROPOSED_NOT_EXECUTED
+P14,Result bijection,Success row without outcome or outcome wrong result,Deferred reciprocal FKs/counts reject,PROPOSED_NOT_EXECUTED
+P15,Resolved input later kernel blocker,Calculation fails supported rounding case,Immutable input unchanged; outcome BLOCKED without amount,PROPOSED_NOT_EXECUTED
+P16,Native forged append,Runtime inserts higher version or claims LEGACY under NP1 parent,Owner/parent protocol command fence denies,PROPOSED_NOT_EXECUTED
+P17,Sealed header late child,Later transaction adds source/outcome to prior header,Command provenance/sealed parent guard denies despite valid FK,PROPOSED_NOT_EXECUTED
+P18,Revision exhaustion,Max batch2147483647,"Checked refusal preserves pointer/history, no wrap",PROPOSED_NOT_EXECUTED
+P19,Semantic vs custody,Unrelated clock event advances family,Guarded re-resolution same full unit basis; no invalidation solely from epoch,PROPOSED_NOT_EXECUTED
+P20,Relevant source correction,Same displayed amount different exact source revision,Changed semantic basis; applicable review obligation reevaluated,PROPOSED_NOT_EXECUTED
+P21,Canonical bytes,JSONB key reorder and Korean notes,Same declared canonical bytes; missing/null and changed note stay distinct,PROPOSED_NOT_EXECUTED
+P22,Oversized candidate set,33 possible sources for one kind,Whole over-limit family omitted with explicit blocker; no first32 completion,PROPOSED_NOT_EXECUTED
+P23,Employment interval,One Employment promotion has two contiguous revisions,Both ordered segments accepted if full eligible coverage; gap/competing ID rejected,PROPOSED_NOT_EXECUTED
+P24,Partial selected/candidate confusion,Candidate ref placed as qualifying singleton,Explicit mode/cardinality/owner checks reject,PROPOSED_NOT_EXECUTED
+P25,Hidden digest/count,No permission for other members; current manifest changes,"No raw count/hash/refs in errors,SSR,history or hydration",PROPOSED_NOT_EXECUTED
+P26,Post-exit history,Employment ended but Account and own-resource grant valid,Authorized historical result accessible; no work authority inherited,PROPOSED_NOT_EXECUTED
+P27,Pension basis,Source lacks explicit pension amount,Blocked before kernel; never None->gross,PROPOSED_NOT_EXECUTED
+P28,Rollback/purge,Legacy reader or0196 purge reaches native retained data,Refuse until compatible reader/safe retained-disposition contract,PROPOSED_NOT_EXECUTED
+P29,Fresh source revalidation,Selected IDs same but new matching source root appears,Guarded zero/one/many resolver reports ambiguity,PROPOSED_NOT_EXECUTED
+P30,Partial cycle decision,First of two required review decisions,"16/17 rule: decision commits, completion waits full R/C;18 batch is not approval",PROPOSED_NOT_EXECUTED

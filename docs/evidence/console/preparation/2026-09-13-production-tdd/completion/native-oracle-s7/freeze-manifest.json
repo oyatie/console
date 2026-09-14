@@ -1,0 +1,48 @@
+{
+  "parent_manifest_sha256": "7e9b50db134a0f45365e210f86190dacac1626a2373980c96e55b9ab4d66424d",
+  "supersedes_manifest_sha256": "47c6d6b3c33e647e4fb7840ca50aeae46798ea69c7907f5689a27c89ef715ecc",
+  "author": "/root/review_completeness",
+  "status": "SOURCE_CANDIDATE_REQUIRES_INDEPENDENT_REVIEW",
+  "files": [
+    {
+      "path": "binder-sequence.rs",
+      "bytes": 6561,
+      "sha256": "f037f11cef0cffd4f1a2c2aabf2dd0d8d1f2e4ee613ecb343158f0b97d22b2de"
+    },
+    {
+      "path": "caller-map.json",
+      "bytes": 836,
+      "sha256": "bbe087d9fd0d8de4e059e2011a9b1d64f1121e475b384683fba41f283907e163"
+    },
+    {
+      "path": "interface-refinement.txt",
+      "bytes": 4106,
+      "sha256": "661328fa6fe419e4efae808eb78b509ead0e0e764389307b0779cd1fcb9f7cee"
+    },
+    {
+      "path": "native-owner-tests.rs",
+      "bytes": 18389,
+      "sha256": "af5a8f7fc6c271ce224285a10fde6fcef414c57e9ba80e5d28d27d83ec19d213"
+    },
+    {
+      "path": "negative-assertions.rs",
+      "bytes": 1171,
+      "sha256": "c7fb20a83e8a51d4b261b601b510aaab10a3365ae55b63bff6fb461b7448334d"
+    },
+    {
+      "path": "source-owner-producer.rs",
+      "bytes": 10736,
+      "sha256": "109c120bda9e95d9f46a34969b7c2227e5b66c95b35214f6b59db1e37fa4d815"
+    },
+    {
+      "path": "source-owner-tests.rs",
+      "bytes": 17458,
+      "sha256": "13147153d86ec2685cec72a27dbedf1b82fd419d215d0e0410c623c6a09b11b6"
+    },
+    {
+      "path": "syntax-execution.json",
+      "bytes": 1603,
+      "sha256": "b02a2b027f4b9464572a6147417c66a1211083bd7387a72ca3f50d77aae3114d"
+    }
+  ]
+}

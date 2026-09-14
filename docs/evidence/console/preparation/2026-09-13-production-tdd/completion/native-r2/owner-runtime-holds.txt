@@ -1,0 +1,13 @@
+# Exact remaining actual-owner proof obligations
+
+These are required approved runtime cases, not executed tests or additional reference passes. They belong in the actual owner lane only after admission of the named clean-tree RED probe.
+
+For each of RunExpected.run_id, run_revision, input_revision, calculation_revision, close_basis and review_cycle_id: produce a real run and sealed command from current owner controls, mutate exactly that expected field in a separately bound original intent (preserving schema validity and recomputing its real fingerprint), and require the actual owner typed stale/mismatch/no-effect outcome with no effect/receipt duplication. For both nullable fields exercise null versus a real mismatched retained reference and real old versus current refs. Also advance each relevant actual owner head after sealing without replacing the sealed intent; execution must refuse stale custody. Read controls through authenticated owner reads; do not synthesize missing fields from RunResult.
+
+Authentication: actual ACCOUNT_V1 and service/worker issuers; missing/wrong/revoked sid, Account security generation, expired token, context_generation, serving generation and scope; revalidation after lock acquisition; worker cannot impersonate human; Group controls never use Company envelope/RLS.
+
+Native sequencing: actual draft-start/save/source preparation/continuation/seal receipts; changed continuation/head refusal; first BUILDING PENDING commit and real worker progression; same original-subject unknown handling; no next binder before actual terminal result; bounded complete review basis read; actual independent Human/credential/task review guards.
+
+Retention: paired aliases with identical pinner/purpose/obligation tuple deduplicate; two distinct obligations remain independently protected on the same physical stream; release one then add late hold; disposal must refuse until every distinct obligation/hold permits it.
+
+All55: actual identity/docs/source issuer and verification bootstrap, direct common controls, source24 specializations, Group registrations and per-owner durable receipt/retained-byte readback. This packet neither installs those fixtures nor claims all55 runtime execution.

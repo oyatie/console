@@ -1,0 +1,53 @@
+{
+  "manifest_sha256": "d4ae377d7af8dcac7356de07481a57d3ce01c501544a46572287a0c56fde49ce",
+  "files": [
+    {
+      "original": "interface-refinements.md",
+      "retained": "interface-refinements.txt",
+      "original_sha256": "04aa4f0b57ee56eb84c5adf2db05b5f5333fd55e2c0cda537b75328387d69dfb",
+      "retained_sha256": "04aa4f0b57ee56eb84c5adf2db05b5f5333fd55e2c0cda537b75328387d69dfb"
+    },
+    {
+      "original": "native-lock-custody-tests.rs",
+      "retained": "native-lock-custody-tests.rs",
+      "original_sha256": "e403a7fba260b93e2339500514c9af4221b7beec40de69244150fd20e1fc0200",
+      "retained_sha256": "e403a7fba260b93e2339500514c9af4221b7beec40de69244150fd20e1fc0200"
+    },
+    {
+      "original": "native-retention-tests.rs",
+      "retained": "native-retention-tests.rs",
+      "original_sha256": "7a9fcd10fa625169996169046d1eacc289ef9ce4c3bacdd883aa03122e873ed7",
+      "retained_sha256": "7a9fcd10fa625169996169046d1eacc289ef9ce4c3bacdd883aa03122e873ed7"
+    },
+    {
+      "original": "native-stream-budget-tests.rs",
+      "retained": "native-stream-budget-tests.rs",
+      "original_sha256": "f09718517bbe3690d4ab8073dd55ce792375a4a0bb15f2fd80703bba12feba52",
+      "retained_sha256": "f09718517bbe3690d4ab8073dd55ce792375a4a0bb15f2fd80703bba12feba52"
+    },
+    {
+      "original": "s3-parent-manifest.json",
+      "retained": "s3-parent-manifest.json",
+      "original_sha256": "7a5a2cbcc447ce271f852c3ff89eefc8cd1fd9262664a48c007c5c474ce73df2",
+      "retained_sha256": "7a5a2cbcc447ce271f852c3ff89eefc8cd1fd9262664a48c007c5c474ce73df2"
+    },
+    {
+      "original": "source-inventory.json",
+      "retained": "source-inventory.json",
+      "original_sha256": "97fb4f34c8332ae4f50f87e3f0f933adf566bb45ff01b2096f478c41d6ed2b53",
+      "retained_sha256": "97fb4f34c8332ae4f50f87e3f0f933adf566bb45ff01b2096f478c41d6ed2b53"
+    },
+    {
+      "original": "supplement-contract.md",
+      "retained": "supplement-contract.txt",
+      "original_sha256": "8e8d66a17d918522bf88fc73044ded23534d6e870e175ad236a74d78e2f0e959",
+      "retained_sha256": "8e8d66a17d918522bf88fc73044ded23534d6e870e175ad236a74d78e2f0e959"
+    },
+    {
+      "original": "syntax-execution.json",
+      "retained": "syntax-execution.json",
+      "original_sha256": "1afc35bf6e7f1075ab2c28f19c2191fbe334d1e692e0ad58c5ac341657b6ed05",
+      "retained_sha256": "1afc35bf6e7f1075ab2c28f19c2191fbe334d1e692e0ad58c5ac341657b6ed05"
+    }
+  ]
+}

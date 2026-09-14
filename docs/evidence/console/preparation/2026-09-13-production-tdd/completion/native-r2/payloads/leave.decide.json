@@ -1,0 +1,14 @@
+{
+  "kind": "leave.decide",
+  "body": {
+    "request_id": "d82c5562-830d-5d42-8bc2-890b2a9bb6d6",
+    "expected_request_revision": "1",
+    "charge_resolution": null,
+    "decision": "TIME_CHANGE_CONSULT",
+    "reason": "검토 근거를 확인했습니다.",
+    "consultation_proposal_dates": [
+      "2026-09-15"
+    ],
+    "supporting_evidence": []
+  }
+}

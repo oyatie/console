@@ -1,0 +1,15 @@
+{
+  "kind": "draft.expire",
+  "body": {
+    "draft_id": "1f9a8da5-3585-5ab8-b4a9-46560970445b",
+    "expected_control_revision": "1",
+    "retention_policy": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+      "instance_id": "ec796328-4e80-5003-8a5c-977449490de3",
+      "revision_id": "a1f866da-4ae9-5b04-92e4-6bdba70e3040",
+      "version": "1",
+      "row_hash": "bda7229c1c86f3dc16ea85b4adb106cb6a247038c3c99fd598eb173ebb3e8027"
+    }
+  }
+}

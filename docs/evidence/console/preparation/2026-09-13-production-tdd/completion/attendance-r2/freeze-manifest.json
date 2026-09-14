@@ -1,0 +1,36 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "supersedes": "920a4ed7d4c1d049d7430dccac5701dacfa9f1853293455c88cd0f55fe22de58",
+  "files": [
+    {
+      "path": "attendance-owner-producer.rs",
+      "bytes": 10573,
+      "sha256": "08121eb293b6e8c0d08881be2596243af258228bd0c12bb284974474b40fe83a"
+    },
+    {
+      "path": "attendance-owner-tests.rs",
+      "bytes": 9478,
+      "sha256": "b08212fa66c32270dc85d1af70a5c62c3c6333d4c07920d6d85539e08f93e62f"
+    },
+    {
+      "path": "execution.json",
+      "bytes": 466,
+      "sha256": "114f2771feea29d80ecdc7ca6fada6fcce61b3b0f6b3096221b2b918bc41b490"
+    },
+    {
+      "path": "leave-owner-tests.rs",
+      "bytes": 5460,
+      "sha256": "9ca8c024a8000d1607da2b8e6f36b49fa7eaf5e40aee96bd95ebea82f9a4091b"
+    },
+    {
+      "path": "owner-contract.txt",
+      "bytes": 5899,
+      "sha256": "29136ab6e96fbe87646597078994d69805f3fffc6cd13c8dbab0a9a9db2987be"
+    },
+    {
+      "path": "parent-manifest.json",
+      "bytes": 858,
+      "sha256": "920a4ed7d4c1d049d7430dccac5701dacfa9f1853293455c88cd0f55fe22de58"
+    }
+  ]
+}
