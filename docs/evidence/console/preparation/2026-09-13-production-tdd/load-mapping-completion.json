@@ -1,0 +1,12 @@
+{
+  "candidate_sha": "0f89f248812cbebd4e9be0997da7ed7812119ab6",
+  "reviewed_test_sha": "0dac266707787a8afa86cfbb9b0be3a2533dc42c",
+  "source_reviewer": "/root/fresh29_operations",
+  "same_named_probe": "PASS",
+  "raw_log_sha256": "174e698a5586a16d9160683be381f051911cf9022fd1e07bd7ed378aec69b318",
+  "rust_test_targets_enumerated": 377,
+  "firstparty_generated_files": 174,
+  "product_tests_executed_by_this_probe": 0,
+  "expensive_thirdparty_face": "DEFERRED in this cheap run; unchanged from earlier fullPASS; fullmergedcandidatechecks stillrequired",
+  "status": "BOUNDED_GENERATED_INPUT_REPAIR_COMPLETE; consolidatedpreparationstillopen"
+}

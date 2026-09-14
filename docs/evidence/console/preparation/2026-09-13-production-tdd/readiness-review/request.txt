@@ -1,0 +1,149 @@
+Adversarily challenge and verify these independent review findings on what needs to happen before implementation.
+Review:
+  Before implementation starts, you need a whole-Console roadmap and an executable, independently reviewed package for the first slice. Every later feature does not need a finished specification, but its existence,
+    dependencies, and architectural implications must be accounted for.
+
+    This is the complete readiness checklist I would use—not a claim that the current repository already satisfies it.
+
+    ### 1. Whole-Console capability and dependency map
+
+    Record the entire intended product:
+
+    - Foundry-equivalent capabilities, explicitly mapping Ontology, Actions, Fusion, and the broader suite.
+    - HR, attendance, labor, payroll, and employment lifecycle workflows.
+    - Shared approvals, work assignment and handoff, messenger, mail, calendar, storage, and collaborative spreadsheets.
+    - Applicant, former employee, partner, and external sharing experiences.
+    - Platform administration, integrations, security, and operations.
+
+    Each capability needs its dependencies, delivery phase, acceptance outcome, and status. Deferred capabilities remain visible. This must align with the authoritative product, roadmap, and delivery documents.
+
+    ### 2. Shared architectural contracts
+
+    Settle the foundations that early implementation would otherwise accidentally define:
+
+    - Persistent account identity, tenancy, and within-tenant company/group/site/department scopes.
+    - Entity identity, typed properties, relationships, schema evolution, and provenance.
+    - Draft identity, change history, replay, snapshots, and finalization.
+    - Actions, validation, approvals, idempotency, audit, and external side effects.
+    - Work ownership, delegation, reassignment, and continuity.
+    - Resource-, field-, and action-level authorization with Cedar.
+
+    Distinguish committed contracts, replaceable implementation choices, and unresolved decisions. Avoid freezing every storage or concurrency choice prematurely.
+
+    ### 3. UI and interaction architecture
+
+    Define enough of the Leptos SSR experience to prevent disconnected modules:
+
+    - Navigation that scales across the whole Console.
+    - Reusable entity views and consistent action entry points.
+    - Dedicated communication surfaces connected to business objects.
+    - Policy-derived visibility and server-enforced actions.
+    - Input, validation, submission, approval, tracking, and recovery flows.
+    - Accessibility, keyboard use, loading, empty, error, and stale-data states.
+    - Essential information surfaced where decisions happen.
+
+    Specify the SSR/hydration boundary and what genuinely requires live collaboration.
+
+    ### 4. First complete workflow specification
+
+    Choose a bounded slice with explicit entry and completion conditions.
+
+    Describe its actual users, inputs, screens, state transitions, rules, outputs, and downstream effects. Include exceptions, cancellation, correction, retries, manual intervention, and handoff.
+
+    For HR/payroll, distinguish verified legal requirements from assumptions and identify rules requiring authoritative confirmation.
+
+    ### 5. Security and information-flow model
+
+    Define and review:
+
+    - Cross-tenant isolation and separately governed intra-tenant access.
+    - Field redaction, entity links, search results, notifications, exports, and caches.
+    - SSR responses, hydration data, subscriptions, logs, telemetry, and outbound integrations.
+    - Permission revocation during an active session or pending action.
+    - Narrow, time-bound external sharing and its audit trail.
+
+    Identify which properties receive executable tests, Verus proofs, or operational controls—and the limits of each guarantee.
+
+    ### 6. Workload and concurrency plan
+
+    Use the one-tenant, six-company, 2,000-person pilot as the initial operating baseline. Record assumptions for active users, concurrent editors, data volume, and workload mix.
+
+    Also define:
+
+    - Hot-object and hot-cell contention scenarios.
+    - Conflict semantics, ordering, fairness, cancellation, and retry behavior.
+    - Latency, throughput, queue, and resource limits.
+    - Experiments comparing plausible mechanisms rather than assuming locks or MVCC.
+    - What must change at 50,000 and 1,000,000 employees.
+
+    Those larger scales need an explicit evaluation path; they do not need production certification before the first slice.
+
+    ### 7. Operations and recovery contracts
+
+    For the first slice, specify deployment ownership, topology assumptions, migrations, backup/restore, failure detection, recovery objectives, reconciliation, and rollback.
+
+    Make commit ambiguity, duplicate delivery, partial failure, and external side-effect recovery explicit. Schedule larger operational exercises before the exposure they protect.
+
+    ### 8. Executable production-standard TDD package
+
+    Acceptance criteria must map to runnable tests with trustworthy fixtures and oracles.
+
+    Cover the slice’s relevant domain rules, authorization, persistence, concurrency, recovery, and browser behavior. Record:
+
+    - Exact commands and discovered/executed counts.
+    - Why each expected failure occurs.
+    - Behavior blocked behind earlier failures.
+    - Coverage gaps and proof boundaries.
+
+    A suite failing entirely at a missing schema does not yet demonstrate that its deeper assertions are meaningful.
+
+    ### 9. Reproducible implementation environment
+
+    Verify the toolchain and dependency compatibility, build commands, database setup, CI requirements, and Leptos SSR test path.
+
+    Confirm any proposed version pin actually exists and works. Resolve prerequisite build failures so implementation failures are distinguishable from infrastructure failures.
+
+    ### 10. Consolidated independent review
+
+    Review the same exact candidate across architecture, UX, security, domain correctness, concurrency, recovery, and test quality.
+
+    Resolve blocking findings. Record evidence and rationale for accepted findings, outstanding HOLDs, and deferred work. Reconcile design, tests, roadmap, and implementation instructions after revisions.
+
+    ### 11. Concrete implementation handoff
+
+    The final package needs:
+
+    - Exact scope, base SHA, ownership, and mechanical implementation guide.
+    - An executable red probe on the clean tree.
+    - The same probe as the success condition.
+    - Pre-mortem, blast radius, detection, rollback, and stop conditions.
+    - Review identities and explicit remaining HOLDs.
+    - Admission through the repository’s prescribed lane tooling.
+
+    Once these are satisfied for the first slice, implementation should start. Whole-Console planning establishes coverage and direction; each subsequent slice repeats the detailed design, test, and review gate.
+    Production launch remains a separate evidence-based decision.
+1. Give every requirement a gate. Explicitly classify it as required before implementation, before slice acceptance, or before production exposure. Later capabilities need architectural consideration now; their
+     complete tests, operational exercises, and deployment certification generally belong later.
+
+  2. Clarify what “executable TDD package” means before implementation. Author and independently review the slice’s acceptance tests, fixtures, and oracles. Execute what existing interfaces permit and identify
+     genuine prerequisite failures. Deeper tests may remain blocked until their owners exist. Each implementation lane needs a meaningful RED at its actual boundary; a schema failure cannot admit unrelated
+     authorization implementation. Never introduce fake implementations merely to manufacture RED.
+
+  3. Add architectural dependency checks, not just a capability inventory. For each deferred capability, identify what the first slice must preserve: identity, ownership, policy context, versioning, event contracts,
+     or data addressing. Explain whether later adoption is additive or requires migration. Otherwise, a comprehensive roadmap can still conceal an architecture that makes later features prohibitively expensive.
+
+  4. Make authority over policy itself explicit. Resource, field, and action authorization is incomplete without rules for creating grants, changing policies, delegating authority, administering schemas, and using
+     operational access. Cover privilege escalation, stale decisions, revocation, and attribution. Job titles and organizational hierarchy must not silently become authorization authority.
+
+  5. Expand migration and lifecycle coverage. Include existing-data conversion, mixed-version readers and writers, resumable backfills, compatibility windows, and irreversible transition points. Distinguish rolling
+     back software from restoring data. Persistent login identity must also coexist with retention, deletion, legal holds, and historical attribution.
+
+  6. Separate correctness invariants from measured budgets. Isolation, attribution, and duplicate-effect prevention must hold under contention and overload. Latency and throughput have measured operating envelopes.
+     For larger scales, specify the experiments and results that would trigger architectural changes; do not presume those changes are necessary based on employee count alone.
+
+  7. Add observable usability acceptance. Listing screens and states does not demonstrate an intuitive experience. Specify representative tasks and assess whether users can discover the action, understand its
+     consequences, complete it, and recover without undocumented knowledge. Measure task success, errors, assistance required, and whether essential decision information was actually presented. Numerical targets can
+     remain explicit hypotheses until evaluated.
+
+  8. Require independent review of the evidence-generating machinery. Review fixtures, positive controls, failure injection, history completeness, and oracles—not only application tests. A checker that accepts a
+     missing effect or omitted request invalidates the conclusions built on it.
