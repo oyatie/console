@@ -19,6 +19,7 @@ metadata:
   labels: { app: console-migrate }
   annotations:
     argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/sync-wave: "-20"
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
 spec:
   # Bounded retries; each migration run is idempotent so a retry is safe.

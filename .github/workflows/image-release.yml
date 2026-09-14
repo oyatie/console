@@ -934,7 +934,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     services:
       postgres:
-        image: postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20
+        image: postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280
         env:
           POSTGRES_DB: console_release_probe
           POSTGRES_USER: postgres
@@ -1006,7 +1006,7 @@ jobs:
             -e CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
             -e CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
             -e CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
-            --entrypoint bash postgres:18.4@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20 \
+            --entrypoint bash postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 \
             /usr/local/bin/postgres-reconcile-topology
           {
             echo "PROBE_OWNER_DATABASE_URL=postgres://console_app:${APP_PASSWORD}@127.0.0.1:5432/console_release_probe"
@@ -1032,6 +1032,45 @@ jobs:
             echo "CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD=${ONTOLOGY_COMMAND_PASSWORD}"
             echo "CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD=${PLATFORM_FORCE_COMMAND_PASSWORD}"
           } > "$RUNNER_TEMP/probe-topology.env"
+
+      - name: Prepare local operator TLS, independent inventory and image
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p "$RUNNER_TEMP/custody-probe"
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=localhost \
+            -addext basicConstraints=critical,CA:FALSE \
+            -addext subjectAltName=DNS:localhost,IP:127.0.0.1 \
+            -addext extendedKeyUsage=serverAuth \
+            -keyout "$RUNNER_TEMP/custody-probe/server.key" \
+            -out "$RUNNER_TEMP/custody-probe/server.crt"
+          docker cp "$RUNNER_TEMP/custody-probe/server.key" "${POSTGRES_CONTAINER}:/tmp/custody-server.key"
+          docker cp "$RUNNER_TEMP/custody-probe/server.crt" "${POSTGRES_CONTAINER}:/tmp/custody-server.crt"
+          docker exec "$POSTGRES_CONTAINER" chown postgres:postgres /tmp/custody-server.key /tmp/custody-server.crt
+          docker exec "$POSTGRES_CONTAINER" chmod 600 /tmp/custody-server.key
+          docker exec "$POSTGRES_CONTAINER" psql -X -v ON_ERROR_STOP=1 -U postgres -d console_release_probe \
+            -c "ALTER SYSTEM SET ssl_cert_file = '/tmp/custody-server.crt'" \
+            -c "ALTER SYSTEM SET ssl_key_file = '/tmp/custody-server.key'" \
+            -c "ALTER SYSTEM SET ssl = on" -c "SELECT pg_reload_conf()"
+          # Independent provisioning channel: exact service container/local
+          # socket, captured before migrations and never replaced at finalization.
+          SYSTEM_ID="$(docker exec "$POSTGRES_CONTAINER" psql -X -At -U postgres -d console_release_probe -c 'SELECT system_identifier FROM pg_catalog.pg_control_system()')"
+          DATABASE_OID="$(docker exec "$POSTGRES_CONTAINER" psql -X -At -U postgres -d console_release_probe -c "SELECT oid FROM pg_catalog.pg_database WHERE datname=current_database()")"
+          {
+            echo POSTGRES_HOST=127.0.0.1
+            echo POSTGRES_PORT=5432
+            echo POSTGRES_DB=console_release_probe
+            echo POSTGRES_ADMIN_USER=postgres
+            echo ACCOUNT_CUSTODY_EXPECTED_OPERATOR=postgres
+            echo "ACCOUNT_CUSTODY_EXPECTED_SYSTEM_IDENTIFIER=$SYSTEM_ID"
+            echo ACCOUNT_CUSTODY_EXPECTED_DATABASE=console_release_probe
+            echo "ACCOUNT_CUSTODY_EXPECTED_DATABASE_OID=$DATABASE_OID"
+            echo ACCOUNT_CUSTODY_EXPECTED_TLS_HOST=127.0.0.1
+          } > "$RUNNER_TEMP/custody-probe/target.env"
+          printf '%s' postgres > "$RUNNER_TEMP/custody-probe/password"
+          docker build -f ops/account-custody.Dockerfile -t console-account-custody:release-probe .
 
       - name: Run migrations against the probe database as console_app
         run: |
@@ -1060,6 +1099,23 @@ jobs:
           docker cp "$RUNNER_TEMP/probe-topology.env" "${POSTGRES_CONTAINER}:/topology.env"
           bash backend/ci/gates/writer-ownership/canonical-enforce.sh \
             "$GITHUB_WORKSPACE" "$POSTGRES_CONTAINER" canonical_probe_release
+
+      - name: Finalize Account custody on the actual serving probe database
+        env:
+          ACCOUNT_CUSTODY_OPERATOR_IMAGE: console-account-custody:release-probe
+          ACCOUNT_CUSTODY_DESCRIPTOR_FILE: ${{ runner.temp }}/custody-probe/target.env
+          ACCOUNT_CUSTODY_PASSWORD_FILE: ${{ runner.temp }}/custody-probe/password
+          ACCOUNT_CUSTODY_CA_FILE: ${{ runner.temp }}/custody-probe/server.crt
+          PROBE_DATABASE: console_release_probe
+        run: |
+          docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --network host \
+            --env-file "${ACCOUNT_CUSTODY_DESCRIPTOR_FILE}" \
+            --env "POSTGRES_DB=${PROBE_DATABASE}" \
+            --env POSTGRES_ADMIN_PASSWORD_FILE=/run/account-finalize/password \
+            --env PGSSLROOTCERT=/run/account-finalize/ca \
+            --volume "${ACCOUNT_CUSTODY_PASSWORD_FILE}:/run/account-finalize/password:ro" \
+            --volume "${ACCOUNT_CUSTODY_CA_FILE}:/run/account-finalize/ca:ro" \
+            "${ACCOUNT_CUSTODY_OPERATOR_IMAGE}"
 
       - name: Boot the release image (the real published image — no dev-auth flag exists to pass)
         run: |

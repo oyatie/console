@@ -43,6 +43,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseSingleBuckOutput, resolveRepoBuckOutput } from "./lib/dev-up-buck-output.mjs";
+import { prepareLocalCustody, retainLocalCustodyInventory } from "./lib/dev-account-custody.mjs";
 import {
   parseWindowsProcessIdentity,
   processIdentityMatches,
@@ -476,6 +477,8 @@ async function bringUpDeps() {
     throw new Error(`no container runtime found. ${platformRemediation()}`);
   }
 
+  prepareLocalCustody(path.join(SECRETS_DIR, "account-custody"), runtimeBin(compose), POSTGRES_ADMIN_PASSWORD);
+
   const composeEnv = {
     ...process.env,
     CONSOLE_POSTGRES_PORT: String(PORTS.postgres),
@@ -511,6 +514,9 @@ async function bringUpDeps() {
 
   log("waiting for deps to report healthy...");
   await waitForContainersHealthy(compose, DEPS_SERVICES, 180_000, composeEnv);
+
+  const operatorBuild = runCompose(compose, ["build", "account-finalize"], { cwd: REPO_ROOT, env: composeEnv, stdio: "inherit" });
+  if (operatorBuild.error || operatorBuild.status !== 0) throw new Error("Account custody operator image build failed");
 
   log("ensuring SeaweedFS evidence buckets exist...");
   await ensureBucket(PORTS.s3, "mnt-evidence");
@@ -568,9 +574,7 @@ function runMigrations(appBinary) {
 
 function reconcileDatabaseTopology(compose) {
   log("reconciling and verifying the seven-role database topology...");
-  const result = runCompose(compose, ["run", "--rm", "postgres-topology"], {
-    cwd: REPO_ROOT,
-    env: {
+  const composeEnv = {
       ...process.env,
       // Keep the topology one-shot on the same Compose model used to start
       // Postgres. Falling back to compose.dev.yml's 5432 default makes Compose
@@ -585,10 +589,38 @@ function reconcileDatabaseTopology(compose) {
       CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
       CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:
         PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD,
+  };
+  const result = runCompose(compose, ["run", "--rm", "postgres-topology"], { cwd: REPO_ROOT, env: composeEnv, stdio: "inherit" });
+  if (result.status !== 0) throw new Error("database topology reconciliation failed");
+  if (process.env.ACCOUNT_CUSTODY_TARGET_ENV_FILE === path.join(SECRETS_DIR, "account-custody", "target.env")) {
+    const identity = runCompose(compose, ["exec", "-T", "postgres", "psql", "-X", "-w", "-At",
+      "-U", POSTGRES_ADMIN_USER, "-d", POSTGRES_DB, "-v", "ON_ERROR_STOP=1", "-c",
+      "SELECT system_identifier::text || '|' || (SELECT oid::text FROM pg_catalog.pg_database WHERE datname=current_database()) FROM pg_catalog.pg_control_system()"],
+    { cwd: REPO_ROOT, env: composeEnv, encoding: "utf8", timeout: 30_000 });
+    if (identity.error || identity.status !== 0) throw new Error("local Account custody inventory capture failed");
+    retainLocalCustodyInventory(process.env.ACCOUNT_CUSTODY_TARGET_ENV_FILE, identity.stdout, POSTGRES_ADMIN_USER, POSTGRES_DB);
+  }
+}
+
+function finalizeDatabaseCustody(compose) {
+  log("finalizing Account custody with the independent operator inventory...");
+  const result = runCompose(compose, ["run", "--rm", "--no-deps", "account-finalize"], {
+    cwd: REPO_ROOT,
+    env: {
+      ...process.env,
+      CONSOLE_POSTGRES_PORT: String(PORTS.postgres),
+      CONSOLE_POSTGRES_DB: POSTGRES_DB,
+      CONSOLE_POSTGRES_ADMIN_USER: POSTGRES_ADMIN_USER,
+      CONSOLE_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
+      CONSOLE_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
+      CONSOLE_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
+      CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
+      CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
+      CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD: PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD,
     },
     stdio: "inherit",
   });
-  if (result.status !== 0) throw new Error("database topology reconciliation failed");
+  if (result.error || result.status !== 0) throw new Error("Account custody finalization failed");
 }
 
 // Load the KNL tenant dev fixtures (scripts/dev-seed.sql) so every console
@@ -626,8 +658,12 @@ function runSeed(compose) {
 // published localhost ports for a host-launched process.
 function buildAppEnv(role) {
   const { privateKeyPem, publicKeyPem } = ensureDevKeys();
+  // Operator transport belongs to the parent orchestrator, never its serving
+  // or migration child. Clear libpq's alternate credential/target channels too.
+  const parentEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
+    !/^(?:ACCOUNT_CUSTODY_|CONSOLE_POSTGRES_ADMIN_|CONSOLE_APP_POSTGRES_PASSWORD$|POSTGRES_|PG)/.test(key)));
   return {
-    ...process.env,
+    ...parentEnv,
     CONSOLE_APP_ROLE: role,
     DATABASE_URL: role === "migrate" ? databaseUrl() : runtimeDatabaseUrl(),
     LEAVE_COMMAND_DATABASE_URL: commandDatabaseUrl(
@@ -726,6 +762,7 @@ async function cmdUp() {
   reconcileDatabaseTopology(compose);
   const appBinary = buildAppBinary(false);
   runMigrations(appBinary);
+  finalizeDatabaseCustody(compose);
   runSeed(compose);
   const appEnv = buildAppEnv("api");
   log(`launching ${appBinary.target}...`);
@@ -756,6 +793,7 @@ async function cmdBootstrap() {
   reconcileDatabaseTopology(compose);
   const appBinary = buildAppBinary(devAuth);
   runMigrations(appBinary);
+  finalizeDatabaseCustody(compose);
   // Seed ONLY the dev-auth stack. dev-seed.sql pre-seeds a `dev-auth:*` persona
   // (so `POST /dev-auth/session` upserts the SAME row), which a DEFAULT-feature
   // build refuses to boot against — `assert_no_dev_auth_personas` treats such a

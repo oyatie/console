@@ -305,6 +305,13 @@ test("quickstart supplies all six distinct login passwords and Compose accepts i
     return;
   }
   const [bin, prefix] = compose;
+  // Configuration parsing requires the operator's separately provisioned
+  // transport files. This fixture does not claim TLS or SQL execution.
+  const custody = mkdtempSync(path.join(tmpdir(), "console-compose-custody-"));
+  t.after(() => rmSync(custody, { recursive: true, force: true }));
+  writeFileSync(path.join(custody, "target.env"), "", { mode: 0o600 });
+  writeFileSync(path.join(custody, "password"), "synthetic", { mode: 0o600 });
+  writeFileSync(path.join(custody, "ca.crt"), "synthetic", { mode: 0o600 });
   const result = spawnSync(
     bin,
     [...prefix, "-f", "ops/compose.yml", "config", "--quiet"],
@@ -312,6 +319,10 @@ test("quickstart supplies all six distinct login passwords and Compose accepts i
       cwd: new URL("..", import.meta.url),
       env: {
         ...process.env,
+        ACCOUNT_CUSTODY_TARGET_ENV_FILE: path.join(custody, "target.env"),
+        ACCOUNT_CUSTODY_PASSWORD_FILE: path.join(custody, "password"),
+        ACCOUNT_CUSTODY_CA_FILE: path.join(custody, "ca.crt"),
+        ACCOUNT_CUSTODY_PG_TLS_DIR: custody,
         CONSOLE_POSTGRES_ADMIN_PASSWORD: "admin-quickstart",
         CONSOLE_APP_POSTGRES_PASSWORD: "app-quickstart",
         CONSOLE_RT_POSTGRES_PASSWORD: "runtime-quickstart",

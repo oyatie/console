@@ -4,7 +4,9 @@ namespace: console
 resources:
   - namespace.yaml
   - configmap.yaml
+  - migration-networkpolicy.yaml
   - migrate-job.yaml
+  - account-finalize-job.yaml
   - backend.yaml
   - web.yaml
   - worker.yaml
