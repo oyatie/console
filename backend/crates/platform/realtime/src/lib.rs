@@ -882,6 +882,7 @@ impl PgRealtimeHub {
                 let connections = self.connections.lock().await;
                 connections
                     .values()
+                    .filter(|slot| slot.principal.org_id == org)
                     .filter(|slot| slot.principal.branch_scope.allows(branch_id))
                     .map(|slot| slot.principal.user_id)
                     .collect::<Vec<_>>()
@@ -896,6 +897,7 @@ impl PgRealtimeHub {
             let connections = self.connections.lock().await;
             connections
                 .iter()
+                .filter(|(_, slot)| slot.principal.org_id == org)
                 .filter(|(_, slot)| slot.principal.branch_scope.allows(branch_id))
                 .filter(|(_, slot)| {
                     candidate_users
