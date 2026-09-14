@@ -575,7 +575,13 @@ fn error_response_for(err: &RequestContextError) -> Response {
         RequestContextError::WrongTokenTier => StatusCode::FORBIDDEN,
         _ => StatusCode::UNAUTHORIZED,
     };
-    error_response(status, &err.to_string())
+    let message = match err {
+        RequestContextError::BranchScope(_) => "failed to resolve branch scope",
+        RequestContextError::EffectivePolicy(_) => "failed to resolve effective policy",
+        RequestContextError::AccessScope(_) => "access scope is not valid for this route",
+        _ => return error_response(status, &err.to_string()),
+    };
+    error_response(status, message)
 }
 
 // ---------------------------------------------------------------------------
