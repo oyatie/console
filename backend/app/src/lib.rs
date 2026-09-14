@@ -163,6 +163,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 use url::Url;
 
 pub mod action_inbox;
+mod account_custody;
 mod audit_chain_signer;
 pub mod cedar_parity;
 mod collaboration;
@@ -1583,6 +1584,7 @@ impl AppState {
                     .await
                     .map_err(AppError::Database)?;
                 validate_database_pool_identity(&pool, "DATABASE_URL", "console_rt").await?;
+                account_custody::verify(&pool).await?;
                 DatabaseDependency::Postgres(pool)
             }
             None => DatabaseDependency::NotConfigured,
@@ -3796,7 +3798,12 @@ async fn readyz(State(state): State<AppState>) -> impl IntoResponse {
     )
     .await;
 
+    let custody_ready = match &state.database {
+        DatabaseDependency::Postgres(pool) => account_custody::verify(pool).await.is_ok(),
+        DatabaseDependency::NotConfigured => true,
+    };
     let ready = database.healthy()
+        && custody_ready
         && (!command_databases_required
             || (leave_command_database.configured
                 && leave_command_database.ready

@@ -29,7 +29,7 @@ DECLARE
     target_owner text;
     populated boolean;
 BEGIN
-    PERFORM pg_catalog.set_config('search_path','pg_catalog',true);
+    PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
     PERFORM pg_catalog.set_config('lock_timeout','5s',true);
     IF session_user<>current_user
        OR NOT (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=session_user)

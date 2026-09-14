@@ -9,7 +9,7 @@ DECLARE
     target_owner text;
     populated boolean;
 BEGIN
-    PERFORM pg_catalog.set_config('search_path','pg_catalog',true);
+    PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
     PERFORM pg_catalog.set_config('lock_timeout','5s',true);
     IF session_user<>current_user
        OR NOT (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=session_user)
@@ -20,7 +20,7 @@ BEGIN
         RAISE EXCEPTION USING MESSAGE='account_custody.operator_identity_mismatch', ERRCODE='P0001';
     END IF;
     state := (
--- Read-only six-table v1 metadata verdict. Caller must use search_path=pg_catalog.
+-- Read-only six-table v1 metadata verdict. Caller must use search_path=pg_catalog,pg_temp.
 -- Expected fingerprints are fixed from reviewed0226, never from this target.
 WITH expected(name, owner_name, shape_sha256) AS (VALUES
  ('accounts','console_account_owner','bf8b3a765aca8473b0bdcb977a3c2adbb2c1fe0dd775cc151faae1271427d3f9'),
@@ -94,7 +94,7 @@ END
     LOCK TABLE public.accounts, public.account_security, public.account_security_events, public.account_terms_acceptances, public.account_terms_head, public.account_terms_release_receipts IN ACCESS EXCLUSIVE MODE;
     -- Recheck under relation locks: pre-lock metadata is not transfer authority.
     state := (
--- Read-only six-table v1 metadata verdict. Caller must use search_path=pg_catalog.
+-- Read-only six-table v1 metadata verdict. Caller must use search_path=pg_catalog,pg_temp.
 -- Expected fingerprints are fixed from reviewed0226, never from this target.
 WITH expected(name, owner_name, shape_sha256) AS (VALUES
  ('accounts','console_account_owner','bf8b3a765aca8473b0bdcb977a3c2adbb2c1fe0dd775cc151faae1271427d3f9'),
@@ -179,7 +179,7 @@ END
         EXECUTE format('ALTER TABLE public.%I OWNER TO %I',relation_name,target_owner);
     END LOOP;
     state := (
--- Read-only six-table v1 metadata verdict. Caller must use search_path=pg_catalog.
+-- Read-only six-table v1 metadata verdict. Caller must use search_path=pg_catalog,pg_temp.
 -- Expected fingerprints are fixed from reviewed0226, never from this target.
 WITH expected(name, owner_name, shape_sha256) AS (VALUES
  ('accounts','console_account_owner','bf8b3a765aca8473b0bdcb977a3c2adbb2c1fe0dd775cc151faae1271427d3f9'),
