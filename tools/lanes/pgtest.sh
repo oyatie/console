@@ -13,7 +13,7 @@ repo_root="${1:?repo root}"; shift
 # shellcheck source=no-credential-in-argv.sh
 source "$(dirname "${BASH_SOURCE[0]}")/no-credential-in-argv.sh" "$@"
 
-image="postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56"
+image="postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280"
 name="console-conformance-$$"
 db="console_conformance_$$"
 

@@ -57,7 +57,7 @@ esac
 
 [[ -f "${map_path}" ]] || { echo "cargo-postgres: map missing: ${map_path}" >&2; exit 1; }
 
-postgres_image="postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56"
+postgres_image="postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280"
 container_name="console-cargo-postgres-${USER:-user}-$$"
 database="console_cargo_test_$$_contract"
 container_env_file=""
