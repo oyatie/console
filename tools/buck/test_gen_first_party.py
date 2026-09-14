@@ -440,7 +440,7 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             source_text,
             re.MULTILINE,
         )
-        self.assertEqual(164, len(ordinary_tests))
+        self.assertEqual(166, len(ordinary_tests))
         self.assertEqual(len(ordinary_tests), len(ordinary_gates))
         self.assertEqual(23, len(sqlx_tests))
         self.assertEqual(len(sqlx_tests), len(sqlx_gates))
@@ -609,7 +609,7 @@ class TestResourceClassification(unittest.TestCase):
                 labels = GENERATOR.test_labels(
                     package_path,
                     test_type,
-                    GENERATOR.requires_postgres(package_name, test_type, test_file),
+                    GENERATOR.resource_requirement(package_name, test_type, test_file),
                 )
                 self.assertEqual(1, len(set(labels) & GENERATOR.TEST_TYPE_LABELS))
                 self.assertEqual(1, len(set(labels) & GENERATOR.RESOURCE_LABELS))

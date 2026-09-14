@@ -313,7 +313,7 @@ struct ErrorPayload {
 
 // Append to backend/app/src/console_telemetry.rs. Tests actual From<...> logging.
 // Synthetic error payloads establish only the public trace formatter boundary.
-#[cfg(test)]
+#[cfg(all(test, not(feature = "test-postgres")))]
 mod security_diagnostic_sink_tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
     use super::*;
@@ -381,6 +381,7 @@ mod security_diagnostic_sink_tests {
             "equal public failures must have equal logical event schedule/content"
         );
     }
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn database_error_conversion_keeps_private_protocol_diagnostics_out_of_public_trace() {
         let a = captured(|| {
@@ -393,6 +394,7 @@ mod security_diagnostic_sink_tests {
         });
         assert_safe_pair(&a, &b, "console route telemetry database error");
     }
+    #[cfg(not(feature = "test-postgres"))]
     #[test]
     fn request_context_error_conversion_keeps_private_policy_diagnostics_out_of_public_trace() {
         let a = captured(|| {

@@ -54,6 +54,28 @@ rust_test(
 )
 
 rust_test(
+    name = "console-platform-authz-itest-cedar_diagnostic_fail_closed",
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", ["tests/cedar_diagnostic_fail_closed.rs"] + glob(["tests/fixtures/**"])),
+    crate = "cedar_diagnostic_fail_closed",
+    edition = "2024",
+    crate_root = "backend/crates/platform/authz/tests/cedar_diagnostic_fail_closed.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/authz"},
+    labels = ["owner.backend.crates.platform.authz", "domain.platform", "test.integration", "resource.none"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//third-party/rust:cedar-policy",
+        "//third-party/rust:hex",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:sha2",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:uuid",
+        ":console-platform-authz",
+    ],
+)
+
+rust_test(
     name = "console-platform-authz-itest-cedar_pbac_legacy_only_observe_and_record",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", ["tests/cedar_pbac_legacy_only_observe_and_record.rs"] + glob(["tests/fixtures/**"])),
     crate = "cedar_pbac_legacy_only_observe_and_record",

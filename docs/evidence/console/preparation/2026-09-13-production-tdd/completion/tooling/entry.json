@@ -1,0 +1,67 @@
+{
+  "owner": "/root",
+  "scratch_author": "/root/readiness_final_verifier",
+  "independent_reviewer": "/root/preparation_recovery",
+  "base_sha": "e44e0448abee62ea7d296ffca4ace3b3dbfbdb85",
+  "immutable_target": "Same nine-method admission probe GREEN with topology-safe CI wiring and no product behavior/test weakening",
+  "guide": "../wiring-guide.txt",
+  "test_sha256": "ad665d1de72bb801e509305f869a5d9ecb8a0ff23b73da556e215913fe855487",
+  "admission_command": "python3 tools/lanes/fanout.py admit --probe 'PYTHONDONTWRITEBYTECODE=1 python3 tools/buck/test_preparation_wiring.py -v'",
+  "admission_exit": 0,
+  "clean_base_confirmed": true,
+  "red": "9methods2positive-mutationmethodsPASS;7repositorymethodsRED,8failure-records3error-records. Missing metadata/wiring and unsafe queue routing, not product failures.",
+  "success_probe": "PYTHONDONTWRITEBYTECODE=1 python3 tools/buck/test_preparation_wiring.py -v",
+  "allow": [
+    ".github/workflows/ci.yml",
+    "backend/app/BUCK",
+    "backend/crates/payroll/adapter-postgres/BUCK",
+    "backend/crates/platform/authz/BUCK",
+    "docs/program/executed-tests-baseline.json",
+    "scripts/check-ci-preflight.mjs",
+    "scripts/check-ci-preflight.test.mjs",
+    "scripts/check-executed-tests.mjs",
+    "scripts/console/run-verification-queue.mjs",
+    "scripts/console/run-verification-queue.test.mjs",
+    "scripts/lib/recovery-test-invocations.mjs",
+    "scripts/lib/recovery-test-invocations.test.mjs",
+    "tools/buck/BUCK",
+    "tools/buck/gen_first_party.py",
+    "tools/buck/test_gen_first_party.py",
+    "tools/ci/postgres-cargo-map.json",
+    "tools/lanes/recovery/commit_relay.py",
+    "tools/lanes/recovery/recovery_control.sh",
+    "tools/lanes/recovery/recovery_postgres.sh",
+    "tools/lanes/recovery/supervise_recovery.py",
+    "tools/lanes/recovery/test_commit_relay.py",
+    "tools/lanes/recovery/test_supervise_recovery.py"
+  ],
+  "forbidden": [
+    "domain serving implementation",
+    "migrations",
+    "lockfiles",
+    "current authority",
+    "rejected Account FK correction"
+  ],
+  "premortem": [
+    "Recovery accidentally sent to one-node/hardware-free runner",
+    "Tests compiled/listed but never executed",
+    "First failure hides second required scenario",
+    "Cold runner lacks pinned image",
+    "Nested auth source not materialized"
+  ],
+  "detection": "Exact argv/setup/fail-slow mutation checks, generator, maps, parser, runtime harness tests, actual classified owner runs",
+  "blast_radius": "Isolated worktree CI/build/test topology only",
+  "rollback": "Ordinary targeted revert of tooling commit; retain historical evidence and tests. No reset/stash/main writes.",
+  "stop_conditions": [
+    "No altered approved probe semantics",
+    "No new dark-test exemption",
+    "No unrelated generated diff",
+    "No infrastructure failure called product RED"
+  ],
+  "remaining_holds": [
+    "Final independent integrated source review",
+    "Consolidated new product test approval",
+    "Product implementation and production exposure remain separate"
+  ],
+  "related_test_correction": "../telemetry-resource-correction.json"
+}

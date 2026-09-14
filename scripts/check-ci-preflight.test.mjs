@@ -465,6 +465,12 @@ describe("CI preflight contract", () => {
     assert.equal(classifyChangedPaths(["ops/postgres-reconcile-topology.sh"]).runLivePostgres, true);
     assert.equal(classifyChangedPaths(["ops/postgres-topology.integration.test.sh"]).runLivePostgres, true);
     assert.equal(classifyChangedPaths(["backend/crates/platform/db/src/lib.rs"]).runLivePostgres, true);
+    for (const path of [
+      "tools/lanes/recovery/commit_relay.py",
+      "tools/lanes/recovery/supervise_recovery.py",
+      "tools/lanes/recovery/test_supervise_recovery.py",
+      "backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+    ]) assert.equal(classifyChangedPaths([path]).runLivePostgres, true, path);
     assert.equal(
       classifyChangedPaths(["backend/crates/platform/realtime/tests/postgres_bridge.rs"]).runLivePostgres,
       true,
@@ -928,7 +934,7 @@ describe("CI preflight contract", () => {
 
   it("rejects every run-step condition, soft-failure, and retained-text early-exit bypass", () => {
     const requiredRunStepCounts = {
-      preflight: 33,
+      preflight: 34,
       "domain-unit": 2,
       // -1: the expand/contract rehearsal moved to its own job.
       backend: 26,
@@ -942,10 +948,8 @@ describe("CI preflight contract", () => {
       "postgres-reachability-platform": 3,
       "postgres-reachability-ontology": 3,
       "postgres-reachability-domain-a": 3,
-      // 3, not 2: domain-b is the cargo-nextest pilot and installs the pinned
-      // runner before the harness runs. Every one of its run steps is still put
-      // through the bypass mutations below, which is what this inventory is for.
-      "postgres-reachability-domain-b": 3,
+      // Pinned image setup and both independently gated recovery scenarios.
+      "postgres-reachability-domain-b": 6,
       "postgres-domain-reachability": 3,
       "required-ci": 1,
       "rust-fmt": 1,
@@ -1005,9 +1009,9 @@ describe("CI preflight contract", () => {
     // previously dark 13-test suite and subjects the new step to all bypasses.
     // 2026-08-28: +1 rust-fmt presubmit run step (oyatie lint analog).
     // +1: isolate the app dev-auth feature case so an earlier failure cannot hide it.
-    assert.equal(runStepCount, 133, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 133*3 = 399.
-    assert.equal(mutationCount, 399, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 137, "required and planned job run-step coverage must not shrink");
+    // Four added preparation/recovery steps: 137*3 = 411.
+    assert.equal(mutationCount, 411, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {

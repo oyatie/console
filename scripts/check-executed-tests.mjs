@@ -76,6 +76,7 @@ import {
 import { directExecutable, executableWorkflowCommands } from "./lib/ci-workflow-executables.mjs";
 import { unitTestedCrateSrcRoots } from "./check-executed-tests-cfg.mjs";
 import { cargoTestKind } from "./lib/cargo-test-kind.mjs";
+import { recoveryTestInvocations } from "./lib/recovery-test-invocations.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CI = join(ROOT, ".github/workflows/ci.yml");
@@ -277,6 +278,11 @@ for (const target of buckInvocations.flatMap(({ executable }) => executable.toke
   if (!test) { unresolved.push(`ci.yml names ${target}, which is not a rust_test in any BUCK file`); continue; }
   executed.set(key(test.root, test.features), target);
 }
+
+// Dedicated topology is executable only when both exact supervised cases verify.
+const recovery = recoveryTestInvocations(ci, readFileSync(join(ROOT, "backend/crates/payroll/adapter-postgres/tests/recovery.rs"), "utf8"));
+unresolved.push(...recovery.failures);
+for (const tokens of recovery.invocations) workflowCommands.push({ executable: { tokens, malformed: false } });
 
 // 3. cargo test -p <pkg> [--lib | --test <name>] [--features …], resolved through
 // `cargo metadata`. Runs last on purpose: where both build systems reach the same binary,

@@ -113,6 +113,7 @@ RESOURCE_CONFIG = {
             "tests/auth_rest.rs": {
                 "srcs": [
                     "tests/auth_rest/account_storage.rs",
+                    "tests/auth_rest/publication_privileges.rs",
                     "tests/auth_rest/actor-migration.csv",
                 ],
             },
@@ -221,6 +222,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-app': {
         'unit': 'none',
         'integration': {
+            'tests/account_migration.rs': 'postgres',
             'tests/action_inbox_api.rs': 'postgres',
             'tests/attendance_persona_api.rs': 'postgres',
             'tests/audit_api.rs': 'postgres',
@@ -766,6 +768,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-payroll-adapter-postgres': {
         'unit': 'none',
         'integration': {
+            'tests/recovery.rs': 'postgres-recovery',
             'tests/pay_run_port_as_runtime_role.rs': 'postgres',
             'tests/payroll_lifecycle_rls_as_runtime_role.rs': 'postgres',
             'tests/roster_materialisation.rs': 'postgres',
@@ -812,6 +815,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-platform-authz': {
         'unit': 'none',
         'integration': {
+            'tests/cedar_diagnostic_fail_closed.rs': 'none',
             'tests/cedar_pbac_legacy_only_observe_and_record.rs': 'none',
             'tests/cedar_pbac_readiness_cases.rs': 'none',
             'tests/policy.rs': 'postgres',
@@ -1059,7 +1063,7 @@ TEST_RESOURCE_REQUIREMENTS = {
 }
 
 TEST_TYPE_LABELS = frozenset({"test.unit", "test.integration"})
-RESOURCE_LABELS = frozenset({"resource.none", "resource.postgres"})
+RESOURCE_LABELS = frozenset({"resource.none", "resource.postgres", "resource.postgres-recovery"})
 
 # Inline database tests remain in their crate source tree, but cannot share the
 # hermetic unit target. Each declared variant is compiled with its inert Cargo
@@ -1165,7 +1169,7 @@ def resource_requirement(package_name, test_type, test_file=None):
                 " " + test_file if test_file else "",
             )
         ) from error
-    if resource not in {"none", "postgres"}:
+    if resource not in {"none", "postgres", "postgres-recovery"}:
         raise ValueError("unknown test resource: {}".format(resource))
     return resource
 
@@ -1281,9 +1285,12 @@ def test_labels(package, test_type, uses_postgres):
     """Return the complete deterministic taxonomy for one generated rust_test."""
     if test_type not in TEST_TYPE_LABELS:
         raise ValueError("unknown test type: {}".format(test_type))
-    resource = "resource.postgres" if uses_postgres else "resource.none"
-    labels = ownership_labels(package) + [test_type, resource]
-    if uses_postgres:
+    # Preserve legacy bool callers; generation passes the full reviewed resource.
+    resource = ("postgres" if uses_postgres else "none") if isinstance(uses_postgres, bool) else uses_postgres
+    if "resource." + resource not in RESOURCE_LABELS:
+        raise ValueError("unknown test resource: {}".format(resource))
+    labels = ownership_labels(package) + [test_type, "resource." + resource]
+    if resource == "postgres":
         # Compatibility during runner migration; resource.postgres is canonical.
         labels.append("needs-postgres")
     return labels
@@ -1728,7 +1735,7 @@ def emit(d, name, deps, named, dev_deps, dev_named):
             labels = test_labels(
                 package,
                 "test.integration",
-                requires_postgres(name, "test.integration", tf),
+                resource_requirement(name, "test.integration", tf),
             )
             config = integration_resource_config(name, tf)
             srcs_expr = listsrcs(sorted(set([tf] + helpers)))
