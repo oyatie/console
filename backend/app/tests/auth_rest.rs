@@ -34,6 +34,10 @@ const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 const TEST_ORIGIN: &str = "https://auth.example.com";
 
+#[path = "auth_rest/account_custody_lifecycle.rs"]
+mod account_custody_lifecycle;
+#[path = "auth_rest/account_custody_startup.rs"]
+mod account_custody_startup;
 #[path = "auth_rest/account_storage.rs"]
 mod account_storage;
 #[path = "auth_rest/publication_privileges.rs"]
@@ -3299,6 +3303,43 @@ fn account_transport_urls(owner_pool: &PgPool) -> Vec<(&'static str, String)> {
 /// owns both numbered migrations and Apalis initialization before any fixtures.
 /// Runtime pools never receive this directly authenticated migration-owner URL.
 async fn prepare_http_database(pool: &PgPool) {
+    prepare_http_database_staging(pool).await;
+    finalize_account_custody(pool).await;
+}
+
+fn account_custody_finalizer_sql() -> String {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../ops/postgres-finalize-account-custody.sql");
+    std::fs::read_to_string(path)
+        .expect("ACCOUNT_CUSTODY_FINALIZER_PREREQUISITE: production SQL file missing")
+}
+
+async fn finalize_account_custody(pool: &PgPool) {
+    let identity: (String, String, bool) = sqlx::query_as(
+        "SELECT session_user::text,current_user::text,current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' AND (SELECT rolsuper FROM pg_roles WHERE rolname=current_user)",
+    ).fetch_one(pool).await.expect("inspect disposable finalization administrator");
+    assert_eq!(
+        identity,
+        (
+            "console_buck_admin".to_owned(),
+            "console_buck_admin".to_owned(),
+            true
+        )
+    );
+    sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
+        .execute(pool)
+        .await
+        .expect("actual production Account custody finalizer");
+}
+
+async fn prepare_http_database_staging(pool: &PgPool) {
+    let config = prepare_http_migration_config(pool).await;
+    run_migrations(&config)
+        .await
+        .expect("complete production schema migration before HTTP fixtures");
+}
+
+async fn prepare_http_migration_config(pool: &PgPool) -> AppConfig {
     let mut connection = pool.acquire().await.expect("disposable admin connection");
     let identity: (String, String, String, bool, bool) = sqlx::query_as(
         r#"
@@ -3361,9 +3402,7 @@ async fn prepare_http_database(pool: &PgPool) {
         ("DATABASE_URL", owner_url.to_string()),
     ])
     .expect("production migration configuration");
-    run_migrations(&config)
-        .await
-        .expect("complete production schema migration before HTTP fixtures");
+    config
 }
 
 // AS1.3 selected legacy-fence acceptance. These owner fixtures install only
