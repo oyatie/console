@@ -1,7 +1,52 @@
-//! Append inside request-context account owner tests. This exercises the actual
-//! pure exact-binding check used after live authority loads; snapshots are plain
-//! operands, NOT constructed ActiveContext/capabilities. DB provenance is tested
-//! separately by the real context switch/revocation fixtures.
+//! Exact comparison of plain authority binding operands.
+//!
+//! These values are not verified sessions or capabilities. The context owner
+//! must obtain current operands through its restricted authority loaders before
+//! comparing them; equality alone neither authenticates nor authorizes anyone.
+use crate::RequestContextError;
+use console_kernel_core::KernelError;
+use uuid::Uuid;
+
+/// Identity and revision operands compared against the current owner readback.
+///
+/// Deliberately has no default, serialization or diagnostic representation.
+#[derive(Clone, PartialEq, Eq)]
+pub struct AuthorityBindingSnapshot {
+    pub account_id: Uuid,
+    pub session_id: Uuid,
+    pub group_id: Uuid,
+    pub company_id: Option<Uuid>,
+    pub security_generation: i64,
+    pub context_generation: i64,
+    pub topology_revision: i64,
+    pub policy_revision: i64,
+    pub serving_generation: i64,
+    pub recovery_generation: i64,
+    pub membership_incarnation: Uuid,
+}
+
+/// Require exact identity and revision equality, including optional Company.
+///
+/// # Errors
+/// Returns the existing forbidden access-scope error for any mismatch, whether
+/// the presented revision is older or newer, without exposing either operand.
+pub fn check_exact_authority_binding(
+    presented: &AuthorityBindingSnapshot,
+    current: &AuthorityBindingSnapshot,
+) -> Result<(), RequestContextError> {
+    if presented == current {
+        Ok(())
+    } else {
+        Err(RequestContextError::AccessScope(KernelError::forbidden(
+            "authority binding does not match current context",
+        )))
+    }
+}
+
+// Append inside request-context account owner tests. This exercises the actual
+// pure exact-binding check used after live authority loads; snapshots are plain
+// operands, NOT constructed ActiveContext/capabilities. DB provenance is tested
+// separately by the real context switch/revocation fixtures.
 #[cfg(test)]
 mod exact_authority_binding_acceptance {
     use super::{AuthorityBindingSnapshot, check_exact_authority_binding};
