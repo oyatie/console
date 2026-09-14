@@ -178,7 +178,7 @@ fn incomplete_decimal_is_not_coerced_and_error_links_to_exact_field() {
 }
 
 #[test]
-fn unresolved_editor_can_save_but_cannot_submit_as_business_value() {
+fn unresolved_editor_can_save_and_retry_after_no_js_correction() {
     let mut model = screen();
     model.fields[0].value = EditorValue::Incomplete("1..2".into());
     let html = render(&model);
@@ -192,15 +192,24 @@ fn unresolved_editor_can_save_but_cannot_submit_as_business_value() {
         save.contains(" formnovalidate"),
         "draft save must survive required/browser validation"
     );
-    for submit in buttons
+    let submit = buttons
         .iter()
-        .filter(|b| attr(b, "value").as_deref() == Some("submit"))
-    {
-        assert!(
-            submit.contains(" disabled"),
-            "incomplete editor must not offer business submission"
-        );
-    }
+        .find(|b| attr(b, "value").as_deref() == Some("submit"))
+        .expect("permitted submit must remain available for corrected input");
+    assert!(
+        !submit.contains(" disabled"),
+        "old SSR error cannot lock out a no-JS retry"
+    );
+    assert_eq!(
+        attr(
+            one_id(&html, "input", &control_id(&model.fields[0].address)),
+            "value"
+        )
+        .as_deref(),
+        Some("1..2")
+    );
+    // The owner must validate the new POST. Available HTML retry is not proof
+    // that this incomplete editor text is a valid typed business value.
 }
 
 #[test]
@@ -229,7 +238,10 @@ fn repeated_item_addresses_survive_reorder_without_aliasing() {
             attr(one_id(&before, "input", &id), "name"),
             Some(name.clone())
         );
-        assert_eq!(attr(one_id(&after, "input", &id), "name"), Some(name.clone()));
+        assert_eq!(
+            attr(one_id(&after, "input", &id), "name"),
+            Some(name.clone())
+        );
     }
     let mut nested = model.fields[0].address.clone();
     nested
@@ -535,4 +547,71 @@ fn address_encoding_is_injective_for_sequence_and_optional_item_boundaries() {
             "DOM fragment identifier needs safe serialization: {id}"
         );
     }
+}
+
+#[test]
+fn submit_only_validation_error_retains_retry_without_inventing_save_authority() {
+    let mut model = screen();
+    model.mutation.as_mut().unwrap().operations = vec![ComposerOperation::Submit];
+    model.fields[0].value = EditorValue::Incomplete("1..2".into());
+    model.errors.push(FieldError {
+        address: model.fields[0].address.clone(),
+        message: "숫자를 확인해 주세요".into(),
+    });
+    let html = render(&model);
+    let operations: Vec<_> = start_tags(&html, "button")
+        .into_iter()
+        .filter(|b| attr(b, "name").as_deref() == Some("operation"))
+        .collect();
+    assert_eq!(operations.len(), 1, "projection grants only submit");
+    assert_eq!(attr(operations[0], "value").as_deref(), Some("submit"));
+    assert!(
+        !operations[0].contains(" disabled"),
+        "no-JS user must retry after correcting acknowledged input"
+    );
+    let input = one_id(&html, "input", &control_id(&model.fields[0].address));
+    assert_eq!(attr(input, "value").as_deref(), Some("1..2"));
+    assert_eq!(attr(input, "aria-invalid").as_deref(), Some("true"));
+    assert!(html.contains("숫자를 확인해 주세요"));
+}
+
+#[test]
+fn optional_selected_enum_can_be_cleared_without_javascript() {
+    let mut model = screen();
+    model.fields[0].required = false;
+    model.fields[0].value = EditorValue::Enum {
+        selected: Some("temporary".into()),
+        choices: vec![Choice {
+            value: "temporary".into(),
+            label: "임시 대행".into(),
+        }],
+    };
+    let html = render(&model);
+    let select = one_id(&html, "select", &control_id(&model.fields[0].address));
+    assert!(!select.contains(" required"));
+    let options = start_tags(&html, "option");
+    assert_eq!(
+        options.len(),
+        2,
+        "one authorized choice and one clearing option"
+    );
+    let clear = options
+        .iter()
+        .find(|o| attr(o, "value").as_deref() == Some(""))
+        .expect("optional existing choice needs an explicit Unset path");
+    assert!(
+        !clear.contains(" disabled"),
+        "clearing option must remain selectable"
+    );
+    assert!(
+        !clear.contains(" selected"),
+        "existing selection is preserved until user clears it"
+    );
+    assert!(
+        options
+            .iter()
+            .any(|o| attr(o, "value").as_deref() == Some("temporary") && o.contains(" selected"))
+    );
+    // Empty option represents editor Unset, not business NULL. Decoding and
+    // owner validation require separate actual POST tests.
 }
