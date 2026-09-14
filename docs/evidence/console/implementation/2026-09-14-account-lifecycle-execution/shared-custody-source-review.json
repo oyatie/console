@@ -1,0 +1,33 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "39ae20863c5f1b599323f2ddcf72e5400311d023",
+  "review_kind": "independent read-only security source review",
+  "verdict": "ACCEPT_SOURCE_FOR_EXECUTION",
+  "files_sha256": {
+    "backend/app/src/account_custody_state.sql": "398c2b7c70add2381f6ea9e3cc3f96231aa1c28c9b546966a712c3699c3e5db7",
+    "ops/generate-account-custody.py": "ed73a8e9e298480b7d59999f145272c12728c8979a987d5b0aa1f9b3df23fb96",
+    "ops/postgres-finalize-account-custody.sql": "ada5cde1ca90caed69464c830f09f1ed7839d5eb35cd8f379afb1185e39f3ece",
+    "ops/account-custody-migrations.sha384": "adc836e55749bb1775631289deb3e39566f98d4848e67d837a486c59ebf99c96"
+  },
+  "blocking_findings": [],
+  "scope": "Shared six-table dormant Account metadata verifier, generated atomic operator DO, deterministic migration manifest generation. Not wrapper, runtime wiring, complete lifecycle execution, Account activation or production approval.",
+  "analysis": [
+    "Fixed reviewed migration fingerprints are independent of inspected target, include column/constraint/index/trigger/rule/RLS/inheritance shape; missing relations and NULL fingerprints fail closed. Verified six evidence shape strings hash to embedded fingerprints.",
+    "Owner topology requires two strict NOLOGIN zero-membership owners. Relation ACL now rejects NULL and any nonempty cardinality, preserving explicit empty ACL while avoiding empty-array dimension inequality. Column grants and effective nonsuperuser access/membership are independently rejected.",
+    "pg_ role exclusion concerns reserved built-in roles; ordinary login inheritance of broad predefined rights remains checked through effective privileges. Superuser compromise remains outside this six-relation custody guarantee.",
+    "Finalizer validates authenticated superuser identity, locks all six fixed relations in fixed order, rechecks before transfer, refuses nonempty staging, changes only six owners and verifies final state inside one atomic statement. Finalized repeat returns without reseeding or retransfer.",
+    "Generator embeds exact canonical query three times, fixed identifiers only, and uses SHA384 exact migration bytes matching SQLx. No runtime supplied SQL or target-derived expected catalog.",
+    "Source baseline was explicitly reset after root ACL array-dimension correction; prior SQL/finalizer hashes are not approved by this receipt."
+  ],
+  "validation": {
+    "generator_check": "python3 ops/generate-account-custody.py --check: PASS",
+    "fingerprint_check": "six shape strings SHA256 and query inclusion: PASS",
+    "rust_or_database_tests_executed_by_reviewer": 0
+  },
+  "limits": [
+    "Operator transport must enforce statement timeout before DO and validate independently supplied target/TLS/ledger in same connection; outside these four files.",
+    "Relation locks do not serialize concurrent cluster role administration; trusted operator coordination and subsequent readiness detection remain necessary. No claim that readyz stops workers.",
+    "Metadata shape is intentionally tied to reviewed migration and pinned PostgreSQL release; future schema/owner DDL needs separately versioned operator ordering.",
+    "No guarantee against cluster-superuser tampering or arbitrary privileged database objects; operator credentials retain cluster-wide blast radius."
+  ]
+}
