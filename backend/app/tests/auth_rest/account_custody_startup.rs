@@ -1,4 +1,5 @@
-//! LC05: actual production startup and HTTP readiness, not constructed states.
+//! LC05: actual production startup and HTTP readiness. The temp-catalog
+//! regression explicitly constructs a state to control readiness session reuse.
 //! Requires ordinary migration and production finalization helpers; missing
 //! lifecycle prerequisites cannot be counted as startup refusal evidence.
 use super::{account_transport_urls, finalize_account_custody, prepare_http_database_staging};
@@ -190,5 +191,74 @@ async fn custody_configured_database_failure_does_not_become_no_database_mode() 
     assert!(
         matches!(outcome, Err(console_app::AppError::Database(_))),
         "configured transport failure must remain a database error, not ready no-DB state"
+    );
+}
+
+/// Readiness must inspect real catalogs on a reused runtime session. Unlike the
+/// startup cases above, constructing AppState here deliberately controls the
+/// single connection consumed by the actual HTTP readiness adapter.
+#[sqlx::test(migrations = false)]
+async fn custody_readyz_ignores_session_temporary_pg_class_forgery(pool: PgPool) {
+    prepare_http_database_staging(&pool).await;
+    finalize_account_custody(&pool).await;
+    let login = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let options = login.connect_options().as_ref().clone();
+    login.close().await;
+    let runtime = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(1)
+        .idle_timeout(None)
+        .max_lifetime(None)
+        .connect_with(options)
+        .await
+        .expect("genuine runtime connection with no additional privileges");
+    let identity: (String, String, i32) =
+        sqlx::query_as("SELECT session_user::text,current_user::text,pg_catalog.pg_backend_pid()")
+            .fetch_one(&runtime)
+            .await
+            .unwrap();
+    assert_eq!(identity.0, "console_rt");
+    assert_eq!(identity.1, "console_rt");
+    // Copy public catalog metadata only. No private Account rows or changed
+    // privileges are needed for implicit pg_temp relation-name precedence.
+    sqlx::raw_sql("CREATE TEMP TABLE pg_class AS SELECT * FROM pg_catalog.pg_class; RESET ALL")
+        .execute(&runtime)
+        .await
+        .unwrap();
+    let state = AppState::new(
+        config(&pool, AppRole::Worker),
+        console_app::DatabaseDependency::Postgres(runtime.clone()),
+    )
+    .expect("controlled runtime pool for actual readiness reuse");
+    assert_eq!(ready(&state).await, StatusCode::OK);
+    sqlx::raw_sql("ALTER TABLE public.accounts OWNER TO console_app")
+        .execute(&pool)
+        .await
+        .unwrap();
+    let real_owner: String = sqlx::query_scalar(
+        "SELECT pg_catalog.pg_get_userbyid(c.relowner) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname='accounts'",
+    ).fetch_one(&pool).await.unwrap();
+    let stale_owner: String = sqlx::query_scalar(
+        "SELECT pg_catalog.pg_get_userbyid(c.relowner) FROM pg_temp.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname='accounts'",
+    ).fetch_one(&runtime).await.unwrap();
+    assert_eq!(real_owner, "console_app", "real owner drift must exist");
+    assert_eq!(
+        stale_owner, "console_account_owner",
+        "session forgery must still present finalized ownership"
+    );
+    let status = ready(&state).await;
+    let reused_pid: i32 = sqlx::query_scalar("SELECT pg_catalog.pg_backend_pid()")
+        .fetch_one(&runtime)
+        .await
+        .unwrap();
+    state.shutdown_realtime().await;
+    runtime.close().await;
+    assert_eq!(
+        reused_pid, identity.2,
+        "test must reuse the same forged runtime session"
+    );
+    assert_eq!(
+        status,
+        StatusCode::SERVICE_UNAVAILABLE,
+        "temporary pg_class must not hide actual custody drift"
     );
 }
