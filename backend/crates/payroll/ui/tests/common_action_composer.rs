@@ -229,7 +229,7 @@ fn repeated_item_addresses_survive_reorder_without_aliasing() {
             attr(one_id(&before, "input", &id), "name"),
             Some(name.clone())
         );
-        assert_eq!(attr(one_id(&after, "input", &id), "name"), Some(name));
+        assert_eq!(attr(one_id(&after, "input", &id), "name"), Some(name.clone()));
     }
     let mut nested = model.fields[0].address.clone();
     nested
