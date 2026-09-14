@@ -1,0 +1,23 @@
+{
+  "classification": "PUBLIC_INTERVIEW_CONTINUATION_NOT_AUTHORITY",
+  "previous_record_path": "/Users/jasonlee/Developer/console/docs/evidence/console/interviews/2026-09-13-native-object-continuity-50/record.json",
+  "previous_record_sha256": "1aae98194510106820b30ea55d22b2b25c7fb149eee42f7b12e736dc13517525",
+  "source_file": "rollout-2026-09-11T16-59-27-01a09244-a53e-7c83-b38a-73150cfa02dd.jsonl",
+  "source_prefix_bytes": 154413464,
+  "source_prefix_sha256": "25131dcc77268cd30ab2d120d47fac86d96fad56a8a11d6c4edd0dc9aa30a049",
+  "from_exclusive_utc": "2026-09-13T21:49:28.073Z",
+  "cutoff_utc": "2026-09-14T00:36:06.572Z",
+  "counts": {
+    "assistant": 37,
+    "user": 8
+  },
+  "excluded_context_wrappers": 3,
+  "scope": "Available original session public user/assistant commentary/final messages only. No analysis, private reasoning, tools or subagent messages. Current final answer and messages after cutoff are not captured.",
+  "transcript_sha256": "94e8503cc13c3db42c4d4cc74d160c08d9cf8ad85a8e066e14e4d717052b3852",
+  "main_custody": {
+    "head_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+    "cached_diff_sha256": "2a4a15c33cb1db7f512654f42c26d494843c6a45e997740594de43601d6d69c3",
+    "staged_path_count": 94,
+    "unchanged": true
+  }
+}

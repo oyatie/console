@@ -1,0 +1,12 @@
+{
+  "kind": "ARTIFACT_STRUCTURE_AND_CUSTODY_NOT_PRODUCT_TESTS",
+  "pages": 6,
+  "html_h1_main_language_and_no_scripts": true,
+  "all_local_links_and_main26_citation_anchors_resolve": true,
+  "all_json_parses": true,
+  "family_rows": 23,
+  "usability_tasks": 12,
+  "participant_observations": 0,
+  "visual_browser_check": "NOT_RUN: no installed supported browser or Playwright in this workspace; structural HTML checks only.",
+  "scope": "No product, usability or WCAG acceptance inferred from artifact parsing."
+}
