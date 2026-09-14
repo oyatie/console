@@ -67,6 +67,7 @@ time = { version = "0.3", features = ["serde", "serde-well-known", "formatting",
 # Versions verified live against crates.io 2026-06-12: sqlx 0.9.0, tokio 1.52.3
 sqlx = { version = "0.9.0", default-features = false, features = [
     "runtime-tokio",
+    "tls-rustls-aws-lc-rs",
     "postgres",
     "uuid",
     "time",
@@ -89,7 +90,9 @@ jsonwebtoken = { version = "10.4.0", default-features = false, features = ["rust
 # apalis 1.0.0-rc.9, apalis-postgres 1.0.0-rc.8, apalis-sql 1.0.0-rc.9.
 # No stable apalis 1.0.0 release was available at verification time.
 apalis = { version = "=1.0.0-rc.9" }
-apalis-postgres = { version = "=1.0.0-rc.8" }
+# Keep migration/chrono/Tokio support; jobs selects SQLx runtime and AWS-LC
+# explicitly because the upstream tokio-comp convenience feature enables ring.
+apalis-postgres = { version = "=1.0.0-rc.8", default-features = false, features = ["migrate", "tokio", "chrono"] }
 apalis-sql = { version = "=1.0.0-rc.9" }
 # Version verified live against crates.io 2026-06-12: calamine 0.35.0
 calamine = { version = "0.35.0", features = ["dates"] }
@@ -131,12 +134,12 @@ metrics = "0.24.6"
 metrics-exporter-prometheus = { version = "0.18.3", default-features = false }
 # Outbound SMTP for transactional email (OCI Email Delivery relay). Version
 # verified live against crates.io 2026-06-22: lettre 0.11.22 (latest stable).
-# The workspace ships NO TLS backend (reqwest is default-features = false; no
-# rustls/native-tls elsewhere), so lettre MUST bring its own — we select the
-# bundled rustls stack via `tokio1-rustls-tls` and disable defaults so no
-# system-native TLS (openssl) is pulled in.
+# Select rustls explicitly, sharing the workspace Rust TLS stack with SQLx
+# and IMAP; disable defaults so no system-native TLS (openssl) is pulled in.
 lettre = { version = "0.11.22", default-features = false, features = [
-    "tokio1-rustls-tls",
+    "tokio1-rustls",
+    "aws-lc-rs",
+    "webpki-roots",
     "builder",
     "smtp-transport",
 ] }
@@ -164,21 +167,19 @@ hickory-resolver = "0.26.1"
 ipnet = "2.12.0"
 # Inbound IMAP sync (B-mail-3). Versions verified live against the crates.io
 # index 2026-06-23: async-imap 0.11.2, mail-parser 0.11.4, tokio-rustls 0.26.4,
-# rustls 0.23 (workspace already resolves 0.23.x via lettre's tokio1-rustls-tls),
+# rustls 0.23 (workspace already resolves 0.23.x via lettre's tokio1-rustls),
 # webpki-roots 1.0.8, futures 0.3.32.
 #
 # R1 SINGLE-STACK GATE: `async-imap` is TLS-AGNOSTIC — it speaks IMAP over any
 # `tokio::io::AsyncRead + AsyncWrite` (feature `runtime-tokio`, default off so
 # `async-std` is never pulled). We supply the TLS layer ourselves with
-# `tokio-rustls` 0.26 on `rustls` 0.23 + the `ring` provider — the EXACT rustls
-# major/minor + ring that `lettre 0.11.22`'s `tokio1-rustls-tls` already pulls,
-# so `cargo tree -d` stays single-stack (one rustls, one ring, no native-tls /
-# openssl). `mail-parser` is the inbound MIME parser; both appear ONLY in
+# `tokio-rustls` 0.26 on `rustls` 0.23 with the same `aws-lc-rs` provider
+# as SQLx and SMTP, without native-tls/openssl. `mail-parser` is the inbound MIME parser; both appear ONLY in
 # `console-comms-adapter-imap`.
 async-imap = { version = "0.11.2", default-features = false, features = ["runtime-tokio"] }
 mail-parser = "0.11.4"
-tokio-rustls = { version = "0.26.4", default-features = false, features = ["ring", "tls12"] }
-rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+tokio-rustls = { version = "0.26.4", default-features = false, features = ["aws_lc_rs", "tls12"] }
+rustls = { version = "0.23", default-features = false, features = ["aws_lc_rs", "std", "tls12"] }
 webpki-roots = "1.0.8"
 futures = { version = "0.3.32", default-features = false, features = ["std"] }
 
