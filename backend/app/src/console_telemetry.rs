@@ -257,8 +257,8 @@ impl TelemetryError {
 }
 
 impl From<DbError> for TelemetryError {
-    fn from(err: DbError) -> Self {
-        tracing::error!(error = %err, "console route telemetry database error");
+    fn from(_: DbError) -> Self {
+        tracing::error!("console route telemetry database error");
         Self::new(
             StatusCode::INTERNAL_SERVER_ERROR,
             "internal",
@@ -274,8 +274,8 @@ impl From<sqlx::Error> for TelemetryError {
 }
 
 impl From<console_platform_request_context::RequestContextError> for TelemetryError {
-    fn from(err: console_platform_request_context::RequestContextError) -> Self {
-        tracing::error!(error = %err, "console route telemetry request context error");
+    fn from(_: console_platform_request_context::RequestContextError) -> Self {
+        tracing::error!("console route telemetry request context error");
         Self::new(
             StatusCode::INTERNAL_SERVER_ERROR,
             "internal",
@@ -309,7 +309,6 @@ struct ErrorPayload {
     code: &'static str,
     message: String,
 }
-
 
 // Append to backend/app/src/console_telemetry.rs. Tests actual From<...> logging.
 // Synthetic error payloads establish only the public trace formatter boundary.
