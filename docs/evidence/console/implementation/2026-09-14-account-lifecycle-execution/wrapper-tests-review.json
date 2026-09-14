@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root",
+  "candidate_sha": "a82e70920faf0bbdd707cdc68f4626e3780f2feb",
+  "verdict": "ACCEPT_TEST_MACHINERY_CANDIDATE",
+  "executed": {
+    "command": "bash ops/postgres-finalize-account-custody.integration.test.sh --self-test",
+    "discovered": 11,
+    "executed": 11,
+    "passed": 11
+  },
+  "resolved": [
+    "exact unique case roster",
+    "cleanup on lost create acknowledgement and independent absence confirmation",
+    "prebuild source custody",
+    "private isolated Cargo target and frozen executable checked before and after each migrate"
+  ],
+  "source_sha256": {
+    "ops/postgres-finalize-account-custody.integration.test.py": "1a104a0eab491621fe39d18250cf649b5e88ce33c63cb630e0b816d4d316fb0c",
+    "ops/postgres-finalize-account-custody.integration.test.sh": "cf1d28233d076c88ad8c3d6da43657a1cc5978ac0f1505631084f0f8a1095928"
+  },
+  "limits": [
+    "13 product wrapper cases remain prerequisite blocked, no behavioral execution claimed",
+    "Private filesystem custody guards accidental concurrent replacement, not hostile same-user OS compromise",
+    "No production/network/signing certification"
+  ]
+}
