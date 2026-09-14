@@ -1,0 +1,30 @@
+id,trigger,expected,status
+withdraw_expired,Revoke previously verified target with expired credential,Current revoke/head CAS succeeds when all withdrawal evidence valid; no positive target trust prerequisite,PROPOSED_NOT_EXECUTED
+replace_revoked,Successor verifies against predecessor revoke3 formerly verify2,Retain exact historical verify2; claim successor without restoring predecessor,PROPOSED_NOT_EXECUTED
+blocked_missing,Missing leave decision/qualification ref,No fake entity or fabricated complete source; draft/typed blocker,PROPOSED_NOT_EXECUTED
+hidden_competitor,Unauthorized candidate causes overlapping selection,Internal completeness detects; SSR/error/count/hash reveals no hidden candidate,PROPOSED_NOT_EXECUTED
+negative_phantom,Insert source after absence probe,Same family guard serializes or replan; stale absence never authorizes,PROPOSED_NOT_EXECUTED
+boundary,Prior-day shift and month-end duty overlap with next boundary plan,Retain actual anchors/events/rules AND next boundary assignment/plan/selector evidence; no guessed plan or third earning-day contribution; unknown opening not OFF_DUTY,PROPOSED_NOT_EXECUTED
+notes,Qualify TAX_TABLE before any employee assessment then apply selected cell with external footnote,Source qualification needs edition/layout/support/rule notes only; later employee tax evidence additionally needs verified assessment/selected cells and all applicable notes; no dependency cycle,PROPOSED_NOT_EXECUTED
+legacy_actor,Event has historical user UUID not Account,Keep attribution without impersonating Account or human equivalence,PROPOSED_NOT_EXECUTED
+late_gate,Gate consumption introduces participant/resource,Predeclare or release/replan; no late earlier lock/24 hash rewrite,PROPOSED_NOT_EXECUTED
+replay_unavailable,COMMIT succeeded then source bytes unavailable,"Receipt/provenance first; return current authorized history, no new pin/preload",PROPOSED_NOT_EXECUTED
+shared_expiry,One purpose expires while another still requires same evidence,May release first pin; byte disposal remains denied,PROPOSED_NOT_EXECUTED
+transitive_expiry,Coverage original obligation expires before payroll obligation,Every original event/package still protected through payroll closure,PROPOSED_NOT_EXECUTED
+partial_reservation,Crash after protecting subset before reservation completion,Subset retained with durable status; no complete root/no source publication,PROPOSED_NOT_EXECUTED
+transfer_race,Cancel preparation while publication consumes reservation,Same owner guards/receipt produce one outcome; no protection gap,PROPOSED_NOT_EXECUTED
+quarantine_race,New pin races child quarantine,Whole closure protection wins or adoption refuses; no root-only success,PROPOSED_NOT_EXECUTED
+root_forgery,Correct hash/counters but omitted child purpose,Owner completeness check rejects; hash alone not seal authority,PROPOSED_NOT_EXECUTED
+cycle,Inventory points back through receipt/adoption/control,Classify lineage; reject protection cycle; bounded extraction terminates,PROPOSED_NOT_EXECUTED
+cap_overflow,Extra node/edge/byte/row beyond independent budget,Whole new effect refused without truncation; acknowledged input preserved,PROPOSED_NOT_EXECUTED
+pilot_reread,2000 max event/day packages fresh read,88080384000 bytes exceeds128MiB; no false scalable command,PROPOSED_NOT_EXECUTED
+shared_digest,Different Company/version copies have same content hash,No identity/purpose merge or cross-customer disclosure,PROPOSED_NOT_EXECUTED
+reverse_overflow,More8192 incoming protection memberships,Stop destructive action; no limited query certifies absence,PROPOSED_NOT_EXECUTED
+hold_after_send,New hold after external DELETE has been sent,No reversal promise; unknown until exact outcome reconciliation,PROPOSED_NOT_EXECUTED
+stale_worker,Paused external worker resumes after cancellation,External-delete enrollment blocked until real issuance fencing proven,PROPOSED_NOT_EXECUTED
+restore_old,Backup restores deleted bytes and revoked credential,Isolated admission; independently current journal/authority wins or scope remains isolated,PROPOSED_NOT_EXECUTED
+schema_new_site,New reference in source schema,Pinned census mismatch fails static custody; reviewed registered handler before runtime enrollment,PROPOSED_NOT_EXECUTED
+query_budget,Many small indexed reads exceed aggregate query rows,Charge sentinel/rows across all templates; no per-query reset,PROPOSED_NOT_EXECUTED
+cancel_orphan,Abandoned staged package with unknown attempt,Keep protection until conclusive reconciliation; no fabricated adoption to permit cleanup,PROPOSED_NOT_EXECUTED
+new_evidence_revoke,Revocation attaches quarantined evidence copy,Reject new evidence adoption while still allowing a separately valid withdrawal submission,PROPOSED_NOT_EXECUTED
+same_leaf_purposes,Same exact leaf used as historical and positive evidence,Deduplicate reads only; preserve both mode edges and current checks,PROPOSED_NOT_EXECUTED

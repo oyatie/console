@@ -1,0 +1,26 @@
+{
+  "kind": "payroll.create_run",
+  "body": {
+    "correlation_id": "e007eebd-5365-5cd5-91cd-689953fde76a",
+    "period": {
+      "start": "2026-09-01",
+      "end": "2026-09-30"
+    },
+    "pay_date": "2026-10-05",
+    "profile": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "profile_id": "f11fadcd-2a07-5380-8181-0dda1ea667ed",
+      "revision": "1",
+      "rule_bundle": {
+        "bundle_id": "NONPRODUCTION_FIXTURE_V1",
+        "kernel_build_sha256": "c4c7186883e031389d6f3124d553a030175fec92e3bdde1252499b5f546f339c",
+        "citation_set_sha256": "b5b48198f989cb9228a816286021bc6f1c96550cfcf5b76231b1a8028d8c886f"
+      }
+    },
+    "scope": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "scope_id": "4f75d2b2-e6ce-5f2d-a475-709d67aa279f",
+      "revision": "1"
+    }
+  }
+}

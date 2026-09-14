@@ -165,3 +165,98 @@ fn message_event(branch_id: BranchId, sender_id: UserId, body: &str) -> Realtime
         },
     }
 }
+
+
+// Append to backend/crates/platform/realtime/tests/hub.rs at base58b6f758.
+// Uses existing message_event helper; exact production dispatch method is shared.
+// This is in-process fanout selection, not actual PostgreSQL membership proof.
+async fn assert_same_account_company_fanout(
+    a_event: RealtimeEvent,
+    b_event: RealtimeEvent,
+    org_a: OrgId,
+    org_b: OrgId,
+) {
+    let hub = std::sync::Arc::new(PgRealtimeHub::for_tests(RealtimeHubConfig {
+        connection_buffer: 8,
+    }));
+    let account = UserId::new();
+    let mut a = hub
+        .connect(
+            RealtimePrincipal {
+                user_id: account,
+                branch_scope: BranchScope::All,
+                org_id: org_a,
+            },
+            None,
+        )
+        .await
+        .unwrap();
+    let mut b = hub
+        .connect(
+            RealtimePrincipal {
+                user_id: account,
+                branch_scope: BranchScope::All,
+                org_id: org_b,
+            },
+            None,
+        )
+        .await
+        .unwrap();
+    assert_ne!(org_a, org_b);
+    hub.dispatch_local_for_test(org_b, b_event.clone())
+        .await
+        .unwrap();
+    hub.dispatch_local_for_test(org_a, a_event.clone())
+        .await
+        .unwrap();
+    // Both producers completed and shutdown drops every sender. Drain to closure;
+    // a short timeout is never the oracle for absence.
+    hub.shutdown().await;
+    let mut a_seen = Vec::new();
+    while let Some(event) = a.recv().await {
+        a_seen.push(event);
+    }
+    let mut b_seen = Vec::new();
+    while let Some(event) = b.recv().await {
+        b_seen.push(event);
+    }
+    // The two positive controls are part of exact sequence equality: an always
+    // drop-all repair cannot satisfy either expected vector.
+    assert_eq!(
+        b_seen,
+        vec![b_event],
+        "B receives exactly B's permitted event"
+    );
+    assert_eq!(
+        a_seen,
+        vec![a_event],
+        "A receives exactly A's permitted event"
+    );
+}
+
+#[tokio::test]
+async fn same_account_message_fanout_respects_active_company() {
+    let org_a = OrgId::new();
+    let org_b = OrgId::new();
+    let sender = UserId::new();
+    assert_same_account_company_fanout(
+        message_event(BranchId::new(), sender, "permitted-A"),
+        message_event(BranchId::new(), sender, "private-B"),
+        org_a,
+        org_b,
+    )
+    .await;
+}
+
+#[tokio::test]
+async fn same_account_ack_fanout_respects_active_company() {
+    let org_a = OrgId::new();
+    let org_b = OrgId::new();
+    let ack = |count| RealtimeEvent::MessageAcked {
+        message_id: MessageId::new(),
+        thread_id: ThreadId::new(),
+        branch_id: BranchId::new(),
+        ack_count: count,
+    };
+    assert_same_account_company_fanout(ack(1), ack(37), org_a, org_b).await;
+}

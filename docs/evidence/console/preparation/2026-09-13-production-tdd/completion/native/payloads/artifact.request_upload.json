@@ -1,0 +1,24 @@
+{
+  "kind": "artifact.request_upload",
+  "body": {
+    "target": {
+      "kind": "EXISTING",
+      "object": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+        "object_id": "a9c0ed1f-ca5a-56a8-9994-f9e31cfeab23"
+      }
+    },
+    "purpose": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+      "instance_id": "ec796328-4e80-5003-8a5c-977449490de3",
+      "revision_id": "a1f866da-4ae9-5b04-92e4-6bdba70e3040",
+      "version": "1",
+      "row_hash": "aa5a18d2319b9ccf94e5f7108fe67a60681629ec459cb013ff0dce5443a37550"
+    },
+    "mime_type": "text/csv",
+    "expected_bytes": 39,
+    "expected_digest": "63ebe81b75eb31ee1d90d53441f402b529f4a765307d9b5fb89a1f6849698f8e"
+  }
+}

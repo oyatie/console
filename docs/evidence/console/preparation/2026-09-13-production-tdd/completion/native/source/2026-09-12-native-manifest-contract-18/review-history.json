@@ -1,0 +1,22 @@
+{
+  "initial_candidate_sha": "345c962244d45d82acaaadcf1c26be67ba0800df",
+  "initial_reviews": [
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "verdict": "SCOPED_ACCEPT"
+    },
+    {
+      "reviewer": "/root/continuity_review",
+      "verdict": "CHANGES_REQUIRED",
+      "finding": "input_unit_digest did not select semantic_digest vs custody_digest; no calculation-outcome/batch frame vector"
+    }
+  ],
+  "correction_commit": "720b0920fcfd8277f11686081937ccd09a77f1f0",
+  "corrections": [
+    "Explicit input_unit_digest=custody_digest with exact composite FK/UNIQUE and owner validation",
+    "V12-V18 resolved input/custody/manifest and blocked calculation outcome/batch commitment witnesses",
+    "Explicit source wire-to-SQL alias maps"
+  ],
+  "final_candidate_sha": "720b0920fcfd8277f11686081937ccd09a77f1f0",
+  "counts_as_final_integrated_round": false
+}

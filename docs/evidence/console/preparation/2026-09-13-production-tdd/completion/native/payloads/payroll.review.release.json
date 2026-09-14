@@ -1,0 +1,42 @@
+{
+  "kind": "payroll.review.release",
+  "body": {
+    "targets": [
+      {
+        "subject": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "person_id": "6cc0002b-0829-5850-ae45-27f3c7919c51",
+          "employment_id": "abc17824-a202-5ffc-b25c-79d53ff52fb4",
+          "binding": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "employee_id": "d4350801-44d4-54f8-a9a8-fb2867fbe19a",
+            "employment_id": "abc17824-a202-5ffc-b25c-79d53ff52fb4",
+            "binding_id": "2dc2bbb5-c5d3-5ef5-abac-95c7a396f090",
+            "binding_revision": "1"
+          }
+        },
+        "result": {
+          "calculation_id": "5ead2cc8-4690-5f1c-8a7c-b27142a85353",
+          "version": "1"
+        },
+        "completion": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "run_id": "824563b2-d18b-501c-8f17-875db7c57313",
+          "cycle_id": "66006f75-2447-5e46-a7f9-d904131cd1cc",
+          "completion_id": "1121bee2-c770-50e8-893a-3a7ea0b186a8",
+          "membership_digest": "894b70fca10fd296bb46995450ea2dd4d6519e8169ae9e2b25772da0d740e38c",
+          "decision_manifest_digest": "66ffab532f21c9d6da7dfd0f8a6f1cdcc0a9026316683db03ced8abe3865aa07"
+        }
+      }
+    ],
+    "projection": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+      "instance_id": "ec796328-4e80-5003-8a5c-977449490de3",
+      "revision_id": "a1f866da-4ae9-5b04-92e4-6bdba70e3040",
+      "version": "1",
+      "row_hash": "6a76d7778fdea67eb020e875192c41efd85d913448ab73ebe6942727e7320923"
+    },
+    "purpose": "NONPAYABLE_REVIEW"
+  }
+}

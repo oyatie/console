@@ -1,0 +1,11 @@
+np1_command,local_key,owner_action,object_key,proposed_or_existing_variant,status,sql_owner
+CREATE_RUN,create_run,payroll.create_run,pay_run,PayRun,existing canonical target; NP1 typed query extension,console-payroll-adapter-postgres
+SAVE_WAGE,create_contract_wage,payroll.create_contract_wage,contract_wage,ContractWage,proposed owner roster; reuse payroll wage SQL,console-payroll-adapter-postgres
+CORRECT_WAGE,correct_contract_wage,payroll.correct_contract_wage,contract_wage,ContractWage,proposed owner roster/append correction,console-payroll-adapter-postgres
+ADMIT_TAX,admit_tax_evidence,payroll.admit_tax_evidence,tax_evidence,TaxEvidence,proposed source owner schema W04b-03,console-payroll-adapter-postgres
+VERIFY_SOURCE,verify_tax_evidence,payroll.verify_tax_evidence,tax_evidence,TaxEvidence,proposed independent verification owner W04b-03,console-payroll-adapter-postgres
+REVOKE_SOURCE,revoke_tax_evidence,payroll.revoke_tax_evidence,tax_evidence,TaxEvidence,proposed source revocation owner W04b-03,console-payroll-adapter-postgres
+PREPARE_INPUT,prepare_inputs,payroll.prepare_inputs,pay_run,PayRun,proposed query variant and closed dispatch target,console-payroll-adapter-postgres
+REOPEN_INPUTS,reopen_inputs,payroll.reopen_inputs,pay_run,PayRun,proposed query variant; no approved/reviewing reopen,console-payroll-adapter-postgres
+CLOSE_ATTENDANCE,close_attendance,payroll.close_attendance,pay_run,PayRun,existing REST owner; new canonical dispatch variant,console-payroll-adapter-postgres
+CALCULATE,calculate_run,payroll.calculate_run,pay_run,PayRun,existing REST owner; new canonical dispatch variant,console-payroll-adapter-postgres

@@ -1,0 +1,182 @@
+{
+  "kind": "calendar.publish",
+  "body": {
+    "kind": "WORK_CALENDAR",
+    "covered_dates": {
+      "from": "2026-09-01",
+      "to_exclusive": "2026-10-01"
+    },
+    "zone": "Asia/Seoul",
+    "weekly": [
+      {
+        "iso_weekday": "1",
+        "day_kind": "WORK_DUTY",
+        "duties": [
+          {
+            "start_minute": "540",
+            "end_minute": "1080",
+            "breaks": [
+              {
+                "start_minute": "720",
+                "end_minute": "780",
+                "treatment": "UNPAID"
+              }
+            ]
+          }
+        ],
+        "expected_work_minutes": "480",
+        "expected_paid_minutes": "480",
+        "rule_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "00000000-0000-0000-0000-000000000004",
+          "revision": "2"
+        }
+      },
+      {
+        "iso_weekday": "2",
+        "day_kind": "WORK_DUTY",
+        "duties": [
+          {
+            "start_minute": "540",
+            "end_minute": "1080",
+            "breaks": [
+              {
+                "start_minute": "720",
+                "end_minute": "780",
+                "treatment": "UNPAID"
+              }
+            ]
+          }
+        ],
+        "expected_work_minutes": "480",
+        "expected_paid_minutes": "480",
+        "rule_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "00000000-0000-0000-0000-000000000004",
+          "revision": "2"
+        }
+      },
+      {
+        "iso_weekday": "3",
+        "day_kind": "WORK_DUTY",
+        "duties": [
+          {
+            "start_minute": "540",
+            "end_minute": "1080",
+            "breaks": [
+              {
+                "start_minute": "720",
+                "end_minute": "780",
+                "treatment": "UNPAID"
+              }
+            ]
+          }
+        ],
+        "expected_work_minutes": "480",
+        "expected_paid_minutes": "480",
+        "rule_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "00000000-0000-0000-0000-000000000004",
+          "revision": "2"
+        }
+      },
+      {
+        "iso_weekday": "4",
+        "day_kind": "WORK_DUTY",
+        "duties": [
+          {
+            "start_minute": "540",
+            "end_minute": "1080",
+            "breaks": [
+              {
+                "start_minute": "720",
+                "end_minute": "780",
+                "treatment": "UNPAID"
+              }
+            ]
+          }
+        ],
+        "expected_work_minutes": "480",
+        "expected_paid_minutes": "480",
+        "rule_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "00000000-0000-0000-0000-000000000004",
+          "revision": "2"
+        }
+      },
+      {
+        "iso_weekday": "5",
+        "day_kind": "WORK_DUTY",
+        "duties": [
+          {
+            "start_minute": "540",
+            "end_minute": "1080",
+            "breaks": [
+              {
+                "start_minute": "720",
+                "end_minute": "780",
+                "treatment": "UNPAID"
+              }
+            ]
+          }
+        ],
+        "expected_work_minutes": "480",
+        "expected_paid_minutes": "480",
+        "rule_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "00000000-0000-0000-0000-000000000004",
+          "revision": "2"
+        }
+      },
+      {
+        "iso_weekday": "6",
+        "day_kind": "NONWORKING",
+        "duties": [],
+        "expected_work_minutes": "0",
+        "expected_paid_minutes": "0",
+        "rule_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "00000000-0000-0000-0000-000000000004",
+          "revision": "2"
+        }
+      },
+      {
+        "iso_weekday": "7",
+        "day_kind": "NONWORKING",
+        "duties": [],
+        "expected_work_minutes": "0",
+        "expected_paid_minutes": "0",
+        "rule_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "00000000-0000-0000-0000-000000000004",
+          "revision": "2"
+        }
+      }
+    ],
+    "overrides": [
+      {
+        "date": "2026-09-09",
+        "day_kind": "WORK_DUTY",
+        "duties": [
+          {
+            "start_minute": "540",
+            "end_minute": "780",
+            "breaks": []
+          }
+        ],
+        "expected_work_minutes": "240",
+        "expected_paid_minutes": "240",
+        "rule_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "00000000-0000-0000-0000-000000000004",
+          "revision": "2"
+        }
+      }
+    ],
+    "rule_qualification_ref": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "qualification_id": "00000000-0000-0000-0000-000000000004",
+      "revision": "2"
+    }
+  }
+}

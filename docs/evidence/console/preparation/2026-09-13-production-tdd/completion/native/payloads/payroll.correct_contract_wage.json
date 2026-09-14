@@ -1,0 +1,11 @@
+{
+  "kind": "payroll.correct_contract_wage",
+  "body": {
+    "base_wage_id": "669a4952-0622-58ff-95e1-af6656433e9b",
+    "amount_won": "3100000",
+    "wage_kind": "MONTHLY",
+    "monthly_standard_hours": "209",
+    "source_note": "검토 근거를 확인했습니다.",
+    "evidence_refs": []
+  }
+}

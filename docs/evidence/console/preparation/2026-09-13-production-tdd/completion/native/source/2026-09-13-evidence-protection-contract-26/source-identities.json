@@ -1,0 +1,100 @@
+{
+  "sources": [
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/source-types.schema.json",
+      "git_blob": "6e3cc7ce9dfe00d5c43d56a6be863ff6104d0dc4",
+      "sha256": "6d52b788855826e553a9e4a8e31c3e777fa80a878d03debbb1ceb2d84de7a71e"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/source-contract.txt",
+      "git_blob": "3fdb4732c1a481efe92dda5be49de18754695b16",
+      "sha256": "ecd92c45511c4b72ed044252ab5ba8e5f90d4ac6672d3cb8682cf5126808c695"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/encoding-and-packages.txt",
+      "git_blob": "c5a92c31d4245575861ff01ac09f4c0064140350",
+      "sha256": "6e2a33d756a8b19d5d370d7513bf8d32531ec23ccde35a7ba3821c28e979255f"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/dependency-contract.csv",
+      "git_blob": "808caddc0a6f382cbc43549e69c3da140f84a4a8",
+      "sha256": "7eb670e0b092915b028baf59b3eb34acff965bcca7a2f390e18d07ac4a70cff8"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/state-contract.json",
+      "git_blob": "07436a946949c92c404ccb149f5b8b7320b91a16",
+      "sha256": "1908c1e49f95c94b77ffaf5d30874f1f00c05e8c9639123aa0ba7c9509188329"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/retention-records.json",
+      "git_blob": "fe4a6b0781766f15f2d15d68578f0260b891c5e9",
+      "sha256": "e98cf009c8dc8622436b3e23ad9288dd3d1dc9f41927985c3607cd7647131d81"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/retention-and-recovery.txt",
+      "git_blob": "e6d179ea1b93c1d07171654e8c140269cae946ed",
+      "sha256": "b66bdeac58be1dcca57e74af0b889d1e1c6afe3f0900849bc6e7ec780ece18c3"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/execution-contract.txt",
+      "git_blob": "53bd4d767eb554804008bac84e90bc49b59da727",
+      "sha256": "d71b303bfecc59534e11cfc5850f9e383791c560913cab756ba8a380f5ba6ea0"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/locking-and-constraints.txt",
+      "git_blob": "514789dcfc156e58bb2679e14e3180e1b3545c44",
+      "sha256": "4243eeca95676a4fd1709a516ecaa97773a112bb8939a0ae6c1b7b5899c86276"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/payload-and-adoption.txt",
+      "git_blob": "9a4b2330a71757a2a75da3d00582886b313e605e",
+      "sha256": "14cacc3a7de2e4f3a4fd46a287c22844e9f4c5f75f83edb6cfa694c9d89adbfa"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/contract.txt",
+      "git_blob": "0aa9b0f89f68ec6196c954f12dc04ade699470b1",
+      "sha256": "b52d2c9432f78dd4efc104a5c916b99f530f159772e09fba6790d4a4af535151"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/framing-vectors.json",
+      "git_blob": "14fe574fb0d47add5b0ff348317c072f1f6d4f7e",
+      "sha256": "4d4cb9ab6a81f909a9073e41782729c02c6da8a1a10ccdea2586e93742b7d17f"
+    },
+    {
+      "commit": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/record.json",
+      "git_blob": "d6e284d4edb8e6c2199c0bd89caf72568e63b2b1",
+      "sha256": "788460322d7c31992c38079505b7143d75e327294140557e57e3c90f4eac5415"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/PRODUCT.md",
+      "git_blob": "6a3992e258d7eecf4d2cd11422ee01d521a01017",
+      "sha256": "d9740519950695c0b09bcd173b3a8bac2ff52f41f16eee9cb6984f3ca67e3979"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/ROADMAP.md",
+      "git_blob": "a9167cee191dd79304086027b05523b675f7fbbe",
+      "sha256": "eccba4cb8f0ea3a684ab125967eddc20c98be5807f24b6905e4bad8599adcc57"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/DELIVERY.md",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4"
+    }
+  ]
+}

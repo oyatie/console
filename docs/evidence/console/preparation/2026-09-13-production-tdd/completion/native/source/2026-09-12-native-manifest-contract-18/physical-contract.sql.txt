@@ -1,0 +1,212 @@
+-- NATIVE18: proposed physical CONTRACT, not an executable migration.
+-- Existing objects are at product05200; source/Account targets below are explicit
+-- future13/15 contracts. Their final DDL and F04 ACL/command signatures remain OPEN.
+-- No migration number, deployment permission, or executed SQL proof.
+-- All new Company FKs ON DELETE RESTRICT; no destructive cascade/SET NULL.
+-- Nullability is explicit: absent NOT NULL means nullable in PostgreSQL.
+
+-- Exact existing parent keys needed by the proposed FKs.
+ALTER TABLE public.employee_contract_wages
+  ADD CONSTRAINT native18_wage_subject_uq UNIQUE (org_id,id,employee_id);
+ALTER TABLE public.payroll_draft_lines
+  ADD COLUMN native_protocol text CHECK (native_protocol IS NULL OR native_protocol='NP1'),
+  ADD CONSTRAINT native18_line_identity_uq UNIQUE (org_id,run_id,id,employee_id),
+  ADD CONSTRAINT native18_line_native_check CHECK (native_protocol IS NULL OR
+    (employee_id IS NOT NULL AND employee_source_key='native:'||employee_id::text
+     AND cardinality(source_data_import_row_ids)=0)),
+  ADD CONSTRAINT native18_line_employee_fk FOREIGN KEY(employee_id,org_id)
+    REFERENCES public.employees(id,org_id) ON DELETE RESTRICT;
+CREATE UNIQUE INDEX native18_line_subject_uq ON public.payroll_draft_lines(org_id,run_id,employee_id)
+  WHERE native_protocol='NP1';
+-- Existing same-org trigger retained; composite FK above strengthens it.
+-- Native line immutable identity and parent protocol correlation require N18-LINE.
+ALTER TABLE public.employment_revisions
+  ADD CONSTRAINT native18_employment_revision_uq UNIQUE(org_id,employment_id,id,version);
+ALTER TABLE public.ont_instance_revisions
+  ADD CONSTRAINT native18_instance_version_uq UNIQUE(org_id,instance_id,version);
+
+CREATE TABLE public.employee_contract_wage_corrections (
+  org_id uuid NOT NULL, base_wage_id uuid NOT NULL, employee_id uuid NOT NULL,
+  revision bigint NOT NULL CHECK(revision>0),
+  predecessor_revision bigint NOT NULL CHECK(predecessor_revision>=0 AND predecessor_revision=revision-1),
+  predecessor_fk_revision bigint GENERATED ALWAYS AS (NULLIF(predecessor_revision,0)) STORED,
+  amount_won bigint NOT NULL CHECK(amount_won>0),
+  wage_kind text NOT NULL CHECK(wage_kind IN ('MONTHLY','HOURLY')),
+  monthly_standard_hours integer NOT NULL CHECK(monthly_standard_hours BETWEEN 1 AND 400),
+  source_note text NOT NULL CHECK(char_length(source_note)<=500),
+  reason text NOT NULL CHECK(char_length(reason) BETWEEN 1 AND 2000),
+  evidence_refs jsonb NOT NULL CHECK(jsonb_typeof(evidence_refs)='array' AND jsonb_array_length(evidence_refs)<=32),
+  actor_account_id uuid NOT NULL, command_id uuid NOT NULL,
+  recorded_at_us bigint NOT NULL,
+  payload_digest bytea NOT NULL CHECK(octet_length(payload_digest)=32),
+  PRIMARY KEY(org_id,base_wage_id,revision),
+  UNIQUE(org_id,base_wage_id,predecessor_revision),
+  UNIQUE(org_id,command_id),
+  FOREIGN KEY(org_id,base_wage_id,employee_id) REFERENCES public.employee_contract_wages(org_id,id,employee_id) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,base_wage_id,predecessor_fk_revision) REFERENCES public.employee_contract_wage_corrections(org_id,base_wage_id,revision) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,actor_account_id) REFERENCES public.company_actors(org_id,account_id) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,command_id) REFERENCES public.ont_action_command_receipts(org_id,command_id) ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE public.employee_contract_wage_correction_heads (
+  org_id uuid NOT NULL, base_wage_id uuid NOT NULL, current_revision bigint NOT NULL CHECK(current_revision>0),
+  PRIMARY KEY(org_id,base_wage_id),
+  FOREIGN KEY(org_id,base_wage_id,current_revision) REFERENCES public.employee_contract_wage_corrections(org_id,base_wage_id,revision) ON DELETE RESTRICT
+);
+-- No head is stored for revision0. N18-WAGE serializes first insertion under WAGE guard.
+
+ALTER TABLE public.payroll_draft_runs
+  ADD COLUMN protocol_version text NOT NULL DEFAULT 'LEGACY' CHECK(protocol_version IN ('LEGACY','NP1')),
+  ADD COLUMN run_revision bigint CHECK(run_revision>0),
+  ADD COLUMN native_pay_date date,
+  ADD COLUMN current_input_revision bigint CHECK(current_input_revision>0),
+  ADD COLUMN current_calculation_revision integer CHECK(current_calculation_revision>0),
+  ADD COLUMN native_close_basis_id uuid,
+  ADD COLUMN native_close_basis_revision bigint CHECK(native_close_basis_revision>0),
+  ADD CONSTRAINT native18_run_required CHECK(protocol_version<>'NP1' OR (run_revision IS NOT NULL AND native_pay_date IS NOT NULL)),
+  ADD CONSTRAINT native18_run_close_pair CHECK((native_close_basis_id IS NULL)=(native_close_basis_revision IS NULL)),
+  ADD CONSTRAINT native18_run_active_refs CHECK((current_calculation_revision IS NULL OR current_input_revision IS NOT NULL)
+    AND (native_close_basis_id IS NULL OR current_input_revision IS NOT NULL));
+-- Original status/enabled constraints must be replaced by exact reviewed NP1/PC1
+-- compatibility matrix before enrollment (N18-RUN); no weakening implied here.
+
+CREATE TABLE public.payroll_input_revisions (
+  org_id uuid NOT NULL, run_id uuid NOT NULL, input_revision bigint NOT NULL CHECK(input_revision>0),
+  codec_version text NOT NULL CHECK(codec_version='native18-v1'),
+  period_start date NOT NULL, period_end date NOT NULL CHECK(period_end>=period_start),
+  pay_date date NOT NULL, earning_zone text NOT NULL CHECK(earning_zone='Asia/Seoul'),
+  earning_start_us bigint NOT NULL, earning_end_us bigint NOT NULL CHECK(earning_end_us>earning_start_us),
+  profile_id uuid NOT NULL, profile_revision bigint NOT NULL CHECK(profile_revision>0),
+  rule_bundle_id text NOT NULL, kernel_build_sha256 bytea NOT NULL CHECK(octet_length(kernel_build_sha256)=32),
+  citation_set_sha256 bytea NOT NULL CHECK(octet_length(citation_set_sha256)=32),
+  scope_id uuid NOT NULL, scope_revision bigint NOT NULL CHECK(scope_revision>0),
+  membership_count integer NOT NULL CHECK(membership_count BETWEEN 0 AND 2000),
+  membership_basis_digest bytea NOT NULL CHECK(octet_length(membership_basis_digest)=32),
+  guard_witnesses jsonb NOT NULL CHECK(jsonb_typeof(guard_witnesses)='array' AND jsonb_array_length(guard_witnesses)=10),
+  actor_account_id uuid NOT NULL, command_id uuid NOT NULL, recorded_at_us bigint NOT NULL,
+  header_digest bytea NOT NULL CHECK(octet_length(header_digest)=32),
+  manifest_digest bytea NOT NULL CHECK(octet_length(manifest_digest)=32),
+  PRIMARY KEY(org_id,run_id,input_revision), UNIQUE(org_id,command_id),
+  FOREIGN KEY(run_id,org_id) REFERENCES public.payroll_draft_runs(id,org_id) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,profile_id,profile_revision) REFERENCES public.ont_instance_revisions(org_id,instance_id,version) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,scope_id,scope_revision) REFERENCES public.ont_instance_revisions(org_id,instance_id,version) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,actor_account_id) REFERENCES public.company_actors(org_id,account_id) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,command_id) REFERENCES public.ont_action_command_receipts(org_id,command_id) ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE public.payroll_input_units (
+  org_id uuid NOT NULL, run_id uuid NOT NULL, input_revision bigint NOT NULL,
+  employee_id uuid NOT NULL, line_id uuid NOT NULL,
+  resolution text NOT NULL CHECK(resolution IN ('RESOLVED','BLOCKED')),
+  gross_won bigint CHECK(gross_won>0), taxable_monthly_won bigint CHECK(taxable_monthly_won>=0),
+  pension_standard_monthly_income_won bigint CHECK(pension_standard_monthly_income_won>=0),
+  monthly_standard_hours integer CHECK(monthly_standard_hours BETWEEN 1 AND 400),
+  income_tax_won bigint CHECK(income_tax_won>=0), local_tax_won bigint CHECK(local_tax_won>=0),
+  tax_table_edition text,
+  blockers jsonb NOT NULL CHECK(jsonb_typeof(blockers)='array' AND jsonb_array_length(blockers)<=32),
+  semantic_digest bytea NOT NULL CHECK(octet_length(semantic_digest)=32),
+  custody_digest bytea NOT NULL CHECK(octet_length(custody_digest)=32),
+  PRIMARY KEY(org_id,run_id,input_revision,employee_id),
+  UNIQUE(org_id,run_id,input_revision,employee_id,resolution),
+  UNIQUE(org_id,run_id,input_revision,employee_id,line_id,custody_digest),
+  CHECK((resolution='RESOLVED' AND num_nonnulls(gross_won,taxable_monthly_won,pension_standard_monthly_income_won,monthly_standard_hours,income_tax_won,local_tax_won,tax_table_edition)=7 AND jsonb_array_length(blockers)=0)
+    OR (resolution='BLOCKED' AND num_nonnulls(gross_won,taxable_monthly_won,pension_standard_monthly_income_won,monthly_standard_hours,income_tax_won,local_tax_won,tax_table_edition)=0 AND jsonb_array_length(blockers)>0)),
+  FOREIGN KEY(org_id,run_id,input_revision) REFERENCES public.payroll_input_revisions(org_id,run_id,input_revision) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,run_id,line_id,employee_id) REFERENCES public.payroll_draft_lines(org_id,run_id,id,employee_id) ON DELETE RESTRICT
+);
+CREATE TABLE public.payroll_input_source_refs (
+  org_id uuid NOT NULL, run_id uuid NOT NULL, input_revision bigint NOT NULL, employee_id uuid NOT NULL,
+  source_kind text NOT NULL CHECK(source_kind IN ('EMPLOYMENT_BINDING','EMPLOYMENT_REVISION','WAGE','ATTENDANCE_COVERAGE','ELIGIBILITY','TAX_EVIDENCE')),
+  selection text NOT NULL CHECK(selection IN ('SELECTED','CANDIDATE')),
+  ordinal smallint NOT NULL CHECK(ordinal BETWEEN 0 AND 255),
+  reference_id uuid NOT NULL, reference_revision bigint NOT NULL,
+  employment_id uuid, from_us bigint, to_us bigint,
+  reference_digest bytea NOT NULL CHECK(octet_length(reference_digest)=32),
+  binding_id uuid GENERATED ALWAYS AS (CASE WHEN source_kind='EMPLOYMENT_BINDING' THEN reference_id END) STORED,
+  employment_revision_id uuid GENERATED ALWAYS AS (CASE WHEN source_kind='EMPLOYMENT_REVISION' THEN reference_id END) STORED,
+  wage_base_id uuid GENERATED ALWAYS AS (CASE WHEN source_kind='WAGE' THEN reference_id END) STORED,
+  wage_correction_revision bigint GENERATED ALWAYS AS (CASE WHEN source_kind='WAGE' THEN NULLIF(reference_revision,0) END) STORED,
+  coverage_id uuid GENERATED ALWAYS AS (CASE WHEN source_kind='ATTENDANCE_COVERAGE' THEN reference_id END) STORED,
+  assessment_id uuid GENERATED ALWAYS AS (CASE WHEN source_kind='ELIGIBILITY' THEN reference_id END) STORED,
+  evidence_id uuid GENERATED ALWAYS AS (CASE WHEN source_kind='TAX_EVIDENCE' THEN reference_id END) STORED,
+  PRIMARY KEY(org_id,run_id,input_revision,employee_id,source_kind,selection,ordinal),
+  CHECK((source_kind='WAGE' AND reference_revision>=0) OR (source_kind<>'WAGE' AND reference_revision>0)),
+  CHECK((selection='CANDIDATE' AND ordinal BETWEEN 1 AND 32)
+    OR (selection='SELECTED' AND ((source_kind='EMPLOYMENT_REVISION' AND ordinal BETWEEN 1 AND 128) OR (source_kind<>'EMPLOYMENT_REVISION' AND ordinal=0)))),
+  CHECK((source_kind='EMPLOYMENT_REVISION' AND employment_id IS NOT NULL AND from_us IS NOT NULL AND to_us IS NOT NULL AND to_us>from_us)
+    OR (source_kind='EMPLOYMENT_BINDING' AND employment_id IS NOT NULL AND from_us IS NULL AND to_us IS NULL)
+    OR (source_kind NOT IN ('EMPLOYMENT_REVISION','EMPLOYMENT_BINDING') AND employment_id IS NULL AND from_us IS NULL AND to_us IS NULL)),
+  FOREIGN KEY(org_id,run_id,input_revision,employee_id) REFERENCES public.payroll_input_units(org_id,run_id,input_revision,employee_id) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,binding_id,reference_revision) REFERENCES public.employment_binding_revisions(org_id,binding_id,revision) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,employment_id,employment_revision_id,reference_revision) REFERENCES public.employment_revisions(org_id,employment_id,id,version) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,wage_base_id,employee_id) REFERENCES public.employee_contract_wages(org_id,id,employee_id) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,wage_base_id,wage_correction_revision) REFERENCES public.employee_contract_wage_corrections(org_id,base_wage_id,revision) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,coverage_id,reference_revision) REFERENCES public.attendance_coverage_revisions(org_id,coverage_id,revision) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,assessment_id,reference_revision) REFERENCES public.payroll_eligibility_assessment_revisions(org_id,assessment_id,revision) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,evidence_id,reference_revision) REFERENCES public.payroll_tax_evidence_revisions(org_id,evidence_id,revision) ON DELETE RESTRICT
+);
+-- Conditional FK MATCH SIMPLE deliberately bypasses nonmatching union arms only.
+-- N18-INPUT checks binding/coverage/assessment/tax semantic subject correlations
+-- and exact parsed subtype fields; they cannot be inferred from existence FKs.
+
+CREATE TABLE public.payroll_calculation_batches (
+  org_id uuid NOT NULL, run_id uuid NOT NULL, calculation_revision integer NOT NULL CHECK(calculation_revision>0),
+  input_revision bigint NOT NULL,
+  close_basis_id uuid NOT NULL, close_basis_revision bigint NOT NULL CHECK(close_basis_revision>0),
+  member_count integer NOT NULL CHECK(member_count BETWEEN 1 AND 2000),
+  success_count integer NOT NULL CHECK(success_count>=0), blocked_count integer NOT NULL CHECK(blocked_count>=0),
+  input_manifest_digest bytea NOT NULL CHECK(octet_length(input_manifest_digest)=32),
+  header_digest bytea NOT NULL CHECK(octet_length(header_digest)=32),
+  batch_digest bytea NOT NULL CHECK(octet_length(batch_digest)=32),
+  actor_account_id uuid NOT NULL, command_id uuid NOT NULL, recorded_at_us bigint NOT NULL,
+  PRIMARY KEY(org_id,run_id,calculation_revision), UNIQUE(org_id,run_id,calculation_revision,input_revision), UNIQUE(org_id,command_id),
+  CHECK(success_count+blocked_count=member_count),
+  FOREIGN KEY(org_id,run_id,input_revision) REFERENCES public.payroll_input_revisions(org_id,run_id,input_revision) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,close_basis_id,close_basis_revision) REFERENCES public.attendance_native_close_bases(org_id,close_basis_id,revision) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,actor_account_id) REFERENCES public.company_actors(org_id,account_id) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,command_id) REFERENCES public.ont_action_command_receipts(org_id,command_id) ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED
+);
+ALTER TABLE public.payroll_line_calculations
+  ADD COLUMN native_employee_id uuid,
+  ADD COLUMN native_input_revision bigint CHECK(native_input_revision>0),
+  ADD COLUMN native_input_resolution text CHECK(native_input_resolution='RESOLVED'),
+  ADD CONSTRAINT native18_result_presence CHECK(num_nonnulls(native_employee_id,native_input_revision,native_input_resolution) IN (0,3)),
+  ADD CONSTRAINT native18_result_not_payable CHECK(native_input_revision IS NULL OR payable=false),
+  ADD CONSTRAINT native18_result_subject_uq UNIQUE(org_id,run_id,version,native_employee_id),
+  ADD CONSTRAINT native18_result_exact_uq UNIQUE(org_id,run_id,version,native_employee_id,native_input_revision,line_id,id),
+  ADD CONSTRAINT native18_result_line_fk FOREIGN KEY(org_id,run_id,line_id,native_employee_id) REFERENCES public.payroll_draft_lines(org_id,run_id,id,employee_id) ON DELETE RESTRICT,
+  ADD CONSTRAINT native18_result_input_fk FOREIGN KEY(org_id,run_id,native_input_revision,native_employee_id,native_input_resolution) REFERENCES public.payroll_input_units(org_id,run_id,input_revision,employee_id,resolution) ON DELETE RESTRICT,
+  ADD CONSTRAINT native18_result_batch_fk FOREIGN KEY(org_id,run_id,version,native_input_revision) REFERENCES public.payroll_calculation_batches(org_id,run_id,calculation_revision,input_revision) ON DELETE RESTRICT;
+CREATE TABLE public.payroll_calculation_units (
+  org_id uuid NOT NULL, run_id uuid NOT NULL, calculation_revision integer NOT NULL,
+  input_revision bigint NOT NULL, employee_id uuid NOT NULL, line_id uuid NOT NULL,
+  state text NOT NULL CHECK(state IN ('SUCCESS','BLOCKED')),
+  result_id uuid,
+  blockers jsonb NOT NULL CHECK(jsonb_typeof(blockers)='array' AND jsonb_array_length(blockers)<=32),
+  input_unit_digest bytea NOT NULL CHECK(octet_length(input_unit_digest)=32),
+  outcome_digest bytea NOT NULL CHECK(octet_length(outcome_digest)=32),
+  PRIMARY KEY(org_id,run_id,calculation_revision,employee_id),
+  UNIQUE(org_id,run_id,calculation_revision,employee_id,result_id),
+  CHECK((state='SUCCESS' AND result_id IS NOT NULL AND jsonb_array_length(blockers)=0)
+    OR (state='BLOCKED' AND result_id IS NULL AND jsonb_array_length(blockers)>0)),
+  FOREIGN KEY(org_id,run_id,calculation_revision,input_revision) REFERENCES public.payroll_calculation_batches(org_id,run_id,calculation_revision,input_revision) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,run_id,input_revision,employee_id,line_id,input_unit_digest) REFERENCES public.payroll_input_units(org_id,run_id,input_revision,employee_id,line_id,custody_digest) ON DELETE RESTRICT,
+  FOREIGN KEY(org_id,run_id,calculation_revision,employee_id,input_revision,line_id,result_id) REFERENCES public.payroll_line_calculations(org_id,run_id,version,native_employee_id,native_input_revision,line_id,id) ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED
+);
+ALTER TABLE public.payroll_line_calculations
+  ADD CONSTRAINT native18_result_outcome_fk FOREIGN KEY(org_id,run_id,version,native_employee_id,id)
+  REFERENCES public.payroll_calculation_units(org_id,run_id,calculation_revision,employee_id,result_id)
+  ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.payroll_draft_runs
+  ADD CONSTRAINT native18_run_input_fk FOREIGN KEY(org_id,id,current_input_revision) REFERENCES public.payroll_input_revisions(org_id,run_id,input_revision) ON DELETE RESTRICT,
+  ADD CONSTRAINT native18_run_batch_fk FOREIGN KEY(org_id,id,current_calculation_revision,current_input_revision) REFERENCES public.payroll_calculation_batches(org_id,run_id,calculation_revision,input_revision) ON DELETE RESTRICT,
+  ADD CONSTRAINT native18_run_close_fk FOREIGN KEY(org_id,native_close_basis_id,native_close_basis_revision) REFERENCES public.attendance_native_close_bases(org_id,close_basis_id,revision) ON DELETE RESTRICT;
+
+-- Supporting indexes beyond PK/UNIQUE; write work stays bounded per immutable header.
+CREATE INDEX native18_refs_wage_idx ON public.payroll_input_source_refs(org_id,wage_base_id,wage_correction_revision) WHERE wage_base_id IS NOT NULL;
+CREATE INDEX native18_refs_assessment_idx ON public.payroll_input_source_refs(org_id,assessment_id,reference_revision) WHERE assessment_id IS NOT NULL;
+CREATE INDEX native18_refs_tax_idx ON public.payroll_input_source_refs(org_id,evidence_id,reference_revision) WHERE evidence_id IS NOT NULL;
+-- Other FK reverse indexes/source invalidation queues require unified F02 query census;
+-- no arbitrary entity/property query uses these native rows as an EAV store.
+-- Installation must ENABLE/FORCE RLS with exact Company USING/WITH CHECK on all7,
+-- REVOKE every inherited PUBLIC/runtime privilege in SAME creation transaction,
+-- then install immutable/owner validation guards N18-* and exact F04 ACLs.
+-- No insert can become admitted while these commands/signatures are unresolved.

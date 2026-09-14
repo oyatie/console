@@ -1,0 +1,5685 @@
+{
+  "classification": "PROPOSED_PHYSICAL_MAPPING;constraint realization and owner procedures in physical-contract.txt;not runtime DDL",
+  "records": [
+    {
+      "name": "accounts",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity",
+      "keys": [
+        "id"
+      ],
+      "constraints": [
+        "No Company/role/Employment FK",
+        "id immutable; legacy users.id mapping preserved"
+      ],
+      "cell": "ACCOUNT",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "accounts",
+      "columns": [
+        {
+          "name": "id",
+          "nullable": false,
+          "inherited_description": "UUID NOT NULL",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "created_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ NOT NULL",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        }
+      ]
+    },
+    {
+      "name": "account_security",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity security; auth participates",
+      "keys": [
+        "account_id"
+      ],
+      "constraints": [
+        "Mandatory for every Account before usable",
+        "Generation/revision never decrease",
+        "Company work-relation transition cannot update this row"
+      ],
+      "cell": "ACCOUNT",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "account_security",
+      "columns": [
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID FK accounts RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "security_state",
+          "nullable": false,
+          "inherited_description": "PENDING_ENROLLMENT|ACTIVE|SECURITY_SUSPENDED|RECOVERY_REQUIRED",
+          "pg_type": "text",
+          "enum": [
+            "PENDING_ENROLLMENT",
+            "ACTIVE",
+            "SECURITY_SUSPENDED",
+            "RECOVERY_REQUIRED"
+          ]
+        },
+        {
+          "name": "security_generation",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "updated_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "context_generation",
+          "pg_type": "bigint",
+          "nullable": false,
+          "minimum": 1,
+          "constraint": "monotonic16 context navigation fence"
+        }
+      ]
+    },
+    {
+      "name": "company_actors",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity",
+      "keys": [
+        "org_id",
+        "account_id"
+      ],
+      "constraints": [
+        "Immutable attribution only",
+        "Admission receipt same Company and exact Account",
+        "No eligibility or workforce-active bool"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "company_actors",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID FK organizations RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID FK accounts RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "admission_receipt_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "entitlement_ref",
+          "nullable": false,
+          "inherited_description": "ImmutableOwnerRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "created_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        }
+      ]
+    },
+    {
+      "name": "account_terms_acceptances",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity security",
+      "keys": [
+        "account_id",
+        "terms_kind",
+        "terms_version"
+      ],
+      "constraints": [
+        "Immutable owner-verified acceptance; content digest fixed for registered version"
+      ],
+      "cell": "ACCOUNT",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "account_terms_acceptances",
+      "columns": [
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID FK accounts RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "terms_kind",
+          "nullable": false,
+          "inherited_description": "RegisteredTermsKind",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "terms_version",
+          "nullable": false,
+          "inherited_description": "TEXT nonblank",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "content_sha256",
+          "nullable": false,
+          "inherited_description": "BYTEA length32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "accepted_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "security_event_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        }
+      ]
+    },
+    {
+      "name": "account_security_events",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity security",
+      "keys": [
+        "id"
+      ],
+      "constraints": [
+        "Append-only subject/security audit",
+        "No raw token/key/identity document",
+        "Not employer audit feed"
+      ],
+      "cell": "ACCOUNT",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "account_security_events",
+      "columns": [
+        {
+          "name": "id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID FK accounts RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "kind",
+          "nullable": false,
+          "inherited_description": "RegisteredSecurityEvent",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "occurred_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": true,
+          "inherited_description": "UUID FK accounts RESTRICT or null for verified system event",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "session_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "evidence_ref",
+          "nullable": true,
+          "inherited_description": "ImmutableOwnerRef nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "payload",
+          "nullable": false,
+          "inherited_description": "Typed minimized event object",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/SecurityEvent"
+        }
+      ]
+    },
+    {
+      "name": "group_authority_guards",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity/group authority helper",
+      "keys": [
+        "group_id"
+      ],
+      "constraints": [
+        "Initialized atomically with Group before enrollment",
+        "Monotonic/no ordinary delete, including archive",
+        "Global Group helper does not arm Company RLS"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_authority_guards",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID FK groups RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "topology_epoch",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "identity_epoch",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      ]
+    },
+    {
+      "name": "company_authority_guards",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity authority helper",
+      "keys": [
+        "org_id"
+      ],
+      "constraints": [
+        "Not the legacy policy_versions bundle version",
+        "Exists before every enrolled surface; missing fails closed",
+        "Monotonic epoch bump in same fact-writer transaction"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "company_authority_guards",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID FK organizations RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "epoch",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      ]
+    },
+    {
+      "name": "group_human_subjects",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity",
+      "keys": [
+        "group_id",
+        "human_id"
+      ],
+      "constraints": [
+        "UNIQUE(group_id,registry_id,issuer_subject_ref)",
+        "Only one admitted registry per pilot Group unless reviewed equivalence",
+        "Opaque registry key requires actual verified human evidence, not UUID distinctness"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_human_subjects",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID FK groups RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "human_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "registry_id",
+          "nullable": false,
+          "inherited_description": "UUID reference admitted pilot registry",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "issuer_subject_ref",
+          "nullable": false,
+          "inherited_description": "OpaqueRegistrySubjectId",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "created_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        }
+      ]
+    },
+    {
+      "name": "group_identity_binding_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity",
+      "keys": [
+        "group_id",
+        "binding_id",
+        "revision"
+      ],
+      "constraints": [
+        "XOR ACCOUNT(account_id only) / PERSON(composite Company Person only)",
+        "FK(group_id,human_id) group_human_subjects",
+        "PERSON reference verified through canonical Person owner, no profile writes",
+        "valid_until > valid_from when present",
+        "VERIFIED requires current qualified evidence and independent verified natural persons"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_identity_binding_revisions",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "binding_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "alias_kind",
+          "nullable": false,
+          "inherited_description": "ACCOUNT|PERSON",
+          "pg_type": "text",
+          "enum": [
+            "ACCOUNT",
+            "PERSON"
+          ]
+        },
+        {
+          "name": "account_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable FK accounts RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "person_org_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "person_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "human_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "status",
+          "nullable": false,
+          "inherited_description": "PROPOSED|VERIFIED|SUSPENDED|SUPERSEDED",
+          "pg_type": "text",
+          "enum": [
+            "PROPOSED",
+            "VERIFIED",
+            "SUSPENDED",
+            "SUPERSEDED"
+          ]
+        },
+        {
+          "name": "valid_from",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "valid_until",
+          "nullable": true,
+          "inherited_description": "TIMESTAMPTZ nullable",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "case_ref",
+          "nullable": false,
+          "inherited_description": "ImmutableOwnerRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "proof_digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "proposer_account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "verifier_account_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "verified_at",
+          "nullable": true,
+          "inherited_description": "TIMESTAMPTZ nullable",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        }
+      ]
+    },
+    {
+      "name": "group_identity_binding_heads",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity",
+      "keys": [
+        "group_id",
+        "binding_id"
+      ],
+      "constraints": [
+        "Composite FK to binding revision; alias fixed for binding",
+        "Partial UNIQUE(group_id,account_id) for ACCOUNT",
+        "Partial UNIQUE(group_id,person_org_id,person_id) for PERSON",
+        "CAS expected current revision; suspended alias cannot acquire another parallel head"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_identity_binding_heads",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "binding_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "current_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "alias_kind",
+          "nullable": false,
+          "inherited_description": "ACCOUNT|PERSON",
+          "pg_type": "text",
+          "enum": [
+            "ACCOUNT",
+            "PERSON"
+          ]
+        },
+        {
+          "name": "account_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "person_org_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "person_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        }
+      ]
+    },
+    {
+      "name": "tenant_identity_root_receipts",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity supervised provisioning",
+      "keys": [
+        "group_id"
+      ],
+      "constraints": [
+        "Single-use initial root; operators and issuer subjects distinct under supervised registry evidence",
+        "No tenant upload verified=true; no payroll grants",
+        "Recovery is append-only linked owner receipt, not overwrite of initial root"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "tenant_identity_root_receipts",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID FK groups RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "receipt_id",
+          "nullable": false,
+          "inherited_description": "UUID UNIQUE",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "registry_ref",
+          "nullable": false,
+          "inherited_description": "ImmutableOwnerRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "policy_ref",
+          "nullable": false,
+          "inherited_description": "ImmutableOwnerRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "operator_a",
+          "nullable": false,
+          "inherited_description": "UUID FK accounts RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "operator_b",
+          "nullable": false,
+          "inherited_description": "UUID FK accounts RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "issuer_subject_a",
+          "nullable": false,
+          "inherited_description": "OpaqueRegistrySubjectId",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "issuer_subject_b",
+          "nullable": false,
+          "inherited_description": "OpaqueRegistrySubjectId",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "reviewer_evidence_ref",
+          "nullable": false,
+          "inherited_description": "ImmutableOwnerRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "recorded_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        }
+      ]
+    },
+    {
+      "name": "policy_role_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity policy owner",
+      "keys": [
+        "org_id",
+        "role_id",
+        "revision"
+      ],
+      "constraints": [
+        "FK(role_id,org_id) existing policy_roles",
+        "Actor attribution CompanyActor",
+        "Immutable published content; changes append revision"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "policy_role_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "role_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "display_name",
+          "nullable": false,
+          "inherited_description": "TEXT1..80",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "status",
+          "nullable": false,
+          "inherited_description": "DRAFT|PUBLISHED|RETIRED",
+          "pg_type": "text",
+          "enum": [
+            "DRAFT",
+            "PUBLISHED",
+            "RETIRED"
+          ]
+        },
+        {
+          "name": "schema_ref",
+          "nullable": false,
+          "inherited_description": "ImmutableOwnerRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "created_by",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "created_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        }
+      ]
+    },
+    {
+      "name": "policy_capability_clauses",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity policy owner",
+      "keys": [
+        "org_id",
+        "role_id",
+        "role_revision",
+        "clause_id"
+      ],
+      "constraints": [
+        "Composite FK role revision",
+        "Action/type/property refs validate exact registered owner schema at publish",
+        "Clause preserves action/scope/field/conditions correlation",
+        "No arbitrary Cedar text or undefined JSON operands"
+      ],
+      "cell": "COMPANY",
+      "mapping": "REGISTERED_COMMON_CONTENT",
+      "physical_owner": "policy_role_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "role_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "role_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "clause_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "action_ref",
+          "nullable": false,
+          "inherited_description": "RegisteredActionRevisionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ActionRef"
+        },
+        {
+          "name": "resource_kind_ref",
+          "nullable": false,
+          "inherited_description": "RegisteredTypeRevisionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        {
+          "name": "field_group_ref",
+          "nullable": true,
+          "inherited_description": "ImmutableOwnerRef nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "condition_ast",
+          "nullable": false,
+          "inherited_description": "Typed closed condition grammar",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/Condition"
+        }
+      ]
+    },
+    {
+      "name": "policy_assignment_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity policy owner",
+      "keys": [
+        "org_id",
+        "assignment_id",
+        "revision"
+      ],
+      "constraints": [
+        "Root is existing user_role_assignments.id after Account-aware migration",
+        "Account FK company_actors; exact same-Company bundle/scope references",
+        "valid_until > valid_from when present",
+        "Old unique(org,user,role) replaced only after old writers refuse/understand enrolled records",
+        "First supported roots Account-bound; subject-group expansion awaits guarded membership owner"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "policy_assignment_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "assignment_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "role_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "role_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "scope_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "scope_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "field_narrowing_ref",
+          "nullable": true,
+          "inherited_description": "ImmutableOwnerRef nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "valid_from",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "valid_until",
+          "nullable": true,
+          "inherited_description": "TIMESTAMPTZ nullable",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "purpose_ref",
+          "nullable": true,
+          "inherited_description": "ImmutableOwnerRef nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "relationship_refs",
+          "nullable": false,
+          "inherited_description": "Typed immutable ref vector",
+          "pg_type": "jsonb",
+          "items_schema_ref": "action-types.schema.json#/$defs/ExactEvidence",
+          "max_items": 256
+        },
+        {
+          "name": "delegation_ceiling_ref",
+          "nullable": false,
+          "inherited_description": "ImmutableOwnerRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "issuer_account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "approval_ref",
+          "nullable": true,
+          "inherited_description": "ImmutableOwnerRef nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "ACTIVE|REVOKED",
+          "pg_type": "text",
+          "enum": [
+            "ACTIVE",
+            "REVOKED"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "policy_assignment_heads",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity policy owner",
+      "keys": [
+        "org_id",
+        "assignment_id"
+      ],
+      "constraints": [
+        "FK exact assignment revision",
+        "CAS expected head, no silent replacement of other scope roots"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "policy_assignment_heads",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "assignment_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "current_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      ]
+    },
+    {
+      "name": "policy_scope_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity policy owner; source facts stay domain-owned",
+      "keys": [
+        "org_id",
+        "scope_id",
+        "revision"
+      ],
+      "constraints": [
+        "Company boundary fixed; descendant rule only on registered hierarchy types",
+        "No unvalidated SQL/query text or labels",
+        "Actual membership is owner/current-fact-derived under Company guard"
+      ],
+      "cell": "COMPANY",
+      "mapping": "REGISTERED_COMMON_CONTENT",
+      "physical_owner": "ont_instance_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "scope_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "selector_kind",
+          "nullable": false,
+          "inherited_description": "COMPANY|ORG_UNIT|TASK|OBJECT",
+          "pg_type": "text",
+          "enum": [
+            "COMPANY",
+            "ORG_UNIT",
+            "TASK",
+            "OBJECT"
+          ]
+        },
+        {
+          "name": "selector_ref",
+          "nullable": false,
+          "inherited_description": "Typed Company-owned object identity",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ObjectRef"
+        },
+        {
+          "name": "include_descendants",
+          "nullable": false,
+          "inherited_description": "BOOLEAN",
+          "pg_type": "boolean"
+        },
+        {
+          "name": "schema_ref",
+          "nullable": false,
+          "inherited_description": "ImmutableOwnerRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        }
+      ]
+    },
+    {
+      "name": "policy_field_group_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "identity policy metadata owner",
+      "keys": [
+        "org_id",
+        "field_group_id",
+        "revision"
+      ],
+      "constraints": [
+        "No future-field wildcard",
+        "Schema change requires explicit revalidation and new publication where relevant",
+        "Property IDs checked under owning schema guard"
+      ],
+      "cell": "COMPANY",
+      "mapping": "REGISTERED_COMMON_CONTENT",
+      "physical_owner": "ont_instance_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "field_group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "object_schema_ref",
+          "nullable": false,
+          "inherited_description": "ImmutableOwnerRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "property_ids",
+          "nullable": false,
+          "inherited_description": "Bounded exact registered property identity vector",
+          "pg_type": "jsonb",
+          "items_schema_ref": "control-types.schema.json#/$defs/PropertyRef",
+          "max_items": 256
+        }
+      ]
+    },
+    {
+      "name": "authorized_query_cursors",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "owner": "authorization projection owner",
+      "keys": [
+        "org_id",
+        "cursor_hash"
+      ],
+      "constraints": [
+        "Opaque random256bit handle, only hash stored; 5minute expiry",
+        "Current Account+Company+query+epoch checked; not a read grant",
+        "Last key never raw hidden sort field; max100 page rows",
+        "Cleanup TTL only this ephemeral cursor, never business receipt/history"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "authorized_query_cursors",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "cursor_hash",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID FK accounts RESTRICT",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "query_digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "scope_ref",
+          "nullable": false,
+          "inherited_description": "ImmutableOwnerRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ControlEvidence"
+        },
+        {
+          "name": "authority_epoch",
+          "nullable": false,
+          "inherited_description": "BIGINT >=1",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "schema_plan_digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "last_key",
+          "nullable": false,
+          "inherited_description": "Typed authorized sort key/object identity",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/SortKey"
+        },
+        {
+          "name": "expires_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        }
+      ]
+    },
+    {
+      "name": "ont_action_input_schema_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "owner": "ontology registry command owner",
+      "keys": [
+        "org_id",
+        "schema_id",
+        "revision"
+      ],
+      "constraints": [
+        "Composite action row FK; same schema family fixed to action binding/codec",
+        "Immutable published row; no UPDATE/DELETE; typed definition field IDs/names unique and stable across permitted upgrade",
+        "Exact schema digest and registered normalization; field IDs admitted into PA1 property registry",
+        "All required nested owner codecs exist before executable enrollment"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "ont_action_input_schema_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "schema_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "action_type_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "codec_version",
+          "nullable": false,
+          "inherited_description": "RegisteredVersion",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "definition_digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "created_by",
+          "nullable": false,
+          "inherited_description": "CompanyActorId",
+          "pg_type": "uuid",
+          "validation": "same-rowCompany+accountUUID compositeCompanyActorFK"
+        },
+        {
+          "name": "created_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "definition_revision",
+          "pg_type": "jsonb",
+          "nullable": false,
+          "schema_ref": "types.schema.json#/$defs/GovernedRevision",
+          "physical": "flatten exact6column common reference;PH28"
+        }
+      ]
+    },
+    {
+      "name": "ont_action_runtime_bindings",
+      "source": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "owner": "ontology registry command owner with compiled domain registration",
+      "keys": [
+        "org_id",
+        "action_type_id"
+      ],
+      "constraints": [
+        "Composite FK ensures action belongs to exact Company/type snapshot",
+        "Immutable tuple; no arbitrary owner/SQL/dispatch strings",
+        "Schema family exactly belongs to action; publication rejects unresolved codec/result owner",
+        "Live enrollment and compatibility governed separately by current registry/Company authority; no immutable row implies permanent executable permission"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "ont_action_runtime_bindings",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "action_type_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "object_type_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "owner_key",
+          "nullable": false,
+          "inherited_description": "ClosedOwnerKey",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "owner_action",
+          "nullable": false,
+          "inherited_description": "ClosedDispatchTarget",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "input_schema_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "codec_version",
+          "nullable": false,
+          "inherited_description": "RegisteredVersion",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "fingerprint_protocol",
+          "nullable": false,
+          "inherited_description": "CCF1",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "draft_requirement",
+          "nullable": false,
+          "inherited_description": "REQUIRED|PERMITTED|NOT_APPLICABLE",
+          "pg_type": "text",
+          "enum": [
+            "REQUIRED",
+            "PERMITTED",
+            "NOT_APPLICABLE"
+          ]
+        },
+        {
+          "name": "result_contract",
+          "nullable": false,
+          "inherited_description": "RegisteredResultVersion",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "manifest_digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "name": "ont_draft_controls",
+      "source": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "owner": "ontology common instance adapter",
+      "keys": [
+        "org_id",
+        "draft_id"
+      ],
+      "constraints": [
+        "Composite same-Company instance FK to retained head/tombstone; type positively INPUT_DRAFT_V1",
+        "XOR Account custody with exact Account FK or existing WorkItem Company FK; work assignment owner proof current",
+        "Partial UNIQUE(org_id,intent_key) WHERE state IN(EDITABLE,SEALED); tuple equality checked on digest match",
+        "Intent key CCF1 of immutable Company/custody/action/target/owner-slot; collisions conflict rather than conflate",
+        "SEALED iff active_attempt references matching READY attempt, except unresolved observer does not mutate stored phase; deferred owner constraint verified at transaction commit",
+        "Control revision is lifecycle concurrency only, not payload history; immutable bindings never retarget",
+        "PAYLOAD_REMOVED never ordinary editable/readable; retain tombstone; explicit retention operation only",
+        "Head/current open revision Company consistency checked under owner guard; compatible constrained terminal cleanup W04b-05"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "ont_draft_controls",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "draft_id",
+          "nullable": false,
+          "inherited_description": "UUID same ont_instances.id",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "action_type_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "object_type_id",
+          "nullable": false,
+          "inherited_description": "UUID action target schema",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "initial_input_schema_ref",
+          "nullable": false,
+          "inherited_description": "ExactInputSchemaRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/InputSchemaRef"
+        },
+        {
+          "name": "target_binding",
+          "nullable": false,
+          "inherited_description": "ExistingTarget|CreateScope (typed immutable)",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/Target"
+        },
+        {
+          "name": "custody_kind",
+          "nullable": false,
+          "inherited_description": "ACCOUNT|WORK_ITEM",
+          "pg_type": "text",
+          "enum": [
+            "ACCOUNT",
+            "WORK_ITEM"
+          ]
+        },
+        {
+          "name": "custody_account_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "work_item_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "creator_account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "intent_slot",
+          "nullable": false,
+          "inherited_description": "BoundedOwnerSlot",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "intent_key",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "EDITABLE|SEALED|CONSUMED|DISCARDED|EXPIRED",
+          "pg_type": "text",
+          "enum": [
+            "EDITABLE",
+            "SEALED",
+            "CONSUMED",
+            "DISCARDED",
+            "EXPIRED"
+          ]
+        },
+        {
+          "name": "editing_epoch",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "editing_nonce",
+          "nullable": false,
+          "inherited_description": "BYTEA32 opaque",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "assignment_generation",
+          "nullable": true,
+          "inherited_description": "BIGINT nullable",
+          "pg_type": "bigint",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "active_attempt_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "retention_state",
+          "nullable": false,
+          "inherited_description": "LIVE|QUARANTINED|PAYLOAD_REMOVED",
+          "pg_type": "text",
+          "enum": [
+            "LIVE",
+            "QUARANTINED",
+            "PAYLOAD_REMOVED"
+          ]
+        },
+        {
+          "name": "control_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "created_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "updated_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        }
+      ]
+    },
+    {
+      "name": "ont_draft_submission_attempts",
+      "source": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "owner": "ontology common draft owner, participating in business owner transaction",
+      "keys": [
+        "org_id",
+        "attempt_id"
+      ],
+      "constraints": [
+        "UNIQUE(org_id,domain_command_id); composite FK draft control; no second active READY attempt per draft",
+        "Original CompanyActor/action/type/schema/target/input/basis/context immutable and fingerprint-bound; phase update cannot rewrite input",
+        "Source lineage verified under pin fence; not permanent restrictive FK to deletable revision payload; exact existing pin while required",
+        "SUCCEEDED requires same-Company exact domain receipt and result owner; terminal states monotonic",
+        "No committed RUNNING/outcome_UNKNOWN transition or timer cancellation; uncertain observation pins/reconciles",
+        "Erasing payload/reason/expected refs only eligible RR1 owner operation, never ordinary update; fingerprint and minimal lineage/tombstone retained",
+        "Domain adoption first retains complete required submission data/evidence under domain owner before releasing draft pin; original actor never rewritten",
+        "Reservation holds future Company/domain_command fence and proves absent receipt/binding; every direct alias rechecks this provenance even when attempt_ref omitted"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "ont_draft_submission_attempts",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "attempt_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "draft_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "source_revision_id",
+          "nullable": false,
+          "inherited_description": "UUID lineage",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "source_revision_version",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "source_hash",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "input_schema_ref",
+          "nullable": false,
+          "inherited_description": "ExactInputSchemaRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/InputSchemaRef"
+        },
+        {
+          "name": "original_account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "original_assignment_generation",
+          "nullable": true,
+          "inherited_description": "BIGINT nullable",
+          "pg_type": "bigint",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "sealed_editing_epoch",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "domain_command_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "action_type_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "owner_key",
+          "nullable": false,
+          "inherited_description": "ClosedOwnerKey",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "owner_action",
+          "nullable": false,
+          "inherited_description": "ClosedDispatchTarget",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "object_type_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "target_binding",
+          "nullable": false,
+          "inherited_description": "ExactTypedTarget",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/Target"
+        },
+        {
+          "name": "codec_version",
+          "nullable": false,
+          "inherited_description": "RegisteredVersion",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "normalized_input",
+          "nullable": true,
+          "inherited_description": "Closed typed immutable snapshot, nullable only after authorized disposal",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/RegisteredInput"
+        },
+        {
+          "name": "expected_refs",
+          "nullable": false,
+          "inherited_description": "Typed exact immutable basis",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ExpectedBinding"
+        },
+        {
+          "name": "reason",
+          "nullable": false,
+          "inherited_description": "Bounded immutable narrative, payload custody",
+          "pg_type": "text",
+          "max_chars": 1000
+        },
+        {
+          "name": "gate_ref",
+          "nullable": true,
+          "inherited_description": "ExactGateRequestPayloadRef nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/GovernanceRequestRef"
+        },
+        {
+          "name": "command_fingerprint",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "READY|SUCCEEDED|REJECTED_NO_EFFECT|CANCELLED",
+          "pg_type": "text",
+          "enum": [
+            "READY",
+            "SUCCEEDED",
+            "REJECTED_NO_EFFECT",
+            "CANCELLED"
+          ]
+        },
+        {
+          "name": "state_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "result_refs",
+          "nullable": true,
+          "inherited_description": "RegisteredOwnerReceipt/Result refs nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/OwnerResultRef"
+        },
+        {
+          "name": "adoption_receipt_ref",
+          "nullable": true,
+          "inherited_description": "RegisteredDomainAdoptionRef nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ReceiptRef"
+        },
+        {
+          "name": "payload_state",
+          "nullable": false,
+          "inherited_description": "RETAINED|ADOPTED|ERASED",
+          "pg_type": "text",
+          "enum": [
+            "RETAINED",
+            "ADOPTED",
+            "ERASED"
+          ]
+        },
+        {
+          "name": "created_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "completed_at",
+          "nullable": true,
+          "inherited_description": "TIMESTAMPTZ nullable",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        }
+      ]
+    },
+    {
+      "name": "source_family_guards",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "platform/db source guard helper",
+      "keys": [
+        "org_id",
+        "family"
+      ],
+      "constraints": [
+        "Preinitialized before enrollment; missing denied; source writers same-tx EXCLUSIVE+increment",
+        "No permissions/grants implied by possession of generation"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "source_family_guards",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "family",
+          "nullable": false,
+          "inherited_description": "ClosedSourceFamily",
+          "pg_type": "text",
+          "enum": [
+            "POPULATION",
+            "EMPLOYMENT",
+            "WAGE",
+            "ATTENDANCE",
+            "CALENDAR",
+            "LEAVE",
+            "ELIGIBILITY",
+            "TAX_EVIDENCE",
+            "QUALIFICATION",
+            "ARTIFACT"
+          ]
+        },
+        {
+          "name": "generation",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      ]
+    },
+    {
+      "name": "employment_binding_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "canonical Employment adapter",
+      "keys": [
+        "org_id",
+        "binding_id",
+        "revision"
+      ],
+      "constraints": [
+        "SameCompany employee/Employment FKs",
+        "Append-ended/superseded relationship; current employment_source_bindings projection same owner tx",
+        "Full historical mapping retained; overlapping effective candidates blocked not arbitrarily selected"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "employment_binding_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "binding_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": false,
+          "inherited_description": "CompanyActorId",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/CompanyActor"
+        },
+        {
+          "name": "recorded_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ microseconds",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "employee_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "employment_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "from_us",
+          "nullable": false,
+          "inherited_description": "BIGINT",
+          "pg_type": "bigint",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "to_us",
+          "nullable": true,
+          "inherited_description": "BIGINT nullable",
+          "pg_type": "bigint",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "ACTIVE|ENDED",
+          "pg_type": "text",
+          "enum": [
+            "ACTIVE",
+            "ENDED"
+          ]
+        },
+        {
+          "name": "canonical_employment_revision",
+          "pg_type": "bigint",
+          "nullable": false,
+          "minimum": 1
+        },
+        {
+          "name": "source_binding_receipt",
+          "pg_type": "jsonb",
+          "nullable": false,
+          "schema_ref": "action-types.schema.json#/$defs/ReceiptRef"
+        }
+      ]
+    },
+    {
+      "name": "employee_contract_wage_corrections",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "payroll adapter",
+      "keys": [
+        "org_id",
+        "base_wage_id",
+        "revision"
+      ],
+      "constraints": [
+        "SameCompany wage base; base identity/employee/effective date immutable",
+        "revision=predecessor+1; append-only; source refs/reason in typed payload"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "employee_contract_wage_corrections",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "payload",
+          "nullable": false,
+          "inherited_description": "Closed registered typed source payload",
+          "pg_type": "jsonb",
+          "schema_ref": "../2026-09-12-native-manifest-contract-18/native-types.schema.json#/$defs/WageCorrectionBody"
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": false,
+          "inherited_description": "CompanyActorId",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/CompanyActor"
+        },
+        {
+          "name": "recorded_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ microseconds",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "base_wage_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "predecessor_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT nonnegative",
+          "pg_type": "bigint",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "amount_won",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "wage_kind",
+          "nullable": false,
+          "inherited_description": "MONTHLY|HOURLY",
+          "pg_type": "text",
+          "enum": [
+            "MONTHLY",
+            "HOURLY"
+          ]
+        },
+        {
+          "name": "monthly_standard_hours",
+          "nullable": false,
+          "inherited_description": "INTEGER1..400",
+          "pg_type": "integer",
+          "minimum": 1,
+          "maximum": 400
+        }
+      ]
+    },
+    {
+      "name": "employee_contract_wage_correction_heads",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "payroll adapter",
+      "keys": [
+        "org_id",
+        "base_wage_id"
+      ],
+      "constraints": [
+        "Exact correction FK; CAS expected; missing means base revision0 only for genuine uncorrected base"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "employee_contract_wage_correction_heads",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "base_wage_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "current_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      ]
+    },
+    {
+      "name": "work_calendar_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "attendance adapter",
+      "keys": [
+        "org_id",
+        "calendar_id",
+        "revision"
+      ],
+      "constraints": [
+        "Finite date coverage, ordered disjoint duty/break intervals, every covered date classified",
+        "Template and explicit overrides normalized deterministically; source/publisher identity retained"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "work_calendar_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": false,
+          "inherited_description": "CompanyActorId",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/CompanyActor"
+        },
+        {
+          "name": "recorded_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ microseconds",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "calendar_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "covered_start",
+          "nullable": false,
+          "inherited_description": "DATE",
+          "pg_type": "date"
+        },
+        {
+          "name": "covered_end_exclusive",
+          "nullable": false,
+          "inherited_description": "DATE",
+          "pg_type": "date"
+        },
+        {
+          "name": "zone",
+          "nullable": false,
+          "inherited_description": "Asia/Seoul",
+          "pg_type": "text",
+          "const": "Asia/Seoul"
+        },
+        {
+          "name": "rule_qualification_ref",
+          "nullable": false,
+          "inherited_description": "ExactSourceQualificationRef",
+          "pg_type": "jsonb",
+          "schema_ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/QualificationRef"
+        },
+        {
+          "name": "command_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "custody_digest",
+          "pg_type": "bytea",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "effect_ordinal",
+          "pg_type": "integer",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        }
+      ],
+      "normalization": "21/23 exact native source key supersedes15 generic id;creating command/custody/effect tuple required;payload resolves24/25 submission,not duplicated narrative"
+    },
+    {
+      "name": "work_calendar_assignment_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "attendance adapter",
+      "keys": [
+        "org_id",
+        "assignment_id",
+        "revision"
+      ],
+      "constraints": [
+        "SameCompany Employment/calendar; no gap/overlap in selected active date interval",
+        "Current assignment projection uses revision/CAS; immutable earlier applicability preserved"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "work_calendar_assignment_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": false,
+          "inherited_description": "CompanyActorId",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/CompanyActor"
+        },
+        {
+          "name": "recorded_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ microseconds",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "assignment_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "employment_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "calendar_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "calendar_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "from_date",
+          "nullable": false,
+          "inherited_description": "DATE",
+          "pg_type": "date"
+        },
+        {
+          "name": "to_date_exclusive",
+          "nullable": true,
+          "inherited_description": "DATE nullable",
+          "pg_type": "date"
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "ACTIVE|REVOKED",
+          "pg_type": "text",
+          "enum": [
+            "ACTIVE",
+            "REVOKED"
+          ]
+        },
+        {
+          "name": "command_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "custody_digest",
+          "pg_type": "bytea",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "effect_ordinal",
+          "pg_type": "integer",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        }
+      ],
+      "normalization": "21/23 exact native source key supersedes15 generic id;creating command/custody/effect tuple required;payload resolves24/25 submission,not duplicated narrative"
+    },
+    {
+      "name": "attendance_coverage_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "attendance adapter",
+      "keys": [
+        "org_id",
+        "coverage_id",
+        "revision"
+      ],
+      "constraints": [
+        "Exact per-day events/calendar/leave/exception/boundary refs in typed payload; epoch not semantic basis",
+        "Nonempty required duties cannot be covered by empty events unless exact resolved paid absence allows it",
+        "Duplicate/missing/out-of-order source classifications blocked"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "attendance_coverage_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": false,
+          "inherited_description": "CompanyActorId",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/CompanyActor"
+        },
+        {
+          "name": "recorded_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ microseconds",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "coverage_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "employee_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "period_start",
+          "nullable": false,
+          "inherited_description": "DATE",
+          "pg_type": "date"
+        },
+        {
+          "name": "period_end",
+          "nullable": false,
+          "inherited_description": "DATE",
+          "pg_type": "date"
+        },
+        {
+          "name": "semantic_basis_digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "outcome",
+          "nullable": false,
+          "inherited_description": "COMPLETE|BLOCKED",
+          "pg_type": "text",
+          "enum": [
+            "COMPLETE",
+            "BLOCKED"
+          ]
+        },
+        {
+          "name": "command_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "custody_digest",
+          "pg_type": "bytea",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "effect_ordinal",
+          "pg_type": "integer",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "employment_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        }
+      ],
+      "normalization": "21/23 exact native source key supersedes15 generic id;creating command/custody/effect tuple required;payload resolves24/25 submission,not duplicated narrative"
+    },
+    {
+      "name": "attendance_native_close_bases",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "attendance adapter",
+      "keys": [
+        "org_id",
+        "close_basis_id",
+        "revision"
+      ],
+      "constraints": [
+        "SameCompany exact existing close/lock; complete required coverage membership",
+        "Branch-only close cannot assert Company lock; current amendment/basis exact"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "attendance_native_close_bases",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": false,
+          "inherited_description": "CompanyActorId",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/CompanyActor"
+        },
+        {
+          "name": "recorded_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ microseconds",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "close_basis_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "operational_close_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "scope_basis_ref",
+          "nullable": false,
+          "inherited_description": "ExactScopeBasisRef",
+          "pg_type": "jsonb",
+          "schema_ref": "../2026-09-12-native-manifest-contract-18/native-types.schema.json#/$defs/ScopeBasisRef"
+        },
+        {
+          "name": "period_lock_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "command_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "custody_digest",
+          "pg_type": "bytea",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "effect_ordinal",
+          "pg_type": "integer",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "operational_close_ref",
+          "pg_type": "jsonb",
+          "nullable": false,
+          "schema_ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/OperationalCloseRef"
+        },
+        {
+          "name": "period_start",
+          "pg_type": "date",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "period_end",
+          "pg_type": "date",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "scope_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "scope_revision",
+          "pg_type": "bigint",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "amendment_set_digest",
+          "pg_type": "bytea",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        }
+      ],
+      "normalization": "21/23 exact native source key supersedes15 generic id;creating command/custody/effect tuple required;payload resolves24/25 submission,not duplicated narrative"
+    },
+    {
+      "name": "docs_evidence_version_attestations",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "Docs adapter + trusted storage verifier",
+      "keys": [
+        "org_id",
+        "attestation_id",
+        "revision"
+      ],
+      "constraints": [
+        "Exact original/derivative copy and provider/version/hash/bytes tuple; no latest-key fallback",
+        "Client cannot write READY; durable trusted byte readback before admission",
+        "New revocation event/current projection preserves immutable earlier attestation",
+        "Wire ArtifactRef identifies exact attestation id+revision; latest revocation/quarantine is checked separately under ARTIFACT guard"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "docs_evidence_version_attestations",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "attestation_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "payload",
+          "nullable": false,
+          "inherited_description": "Closed registered typed source payload",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/DocsAttestation",
+          "validation": "trusted exact-version readback;all native projections equal immutable typed body"
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": false,
+          "inherited_description": "CompanyActorId",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/CompanyActor"
+        },
+        {
+          "name": "recorded_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ microseconds",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "copy_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "provider_id",
+          "nullable": false,
+          "inherited_description": "RegisteredProviderId",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted provider/location/MIME registry or opaque immutable provider version;no client network target"
+        },
+        {
+          "name": "bucket_ref",
+          "nullable": false,
+          "inherited_description": "ServerBucketRef",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted provider/location/MIME registry or opaque immutable provider version;no client network target"
+        },
+        {
+          "name": "object_key_ref",
+          "nullable": false,
+          "inherited_description": "ServerObjectRef",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted provider/location/MIME registry or opaque immutable provider version;no client network target"
+        },
+        {
+          "name": "provider_version_id",
+          "nullable": false,
+          "inherited_description": "OpaqueVersion",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted provider/location/MIME registry or opaque immutable provider version;no client network target"
+        },
+        {
+          "name": "bytes_sha256",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "byte_count",
+          "nullable": false,
+          "inherited_description": "BIGINT",
+          "pg_type": "bigint",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "content_type",
+          "nullable": false,
+          "inherited_description": "RegisteredMIME",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted provider/location/MIME registry or opaque immutable provider version;no client network target"
+        },
+        {
+          "name": "verification_state",
+          "nullable": false,
+          "inherited_description": "READY|REVOKED|QUARANTINED",
+          "pg_type": "text",
+          "enum": [
+            "READY",
+            "REVOKED",
+            "QUARANTINED"
+          ]
+        },
+        {
+          "name": "retention_until",
+          "nullable": true,
+          "inherited_description": "TIMESTAMPTZ nullable",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        }
+      ]
+    },
+    {
+      "name": "payroll_source_qualification_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "payroll source-evidence adapter",
+      "keys": [
+        "org_id",
+        "qualification_id",
+        "revision"
+      ],
+      "constraints": [
+        "One immutable admission payload; VERIFY/REVOKE bind original digest and exact reviewed predecessor",
+        "Independent proposer/verifier natural persons; current qualification/evidence required",
+        "Unknown purpose/state/period/subject ref denied; approved bool not source authority",
+        "Retain source/domain pins and old snapshots through required recovery/retention horizon",
+        "EA1.6 exact cross-root selector zero/one/many; no latest-root tie-break",
+        "Successor VERIFY uses EA1.6 sorted head+successor-claim CAS; VERIFIED predecessor appends SUPERSEDE, already REVOKED retains terminal history; no auto-resurrection",
+        "REVIEWER_CREDENTIAL uses closed ReviewerCredentialPayload and pinned issuer profile; no recursive self-qualification; EA1.7 current downstream trust closure"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_source_qualification_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": false,
+          "inherited_description": "CompanyActorId",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/CompanyActor"
+        },
+        {
+          "name": "recorded_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ microseconds",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "qualification_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "event_kind",
+          "nullable": false,
+          "inherited_description": "PROPOSE|VERIFY|REVOKE|SUPERSEDE",
+          "pg_type": "text",
+          "enum": [
+            "PROPOSE",
+            "VERIFY",
+            "REVOKE",
+            "SUPERSEDE"
+          ]
+        },
+        {
+          "name": "admission_revision",
+          "nullable": true,
+          "inherited_description": "BIGINT nullable",
+          "pg_type": "bigint",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "source_refs",
+          "nullable": false,
+          "inherited_description": "Closed purpose-specific immutable refs",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ExactSourceRefs"
+        },
+        {
+          "name": "verified_human_ref",
+          "nullable": true,
+          "inherited_description": "AI1 exact current proof nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/HumanWitness"
+        },
+        {
+          "name": "command_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "custody_digest",
+          "pg_type": "bytea",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "effect_ordinal",
+          "pg_type": "integer",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "qualification_kind",
+          "pg_type": "text",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "purpose",
+          "pg_type": "text",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "admission_digest",
+          "pg_type": "bytea",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        }
+      ],
+      "normalization": "21/23 exact native source key supersedes15 generic id;creating command/custody/effect tuple required;payload resolves24/25 submission,not duplicated narrative"
+    },
+    {
+      "name": "payroll_source_qualification_heads",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "payroll source-evidence adapter",
+      "keys": [
+        "org_id",
+        "qualification_id"
+      ],
+      "constraints": [
+        "Exact same-root revision FK; CAS; revoked source cannot revive under older payload",
+        "Correction new admission with explicit supersedes ref; no mutation of prior admission values",
+        "EA1.6 predecessor exact head revision plus initially null activated_successor_ref CAS, atomic with new successor VERIFY",
+        "VERIFIED predecessor appends SUPERSEDE; previously verified REVOKED predecessor retains terminal revision and only records one successor linkage; no resurrection"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_source_qualification_heads",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "qualification_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "current_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "successor_claim_command_id",
+          "pg_type": "uuid",
+          "nullable": true,
+          "constraint": "reciprocal23 immutable claim;no duplicate successor pointer"
+        }
+      ]
+    },
+    {
+      "name": "payroll_eligibility_assessment_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "payroll inputs/source-evidence adapter",
+      "keys": [
+        "org_id",
+        "assessment_id",
+        "revision"
+      ],
+      "constraints": [
+        "One immutable admission payload; VERIFY/REVOKE bind original digest and exact reviewed predecessor",
+        "Independent proposer/verifier natural persons; current qualification/evidence required",
+        "Unknown purpose/state/period/subject ref denied; approved bool not source authority",
+        "Retain source/domain pins and old snapshots through required recovery/retention horizon",
+        "EA1.6 exact cross-root selector zero/one/many; no latest-root tie-break",
+        "Successor VERIFY uses EA1.6 sorted head+successor-claim CAS; VERIFIED predecessor appends SUPERSEDE, already REVOKED retains terminal history; no auto-resurrection"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_eligibility_assessment_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": false,
+          "inherited_description": "CompanyActorId",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/CompanyActor"
+        },
+        {
+          "name": "recorded_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ microseconds",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "assessment_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "event_kind",
+          "nullable": false,
+          "inherited_description": "PROPOSE|VERIFY|REVOKE|SUPERSEDE",
+          "pg_type": "text",
+          "enum": [
+            "PROPOSE",
+            "VERIFY",
+            "REVOKE",
+            "SUPERSEDE"
+          ]
+        },
+        {
+          "name": "admission_revision",
+          "nullable": true,
+          "inherited_description": "BIGINT nullable",
+          "pg_type": "bigint",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "source_refs",
+          "nullable": false,
+          "inherited_description": "Closed purpose-specific immutable refs",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ExactSourceRefs"
+        },
+        {
+          "name": "verified_human_ref",
+          "nullable": true,
+          "inherited_description": "AI1 exact current proof nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/HumanWitness"
+        },
+        {
+          "name": "command_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "custody_digest",
+          "pg_type": "bytea",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "effect_ordinal",
+          "pg_type": "integer",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "employee_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "employment_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "period_start",
+          "pg_type": "date",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "period_end",
+          "pg_type": "date",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "admission_digest",
+          "pg_type": "bytea",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        }
+      ],
+      "normalization": "21/23 exact native source key supersedes15 generic id;creating command/custody/effect tuple required;payload resolves24/25 submission,not duplicated narrative"
+    },
+    {
+      "name": "payroll_eligibility_assessment_heads",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "payroll inputs/source-evidence adapter",
+      "keys": [
+        "org_id",
+        "assessment_id"
+      ],
+      "constraints": [
+        "Exact same-root revision FK; CAS; revoked source cannot revive under older payload",
+        "Correction new admission with explicit supersedes ref; no mutation of prior admission values",
+        "EA1.6 predecessor exact head revision plus initially null activated_successor_ref CAS, atomic with new successor VERIFY",
+        "VERIFIED predecessor appends SUPERSEDE; previously verified REVOKED predecessor retains terminal revision and only records one successor linkage; no resurrection"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_eligibility_assessment_heads",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "assessment_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "current_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "successor_claim_command_id",
+          "pg_type": "uuid",
+          "nullable": true,
+          "constraint": "reciprocal23 immutable claim;no duplicate successor pointer"
+        }
+      ]
+    },
+    {
+      "name": "payroll_tax_evidence_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "payroll source-evidence adapter",
+      "keys": [
+        "org_id",
+        "evidence_id",
+        "revision"
+      ],
+      "constraints": [
+        "One immutable admission payload; VERIFY/REVOKE bind original digest and exact reviewed predecessor",
+        "Independent proposer/verifier natural persons; current qualification/evidence required",
+        "Unknown purpose/state/period/subject ref denied; approved bool not source authority",
+        "Retain source/domain pins and old snapshots through required recovery/retention horizon",
+        "EA1.6 exact cross-root selector zero/one/many; no latest-root tie-break",
+        "Successor VERIFY uses EA1.6 sorted head+successor-claim CAS; VERIFIED predecessor appends SUPERSEDE, already REVOKED retains terminal history; no auto-resurrection"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_tax_evidence_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": false,
+          "inherited_description": "CompanyActorId",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/CompanyActor"
+        },
+        {
+          "name": "recorded_at",
+          "nullable": false,
+          "inherited_description": "TIMESTAMPTZ microseconds",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "evidence_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "event_kind",
+          "nullable": false,
+          "inherited_description": "PROPOSE|VERIFY|REVOKE|SUPERSEDE",
+          "pg_type": "text",
+          "enum": [
+            "PROPOSE",
+            "VERIFY",
+            "REVOKE",
+            "SUPERSEDE"
+          ]
+        },
+        {
+          "name": "admission_revision",
+          "nullable": true,
+          "inherited_description": "BIGINT nullable",
+          "pg_type": "bigint",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "source_refs",
+          "nullable": false,
+          "inherited_description": "Closed purpose-specific immutable refs",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ExactSourceRefs"
+        },
+        {
+          "name": "verified_human_ref",
+          "nullable": true,
+          "inherited_description": "AI1 exact current proof nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/HumanWitness"
+        },
+        {
+          "name": "command_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "custody_digest",
+          "pg_type": "bytea",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "effect_ordinal",
+          "pg_type": "integer",
+          "nullable": false,
+          "constraint": "exact reciprocal22/23 source/effect/member and digest32/ordinal0..1023"
+        },
+        {
+          "name": "employee_id",
+          "pg_type": "uuid",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "period_start",
+          "pg_type": "date",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "period_end",
+          "pg_type": "date",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        },
+        {
+          "name": "admission_digest",
+          "pg_type": "bytea",
+          "nullable": false,
+          "validation": "exact projection from registered19 admission/current event body;21/23 subject and successor constraints;PH28"
+        }
+      ],
+      "normalization": "21/23 exact native source key supersedes15 generic id;creating command/custody/effect tuple required;payload resolves24/25 submission,not duplicated narrative"
+    },
+    {
+      "name": "payroll_tax_evidence_heads",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "owner": "payroll source-evidence adapter",
+      "keys": [
+        "org_id",
+        "evidence_id"
+      ],
+      "constraints": [
+        "Exact same-root revision FK; CAS; revoked source cannot revive under older payload",
+        "Correction new admission with explicit supersedes ref; no mutation of prior admission values",
+        "EA1.6 predecessor exact head revision plus initially null activated_successor_ref CAS, atomic with new successor VERIFY",
+        "VERIFIED predecessor appends SUPERSEDE; previously verified REVOKED predecessor retains terminal revision and only records one successor linkage; no resurrection"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_tax_evidence_heads",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "evidence_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "current_revision",
+          "nullable": false,
+          "inherited_description": "BIGINT positive",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "successor_claim_command_id",
+          "pg_type": "uuid",
+          "nullable": true,
+          "constraint": "reciprocal23 immutable claim;no duplicate successor pointer"
+        }
+      ]
+    },
+    {
+      "name": "workflow_work_controls",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "workflow",
+      "keys": [
+        "org_id",
+        "task_id"
+      ],
+      "constraints": [
+        "FK existing workflow_waiting_tasks",
+        "One current assignment; control cannot grant business permission"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "workflow_work_controls",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "task_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "assignment_epoch",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "definition_ref",
+          "nullable": false,
+          "inherited_description": "ExactCommonRevisionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        {
+          "name": "coverage_ref",
+          "nullable": false,
+          "inherited_description": "ExactCommonRevisionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        {
+          "name": "target_ref",
+          "nullable": false,
+          "inherited_description": "RegisteredObjectRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ObjectRef"
+        },
+        {
+          "name": "protocol",
+          "nullable": false,
+          "inherited_description": "EnrolledProtocolId",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        }
+      ]
+    },
+    {
+      "name": "workflow_assignment_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "workflow",
+      "keys": [
+        "org_id",
+        "task_id",
+        "epoch"
+      ],
+      "constraints": [
+        "Same task/Company; monotonic epoch",
+        "One accountable assignee for ACTIVE/PAUSED; unknown work stays charged",
+        "Actor/assignee CompanyActor refs; old authors preserved"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "workflow_assignment_revisions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "task_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "epoch",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "assignee_account_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "UNASSIGNED|ACTIVE|PAUSED|TERMINAL",
+          "pg_type": "text",
+          "enum": [
+            "UNASSIGNED",
+            "ACTIVE",
+            "PAUSED",
+            "TERMINAL"
+          ]
+        },
+        {
+          "name": "basis",
+          "nullable": false,
+          "inherited_description": "ClosedAssignmentBinding",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/AssignmentBasis"
+        },
+        {
+          "name": "validity",
+          "nullable": false,
+          "inherited_description": "half-open UTC interval",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/Interval"
+        },
+        {
+          "name": "charge_ref",
+          "nullable": true,
+          "inherited_description": "ExactGroupWorkChargeRef nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/GroupChargeRef"
+        },
+        {
+          "name": "receipt_ref",
+          "nullable": false,
+          "inherited_description": "CompanyCommandRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/CommandRef"
+        }
+      ]
+    },
+    {
+      "name": "workflow_transfer_controls",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "workflow",
+      "keys": [
+        "org_id",
+        "plan_id"
+      ],
+      "constraints": [
+        "Active content immutable; plan stop no synchronous task traversal",
+        "Reasons are refs/context only, not subtype columns"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "workflow_transfer_controls",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "plan_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "content_revision_ref",
+          "nullable": false,
+          "inherited_description": "ExactCommonRevisionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        {
+          "name": "content_digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "control_epoch",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "DRAFT|REQUESTED|AUTHORIZED|ACTIVE|STOPPED|COMPLETE",
+          "pg_type": "text",
+          "enum": [
+            "DRAFT",
+            "REQUESTED",
+            "AUTHORIZED",
+            "ACTIVE",
+            "STOPPED",
+            "COMPLETE"
+          ]
+        },
+        {
+          "name": "original_actor",
+          "nullable": false,
+          "inherited_description": "CompanyActorRef",
+          "pg_type": "uuid",
+          "validation": "same-rowCompany+accountUUID compositeCompanyActorFK"
+        },
+        {
+          "name": "mandate_ref",
+          "nullable": true,
+          "inherited_description": "ExactMandateRef nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/GovernanceRequestRef"
+        }
+      ]
+    },
+    {
+      "name": "workflow_transfer_targets",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "workflow",
+      "keys": [
+        "org_id",
+        "plan_id",
+        "task_id"
+      ],
+      "constraints": [
+        "Immutable activated selection; each task has own actual outcome",
+        "No all-plan atomicity claim; no new task added after activation"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "workflow_transfer_targets",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "plan_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "task_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "expected_assignment_epoch",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "selection",
+          "nullable": false,
+          "inherited_description": "AccountRef|RoutingRuleRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/TransferSelection"
+        },
+        {
+          "name": "responsibility_intent",
+          "nullable": false,
+          "inherited_description": "TEMPORARY|PERMANENT",
+          "pg_type": "text",
+          "enum": [
+            "TEMPORARY",
+            "PERMANENT"
+          ]
+        },
+        {
+          "name": "interval",
+          "nullable": false,
+          "inherited_description": "bounded task obligation plus responsibility validity",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/Responsibility"
+        },
+        {
+          "name": "outcome_receipt_ref",
+          "nullable": true,
+          "inherited_description": "CompanyCommandRef nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/CommandRef"
+        }
+      ]
+    },
+    {
+      "name": "group_capacity_profile_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "platform/group",
+      "keys": [
+        "group_id",
+        "account_id",
+        "revision"
+      ],
+      "constraints": [
+        "No infinity/missing defaults; profile change separate from transfer"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_capacity_profile_revisions",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "limit_units",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "validity",
+          "nullable": false,
+          "inherited_description": "finite half-open interval",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/Interval"
+        },
+        {
+          "name": "governing_receipt",
+          "nullable": false,
+          "inherited_description": "ExactGroupReceiptRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ReceiptRef"
+        }
+      ]
+    },
+    {
+      "name": "group_availability_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "platform/group with owning source participant",
+      "keys": [
+        "group_id",
+        "account_id",
+        "revision"
+      ],
+      "constraints": [
+        "No medical reason/narrative; conflict UNKNOWN; synchronous invalidation fence",
+        "No eventual outbox as current authority"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_availability_revisions",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "intervals",
+          "nullable": false,
+          "inherited_description": "bounded typed AVAILABLE|UNAVAILABLE|UNKNOWN with source refs",
+          "pg_type": "jsonb",
+          "items_schema_ref": "control-types.schema.json#/$defs/Availability",
+          "max_items": 256
+        },
+        {
+          "name": "source_watermarks",
+          "nullable": false,
+          "inherited_description": "closed source versions",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ContextSourceKey"
+        }
+      ]
+    },
+    {
+      "name": "group_routing_accounts",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "platform/group",
+      "keys": [
+        "group_id",
+        "account_id"
+      ],
+      "constraints": [
+        "used_units equals active charge sum",
+        "Missing control refuses; no TTL release"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_routing_accounts",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "capacity_revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "availability_revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "used_units",
+          "nullable": false,
+          "inherited_description": "nonnegative i64",
+          "pg_type": "bigint",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "fairness_sequence",
+          "nullable": false,
+          "inherited_description": "nonnegative i64",
+          "pg_type": "bigint",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "integrity",
+          "nullable": false,
+          "inherited_description": "READY|UNAVAILABLE|OVER_CAPACITY|INTEGRITY_HOLD",
+          "pg_type": "text",
+          "enum": [
+            "READY",
+            "UNAVAILABLE",
+            "OVER_CAPACITY",
+            "INTEGRITY_HOLD"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "group_work_charges",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "platform/group",
+      "keys": [
+        "group_id",
+        "target_org_id",
+        "task_id"
+      ],
+      "constraints": [
+        "Exact task/current epoch binding; reused key updates only atomically with assignment",
+        "Historical release-only does not require current membership; no positive admission from retired incarnation"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_work_charges",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "target_org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "task_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "assignment_epoch",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "units",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "ACTIVE|RELEASED",
+          "pg_type": "text",
+          "enum": [
+            "ACTIVE",
+            "RELEASED"
+          ]
+        },
+        {
+          "name": "membership_incarnation",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "assignment_receipt",
+          "nullable": false,
+          "inherited_description": "CompanyCommandRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/CommandRef"
+        }
+      ]
+    },
+    {
+      "name": "group_work_charge_events",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "platform/group",
+      "keys": [
+        "group_id",
+        "event_id"
+      ],
+      "constraints": [
+        "Append once per exact command charge effect; no business payload",
+        "Reconciliation preserves events, never guessed destructive repair"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_work_charge_events",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "event_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "command_binding",
+          "nullable": false,
+          "inherited_description": "CompanyCommandRef or GroupCommandRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ReceiptRef"
+        },
+        {
+          "name": "task_ref",
+          "nullable": false,
+          "inherited_description": "CompanyTaskRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/TaskRef"
+        },
+        {
+          "name": "old_epoch",
+          "nullable": true,
+          "inherited_description": "i64 nullable",
+          "pg_type": "bigint",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "new_epoch",
+          "nullable": true,
+          "inherited_description": "i64 nullable",
+          "pg_type": "bigint",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "old_account",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "new_account",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "units_delta",
+          "nullable": false,
+          "inherited_description": "checked i64",
+          "pg_type": "bigint",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "source_receipt",
+          "nullable": false,
+          "inherited_description": "ExactOwnerReceiptRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ReceiptRef"
+        }
+      ]
+    },
+    {
+      "name": "group_operations",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "platform/group",
+      "keys": [
+        "group_id",
+        "operation_id"
+      ],
+      "constraints": [
+        "Immutable selection/creator; exact resume scope",
+        "No Company payload or magic global atomic result"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_operations",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "operation_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "manifest_digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "creator_account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "action_ref",
+          "nullable": false,
+          "inherited_description": "ExactRegisteredActionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/GroupActionRef"
+        },
+        {
+          "name": "control_epoch",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "dispatch_epoch",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "PREPARING|ACTIVE|STOPPED|COMPLETE",
+          "pg_type": "text",
+          "enum": [
+            "PREPARING",
+            "ACTIVE",
+            "STOPPED",
+            "COMPLETE"
+          ]
+        },
+        {
+          "name": "session_binding",
+          "nullable": false,
+          "inherited_description": "AS1 sid/generation/valid_until; never token",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/SessionWitness"
+        }
+      ]
+    },
+    {
+      "name": "group_operation_slots",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "platform/group",
+      "keys": [
+        "group_id",
+        "operation_id",
+        "slot_id"
+      ],
+      "constraints": [
+        "Unique fixed slot; max6/one admitted actionfamily pilot",
+        "Observations rebuildable; no latest opaque ACK as effect truth"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_operation_slots",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "operation_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "membership_incarnation",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "target_ref",
+          "nullable": false,
+          "inherited_description": "RegisteredObjectRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ObjectRef"
+        },
+        {
+          "name": "child_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "attempt_ref",
+          "nullable": false,
+          "inherited_description": "CompanyAttemptRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/AttemptRef"
+        },
+        {
+          "name": "command_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "observation",
+          "nullable": false,
+          "inherited_description": "typed verified Company receipt ref/status",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ResultObservation"
+        }
+      ]
+    },
+    {
+      "name": "group_operation_command_receipts",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "platform/group",
+      "keys": [
+        "group_id",
+        "command_id"
+      ],
+      "constraints": [
+        "Immutable exact binding; parent creation commands need serialized namespace absence",
+        "No Company command/Group key collision; no payload salary"
+      ],
+      "cell": "GROUP",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "group_operation_command_receipts",
+      "columns": [
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "command_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "actor_account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "action_ref",
+          "nullable": false,
+          "inherited_description": "RegisteredActionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/GroupActionRef"
+        },
+        {
+          "name": "fingerprint",
+          "nullable": false,
+          "inherited_description": "BYTEA32 CCF1 group-control namespace",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "result_refs",
+          "nullable": false,
+          "inherited_description": "closed minimal control refs",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/GroupControlResultRefs"
+        }
+      ]
+    },
+    {
+      "name": "workflow_group_children",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "workflow",
+      "keys": [
+        "org_id",
+        "child_id"
+      ],
+      "constraints": [
+        "Unique Company/Group/operation/slot",
+        "Parent provenance cannot be omitted through direct command",
+        "Claim fencing never substitutes for original human permission"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "workflow_group_children",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "child_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "group_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "operation_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "attempt_ref",
+          "nullable": false,
+          "inherited_description": "CompanyAttemptRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/AttemptRef"
+        },
+        {
+          "name": "claim_generation",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "claim_owner",
+          "nullable": true,
+          "inherited_description": "WorkloadPrincipalRef nullable",
+          "pg_type": "uuid",
+          "validation": "admitted service-principal identity,not Account or job title"
+        },
+        {
+          "name": "status",
+          "nullable": false,
+          "inherited_description": "PREPARED|CLAIMED|SUCCEEDED|TERMINAL_NO_EFFECT|UNKNOWN",
+          "pg_type": "text",
+          "enum": [
+            "PREPARED",
+            "CLAIMED",
+            "SUCCEEDED",
+            "TERMINAL_NO_EFFECT",
+            "UNKNOWN"
+          ]
+        },
+        {
+          "name": "receipt_ref",
+          "nullable": true,
+          "inherited_description": "CompanyCommandRef nullable",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/CommandRef"
+        }
+      ]
+    },
+    {
+      "name": "account_context_candidates",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "identity",
+      "keys": [
+        "account_id",
+        "source_key",
+        "context_kind",
+        "context_id"
+      ],
+      "constraints": [
+        "Overapproximate hints; no labels/salary/authority",
+        "Same-tx source update and context_generation fence; source enrollment proves completeness"
+      ],
+      "cell": "ACCOUNT",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "account_context_candidates",
+      "columns": [
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "source_key",
+          "nullable": false,
+          "inherited_description": "RegisteredSourceRootKey",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ContextSourceKey"
+        },
+        {
+          "name": "context_kind",
+          "nullable": false,
+          "inherited_description": "COMPANY|GROUP",
+          "pg_type": "text",
+          "enum": [
+            "COMPANY",
+            "GROUP"
+          ]
+        },
+        {
+          "name": "context_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "source_revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "incarnation",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "CURRENT|HISTORICAL",
+          "pg_type": "text",
+          "enum": [
+            "CURRENT",
+            "HISTORICAL"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "account_context_cursors",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "identity",
+      "keys": [
+        "account_id",
+        "cursor_hash"
+      ],
+      "constraints": [
+        "Random token hash; current Account only; TTL5min",
+        "No Company cursor reused; no cached allow verdict"
+      ],
+      "cell": "ACCOUNT",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "account_context_cursors",
+      "columns": [
+        {
+          "name": "account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "cursor_hash",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "query",
+          "nullable": false,
+          "inherited_description": "ClosedContextQuery",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ContextQuery"
+        },
+        {
+          "name": "context_generation",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "authority_vector",
+          "nullable": false,
+          "inherited_description": "bounded Group+Company versions",
+          "pg_type": "jsonb",
+          "items_schema_ref": "control-types.schema.json#/$defs/AuthorityVersion",
+          "max_items": 256
+        },
+        {
+          "name": "last_key",
+          "nullable": false,
+          "inherited_description": "authorized kind/UUID",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/SortKey"
+        },
+        {
+          "name": "expires_at",
+          "nullable": false,
+          "inherited_description": "UTC microsecond",
+          "pg_type": "timestamptz",
+          "precision": "microseconds"
+        },
+        {
+          "name": "decision_stable_until",
+          "nullable": true,
+          "inherited_description": "Earliest whole-scan allow/deny/Group temporal transition nullable only when certified timeless",
+          "pg_type": "timestamptz",
+          "validation": "null only with proof no timed transition;otherwise earliest full-scan permission transition"
+        }
+      ]
+    },
+    {
+      "name": "gov_request_bindings",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "governance",
+      "keys": [
+        "org_id",
+        "request_ref"
+      ],
+      "constraints": [
+        "FK existing gov_approval_requests; immutable one request binding",
+        "Gate and decision are distinct requests; no consumption of review decision",
+        "No client-selected weaker owner/evidence contract",
+        "REVIEW_DECISION uniquely bound to one registered owner/exact immutable basis; reciprocal Company/digest/request linkage validated by same owner tx",
+        "CHECK ((purpose='REVIEW_DECISION' AND command_binding IS NULL AND target_basis->>'kind'='PAYROLL_REVIEW') OR (purpose='EXECUTION_GATE' AND command_binding IS NOT NULL AND target_basis->>'kind'='EXECUTION_GATE'))",
+        "Deferred same-Company guard checks exact actual sealed command/attempt/fingerprint and equality with target_basis attempt/command_digest for EXECUTION_GATE; REVIEW_DECISION binds exact owner basis without gate",
+        "Immutable stored binding has no editable token, no future decision ref/digest; optional gate consumption remains separate"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "gov_request_bindings",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "request_ref",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "purpose",
+          "nullable": false,
+          "inherited_description": "REVIEW_DECISION|EXECUTION_GATE",
+          "pg_type": "text",
+          "enum": [
+            "REVIEW_DECISION",
+            "EXECUTION_GATE"
+          ]
+        },
+        {
+          "name": "owner_action",
+          "nullable": false,
+          "inherited_description": "ExactRegisteredActionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ActionRef"
+        },
+        {
+          "name": "target_basis",
+          "nullable": false,
+          "inherited_description": "ClosedOwnerBasisRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/OwnerBasis"
+        },
+        {
+          "name": "evidence_contract",
+          "nullable": false,
+          "inherited_description": "ExactCommonRevisionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        {
+          "name": "command_binding",
+          "nullable": true,
+          "inherited_description": "ExactCommandRef/digest for EXECUTION_GATE",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ExecutionCommandBinding",
+          "validation": "SQL NULL exactly for REVIEW_DECISION; nonnull exact stored binding for EXECUTION_GATE; never GateRequest/public editing token"
+        },
+        {
+          "name": "proposal_digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "proof_refs",
+          "nullable": false,
+          "inherited_description": "ExactIdentityPolicyRefs",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/HumanWitness"
+        },
+        {
+          "name": "validity",
+          "nullable": false,
+          "inherited_description": "half-open UTC interval",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/Interval"
+        }
+      ]
+    },
+    {
+      "name": "gov_request_controls",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "governance",
+      "keys": [
+        "org_id",
+        "request_ref"
+      ],
+      "constraints": [
+        "Current disposition separate immutable original request/decision",
+        "No current-session requirement for past valid decision composition"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "gov_request_controls",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "request_ref",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "OPEN|DECIDED|WITHDRAWN|SUPERSEDED|INTEGRITY_HOLD",
+          "pg_type": "text",
+          "enum": [
+            "OPEN",
+            "DECIDED",
+            "WITHDRAWN",
+            "SUPERSEDED",
+            "INTEGRITY_HOLD"
+          ]
+        },
+        {
+          "name": "current_event_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        }
+      ]
+    },
+    {
+      "name": "gov_request_control_events",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "governance",
+      "keys": [
+        "org_id",
+        "event_id"
+      ],
+      "constraints": [
+        "Append only; event/cas/owner correction same tx",
+        "Withdrawal cannot undo a committed business effect"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "gov_request_control_events",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "event_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "request_ref",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "expected_revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "effect",
+          "nullable": false,
+          "inherited_description": "WITHDRAW|SUPERSEDE|INVALIDATE",
+          "pg_type": "text",
+          "enum": [
+            "WITHDRAW",
+            "SUPERSEDE",
+            "INVALIDATE"
+          ]
+        },
+        {
+          "name": "cause_ref",
+          "nullable": false,
+          "inherited_description": "ExactOwnerReceiptRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ReceiptRef"
+        },
+        {
+          "name": "reason_ref",
+          "nullable": false,
+          "inherited_description": "ExactEvidenceOrReasonRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ExactEvidence"
+        }
+      ]
+    },
+    {
+      "name": "payroll_review_cycles",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "cycle_id",
+        "revision"
+      ],
+      "constraints": [
+        "Nonempty server-derived R, finite C; immutable cycle",
+        "Current cycle head extension on existing run control"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_review_cycles",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "cycle_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "run_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "scope_basis",
+          "nullable": false,
+          "inherited_description": "ExactScopeBasisRef",
+          "pg_type": "jsonb",
+          "schema_ref": "../2026-09-12-native-manifest-contract-18/native-types.schema.json#/$defs/ScopeBasisRef"
+        },
+        {
+          "name": "source_manifest",
+          "nullable": false,
+          "inherited_description": "ExactInputCalculationRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/InputCalculationRef"
+        },
+        {
+          "name": "derivation",
+          "nullable": false,
+          "inherited_description": "RegisteredVersion",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        }
+      ]
+    },
+    {
+      "name": "payroll_review_bases",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "basis_id"
+      ],
+      "constraints": [
+        "No duplicate human request/decision lifecycle",
+        "Source/evidence basis immutable; submission linkage permits only one NULL->exact governance request CAS in same owner transaction",
+        "Same-run exact basis reuse only"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_review_bases",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "basis_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "run_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "target",
+          "nullable": false,
+          "inherited_description": "UNIT coverage key or COMMON obligationref",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ObligationKey"
+        },
+        {
+          "name": "basis_digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "source_refs",
+          "nullable": false,
+          "inherited_description": "ClosedExactSourceRefs",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/ExactSourceRefs"
+        },
+        {
+          "name": "evidence_contract",
+          "nullable": false,
+          "inherited_description": "ExactCommonRevisionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        {
+          "name": "governance_request_ref",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        }
+      ]
+    },
+    {
+      "name": "payroll_review_cycle_members",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "cycle_id",
+        "cycle_revision",
+        "obligation_key"
+      ],
+      "constraints": [
+        "Exact set membership not counts; same Company/run",
+        "Current map revisions append via new cycle; hidden obligations retained",
+        "Resolve sole submission link via member basis; never duplicate nullable request link in cycle snapshot"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_review_cycle_members",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "cycle_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "cycle_revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "obligation_key",
+          "nullable": false,
+          "inherited_description": "ClosedUnitOrCommonKey",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ObligationKey"
+        },
+        {
+          "name": "basis_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        }
+      ]
+    },
+    {
+      "name": "payroll_review_completions",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "completion_id"
+      ],
+      "constraints": [
+        "Unique exact cycle completion; no synthetic global human",
+        "Current composition integrity distinct historical facts"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_review_completions",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "completion_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "cycle_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "cycle_revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "decision_refs",
+          "nullable": false,
+          "inherited_description": "ExactGovernanceDecisionManifestRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/DecisionManifest"
+        },
+        {
+          "name": "composition_digest",
+          "nullable": false,
+          "inherited_description": "BYTEA32",
+          "pg_type": "bytea",
+          "bytes": 32
+        },
+        {
+          "name": "causal_command",
+          "nullable": false,
+          "inherited_description": "CompanyCommandRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/CommandRef"
+        }
+      ]
+    },
+    {
+      "name": "payroll_period_reservations",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "reservation_id"
+      ],
+      "constraints": [
+        "EXCLUDE overlapping active Company/employee regular ranges",
+        "Exact correction transfers reservation atomically; legacy census before enrollment"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_period_reservations",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "reservation_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "employee_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "run_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "period",
+          "nullable": false,
+          "inherited_description": "daterange half-open",
+          "pg_type": "daterange",
+          "bounds": "[)",
+          "empty_forbidden": true
+        },
+        {
+          "name": "status",
+          "nullable": false,
+          "inherited_description": "ACTIVE|RELEASED",
+          "pg_type": "text",
+          "enum": [
+            "ACTIVE",
+            "RELEASED"
+          ]
+        },
+        {
+          "name": "predecessor_ref",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        }
+      ]
+    },
+    {
+      "name": "payroll_run_correction_edges",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "predecessor_run_id"
+      ],
+      "constraints": [
+        "Unique successor; immutable nonpayable lineage",
+        "No crossCompany or paid/issued reset"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_run_correction_edges",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "predecessor_run_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "successor_run_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "affected_units",
+          "nullable": false,
+          "inherited_description": "ExactOwnerDerivedUnitMap",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/AffectedUnitMap"
+        },
+        {
+          "name": "receipt_ref",
+          "nullable": false,
+          "inherited_description": "CompanyCommandRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/CommandRef"
+        },
+        {
+          "name": "reason_evidence",
+          "nullable": false,
+          "inherited_description": "ExactRefs",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/ExactEvidence"
+        }
+      ]
+    },
+    {
+      "name": "payroll_review_publications",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "publication_id"
+      ],
+      "constraints": [
+        "Unique exact sourceunit/subject/projection/purpose",
+        "No overwrite; actual labels/amounts frozen under permitted schema"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_review_publications",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "publication_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "subject_ref",
+          "nullable": false,
+          "inherited_description": "HistoricalPersonEmploymentRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/HistoricalSubject"
+        },
+        {
+          "name": "source_ref",
+          "nullable": false,
+          "inherited_description": "ExactApprovedUnitCompletionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/PublicationTarget"
+        },
+        {
+          "name": "projection_ref",
+          "nullable": false,
+          "inherited_description": "ExactCommonRevisionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        {
+          "name": "purpose",
+          "nullable": false,
+          "inherited_description": "NONPAYABLE_REVIEW",
+          "pg_type": "text",
+          "const": "NONPAYABLE_REVIEW"
+        },
+        {
+          "name": "content",
+          "nullable": false,
+          "inherited_description": "ImmutableClosedAuthorizedSnapshot",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/PublicationContent"
+        },
+        {
+          "name": "release_proof",
+          "nullable": false,
+          "inherited_description": "ExactRecipientDisclosureRef",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/RecipientDisclosure"
+        }
+      ]
+    },
+    {
+      "name": "payroll_publication_slots",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "subject_key",
+        "lineage_key",
+        "purpose"
+      ],
+      "constraints": [
+        "One CURRENT per semantic lineage regardless projection version",
+        "Owner-verified predecessor edge; no arbitrary recipient retarget"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_publication_slots",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "subject_key",
+          "nullable": false,
+          "inherited_description": "ExactSubjectKey",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/SubjectKey"
+        },
+        {
+          "name": "lineage_key",
+          "nullable": false,
+          "inherited_description": "ExactOwnerCorrectionLineageKey",
+          "pg_type": "jsonb",
+          "schema_ref": "control-types.schema.json#/$defs/LineageKey"
+        },
+        {
+          "name": "purpose",
+          "nullable": false,
+          "inherited_description": "RegisteredPublicationPurpose",
+          "pg_type": "text",
+          "max_bytes": 1024,
+          "validation": "exact admitted registry identity; immutable binding; no arbitrary executable name"
+        },
+        {
+          "name": "current_publication_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "generation",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      ]
+    },
+    {
+      "name": "payroll_publication_controls",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "publication_id"
+      ],
+      "constraints": [
+        "Disclosure independent currentness; restore never currentness rollback",
+        "Current Cedar still applies even ALLOWED"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_publication_controls",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "publication_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "disclosure",
+          "nullable": false,
+          "inherited_description": "ALLOWED|ACCESS_SUSPENDED",
+          "pg_type": "text",
+          "enum": [
+            "ALLOWED",
+            "ACCESS_SUSPENDED"
+          ]
+        },
+        {
+          "name": "currentness",
+          "nullable": false,
+          "inherited_description": "CURRENT|CORRECTION_PENDING|SUPERSEDED",
+          "pg_type": "text",
+          "enum": [
+            "CURRENT",
+            "CORRECTION_PENDING",
+            "SUPERSEDED"
+          ]
+        },
+        {
+          "name": "successor_id",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        }
+      ]
+    },
+    {
+      "name": "payroll_publication_events",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "event_id"
+      ],
+      "constraints": [
+        "Append exact old/new revision/edge; no medical/salary audit mirror"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_publication_events",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "event_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "publication_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "kind",
+          "nullable": false,
+          "inherited_description": "SOURCE_CORRECTION|PROJECTION_CORRECTION|SUSPEND|RESTORE",
+          "pg_type": "text",
+          "enum": [
+            "SOURCE_CORRECTION",
+            "PROJECTION_CORRECTION",
+            "SUSPEND",
+            "RESTORE"
+          ]
+        },
+        {
+          "name": "successor_ref",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "source_receipt",
+          "nullable": false,
+          "inherited_description": "CompanyCommandRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/CommandRef"
+        }
+      ]
+    },
+    {
+      "name": "payroll_review_request_controls",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "request_id"
+      ],
+      "constraints": [
+        "Immutable submission via common store; exact source/issue coverage",
+        "Task creation same tx, no eligible handler still durable case"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_review_request_controls",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "request_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "requester_account_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "subject_ref",
+          "nullable": false,
+          "inherited_description": "HistoricalSubjectRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/HistoricalSubject"
+        },
+        {
+          "name": "target_ref",
+          "nullable": false,
+          "inherited_description": "PublicationRef or EmploymentPeriodRef",
+          "pg_type": "jsonb",
+          "schema_ref": "action-types.schema.json#/$defs/CaseTarget"
+        },
+        {
+          "name": "submitted_content_ref",
+          "nullable": false,
+          "inherited_description": "ExactCommonRevisionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        {
+          "name": "current_issue_revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "task_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "state",
+          "nullable": false,
+          "inherited_description": "OPEN|IN_REVIEW|WAITING_REQUESTER|CORRECTION_PENDING|RESOLVED|WITHDRAWN",
+          "pg_type": "text",
+          "enum": [
+            "OPEN",
+            "IN_REVIEW",
+            "WAITING_REQUESTER",
+            "CORRECTION_PENDING",
+            "RESOLVED",
+            "WITHDRAWN"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "payroll_review_response_records",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "owner": "payroll",
+      "keys": [
+        "org_id",
+        "response_id"
+      ],
+      "constraints": [
+        "Subject-visible complete explanation; no-change and corrected predicates PR1",
+        "Corrected outcome needs actual permitted publication; case/task/charge same tx",
+        "DC30 response content uses ResolvedIssueDisposition; every pending/outside item has exact workflow_response_work_links row, no future task ref in submitted intent"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "payroll_review_response_records",
+      "columns": [
+        {
+          "name": "org_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "response_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "request_id",
+          "nullable": false,
+          "inherited_description": "UUID",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "issue_revision",
+          "nullable": false,
+          "inherited_description": "positive i64",
+          "pg_type": "bigint",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "issue_dispositions",
+          "nullable": false,
+          "inherited_description": "ClosedPerItemDispositionRefs",
+          "pg_type": "jsonb",
+          "items_schema_ref": "control-types.schema.json#/$defs/StoredIssueDisposition",
+          "max_items": 64
+        },
+        {
+          "name": "content_ref",
+          "nullable": false,
+          "inherited_description": "ExactCommonRevisionRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        {
+          "name": "corrected_publication_ref",
+          "nullable": true,
+          "inherited_description": "UUID nullable",
+          "pg_type": "uuid"
+        },
+        {
+          "name": "causal_receipt",
+          "nullable": false,
+          "inherited_description": "CompanyCommandRef",
+          "pg_type": "jsonb",
+          "schema_ref": "types.schema.json#/$defs/CommandRef"
+        }
+      ]
+    },
+    {
+      "name": "common_owner_content_bindings",
+      "source": "design-corrections.txt:2",
+      "owner": "ontology common revision owner; fixed payroll borrowed caller",
+      "keys": [
+        "org_id",
+        "origin_command_id",
+        "content_kind"
+      ],
+      "constraints": [
+        "Company command/fingerprint attribution verified before construction; immutable binding",
+        "Exact6-column common revision FK/type/hash check with same Company",
+        "REQUEST requires response_id/issue_revision NULL; RESPONSE requires both NOT NULL and exact native response/issue membership",
+        "Deferred bidirectional case/response/command-receipt closure; no orphan content binding commit",
+        "Request append reuses same instance and exact predecessor head; unique(org_id,revision_id)",
+        "No runtime UPDATE/DELETE outside qualified content-retention owner"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "common_owner_content_bindings",
+      "columns": [
+        {
+          "name": "org_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "origin_command_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "content_kind",
+          "pg_type": "text",
+          "nullable": false,
+          "enum": [
+            "REQUEST",
+            "RESPONSE"
+          ]
+        },
+        {
+          "name": "case_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "response_id",
+          "pg_type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "issue_revision",
+          "pg_type": "bigint",
+          "nullable": true,
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "instance_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "revision_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "version",
+          "pg_type": "bigint",
+          "nullable": false,
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "object_type_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "row_hash",
+          "pg_type": "bytea",
+          "nullable": false,
+          "bytes": 32
+        },
+        {
+          "name": "predecessor_revision_id",
+          "pg_type": "uuid",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "workflow_response_work_links",
+      "source": "follow-up-work-contract.txt:3",
+      "owner": "workflow fixed participant under payroll response transaction",
+      "keys": [
+        "org_id",
+        "origin_command_id",
+        "item_id"
+      ],
+      "constraints": [
+        "UNIQUE(org_id,response_id,item_id); immutable origin/kind/response/item/task binding",
+        "Composite FK to actual workflow_work_controls and workflow_waiting_tasks; same Company; assignment epoch/control refer actual admission revision, not a permanent currentness requirement",
+        "Deferred FK to actual payroll response and exact current-at-response case/issue/item membership",
+        "CREATE binding correlates one actual task origin to this command/item; LINK resolves actual existing nonterminal task without assignment or charge mutation",
+        "Exact immutable task definition/target equals resolved response content; decoded sealed CREATE/LINK input equals selected origin/target/definition or LINK expected task",
+        "Deferred bidirectional complete pending/outside-disposition linkage to actual response content and same final command receipt; missing/extra item or absent created work forbids commit",
+        "No link grants execute/read authority, rewrites task target/definition, completes source work or releases a task charge",
+        "Company RLS, command-only fixed owner writes; retention follows common case content, work obligations and actual task/assignment/receipt evidence"
+      ],
+      "cell": "COMPANY",
+      "mapping": "NATIVE_RELATION",
+      "physical_owner": "workflow_response_work_links",
+      "columns": [
+        {
+          "name": "org_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "origin_command_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "case_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "response_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "issue_revision",
+          "pg_type": "bigint",
+          "nullable": false,
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "item_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "task_id",
+          "pg_type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "assignment_epoch",
+          "pg_type": "bigint",
+          "nullable": false,
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "task_control_revision",
+          "pg_type": "bigint",
+          "nullable": false,
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        {
+          "name": "intent_kind",
+          "pg_type": "text",
+          "nullable": false,
+          "enum": [
+            "CREATE",
+            "LINK"
+          ]
+        }
+      ]
+    }
+  ],
+  "unresolved": []
+}
