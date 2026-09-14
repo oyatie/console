@@ -169,14 +169,22 @@ def _codex(prompt: str, cwd: Path, sandbox: str, model: str, log: Path) -> tuple
     return proc.returncode == 0, answer, err
 
 
-def _git(cwd: Path, *args: str) -> str:
-    return subprocess.run(["git", "-C", str(cwd), *args],
-                          capture_output=True, text=True).stdout.strip()
-
-
 def _changed(worktree: Path) -> list[str]:
-    out = _git(worktree, "status", "--porcelain")
-    return [ln[3:].strip() for ln in out.splitlines() if ln.strip()]
+    out = subprocess.check_output([
+        "git", "-C", str(worktree), "status", "--porcelain=v1", "-z",
+        "--untracked-files=all",
+    ])
+    fields = out.split(b"\0")
+    changed = []
+    index = 0
+    while index < len(fields) and fields[index]:
+        record = fields[index]
+        index += 1
+        changed.append(os.fsdecode(record[3:]))
+        if b"R" in record[:2] or b"C" in record[:2]:
+            changed.append(os.fsdecode(fields[index]))
+            index += 1
+    return changed
 
 
 def admit_lane(item: dict, *, cwd: Path, runner=subprocess.run) -> str | None:
