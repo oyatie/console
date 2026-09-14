@@ -1,0 +1,1566 @@
+{
+  "classification": "FINAL_SELECTED_SOURCE_PARSER_AND_ASSET_INTEGRITY_NOT_OWNER_COMPILATION",
+  "rust_source_checks": [
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/account-enrollment-producer.rs",
+      "sha256": "a260c3b99ba1f78027d43da19b9a87ca1948ad0fbd07dd1cf84aa691c764b982",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/account-enrollment-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/artifact-owner-producer.rs",
+      "sha256": "27e105bc0d7b1274b8f29b3b8fb48e3a3c34757e324a99d9ea234f7bb5797c53",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/artifact-owner-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/binder-sequence.rs",
+      "sha256": "f037f11cef0cffd4f1a2c2aabf2dd0d8d1f2e4ee613ecb343158f0b97d22b2de",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/binder-sequence.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/commit-ack-relay.rs",
+      "sha256": "741f9c478e7315881cfb3c6cdd3c72cf92f5aa157cee4fd8e540f4d16e542733",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/commit-ack-relay.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/deployment-root-producer.rs",
+      "sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/deployment-root-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/deployment-runtime-producer.rs",
+      "sha256": "3a1a67d0fd68e48b6d09c5213725c111eb8d6e0f0d5c06f8a1c6d194d62b96b6",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/deployment-runtime-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/native-fixture.rs",
+      "sha256": "ed0a60d300450a8295bcd814b8e5876ced5ba8746dd6baf79fc8abcc25f21315",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/native-fixture.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/native-money-assertions.rs",
+      "sha256": "6e2a48c34b85b8426a594d7b14ff4b94cdcbedf34761cea7a8d0f33b90ebf072",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/native-money-assertions.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/native-owner-producer.rs",
+      "sha256": "9ca5c2d564566837231d4c52162bae2add39116dacbc0eb2bfd188cc25c0177c",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/native-owner-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/negative-assertions.rs",
+      "sha256": "c7fb20a83e8a51d4b261b601b510aaab10a3365ae55b63bff6fb461b7448334d",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/negative-assertions.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/operator-custody-producer.rs",
+      "sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/operator-custody-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/ordinary-issuer-bootstrap.rs",
+      "sha256": "50e0fb9e77889f6acaf3111b920453f2c5c7b5e4800bdfbb848ddb63aa8ad494",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/ordinary-issuer-bootstrap.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/payroll-source-facts-producer.rs",
+      "sha256": "015cc3062f4f6918adda88b6133c82d073d45c7741e0919c097c7fae4333d9b9",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/payroll-source-facts-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/publish-then-root-producer.rs",
+      "sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/publish-then-root-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/review-correction-producer.rs",
+      "sha256": "f0f3fdda6ffb95a5146ba017fdd571649df4e9383bae4ec1b4a15b9d697ec1bc",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/review-correction-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/source-foundation-producer.rs",
+      "sha256": "8ebc38ad1204769e34c8629e026ecb89dc141bc6c0b8522ebb9356d8c05e014a",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/source-foundation-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/source-owner-producer.rs",
+      "sha256": "109c120bda9e95d9f46a34969b7c2227e5b66c95b35214f6b59db1e37fa4d815",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/source-owner-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/two-subject-producer.rs",
+      "sha256": "5d6b644fac22909929213f72eca310dfa1e666d572b14071a14a342cd473e71a",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/two-subject-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/workforce-owner-producer.rs",
+      "sha256": "cd955704de2f263bac25abf4dbab2fce241283166368f281f585de92011e363f",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/workforce-owner-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/attendance-r2/attendance-owner-producer.rs",
+      "sha256": "08121eb293b6e8c0d08881be2596243af258228bd0c12bb284974474b40fe83a",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/attendance-r2/attendance-owner-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/native-owner-tests.rs",
+      "sha256": "af5a8f7fc6c271ce224285a10fde6fcef414c57e9ba80e5d28d27d83ec19d213",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/native-owner-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/native-lifecycle-tests.rs",
+      "sha256": "3373e4b6792464b80cf2d15d113e1d2a731029e9919d47d565f75cd38e9130c1",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/native-lifecycle-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/artifact-owner-tests.rs",
+      "sha256": "629e5a37b48b6d059eefacb7ea59757f1015cb7ae70cad24634e72ce5beb043d",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/artifact-owner-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/source-owner-tests.rs",
+      "sha256": "13147153d86ec2685cec72a27dbedf1b82fd419d215d0e0410c623c6a09b11b6",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/source-owner-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/source-preparation-tests.rs",
+      "sha256": "cd63fe12160c74335273b758adfdfde05e7738a3833255eaee3651ccc09e4e8e",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/source-preparation-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s4/native-lock-custody-tests.rs",
+      "sha256": "e403a7fba260b93e2339500514c9af4221b7beec40de69244150fd20e1fc0200",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s4/native-lock-custody-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s3/native-retention-tests.rs",
+      "sha256": "7a9fcd10fa625169996169046d1eacc289ef9ce4c3bacdd883aa03122e873ed7",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s3/native-retention-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/draft-r3/draft-owner-acceptance.rs",
+      "sha256": "873786ca013ec5af21927e849d5f7209ffce82a06b938993dc0b5f9fefc21f42",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/draft-r3/draft-owner-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/attendance-r2/attendance-owner-tests.rs",
+      "sha256": "b08212fa66c32270dc85d1af70a5c62c3c6333d4c07920d6d85539e08f93e62f",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/attendance-r2/attendance-owner-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/attendance-r2/leave-owner-tests.rs",
+      "sha256": "9ca8c024a8000d1607da2b8e6f36b49fa7eaf5e40aee96bd95ebea82f9a4091b",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/attendance-r2/leave-owner-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-owner-tests.rs",
+      "sha256": "8880e5edc2b61818ebe70e977f5d76e4e028a23f51ab9674a15e4c914e090dce",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-owner-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-race-projection-tests.rs",
+      "sha256": "cbfd62612ae4173b5db64a488d882e775f5de9171c673a43fa061747a3829337",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-race-projection-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-obligation-tests.rs",
+      "sha256": "a7c6f78be1865bc430b115c7834e6e6426ce6032bcc8722cbad2a94deedd6e42",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-obligation-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/migration-admission-tests.rs",
+      "sha256": "63faa9a23fa4c6cd1c615fb40821b861c106e7a1964f34f639f131eb63a15111",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/migration-admission-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/draft-r3/lifecycle-producer.rs",
+      "sha256": "03e342a9b5bc4806ab37ef8f623af8a50f41e5d1c6fd9bb5c7d71c355069b632",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/draft-r3/lifecycle-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-fixture.rs",
+      "sha256": "170cc5a8b1759d0db80ec51a59cb1035059ae34f314f33decd590438d2ba557d",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-fixture.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/migration-catalog-producer.rs",
+      "sha256": "9be995e540a59afbf25dad9255509927ca349730d7038c662c2790ba321c3bdd",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/migration-catalog-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/postgres-snapshot-producer.rs",
+      "sha256": "17ef554655131089e447de49d8e77230fda722ea233a562ec30fcbff90f723e9",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/postgres-snapshot-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/context-discovery-acceptance.rs",
+      "sha256": "461235bbc37190f059ac0ec355b7d1017c6761b008e00a731c45b44ae0519179",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/context-discovery-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/context-topology-acceptance.rs",
+      "sha256": "6bc2be8f0b5b04b72c1cee510200e8e80aab183a298c945ceee88b377cd552ee",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/context-topology-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/current-context-projection-acceptance.rs",
+      "sha256": "14919ce92fad09108a197477e29dbbd19a88ccf32682e56cadc584a54179b00f",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/current-context-projection-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/live-context-invalidation-acceptance.rs",
+      "sha256": "b9cbea19b1b87e9ce32dca02729fb2b7f30f1a4e2891dabdf3d5eea86e32f99b",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/live-context-invalidation-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/native-control-reference-acceptance.rs",
+      "sha256": "1608b02e4935d21fd42ac649e488d8474c1ca73f4207098380ecdfd7bd006587",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/native-control-reference-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/native-projection-alias-acceptance.rs",
+      "sha256": "bd77cb8c652f51dbf947a292675fab615488e7edc1ccc20fa07ecf8a4cc62a2f",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/native-projection-alias-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/native-replay-disclosure-acceptance.rs",
+      "sha256": "49b31b7017276a3d5b17b235876c9dc08e7da90c982294357317c498ea66ae30",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/native-replay-disclosure-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/projector-counterfactual-acceptance.rs",
+      "sha256": "4736a440e2eca6192404514b4b90b8cbe415737de6794ae2bb382f1bd491c6cd",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/projector-counterfactual-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/publication-boundary-acceptance.rs",
+      "sha256": "ad2f40ccccc4eef619bb548fae5aa09a5e608b89dce8d52ba7c432cc5a4d78cc",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/publication-boundary-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/publication-transition-acceptance.rs",
+      "sha256": "98f850b4c450d0f5a5a7387f16bb5cb0ffef235350820b52ac45924258cd3f34",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/publication-transition-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/replica-key-acceptance.rs",
+      "sha256": "fa902b1916b293ab8c6261fd1fb76ee0565f4ec095bed50e988685effc03b93a",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/replica-key-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/storage-no-redirect-acceptance.rs",
+      "sha256": "7973ce0b2d3db2ece3a151bedfa7c34021c5188fc9c7e5cf639774d6fb630bb2",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/storage-no-redirect-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/terms-publication-acceptance.rs",
+      "sha256": "0178db0e32ab0d3dc87183328e7a8ec83b4b5f45835b82670506706439042bd4",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/terms-publication-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/bound-egress-acceptance.rs",
+      "sha256": "fe41a716f706c03fbf4a527f0874a563699b2f7edc5b25e275457c1138823112",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/bound-egress-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-auth-producer.rs",
+      "sha256": "2cf499110ec906d167c299ed3ce996906c66dd02bfca7dbc51115df686ce68f1",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-auth-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/context-owner-fixture.rs",
+      "sha256": "15e0c1995e4d425b8c9b3001487159c7d0f035101e41172b3e05868c2e9cfe27",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/context-owner-fixture.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/expanded-custody-producer.rs",
+      "sha256": "7b45f89271398090947e9ed0f0dc18f739b703eece8d38904c12fe2f997ef4f2",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/expanded-custody-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/local-egress-peer.rs",
+      "sha256": "28bfdbaa15cfa1d6e784e6335ba08e3e72041f1e91b62f31157c0099c51d17ce",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/local-egress-peer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/logical-http-collector.rs",
+      "sha256": "d28ba7a46510b05cf9f7a3b8d44b56db4f5c241c0d2d30c26820d6260ccfab80",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/logical-http-collector.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/projector-observation-collector.rs",
+      "sha256": "2aa9147939a225094bd9c7a3835ba7d8609f954c9a9316ea3fc11febed0f3b92",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/projector-observation-collector.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/real-process-producer.rs",
+      "sha256": "89f640d7a5345d0cff4f7ac5471b0304805993a1f89bf268e9dcecba0edf7d9d",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/real-process-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/security-grant-producer.rs",
+      "sha256": "0b43d28dea65ba15eca4dbe7dcc3a1d330248af3b7d63ae7af28b9d8a6d1e7ed",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/security-grant-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/migration-transition-acceptance.rs",
+      "sha256": "69308e55730f526ff243f725d9519b65743e4cac660f1d1369130eb83b9d0bd6",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/migration-transition-acceptance.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/migration-rollback-tests.rs",
+      "sha256": "9c7fddc7b5c44f846898c85b3be4ab56c9d2ebd512270d278f270a6743428c27",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/migration-rollback-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/publication-r1/publication-completion-tests.rs",
+      "sha256": "e5b7e70ad91fea91c296221df1aa3ee7796d2f771d7ccb174b243edb1f894a24",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/publication-r1/publication-completion-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/rust-codec-assertions.rs",
+      "sha256": "1dc2043400ec7da6e00d6d3269f2b8da2819e77ba43d614310d75867c8ed36ee",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/rust-codec-assertions.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s3/native-stream-budget-tests.rs",
+      "sha256": "f09718517bbe3690d4ab8073dd55ce792375a4a0bb15f2fd80703bba12feba52",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s3/native-stream-budget-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/authority-vector-acceptance.append.rs",
+      "sha256": "f22f04ed31d2f9fa31b279f0f0944eb124e7072c6c05db1198a396c46c5183af",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/authority-vector-acceptance.append.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/public-telemetry-registry-acceptance.append.rs",
+      "sha256": "80b9632a0964b7849102bbba25ea751c6690ef7341c479a7a6ca51560dd28b9b",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/public-telemetry-registry-acceptance.append.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/safe-event-constructor-acceptance.append.rs",
+      "sha256": "64161af9a4e17e8a792808e37b7e7c831ae3d1abbc8cb0aa5bc3be4f485fad07",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/safe-event-constructor-acceptance.append.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-case-producer.rs",
+      "sha256": "1a17e57086bb312364293b5105d596cfe2ddfcd72554d1ff63e6f4d8a01d8c4e",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-case-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-runtime-helpers.rs",
+      "sha256": "577138ad387f6cb0cd2fc84fddc38374abc37bd0e660e7a02078016a5662c8b7",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-runtime-helpers.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-acceptance-producer.rs",
+      "sha256": "10482f33d9f89a67fe83a50254aa02556f72d59293b14c2921c201410a49b615",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-acceptance-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/migration-batch-process.rs",
+      "sha256": "d6f481faaa30b3db9a470ea93287d7c9f0c92ef5591e4984a9b4b8deed067345",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/migration-batch-process.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/bounded-process-output.rs",
+      "sha256": "f993feab5beb08c2c68bc889259cf8eedc4506132a6313089b7e35318b9d8d62",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/bounded-process-output.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/migration-remaining-tests.rs",
+      "sha256": "fc4ff20c3b57bc4686212b4f1b311b23e1f1bb1327773d53ce9f4849d574321a",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/migration-remaining-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/legacy-transport-producer.rs",
+      "sha256": "643bbcf97c16734f03f2562a75c04552d760c7daca585cd9b2e2a9e6f14637ff",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/legacy-transport-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/migrated-primary-producer.rs",
+      "sha256": "2c0d5ed21675b5426dadb5857e96c4e8eb67e87d8cfb7191cd4ef0d7cb6abd9d",
+      "command": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/migrated-primary-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    }
+  ],
+  "javascript_checks": [
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/acceptance.spec.cjs",
+      "sha256": "055be6e0571563511ed9a393fdb5217061b0a5240f22f852dd5f228b2b9783ff",
+      "command": [
+        "fnm",
+        "exec",
+        "--using=24.16.0",
+        "node",
+        "--check",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/acceptance.spec.cjs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/effective-submissions.cjs",
+      "sha256": "4f0cc37c5777a29f56aeeca1dfdfa06d6331f273cf1b13dcc4348e93c69daa4d",
+      "command": [
+        "fnm",
+        "exec",
+        "--using=24.16.0",
+        "node",
+        "--check",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/effective-submissions.cjs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/fixture.cjs",
+      "sha256": "dd153b32e1016d0c76dfc7f62fb72d3ba2e0f71f28bbb6efa5d4576ac34c29b1",
+      "command": [
+        "fnm",
+        "exec",
+        "--using=24.16.0",
+        "node",
+        "--check",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/fixture.cjs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/hydration.spec.cjs",
+      "sha256": "6bba04ae4e5ea6516f5f08407b573454891c45081c5d514b39a5632ed123da06",
+      "command": [
+        "fnm",
+        "exec",
+        "--using=24.16.0",
+        "node",
+        "--check",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/hydration.spec.cjs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/oracle.spec.cjs",
+      "sha256": "55dab811b28b39873755c436f032bac44ed086b5f163bb4849edc9929e3e2098",
+      "command": [
+        "fnm",
+        "exec",
+        "--using=24.16.0",
+        "node",
+        "--check",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/oracle.spec.cjs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/playwright.config.cjs",
+      "sha256": "c7af0ab8d4f0b29a8f801a1e2a1151196d326abe0c1ff6da0deaf5160bc26515",
+      "command": [
+        "fnm",
+        "exec",
+        "--using=24.16.0",
+        "node",
+        "--check",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/playwright.config.cjs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/reflow.cjs",
+      "sha256": "41e163c302aeb275ea9c6a8a07bad30425b60ed8edc2693472ac9b560e9f805a",
+      "command": [
+        "fnm",
+        "exec",
+        "--using=24.16.0",
+        "node",
+        "--check",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/reflow.cjs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/wasm-observer.cjs",
+      "sha256": "b7702906d326c694a568b315a4fba487133a58f0cdbedeca3a0f88a582086a44",
+      "command": [
+        "fnm",
+        "exec",
+        "--using=24.16.0",
+        "node",
+        "--check",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/wasm-observer.cjs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    }
+  ],
+  "json_parsed": 605,
+  "owner_compiled": 0,
+  "owner_executed": 0
+}

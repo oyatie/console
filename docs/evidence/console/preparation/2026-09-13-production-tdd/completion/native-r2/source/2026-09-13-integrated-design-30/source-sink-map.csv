@@ -1,0 +1,29 @@
+id,path,line,source,projection_boundary,sink,enrollment
+request_context,backend/crates/platform/request-context/src/lib.rs,310,bearer/current context,bind_active_context;typed middleware errors562,HTTP JSON body578,ADAPT
+auth,backend/crates/platform/auth-rest/src/lib.rs,1012,credentials/session/Group,Account owner;current active-customer binding,token/cookie/JSON/logs,ADAPT
+platform_operator,backend/crates/platform/platform-rest/src/lib.rs,728,Group admin directory,separate restricted platform owner,operator JSON,SEPARATE_OPERATOR_ONLY
+group_read,backend/crates/platform/group/src/lib.rs,114,Company membership rows,current Group resolver+perCompany projection,consolidated JSON,ADAPT
+policy,backend/crates/platform/authz-rest/src/lib.rs,428,policy decision facts,field-safe projection+typed errors532,JSON/tracing,ADAPT
+directory,backend/crates/identity/rest/src/lib.rs,3053,people/Employment,authorized directory projection,JSON/SSR,ADAPT
+instance_reads,backend/crates/ontology/rest/src/lib.rs,1416,instance/revision/link,current field/history/graph projection,JSON,ADAPT
+instance_write,backend/crates/ontology/rest/src/lib.rs,2369,full attributes/notes,registered draft/source owner;minimal receipt;protected audit,audit2523+receipt2531,ADAPT_OR_DENY_GENERIC
+ontology_gate,backend/crates/ontology/rest/src/lib.rs,1873,bound gate,same domain transaction consumption,owner effect,DENY_SEPARATE_CONSUME
+object_graph,backend/app/src/objects.rs,584,object heads/search/links,enforced Cedar+field projection;parity observation insufficient,JSON/logs2509,ADAPT
+hr,backend/app/src/hr.rs,798,personnel/attendance,Account-aware actual owner projection,JSON/rawDebug8669,ADAPT
+hr_export,backend/app/src/hr.rs,3237,employee CSV,separate purpose-bound export projection,download,UNAVAILABLE_FIRST_SLICE
+leave,backend/crates/leave/rest/src/lib.rs,365,leave/charge/comments,Account-aware fixed owner+typed errors,JSON/log908,ADAPT_DENY_V1_NO_CAS
+attendance,backend/crates/attendance/rest/src/lib.rs,613,exceptions/close sources,current branch/object/field projection,JSON/preflight,ADAPT
+payroll_read,backend/crates/payroll/rest/src/lib.rs,256,run/line/own amounts,historical Account subject+field projection,JSON/log385_406_419,ADAPT
+payroll_actions,backend/crates/payroll/rest/src/lifecycle.rs,237,source/run/lifecycle,single owner/receipt/gate/custody,JSON/preflight/audit,ADAPT
+payslip_issue,backend/crates/payroll/rest/src/lifecycle.rs,570,amounts/name/deductions,separate issuance/recipient copy owner,vault/inbox copy,UNAVAILABLE_FIRST_SLICE
+workflow,backend/app/src/workflow_studio.rs,2373,task/run/comments/error_payload,current assigned Account+typed error payload,JSON/log7988,ADAPT
+workflow_drain,backend/app/src/workflow_drain.rs,109,outbox/notifications,remote-applied receipt+current dispatch fence,staging/notifications/logs,ADAPT_OR_DISABLE
+docs,backend/crates/docs/rest/src/lib.rs,240,copies/custody/holds,current exact owner+protected audit,JSON/provider HEAD/logs,ADAPT_DENY_SEPARATE_GATE
+lifecycle,backend/app/src/lifecycle.rs,436,holds/lifecycle,registered unit+owner barriers,JSON/log639,ADAPT_OR_DENY_GENERIC
+storage,backend/crates/platform/storage/src/lib.rs,388,stored data/provider credential,exact location/issuer/recipient binding,network/presigned URL,ADAPT_DENY_RAW_DELETE_URL
+office_callback,backend/app/src/office.rs,947,remote URL/document bytes,future enrolled office owner,remote fetch+stored copy,UNAVAILABLE_FIRST_SLICE
+realtime,backend/crates/platform/realtime/src/lib.rs,668,events/replay cursors,current emission-generation/recipient projection,websocket buffered frames,ADAPT_OR_DISABLE
+ssr,backend/app/src/lib.rs,3597,directory/payroll listing,owning UI projection before serialization,Leptos HTML/data attributes/islands,ADAPT
+request_trace,backend/app/src/lib.rs,2972,request/status/latency,safe public route/result event schedule,operational traces,ADAPT
+client_telemetry,backend/app/src/console_telemetry.rs,110,client payload,bounded registered public event schema,telemetry rows/log261,ADAPT
+otp_stub,backend/crates/platform/email/src/lib.rs,227,OTP/recipient,production excludes nonproduction stub,plaintext log235,DISABLE_PRODUCTION

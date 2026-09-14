@@ -1,0 +1,750 @@
+{
+  "classification": "ACTUAL_OBLIGATIONS_SHARED_INVARIANTS_AND_DECLARED_OWNER_ENROLLMENT",
+  "supersedes": "R2 artificial 90-cell census; no 15x6 acceptance requirement exists",
+  "registration_count": 15,
+  "company_attempt_registrations": 11,
+  "group_control_registrations": 4,
+  "authored_sqlx_methods": 30,
+  "shared_sources": {
+    "COMPANY_DRAFT_ATTEMPT": {
+      "manifest_sha256": "4c4cfc3fa39e99acfe72d07634495c7916332dee4e3d62583000ef6a2f3d1d41",
+      "assertion_sha256": "873786ca013ec5af21927e849d5f7209ffce82a06b938993dc0b5f9fefc21f42",
+      "independent_review_sha256": "16f26b146a9572962f4a637f4c7552a39d3eba886b7aa5f08d00275858a2da25",
+      "methods": [
+        {
+          "function": "draft_start_replay_preserves_identity_and_has_no_business_effect",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 139
+        },
+        {
+          "function": "draft_get_binding_does_not_mint_intent_or_revision",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 152
+        },
+        {
+          "function": "draft_save_stale_head_does_not_overwrite_acknowledged_input",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 160
+        },
+        {
+          "function": "draft_incomplete_text_survives_replay_and_refuses_seal",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 170
+        },
+        {
+          "function": "draft_restore_appends_selected_history_without_rewriting_old_revisions",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 189
+        },
+        {
+          "function": "draft_two_saves_same_head_have_one_winner_and_keep_original_history",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 214
+        },
+        {
+          "function": "draft_discard_keeps_acknowledged_content_and_refuses_later_seal",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 230
+        },
+        {
+          "function": "draft_seal_replay_has_one_original_attempt_without_business_effect",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 241
+        },
+        {
+          "function": "cancel_ready_attempt_is_terminal_no_effect_and_cannot_execute",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 252
+        },
+        {
+          "function": "attempt_execute_replay_reuses_original_domain_receipt",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 266
+        },
+        {
+          "function": "attempt_cancel_cannot_erase_an_already_committed_effect",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 282
+        },
+        {
+          "function": "attempt_cancel_pending_owner_work_requires_definitive_owner_evidence",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 295
+        },
+        {
+          "function": "draft_schema_upgrade_preserves_identity_fields_and_old_schema",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 312
+        },
+        {
+          "function": "draft_schema_upgrade_partial_mapping_cannot_drop_complete_input",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 329
+        },
+        {
+          "function": "draft_expiry_uses_current_server_policy_and_retains_history",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 339
+        },
+        {
+          "function": "draft_expiry_ends_editing_but_preserves_held_evidence",
+          "file": "/private/tmp/console-draft-owner-assertions-r3-20260913/draft-owner-acceptance.rs",
+          "line": 354
+        }
+      ],
+      "scope": "Shared draft lifecycle/concurrency/replay/expiry source only for11 EXISTING_ATTEMPT registrations; conditional on actual immutable schema/binder/engine enrollment. No automatic field-policy/owner-effect coverage."
+    },
+    "GROUP_COMMAND_CONTROL": {
+      "functions": [
+        "group_command_replay_preserves_allocated_parent_and_rejects_changed_body",
+        "group_activate_requires_all_prepared_original_attempts",
+        "group_resume_preserves_manifest_and_original_pending_commands",
+        "group_stop_blocks_prepared_child_without_cross_company_effect"
+      ],
+      "scope": "Distinct GROUP_CONTROL_V1 command receipts and Group authority; no Company Draft inheritance; source registrations must route all4 through same Group fence/codec."
+    }
+  },
+  "entries": [
+    {
+      "registration": "governance.execution_gate.request",
+      "obligation": {
+        "before": "EDITABLE exact draft/schema/head/epoch; actual gate policy and validity interval",
+        "after": "Reserve request identity then seal command; fill binding after fingerprint; no domain execution",
+        "refusal": "Future gate decision/binding digest cannot enter original command identity"
+      },
+      "source_evidence": [
+        {
+          "function": "gate_request_binds_actual_sealed_calculation_without_effect",
+          "file": "workflow-owner-tests.rs",
+          "line": 19
+        }
+      ],
+      "shared_invariant_source": "COMPANY_DRAFT_ATTEMPT",
+      "structural_enrollment": {
+        "interface": {
+          "key": "governance.execution_gate.request",
+          "proposed_rust_entry": "governance::action30::governance_execution_gate_request",
+          "private_finalizer_label": "governance_execution_gate_request_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/GateRequest",
+          "result_schema": "action-types.schema.json#/$defs/GateResult",
+          "admission_class": "EXISTING_ATTEMPT",
+          "authentication_type": "AuthenticatedCompanyContext",
+          "parameter_type": "&AttemptRef",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "governance.execution_gate.decide",
+      "obligation": {
+        "before": "Pending exact gate request; independent current decision actor",
+        "after": "Append PERMIT for exact request command binding; never autoexecute gated command",
+        "refusal": "SELF or expired policy authority refuses without decision/consumption"
+      },
+      "source_evidence": [
+        {
+          "function": "gate_decide_requires_independence_and_never_executes_business",
+          "file": "workflow-owner-tests.rs",
+          "line": 52
+        }
+      ],
+      "shared_invariant_source": "COMPANY_DRAFT_ATTEMPT",
+      "structural_enrollment": {
+        "interface": {
+          "key": "governance.execution_gate.decide",
+          "proposed_rust_entry": "governance::action30::governance_execution_gate_decide",
+          "private_finalizer_label": "governance_execution_gate_decide_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/GateDecide",
+          "result_schema": "action-types.schema.json#/$defs/GateResult",
+          "admission_class": "EXISTING_ATTEMPT",
+          "authentication_type": "AuthenticatedCompanyContext",
+          "parameter_type": "&AttemptRef",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "payroll.review.release",
+      "obligation": {
+        "before": "Approved completion and actual immutable result for historical subject; allowed projection",
+        "after": "One NONPAYABLE_REVIEW publication per exact target; slot currentness CURRENT; protected source proof",
+        "refusal": "One forbidden target in<=2000 prevents entire Company release; no partial rows"
+      },
+      "source_evidence": [
+        {
+          "function": "publication_release_preserves_exact_source_and_is_nonpayable",
+          "file": "workflow-owner-tests.rs",
+          "line": 120
+        },
+        {
+          "function": "publication_one_forbidden_company_target_prevents_all_local_publication",
+          "file": "workflow-obligation-tests.rs",
+          "line": 34
+        },
+        {
+          "function": "publication_valid_same_company_forbidden_field_prevents_all_targets",
+          "file": "workflow-obligation-tests.rs",
+          "line": 522
+        },
+        {
+          "function": "publication_replay_after_current_grant_revocation_is_not_disclosed",
+          "file": "workflow-race-projection-tests.rs",
+          "line": 75
+        }
+      ],
+      "shared_invariant_source": "COMPANY_DRAFT_ATTEMPT",
+      "structural_enrollment": {
+        "interface": {
+          "key": "payroll.review.release",
+          "proposed_rust_entry": "payroll::action30::payroll_review_release",
+          "private_finalizer_label": "payroll_review_release_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/PublicationRelease",
+          "result_schema": "action-types.schema.json#/$defs/PublicationResult",
+          "admission_class": "EXISTING_ATTEMPT",
+          "authentication_type": "AuthenticatedCompanyContext",
+          "parameter_type": "&AttemptRef",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "payroll.review.replace_projection",
+      "obligation": {
+        "before": "Current publication predecessor and allowed replacement projection",
+        "after": "New immutable projected content; advance exact slot generation; retain predecessor",
+        "refusal": "Stale predecessor slot generation refuses"
+      },
+      "source_evidence": [
+        {
+          "function": "publication_replace_preserves_history_and_rejects_stale_slot",
+          "file": "workflow-owner-tests.rs",
+          "line": 176
+        },
+        {
+          "function": "publication_concurrent_same_predecessor_has_one_exact_successor",
+          "file": "workflow-race-projection-tests.rs",
+          "line": 16
+        }
+      ],
+      "shared_invariant_source": "COMPANY_DRAFT_ATTEMPT",
+      "structural_enrollment": {
+        "interface": {
+          "key": "payroll.review.replace_projection",
+          "proposed_rust_entry": "payroll::action30::payroll_review_replace_projection",
+          "private_finalizer_label": "payroll_review_replace_projection_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/PublicationReplace",
+          "result_schema": "action-types.schema.json#/$defs/PublicationResult",
+          "admission_class": "EXISTING_ATTEMPT",
+          "authentication_type": "AuthenticatedCompanyContext",
+          "parameter_type": "&AttemptRef",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "payroll.review.request",
+      "obligation": {
+        "before": "Own historical publication readable via actual Person/Employment binding",
+        "after": "One OPEN request with exact item/narrative content and existing configured handler task or typed unassigned exception",
+        "refusal": "Unrelated historical subject is undiscoverable and cannot create request"
+      },
+      "source_evidence": [
+        {
+          "function": "case_request_retains_real_content_and_actual_accountable_task",
+          "file": "workflow-owner-tests.rs",
+          "line": 242
+        },
+        {
+          "function": "own_case_request_and_withdraw_do_not_follow_general_handler_permission",
+          "file": "workflow-obligation-tests.rs",
+          "line": 95
+        }
+      ],
+      "shared_invariant_source": "COMPANY_DRAFT_ATTEMPT",
+      "structural_enrollment": {
+        "interface": {
+          "key": "payroll.review.request",
+          "proposed_rust_entry": "payroll::action30::payroll_review_request",
+          "private_finalizer_label": "payroll_review_request_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/CaseRequest",
+          "result_schema": "action-types.schema.json#/$defs/CaseResult",
+          "admission_class": "EXISTING_ATTEMPT",
+          "authentication_type": "AuthenticatedCompanyContext",
+          "parameter_type": "&AttemptRef",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "payroll.review.request_append",
+      "obligation": {
+        "before": "Own OPEN request at exact content/control revision",
+        "after": "Append one issue revision preserving prior acknowledged items and narrative",
+        "refusal": "Stale issue revision refuses without losing current draft text"
+      },
+      "source_evidence": [
+        {
+          "function": "case_append_preserves_prior_items_and_refuses_stale_revision",
+          "file": "workflow-owner-tests.rs",
+          "line": 269
+        }
+      ],
+      "shared_invariant_source": "COMPANY_DRAFT_ATTEMPT",
+      "structural_enrollment": {
+        "interface": {
+          "key": "payroll.review.request_append",
+          "proposed_rust_entry": "payroll::action30::payroll_review_request_append",
+          "private_finalizer_label": "payroll_review_request_append_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/CaseAppend",
+          "result_schema": "action-types.schema.json#/$defs/CaseResult",
+          "admission_class": "EXISTING_ATTEMPT",
+          "authentication_type": "AuthenticatedCompanyContext",
+          "parameter_type": "&AttemptRef",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "payroll.review.request_withdraw",
+      "obligation": {
+        "before": "Own current open request and exact content/control revision",
+        "after": "WITHDRAWN once, retain submitted content/task causal evidence",
+        "refusal": "Another Account without own-subject authority cannot withdraw"
+      },
+      "source_evidence": [
+        {
+          "function": "case_withdraw_retains_immutable_content_and_replays_once",
+          "file": "workflow-owner-tests.rs",
+          "line": 307
+        },
+        {
+          "function": "own_case_request_and_withdraw_do_not_follow_general_handler_permission",
+          "file": "workflow-obligation-tests.rs",
+          "line": 95
+        }
+      ],
+      "shared_invariant_source": "COMPANY_DRAFT_ATTEMPT",
+      "structural_enrollment": {
+        "interface": {
+          "key": "payroll.review.request_withdraw",
+          "proposed_rust_entry": "payroll::action30::payroll_review_request_withdraw",
+          "private_finalizer_label": "payroll_review_request_withdraw_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/CaseWithdraw",
+          "result_schema": "action-types.schema.json#/$defs/CaseResult",
+          "admission_class": "EXISTING_ATTEMPT",
+          "authentication_type": "AuthenticatedCompanyContext",
+          "parameter_type": "&AttemptRef",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "payroll.review.respond",
+      "obligation": {
+        "before": "Current handler task/assignment and case issue revision; one exact item",
+        "after": "Immutable ANSWERED response; exact issue dispositions; case RESOLVED when all handled",
+        "refusal": "Stale assignment or omitted issue disposition refuses; no invented task"
+      },
+      "source_evidence": [
+        {
+          "function": "case_respond_requires_complete_items_then_resolves_with_real_receipt",
+          "file": "workflow-owner-tests.rs",
+          "line": 337
+        },
+        {
+          "function": "stale_case_handler_attempt_cannot_resolve_after_real_transfer",
+          "file": "workflow-obligation-tests.rs",
+          "line": 142
+        }
+      ],
+      "shared_invariant_source": "COMPANY_DRAFT_ATTEMPT",
+      "structural_enrollment": {
+        "interface": {
+          "key": "payroll.review.respond",
+          "proposed_rust_entry": "payroll::action30::payroll_review_respond",
+          "private_finalizer_label": "payroll_review_respond_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/CaseRespond",
+          "result_schema": "action-types.schema.json#/$defs/CaseResult",
+          "admission_class": "EXISTING_ATTEMPT",
+          "authentication_type": "AuthenticatedCompanyContext",
+          "parameter_type": "&AttemptRef",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "work.transfer.submit",
+      "obligation": {
+        "before": "Current task assignment1/control1; nominated eligible other Account; explicit interval",
+        "after": "Actual transfer-plan content REQUESTED with exact target selection/responsibility and receipt",
+        "refusal": "Transfer cannot grant recipient authority to execute domain action"
+      },
+      "source_evidence": [
+        {
+          "function": "transfer_submit_retains_task_and_selection_without_assigning",
+          "file": "workflow-owner-tests.rs",
+          "line": 388
+        },
+        {
+          "function": "transfer_nomination_never_restores_revoked_recipient_domain_authority",
+          "file": "workflow-obligation-tests.rs",
+          "line": 390
+        },
+        {
+          "function": "transfer_capacity_conflict_preserves_two_real_task_charges",
+          "file": "workflow-obligation-tests.rs",
+          "line": 747
+        }
+      ],
+      "shared_invariant_source": "COMPANY_DRAFT_ATTEMPT",
+      "structural_enrollment": {
+        "interface": {
+          "key": "work.transfer.submit",
+          "proposed_rust_entry": "workflow::action30::work_transfer_submit",
+          "private_finalizer_label": "work_transfer_submit_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/TransferSubmit",
+          "result_schema": "action-types.schema.json#/$defs/TransferResult",
+          "admission_class": "EXISTING_ATTEMPT",
+          "authentication_type": "AuthenticatedCompanyContext",
+          "parameter_type": "&AttemptRef",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "work.transfer.execute",
+      "obligation": {
+        "before": "Authorized exact transfer plan and current target task assignment/control",
+        "after": "One TRANSFERRED target; advance assignment epoch; append old/new responsibility history",
+        "refusal": "Stale assignment/capacity conflict produces no unauthorized assignment"
+      },
+      "source_evidence": [
+        {
+          "function": "transfer_execute_changes_one_assignment_and_charge_once",
+          "file": "workflow-owner-tests.rs",
+          "line": 412
+        },
+        {
+          "function": "transfer_rechecks_actual_recipient_availability_after_seal",
+          "file": "workflow-obligation-tests.rs",
+          "line": 351
+        },
+        {
+          "function": "transfer_nomination_never_restores_revoked_recipient_domain_authority",
+          "file": "workflow-obligation-tests.rs",
+          "line": 390
+        },
+        {
+          "function": "transfer_capacity_conflict_preserves_two_real_task_charges",
+          "file": "workflow-obligation-tests.rs",
+          "line": 747
+        },
+        {
+          "function": "transfer_unknown_receipt_retains_actual_assignment_and_capacity_until_reconciled",
+          "file": "workflow-obligation-tests.rs",
+          "line": 897
+        },
+        {
+          "function": "transfer_stop_races_effect_preserving_one_truthful_assignment",
+          "file": "workflow-race-projection-tests.rs",
+          "line": 124
+        }
+      ],
+      "shared_invariant_source": "COMPANY_DRAFT_ATTEMPT",
+      "structural_enrollment": {
+        "interface": {
+          "key": "work.transfer.execute",
+          "proposed_rust_entry": "workflow::action30::work_transfer_execute",
+          "private_finalizer_label": "work_transfer_execute_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/TransferExecute",
+          "result_schema": "action-types.schema.json#/$defs/TransferResult",
+          "admission_class": "EXISTING_ATTEMPT",
+          "authentication_type": "AuthenticatedCompanyContext",
+          "parameter_type": "&AttemptRef",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "work.transfer.stop",
+      "obligation": {
+        "before": "Current active transfer plan",
+        "after": "STOPPED for remaining pending targets; completed transfers remain historical facts",
+        "refusal": "Stop cannot undo an already committed transfer by rewriting history"
+      },
+      "source_evidence": [
+        {
+          "function": "transfer_stop_fences_later_execution_and_keeps_assignment",
+          "file": "workflow-owner-tests.rs",
+          "line": 467
+        },
+        {
+          "function": "transfer_stop_races_effect_preserving_one_truthful_assignment",
+          "file": "workflow-race-projection-tests.rs",
+          "line": 124
+        }
+      ],
+      "shared_invariant_source": "COMPANY_DRAFT_ATTEMPT",
+      "structural_enrollment": {
+        "interface": {
+          "key": "work.transfer.stop",
+          "proposed_rust_entry": "workflow::action30::work_transfer_stop",
+          "private_finalizer_label": "work_transfer_stop_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/TransferStop",
+          "result_schema": "action-types.schema.json#/$defs/TransferResult",
+          "admission_class": "EXISTING_ATTEMPT",
+          "authentication_type": "AuthenticatedCompanyContext",
+          "parameter_type": "&AttemptRef",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "group.operation.create",
+      "obligation": {
+        "before": "Actual Group authority and one current member incarnation; exact child run intent",
+        "after": "One PREPARING Group operation with immutable selected slot set; no Company domain effect",
+        "refusal": "Different membership incarnation refuses slot admission"
+      },
+      "source_evidence": [
+        {
+          "function": "group_create_freezes_six_actual_companies_without_calculation",
+          "file": "workflow-owner-tests.rs",
+          "line": 509
+        },
+        {
+          "function": "group_create_rejects_another_members_actual_incarnation",
+          "file": "workflow-obligation-tests.rs",
+          "line": 195
+        },
+        {
+          "function": "group_command_replay_preserves_allocated_parent_and_rejects_changed_body",
+          "file": "workflow-obligation-tests.rs",
+          "line": 467
+        }
+      ],
+      "shared_invariant_source": "GROUP_COMMAND_CONTROL",
+      "structural_enrollment": {
+        "interface": {
+          "key": "group.operation.create",
+          "proposed_rust_entry": "group::action30::group_operation_create",
+          "private_finalizer_label": "group_operation_create_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/GroupCreate",
+          "result_schema": "action-types.schema.json#/$defs/GroupResult",
+          "admission_class": "GROUP_UNADMITTED_CONTROL",
+          "authentication_type": "AuthenticatedGroupContext",
+          "parameter_type": "group::GroupRegisteredActionRequest<group::GroupCreate>",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "group.operation.activate",
+      "obligation": {
+        "before": "Prepared exact child attempt per slot; original actor confirms fixed intent",
+        "after": "ACTIVE Group dispatch; children retain Company-local commands/receipts; no Group-wide atomicity claim",
+        "refusal": "Missing/changed prepared attempt prevents activation"
+      },
+      "source_evidence": [
+        {
+          "function": "group_activate_requires_all_prepared_original_attempts",
+          "file": "workflow-owner-tests.rs",
+          "line": 540
+        }
+      ],
+      "shared_invariant_source": "GROUP_COMMAND_CONTROL",
+      "structural_enrollment": {
+        "interface": {
+          "key": "group.operation.activate",
+          "proposed_rust_entry": "group::action30::group_operation_activate",
+          "private_finalizer_label": "group_operation_activate_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/GroupActivate",
+          "result_schema": "action-types.schema.json#/$defs/GroupResult",
+          "admission_class": "GROUP_UNADMITTED_CONTROL",
+          "authentication_type": "AuthenticatedGroupContext",
+          "parameter_type": "group::GroupRegisteredActionRequest<group::GroupActivate>",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "group.operation.resume",
+      "obligation": {
+        "before": "Current paused original operation with unknown/pending child outcomes",
+        "after": "Reconcile old child receipts first; resume only unchanged original pending intent",
+        "refusal": "Resume cannot replace failed child intent or duplicate committed child effect"
+      },
+      "source_evidence": [
+        {
+          "function": "group_resume_preserves_manifest_and_original_pending_commands",
+          "file": "workflow-owner-tests.rs",
+          "line": 619
+        },
+        {
+          "function": "group_resume_requires_original_account_even_for_same_human_with_group_grant",
+          "file": "workflow-obligation-tests.rs",
+          "line": 975
+        }
+      ],
+      "shared_invariant_source": "GROUP_COMMAND_CONTROL",
+      "structural_enrollment": {
+        "interface": {
+          "key": "group.operation.resume",
+          "proposed_rust_entry": "group::action30::group_operation_resume",
+          "private_finalizer_label": "group_operation_resume_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/GroupResume",
+          "result_schema": "action-types.schema.json#/$defs/GroupResult",
+          "admission_class": "GROUP_UNADMITTED_CONTROL",
+          "authentication_type": "AuthenticatedGroupContext",
+          "parameter_type": "group::GroupRegisteredActionRequest<group::GroupResume>",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    },
+    {
+      "registration": "group.operation.stop",
+      "obligation": {
+        "before": "Current active Group operation",
+        "after": "STOPPED for undispatched children; actual completed/unknown outcomes preserved",
+        "refusal": "Unknown child cannot be reported definitive no effect"
+      },
+      "source_evidence": [
+        {
+          "function": "group_stop_blocks_prepared_child_without_cross_company_effect",
+          "file": "workflow-owner-tests.rs",
+          "line": 769
+        },
+        {
+          "function": "group_stop_preserves_unknown_when_authoritative_company_receipt_is_unavailable",
+          "file": "workflow-obligation-tests.rs",
+          "line": 246
+        }
+      ],
+      "shared_invariant_source": "GROUP_COMMAND_CONTROL",
+      "structural_enrollment": {
+        "interface": {
+          "key": "group.operation.stop",
+          "proposed_rust_entry": "group::action30::group_operation_stop",
+          "private_finalizer_label": "group_operation_stop_in_conn",
+          "private_finalizer_kind": "OWNER_PRIVATE_RUST_PROPOSAL",
+          "input_schema": "action-types.schema.json#/$defs/GroupStop",
+          "result_schema": "action-types.schema.json#/$defs/GroupResult",
+          "admission_class": "GROUP_UNADMITTED_CONTROL",
+          "authentication_type": "AuthenticatedGroupContext",
+          "parameter_type": "group::GroupRegisteredActionRequest<group::GroupStop>",
+          "status": "EXPLICIT_PROPOSED_INTERFACE_NOT_IMPLEMENTED"
+        },
+        "status": "DECLARED_OWNER_INTERFACE_ONLY; actual production registration and shared-engine closure require implementation review"
+      },
+      "product_execution": {
+        "discovered": 0,
+        "executed": 0,
+        "reason": "Owners/test target/native fixture implementation not executed"
+      }
+    }
+  ],
+  "remaining_holds": [
+    "Native deployment/two-subject producer next accepted frozen identity is not yet pinned; bootstrap/source prerequisites remain separate",
+    "Proposed ordinary configuration/read/policy-resource refinements require owner implementation and independent source review",
+    "All product test discovery, compilation, execution and required fixture services remain unexecuted",
+    "Full security hidden-world/sink/typed-reference matrices and broader WC16 bounds/repair proof remain independent obligations, not universal per-registration dimension cells"
+  ]
+}

@@ -2,6 +2,7 @@ const { test, expect } = require('@playwright/test');
 const fs = require('node:fs');
 const {effectiveSubmissions,unexpectedMutations} = require('./effective-submissions.cjs');
 const crypto = require('node:crypto');
+const {expectEssentialReflow}=require('./reflow.cjs');
 
 // Presentation/transport acceptance against the real mounted Leptos application.
 // Fixture construction is a dependency: this file never installs fake routes,
@@ -105,7 +106,7 @@ test('stale save preserves acknowledged inputs and offers recovery', async ({pag
 test('scoped review presents permitted evidence without hidden coverage', async ({page},info) => {
   const f=fixture(info); await page.context().addCookies(f.cookies);
   const response=await page.goto(f.url); expect(response.status()).toBe(200);
-  for(const text of ['1200000',f.visible_evidence_narrative,f.visible_subject_label])
+  for(const text of ['3000000',f.visible_evidence_narrative,f.visible_subject_label])
     await expect(page.getByText(text,{exact:true})).toBeVisible();
   expect(f.canaries).toHaveLength(4); // Hidden employee, wage, narrative, global coverage marker.
   await absentEverywhere(page,response,f.canaries);
@@ -115,7 +116,7 @@ test('scoped review presents permitted evidence without hidden coverage', async 
 test('historical own publication remains nonpayable with correction entry', async ({page},info) => {
   // Employment ended; the Account remains ACTIVE and current own-field policy permits this publication.
   const f=fixture(info); await open(page,f);
-  for(const text of ['1200000','NONPAYABLE_REVIEW',f.historical_period])
+  for(const text of ['3000000','NONPAYABLE_REVIEW',f.historical_period])
     await expect(page.getByText(text,{exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'지급',exact:true})).toHaveCount(0);
   await expect(page.getByRole('link',{name:'정정 요청',exact:true})).toBeVisible();
@@ -134,4 +135,44 @@ test('read-only projection has no state-changing form or concealed private field
   expect(unexpectedMutations(await page.evaluate(effectiveSubmissions),f.origin)).toEqual([]);
   for (const control of await page.locator('[data-action-key]').all())
     expect(await control.getAttribute('data-action-key')).toBe('account.session.logout');
+});
+
+// Browser keyboard commands exercise the normal focus order. No locator.focus(),
+// DOM event injection, forced click, route fulfillment or test-only app handler.
+async function tabTo(page, target) {
+  for (let i = 0; i < 64; i += 1) {
+    await page.keyboard.press('Tab');
+    if (await target.evaluate(el => el === document.activeElement)) return;
+  }
+  throw new Error('Keyboard could not discover the required control within the bounded focus traversal');
+}
+
+test('keyboard user can discover edit save and recover acknowledged input', async ({page},info) => {
+  const f=fixture(info); await open(page,f);
+  const input=page.getByLabel('기본급',{exact:true});
+  await expect(input).toHaveValue('1200000');
+  await tabTo(page,input);
+  await expect(input).toBeFocused();
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+  await page.keyboard.type('1234567');
+  const save=page.getByRole('button',{name:'저장',exact:true});
+  await tabTo(page,save);
+  const response=page.waitForResponse(r=>r.request().method()==='POST' && new URL(r.url()).pathname===f.pathname);
+  await page.keyboard.press('Enter');
+  expect((await response).status()).toBe(303);
+  await expect(page.getByText('서버에 저장됨',{exact:true})).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel('기본급',{exact:true})).toHaveValue('1234567');
+});
+
+test('narrow composer preserves essential context inputs and actions', async ({page},info) => {
+  const f=fixture(info);
+  await page.setViewportSize({width:320,height:800});
+  await open(page,f);
+  await expect(page.getByText(f.company_label,{exact:true})).toBeVisible();
+  await expect(page.getByLabel('기본급',{exact:true})).toHaveValue('1200000');
+  for(const name of ['저장','상신']) await expect(page.getByRole('button',{name,exact:true})).toBeVisible();
+  await expectEssentialReflow(page,[page.getByText(f.company_label,{exact:true}),page.getByLabel('기본급',{exact:true}),...['저장','상신'].map(name=>page.getByRole('button',{name,exact:true}))]);
+  // This is a scalar-input composer fixture. Data-grid horizontal scrolling is
+  // assessed separately and is not prohibited by this form-specific test.
 });

@@ -1,0 +1,22 @@
+{
+  "source-owner-tests.rs": [
+    "malformed predecessor with same-actor valid propose",
+    "same alias successful independent proposal verification then original Human refusal",
+    "stale verify with same-actor subsequent current verification",
+    "stale revoke with same-actor subsequent current revocation"
+  ],
+  "native-owner-tests.rs": [
+    "seven mutated expectations then same-actor actual current control calculate"
+  ],
+  "native-lifecycle-tests.rs": [
+    "nullable review-open retains existing actual positive",
+    "wrong author withdrawal existing refusal",
+    "same author conflicting body/common reason refuses with immutable decision/control/accepted set unchanged",
+    "same author matching common/body reason actual succeeds and replays"
+  ],
+  "reason_callers": [
+    "source-owner-producer.rs three revocation helpers",
+    "source-owner-tests.rs stale revocation and successful revocation",
+    "source-owner-tests.rs two distinct concurrent revoke commands"
+  ]
+}

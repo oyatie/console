@@ -1,0 +1,56 @@
+{
+  "classification": "PARSER_ONLY_FINAL_R5_BYTES",
+  "commands": [
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r5-20260913/workflow-fixture.rs"
+      ],
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r5-20260913/workflow-obligation-tests.rs"
+      ],
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r5-20260913/workflow-owner-tests.rs"
+      ],
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r5-20260913/workflow-race-projection-tests.rs"
+      ],
+      "returncode": 0
+    }
+  ],
+  "source_discovered": 30,
+  "parser_passed": 4,
+  "compiled": 0,
+  "cargo_discovered": 0,
+  "executed": 0,
+  "sql_executed": 0,
+  "narrow_delta_check": "Explicit negative intent; same-Company owner/binder precise field reason; both capacity owner branches precise reason verified from final source"
+}

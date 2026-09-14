@@ -1,0 +1,33 @@
+{
+  "status": "SOURCE_PACKAGE_FROZEN_FOR_REVISION_BOUND_REVIEW",
+  "custody": {
+    "packets": 36,
+    "retained_members": 1160,
+    "checker_tests": 19
+  },
+  "mapping": {
+    "source_placements": 76,
+    "include_assets": 26,
+    "runtime_assets": 10,
+    "positive_controls": 1,
+    "hostile_controls": 10
+  },
+  "final_selected_source": {
+    "rust_parser_checks": 76,
+    "javascript_parser_checks": 8,
+    "owner_compiled": 0,
+    "owner_executed": 0
+  },
+  "browser": {
+    "application_discovered": 15,
+    "application_executed": 0,
+    "rust_helper_passed": 15,
+    "chromium_oracle_passed": 10
+  },
+  "request_context": {
+    "executed": 20,
+    "passed": 16,
+    "behavioral_red": 4
+  },
+  "claim_limit": "No whole-slice runtime, actual application hydration, global information-flow theorem, payment or production claim. Source control and parser checks never count as product coverage."
+}

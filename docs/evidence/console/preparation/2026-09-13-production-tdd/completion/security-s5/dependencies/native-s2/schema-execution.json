@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "/private/tmp/console-wire31-validator/bin/python",
+    "/private/tmp/console-native28-owner-assertions-s2-20260913/test_interface_delta.py"
+  ],
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": "test_exact_member_required (__main__.MimeDelta.test_exact_member_required) ... ok\ntest_exact_source19_ndjson_is_allowed (__main__.MimeDelta.test_exact_source19_ndjson_is_allowed) ... ok\ntest_no_case_or_parameter_alias (__main__.MimeDelta.test_no_case_or_parameter_alias) ... ok\ntest_no_coercion (__main__.MimeDelta.test_no_coercion) ... ok\ntest_no_extra_member (__main__.MimeDelta.test_no_extra_member) ... ok\ntest_no_unknown_type (__main__.MimeDelta.test_no_unknown_type) ... ok\ntest_no_wildcards (__main__.MimeDelta.test_no_wildcards) ... ok\ntest_old_three_are_preserved (__main__.MimeDelta.test_old_three_are_preserved) ... ok\ntest_raw_jwt_is_not_mislabeled_or_allowed (__main__.MimeDelta.test_raw_jwt_is_not_mislabeled_or_allowed) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.000s\n\nOK\n",
+  "discovered": 9,
+  "executed": 9,
+  "classification": "REFERENCE_SCHEMA_DELTA_ONLY"
+}

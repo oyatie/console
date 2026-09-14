@@ -1,0 +1,48 @@
+{
+  "classification": "PARSER_ONLY",
+  "commands": [
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-workflow15-owner-assertions-r2-20260913/workflow-fixture.rs"
+      ],
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-workflow15-owner-assertions-r2-20260913/workflow-owner-tests.rs"
+      ],
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-workflow15-owner-assertions-r2-20260913/workflow-race-projection-tests.rs"
+      ],
+      "returncode": 0
+    }
+  ],
+  "source_discovered": 18,
+  "compiled": 0,
+  "cargo_discovered": 0,
+  "executed": 0
+}

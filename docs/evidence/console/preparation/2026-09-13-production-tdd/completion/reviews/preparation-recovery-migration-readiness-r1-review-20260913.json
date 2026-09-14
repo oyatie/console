@@ -1,0 +1,71 @@
+{
+  "reviewer": "/root/preparation_recovery",
+  "manifest_sha256": "f3008ce4e8c79c7298c1d203afb8bedca53a39aa0f8bdbef1eff3dc669936420",
+  "files_hash_length_verified": 17,
+  "reviewer_parser_checks": [
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-migration-readiness-r1-20260913/migration-admission-tests.rs"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-migration-readiness-r1-20260913/migration-rollback-tests.rs"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-migration-readiness-r1-20260913/postgres-snapshot-producer.rs"
+      ],
+      "exit": 0
+    }
+  ],
+  "owner_source_methods": 7,
+  "reviewer_owner_compile": 0,
+  "reviewer_owner_runtime": 0,
+  "author_machinery_evidence": "Final frozen run4 log records7 PostgreSQL18.6 fixture checks; compile0 exit, initial failures preserved. This is machinery calibration, not owner migration execution.",
+  "findings": [
+    {
+      "priority": "P1",
+      "file": "migration-admission-tests.rs",
+      "problem": "A declared mapped column can retain its old users FK alongside the new valid target FK because remaining users-FK loop accepts mapped disposition. Both old global/composite login dependencies must be migrated or explicitly fenced.",
+      "fix": "Reject remaining users FK for active mapped writer, or require actual constraint-specific retained/fenced evidence."
+    },
+    {
+      "priority": "P1",
+      "file": "migration-rollback-tests.rs",
+      "problem": "payroll_draft_runs.correlation_id is not established by current migrations or design30 storage; the new never-dispatched effect oracle queries an absent column.",
+      "fix": "Compare exact full Company run rows before/after or resolve actual allocated target from sealed owner binding."
+    },
+    {
+      "priority": "P2",
+      "file": "owner-interface-contract.txt",
+      "problem": "Native owner contract returns PayrollActionError while pause test matches ontology OwnerActionError; no explicit alias/wrapper propagation is declared.",
+      "fix": "Align exact owner return error type or declare shared alias/wrapper in interface refinement."
+    }
+  ],
+  "resolved_earlier_findings": [
+    "Separate READY never-dispatched paused effect is now attempted",
+    "Normalized ACL tuples and stable logical trigger ordering",
+    "Runtime retains actual migrated config/role pool",
+    "M4 no longer infers dormant enrollment from missing business fixtures"
+  ],
+  "decision": "REVISION_REQUIRED_FOR_OWNER_SOURCE; snapshot machinery custody/checks accepted narrowly"
+}

@@ -1,0 +1,17 @@
+
+running 3 tests
+test tests::actual_small_output_is_retained ... ok
+test tests::actual_unbounded_output_is_refused ... ok
+test tests::actual_stalled_child_is_terminated ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling console-migration-output-machinery v0.1.0 (/private/tmp/console-migration-remaining-s4-r2-20260914/machinery)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.17s
+     Running unittests ../bounded-process-output.rs (/private/tmp/console-migration-remaining-s4-r2-20260914/machinery/target/debug/deps/console_migration_output_machinery-e5d2e7c4debe9415)
+   Doc-tests console_migration_output_machinery

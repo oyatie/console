@@ -1,0 +1,5 @@
+# R2 custody and review status
+
+R1 is immutable at /private/tmp/console-native28-contract-refinement-20260913. Its manifest SHA256 is 7599f608f7174af2282250ac9ba88b225fc4b4c1bc2bf06d9d4d763dc1792785. historical-r1-freeze-manifest.json, reference-execution.log and schema-execution.json are copied historical R1 evidence and describe R1 only.
+
+R2 keeps all nine binary goldens and 121 source snapshots byte-identical. R2 adds retained-form schema projection and stricter canonical decoder negatives, replaces proposed interfaces and future recipe source with sequential binder/control/owner composition, and corrects Group/auth/worker/finalizer placement. Runtime code has not been compiled or executed. execution-r2.json and freeze-manifest.json describe only the final R2 author candidate. Independent review is pending at freeze; no approval is inferred.

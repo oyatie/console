@@ -1,0 +1,52 @@
+{
+  "status": "AUTHORED_RECIPES_OWNER_SOURCE_REQUIRED_NOT_EXECUTED",
+  "mechanics": "Copy exact reviewed production owner/caller source into private mutant worktrees. Each mutation changes one executable decision; retain original snapshots, exact patch hashes, compilation logs and verifier diagnostic location. Do not mutate supplied allowed decisions, output assertions or test input to manufacture failure.",
+  "runs": [
+    {
+      "name": "positive",
+      "mutation": null,
+      "required": "all four exact-bound owner obligations, event schedule, useful permitted projection; nonzero verifier units and zero failed obligations"
+    },
+    {
+      "name": "wrong_company",
+      "owner": "bind_active_context",
+      "mutation": "Remove the Company equality refusal only; preserve all other binding checks.",
+      "required": "current_binding_rejects_other_company designated assertion/postcondition fails"
+    },
+    {
+      "name": "missing_field_filter",
+      "owner": "project_authorized_result",
+      "mutation": "Change the denied field branch to retain original denied scalar; preserve source loader and authority.",
+      "required": "projection_pair designated low-equivalence assertion fails"
+    },
+    {
+      "name": "extra_safe_event",
+      "owner": "schedule_projection_events actual source-bound caller",
+      "mutation": "Append one build_safe_operational_event result conditional on one denied source scalar at the preprojection caller; preserve every record field.",
+      "required": "whole logical event schedule equality assertion fails; per-event serialization remains valid"
+    },
+    {
+      "name": "unbound_egress",
+      "owner": "admit_bound_egress",
+      "mutation": "Accept selected destination without exact recipient/provider/credential/purpose/endpoint check.",
+      "required": "egress_wrong_binding_refuses designated assertion fails"
+    },
+    {
+      "name": "deny_valid_a",
+      "owner": "project_authorized_result",
+      "mutation": "Replace permitted A projection with empty denied result.",
+      "required": "useful_a_projection designated assertion fails; paired noninterference alone must not pass this control"
+    }
+  ],
+  "stop": [
+    "absent production body",
+    "missing exact span/caller/TCB approval",
+    "source mismatch",
+    "compiler or import failure",
+    "unsupported tool option",
+    "zero discovered proof units",
+    "wrong diagnostic location",
+    "mutation unable to compile",
+    "negative failure outside designated obligation"
+  ]
+}

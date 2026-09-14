@@ -1,0 +1,30 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "files": [
+    {
+      "path": "attendance-owner-producer.rs",
+      "bytes": 10364,
+      "sha256": "dc170bb4d70c648ff615f1a139b1fea2cd55d876a2a7bd1432eaaa6754ead6e9"
+    },
+    {
+      "path": "attendance-owner-tests.rs",
+      "bytes": 9478,
+      "sha256": "b08212fa66c32270dc85d1af70a5c62c3c6333d4c07920d6d85539e08f93e62f"
+    },
+    {
+      "path": "execution.json",
+      "bytes": 393,
+      "sha256": "feffd996894bfe0c265f30d1c20d03af841fc17bc4041b47cc4d43c5b146b7b4"
+    },
+    {
+      "path": "leave-owner-tests.rs",
+      "bytes": 5522,
+      "sha256": "30e6cec033d35440a599738d6a6e31ad4f85d861808e0e91b7d1f3b0e6c279e3"
+    },
+    {
+      "path": "owner-contract.txt",
+      "bytes": 5337,
+      "sha256": "59c2248e7ac8818b83054b18c1ec41dc0f2ac163ec883f87179895e6d6da7b17"
+    }
+  ]
+}

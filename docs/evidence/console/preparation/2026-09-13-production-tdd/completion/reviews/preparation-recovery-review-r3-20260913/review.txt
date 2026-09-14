@@ -1,0 +1,45 @@
+# Independent preparation review receipt
+
+Reviewer: /root/preparation_recovery. Repository writer: /root. Read-only review; only this reviewer-owned scratch receipt directory was written. No Rust/Cargo, PostgreSQL, VM, or repository implementation action was run.
+
+Task-selected lenses: Cartesian doubt, systems thinking, operability, blast radius and security boundaries. Review distinguishes pure reference/schema checks, tooling RED, fixture incompleteness and actual product execution.
+
+## Wiring R3: APPROVED TEST INPUT FOR FRESH TOOLING ADMISSION
+
+Exact reviewed test: /private/tmp/test_preparation_wiring.py
+SHA256 ad665d1de72bb801e509305f869a5d9ecb8a0ff23b73da556e215913fe855487
+Exact reviewed guide: /private/tmp/preparation-wiring-guide.txt
+SHA256 b54877a9f54064dc9db3486bcddb33b5dbe97e9cbb624d24c2a61fbe3b816f96
+Repository at independent execution: /private/tmp/console-production-tdd-preparation-20260913, HEAD 67693004c16edd192e744529512bf8fec09ad2b1, with root-owned preparation changes. This is not a clean implementation admission base. Root must commit the exact approved test, declare clean SHA/ownership/immutable target/guide, and run fresh fanout.py admission before implementation.
+
+Exact command:
+CONSOLE_PREPARATION_WIRING_ROOT=/private/tmp/console-production-tdd-preparation-20260913 PYTHONDONTWRITEBYTECODE=1 python3 /private/tmp/test_preparation_wiring.py -v
+Exit 1. Discovered/executed 9 unittest methods, skipped 0, failure records 8, error records 3. Two methods have three subcases, so failure/error record totals are not method counts. Both hostile-workflow suites pass against positive fixture controls; they exercise 11 Cedar and 15 recovery negative mutations. These are checker tests, not product or hosted-CI execution.
+
+Preserved earlier counterexamples and closure:
+- R1 accepted cargo test --no-run as Cedar execution; R3 exact full argv rejects no-run/list/filter/skip/ignored variants.
+- R1 accepted /tmp/unbound-checkout supervisor root; R3 raw argv requires $GITHUB_WORKSPACE and exact fault-mode assignment.
+- R1 dropped step metadata, allowing default-success/combined-step reachability. R3 retains step metadata, requires two separate recovery steps after ordinary tests, explicit !cancelled()+live+three real setup-success guards, no continue-on-error, and pinned setup before ordinary tests.
+- R2 SHA42134dd1127b7df425c5e8d6c61e52271415e1117e76e11f1db9e9188d740f4b accepted Cedar env -C /tmp/unbound-checkout, Cedar if: failure(), and a recovery step with first key shell: echo {0}. R3 independently rejects all three; regressions are now retained. Raw Cedar prefix, intended heavy condition, working-directory and effective-shell checks close these specific failures.
+
+Scope is serialized metadata/generator/BUCK/map/CI/custom-executor routing only. No product test weakening, payroll/auth implementation, DDL, lockfile, VM or production work is approved. Same nine-method probe must turn GREEN; separate focused generator/map/queue/preflight/recognizer/evidence checks remain required. Static reachability does not certify successful product runtime tests. Rollback is ordinary targeted revert preserving test/evidence history. Stop on changed approved test semantics, unrelated generated drift, missing clean admission, dark-test exception or fixture failure called product RED.
+
+## Frozen native R2: reference/schema verified; source correction required
+
+Packet /private/tmp/console-native28-contract-refinement-r2-20260913.
+freeze-manifest.json SHA256 764e3e4454a0e059337a9d6faa7ae0c861f586ca2762f27a6a484b404582649e.
+All 226 declared file lengths and SHA256 values independently match. All seven normalized schemas independently reproduce in memory from the frozen source/projection without writing the packet.
+
+Exact commands, cwd packet:
+PYTHONDONTWRITEBYTECODE=1 /private/tmp/console-wire31-validator/bin/python -m unittest -v test_reference
+Exit 0; discovered/executed/passed 96 methods, no failures/skips.
+PYTHONDONTWRITEBYTECODE=1 /private/tmp/console-wire31-validator/bin/python schema_check.py
+Exit 0; discovered/executed/passed 55 schema fixtures.
+
+Original R1 checked-byte counterexamples now reject: duplicate header guard family, reversed source refs with recomputed semantic/frame digests, non-UUID Company, registration revision zero, unknown action with recomputed body digest. Duplicate and reversed blocker source_slots reject in both input and calculation. These lexical/canonical checks do not establish current database ownership, source completeness, authority, money-row integrity or retention.
+
+R2 resolves the former future-preassembled-command recipe by actual proposed sequential start/save/prepare/continuation/seal calls and fresh owner control reads, and distinguishes native PENDING/worker progression/terminal result. It corrects actual workflow and Group packages, auth-issued Company/Group versus worker boundaries, all six RunExpected fields, fixed SQL labels versus proposed Rust wrappers, and separate protection obligations. Proposed DTOs/modules and owner error conversions remain unimplemented prerequisites; zero owner tests executed, Rust uncompiled, runtime bootstrap incomplete.
+
+One confirmed source defect remains: native-owner-producer.rs constructs the decision target via existing_governance_request(request.request_id). Immutable source/2026-09-13-integrated-design-30/owner-bindings.json registers review.decide on review_basis. The independent decision must target the actual basis id while retaining the actual returned governance request in its typed input. Author /root/fresh29_workflows separately identified this and is issuing a preserved supplement, not mutating frozen R2. Native actual-owner assertion bodies and this correction require separate review before source can be described as ready.
+
+No stale authority-adoption HOLD is asserted here. Root verified current PRODUCT/ROADMAP byte-identical to integrated-design30 adoption at31f769accc08ac7dcb0d140709021c58d2a86c7e. Remaining native HOLDs concern concrete proposed-interface compilation, real credential/source bootstrap, exact owner RED admission and actual owner/retention/guard/CAS execution.

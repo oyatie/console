@@ -1,0 +1,28 @@
+{
+  "kind": "work.transfer.submit",
+  "body": {
+    "targets": [
+      {
+        "task": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "task_id": "cd4cc409-6c89-559c-9409-0bfb7f028010",
+          "assignment_epoch": "1",
+          "control_revision": "1"
+        },
+        "selection": {
+          "kind": "NOMINATED",
+          "account_id": "ec1cd8d0-3cce-5d1d-9a4b-e5df71f80a19"
+        },
+        "responsibility": {
+          "kind": "TEMPORARY",
+          "from": "1788220800000000",
+          "until": "1790780400000000"
+        }
+      }
+    ],
+    "reason_revision": null,
+    "context_evidence": [],
+    "mandate": null,
+    "explanation": "검토 근거를 확인했습니다."
+  }
+}

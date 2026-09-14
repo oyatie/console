@@ -1,0 +1,1 @@
+S5 supersedes S4 only for executed proof input binding and existing telemetry/request-context ownership mapping. S4 source/proof count records remain historical. No new product implementation or production proof claim.

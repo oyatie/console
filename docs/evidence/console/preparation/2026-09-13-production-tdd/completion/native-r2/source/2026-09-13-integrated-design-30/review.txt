@@ -1,0 +1,1 @@
+수정 설계30: 최초 정정 착수 입력의 AR29-F01과 후속 업무 생성/재사용 명세 Q01을 다룹니다. follow-up-work-contract.txt가 이번 변경의 기준이며, 실제 입력·결과·물리 매핑은 action-types/control-types.schema.json 및 storage-mapping.json입니다. 정정 대기 상태를 유지하며 결과 영수증은 nullable, 후속 업무는 공통 CREATE/LINK 의도입니다. 기존 응답·업무 소유자가 같은 트랜잭션에서 생성한 실제 참조를 응답 내용에 연결합니다. 독립 검토와 사용자 SHA 승인은 별도입니다. 이전29와 반대 검토는 보존합니다.

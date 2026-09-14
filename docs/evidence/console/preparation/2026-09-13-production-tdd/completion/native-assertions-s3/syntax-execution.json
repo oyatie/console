@@ -1,0 +1,69 @@
+{
+  "classification": "RUSTFMT_PARSER_ONLY",
+  "checks": [
+    {
+      "file": "native-lock-custody-tests.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s3-20260913/native-lock-custody-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "native-retention-tests.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s3-20260913/native-retention-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "native-stream-budget-tests.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-owner-assertions-s3-20260913/native-stream-budget-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    }
+  ],
+  "parsed_files": 3,
+  "test_bodies": {
+    "native-lock-custody-tests.rs": [
+      "native_calculate_two_distinct_commands_rendezvous_on_actual_run_lock",
+      "native_runtime_cannot_update_or_delete_actual_immutable_custody"
+    ],
+    "native-retention-tests.rs": [
+      "native_aliases_share_one_real_copy_but_keep_distinct_live_obligations",
+      "native_late_hold_invalidates_disposal_preflight_without_claiming_bytes_removed"
+    ],
+    "native-stream-budget-tests.rs": [
+      "native_stream_decoder_accepts_short_reads_without_duplicate_consumption",
+      "native_stream_declared_u32_max_header_refuses_before_any_body_read",
+      "native_stream_writer_never_returns_complete_manifest_after_partial_destination_failure"
+    ]
+  },
+  "compiled": false,
+  "cargo_discovered": 0,
+  "executed": 0
+}

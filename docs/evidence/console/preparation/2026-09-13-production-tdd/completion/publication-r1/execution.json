@@ -1,0 +1,12 @@
+{
+  "rust_source_tests": 5,
+  "rust_parser_checks": 1,
+  "rust_compiled": 0,
+  "rust_executed": 0,
+  "schema_command": "PYTHONDONTWRITEBYTECODE=1 /private/tmp/console-wire31-validator/bin/python validate-boundary-oracles.py",
+  "approved_schema_cases": 10,
+  "utf8_vectors": 2,
+  "schema_exit": 0,
+  "initial_system_python_exit": 1,
+  "initial_cause": "jsonschema absent; reused existing pinned validation environment"
+}

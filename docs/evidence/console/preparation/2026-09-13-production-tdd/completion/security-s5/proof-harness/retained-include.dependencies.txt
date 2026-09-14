@@ -1,0 +1,6 @@
+/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-verus-dependencies-e0llg4pq/input.d: /var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-verus-dependencies-e0llg4pq/entry.rs /var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-verus-dependencies-e0llg4pq/bound.rs
+
+/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-verus-dependencies-e0llg4pq/entry.rs:
+/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-verus-dependencies-e0llg4pq/bound.rs:
+
+# env-dep:VERUSDOC

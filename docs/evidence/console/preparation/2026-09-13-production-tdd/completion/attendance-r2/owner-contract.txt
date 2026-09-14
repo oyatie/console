@@ -1,0 +1,80 @@
+Attendance and leave first-slice preparation source
+
+Root owns this scratch-only proposed source on fd94667f. No product writer is
+implemented here. Three Rust files author eleven acceptance methods plus the
+actual fixture composer. Compilation/execution depend on the ordinary owners;
+parser success and reference schema examples cannot substitute for those runs.
+
+The attendance producer operates on real B6/S2 verified Company/worker contexts,
+actual Employee/Employment, admitted calendar qualification, actual scope and
+object-storage channel. It publishes calendar, assigns it, creates actual prior
+and in-period events, requests a complete version-bound source enumeration,
+uploads the canonical event/day bytes and obtains actual worker attestations,
+resolves coverage, creates an operational close and then an exact close basis.
+The blocked variant omits the last real CLOCK_OUT and stops before downstream
+supported eligibility/tax/native success fixtures. A separate AttendanceFixture
+avoids inventing verified payroll sources for blocked attendance.
+
+Existing responsible writer for employee_attendance_records is
+backend/app/src/hr.rs:create_my_attendance_record (around line1795 at base).
+The proposed Account-aware records::record_manual_event is its ordinary manual
+correction sibling, not a test-only INSERT or second writer. Historical event
+entry requires separately granted scoped policy, records authentic Account and
+server recorded_at, validates occurrence/Employment/source qualification and
+event sequence and appends audit/source-guard changes in the same transaction.
+The event roster remains CLOCK_IN, OUT_FOR_WORK, BUSINESS_TRIP, RETURNED,
+CLOCK_OUT; no artificial break event type is introduced. The unpaid lunch break
+is resolved from the admitted calendar rule. Two prior-day actual events prove
+the OFF_DUTY opening anchor. Employment/qualification must cover that prior date.
+
+records::enumerate_coverage_source uses current authenticated context and exact
+Employee/Employment/period/qualification, returning the actual exhaustive
+version-bound events, days, boundary and source19 outcome/blockers. Codecs accept
+the full enumeration so headers include exact Company, subject, period, query
+bounds and actual anchor. They do not infer zero attendance from absent facts.
+The producer independently compares every generated event identity, duplicate
+counts and prior anchor. Owner resolve must independently enumerate and verify
+against the retained package, not simply trust this producer's digest/outcome.
+
+The calendar is synthetic Mon–Fri 09:00–18:00 with a12:00–13:00 unpaid break;
+weekend paid minutes are zero for this explicitly synthetic qualification. This
+does not establish Korean weekly-rest allowance, holiday or legal correctness.
+June2026 has22 weekdays/30dates; the source-level arithmetic oracle is
+22*480=10560minutes, not a copied actual resolver total. Legal applicability,
+full attendance workflows and payment remain separately gated.
+
+Read APIs added at the same attendance owner return complete typed histories,
+collections and exact source references; the fixture has scoped full read rights
+through actual policy grants. A collection result must prove complete pagination
+and current projection; no target outside the actual Company can enter readback.
+read_calendar_history returns complete/revisions; each revision includes the
+exact CalendarPublish input. assignment collection returns complete/assignments.
+read_coverage returns outcome, blockers, exact event refs, all day results and
+original receipt. close basis read returns complete/exact membership. Collection
+snapshots include immutable revisions, current heads and original effect receipts,
+excluding delivery telemetry whose append is legitimate on refusal/replay.
+
+The leave create_leave_request sibling uses the existing PgLeaveStore self-filing
+owner (backend/crates/leave/adapter-postgres/src/lib.rs:457 at base), resolving
+Account→Person→Employment internally. NewLeaveInput also preserves the existing domain no-reason field invariant for annual/half-day requests (leave/domain NewLeaveRequest); it never names a requester,
+approver, subject employee or charge approval. CurrentLeaveDecision is the
+already specified design30 shape. read_leave_request_history exposes immutable
+original request, consultation history and current state; own_charge_ledger
+allows confirming that a timing consultation charged no leave. Consultation
+does not silently reschedule or deny the original request. This is the bounded
+approved TIME_CHANGE_CONSULT behavior, not a general legal conclusion.
+
+Input refusal may occur during actual sealing/preflight or the domain owner.
+Tests must require the exact classified definitive validation refusal and
+unchanged domain state at the reached boundary; missing schema/fixture, decoding
+failure or transport failure is not the intended negative. A positive ordinary
+fixture proves the owning action works before its one-field mutation is tested.
+
+Runtime entry: backend/app/tests/native_acceptance.rs with support modules under
+tests/support/native. Each method uses sqlx::test migrations
+../crates/platform/db/migrations and its fresh database. All restricted LOGIN
+URLs are rewritten to that actual test database; no shared source database.
+The runtime and object storage are held by fixture ownership and shut down on
+drop. No raw tokens or private event/source content may enter fixture logs.
+
+R2 supersedes R1 after native independent review: each new calendar and Company-collection close-basis request first obtains a real explicit new intent slot. Reusing a Company for another subject must not resume a previous sealed draft. Coverage source_package_ref and coverage_days_ref use the approved nullable Rust fields with actual Some references. Workforce and calendar qualification cover2026-05-31 for the June opening anchor.

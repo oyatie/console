@@ -1,0 +1,339 @@
+{
+  "classification": "AUDIT_OF_REJECTED_BOOKKEEPING_NOT_ACCEPTANCE_MATRIX",
+  "historical_absent_cells": 50,
+  "entries": [
+    {
+      "historical_registration": "governance.execution_gate.request",
+      "historical_missing_dimension": "negative",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "governance.execution_gate.request",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "governance.execution_gate.request",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "governance.execution_gate.request",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "governance.execution_gate.decide",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "governance.execution_gate.decide",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "governance.execution_gate.decide",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.release",
+      "historical_missing_dimension": "negative",
+      "reclassification": "GENUINE_OWNER_REFUSAL_OBLIGATION_AUTHORED",
+      "related_authored_functions": [
+        "publication_one_forbidden_company_target_prevents_all_local_publication",
+        "publication_valid_same_company_forbidden_field_prevents_all_targets",
+        "publication_replay_after_current_grant_revocation_is_not_disclosed"
+      ]
+    },
+    {
+      "historical_registration": "payroll.review.release",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.release",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.replace_projection",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.replace_projection",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.request",
+      "historical_missing_dimension": "negative",
+      "reclassification": "GENUINE_OWNER_REFUSAL_OBLIGATION_AUTHORED",
+      "related_authored_functions": [
+        "own_case_request_and_withdraw_do_not_follow_general_handler_permission"
+      ]
+    },
+    {
+      "historical_registration": "payroll.review.request",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.request",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.request",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.request_append",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.request_append",
+      "historical_missing_dimension": "replay",
+      "reclassification": "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.request_append",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.request_append",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.request_withdraw",
+      "historical_missing_dimension": "negative",
+      "reclassification": "GENUINE_OWNER_REFUSAL_OBLIGATION_AUTHORED",
+      "related_authored_functions": [
+        "own_case_request_and_withdraw_do_not_follow_general_handler_permission"
+      ]
+    },
+    {
+      "historical_registration": "payroll.review.request_withdraw",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.request_withdraw",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.request_withdraw",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.respond",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.respond",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "payroll.review.respond",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "work.transfer.submit",
+      "historical_missing_dimension": "negative",
+      "reclassification": "GENUINE_OWNER_REFUSAL_OBLIGATION_AUTHORED",
+      "related_authored_functions": [
+        "transfer_nomination_never_restores_revoked_recipient_domain_authority",
+        "transfer_capacity_conflict_preserves_two_real_task_charges"
+      ]
+    },
+    {
+      "historical_registration": "work.transfer.submit",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "work.transfer.submit",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "work.transfer.submit",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "work.transfer.execute",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "GENUINE_UNKNOWN_CAPACITY_OBLIGATION_AUTHORED",
+      "related_authored_functions": [
+        "transfer_unknown_receipt_retains_actual_assignment_and_capacity_until_reconciled"
+      ]
+    },
+    {
+      "historical_registration": "work.transfer.execute",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "work.transfer.stop",
+      "historical_missing_dimension": "negative",
+      "reclassification": "GENUINE_OWNER_REFUSAL_OBLIGATION_AUTHORED",
+      "related_authored_functions": [
+        "transfer_stop_races_effect_preserving_one_truthful_assignment"
+      ]
+    },
+    {
+      "historical_registration": "work.transfer.stop",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "work.transfer.stop",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "group.operation.create",
+      "historical_missing_dimension": "negative",
+      "reclassification": "GENUINE_OWNER_REFUSAL_OBLIGATION_AUTHORED",
+      "related_authored_functions": [
+        "group_create_rejects_another_members_actual_incarnation",
+        "group_command_replay_preserves_allocated_parent_and_rejects_changed_body"
+      ]
+    },
+    {
+      "historical_registration": "group.operation.create",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "group.operation.create",
+      "historical_missing_dimension": "replay",
+      "reclassification": "SHARED_GROUP_COMMAND_SOURCE_CONDITIONAL_ON_ENROLLMENT",
+      "related_authored_functions": [
+        "group_command_replay_preserves_allocated_parent_and_rejects_changed_body"
+      ]
+    },
+    {
+      "historical_registration": "group.operation.create",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "group.operation.create",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "group.operation.activate",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "group.operation.activate",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "group.operation.activate",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "group.operation.resume",
+      "historical_missing_dimension": "negative",
+      "reclassification": "GENUINE_OWNER_REFUSAL_OBLIGATION_AUTHORED",
+      "related_authored_functions": [
+        "group_resume_requires_original_account_even_for_same_human_with_group_grant"
+      ]
+    },
+    {
+      "historical_registration": "group.operation.resume",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "group.operation.resume",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "group.operation.stop",
+      "historical_missing_dimension": "race",
+      "reclassification": "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests",
+      "related_authored_functions": []
+    },
+    {
+      "historical_registration": "group.operation.stop",
+      "historical_missing_dimension": "recovery",
+      "reclassification": "GENUINE_UNKNOWN_CHILD_OBLIGATION_AUTHORED",
+      "related_authored_functions": [
+        "group_stop_preserves_unknown_when_authoritative_company_receipt_is_unavailable"
+      ]
+    },
+    {
+      "historical_registration": "group.operation.stop",
+      "historical_missing_dimension": "projection",
+      "reclassification": "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES",
+      "related_authored_functions": []
+    }
+  ],
+  "counts": {
+    "NO_UNIVERSAL_DIMENSION_REQUIREMENT; actual action-case and owner-contract obligations determine tests": 15,
+    "SHARED_COMPANY_DRAFT_SOURCE_CONDITIONAL_ON_ENROLLMENT": 11,
+    "CROSS_CUTTING_CURRENT_DISCLOSURE_OBLIGATION_IN_SECURITY_PACKET_NOT_15_INDEPENDENT_CASES": 14,
+    "GENUINE_OWNER_REFUSAL_OBLIGATION_AUTHORED": 7,
+    "GENUINE_UNKNOWN_CAPACITY_OBLIGATION_AUTHORED": 1,
+    "SHARED_GROUP_COMMAND_SOURCE_CONDITIONAL_ON_ENROLLMENT": 1,
+    "GENUINE_UNKNOWN_CHILD_OBLIGATION_AUTHORED": 1
+  }
+}

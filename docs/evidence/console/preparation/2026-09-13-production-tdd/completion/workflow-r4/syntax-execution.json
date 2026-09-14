@@ -1,0 +1,61 @@
+{
+  "classification": "PARSER_ONLY_FINAL_R4_BYTES",
+  "commands": [
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r4-20260913/workflow-fixture.rs"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r4-20260913/workflow-obligation-tests.rs"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r4-20260913/workflow-owner-tests.rs"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r4-20260913/workflow-race-projection-tests.rs"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    }
+  ],
+  "parser_discovered": 4,
+  "parser_executed": 4,
+  "parser_passed": 4,
+  "source_discovered": 30,
+  "compiled": 0,
+  "cargo_discovered": 0,
+  "executed": 0,
+  "sql_executed": 0
+}

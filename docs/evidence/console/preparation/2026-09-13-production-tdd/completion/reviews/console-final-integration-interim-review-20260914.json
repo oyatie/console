@@ -1,0 +1,78 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "reviewed_start_hashes": {
+    "implementation-handoff.txt": "cd3c29fef0aa006ae1a0b287057581f5f74ff475751ffc2c108059c07d645233",
+    "gate-assessment.json": "754d242c26f698ef29ebe49c427383a50a3d534ed926adb25985285b23d1d975",
+    "registration-coverage.json": "89438adb4e1ce033ae9c77a7a1b58965580fa1848ee094028ce1104b6db2b1c4",
+    "required-packets.json": "91117b8ccfafeb55e0f6117ad3b7e71d40380ac33dcff34cbec370d560ce0b8a"
+  },
+  "verdict": "INTERIM_SOURCE_GAPS_AND_RECONCILIATION_REQUIRED",
+  "scope": "User11+8 readiness checklist gating, first bounded lane and native/browser source readiness. Reuses earlier immutable source reviews; not final same-commit approval.",
+  "findings": [
+    {
+      "id": "FI1",
+      "state": "ROOT_CORRECTION_REQUESTED",
+      "issue": "55 registered actions include4Group controls; handoff/gate4 mislabel all55 asCompany.",
+      "fix": "Use51Company+4Group, preserving separate Group control semantics."
+    },
+    {
+      "id": "FI2",
+      "state": "S8_AUTHORED_AWAITING_INDEPENDENT_REVIEW",
+      "issue": "New common/body reason mismatch refusal had no selected-slice assertion.",
+      "fix": "S8 extends existing real ReviewWithdraw test with same-actor mismatched common reason no effect and immutable/current history checks then matching same-actor actual success/replay.",
+      "source_manifest": "07722dd57f91c3533fda58e96ca44e6bb8e5a2d996e86813cd27a6a63981aaf1",
+      "source_path": "/private/tmp/console-native28-owner-oracle-s8-20260914"
+    },
+    {
+      "id": "FI3",
+      "state": "OPEN_SOURCE_OBLIGATION",
+      "issue": "Browser-r2 authors only8no-JS+3JS-enabledSSR; hydration/autosave/failure fallback remains future acceptance prose although approved first slice requires client behavior.",
+      "authority": [
+        "integrated-design30/screen-integration.txt:4 hydrated autosave/no-JS same receipts/conflict",
+        "screen11/screen-contract.txt:48 WASM failure manual-save and autosave-unavailable"
+      ],
+      "fix": "Author bounded actual hydrated edit/autosave receipt, stale conflict input preservation and JS/WASM load failure manual-save fallback, or cite existing concrete selected tests. Human task observations legitimately later; required test source cannot be replaced by later execution TODO."
+    },
+    {
+      "id": "FI4",
+      "state": "CLOSED_FIRST_LANE_SPEC",
+      "issue": "First probe exact executable but handoff lacks concrete bounded fanout run spec path.",
+      "fix": "Provide reviewed formatter lane spec/template with exact owner paths/probe/non-goals and final-SHA admission binding.",
+      "reviewed_sha256": "106f1d64f2dfba1e37cbeb8c408b2452b78dde0f2c71329be49d3fba63a0d6d4"
+    },
+    {
+      "id": "FI5",
+      "state": "ASSIGNED_FINISH_MIGRATION",
+      "issue": "New retained-primary activation lacks consumed assertion replay and actual expired ceremony source. Existing auth_rest.rs4640 covers different new-key enrollment path, not shared actual activation owner closure.",
+      "fix": "Real short-TTL ceremony expiry plus exact successful activation replay with classified InvalidProof and no security/session/assent mutation."
+    }
+  ],
+  "accepted_gating": [
+    "Whole-Console capability-family preservation before first implementation; later leaf capability certification separate.",
+    "Persistent Account identity, Group tenancy versus Company cell, policy rather than role title, source/field/action/administrative authority remain preserved.",
+    "Real-data activation overlay prevents destructive cutover merely because production exposure is still off.",
+    "Correctness invariants cannot relax under overload; measured budgets and50k/1m experiments separate from pilot certification.",
+    "Verus exact source/TCB/input machinery evidence explicitly not whole-program information-flow theorem.",
+    "First formatter probe is scoped to public formatter; SQL catalog failures cannot admit authorization/frontend.",
+    "No source parser or empty application fixture execution is claimed behavioral evidence."
+  ],
+  "actual_probe_review": {
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-request-context --lib",
+    "retained_counts": {
+      "discovered": 20,
+      "executed": 20,
+      "passed": 16,
+      "failed": 4
+    },
+    "independent_readback": "request-context-final-execution.json plus retained diagnostic-reviewed-candidate.json; no redundant product rerun",
+    "tool_syntax_checked": "python3 tools/lanes/fanout.py admit --help",
+    "exit_code": 0
+  },
+  "pending": [
+    "Final module placement/source overlay checker under finish_browser",
+    "Exact frozen same-commit review after final corrections",
+    "Explicit design/test amendment approval and separate exact FK automatic-review restriction"
+  ],
+  "whole_candidate_conclusion": "No additional implementation-preparation blocker found after capability-family dependency ledger, gate timing, accepted first-slice scope, workload history/hot-neighbor protocol and concrete first lane review. Known hydration/activation/S8 source gaps assigned; final map and same-commit review pending. Later complete-suite leaf specifications, participant usability observations, deployment exercises and50k/1m certification are not blanket prerequisites for this slice implementation."
+}

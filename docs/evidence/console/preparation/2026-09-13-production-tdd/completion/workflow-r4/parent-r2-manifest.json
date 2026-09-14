@@ -1,0 +1,136 @@
+{
+  "classification": "FROZEN_R2_PARTIAL_SIX_DIMENSION_OWNER_ASSERTION_SOURCE",
+  "author": "/root/preparation_recovery",
+  "reviewers": [
+    "/root",
+    "/root/fresh29_workflows"
+  ],
+  "base_sha": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "r1_manifest_sha256": "7b1c271fda522816633dc91a1fc095daf3436abd78ce813614da9c800eb04454",
+  "r2_contract_manifest_sha256": "764e3e4454a0e059337a9d6faa7ae0c861f586ca2762f27a6a484b404582649e",
+  "files": [
+    {
+      "path": "packet-contract.md",
+      "sha256": "000db1a92559ce1f1ef2b4f2f495e475d18a4575e7f570e7284ea682ca8efd6d",
+      "bytes": 11286
+    },
+    {
+      "path": "parent-r1-manifest.json",
+      "sha256": "7b1c271fda522816633dc91a1fc095daf3436abd78ce813614da9c800eb04454",
+      "bytes": 1492
+    },
+    {
+      "path": "publication-readback.sql",
+      "sha256": "549ba07a895b4e0c7ad229f2e82f3ef010e0f2535cfa89475eda1c89e367d227",
+      "bytes": 1004
+    },
+    {
+      "path": "registration-coverage.json",
+      "sha256": "6068cb8db959e60c69716c8ce64dbec622979751fa7df5bb2317e579bd0bb721",
+      "bytes": 15619
+    },
+    {
+      "path": "syntax-execution.json",
+      "sha256": "0ff0a383adf4af3bda1ffb0d33d6c605cd6b2f479f0fb955ce7c062c38a5d07d",
+      "bytes": 1041
+    },
+    {
+      "path": "workflow-fixture.rs",
+      "sha256": "53b14e48f836156fa23b9f726dcaf19104794c078e852392256f9936408eaa88",
+      "bytes": 21711
+    },
+    {
+      "path": "workflow-owner-tests.rs",
+      "sha256": "edc8a83a30e78d7d4b7245d6b34caf685a6406da9b38993e1da8cbdd83ab6b45",
+      "bytes": 29572
+    },
+    {
+      "path": "workflow-race-projection-tests.rs",
+      "sha256": "3179c01be13271ebe75653f11aa3f978063ed350bd7bbc7e931ff4648a6537c9",
+      "bytes": 6995
+    }
+  ],
+  "test_functions": [
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "gate_request_binds_actual_sealed_calculation_without_effect"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "gate_decide_requires_independence_and_never_executes_business"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "publication_release_preserves_exact_source_and_is_nonpayable"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "publication_replace_preserves_history_and_rejects_stale_slot"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "case_request_retains_real_content_and_actual_accountable_task"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "case_append_preserves_prior_items_and_refuses_stale_revision"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "case_withdraw_retains_immutable_content_and_replays_once"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "case_respond_requires_complete_items_then_resolves_with_real_receipt"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "transfer_submit_retains_task_and_selection_without_assigning"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "transfer_execute_changes_one_assignment_and_charge_once"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "transfer_stop_fences_later_execution_and_keeps_assignment"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "group_create_freezes_six_actual_companies_without_calculation"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "group_activate_requires_all_prepared_original_attempts"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "group_resume_preserves_manifest_and_original_pending_commands"
+    },
+    {
+      "file": "workflow-owner-tests.rs",
+      "function": "group_stop_blocks_prepared_child_without_cross_company_effect"
+    },
+    {
+      "file": "workflow-race-projection-tests.rs",
+      "function": "publication_concurrent_same_predecessor_has_one_exact_successor"
+    },
+    {
+      "file": "workflow-race-projection-tests.rs",
+      "function": "publication_replay_after_current_grant_revocation_is_not_disclosed"
+    },
+    {
+      "file": "workflow-race-projection-tests.rs",
+      "function": "transfer_stop_races_effect_preserving_one_truthful_assignment"
+    }
+  ],
+  "registration_count": 15,
+  "source_discovered": 18,
+  "compiled": 0,
+  "cargo_discovered": 0,
+  "executed": 0,
+  "authored_dimension_cells": 40,
+  "total_dimension_cells": 90,
+  "external_dependency_status": "Native S2/B6 constructor and producers pending independent accepted freeze; exact accepted native manifest must be integration-pinned",
+  "review_status": "PENDING"
+}

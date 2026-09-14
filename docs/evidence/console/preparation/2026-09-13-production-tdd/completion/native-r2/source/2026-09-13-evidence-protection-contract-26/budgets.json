@@ -1,0 +1,54 @@
+{
+  "status": "PROPOSED_VALIDATION_LIMITS_NOT_MEASURED_CAPACITY",
+  "unit": "One owning command plan; retries charged independently; no cross-Company mixed write",
+  "limits": {
+    "materialized_unique_nodes": 65536,
+    "materialized_purpose_edges": 262144,
+    "materialized_inventory_bytes": 67108864,
+    "guarded_query_rows_including_sentinels": 131072,
+    "distinct_unit_locks": 8192,
+    "total_distinct_locks": 16384,
+    "fresh_external_bytes": 134217728,
+    "sealed_inventory_children_per_unit": 8192,
+    "sealed_inventory_depth": 8,
+    "covered_unique_nodes_upper_bound": 16777216,
+    "covered_purpose_edges_upper_bound": 67108864,
+    "covered_bytes_upper_bound": 137438953472,
+    "inventory_disposal_reverse_rows": 8192,
+    "replans": 3
+  },
+  "inherited19": {
+    "direct_trust_refs": 32,
+    "distinct_trust_nodes": 256,
+    "qualification_edges_depth": 3,
+    "event_rows": 4097,
+    "event_package_bytes": 41943040,
+    "day_rows": 31,
+    "day_package_bytes": 2097152,
+    "close_members": 2000,
+    "close_package_bytes": 20971520,
+    "amendments": 256
+  },
+  "counting": [
+    "All counts checked integer arithmetic; charge before allocation/read/lock/effect. Metadata encoding and counting rules must be implemented by fixed registered decoder before admission.",
+    "Materialized limits include input-derived and server-derived nodes, query witnesses, protected inventory roots and all purpose edges. Exact identity dedup preserves purpose edges; no cross-tenant/digest-only dedup.",
+    "Covered counters include all transitively protected evidence even if not read now; conservative summed child counters may overcount sharing and must never undercount. No metadata-only root may hide unbounded bytes.",
+    "Fresh external bytes sums all original/derivative/package bytes fetched for command; building preparation does not exempt its own budgets. Existing19 smaller per-file limits always apply.",
+    "No leaf bypass: referenced sealed inventory admission must demonstrate exhaustive closure, protected contents and authoritative lifecycle membership, not just counters. Missing this capability forces explicit expansion within limits or blocks enrollment.",
+    "8192 reverse rows plus one overflow sentinel is allowed for protection lookup; overflow/unknown prohibits destructive action, never treats remaining rows as absent.",
+    "Whole plan overflow refuses effect before locks/effects; preserve acknowledged input and authorized typed blocker/repair route. No silent truncation, manual splitting of atomic work, operator override or automatic retry storm. Reviewed widening or existing native18 bounded unit workflow only.",
+    "No new deadline promise from row limits. Query plan/statement, transaction duration and memory/p95/p99 proof remain F08 with deployment sizing."
+  ],
+  "arithmetic_witnesses": {
+    "pilot_people_total": 2000,
+    "pilot_companies": 6,
+    "worst_event_plus_day_bytes": 88080384000,
+    "worst_event_rows": 8194000,
+    "worst_day_rows": 62000,
+    "representative_root_units": 6384,
+    "representative_root_description": "Illustrative one Company upper-bound close: three independently sealed source/inventory units per person plus trust and control. Not a derived complete workload or performance claim; extra units are counted normally.",
+    "worst_case_fresh_read_admitted": false,
+    "sealed_root_example_within_unit_lock_cap": true,
+    "all_pilot_workloads_proven": false
+  }
+}

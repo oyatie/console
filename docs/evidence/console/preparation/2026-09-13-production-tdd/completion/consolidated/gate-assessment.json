@@ -1,0 +1,197 @@
+{
+  "kind": "CONSOLIDATED_PREPARATION_CANDIDATE_NOT_AUTHORITY",
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "supersedes_assessment_only": "../../readiness-review/final/gate-assessment.json",
+  "gate_rule": "Assign timing to individual obligations, not broad headings. BEFORE_REAL_DATA_ACTIVATION is an overlay on all3gates: any real-data conversion, credential cutover, destructive operation or sharing/enrollment requires its protection beforehand, even without public production exposure. Later capabilities receive their own before-implementation gate when scheduled.",
+  "items": [
+    {
+      "id": 1,
+      "requirement": "Whole-Console capability and dependency map",
+      "before_implementation": "Current capability-family coverage, phase/outcome/status and dependency constraints on the first slice; identify additive adoption, required migration or unresolved impact.",
+      "before_slice_acceptance": "The implemented slice meets its capability outcomes; later families get detailed contracts/tests before their own dependent implementation.",
+      "before_production_exposure": "Only claim supported capabilities; full-suite equivalence requires versioned leaf inventory and acceptance evidence.",
+      "current_evidence_state": "Capability-family preservation ledger retained:23 families. Leaf-level later suite equivalence remains a later independently accepted outcome.",
+      "evidence": [
+        "docs/current/PRODUCT.md:23",
+        "docs/current/ROADMAP.md:50",
+        "docs/evidence/console/design/2026-09-12-implementation-readiness-08/work-packages.csv:13"
+      ]
+    },
+    {
+      "id": 2,
+      "requirement": "Shared architectural contracts",
+      "before_implementation": "Stable identity/addressing, Group tenancy, Company cells, typed schema/property relationships, owner/action/draft/replay/continuity and policy semantics exercised or constrained by this slice; classify replaceable choices.",
+      "before_slice_acceptance": "Selected owners enforce those contracts and compatibility boundaries; no required unrelated adapter rewrite.",
+      "before_production_exposure": "Deployed versions and data shapes match accepted contracts; operating privileges conform.",
+      "current_evidence_state": "Design30/BW31 plus nativeR2 and reviewed completion supplements supply bounded contracts. Consolidated material amendments require exact revision-bound approval.",
+      "evidence": [
+        "docs/current/PRODUCT.md:15",
+        "docs/current/PRODUCT.md:46",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/object-owner-custody-contract.txt:18",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/participant-contract.txt:26"
+      ]
+    },
+    {
+      "id": 3,
+      "requirement": "UI and interaction architecture",
+      "before_implementation": "First-slice journeys, scalable navigation, shared object/action context, independent future communications area, SSR/hydration disclosure boundary; observable task hypotheses and keyboard/no-JS/input/recovery contracts.",
+      "before_slice_acceptance": "Real owner-backed browser/hydration/no-JS journeys, accessibility checks and representative-user task observations; essential decision information present and encountered.",
+      "before_production_exposure": "Resolve consequential usability/accessibility failures for the exposed population and deployed assets.",
+      "current_evidence_state": "15 actual-owner browser producers and15 Playwright application cases authored/discovered,0application execution. BrowserR4 adds4required hydration/offline/fallback behaviors with actual owner readbacks;10independent Chromium oracle controls and15Rust fixture-helper checks passed.12usability tasks retained,0participant evidence.",
+      "evidence": [
+        "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:10",
+        "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:45",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:4"
+      ]
+    },
+    {
+      "id": 4,
+      "requirement": "First complete workflow",
+      "before_implementation": "Reuse the selected native NONPAYABLE payroll vertical and dependencies; freeze supported profiles, entry/completion criteria, positive/exception/correction/manual/transfer paths and each rule authority.",
+      "before_slice_acceptance": "All selected positive and exceptional paths complete through real owners; unsupported required population remains visible and assigned for repair.",
+      "before_production_exposure": "Qualified authority for any exposed legal claim or payable behavior; population-specific validation before use.",
+      "current_evidence_state": "55 selected registrations (51Company actions and4Group controls) mapped to concrete source assertions; Group control and private owner contracts separate. Final source assembly approval pending; no payable/legal claim.",
+      "evidence": [
+        "docs/current/PRODUCT.md:27",
+        "docs/current/PRODUCT.md:63",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:5"
+      ]
+    },
+    {
+      "id": 5,
+      "requirement": "Security and information flow",
+      "before_implementation": "Threat and source/sink model; policy-administration/delegation/schema/operational authority, deny/error semantics, legacy alias closure and exact proof/TCB limits. Reserve sound linking/sharing boundaries for later capabilities.",
+      "before_slice_acceptance": "Every enrolled resource/field/action/read/write/SSR/stream/cache/export/log/egress path is enforced with current authority and revocation; required tests/proofs against actual code.",
+      "before_production_exposure": "Actual credentials/bootstrap/recovery operators, proxy/exporter/provider/network configuration verified; sharing controls before sharing is activated.",
+      "current_evidence_state": "SecurityS5 source-bound proof input/negative/dependency machinery independently reviewed:21 controls passed. Existing telemetry owner reused.0 new production owner proofs; all mapped actual callers must pass before acceptance.",
+      "evidence": [
+        "docs/evidence/console/design/2026-09-12-account-policy-technical-13/policy-contract.txt:5",
+        "docs/evidence/console/design/2026-09-12-account-policy-technical-13/policy-contract.txt:15",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/diagnostic-reviewed-candidate.json"
+      ]
+    },
+    {
+      "id": 6,
+      "requirement": "Workload and concurrency",
+      "before_implementation": "Pilot1Group/6Companies/2000people; active-user/data/workload hypotheses, hot keys/cells, conflict/order/fairness/cancel/retry semantics, immutable correctness invariants, bounded experiments and evidence-triggered scaling alternatives.",
+      "before_slice_acceptance": "Run declared first-slice workload/hotpath/recovery acceptance on actual owners, with offered-intent accounting and resource bounds; compare equivalent candidate assemblies when making the selected mechanism decision.",
+      "before_production_exposure": "Deployment-equivalent operating envelope, failure domains and admission limits before their protected exposure; 50k/1m evaluation before adopting those loads.",
+      "current_evidence_state": "Retained workload/fault/history experiments and explicit pilot/hotpath envelopes remain. NativeS4 actual backend-ID transitive wait source reviewed;0 native contention execution. No technology mandated by employee count.",
+      "evidence": [
+        "docs/evidence/console/design/2026-09-12-integrated-admission-17/workloads.json",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/concurrency-protocol.txt:25",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/load-reviewed-candidate.json"
+      ]
+    },
+    {
+      "id": 7,
+      "requirement": "Operations and recovery",
+      "before_implementation": "ACK durability/topology assumptions, ownership, reconciliation authority, unknown outcomes, duplicate effects, external side effects, migration compatibility and irreversible boundaries.",
+      "before_slice_acceptance": "Populated upgrade/backfill/mixed-version/refusal, restore/reconcile/fencing and failure tests under the slice contract; distinguish code rollback from restoring data.",
+      "before_production_exposure": "Deployed backup/restore and independent failure-domain exercises, provider/credential custody and measured objectives before the exposure/effect they protect.",
+      "current_evidence_state": "MigrationR3 actual catalog/dump/restore machinery7 checks passed; remainderR4 actual-expiry/consumed-proof-replay sources independently reviewed and bounded CLI machinery3 passed. Actual owner cutover/recovery and deployed operational certification remain execution gates.",
+      "evidence": [
+        "docs/evidence/console/design/2026-09-12-account-policy-technical-13/migration-and-proof.txt:8",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/operations-recovery-information-flow.txt:34"
+      ]
+    },
+    {
+      "id": 8,
+      "requirement": "Production TDD package",
+      "before_implementation": "Author/review slice acceptance tests, fixtures and independent oracles; execute reachable interfaces; record all prerequisite and deeper unreached assertions; exact approved test SHA and meaningful per-boundary RED.",
+      "before_slice_acceptance": "Every required deeper assertion executes and passes; hostile/mutation/control evidence validates the checker itself; no required case hidden by an early prerequisite failure.",
+      "before_production_exposure": "Deployment/provider/real-data exercises remain separate; no local suite promoted to certification.",
+      "current_evidence_state": "Selected acceptance source and real owner fixture bodies authored and independently reviewed;76source placements26compile-time assets10runtime assets mapped.36custody packets1160members verified,19custody controls passed. Meaningful existing boundary REDs execute; dependent owners are absent and their0execution is explicit. Consolidated revision-bound approval still required.",
+      "evidence": [
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/verification-plan.txt:2",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/storage-candidate-execution.json",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/owner-test-inventory.json"
+      ]
+    },
+    {
+      "id": 9,
+      "requirement": "Reproducible environment",
+      "before_implementation": "Working exact toolchain/dependencies/DB/build runner and required CI/test path for admitted lanes; distinguish dependency/environment failures from product RED.",
+      "before_slice_acceptance": "Full supported assembly including SSR/WASM/browser and applicable CI checks; dependency drift/version compatibility verified.",
+      "before_production_exposure": "Verify exact deployed image/configuration/credential/DB topology and rollback compatibility.",
+      "current_evidence_state": "Rust1.98.1/PG18.6/Node24.16.0/Playwright1.63.0 actual versions and locked environment retained.76final Rust source parser checks8JSchecks passed;15Rust browser helper and10Chromium oracle checks passed. Product test mounting/dependency activation is serialized after approval; owner compilation is not claimed.",
+      "evidence": [
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/test-mapping-final.json",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/load-mapping-completion.json",
+        "docs/current/DELIVERY.md:49"
+      ]
+    },
+    {
+      "id": 10,
+      "requirement": "Consolidated independent review",
+      "before_implementation": "Resolve blocking design/test/oracle findings on exact candidate identities; reconcile product/roadmap/delivery authority and test/instructions after revision; integrated approval remains separate from lane-specific source acceptance.",
+      "before_slice_acceptance": "Review implemented slice, security hardening and required final audits; exact implementation acceptance.",
+      "before_production_exposure": "Separate release/exposure review and hosted/deployed readback.",
+      "current_evidence_state": "Independent source/oracle/UX/domain/assembly reviews closed all discovered preparatory-source findings through nativeS8, migrationR4, browserR4 and mappingR3. Consolidated exact-commit review and explicit design/test approval remain revision-bound gates. Design30 scope authority already adopted31f769accc08ac7dcb0d140709021c58d2a86c7e.",
+      "evidence": [
+        "docs/current/DELIVERY.md:25",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/authority-proposal.txt:1"
+      ]
+    },
+    {
+      "id": 11,
+      "requirement": "Implementation handoff",
+      "before_implementation": "Clean immutable approved base/test SHA, one writer per root, bounded owner/path/guide, named classified executable RED, premortem/blast-radius/detection/rollback/stop/reviewer/HOLDs; fanout admission.",
+      "before_slice_acceptance": "Same probe GREEN plus required slice checks; broader implemented-slice review, not a single-probe success claim.",
+      "before_production_exposure": "Hosted protected integration/readback and separately authorized deployment.",
+      "current_evidence_state": "Four existing meaningful boundary RED commands available; first exact request-context20cases rerun16PASS4behavioralRED. No product lane admitted; exact clean approved test base must be used by fanout.",
+      "evidence": [
+        "docs/current/DELIVERY.md:7",
+        "tools/lanes/fanout.py:182"
+      ]
+    }
+  ],
+  "eight_refinements": [
+    {
+      "id": 1,
+      "verdict": "ACCEPT_WITH_PRECISE_GATE_SCOPE",
+      "qualification": "Use per-obligation stages plus actual-data/effect activation trigger; not one stage per broad heading."
+    },
+    {
+      "id": 2,
+      "verdict": "ACCEPT_WITH_PRECISE_GATE_SCOPE",
+      "qualification": "Write/review tests before code; deepest assertions may be blocked. No schema-to-auth admission and no fake implementations or discovery-only wrappers."
+    },
+    {
+      "id": 3,
+      "verdict": "ACCEPT_WITH_PRECISE_GATE_SCOPE",
+      "qualification": "Capability-family architecture preservation now; exhaustive later specs/leaf acceptance deferred. Additive versus migration versus unknown is explicit."
+    },
+    {
+      "id": 4,
+      "verdict": "ACCEPT",
+      "qualification": "Policy administration/delegation authority is already substantially specified; prove selected owners enforce it."
+    },
+    {
+      "id": 5,
+      "verdict": "ACCEPT_WITH_PRECISE_GATE_SCOPE",
+      "qualification": "Migration/lifecycle designs already exist; require their tests and activation safeguards, not a new blank design exercise."
+    },
+    {
+      "id": 6,
+      "verdict": "ACCEPT",
+      "qualification": "Invariant correctness never relaxes under overload; only measured budgets have operating envelopes. Employee count alone does not select technology."
+    },
+    {
+      "id": 7,
+      "verdict": "ACCEPT",
+      "qualification": "Observable task hypotheses now; representative-user evidence before acceptance of exposed journeys. SSR tests are not usability."
+    },
+    {
+      "id": 8,
+      "verdict": "ACCEPT",
+      "qualification": "Independently review and mutate fixtures/oracles/fault witnesses/history accounting; retain initial flawed checks as evidence, not accepted proof."
+    }
+  ],
+  "holds": [
+    "Exact-commit consolidated review receipt and explicit revision-bound design/test approval required for implementation admission",
+    "Automatic approval review requires trusted user approval for exact ephemeral FK assertion correction; no patch applied",
+    "Dependent tests execute only after actual owners exist; missing owners are not behavioral RED",
+    "Production exposure/payment/legal/provider authority remain separate"
+  ]
+}

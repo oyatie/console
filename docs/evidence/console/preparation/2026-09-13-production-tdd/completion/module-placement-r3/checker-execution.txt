@@ -1,0 +1,1 @@
+1 exact regeneration control +10 hostile controls PASS; source roster/mount mechanics only, not Rust compiler proof

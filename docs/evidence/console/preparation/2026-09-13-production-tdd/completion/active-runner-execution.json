@@ -1,0 +1,53 @@
+{
+  "candidate_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "tools_source": "tools/lanes/recovery",
+  "rust_test_source": "backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+  "source_sha256": "47b206ec5baacf32e9a6cd68dffa7b5b1f1b0fcb4ed7cb4b6f5cef98fcad4430",
+  "ordinary_migration_path": {
+    "command": "DOCKER_CONTEXT=colima-console-design30 RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --only app-account-migration-pg --runner cargo --num-threads 1",
+    "tests": 2,
+    "passed": 0,
+    "catalog_prerequisite_blocked": 2,
+    "fixture": "2actual old subjects/2credentials/7audits per test; full current migrations finish before missing3Account relations",
+    "classification": "MIGRATION_CATALOG_ONLY; downstream preservation unreached"
+  },
+  "scenarios": [
+    {
+      "name": "replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply",
+      "command": "DOCKER_CONTEXT=colima-console-design30 CONSOLE_RECOVERY_CUT= RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo python3 tools/lanes/recovery/supervise_recovery.py /private/tmp/console-production-tdd-preparation-20260913 -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply -- --exact --test-threads=1 --nocapture",
+      "log": "execution-fd94667f/console-preparation-recovery-active-sync.log.gz",
+      "exit": 101,
+      "discovered": 2,
+      "executed": 1,
+      "passed": 0,
+      "failed": 1,
+      "filtered": 1,
+      "classification": "REAL_OWNER_REMOTE_APPLY_ACKNOWLEDGEMENT_RED"
+    },
+    {
+      "name": "lost_commit_transport_reply_replays_one_real_payroll_effect",
+      "command": "DOCKER_CONTEXT=colima-console-design30 CONSOLE_RECOVERY_CUT=after-commit-response RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo python3 tools/lanes/recovery/supervise_recovery.py /private/tmp/console-production-tdd-preparation-20260913 -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery lost_commit_transport_reply_replays_one_real_payroll_effect -- --exact --test-threads=1 --nocapture",
+      "log": "execution-fd94667f/console-preparation-recovery-active-transport.log.gz",
+      "exit": 0,
+      "discovered": 2,
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "filtered": 1,
+      "classification": "REAL_OWNER_TRANSPORT_RECONCILIATION_PASS"
+    }
+  ],
+  "union": {
+    "discovered": 2,
+    "executed": 2,
+    "omitted": 0,
+    "passed": 1,
+    "failed": 1
+  },
+  "limits": [
+    "Same local VM failure domain; not deployed failover/capacity/acknowledged-data-loss proof",
+    "No product fix made; expected actual ownerRED persists after toolingGREEN",
+    "Timeout/fixture failure/unclassified typed unknown is inconclusive, not permitted owner-admissionRED",
+    "Active runtime fixtures remain byte-identical to independently reviewed original evidence files"
+  ]
+}

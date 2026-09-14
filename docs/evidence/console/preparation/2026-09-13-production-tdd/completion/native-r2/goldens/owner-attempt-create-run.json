@@ -1,0 +1,74 @@
+{
+  "protocol": "CCF1",
+  "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+  "command_id": "0fe65370-7796-563f-97fe-17967b7cd734",
+  "actor_account_id": "ec1cd8d0-3cce-5d1d-9a4b-e5df71f80a19",
+  "owner_key": "payroll",
+  "owner_action": "payroll.create_run",
+  "object_type_id": "4b169ff3-91a0-588f-b9c7-3b3c2608847f",
+  "action_type_id": "3c8443bb-31ea-5de9-8d7b-041a58e06646",
+  "input_schema_ref": {
+    "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+    "schema_id": "66c23db2-1517-5b07-9e61-301941c8b182",
+    "revision": "1",
+    "definition_revision": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+      "instance_id": "ec796328-4e80-5003-8a5c-977449490de3",
+      "revision_id": "a1f866da-4ae9-5b04-92e4-6bdba70e3040",
+      "version": "1",
+      "row_hash": "f895eadf7cba66ef776b45b0202405f1015743edda2a70e6cd703e212d5ffe1b"
+    },
+    "codec_digest": "3918bb0b7b811a761364ba04bc3c3ad6c031d71db6d57891b9aeee3c6f6aa9bb"
+  },
+  "codec_version": "action30-v1",
+  "target": {
+    "kind": "Create",
+    "object_kind": "pay_run",
+    "allocated_object_id": "f8fb8c77-8f3b-5b85-b0f9-c78eb1babd8b",
+    "scope_ref": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "object_kind": "company",
+      "object_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "revision": "1"
+    }
+  },
+  "body": {
+    "correlation_id": "e007eebd-5365-5cd5-91cd-689953fde76a",
+    "period": {
+      "start": "2026-09-01",
+      "end": "2026-09-30"
+    },
+    "pay_date": "2026-10-05",
+    "profile": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "profile_id": "f11fadcd-2a07-5380-8181-0dda1ea667ed",
+      "revision": "1",
+      "rule_bundle": {
+        "bundle_id": "NONPRODUCTION_FIXTURE_V1",
+        "kernel_build_sha256": "c4c7186883e031389d6f3124d553a030175fec92e3bdde1252499b5f546f339c",
+        "citation_set_sha256": "b5b48198f989cb9228a816286021bc6f1c96550cfcf5b76231b1a8028d8c886f"
+      }
+    },
+    "scope": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "scope_id": "4f75d2b2-e6ce-5f2d-a475-709d67aa279f",
+      "revision": "1"
+    }
+  },
+  "expected": {
+    "kind": "BODY_EXACT",
+    "registered_input_digest": "d4a99c9cf563cd92711b6e0c30596be5d677bbd181be665a72d54a6b8d788354"
+  },
+  "reason": null,
+  "attempt": {
+    "attempt_id": "e1a3857d-9b23-51ea-b29a-6e925bfa6ddc",
+    "draft_id": "3e3847ed-9ac9-5d8a-b5e7-10aad9d22352",
+    "source_revision_id": "2b3b4088-cd75-57ba-b13b-c6e685dcc2a9",
+    "editing_epoch": "1",
+    "assignment_generation": null
+  },
+  "gate_ref": null,
+  "action_registration_revision": "1",
+  "action_registration_manifest_digest": "08e7afe42be819ab023aa9cb79b241fc8f46412832fd9b49c0bcd1ac75476052"
+}

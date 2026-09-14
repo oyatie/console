@@ -1,0 +1,47 @@
+{
+  "header": {
+    "org_id": "00000000-0000-4000-8000-000000000001",
+    "run_id": "00000000-0000-4000-8000-000000000005",
+    "calculation_revision": "2",
+    "input_revision": "3",
+    "input_manifest_digest": "9f7b6c4dde388f570f6170d122bd0af48b9cff018af9e4d11598624ca0a9b140",
+    "close_basis_ref": {
+      "org_id": "00000000-0000-4000-8000-000000000001",
+      "close_basis_id": "00000000-0000-4000-8000-000000000028",
+      "revision": "1"
+    },
+    "actor_account_id": "00000000-0000-4000-8000-000000000006",
+    "command_id": "a19f7aac-ace2-5407-84bf-a4d00dc6dfeb",
+    "recorded_at_us": "1783238401000000",
+    "member_count": "1",
+    "success_count": "1",
+    "blocked_count": "0"
+  },
+  "pairs": [
+    [
+      {
+        "org_id": "00000000-0000-4000-8000-000000000001",
+        "run_id": "00000000-0000-4000-8000-000000000005",
+        "input_revision": "3",
+        "employee_id": "00000000-0000-4000-8000-000000000002",
+        "line_id": "00000000-0000-4000-8000-000000000009",
+        "semantic_digest": "a62d955f416989e0f61aecd1fd13a3f6f57f8989f085251f3eaed73b0b522435"
+      },
+      {
+        "org_id": "00000000-0000-4000-8000-000000000001",
+        "run_id": "00000000-0000-4000-8000-000000000005",
+        "calculation_revision": "2",
+        "input_revision": "3",
+        "employee_id": "00000000-0000-4000-8000-000000000002",
+        "line_id": "00000000-0000-4000-8000-000000000009",
+        "input_unit_digest": "8eca39b7555dec09466727a78fb6ab35af7028e0d9fe673ed9a439252f8794ce",
+        "state": "SUCCESS",
+        "result_ref": {
+          "calculation_id": "ac12c5e7-10cf-59c1-9f58-6f9d98a67983",
+          "version": "1"
+        },
+        "blockers": []
+      }
+    ]
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "classification": "PINNED_VERUS_DEP_INFO_MECHANISM_CHECK_ONLY_NOT_NEW_INFORMATION_FLOW_PROOF",
+  "runs": [
+    {
+      "argv": [
+        "/private/tmp/console-verus-pinned-671956e/verus-arm64-macos/verus",
+        "--crate-type=lib",
+        "-V",
+        "check-api-safety",
+        "--emit=dep-info=/private/tmp/console-security-owner-assertions-s5-20260914/proof-harness/retained-positive.dependencies.txt",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/source-bound-positive.rs"
+      ],
+      "exit_code": 0,
+      "source_sha256": "861ee4627969cce613a8ce1daacc1284e79e75b85c625c509415ef0e70db33b6",
+      "compiler_dependencies_emitted": true
+    },
+    {
+      "argv": [
+        "/private/tmp/console-verus-pinned-671956e/verus-arm64-macos/verus",
+        "--crate-type=lib",
+        "-V",
+        "check-api-safety",
+        "--emit=dep-info=/private/tmp/console-security-owner-assertions-s5-20260914/proof-harness/retained-known-false.dependencies.txt",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/source-bound-known-false.rs"
+      ],
+      "exit_code": 1,
+      "source_sha256": "04ee961e7b3f96383184ae0c6aa753171c6a92f828b77ec8809373c3a9ea2446",
+      "compiler_dependencies_emitted": true
+    },
+    {
+      "argv": [
+        "/private/tmp/console-verus-pinned-671956e/verus-arm64-macos/verus",
+        "--crate-type=lib",
+        "-V",
+        "check-api-safety",
+        "--emit=dep-info=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-verus-dependencies-e0llg4pq/input.d",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-verus-dependencies-e0llg4pq/entry.rs"
+      ],
+      "exit_code": 0,
+      "compiler_dependencies_exact": [
+        "entry.rs",
+        "bound.rs"
+      ],
+      "purpose": "existing retained positive proof wrapped only to check actual include dependency emission"
+    }
+  ]
+}

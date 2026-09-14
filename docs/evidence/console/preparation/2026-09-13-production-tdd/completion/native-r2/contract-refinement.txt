@@ -1,0 +1,118 @@
+# Proposed exact native28 and OWNER_SUBMISSION refinement
+
+Base: `58b6f758ac2a49b28589b9506628a43b6158e925`. Scratch author `/root/fresh29_workflows`; repository writer `/root`. No implementation authority or production/legal readiness claim. The byte oracle is reference code, not a Rust/PG proof. Selected lenses: Cartesian doubt, Essentialism, Red Team, Operability, Blast radius, Zero trust.
+
+## Native streams
+
+Let `J(x)` be the existing CCF1 restricted writer14, without JSON numbers, normalization of Unicode, absent-null substitution, unknown fields, or duplicate keys. Each header/leaf satisfies its exact native18 schema and semantic/checked scalar contract before hashing. `L(x)=U32BE(byte_length(x)) || x`. U32 values in framing are binary unsigned integers, not CCF1 numeric values. `H18(k,x)=SHA256(UTF8("console.payroll.native18."+k)||NUL||J(x))`, emitted raw32 when named below.
+
+Input exact grammar, with no BOM/newline or other bytes:
+
+```
+UTF8("console.payroll.native28.input-stream.v1") || NUL
+|| L(J(InputHeader18)) || H18("input-header",InputHeader18)_raw32
+|| U32BE(N)
+|| concat(i=0..N-1, U32BE(i) || L(J(UnitSemantic18_i)) || L(J(UnitCustody18_i)))
+|| EOF
+```
+
+Calculation exact grammar:
+
+```
+UTF8("console.payroll.native28.calculation-stream.v1") || NUL
+|| L(J(BatchHeader18)) || H18("batch-header",BatchHeader18)_raw32
+|| U32BE(N)
+|| concat(i=0..N-1, U32BE(i) || L(J(UnitCustody18_i)) || L(J(CalculationOutcome18_i)))
+|| EOF
+```
+
+The literal ASCII tag including NUL is 41 input / 47 calculation bytes. `N` is 1..2000. Stream ordinals are 0..1999; native18 source ordinal0..255 is a different field. Sort strictly by employee UUID raw16, no duplicate employee, gap or duplicate stream ordinal. A parser rejects noncanonical JSON, extra section/result bytes, truncated components, bad tags, lengths, header digest, counts, cross-Company/run/revision/employee/line/context, and digest mismatches. Source-slot cardinality and owner reference-currentness validation from18 remain required; this reference codec does not replace the current owner loaders or kernel validation.
+
+Header and UnitSemantic/CalculationOutcome each max65536 bytes and depth8. UnitCustody has a tighter exact323-byte maximum: four UUID36 values, one checked positive i64 decimal of up to19 digits, one lowercase digest64, and its closed six-key JSON punctuation. Every length is checked before allocation/read. Thus the absolute frame maxima are131807617 input and131807623 calculation bytes. Each raw stream SHA is incremental, retaining only the current bounded leaves. The Python reference may materialize a fixture; its memory use is not evidence of the production streaming budget. All26/CP28 full-closure, per-chunk, and per-request budgets still apply independently. A size cap never permits incomplete inventory/truncation.
+
+UnitCustody.semantic_digest is H18(unit-semantic,exact semantic). Outcome.input_unit_digest is H18(unit-custody,exact custody), never semantic. Calculation pairs contain exactly the activated closed input members and exact custody bytes in the same order; their complete input header/manifest are independently loaded and compared. Outcome.result_ref is serialized exactly once, inside the closed native18 outcome. SUCCESS requires one actual immutable existing calculation result with the correct subject/version; BLOCKED requires null result and nonempty blockers. Count successes/blocked and validate the exact batch header. An all-blocked calculation can be a valid completed calculation; an all-blocked preparation cannot be closed or calculated.
+
+`PreparedNativeInput.manifest_digest` and `PreparedNativeCalculation.manifest_digest` remain the original18 tagged manifest commitment (old header digest+UUID16/member digest framing). `EvidenceRef.evidence_digest` is raw SHA256 of the entire new28 frame. These are different domains; do not interchange them. Old V11/V15/V18 digests are preserved by the new literals.
+
+### Exact retained EvidenceRef mapping
+
+Select one paired input stream. `PreparedNativeInput.semantic_manifest == custody_manifest` by complete structural equality, including UnitRef, evidence_digest, and encoded_size. They name two views of the same immutable stream; deduplicate physical bytes/store and identical pinner/purpose/obligation tuples only. Distinct obligations and protection purposes remain independently pinned even when they name the same unit; releasing one cannot release another. They are not independently comparable semantic/custody manifest hashes. Semantic equality is equality of ordered employee+UnitSemantic18 bytes/digests; actor/time/run/revision/generation in the header/custody intentionally changes the stream SHA. The two old fields remain present to avoid breaking the approved private prepared type.
+
+Calculation uses one outcome_manifest EvidenceRef for the paired custody/outcome stream. All prepared fields and actual command must match decoded header and actual retained evidence; no caller-created private prepared value grants writer authority. Input and calculation streams are distinct retained evidence from OWNER_SUBMISSION, even when the latter names their originating command.
+
+The approved closed20 RetainedSelector has only per-employee NATIVE_INPUT_UNIT / NATIVE_CALCULATION_UNIT. Neither can identify a whole stream. Add two closed variants, an explicit narrow material design refinement requiring approval:
+
+```
+{kind:"NATIVE_INPUT_STREAM",command:{org_id:UUID,command_id:UUID}}
+{kind:"NATIVE_CALCULATION_STREAM",command:{org_id:UUID,command_id:UUID}}
+```
+
+For only these two new variants, identity_digest is `SHA256(UTF8("console.retained.native28.stream-identity")||NUL||J(selector))`. Allocate actual UnitRef.unit_id under the existing retained-unit owner, bound to Company+kind+original preparation command. No future header/result/receipt/hash enters this permanent identity. Preserve all20 prior variants and their old identity algorithms. Fixed payroll dispatch resolves this selector only to the private existing native preparation relation/event protocol; never arbitrary SQL/callback/URI. New selectors require the exhaustive enum/DB check/dispatch inventory to grow20→22. Existing OWNER_SUBMISSION keeps its existing identity, not the new stream identity tag.
+
+Alternatives rejected: two separate semantic/custody streams would contradict the approved paired tuple layout and require an additional ordering/join invariant; removing a prepared field changes the approved private interface; fake employee sentinels and overloading OWNER_SUBMISSION or PROTECTED_INVENTORY erase selector meaning. The alias invariant and literal framing refine an underdefined encoding choice; the two new selector variants are explicitly material.
+
+## Non-source OWNER_SUBMISSION
+
+The closed normalized action30 command has exactly18 required keys: the original16 from14 plus `action_registration_revision` and `action_registration_manifest_digest`. Required nullable keys remain present. No metadata section or duplicated full business input is added.
+
+```
+protocol: "CCF1"
+org_id: exact Company UUID
+command_id: actual reserved originating command UUID
+actor_account_id: original actual Account UUID
+owner_key: exact fixed registration owner
+owner_action: exact dotted registered action
+object_type_id, action_type_id: exact Company registration UUIDs
+input_schema_ref: full exact action30 InputSchemaRef
+codec_version: "action30-v1"
+target: exact canonical14 Existing/Create target
+body: normalized concrete action30 owner input (no outer RegisteredInput wrapper)
+expected: {kind:"BODY_EXACT",registered_input_digest: Digest}
+reason: body.reason when declared; otherwise null
+attempt: exact14 original attempt binding or null for an actually admitted DIRECT
+ gate_ref: null or {request_id:UUID,request_revision:"1"}
+action_registration_revision: checked positive decimal string
+action_registration_manifest_digest: exact immutable registration manifest Digest
+```
+
+The single leading space before gate_ref above is typography only; canonical JSON keys are unspaced ASCII and sorted. The two registration keys supplement, not replace, immutable object/action/schema definitions and their actual Company checks. Full input_schema_ref includes definition_revision and codec_digest; original14 literals using the old3-field schema ref remain unchanged under their old registered codec.
+
+`registered_input_digest = SHA256(UTF8("console.action30.registered-input")||NUL||J({kind:owner_action,body:normalized_body}))`. BODY_EXACT is an exact projection over the full typed input; every declared expected head/revision/task/source/basis remains in that input. The envelope target binds its independent exact Existing/Create identity. An owner cannot use this digest to omit a required CAS/source ref, default an absent head to current, or treat an invalid body as valid. This is consistent with the explicit owner-bindings footer permitting BODY_EXACT only with complete typed CAS/source refs. Any discovery that an action's input schema lacks a required owner expectation requires an explicit schema refinement, not an undocumented field or a current-head default.
+
+Canonical14 target mapping: Existing `{kind:"Existing",object_kind,object_id}` after registered object_type_id resolves to that exact object_kind. Create `{kind:"Create",object_kind,allocated_object_id,scope_ref:{org_id,object_kind,object_id,revision}}`; all refs are owner-verified in Company. The original public action30 Target is separately validated; no title/label/URL substitutes for these values.
+
+Normalization is selected by the exact immutable schema. Typed integer leaves become checked minimal decimal strings; existing decimal-string fields remain strings, booleans stay booleans. Public wire integers at such sites are decimal strings as well, decoded to checked typed integers before validating the original internal action30 schema; raw JSON numeric tokens remain rejected. This projected wire schema is a proposed adapter refinement, not a claim that the existing shallow Value-based endpoint already implements it. The literal payload directory represents validated internal RegisteredInput values; those are never automatically sent as public owner envelopes.
+
+For the existing EditingToken sites, validate and consume the complete actual nonce during current continuation admission, then normalize only that token to `{draft_id,editing_epoch,assignment_epoch}`. Omit nonce, session/CSRF tokens, expiring CONTROL_REFERENCE handles, current policy epochs and private Ctx/witness objects. Resolve a CONTROL_REFERENCE through the existing account/session/context/action/field/schema-bound server store before typed validation and fingerprinting; seal the exact private reference, never a public handle. Existing nonces and control handles remain required where applicable during admission. Only this fixed schema-driven replacement is permitted; arbitrary user fields named nonce are not stripped.
+
+ATTEMPT is `{attempt_id,draft_id,source_revision_id,editing_epoch,assignment_generation}` drawn from the actual stored original seal. DIRECT has attempt:null; on first admission the fixed owner reserves the new original command and immutable normalized input through the actual direct-intent protocol, and no attempt provenance. Private SealedOwnerIntent remains a capability validated against actual stored custody; it is never serialized into C. Draft/attempt control commands retain only their original command input, not a rebuilt current draft. `attempt.execute` loads and executes the original domain command and does not publish a second wrapper submission. Four Group controls retain Group custody/receipts and do not enter this Company publisher. Source19 final actions use the unchanged source24 preparation→seal→command→submission specialization; source.prepare_submission itself is a common preparation control action, not permission to shortcut source24 finalization.
+
+A gate intended for the current command reserves actual request UUID and initial payload revision1, seals C with only that stable pair, computes command fingerprint, then fills request.binding_digest. Decision/consumption/receipt are downstream. GateDecide/ReviewDecide input may include an existing GovernanceRequestRef.binding_digest because that command concerns an already-existing request; it must not be confused with optional gate_ref for this same command. A mismatch/changed actor/registration/schema/target/body/expected/reason/original epoch produces a different command or is rejected; gate expiry/currentness is checked at execution without resealing the old command.
+
+Whole frame:
+
+```
+UTF8("console.owner28.submission.v1") || NUL || U32BE(len(J(C))) || J(C) || EOF
+```
+
+The tag including NUL is30 bytes; frame overhead34. Ordinary total <=65536, so J(C)<=65502. Only exact payroll.review.release may total <=8388608, so J(C)<=8388574, with body.targets1..2000. Every other list retains its schema cap and global256 ceiling; only the exact body.targets path for that registration gets2000. Full C depth<=8, object fields<=128. Compute whole size before seal/direct reservation/effects; preserve acknowledged input and return the typed oversize blocker, never truncate/split atomic publication. Command fingerprint keeps existing `SHA256("console.command.ccf1"||NUL||J(C))`; the new codec/registration/schema selects this18-field schema. Snapshot evidence_digest is raw SHA of the whole owner frame. Fill exact actual seal/command receipt binding after it exists in the owner's transaction; neither command bytes nor frame contains a future snapshot/receipt digest.
+
+The source24 frame (three numbered raw canonical components), its tags, caps, and all three literal goldens are immutable. Codec/selector dispatch must reject source24 passed as OWNER_SUBMISSION and non-source owner28 passed as source24.
+
+## Layer placement and test boundary
+
+Existing pure restricted writer responsibility is ontology/application (14 draft-attempt-contract:9 and encoding-contract:7); it must not acquire SQLx. In58b6 the actual HTTP source is `backend/crates/ontology/rest/src/lib.rs:1525` ActionRequest and lines536–537 existing preflight/execute paths; the typed-owner runner must not mistake this legacy Value/ExecuteOutcome surface for action30 PublicOutcome. The native builder/finalizer is the existing payroll owner; pure native leaf/framing helpers can live privately in its adapter and invoke the existing pure writer through an allowed adapter→application dependency. Payroll/domain must not depend on ontology/application. Fixed borrowed participants stay transaction participants, without pools/commit/network/callbacks or adapter-to-adapter calls. No new common payroll application framework is proposed.
+
+All55 body fixtures are internal owner inputs and schema witnesses. They are not authority, actual retained refs, issuer verification, currentness evidence, or proof of legal eligibility. Authoritative fixture production must use real test-side owner command entry points, read their actual private typed results in owning adapter/application tests, and perform privileged readback only after actual owners commit. Current schema sketches name finalizers but do not yet expose exact Rust public command-entry signatures or a callable current-authority Ctx issuer. Proposed fixture source must keep these as explicit missing-interface prerequisites; it cannot turn generic JSON fixture refs into verified owner capabilities. Public HTTP tests exercise authorized inputs/output projection after the real producer has created sessions/objects; they must not expose hidden internal references simply for testing convenience.
+
+## Mechanical adoption guide and stop conditions
+
+Root independently reviews this exact artifact and hashes, classifies the two selector variants/action30 envelope/wire projection as narrow refinements, preserves immutable14/18/19/24 authorities and tests, and updates only current approved authority through its normal review process. Then the exact owner lane's named probe must be red on clean admitted head before implementation; the same probe must be green to succeed. This scratch suite's R2 reference tests are not a product lane, owner integration count, nor a test-discovery substitute.
+
+Pre-mortem: a digest-only binding drops payload CAS; a fake employee holder breaks retention; a future gate hash cycles; alias double-charging hides duplicate evidence; raw Value decoding loses duplicates; source ordinal confuses stream ordinal; internal refs leak through test HTTP. Detection: literal stream hashes/offsets, hostile codec cases, actual owner receipt/retained-byte readback, transaction failure injection and existing layer/authority tests. Blast radius: new codec-dispatched non-source command and two exact payroll selectors only. Rollback: disable new registration enrollment; preserve all retained identities/bytes and historical receipts; never recode old commands or delete evidence. Stop on ambiguous owner custody, missing current authority/issuer proof, incomplete source closure, unknown transaction outcome, missing approved lane probe, or unexpected old-golden drift. No attempted effect is retried merely because a response was lost; reconcile original actual receipt first. Independent review and actual owner/Rust/PG tests remain mandatory and separate from this author's reference execution.
+
+## R2 review corrections and current proof boundary
+
+R1 is preserved in the separate original scratch. R2 replaces its future request recipe with binder-sequence.rs and native-owner-producer.rs, corrects authentication/session/worker binding and Company/Group separation, and maps SQL labels separately from proposed Rust wrappers in the actual existing owner packages. owner-interface-refinement.md and signature-contract.rs specify the new interfaces explicitly. RunExpected is read with all six fields; pending native work cannot supply a terminal receipt.
+
+normalized-source validates retained normalized bytes using fixed schema locations, checked decimal bounds and dates. Only declared EditingToken nonce sites are removed after actual current admission; these schemas cannot be used as public admission schemas. The decoder checks canonical blocker sets including every nested source_slots set. These reference/schema checks do not validate live authorization, source closure or business effects. Exact counts and invocations are recorded in execution-r2.json at freeze. All Rust compilation, real auth/bootstrap, owner runtime guards, native two-obligation retention and all-six-field CAS mutation proof remain HOLD until the approved actual owner probes execute.

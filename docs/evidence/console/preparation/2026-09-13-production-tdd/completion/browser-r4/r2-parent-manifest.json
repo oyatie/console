@@ -1,0 +1,85 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "members": [
+    {
+      "path": "browser-acceptance-producer.rs",
+      "sha256": "e2fce2655679aea3c3aea4e4fdf946d95071d6df407d7cb287b80d334337507d",
+      "bytes": 8749
+    },
+    {
+      "path": "browser-auth-producer.rs",
+      "sha256": "2cf499110ec906d167c299ed3ce996906c66dd02bfca7dbc51115df686ce68f1",
+      "bytes": 6065
+    },
+    {
+      "path": "browser-case-producer.rs",
+      "sha256": "1a17e57086bb312364293b5105d596cfe2ddfcd72554d1ff63e6f4d8a01d8c4e",
+      "bytes": 15448
+    },
+    {
+      "path": "browser-discovery.json",
+      "sha256": "2bb0842ab6cf160d3fcedcdab2fdf8857ddfca3a704a69f6d9b51d5a9d5383c8",
+      "bytes": 10174
+    },
+    {
+      "path": "browser-runtime-helpers.rs",
+      "sha256": "98d17985626163a86160876418fe6e3ee8c7785fac72343e37180aa0c6aae373",
+      "bytes": 4203
+    },
+    {
+      "path": "helper-execution.json",
+      "sha256": "5c97d17bc7be7bd3b4deb812deb2284c67f0c093b0eda8e27dc5e17819c7d628",
+      "bytes": 407
+    },
+    {
+      "path": "helper-execution.log",
+      "sha256": "4e6301c53488c38e6d3b308df9ed7a8220f27d9443650f6ed21ec880319dd768",
+      "bytes": 2874
+    },
+    {
+      "path": "helper-smoke/Cargo.lock",
+      "sha256": "c78d62cdb8c2b13731fd0aeeaa77a27b012e7e51a1936080f3d301a34c25e20e",
+      "bytes": 19554
+    },
+    {
+      "path": "helper-smoke/Cargo.toml",
+      "sha256": "5bd77739f4e059d725a94b6960c9c439e3bd36b686c26558b8265ac1bfb5c0a4",
+      "bytes": 341
+    },
+    {
+      "path": "helper-smoke/src/actor-migration.csv",
+      "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+      "bytes": 8170
+    },
+    {
+      "path": "helper-smoke/src/lib.rs",
+      "sha256": "55330cfbe5eb70fa270e1e799ccbfab7a02f0a4a11ad22ab1d5c454e4192e2ef",
+      "bytes": 5142
+    },
+    {
+      "path": "owner-contract.txt",
+      "sha256": "8de367a43fa0cc034aa500b0ae91f96d81d38888ff43a971628c1f980ffbd461",
+      "bytes": 3305
+    },
+    {
+      "path": "payroll-source-facts-producer.rs",
+      "sha256": "015cc3062f4f6918adda88b6133c82d073d45c7741e0919c097c7fae4333d9b9",
+      "bytes": 6115
+    },
+    {
+      "path": "r1-parent-manifest.json",
+      "sha256": "ca5fc3d248651f8717f598ffcf98ab467d13d373854613c82415a35726734f94",
+      "bytes": 2549
+    },
+    {
+      "path": "syntax-execution.json",
+      "sha256": "32e90ac62e00be8d93dd5c334cb88eb10634d3758ec4b226f7b6f83f01d5d443",
+      "bytes": 2308
+    },
+    {
+      "path": "two-subject-producer.rs",
+      "sha256": "5d6b644fac22909929213f72eca310dfa1e666d572b14071a14a342cd473e71a",
+      "bytes": 7849
+    }
+  ]
+}

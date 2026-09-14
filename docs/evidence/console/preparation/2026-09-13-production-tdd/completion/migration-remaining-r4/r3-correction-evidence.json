@@ -1,0 +1,14 @@
+{
+  "finding": "legacy225 duplicate membership UNIQUE(org_id) violation",
+  "source_migration": "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql",
+  "source_sha256": "90ded6b338aa92907dc98bf74bc1fa563e05a4a8acb5d748aa24a44e237ff720",
+  "mechanism": {
+    "before_insert": "lines185-217 mints NEW.group_id",
+    "after_insert": "lines200-222 attaches matching membership",
+    "unique_membership": "platform_attach_membership INSERT ON CONFLICT(org_id) at106-112"
+  },
+  "producer_correction": "read and assert existing actual Group+membership; preserve only intended legacy GROUP_ADMIN grant",
+  "runtime_executed": 0,
+  "parser_checks": 5,
+  "review_status": "INDEPENDENT_REVIEW_REQUIRED"
+}

@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/finish_migration",
+  "manifest_sha256": "d808059c55052407cee15dec445d19105a05b709af8c65c9bcd14bb946479e02",
+  "members_verified": 12,
+  "disposition": "ACCEPT_BOUNDED_MECHANICAL_ASSEMBLY_CHECKER",
+  "closed": [
+    "empty/omitted selected source roster refused by exact reviewed selection regeneration",
+    "crate_refs independently recalculated from pinned selected Rust bytes",
+    "parent/declaration projection exact full mapping match required",
+    "actual declaration file bytes match exact generated source mounts",
+    "include assets independently resolved/rehashed against selected source references"
+  ],
+  "independent_execution": {
+    "command": "python3 -B /private/tmp/console-module-placement-r2-20260914/check.py --root /private/tmp/console-production-tdd-preparation-20260913",
+    "positive": 1,
+    "hostile": 9,
+    "failures": 0
+  },
+  "manual_scope": "Private parent imports,include paths,root aliases,actual integration target versus owner --lib commands and existing dependency usage reviewed. Selected sources are repository-relative; no fake owners/fixture statuses introduced.",
+  "limits": "Regex/reference traversal and declaration parser checks are mechanical preparation,not Rust name resolution,macro expansion,owner API compatibility or application execution. Requires final successor refresh for migrationR4 and browser hydration source then exact regeneration/hash review. Required packet custody remains separate checker."
+}

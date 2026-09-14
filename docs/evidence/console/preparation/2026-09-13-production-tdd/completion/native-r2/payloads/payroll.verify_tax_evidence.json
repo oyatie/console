@@ -1,0 +1,21 @@
+{
+  "kind": "payroll.verify_tax_evidence",
+  "body": {
+    "admission_ref": {
+      "family": "TAX_EVIDENCE",
+      "ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "evidence_id": "3d6c16d0-0584-548a-8aa0-cff1efdd18bb",
+        "revision": "1"
+      }
+    },
+    "admission_digest": "9450d50c35ffe5b2d0020f13b35be0a53ea538c91f69536d2ac74d6f42ea7d42",
+    "expected_head_revision": "1",
+    "reviewer_credential_ref": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+      "revision": "1"
+    },
+    "attestation": true
+  }
+}

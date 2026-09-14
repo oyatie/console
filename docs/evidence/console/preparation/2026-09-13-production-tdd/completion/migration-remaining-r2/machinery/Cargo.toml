@@ -1,0 +1,8 @@
+[package]
+name="console-migration-output-machinery"
+version="0.1.0"
+edition="2024"
+[lib]
+path="../bounded-process-output.rs"
+[dependencies]
+tokio={version="1",features=["io-util","process","rt","macros","time"]}

@@ -1,0 +1,54 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "status": "FROZEN_S8_MIGRATION_R3_PLACEMENT_CANDIDATE_BROWSER_R3_FOLLOWUP_PENDING",
+  "members": [
+    {
+      "path": "account_migration-declarations.rs",
+      "sha256": "81867bbcd986662230a293a01deb409ba5439d2eedcccdc7ebfdad26d45e8d80"
+    },
+    {
+      "path": "auth_rest-declarations.rs",
+      "sha256": "a2a3ec5921505e257c94a77176408582315d91c559c3344eabda76306efba77b"
+    },
+    {
+      "path": "build.py",
+      "sha256": "6665d5bd6ec894fff155e9e5aa87db1a2190e02a2dc909e456f85fc27a85e443"
+    },
+    {
+      "path": "check.py",
+      "sha256": "6cc884b7e58abd888a004461ed6ef988ef9c26fcf2eeb4f19d9a1c21760f71e7"
+    },
+    {
+      "path": "checks.json",
+      "sha256": "7bb567ade277def9572a6f552cc9cea28bd375fbccc26f1aa4cba0cb16a239d9"
+    },
+    {
+      "path": "dev-dependencies.json",
+      "sha256": "b298faf0d3a96e245248f46038453a84702abf8ca0a3da1b162072ee8903a585"
+    },
+    {
+      "path": "external-crate-reference-census.json",
+      "sha256": "d2b3659f13785f5dcc59da6f779ffa56d6a012f4781fe6167d340f5a2e71ac85"
+    },
+    {
+      "path": "mechanical-guide.txt",
+      "sha256": "83898530af0f2927818436c5f87c820734f975367bea26c0ec650f5c6aa7bf89"
+    },
+    {
+      "path": "module-placement.json",
+      "sha256": "c98b52b6eafae595fa8f1dba6dd5279c65ab43c40bcfaa0faa55f723eebbe374"
+    },
+    {
+      "path": "native_acceptance-declarations.rs",
+      "sha256": "600a3ebfeea5a275b25fb62a736c4cd7c383158c93e8846b9b013d139b49c462"
+    },
+    {
+      "path": "r1-parent-manifest.json",
+      "sha256": "f811e23cf36574d1bc4b0761da0dd4a2435d2a5e54f20b459bd08662d5be7227"
+    },
+    {
+      "path": "selection-base.json",
+      "sha256": "255c4213d3d0748da92cccbadbfaaccafdc5c54434cb0e2b5637c1e879b321b6"
+    }
+  ]
+}
