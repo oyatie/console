@@ -1,0 +1,168 @@
+{
+  "status": "RESTORE_ORACLE_VERIFIED_HA_AND_OWNER_DURABILITY_INCOMPLETE",
+  "owner": "/root",
+  "base_sha": "2872a5f09e49024028a5591bcde21481e318208f",
+  "candidate_sha": "11e4fcadf1bfb2e35253439a4998481e7fe82a8b",
+  "immutable_target": "Independent expected-reference comparison at the existing CNPG restore verification boundary. No production provisioning or application owner behavior changes.",
+  "source_sha256": {
+    "docs/documentation-index.json": "f5b6e2fed23b97649e6511cfafae369b9c75c9dd5a659ce48bb9cea0a33c2d7d",
+    "docs/documentation-manifest.seed.json": "7c0aba58c8dabd999abf2d6a3ad613b67aecd2bec9ae2d831d1d22bdac21c1bf",
+    "ops/dr/cnpg-restore-drill.md": "09264fbf3b5790e2c509367346b72a981bd07d35cf5d11da5130831426aad048",
+    "ops/dr/cnpg-restore-drill.sh": "51af4b43e559ca4595fad307981a2fac15f39f112b5d761cd93dc23ce6810d86",
+    "ops/dr/recovery-manifest.integration.test.py": "afa849baf26c03a5beb53c884ab55412b8e9d3dc55e02270205db9b0d204766a",
+    "ops/dr/recovery-manifest.py": "ff4663ece33cc755302fd518015f4b8ff5c6b3e2279486ce0fdf4c2ec27f32ef",
+    "ops/dr/test_recovery_manifest.py": "1ee2b8c5e926117090f5dc181f8b38642a3467620c7cf3e3ea70cd4eec805903",
+    "scripts/check-production-hardening.test.mjs": "f2e643a3dff367dda50ce4e633b65abea436854b80c0f40ed3983dddd9c9be36"
+  },
+  "mechanical_guide": [
+    "Freeze operator-supplied expected state before provisioning; retain existing production operation HOLD.",
+    "Compare one read-only repeatable-read snapshot of physical database identity, regular-table row multiset SHA256 and column metadata.",
+    "Reject missing/extra/changed rows, missing tables, incomplete output and any foreign relation. No raw row values in logs.",
+    "Wire executable oracle controls into existing production-hardening tests; verify fixed SQL against actual isolated PG18.6."
+  ],
+  "admission": {
+    "command": "python3 tools/lanes/fanout.py admit --probe 'python3 -m unittest discover -s ops/dr -p test_recovery_manifest.py'",
+    "exit": 0,
+    "base_red": {
+      "tests": 1,
+      "failed": 1,
+      "reason": "Actual existing verification shell section returned success for synthetic table statistics without an independent reference.",
+      "evidence": "oracle-red.log.gz"
+    },
+    "green": {
+      "same_probe": "python3 -m unittest discover -s ops/dr -p test_recovery_manifest.py",
+      "tests": 19,
+      "passed": 19,
+      "failed": 0,
+      "evidence": "oracle-controls-r2.log.gz"
+    },
+    "note": "18 additive comparator and fixture controls became executable with their owner; no prior test weakened/deleted. Root implements; agents only review."
+  },
+  "tests": [
+    {
+      "command": "DOCKER_CONTEXT=colima-console-custody-20260914 python3 ops/dr/recovery-manifest.integration.test.py",
+      "discovered": 9,
+      "executed": 9,
+      "passed": 9,
+      "failed": 0,
+      "owned_cleanup": "confirmed",
+      "evidence": "oracle-postgres-r2-green.log.gz",
+      "scope": "Actual PG snapshot SQL + comparator fault/repair controls. Does not perform backup/restore or Kubernetes/PITR."
+    },
+    {
+      "command": "NODE_PATH=/Users/jasonlee/Developer/console/node_modules node --test scripts/check-production-hardening.test.mjs",
+      "discovered": 93,
+      "executed": 93,
+      "passed": 93,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "production-hardening-r2.log.gz",
+      "note": "Includes nested Python19; do not sum nested controls as distinct Node test cases."
+    },
+    {
+      "command": "NODE_PATH=/Users/jasonlee/Developer/console/node_modules node --test scripts/check-doc-links.test.mjs",
+      "discovered": 54,
+      "executed": 54,
+      "passed": 54,
+      "failed": 0,
+      "evidence": "doc-link-tests.log.gz"
+    },
+    {
+      "command": "NODE_PATH=/Users/jasonlee/Developer/console/node_modules node scripts/console/generate-documentation-manifest.mjs --check",
+      "exit": 0,
+      "documents": 456,
+      "evidence": "documentation-check-final.log.gz"
+    },
+    {
+      "command": "bash -n ops/dr/cnpg-restore-drill.sh",
+      "exit": 0
+    },
+    {
+      "command": "NODE_PATH=/Users/jasonlee/Developer/console/node_modules node scripts/check-doc-links.mjs",
+      "exit": 0,
+      "documents": 457,
+      "evidence": "doc-links-repaired-staged.log.gz"
+    },
+    {
+      "command": "NODE_PATH=/Users/jasonlee/Developer/console/node_modules node scripts/console/generate-documentation-manifest.mjs --check",
+      "exit": 0,
+      "documents": 457,
+      "evidence": "documentation-check-repaired.log.gz"
+    }
+  ],
+  "incidents": [
+    {
+      "evidence": "oracle-postgres.log.gz",
+      "classification": "9 comparator cases passed; initial untyped Docker absence assertion failed. Typed missing-container check plus reviewed predeclared ownership, bounded subprocesses and unconditional absence inspection fixed machinery; full run repeated green."
+    }
+  ],
+  "independent_reviewers": [
+    "/root/review_completeness",
+    "/root/finish_migration"
+  ],
+  "pre_mortem": [
+    "Healthy/promoted DB or statistics falsely certify missing/corrupt data.",
+    "Restored target generates its own expected reference.",
+    "Truncated stream, hidden foreign partitions, or missing request pass a checker.",
+    "Lost Docker create reply or deletion timeout conceals resources."
+  ],
+  "blast_radius": "Operator restore verification and local synthetic test tooling only. No live cluster access, schema migration, credential mutation or runtime write-path change.",
+  "detection": "Independent negative controls, real PG fault/repair comparison, complete stream sentinel, protected reference hash, typed owned-container absence readback.",
+  "rollback": "Revert this candidate through a reviewed change if necessary; retain production HOLD and do not reinstate the old success markers as data-integrity evidence. No data rollback required.",
+  "stop_conditions": [
+    "Reference provenance/target state not independently qualified.",
+    "Any content/column/identity mismatch, foreign relation, SQL/transport error or incomplete stream.",
+    "Test fixture resource ownership or cleanup cannot be confirmed.",
+    "Any claimed HA/production guarantee exceeds measured scope."
+  ],
+  "ha_strategy_and_gates": [
+    {
+      "area": "Availability",
+      "fact": "Base CNPG declaration has1instance; optional3instance synchronous overlay exists.",
+      "required": "Independent fault domains, measured failover, readiness/traffic gating, old-primary write and egress fencing. Source declarations alone do not prove HA."
+    },
+    {
+      "area": "Acknowledged write durability",
+      "fact": "Current real-owner remote_apply replay test fails; one intent/two attempts/one effect/one receipt but premature_success=true.",
+      "required": "No success until independently sufficient replica apply is known under current primary/timeline/quorum. Cancellation/topology change cannot weaken acknowledgement. Preserve UNKNOWN and reconcile original command."
+    },
+    {
+      "area": "Backups and recovery",
+      "fact": "Existing single-VM policy targets RPO<=5min and RTO<=1h. These are not achieved measurements.",
+      "required": "Measure end-to-end offsite durable WAL lag; archive interval plus copy delay can exceed5min. Verify backup restore/decryption, independent key recovery, retention/immutability/access separation."
+    },
+    {
+      "area": "Cross-store continuity",
+      "required": "Bind DB/object versions/mail/draft/audit/external-effect journal to a recoverable boundary; reconcile side effects and post-snapshot revocations/erasures before exposure."
+    },
+    {
+      "area": "Load and worst cases",
+      "required": "Measure the6Company/2000person pilot plus hot receipts/cells, recovery backlog, replica loss and storage exhaustion.50k/1m are evaluation paths, not certified capacity."
+    }
+  ],
+  "current_durability_failure": {
+    "candidate_sha": "8da3bd1d05e05d665ee847d401252e71496a2f8f",
+    "command": "DOCKER_CONTEXT=colima-console-custody-20260914 CONSOLE_RECOVERY_CUT='' RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER='' SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-account30-cargo python3 tools/lanes/recovery/supervise_recovery.py /private/tmp/console-production-tdd-preparation-20260913 -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply -- --exact --test-threads=1 --nocapture",
+    "exit": 101,
+    "discovered": 2,
+    "executed": 1,
+    "failed": 1,
+    "filtered": 1,
+    "classification": "REAL_OWNER_REMOTE_APPLY_ACKNOWLEDGEMENT_RED",
+    "evidence": "remote-apply-current-escalated.log.gz",
+    "fix_status": "Not fixed. Independent PG18.6/SQLx review rejects unconditional row-lock/COMMIT success as a sufficient guarantee because SyncRep cancellation can yield a warning and local commit.",
+    "source_custody": "Launched at8da3bd1d. Subsequent changes during the run touched only new oracle/test/docs paths. Git diff8da3bd1d..11e4fcad confirms zero changes in backend, tools/lanes/recovery and ops/postgres-reconcile-topology.sh."
+  },
+  "remaining_holds": [
+    "Actual CNPG/Barman/OCI restore, PITR boundary, HA failover, RPO/RTO and no-loss guarantees remain unproven.",
+    "Comparator excludes sequences, constraints, indexes, triggers, RLS/roles/routines, partition topology, large objects, materialized views and external stores.",
+    "A trusted expected snapshot at the intended target and its provenance must exist; capturing recovered output as its own reference is prohibited.",
+    "SQL budgets bound the snapshot only, not Kubernetes deployment or all wall-clock failure modes.",
+    "Account LC07 orchestration and subsequent Account/context/draft/UI vertical remain next implementation dependencies; this change does not complete Account or Console.",
+    "No published image, merge or production exposure."
+  ],
+  "documentation_followup": {
+    "review": "doc-link-followup-review.json",
+    "change": "An additive reference-only redirect repairs two preexisting relative DELIVERY links in historical candidate ROADMAP. Original historical bytes preserved; no authority adoption. Two generated projections updated."
+  }
+}

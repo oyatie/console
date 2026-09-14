@@ -1934,6 +1934,16 @@
       "archive_tag": null
     },
     {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/DELIVERY.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "redirect",
+      "replacement": "docs/current/DELIVERY.md",
+      "retention": "retain",
+      "blob_sha": "0360793e6269a045abf609e68c6d05037c0abebd",
+      "archive_tag": null
+    },
+    {
       "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/PRODUCT.md",
       "class": "evidence",
       "owner": "repository maintainers",

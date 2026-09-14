@@ -1,0 +1,76 @@
+{
+  "reviewer": "/root/finish_migration",
+  "verdict": "CONDITIONAL mechanism evidence; DO NOT claim row-lock+successful COMMIT is an unconditional remote-apply guarantee",
+  "proposal": "Fresh-transaction FOR KEY SHARE of exact immutable receipt followed by COMMIT before replay success",
+  "facts": [
+    {
+      "evidence": "PG REL_18_6 heapam.c5355-5450; xact.c1547-1557",
+      "finding": "Fresh successful row lock on permanent logged heap allocates XID, changes tuple locking metadata and emits XLOG_HEAP_LOCK. Transaction with XID+WAL reaches synchronous replication wait on commit. Receipt JSON bytes are unchanged but physical data/WAL are not read-only."
+    },
+    {
+      "evidence": "heapam.c4890-4930; RelationNeedsWAL conditional",
+      "finding": "Not every row lock emits new WAL: already-owned adequate lock can return early, missing row returns none, temporary/unlogged relation does not require WAL. Candidate must bind fresh transaction/exact logged relation/actually found receipt."
+    },
+    {
+      "evidence": "PG REL_18_6 syncrep.c317-326; SQLx0.9 connection/stream.rs161+",
+      "finding": "Query cancellation during SyncRep emits WARNING, ends wait and still finishes local COMMIT. SQLx logs NoticeResponse warnings, not an error. Therefore tx.commit().await success can still acknowledge before remote apply."
+    },
+    {
+      "evidence": "syncrep.c968-994; initial SyncRepRequested guard",
+      "finding": "Removing synchronous_standby_names wakes waiting commits; synchronous_commit mode without configured eligible synchronous standbys is not standalone durability authority."
+    },
+    {
+      "evidence": "select.sgml216;0177 migration;topology.sh470",
+      "finding": "FOR KEY SHARE requires UPDATE privilege on at least one column.0177 explicitly grants SELECT+INSERT only but does not revoke default UPDATE. Topology defaults may provide UPDATE; actual effective privileges must be measured, not inferred or silently widened."
+    },
+    {
+      "evidence": "xact.c1547-1557 comment",
+      "finding": "Locks remain held through SyncRep. Concurrent key-share locks are compatible but MultiXact allocation/tuple-page WAL, DDL/exclusive blockers and connection occupancy grow on hot repeated receipts."
+    }
+  ],
+  "alternatives": [
+    {
+      "mechanism": "Row-lock WAL barrier",
+      "assessment": "Small conditional repair for observed backend-termination replay hole; must additionally handle SyncRep cancellation/config drift, explicit privilege contract and repeated concurrent replay. Do not describe it as lock-free or logically read-only."
+    },
+    {
+      "mechanism": "Dedicated transactional WAL marker/barrier",
+      "assessment": "Makes intent clearer and avoids receipt tuple lock/MultiXact hotspot if designed without one global markerrow, but own COMMIT inherits same cancellation/config semantics. Merely emitting WAL is not a complete fix."
+    },
+    {
+      "mechanism": "Explicit standby replay-LSN confirmation",
+      "assessment": "After reading locally committed receipt, capture same-primary/timeline current WAL insert LSN upper bound; verify required standby/quorum has replayed through it using trusted observer before success. Avoids per-retry receipt WAL but adds observer privilege/protocol, epoch/timeline/cluster identity, quorum semantics and failover validation. Never compare bare numeric LSNs across unrelated timelines or DSN-derived identities."
+    }
+  ],
+  "before_code_requirements": [
+    "Run keyshare+commit two-node probe, then cancel wait with pg_cancel_backend while standby remains paused; assert no durable success. Include statement timeout and loss of client connection separately.",
+    "Verify effective production runtime UPDATE privilege and minimally granted SELECT/INSERT-only control; preserve all immutable receipt bytes/rowcount.",
+    "Exercise many simultaneous same-receipt replays, owner lock/DDL contention, pool saturation, cancellation cleanup and retry after standby resumes.",
+    "Inventory all replay success exits and caller-owned transaction boundaries before shared primitive adoption.",
+    "Define durability success relative to configured failover-eligible replicas/quorum and authorized topology changes; remote_apply GUC text alone is not proof."
+  ],
+  "direct_rust_receipt_read_inventory": [
+    "payroll/adapter-postgres/src/pay_run.rs591",
+    "ontology/canonical-adapter-postgres/src/person.rs316",
+    "ontology/canonical-adapter-postgres/src/company.rs254",
+    "ontology/canonical-adapter-postgres/src/org_unit.rs297",
+    "ontology/canonical-adapter-postgres/src/job_position.rs366",
+    "ontology/canonical-adapter-postgres/src/employment.rs604 (write_in_tx shared outer commit)",
+    "ontology/rest/src/lib.rs1769",
+    "ontology/rest/src/lib.rs2423"
+  ],
+  "inventory_limit": "Located8direct SELECTsites for ont_action_command_receipts;13reader-sibling claim not independently established. Other stores/indirect callers require explicit enumeration.",
+  "source_sha256": {
+    "/private/tmp/pg18-xact.c": "75b012c0b047d1dc905a30975c244beec366e45eac0dbf109fd21bcd611a8e39",
+    "/private/tmp/pg18-heapam.c": "57e3396476fc5d269bd2944b549a671f2699bf8ed43668e661090548ca206a16",
+    "/private/tmp/pg18-syncrep.c": "ecf3c6bbc44ca69943aad0a16ec9f7eff17b86c8eed635fc5f1bd489e4780493",
+    "/private/tmp/pg18-select.sgml": "300d0d5eb2bc5b7a1ef69f528c2a673c11819bb4dc975f9a7f82dff7fe2c560d"
+  },
+  "source_urls": [
+    "https://raw.githubusercontent.com/postgres/postgres/REL_18_6/src/backend/access/transam/xact.c",
+    "https://raw.githubusercontent.com/postgres/postgres/REL_18_6/src/backend/access/heap/heapam.c",
+    "https://raw.githubusercontent.com/postgres/postgres/REL_18_6/src/backend/replication/syncrep.c",
+    "https://raw.githubusercontent.com/postgres/postgres/REL_18_6/doc/src/sgml/ref/select.sgml"
+  ],
+  "execution_limits": "Read-only repository/source review. ExactPG18.6 sources fetched; no PostgreSQL experiment, code edit, Cargo/Buck/Docker execution by reviewer. Root owns live2nodeRED."
+}
