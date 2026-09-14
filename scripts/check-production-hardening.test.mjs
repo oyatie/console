@@ -2535,3 +2535,19 @@ exit 0
     assert.doesNotMatch(result.combined, /deployed and verified/);
   });
 });
+
+
+describe("recovery evidence oracle", () => {
+  it("executes the independent restore-verification controls", () => {
+    const result = spawnSync("python3", [
+      "-m", "unittest", "discover", "-s", "ops/dr", "-p", "test_recovery_manifest.py",
+    ], {
+      cwd: fileURLToPath(new URL("../", import.meta.url)),
+      encoding: "utf8",
+      timeout: 30_000,
+      env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" },
+    });
+    assert.equal(result.status, 0, result.stderr || result.error?.message);
+    assert.match(result.stderr, /Ran [1-9][0-9]* tests/);
+  });
+});

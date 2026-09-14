@@ -1934,6 +1934,26 @@
       "archive_tag": null
     },
     {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/PRODUCT.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "e904705c42f320ede29480371bba78cd8bd8266b",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/ROADMAP.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "d1de9236629ab9e04202d1bb3daaf7e5b3a12364",
+      "archive_tag": null
+    },
+    {
       "path": "docs/evidence/console/hotfix/equipment-custody/report.md",
       "class": "evidence",
       "owner": "repository maintainers",
@@ -4583,7 +4603,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "32368ed4f8bf284fe56dbca328a68f49843d88eb",
+      "blob_sha": "5a14424250e74bdde395ffddafa7c72be063c516",
       "archive_tag": null
     },
     {
