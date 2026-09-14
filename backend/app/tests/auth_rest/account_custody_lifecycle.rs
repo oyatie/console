@@ -453,40 +453,86 @@ async fn wait_for_blocker(pool: &PgPool, blocked: i32, blocker: i32) {
     .expect("actual PostgreSQL lock dependency not observed");
 }
 
+// Aborting a Rust task alone does not prove that its PostgreSQL operation
+// stopped. These actors own unpooled connections; join their cancellation and
+// observe backend termination before releasing fixture databases.
+async fn stop_finalizer<T>(
+    pool: &PgPool,
+    task: &mut tokio::task::JoinHandle<T>,
+    pid: i32,
+    joined: bool,
+) {
+    if !joined {
+        task.abort();
+        let _ = task.await;
+    }
+    let _: bool = sqlx::query_scalar(
+        "SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_stat_activity WHERE pid=$1) \
+         THEN pg_terminate_backend($1, 5000) ELSE true END",
+    )
+    .bind(pid)
+    .fetch_one(pool)
+    .await
+    .expect("finalizer backend termination could not be observed");
+    // The backend can disappear between the catalog observation and signal;
+    // absence, rather than the signal result, is the cleanup oracle.
+    let absent: bool =
+        sqlx::query_scalar("SELECT NOT EXISTS (SELECT 1 FROM pg_stat_activity WHERE pid=$1)")
+            .bind(pid)
+            .fetch_one(pool)
+            .await
+            .expect("finalizer backend absence could not be checked");
+    assert!(absent, "finalizer backend did not terminate");
+}
+
 #[sqlx::test(migrations = false)]
 async fn concurrent_finalizers_have_complete_request_outcomes_and_one_final_state(pool: PgPool) {
     staged(&pool).await;
     let sql = account_custody_finalizer_sql();
     let mut first = pool.begin().await.unwrap();
-    let mut second = pool.acquire().await.unwrap();
+    let mut second = PgConnection::connect_with(&pool.connect_options())
+        .await
+        .unwrap();
     let first_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
         .fetch_one(&mut *first)
         .await
         .unwrap();
     let second_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
-        .fetch_one(&mut *second)
+        .fetch_one(&mut second)
         .await
         .unwrap();
-    sqlx::raw_sql("LOCK TABLE public.accounts IN ACCESS EXCLUSIVE MODE")
+    sqlx::raw_sql("LOCK TABLE public.accounts, public.account_security, public.account_security_events, public.account_terms_acceptances, public.account_terms_head, public.account_terms_release_receipts IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *first)
         .await
         .unwrap();
     let second_sql = sql.clone();
-    let second_task = tokio::spawn(async move {
+    let mut second_task = tokio::spawn(async move {
         sqlx::raw_sql(sqlx::AssertSqlSafe(second_sql.as_str()))
-            .execute(&mut *second)
+            .execute(&mut second)
             .await
     });
-    wait_for_blocker(&pool, second_pid, first_pid).await;
-    sqlx::raw_sql(sqlx::AssertSqlSafe(sql.as_str()))
-        .execute(&mut *first)
-        .await
-        .unwrap();
-    first.commit().await.unwrap();
-    let second_outcome = tokio::time::timeout(Duration::from_secs(65), second_task)
-        .await
-        .unwrap()
-        .unwrap();
+    let outcome = std::panic::AssertUnwindSafe(async {
+        wait_for_blocker(&pool, second_pid, first_pid).await;
+        sqlx::raw_sql(sqlx::AssertSqlSafe(sql.as_str()))
+            .execute(&mut *first)
+            .await
+            .unwrap();
+        first.commit().await.unwrap();
+        tokio::time::timeout(Duration::from_secs(65), &mut second_task).await
+    })
+    .catch_unwind()
+    .await;
+    let second_outcome = match outcome {
+        Ok(Ok(joined)) => joined.unwrap(),
+        Ok(Err(error)) => {
+            stop_finalizer(&pool, &mut second_task, second_pid, false).await;
+            panic!("second finalizer timed out: {error}");
+        }
+        Err(panic) => {
+            stop_finalizer(&pool, &mut second_task, second_pid, false).await;
+            std::panic::resume_unwind(panic);
+        }
+    };
     let requests = [("first", true), ("second", second_outcome.is_ok())];
     assert!(complete_successful_requests(
         &["first", "second"],
@@ -556,17 +602,19 @@ async fn another_database_crosses_0165_while_finalization_is_in_flight(pool: PgP
         .execute(&mut *lock)
         .await
         .unwrap();
-    let mut actor = pool.acquire().await.unwrap();
+    let mut actor = PgConnection::connect_with(&pool.connect_options()).await.unwrap();
     let actor_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
-        .fetch_one(&mut *actor)
+        .fetch_one(&mut actor)
         .await
         .unwrap();
     let sql = account_custody_finalizer_sql();
-    let transfer = tokio::spawn(async move {
+    let mut transfer = tokio::spawn(async move {
         sqlx::raw_sql(sqlx::AssertSqlSafe(sql.as_str()))
-            .execute(&mut *actor)
+            .execute(&mut actor)
             .await
     });
+    let mut transfer_joined = false;
+    let concurrent_outcome = std::panic::AssertUnwindSafe(async {
     wait_for_blocker(&pool, actor_pid, lock_pid).await;
     // run_migrations borrows a non-Send SQLx acquisition future; poll both
     // real operations on this runtime instead of substituting migration SQL.
@@ -588,18 +636,29 @@ async fn another_database_crosses_0165_while_finalization_is_in_flight(pool: PgP
         .await
         .expect("second actual migrator did not cross historical0165 while finalizer was held");
         lock.commit().await.unwrap();
-        tokio::time::timeout(Duration::from_secs(70), transfer)
-            .await
-            .unwrap()
-            .unwrap()
+        let result = tokio::time::timeout(Duration::from_secs(70), &mut transfer).await;
+        transfer_joined = result.is_ok();
+        result
     };
-    let (transfer_result, migration_result) = tokio::join!(
+    tokio::join!(
         controller,
         tokio::time::timeout(
             Duration::from_secs(70),
             console_app::run_migrations(&config)
         )
-    );
+    )
+    }).catch_unwind().await;
+    let (transfer_result, migration_result) = match concurrent_outcome {
+        Ok((Ok(joined), migration)) => (joined.unwrap(), migration),
+        Ok((Err(error), _)) => {
+            stop_finalizer(&pool, &mut transfer, actor_pid, transfer_joined).await;
+            panic!("finalizer timed out: {error}");
+        }
+        Err(panic) => {
+            stop_finalizer(&pool, &mut transfer, actor_pid, transfer_joined).await;
+            std::panic::resume_unwind(panic);
+        }
+    };
     let migration_result = migration_result.unwrap();
     assert!(
         transfer_result.is_ok(),
