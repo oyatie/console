@@ -2,7 +2,7 @@
 
 # Base images pinned to their multi-arch index digest for reproducible builds;
 # Renovate (docker:pinDigests) keeps the digest current behind the tag.
-FROM rust:1.96-bookworm@sha256:19817ead3289c8c631c73df281e18b59b172f6a31f4f563290f69cddd06c30e9 AS builder
+FROM rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa AS builder
 
 WORKDIR /workspace/backend
 
