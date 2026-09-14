@@ -1,0 +1,40 @@
+{
+  "reviewer": "/root/finish_migration",
+  "candidate_sha": "20a3cfb72c2d477ea836a2f31f258c17ba8498fc",
+  "base_sha": "0863a6175fb2d010f5894af52c72e3c85fed297c",
+  "disposition": "ACCEPT_NARROW_TOOL_FIX",
+  "lenses": [
+    "Red Team",
+    "Cartesian doubt",
+    "Systems Thinking"
+  ],
+  "findings": [],
+  "independent_execution": [
+    {
+      "command": "python3 -B tools/lanes/test_status_custody.py",
+      "exit_code": 0,
+      "discovered": 8,
+      "executed": 8,
+      "passed": 8,
+      "skipped": 0
+    },
+    {
+      "command": "python3 -B tools/lanes/fanout.test.py",
+      "exit_code": 0,
+      "result": "ALL PASS; existing custom assertion runner includes actual admission/run positive and negative controls"
+    }
+  ],
+  "assessment": [
+    "Exact clean candidate modifies only fanout.py changed-path helper; no tests, contracts, product files or approval records changed.",
+    "Checked Git command now raises CalledProcessError on failure; missing repository independently verified as refusal, never clean tree.",
+    "NUL porcelain records retain exact whitespace, Unicode, quotes and embedded newline paths. --untracked-files=all preserves nested file custody.",
+    "R/C status consumes destination record and following source record; both retained so destination allowlist cannot conceal outside source. Real rename test passed.",
+    "os.fsdecode preserves filesystem byte decoding semantics including surrogateescape where supported. Unused _git removal is scoped; no remaining call sites.",
+    "Original loaded-parser false breach must remain historical failure. New parser success does not retroactively change previous run outcome; independent corrected isolation and exact immutable patch checks are separate evidence."
+  ],
+  "limits": [
+    "Copy-status and raw nonUTF8 filenames reviewed structurally, not independently exercised as additional real Git tests.",
+    "Malformed forged Git output is not the declared threat interface; local trusted Git successful porcelain output is relied upon for framing.",
+    "This receipt accepts tooling repair only; formatter correction needs its own actual test/isolation evidence. FK exception remains unapplied and outside scope."
+  ]
+}

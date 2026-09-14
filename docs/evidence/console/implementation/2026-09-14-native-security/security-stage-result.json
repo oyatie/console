@@ -1,0 +1,43 @@
+{
+  "status": "BOUNDED_SECURITY_IMPLEMENTATION_AND_INDEPENDENT_REVIEW_COMPLETE",
+  "design_test_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "reviewed_integrated_source_sha": "d2cd4c47975afec364d3e2baeba8100db6281d90",
+  "approved_fk_test_sha": "cca76fee191c3e8e64b4ac823fccf893830204a1",
+  "dispatch": "Native subagents per explicit user override; earlier formatter harness invalid runs retained with separate corrected validation",
+  "implemented": [
+    "Public request-context diagnostic redaction",
+    "Cedar evaluation errors refuse enforcement while authorized explanations remain",
+    "Message and ACK dispatch bound to connection active Company",
+    "Telemetry stable events omit private error diagnostic fields"
+  ],
+  "verification": {
+    "integrated_named_probes": {
+      "context": 20,
+      "cedar": 5,
+      "realtime": 2,
+      "telemetry": 2
+    },
+    "all_named_passed": true,
+    "cedar_package_unique_tests_passed": 153,
+    "cedar_package_detail": "144nonDB plus9SQLx;45policy includes36nonDB overlapping earlier144",
+    "realtime_nonDB_passed": 9,
+    "realtime_postgres_bridge_passed": 5,
+    "app_http_postgres_passed": 2,
+    "tool_real_git_regressions_passed": 8,
+    "no_aggregate_whole_suite_coverage_claim": true
+  },
+  "resolved_environment_failures": [
+    "Optional sccache access failure; supported wrapper override used",
+    "Lane parser false path breach corrected and independently revalidated, originals retained",
+    "Cedar missing DATABASE_URL resolved by disposablePG45policyPASS",
+    "HTTP compile against empty admin DB resolved with committed SQLx offline compile metadata and real runtimePG"
+  ],
+  "fk_exception": "Exact independently reviewed patch explicitly approved by user and applied with matching source hash; no DB schema change in that patch",
+  "next_work": "Account additive dormant catalog running on exactcca76fee; globalfence, credential/actor migration and actual auth owners remain separate stages",
+  "limits": [
+    "No full vertical completion, global information-flow proof, payment/legal or production claim",
+    "Other Account/auth/browser tests retain their own RED/prerequisite classifications",
+    "No hosted merge/release performed"
+  ],
+  "independent_review": "native/reviews/integrated-native-review.json"
+}

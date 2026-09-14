@@ -1,0 +1,10 @@
+{
+  "user_instruction": "I want you to begin implementation without fanout.py. utilize subagents and continue your work",
+  "effect": "Explicit session override of mandatory fanout.py launch route. Native subagents authorized. Exact SHA/clean root, one writer, meaningful RED, test preservation, same-probe GREEN and independent review retained.",
+  "base_sha": "5dd6708ee08c293a2bfdc8d2f9fb28e5c9f06ced",
+  "approved_design_test_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "scope": "Next three existing-owner security boundaries in approved implementation order: Cedar evaluation diagnostics, Company-bound realtime delivery, diagnostic telemetry projection",
+  "shared_writers": "Root serializes integration, evidence, manifests, lockfiles, migrations and authority. Agents must not edit shared paths.",
+  "fk_status": "Exact ephemeral FK patch remains unapplied and requires explicit patch approval after automatic review rejection.",
+  "timestamp": "2026-09-14T16:23:33.365377+00:00"
+}

@@ -1,0 +1,15 @@
+[
+  {
+    "lane": "native30-context-formatter",
+    "ok": false,
+    "seconds": 211.9,
+    "changed_files": [
+      "ackend/crates/platform/request-context/src/lib.rs"
+    ],
+    "out_of_slice": [
+      "ackend/crates/platform/request-context/src/lib.rs"
+    ],
+    "answer": "Implemented the approved formatter-only correction in [lib.rs](/Users/jasonlee/Developer/console-lanes/lane-native30-context-formatter/backend/crates/platform/request-context/src/lib.rs:562).\n\n```diff\n-    error_response(status, &err.to_string())\n+    let message = match err {\n+        RequestContextError::BranchScope(_) => \"failed to resolve branch scope\",\n+        RequestContextError::EffectivePolicy(_) => \"failed to resolve effective policy\",\n+        RequestContextError::AccessScope(_) => \"access scope is not valid for this route\",\n+        _ => return error_response(status, &err.to_string()),\n+    };\n+    error_response(status, message)\n```\n\nVerification:\n\n- Exact HEAD: `4655c084071999a3f2c2d49c9d361f9011ccaa61`; initially clean.\n- Mandatory RED probe: 20 executed, 16 passed, 4 expected body-equality failures.\n- Same GREEN probe: 20 executed, 20 passed, 0 failed/ignored/filtered.\n- Package-scoped `cargo fmt --check`: passed.\n- Package-scoped clippy with `-D warnings`: passed.\n- `git diff --check`: passed.\n- Test-section SHA-256 remained `f60cc80bd8968a9aed74a4f258f98037d8a7a37ce2b4d0432cc8d1ef539a9fb6`.\n- Only the approved source file changed: 7 insertions, 1 deletion.\n- Internal diagnostic `Display` remains available; no logs, tests, authority files, FK changes, or commits added.\n\nRemaining HOLDs: new material design/test approval; exact ephemeral-FK correction; dependent owner tests and actual slice acceptance; hosted merge/release and production/payment/legal authority.",
+    "error": ""
+  }
+]

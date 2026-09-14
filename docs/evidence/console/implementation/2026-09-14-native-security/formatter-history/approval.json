@@ -1,0 +1,12 @@
+{
+  "user_response": "다음",
+  "context": "Direct response to single consolidated approval question naming design/test candidate4655c084 and exact ephemeral FK patch",
+  "interpretation": "User next authorizes proceeding with reviewed design/test formatter lane; exact FK correction remains blocked by automatic review requiring unambiguous explicit patch approval.",
+  "design_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "test_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "evidence_container_sha": "60ef96c5d058e10f6830f29c2886de5ff2d92975",
+  "fk_patch_sha256": "f450999524242cbe0f036b93e77fe17c2c33fc1351b26f0562a344b305fd44ce",
+  "recorded_at": "2026-09-14T16:04:54.785013+00:00",
+  "source_of_authority": "User conversation, not agent approval",
+  "fk_status": "NOT_APPROVED_BY_AUTOMATIC_REVIEW_NOT_APPLIED"
+}

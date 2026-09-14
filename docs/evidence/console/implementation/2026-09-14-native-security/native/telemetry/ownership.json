@@ -1,0 +1,22 @@
+{
+  "base_sha": "5dd6708ee08c293a2bfdc8d2f9fb28e5c9f06ced",
+  "owner": "/root/review_completeness",
+  "allowed": [
+    "backend/app/src/console_telemetry.rs"
+  ],
+  "approved_design_test": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "source_before_sha256": "e9b38b126805593299587e8833afb6b24fcbd95053028641c77d9ae33b17fb56",
+  "test_suffix_sha256": "483941b8f02f7b7c68d5fc433bc948e0b12d21ddb90b258dcdd460d9449298b8",
+  "launch": "Native tools/subagent under explicit user override, no fanout.py",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "premortem": "One conversion or sqlx wrapper still leaks; deleting events falsely passes without stable positive witnesses.",
+  "detection": "Two actual paired conversion captures require capture positive and stable production event plus identical event content/schedule.",
+  "rollback": "Source-only scoped revert preserving tests; no data effects.",
+  "stop": "Material interface/design change, test-source drift, unrelated owner edit or unclassified failure."
+}

@@ -1,0 +1,35 @@
+{
+  "reviewer": "/root/finish_browser",
+  "author": "/root/finish_migration",
+  "candidate_sha": "19a94c2fef2adb711cd0e9e2b972d8b83384f829",
+  "candidate_tree": "3aed2e606e2f9ac3f63553b75a17f96251c2625a",
+  "base_sha": "5dd6708ee08c293a2bfdc8d2f9fb28e5c9f06ced",
+  "verdict": "APPROVE_BOUNDED_SOURCE_CHANGE",
+  "lenses": [
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "findings": [],
+  "checks": [
+    "Exact clean source freeze; full diff is only engine.rs and authoring.rs. No test/manifest/schema/authority changes. Exact committed patch hash matches retained candidate.patch and all8 artifact digests verified.",
+    "Both evaluators collect diagnostics before considering Allow. Any evaluation diagnostic yields effective Deny even when another permit matched. Ordinary clean permit and clean matching-forbid paths remain intact; parsing/request/panic refusals unchanged.",
+    "authoring::simulate retains original diagnostics and determining policy IDs for authorized explanation; shared row/property helpers consume its effective boolean. authz-rest object/property and single/bulk command explanation consumers share this evaluator. No helper-only masking or stripped diagnostic evidence.",
+    "engine::evaluate consumers traced through app cedar_parity and identity REST shadow boundary. Boundary maps Deny to stable CedarDenied, not raw reason. Metrics use stable labels. Identity retains raw detail in existing Company audit custody, not response; existing persistence-error logging remains outside this change and is not certified safe here.",
+    "HTTP simulation/single/bulk decisions preserve existing explicit explanation response shape behind authorize_admin, which resolves principal and requires org-wide RoleManage. No newly introduced unguarded diagnostic response. This review does not endorse current legacy RoleManage authority as final native30 policy administration implementation.",
+    "Five approved actual-evaluator tests include real strict-compiled overflow witness, clean maximum-version permit, nonoverflowing permit, optional-owner diagnostics, matching forbid, positive row and field controls. Author RED5executed2PASS3behavioralFAIL -> GREEN5PASS evidence verified. Broader144nonDBPASS and format/clippy logs retained. No duplicate full suite run or database setup by reviewer.",
+    "Root exact-candidate PostgreSQL18.6 full policy run reviewed:45PASS0failed0ignored0filtered including all9SQLx. Prior missing DATABASE_URL prerequisite is resolved and original failed evidence remains. Disposable runner removes its container/volume."
+  ],
+  "execution_evidence": "/private/tmp/console-native30-native-execution-20260914/cedar/execution.json",
+  "new_runtime_test_executions": 0,
+  "remaining_holds": [
+    "No production rollout, full native30 enforcement, global noninterference, public audit-export or log-sink closure is certified by this bounded change.",
+    "Any later policy administration/diagnostic disclosure boundary must use approved current-policy projections; existing protected explain does not confer general disclosure authority."
+  ],
+  "independence": "Read-only review; no source authored by this reviewer and no repository writes. Owns only this scratch review file.",
+  "postgres_evidence": {
+    "policy-postgres.log": "0af715d8ad7d1c0a036ae89f514953ba184003cc1ef2031b4a2971418fcb1b61",
+    "policy-postgres-execution.json": "6de94649e230f77f514e58eb91df74b00ec126f228e642ddf6189233ee9406a4"
+  }
+}

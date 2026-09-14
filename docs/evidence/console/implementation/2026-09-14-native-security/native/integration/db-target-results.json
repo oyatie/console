@@ -1,0 +1,34 @@
+[
+  {
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "console-platform-realtime",
+      "--test",
+      "postgres_bridge"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 8.95,
+    "log": "db-target-0.log",
+    "sha256": "6ed3be432393ccd1abb81117d1416a233a4e43063d8434c49a72499c3a138b8e"
+  },
+  {
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "console-app",
+      "--test",
+      "console_route_telemetry",
+      "--test",
+      "realtime_ws"
+    ],
+    "exit_code": 101,
+    "elapsed_seconds": 7.35,
+    "log": "db-target-1.log",
+    "sha256": "1cc33b1851c7fb091cf5a293ee2c94c9c9c3026ac36cd66620e542171ab5f7e0"
+  }
+]
