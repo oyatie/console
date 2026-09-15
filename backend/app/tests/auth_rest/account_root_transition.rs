@@ -894,22 +894,67 @@ async fn profile_drift_refuses_without_repair(pool: PgPool) {
     prepare_http_database(&pool).await;
     require_bridge(&mut pool.acquire().await.unwrap()).await;
     let query = include_str!("../../src/account_custody_state.sql");
-    for mutation in [
-        "ALTER TABLE users DISABLE TRIGGER \"00_account_legacy_user_root_v1\"",
-        "ALTER TRIGGER \"00_account_legacy_user_root_v1\" ON users RENAME TO zz_root_bridge",
-        "ALTER FUNCTION account_legacy_user_root_v1() SECURITY INVOKER",
-        "ALTER FUNCTION account_legacy_user_root_v1() SET search_path=public",
-        "ALTER FUNCTION account_legacy_user_root_v1() OWNER TO console_app",
-        "CREATE OR REPLACE FUNCTION public.account_legacy_user_root_v1() RETURNS trigger LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$ BEGIN RETURN NEW; END $$",
-        "CREATE OR REPLACE TRIGGER \"00_account_legacy_user_root_v1\" AFTER INSERT ON public.users FOR EACH ROW EXECUTE FUNCTION public.account_roots_immutable_v1(); ALTER TABLE public.users ENABLE ALWAYS TRIGGER \"00_account_legacy_user_root_v1\"",
-        "ALTER TABLE accounts DISABLE TRIGGER account_roots_immutable_v1",
-        "ALTER TABLE users DISABLE TRIGGER \"00_account_legacy_user_id_immutable_v1\"",
-        "GRANT EXECUTE ON FUNCTION account_legacy_user_root_v1() TO console_rt",
-        "GRANT INSERT(id) ON accounts TO console_rt",
-        "GRANT UPDATE(created_at) ON accounts TO console_account_owner",
-        "ALTER TABLE users ALTER CONSTRAINT users_account_root_v1 NOT DEFERRABLE",
-        "ALTER TABLE users DROP CONSTRAINT users_account_root_v1",
-        "ALTER TABLE users DROP CONSTRAINT users_account_root_v1; ALTER TABLE users ADD CONSTRAINT users_account_root_v1 FOREIGN KEY(id) REFERENCES accounts(id) ON DELETE RESTRICT ON UPDATE RESTRICT DEFERRABLE INITIALLY DEFERRED NOT VALID",
+    for (mutation, expected_error) in [
+        (
+            "ALTER TABLE users DISABLE TRIGGER \"00_account_legacy_user_root_v1\"",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "ALTER TRIGGER \"00_account_legacy_user_root_v1\" ON users RENAME TO zz_root_bridge",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "ALTER FUNCTION account_legacy_user_root_v1() SECURITY INVOKER",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "ALTER FUNCTION account_legacy_user_root_v1() SET search_path=public",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "ALTER FUNCTION account_legacy_user_root_v1() OWNER TO console_app",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "CREATE OR REPLACE FUNCTION public.account_legacy_user_root_v1() RETURNS trigger LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$ BEGIN RETURN NEW; END $$",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "CREATE OR REPLACE TRIGGER \"00_account_legacy_user_root_v1\" AFTER INSERT ON public.users FOR EACH ROW EXECUTE FUNCTION public.account_roots_immutable_v1(); ALTER TABLE public.users ENABLE ALWAYS TRIGGER \"00_account_legacy_user_root_v1\"",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "ALTER TABLE accounts DISABLE TRIGGER account_roots_immutable_v1",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "ALTER TABLE users DISABLE TRIGGER \"00_account_legacy_user_id_immutable_v1\"",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "GRANT EXECUTE ON FUNCTION account_legacy_user_root_v1() TO console_rt",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "GRANT INSERT(id) ON accounts TO console_rt",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "GRANT UPDATE(created_at) ON accounts TO console_account_owner",
+            "account_custody.unexpected_privilege",
+        ),
+        (
+            "ALTER TABLE users ALTER CONSTRAINT users_account_root_v1 NOT DEFERRABLE",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "ALTER TABLE users DROP CONSTRAINT users_account_root_v1",
+            "account_root_transition.profile_mismatch",
+        ),
+        (
+            "ALTER TABLE users DROP CONSTRAINT users_account_root_v1; ALTER TABLE users ADD CONSTRAINT users_account_root_v1 FOREIGN KEY(id) REFERENCES accounts(id) ON DELETE RESTRICT ON UPDATE RESTRICT DEFERRABLE INITIALLY DEFERRED NOT VALID",
+            "account_root_transition.profile_mismatch",
+        ),
     ] {
         let mut tx = pool.begin().await.unwrap();
         sqlx::raw_sql("SET LOCAL search_path=pg_catalog,pg_temp")
@@ -957,8 +1002,8 @@ async fn profile_drift_refuses_without_repair(pool: PgPool) {
         let before = metadata(&mut tx, TABLES).await;
         let state: String = sqlx::query_scalar(query).fetch_one(&mut *tx).await.unwrap();
         assert_eq!(
-            state, "account_root_transition.profile_mismatch",
-            "every new-root drift has the fixed closed metadata refusal"
+            state, expected_error,
+            "each metadata drift has its fixed compatible refusal"
         );
         sqlx::raw_sql("SAVEPOINT attempted_transition")
             .execute(&mut *tx)
@@ -969,12 +1014,7 @@ async fn profile_drift_refuses_without_repair(pool: PgPool) {
             .execute(&mut *tx)
             .await
             .unwrap();
-        db_error(
-            result,
-            "P0001",
-            Some("account_root_transition.profile_mismatch"),
-            None,
-        );
+        db_error(result, "P0001", Some(expected_error), None);
         assert_eq!(metadata(&mut tx, TABLES).await, before);
         tx.rollback().await.unwrap();
     }

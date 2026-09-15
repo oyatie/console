@@ -691,9 +691,12 @@ class AccountResourcesTests(unittest.TestCase):
             'src/account_custody.rs': 'const SQL: &str = include_str!("account_custody_state.sql");',
             'src/account_custody_state.sql': 'SELECT 1;',
             'src/private.sql': 'not an authorized mapped input',
-            'tests/auth_rest.rs': '#[path="auth_rest/account_fence_projection.rs"] mod projection;',
-            'tests/auth_rest/account_fence_projection.rs': 'const OLD: &str = include_str!("fixtures/account-custody-dormant-v1-7af6dfd4.sql");',
+            'tests/auth_rest.rs': '#[path="auth_rest/account_fence_projection.rs"] mod projection; #[path="auth_rest/account_root_transition.rs"] mod root_transition;',
+            'tests/auth_rest/account_fence_projection.rs': 'const OLD: &str = include_str!("fixtures/account-custody-dormant-v1-7af6dfd4.sql"); const V2: &str = include_str!("fixtures/account-custody-projection-v2-69e3ca9c.sql");',
+            'tests/auth_rest/account_root_transition.rs': 'const OLD: &str = include_str!("fixtures/account-custody-root-input-d66e2112.sql"); const STATE: &str = include_str!("../../src/account_custody_state.sql");',
             'tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql': 'synthetic fixture mapping',
+            'tests/auth_rest/fixtures/account-custody-projection-v2-69e3ca9c.sql': 'synthetic projection-v2 fixture mapping',
+            'tests/auth_rest/fixtures/account-custody-root-input-d66e2112.sql': 'synthetic root-transition historical fixture mapping',
             'tests/auth_rest/fixtures/private.sql': 'not an authorized mapped input',
         }
         for relative, content in inputs.items():
@@ -756,7 +759,11 @@ class AccountResourcesTests(unittest.TestCase):
     def test_auth_rest_maps_exact_historical_fixture_without_sql_glob(self):
         package, generated = self.render_account()
         expected = {'tests/auth_rest.rs', 'tests/auth_rest/account_fence_projection.rs',
-                    'tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql'}
+                    'tests/auth_rest/account_root_transition.rs',
+                    'tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql',
+                    'tests/auth_rest/fixtures/account-custody-projection-v2-69e3ca9c.sql',
+                    'tests/auth_rest/fixtures/account-custody-root-input-d66e2112.sql',
+                    'src/account_custody_state.sql'}
         self.assertEqual(self.local_mapping(package, generated, 'console-app-itest-auth_rest'), expected)
 
     def test_account_mapping_oracle_detects_broad_globs_and_extra_private_inputs(self):
