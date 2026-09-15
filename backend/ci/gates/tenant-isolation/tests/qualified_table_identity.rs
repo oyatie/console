@@ -204,11 +204,11 @@ fn qualified_create_reuses_existing_unqualified_dynamic_rls_evidence() {
 }
 
 #[test]
-fn account_catalog_requires_explicit_classification_outside_parser_repair() {
+fn unknown_catalog_requires_explicit_classification() {
     violation(
-        "CREATE TABLE public.accounts (id uuid);",
+        "CREATE TABLE public.unregistered_catalog (id uuid);",
         ViolationKind::UnclassifiedTable,
-        "accounts",
+        "unregistered_catalog",
     );
 }
 
