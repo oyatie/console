@@ -170,6 +170,8 @@ mod audit_chain_signer;
 pub mod cedar_parity;
 mod collaboration;
 mod console_telemetry;
+#[cfg(all(test, feature = "test-recovery"))]
+mod durability_composition_tests;
 mod facilities_schedule;
 mod hr;
 pub mod lifecycle;
