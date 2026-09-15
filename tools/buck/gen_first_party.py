@@ -380,6 +380,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'postgres',
         'integration': {
             'tests/owner_only_acl_postgres18.rs': 'postgres',
+            'tests/qualified_table_identity.rs': 'none',
         },
     },
     'console-gate-vendor-lockin': {
