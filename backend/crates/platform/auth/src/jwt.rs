@@ -7,6 +7,12 @@ use uuid::Uuid;
 
 use crate::AuthError;
 
+mod account;
+pub use account::{
+    AccountAccessClaims, AccountAccessTokenInput, AccountAccessVerification, AccountAssurance,
+    AccountCsrfClaims, AccountCsrfTokenInput, SignedAccountToken,
+};
+
 #[derive(Debug, Clone)]
 pub struct JwtSettings {
     pub issuer: String,
