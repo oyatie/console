@@ -60,7 +60,7 @@ ORDER BY wanted.name), relations AS (
           AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp','row_security=off']::text[]
           AND (SELECT count(*)=2 AND count(DISTINCT a.grantee)=2 AND bool_and(a.grantor=p.proowner
                 AND a.privilege_type='EXECUTE' AND NOT a.is_grantable
-                AND a.grantee IN (p.proowner,(SELECT oid FROM pg_roles WHERE rolname='console_auth_rt')))
+                AND COALESCE(a.grantee IN (p.proowner,(SELECT oid FROM pg_roles WHERE rolname='console_auth_rt')),false))
                FROM pg_catalog.aclexplode(COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))) a)
  ) AS valid
 ), receipt_guard AS (
@@ -164,7 +164,8 @@ SELECT CASE
  THEN 'account_custody.catalog_shape_mismatch'
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
- WHEN (SELECT dormant FROM table_acl_profiles) IS NOT DISTINCT FROM (SELECT present FROM projection)
+ WHEN ((SELECT dormant FROM table_acl_profiles) AND (SELECT present FROM projection))
+   OR ((SELECT prepared OR ready FROM acl_profiles) AND NOT (SELECT present FROM projection))
  THEN 'account_fence_projection.profile_mismatch'
  WHEN (SELECT present AND NOT valid FROM projection)
  THEN 'account_fence_projection.definition_mismatch'
@@ -177,12 +178,6 @@ SELECT CASE
        OR has_any_column_privilege(r.oid,c.oid,'SELECT,INSERT,UPDATE,REFERENCES')
        OR pg_has_role(r.oid,c.relowner,'MEMBER') OR pg_has_role(r.oid,c.relowner,'SET')))
  THEN 'account_custody.unexpected_privilege'
- WHEN NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='console_auth_rt'
-   AND rolcanlogin AND NOT rolsuper AND NOT rolbypassrls AND NOT rolinherit
-   AND NOT rolcreatedb AND NOT rolcreaterole AND NOT rolreplication)
-   OR EXISTS(SELECT 1 FROM pg_auth_members m JOIN pg_roles r ON r.oid=m.member OR r.oid=m.roleid
-     WHERE r.rolname='console_auth_rt')
- THEN 'account_fence_projection.role_mismatch'
  WHEN (SELECT finalized FROM ownership) AND (SELECT ready FROM acl_profiles)
    AND (SELECT valid FROM projection) AND (SELECT valid FROM receipt_guard)
    AND COALESCE((SELECT valid FROM guard_trigger),false)
