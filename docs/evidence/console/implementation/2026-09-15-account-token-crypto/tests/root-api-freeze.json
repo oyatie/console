@@ -1,0 +1,24 @@
+{
+  "kind": "ROOT_API_FREEZE_FOR_ADDITIVE_ACCEPTANCE_TESTS",
+  "source_head": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "owner": "/root",
+  "author": "/root/inventory_repair",
+  "reviewer": "/root/capture_review",
+  "time_utc": "2026-09-15T09:19:01.536367+00:00",
+  "proposal": {
+    "path": "/private/tmp/account-token-crypto-api-v3-f96eddd3.json",
+    "sha256": "8727208acdfee7e100994f7f12870655423842ff619c5503774bc1b767317ac3"
+  },
+  "independent_review": {
+    "path": "/private/tmp/account-token-crypto-api-v3-f96eddd3-independent-review-capture.json",
+    "sha256": "b564a0c921e23da674fe276249892d99864114e30627a8adf46845ff9d338e40"
+  },
+  "scope": "Existing JwtIssuer/JwtVerifier typed Account access and CSRF cryptographic owner, reused ES256 keys/settings; no new crate or dependency. Separate current Account/family authorization remains mandatory.",
+  "decision": "Accept exact minimal API for authoring/reviewing tests under persistent implementation authorization. No test implementation or runtime proof claimed.",
+  "next": "Independently review exact additive tests, commit tests, run and classify actual owner prerequisite RED, admit that exact boundary, implement, run same command and independent review. Never manufacture stubs to create RED.",
+  "remaining_holds": [
+    "Current live Account/session/family proof",
+    "Browser lifecycle and custody transition",
+    "Production exposure, payment and legal conclusions"
+  ]
+}
