@@ -808,3 +808,87 @@ async fn account_fence_projection_refuses_prepared_acl_with_function_deleted(poo
     )
     .await;
 }
+
+// Additive source candidate: independently review before mounting. Exercises
+// final prepared-profile certification after the routine's last EXECUTE grant.
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_postinstall_dormant_drift_rolls_back_every_custody_change(
+    pool: PgPool,
+) {
+    prepare_http_database_staging(&pool).await;
+    let auth = real_auth_pool(&pool).await;
+    let before = projection_catalog(&pool).await;
+    assert_eq!(before["functions"], json!([]));
+    assert_eq!(
+        projection_custody_verdict(&pool).await,
+        "account_custody.pending"
+    );
+    // The first owner SELECT GRANT happens before the projection exists and
+    // cannot fire this fault. The final function EXECUTE GRANT does. REVOKE is
+    // not in this event trigger's tag set, preventing recursive invocation.
+    // The sequence is a fixture-only nontransactional reachability witness:
+    // rollback must remove all custody effects while preserving that it fired.
+    sqlx::raw_sql(r#"
+        CREATE SEQUENCE public.fence_fixture_postgrant_seen;
+        CREATE FUNCTION public.fence_fixture_remove_reads_after_grant()
+        RETURNS event_trigger LANGUAGE plpgsql AS $trigger_body$
+        BEGIN
+            IF pg_catalog.to_regprocedure('public.account_legacy_fenced_v1(uuid)') IS NOT NULL THEN
+                PERFORM pg_catalog.nextval('public.fence_fixture_postgrant_seen'::regclass);
+                REVOKE SELECT ON public.accounts, public.account_security FROM console_account_owner;
+            END IF;
+        END;
+        $trigger_body$;
+        CREATE EVENT TRIGGER fence_fixture_postgrant ON ddl_command_end
+            WHEN TAG IN ('GRANT') EXECUTE FUNCTION public.fence_fixture_remove_reads_after_grant();
+    "#).execute(&pool).await.unwrap();
+    let before_seen: bool =
+        sqlx::query_scalar("SELECT is_called FROM public.fence_fixture_postgrant_seen")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert!(!before_seen, "fault witness must start uncalled");
+    let error = sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
+        .execute(&pool)
+        .await
+        .expect_err("post-install removal of both owner reads must abort the entire statement");
+    assert_eq!(
+        error.as_database_error().and_then(|e| e.code()).as_deref(),
+        Some("P0001")
+    );
+    assert!(
+        error
+            .to_string()
+            .contains("account_fence_projection.profile_mismatch"),
+        "must reach the final non-dormant profile postcondition: {error}"
+    );
+    let witness: (i64, bool) =
+        sqlx::query_as("SELECT last_value,is_called FROM public.fence_fixture_postgrant_seen")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        witness,
+        (1, true),
+        "actual post-GRANT fault must execute exactly once"
+    );
+    assert_eq!(
+        projection_catalog(&pool).await,
+        before,
+        "all six ownership/ACL changes and installed function must roll back"
+    );
+    assert_eq!(
+        projection_custody_verdict(&pool).await,
+        "account_custody.pending"
+    );
+    sqlx::raw_sql("DROP EVENT TRIGGER fence_fixture_postgrant; DROP FUNCTION public.fence_fixture_remove_reads_after_grant(); DROP SEQUENCE public.fence_fixture_postgrant_seen;")
+        .execute(&pool).await.unwrap();
+    finalize_account_custody(&pool).await;
+    assert!(!fenced(&auth, Uuid::new_v4()).await.unwrap());
+    let subject = UserId::new();
+    insert_account_fence(&pool, subject, "ACTIVE").await;
+    assert!(
+        fenced(&auth, *subject.as_uuid()).await.unwrap(),
+        "same installation and real owner read work once only the fault is removed"
+    );
+}

@@ -95,7 +95,7 @@ SELECT CASE
  THEN 'account_custody.catalog_shape_mismatch'
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
- WHEN NOT COALESCE((SELECT dormant OR prepared FROM acl_profiles),false)
+ WHEN NOT COALESCE((SELECT acl_profiles.dormant OR acl_profiles.prepared FROM acl_profiles),false)
    OR EXISTS (SELECT 1 FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
      CROSS JOIN LATERAL aclexplode(a.attacl) acl)
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
@@ -181,7 +181,7 @@ SELECT CASE
  THEN 'account_custody.catalog_shape_mismatch'
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
- WHEN NOT COALESCE((SELECT dormant OR prepared FROM acl_profiles),false)
+ WHEN NOT COALESCE((SELECT acl_profiles.dormant OR acl_profiles.prepared FROM acl_profiles),false)
    OR EXISTS (SELECT 1 FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
      CROSS JOIN LATERAL aclexplode(a.attacl) acl)
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
@@ -288,7 +288,7 @@ SELECT CASE
  THEN 'account_custody.catalog_shape_mismatch'
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
- WHEN NOT COALESCE((SELECT dormant OR prepared FROM acl_profiles),false)
+ WHEN NOT COALESCE((SELECT acl_profiles.dormant OR acl_profiles.prepared FROM acl_profiles),false)
    OR EXISTS (SELECT 1 FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
      CROSS JOIN LATERAL aclexplode(a.attacl) acl)
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
@@ -425,7 +425,7 @@ SELECT CASE
  THEN 'account_custody.catalog_shape_mismatch'
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
- WHEN NOT COALESCE((SELECT dormant OR prepared FROM acl_profiles),false)
+ WHEN NOT COALESCE((SELECT acl_profiles.dormant OR acl_profiles.prepared FROM acl_profiles),false)
    OR EXISTS (SELECT 1 FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
      CROSS JOIN LATERAL aclexplode(a.attacl) acl)
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
