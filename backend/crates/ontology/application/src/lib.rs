@@ -437,3 +437,6 @@ mod tests {
 // Test-first generic owner submission framing, separate from native payroll codecs.
 #[cfg(test)]
 mod owner28_codec_tests;
+
+/// Plain normalized submission framing; does not admit business authority.
+pub mod owner28;
