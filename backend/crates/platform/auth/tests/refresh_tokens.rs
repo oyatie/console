@@ -2,7 +2,9 @@
 
 use console_kernel_core::OrgId;
 use console_platform_auth::{RefreshTokenStore, RefreshTokenUseError};
-use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
 
@@ -20,8 +22,9 @@ async fn auth_role_pool(owner_pool: &PgPool) -> PgPool {
 ///
 /// RED (before the fix): the `auth.refresh` row lands with NULL org, so the
 /// KNL-armed read below returns 0. GREEN: the row carries KNL and is visible.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
     let user_id = seed_user(&pool).await;
     let auth = auth_role_pool(&pool).await;
     let rt = login_test_pool(&pool, TestDatabaseLogin::Business).await;
@@ -33,7 +36,7 @@ async fn rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role(pool:
     // Credential effects use the real auth login; Company audit observation below
     // remains on the distinct business login for this unmigrated legacy subject.
     let first = store
-        .issue_family(&auth, user_id, OrgId::knl(), now, ttl)
+        .issue_family(&auth, &auth, user_id, OrgId::knl(), now, ttl)
         .await
         .unwrap();
     store
@@ -79,8 +82,9 @@ async fn seed_user(pool: &PgPool) -> uuid::Uuid {
     .unwrap()
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn refresh_token_reuse_revokes_the_whole_family(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
     let user_id = seed_user(&pool).await;
     let auth = auth_role_pool(&pool).await;
     let store = RefreshTokenStore;
@@ -90,7 +94,7 @@ async fn refresh_token_reuse_revokes_the_whole_family(pool: PgPool) {
     let absolute_ttl = Duration::days(30);
 
     let first = store
-        .issue_family(&auth, user_id, OrgId::knl(), now, ttl)
+        .issue_family(&auth, &auth, user_id, OrgId::knl(), now, ttl)
         .await
         .unwrap();
     let second = store
@@ -166,8 +170,9 @@ async fn refresh_token_reuse_revokes_the_whole_family(pool: PgPool) {
 /// and revokes the family, even when the presented token is otherwise valid,
 /// unused, and not individually expired. This is the NIST AAL2 absolute
 /// session-lifetime cap.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn rotation_past_family_absolute_ttl_revokes_the_family(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
     let user_id = seed_user(&pool).await;
     let auth = auth_role_pool(&pool).await;
     let store = RefreshTokenStore;
@@ -178,7 +183,7 @@ async fn rotation_past_family_absolute_ttl_revokes_the_family(pool: PgPool) {
     let absolute_ttl = Duration::hours(24);
 
     let first = store
-        .issue_family(&auth, user_id, OrgId::knl(), now, ttl)
+        .issue_family(&auth, &auth, user_id, OrgId::knl(), now, ttl)
         .await
         .unwrap();
 

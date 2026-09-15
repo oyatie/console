@@ -1042,7 +1042,7 @@ async fn finish_login(
     // the org resolved from the asserted credential so the `users` read + session
     // mint run under the credential's tenant.
     let user = load_user_auth_context_in_org(&state.pool, outcome.org_id, outcome.user_id).await?;
-    let tokens = issue_token_pair(&state.pool, services, &user).await?;
+    let tokens = issue_token_pair(&state, services, &user).await?;
     record_auth_audit(
         &state.pool,
         outcome.org_id,
@@ -1188,7 +1188,7 @@ async fn redeem_otp(
     // run under the credential's tenant.
     let user =
         load_user_auth_context_in_org(&state.pool, redemption.org_id, redemption.user_id).await?;
-    let tokens = issue_token_pair(&state.pool, services, &user).await?;
+    let tokens = issue_token_pair(&state, services, &user).await?;
     record_auth_audit(
         &state.pool,
         redemption.org_id,
@@ -1817,7 +1817,7 @@ async fn poll_device_login(
 
     let org_id = OrgId::from_uuid(org_uuid);
     let user = load_user_auth_context_in_org(&state.pool, org_id, user_id).await?;
-    let tokens = issue_token_pair(&state.pool, services, &user).await?;
+    let tokens = issue_token_pair(&state, services, &user).await?;
     record_auth_audit(
         &state.pool,
         org_id,
@@ -2540,7 +2540,7 @@ async fn dev_auth_session(
         authz_policy_version: 0,
         session_generation: 0,
     };
-    let tokens = issue_token_pair(&state.pool, services, &user).await?;
+    let tokens = issue_token_pair(&state, services, &user).await?;
 
     // Loud by design: a dev-auth mint is a security-relevant event even in a
     // local/dev-only build, so it must never be silent.
@@ -2625,10 +2625,14 @@ impl IssuedTokenPair {
 }
 
 async fn issue_token_pair(
-    pool: &PgPool,
+    state: &AuthRestState,
     services: &AuthServices,
     user: &UserAuthContext,
 ) -> Result<IssuedTokenPair, RestError> {
+    let auth_pool = state
+        .auth_database
+        .as_ref()
+        .ok_or_else(|| RestError::from_refresh(RefreshTokenUseError::Storage))?;
     let now = OffsetDateTime::now_utc();
     let access_input = AccessTokenInput {
         subject: user.user_id,
@@ -2661,14 +2665,18 @@ async fn issue_token_pair(
     let refresh = services
         .refresh_tokens
         .issue_family(
-            pool,
+            &state.pool,
+            auth_pool,
             *user.user_id.as_uuid(),
             user.org_id,
             now,
             services.refresh_token_ttl,
         )
         .await
-        .map_err(|err| RestError::internal(err.to_string()))?;
+        .map_err(|err| match err {
+            AuthError::Refresh(refresh) => RestError::from_refresh(refresh),
+            _ => RestError::from_refresh(RefreshTokenUseError::Storage),
+        })?;
 
     Ok(IssuedTokenPair {
         access_token,

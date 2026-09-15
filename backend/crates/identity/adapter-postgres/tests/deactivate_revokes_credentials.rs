@@ -18,7 +18,9 @@ use console_identity_application::DeactivateUserCommand;
 use console_kernel_core::{OrgId, TraceContext, UserId};
 use console_platform_auth::{RefreshTokenStore, RefreshTokenUseError};
 use console_platform_request_context::CURRENT_ORG;
-use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
@@ -132,8 +134,9 @@ async fn audit_count(owner_pool: &PgPool, action: &str, user_id: Uuid) -> i64 {
     count
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn deactivate_revokes_passkeys_and_sessions_as_runtime_role(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let auth_pool = login_test_pool(&owner_pool, TestDatabaseLogin::Auth).await;
     let knl = OrgId::knl();
@@ -151,7 +154,7 @@ async fn deactivate_revokes_passkeys_and_sessions_as_runtime_role(owner_pool: Pg
     // ... and a live refresh-token family (their session), minted as console_rt.
     let now = OffsetDateTime::now_utc();
     let family = RefreshTokenStore
-        .issue_family(&rt_pool, user_id, knl, now, Duration::days(30))
+        .issue_family(&rt_pool, &auth_pool, user_id, knl, now, Duration::days(30))
         .await
         .expect("issue_family must pass RLS as console_rt");
 

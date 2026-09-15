@@ -48,11 +48,17 @@ impl RefreshTokenStore {
     pub async fn issue_family(
         &self,
         pool: &PgPool,
+        auth_pool: &PgPool,
         user_id: Uuid,
         org_id: OrgId,
         now: OffsetDateTime,
         ttl: Duration,
     ) -> Result<RefreshTokenIssue, AuthError> {
+        // Refuse a committed Account fence before any credential or audit write.
+        // As with rotation, concurrent cutover still requires admission and drain.
+        if legacy_subject_is_fenced(auth_pool, user_id).await? {
+            return Err(RefreshTokenUseError::InvalidToken.into());
+        }
         let family_id = Uuid::new_v4();
         let token_id = Uuid::new_v4();
         let token = generate_refresh_token();
@@ -220,12 +226,7 @@ impl RefreshTokenStore {
         // This refuses a pre-existing fence. Account activation still requires
         // admission pause and drain: a separate pool read cannot serialize a
         // concurrent cutover with this legacy Company transaction.
-        let fenced: bool = sqlx::query_scalar("SELECT public.account_legacy_fenced_v1($1)")
-            .bind(user_id)
-            // rls-arming: ok narrow Account identity projection is global, not Company data
-            .fetch_one(auth_pool)
-            .await?;
-        if fenced {
+        if legacy_subject_is_fenced(auth_pool, user_id).await? {
             tx.rollback().await?;
             return Err(RefreshTokenUseError::InvalidToken.into());
         }
@@ -577,6 +578,14 @@ async fn insert_audit_in_tx(
     .await?;
 
     Ok(())
+}
+
+async fn legacy_subject_is_fenced(auth_pool: &PgPool, user_id: Uuid) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar("SELECT public.account_legacy_fenced_v1($1)")
+        .bind(user_id)
+        // rls-arming: ok narrow Account identity projection is global, not Company data
+        .fetch_one(auth_pool)
+        .await
 }
 
 fn generate_refresh_token() -> String {

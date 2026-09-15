@@ -177,11 +177,13 @@ fn refresh_cookie(response: &http::Response<Body>) -> String {
         .to_owned()
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mints_a_real_session_and_backs_it_with_a_real_user(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
     let (org_id, branch_id) = seed_org_and_branch(&pool).await;
     let rt_pool = runtime_role_pool(&pool).await;
-    let app = router(test_state(rt_pool));
+    let auth_pool = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
+    let app = router(test_state(rt_pool).with_auth_database(auth_pool));
 
     let response = post(
         app.clone(),
@@ -323,6 +325,7 @@ async fn cookie_refresh_still_requires_passkey_for_ordinary_zero_passkey_user(po
     let issued = RefreshTokenStore
         .issue_family(
             &rt_pool,
+            &auth_pool,
             user_id,
             OrgId::from_uuid(org_id),
             time::OffsetDateTime::now_utc(),
