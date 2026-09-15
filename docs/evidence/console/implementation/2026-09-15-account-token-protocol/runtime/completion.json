@@ -1,0 +1,83 @@
+{
+  "kind": "COMPLETED_LOCAL_IMPLEMENTATION_LANE",
+  "lane": "account-legacy-protocol-separation",
+  "base_sha": "e2c73bdb02cde494ecb653d7d028f677d87f6fef",
+  "candidate_sha": "c7cfefe607aa4acc15b24dc8a25bb862c55e03fe",
+  "owner": "/root",
+  "independent_reviewer": "/root/capture_review",
+  "verdict": "APPROVED_LOCAL_SOURCE_AND_RUNTIME",
+  "red": {
+    "executed": 3,
+    "passed": 1,
+    "failed": 2,
+    "filtered": 4,
+    "exit": 101
+  },
+  "same_probe_green": {
+    "executed": 3,
+    "passed": 3,
+    "failed": 0,
+    "filtered": 4,
+    "exit": 0
+  },
+  "regression": {
+    "executed": 21,
+    "passed": 21,
+    "failed": 0,
+    "filtered": 0,
+    "exit": 0
+  },
+  "checks": [
+    "rustfmt --edition 2024 --check backend/crates/platform/auth/src/jwt.rs",
+    "git diff --check"
+  ],
+  "archives": [
+    {
+      "original_path": "/private/tmp/account-protocol3-e2c73bdb-red.log",
+      "original_sha256": "3d26e0029bd45953372a0510f85da2775cb0053fca02ba8c463ef85de84c652a",
+      "archive": "account-protocol3-e2c73bdb-red.log.gz",
+      "archive_sha256": "86ee490be66f6983667d599387004dada18d06cb8951614c37cee7bc26a4f20d"
+    },
+    {
+      "original_path": "/private/tmp/account-protocol3-e2c73bdb-green.log",
+      "original_sha256": "58f09e8699a8417b4ded62c3e217a1997b165aaedc27fbb94dfeee2db2db1ff2",
+      "archive": "account-protocol3-e2c73bdb-green.log.gz",
+      "archive_sha256": "3b5a9ebe0c196a1d526470cbc3d8dca44404f7a5696262ab9967bf7b765fd947"
+    },
+    {
+      "original_path": "/private/tmp/account-protocol21-e2c73bdb-regression.log",
+      "original_sha256": "44c012cd80cd25f9564abd515b119fad2aa530a5b361da447ba5e32e262faba9",
+      "archive": "account-protocol21-e2c73bdb-regression.log.gz",
+      "archive_sha256": "9cf701d32c6bf39e07ea72fd4943d543ebc8b2fd75642f04bc39a54d6718eeb2"
+    },
+    {
+      "original_path": "/private/tmp/account-protocol3-e2c73bdb-red-receipt.json",
+      "original_sha256": "a1dd486babe9aebbb8c3c2234dc06135e3d754466462834be2b26cb5999feb74",
+      "archive": "account-protocol3-e2c73bdb-red-receipt.json.gz",
+      "archive_sha256": "4da441208e2697ee1c94abf3b3b1288a4c0e10d8c21226af99eeaa0496abd4f6"
+    },
+    {
+      "original_path": "/private/tmp/account-legacy-protocol-root-lane-spec-e2c73bdb.json",
+      "original_sha256": "82d4b204c8f60341a517b42c8174e0b14cec9cd93eb996ccac1d41c44952b00b",
+      "archive": "account-legacy-protocol-root-lane-spec-e2c73bdb.json.gz",
+      "archive_sha256": "e7d52bfd4661d2842e98023c4db8a1439597a04b90244836d4514a4c6b8caf3d"
+    },
+    {
+      "original_path": "/private/tmp/account-protocol3-e2c73bdb-admission.log",
+      "original_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "archive": "account-protocol3-e2c73bdb-admission.log.gz",
+      "archive_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5"
+    },
+    {
+      "original_path": "/private/tmp/account-legacy-protocol-c7cfefe-independent-review-capture.json",
+      "original_sha256": "8559ed0e647e9c467b10e0be66345f8d99ea2419c1f4446b34cac1290aee133e",
+      "archive": "account-legacy-protocol-c7cfefe-independent-review-capture.json.gz",
+      "archive_sha256": "1c19882f538977045b4a28e27e5c76da90266e6260152549fe704296625f768c"
+    }
+  ],
+  "remaining_holds": [
+    "Cryptographic Account access/CSRF owner nowseparatelyadmitted",
+    "Real current Account/family/primaryproof/browser and custody transition",
+    "No hostedmerge, productionexposure, payment or legal conclusions"
+  ]
+}

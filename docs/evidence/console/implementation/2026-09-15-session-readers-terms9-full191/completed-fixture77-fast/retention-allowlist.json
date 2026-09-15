@@ -1,0 +1,374 @@
+{
+  "kind": "FINITE_COMPLETED_FIXTURE77_AND_SUCCESSFUL_FAST_RERUN_RETENTION_SUPPLEMENT",
+  "preparer": "/root/fast_gate_review",
+  "repository_writer": "/root",
+  "runtime_source_head": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "existing_evidence_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+  "existing_primary_file_count_at_commit": 204,
+  "candidate_root": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast",
+  "status": "READY_FOR_INDEPENDENT_CAPTURE_REVIEW_BEFORE_ROOT_SERIAL_IMPORT",
+  "record_count": 17,
+  "new_archive_bytes": 259981,
+  "original_bytes": 1187788,
+  "records": [
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/probe.log",
+      "original_sha256": "46b619b1a9d31cb3d8c08e07162791d4264ff4bb80b1ff05599d296d9145ff01",
+      "original_bytes": 182139,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/probe.log.gz",
+      "archive_sha256": "59729cbd09d4e63140b77fe7bea1c044ab2835289681c9be3c3679360d6d7712",
+      "archive_bytes": 22399,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/probe-exit.txt",
+      "original_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/probe-exit.txt.gz",
+      "archive_sha256": "89ed3b723e0e40d8957a2df55fcb04d57b6d95fa665c5fe67b098df7f29694ae",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/selected-test-results.json",
+      "original_sha256": "ffcae3be0712546e8e8ddd55b2357d843f9e4c763a1f7f8cc5d0007bb09b154a",
+      "original_bytes": 80839,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/selected-test-results.json.gz",
+      "archive_sha256": "15cfdda96eeed922f07f50889bd6c1e733a5ca7300a8ec4192293fb1bc0c621f",
+      "archive_bytes": 10498,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/source-before.json",
+      "original_sha256": "4e052ad81872ad4aadb1198a360bc547776fea295d31a4ebb22b7edabb9407e1",
+      "original_bytes": 123948,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/source-before.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/source-before.json.gz",
+      "archive_sha256": "0f732d468cf2b5f59a4840abd2a6e7d4a159c9fb0f07c62be1678a669d9ad86a",
+      "archive_bytes": 47687,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/source-after.json",
+      "original_sha256": "4e052ad81872ad4aadb1198a360bc547776fea295d31a4ebb22b7edabb9407e1",
+      "original_bytes": 123948,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/source-after.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/source-after.json.gz",
+      "archive_sha256": "0f732d468cf2b5f59a4840abd2a6e7d4a159c9fb0f07c62be1678a669d9ad86a",
+      "archive_bytes": 47687,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/driver-receipt.json",
+      "original_sha256": "080f8af1f6f1971a87d6f48ae4dbe689ee510232a57ae418a9411778f920bf3d",
+      "original_bytes": 2066,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/driver-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/driver-receipt.json.gz",
+      "archive_sha256": "15aaa421f8b3d11cfe045d16413e22cbd16ade9b3b694dec8b22878daae0ac3d",
+      "archive_bytes": 1030,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/cleanup.txt",
+      "original_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "archive_bytes": 81,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/container-name.txt",
+      "original_sha256": "6d4ef34f6307dffa6664a446265f33927d14bb469047fbd237c5df7fc2cf989f",
+      "original_bytes": 37,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/container-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/container-name.txt.gz",
+      "archive_sha256": "d7da0ee4eb2f14d692d1bf5a6cb8b15cb2d6c5ad9544d8d133337dc8a27658c0",
+      "archive_bytes": 57,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/ownership-label.txt",
+      "original_sha256": "9f064ad8da950b3098f4f21116770f240c72b01e19f34f1180d339c32dd7b858",
+      "original_bytes": 59,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/ownership-label.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/ownership-label.txt.gz",
+      "archive_sha256": "dbe7442007facdd83a1055a492d4557f42920ea9ecd5b8f33fdd4a42540c7ccf",
+      "archive_bytes": 79,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/containers-before-cleanup.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/containers-before-cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/containers-after.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/containers-after.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/cleanup-list-error.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/cleanup-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixture77-runtime",
+      "original_path": "/private/tmp/account-session-fixture77-79ea7942872e4a739b173b6262da919a/cleanup-final-list-error.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/fixture77-runtime/cleanup-final-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/fixture77-runtime/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "independent-reviews",
+      "original_path": "/private/tmp/account-session-fixture77-runtime-independent-review-fast.json",
+      "original_sha256": "9211577804eec3af870d283844a09b2ce7078be007ab3fbb1d7b089d1e8b48a9",
+      "original_bytes": 30877,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/independent-reviews/account-session-fixture77-runtime-independent-review-fast.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/independent-reviews/account-session-fixture77-runtime-independent-review-fast.json.gz",
+      "archive_sha256": "701e41e1f644ee07db408118287822b04093cdd59340a790251bf609ae007d59",
+      "archive_bytes": 4622,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "npm-fast-local-permissions",
+      "original_path": "/private/tmp/account-session-f96eddd3-npm-verify-local-permissions.log",
+      "original_sha256": "4fb45c1a03c587d8f25a5887130893ac8490e6d94f96200a7247c615cf3db4e4",
+      "original_bytes": 595300,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/npm-fast-local-permissions/account-session-f96eddd3-npm-verify-local-permissions.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/npm-fast-local-permissions/account-session-f96eddd3-npm-verify-local-permissions.log.gz",
+      "archive_sha256": "24ba4ed351614b7ed7af3155d8fddc0ae35e94a2c9db061059b72845ba7aa180",
+      "archive_bytes": 116966,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "independent-reviews",
+      "original_path": "/private/tmp/account-session-npm-fast-independent-review-fast.json",
+      "original_sha256": "c8282c4f04dd4286231df4ecbec78bc892f398e31ce3c9ec6e600644f5fd1a45",
+      "original_bytes": 41945,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/independent-reviews/account-session-npm-fast-independent-review-fast.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/independent-reviews/account-session-npm-fast-independent-review-fast.json.gz",
+      "archive_sha256": "a836c332b0bf819d1180258bda70b76fd95d884f31bc317770c0bbb16cac5ed8",
+      "archive_bytes": 6136,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "execution",
+      "original_path": "/private/tmp/account-session-fixture77-fast-completed-execution-summary.json",
+      "original_sha256": "e0f541ee4e24d84757de0d72670cf0606059dfdcb5a840258a3a586f7e45dbb3",
+      "original_bytes": 6559,
+      "archive_candidate": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/execution/account-session-fixture77-fast-completed-execution-summary.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast/execution/account-session-fixture77-fast-completed-execution-summary.json.gz",
+      "archive_sha256": "6e7045b8c1397c66d380c7afeea7db10d0a4b63e3f504f753237d8575ea972e7",
+      "archive_bytes": 2637,
+      "byte_exact_decompression_verified": true
+    }
+  ],
+  "reused_committed_references": [
+    {
+      "git_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+      "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/manifest.json.gz",
+      "git_blob_oid": "f8c5b18758d38015de6907ae643b1c06ffaee53f",
+      "git_mode": "100644",
+      "archive_sha256": "257dd9a5b0ca646f5f4a2909d49e1b05bd9ac9ab82c24138c8db939ee2bfd082",
+      "archive_bytes": 3389,
+      "decompressed_sha256": "254c39a68a92088ee329785a83108c486fb8b2148b9145a4813616f532ed9f2a",
+      "decompressed_bytes": 7426,
+      "verified_gzip_from_exact_git_blob": true
+    },
+    {
+      "git_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+      "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/driver.sh.gz",
+      "git_blob_oid": "0c0b0fec8d8ec3c5e445ea0c8a603069c0c42bab",
+      "git_mode": "100644",
+      "archive_sha256": "e3eca19c48d5f611df50a4f8a0e6f48dca2275a1b7e2a183e82da3452bcada8c",
+      "archive_bytes": 4121,
+      "decompressed_sha256": "b96c9674a9e3c60ea657ad1a2469120fc1dac01d97875b9926b316b758e4185d",
+      "decompressed_bytes": 12045,
+      "verified_gzip_from_exact_git_blob": true
+    },
+    {
+      "git_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+      "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/probe.py.gz",
+      "git_blob_oid": "20eb9396939d2924d58fbc0a27d2dc8e38e98c39",
+      "git_mode": "100644",
+      "archive_sha256": "258f03ba207c2a4cdab6cde80671f9a151c5d11e37d2609e130b1b6a96d7509d",
+      "archive_bytes": 286,
+      "decompressed_sha256": "971fe03db86c5b3f276bd6fc95380b67e1efa8d78a0fe1fb878f979087e46093",
+      "decompressed_bytes": 416,
+      "verified_gzip_from_exact_git_blob": true
+    },
+    {
+      "git_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+      "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/validate-results.py.gz",
+      "git_blob_oid": "9c9d923198229582a6d453ef8c2a471c1a02e870",
+      "git_mode": "100644",
+      "archive_sha256": "9959ac62154a4075ce9116616b8dd7b26cb0db935fb89f3d412e0759fdf7ae86",
+      "archive_bytes": 2416,
+      "decompressed_sha256": "5fdd97fd980a69ec0b35a630abdd01fd40f2f8337609691d54579c385c657c8e",
+      "decompressed_bytes": 7224,
+      "verified_gzip_from_exact_git_blob": true
+    },
+    {
+      "git_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+      "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/postgres-map.json.gz",
+      "git_blob_oid": "af536ae87d2c4173dbbcdf1688598ca757a7aa88",
+      "git_mode": "100644",
+      "archive_sha256": "429ed4458d23c8532a3ec1fdf070a9b2053eeea7677b1a2afbf510d84323fc69",
+      "archive_bytes": 10999,
+      "decompressed_sha256": "2cc161fd8a747741306d0ac2149755df11c7825ce9ebd762669901fdc1fa7401",
+      "decompressed_bytes": 184116,
+      "verified_gzip_from_exact_git_blob": true
+    },
+    {
+      "git_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+      "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/fixture-roster.json.gz",
+      "git_blob_oid": "5b205222b85b043fb41ad0b9268d801a37be10ad",
+      "git_mode": "100644",
+      "archive_sha256": "2c4511db43b31686cb231d82a2c9e7fe46298349e569a4171863bee294ad9f88",
+      "archive_bytes": 10622,
+      "decompressed_sha256": "20762b55d61f3cfc150dbb633d4800a029503a01c6ff0062ff337bc924d1102b",
+      "decompressed_bytes": 67936,
+      "verified_gzip_from_exact_git_blob": true
+    },
+    {
+      "git_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+      "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/only.txt.gz",
+      "git_blob_oid": "fbcb88ec21bca7952ccc009afc31bff762d84aee",
+      "git_mode": "100644",
+      "archive_sha256": "3971dd1e568e3dd70bd6af90059f0e7e3d6d21ab3cf4d2fa276b58869db13ca2",
+      "archive_bytes": 787,
+      "decompressed_sha256": "f760d1d13595f913bb609fd975337f7c2e25f83964c14d5f59842cf28d3457a1",
+      "decompressed_bytes": 2279,
+      "verified_gzip_from_exact_git_blob": true
+    },
+    {
+      "git_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+      "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/selected.jsonl.gz",
+      "git_blob_oid": "ab62bcdbf086fc18e88c413b1521db6aa55faeae",
+      "git_mode": "100644",
+      "archive_sha256": "38ee2c68b42f795663616ad1245d706eed37c1dca3a72bdc3148e4141942f6be",
+      "archive_bytes": 1635,
+      "decompressed_sha256": "1d3a26339f16cca817c629e60ed03c874b6a8cbdfd03ff8ed68c88c3a684c8b4",
+      "decompressed_bytes": 16887,
+      "verified_gzip_from_exact_git_blob": true
+    },
+    {
+      "git_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+      "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/account-session-fixture77-independent-review-capture.json.gz",
+      "git_blob_oid": "706f707ba64780d2e63a69ac5b07ec7da36a9adb",
+      "git_mode": "100644",
+      "archive_sha256": "f9bb085cfacaeb260ef8e72e6d5ed6c791e97fa49107233b8199e03752782ee5",
+      "archive_bytes": 1435,
+      "decompressed_sha256": "94387cf84b2efff254eab82c3de68fca086aa6f792ac98eb2653f02d0009bb17",
+      "decompressed_bytes": 3928,
+      "verified_gzip_from_exact_git_blob": true
+    },
+    {
+      "git_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+      "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/source-index/source-git-bindings.json.gz",
+      "git_blob_oid": "68bab691aa37610d9cae91e8ceb909cf9583661a",
+      "git_mode": "100644",
+      "archive_sha256": "98d027edbd296cedb2779194e6d5ad4dca7096f10c494fb83a95a70f0726f45a",
+      "archive_bytes": 321645,
+      "decompressed_sha256": "5d29d860f15b1c816ad1cc945b3567d297670783855aef864b301f82efa61731",
+      "decompressed_bytes": 1312632,
+      "verified_gzip_from_exact_git_blob": true
+    },
+    {
+      "git_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+      "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/npm-default-sandbox/account-session-f96eddd3-npm-verify.log.gz",
+      "git_blob_oid": "f2c4de41a29f734b0db9085421ff539f66c6cd1c",
+      "git_mode": "100644",
+      "archive_sha256": "674a02a4569388fb75768f1584881e70d43aa19a8ac710881f1b4993991754bf",
+      "archive_bytes": 102522,
+      "decompressed_sha256": "2e5dd33276dd79543f843eb48a2decadf95e09eb4ef69980392d0d0bf9a38cc5",
+      "decompressed_bytes": 590952,
+      "verified_gzip_from_exact_git_blob": true
+    }
+  ],
+  "reused_committed_reference_count": 11,
+  "source_binding_reused_rows": 991,
+  "source_payload_copies": 0,
+  "classifications": {
+    "fixture77": "Completed77invocations381passed0failed0ignored0filtered at clean f96; bounded recorded owned-container absence; no volume/durability claim.",
+    "npm_fast": "Completed78fast steps at root-reported f96,root exit0 and raw final success; per-step counts,5ignored doctests,21explicit unmirroredCI-only entries.",
+    "prior_default_sandbox": "Retained as immutable old prerequisite-failure evidence via exactGit reference; not overwritten by newPASS."
+  },
+  "explicit_exclusions": [
+    "All unlisted neighbors and environment files.",
+    "Source code copies, caches, database/container/volume contents and credentials.",
+    "Active or forthcoming JWT protocol tests, implementations, runtimes and approval artifacts.",
+    "Hosted/release/production claims."
+  ],
+  "pre_mortem": "Mixing completed and active inputs or treating repeated suites as unique tests would overstate proof; mutable neighbors could leak unrelated state.",
+  "blast_radius": "17inert gzip payloads and finite hash/path manifest; existing204-file evidence history and source untouched.",
+  "detection": "Every named source and gzip size/hash, byte-exact roundtrip, exact Git blob reuse, fixture run source equality/results/exit/cleanup, npm finalPASS/per-step counts.",
+  "rollback": "Discard only unimported candidate if rejected; after root import preserve history using reviewed corrective evidence.",
+  "stop_conditions": [
+    "Source/hash/path mismatch.",
+    "Any active/unlisted input or source mutation.",
+    "Claims broader than exact receipts.",
+    "Capture review finding."
+  ],
+  "root_import_contract": [
+    "Verify exact allowlist hash and independently review17payloads plus11Git references.",
+    "Import only17listed gzip paths into new completed-fixture77-fast directory, with allowlist and independent/root review receipts.",
+    "Do not modify historical primary/supplement records; root performs serial exact readback."
+  ],
+  "execution_by_preparer": {
+    "runtime_tests": 0,
+    "cargo": 0,
+    "docker": 0,
+    "database": 0,
+    "repository_writes": 0
+  },
+  "remaining_holds": [
+    "Independent Capture review and root serial import/readback.",
+    "Full19123failures and later JWT work are separate.",
+    "Hosted CI/release/production authority remains separate."
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}
