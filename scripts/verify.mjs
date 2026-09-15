@@ -17,7 +17,7 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 const WORKFLOW = ".github/workflows/ci.yml";
 /**

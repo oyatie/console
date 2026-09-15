@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 import * as verifyModule from "./verify.mjs";
 

@@ -18,7 +18,7 @@ import {
   own,
   PROTOTYPE_CHAIN_KEYS,
 } from "./own-property.mjs";
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const cli = fileURLToPath(new URL("./check-request-body-contract.mjs", import.meta.url));
