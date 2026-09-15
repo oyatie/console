@@ -24,7 +24,7 @@ use console_payroll_domain::{
     ProfessionalReviewerKind, ProfessionalValidation, SeverancePayInput, build_severance_pay_draft,
     moel_retirement_pay_source, nhis_qualification_loss_form_source,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{
     Action, Feature, Principal, Role, authorize, authorize_capability, authorize_org_wide,
 };
@@ -97,16 +97,16 @@ const MAX_LIMIT: i64 = 1000;
 pub struct HrState {
     pool: PgPool,
     leave_command_store: Option<PgLeaveStore>,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl HrState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
         Self {
             pool,
             leave_command_store: None,
-            jwt_verifier,
+            session_verification,
         }
     }
 
@@ -118,7 +118,7 @@ impl HrState {
 }
 
 pub fn router(state: HrState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(EMPLOYEES_PATH, get(list_employees).post(create_employee))

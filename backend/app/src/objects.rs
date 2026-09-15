@@ -20,7 +20,7 @@ use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
     UserId,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{
     AuthorizationResource, Feature, PermissionLevel, Principal, permission_for,
 };
@@ -176,18 +176,21 @@ const ID_MAX: usize = 200;
 #[derive(Debug, Clone)]
 pub struct ObjectState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl ObjectState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
-        Self { pool, jwt_verifier }
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            pool,
+            session_verification,
+        }
     }
 }
 
 pub fn router(state: ObjectState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(

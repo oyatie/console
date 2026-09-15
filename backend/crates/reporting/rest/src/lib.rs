@@ -10,7 +10,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use console_kernel_core::{BranchId, ErrorKind, KernelError, RegionId, TraceContext, UserId};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{
     Action, Feature, Principal, authorize, authorize_capability, authorize_org_wide,
 };
@@ -52,21 +52,24 @@ const OPS_TOP_MECHANICS: u32 = 10;
 #[derive(Debug, Clone)]
 pub struct KpiRestState {
     repository: PgKpiRepository,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl KpiRestState {
     #[must_use]
-    pub fn new(repository: PgKpiRepository, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(
+        repository: PgKpiRepository,
+        session_verification: Option<SessionVerification>,
+    ) -> Self {
         Self {
             repository,
-            jwt_verifier,
+            session_verification,
         }
     }
 }
 
 pub fn router(state: KpiRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.repository.pool().clone();
     let router = Router::new()
         .route(KPI_PATH, get(get_kpis))
@@ -485,7 +488,7 @@ async fn principal_from_headers(
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
     let verifier = state
-        .jwt_verifier
+        .session_verification
         .as_ref()
         .ok_or_else(|| RestError::unavailable("JWT verification is not configured for KPI API"))?;
     console_platform_request_context::resolve_principal(verifier, state.repository.pool(), headers)
@@ -497,6 +500,9 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for KPI API")
         }

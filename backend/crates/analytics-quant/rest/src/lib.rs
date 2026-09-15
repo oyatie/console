@@ -17,7 +17,7 @@ use axum::routing::post;
 use axum::{Json, Router};
 use console_analytics_quant_service::{ProjectionRequest, ProjectionResult, SeriesKind, project};
 use console_kernel_core::{ErrorKind, KernelError};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_capability};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
@@ -33,20 +33,27 @@ pub const ANALYTICS_QUANT_ROUTE_PATHS: &[&str] = &[PROJECTION_PATH];
 #[derive(Debug, Clone)]
 pub struct AnalyticsQuantState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl AnalyticsQuantState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
-        Self { pool, jwt_verifier }
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            pool,
+            session_verification,
+        }
     }
 }
 
 /// Build the analytics-quant router, auth-wrapped.
 pub fn router(state: AnalyticsQuantState) -> Router {
     let router = Router::new().route(PROJECTION_PATH, post(post_projection));
-    console_platform_request_context::with_request_context(router, state.jwt_verifier, state.pool)
+    console_platform_request_context::with_request_context(
+        router,
+        state.session_verification,
+        state.pool,
+    )
 }
 
 /// Request body for the projection endpoint.

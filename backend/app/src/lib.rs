@@ -94,8 +94,9 @@ use console_payroll_rest::PayrollRestState;
 use console_platform_audit_chain::{ChainReport, SealConfig, SealSigner, verify_org_chain};
 use console_platform_auth::{
     AccessClaims, AndroidAssetLinksConfig, AppleAppSiteAssociationConfig, JwtIssuer, JwtSettings,
-    JwtVerifier, PasskeyService, WELL_KNOWN_AASA_PATH, WELL_KNOWN_ASSETLINKS_PATH,
-    WebauthnSettings, android_assetlinks_json, apple_app_site_association_json,
+    JwtVerifier, PasskeyService, SessionVerification, WELL_KNOWN_AASA_PATH,
+    WELL_KNOWN_ASSETLINKS_PATH, WebauthnSettings, android_assetlinks_json,
+    apple_app_site_association_json,
 };
 use console_platform_auth_rest::{AuthRestConfig, AuthRestState};
 use console_platform_authz::{
@@ -885,7 +886,7 @@ impl AppConfig {
         let auth_database_url = non_empty(vars.get("AUTH_DATABASE_URL"));
         if role == AppRole::Api
             && database_url.is_some()
-            && auth_rest.is_some()
+            && jwt.is_some()
             && auth_database_url.is_none()
         {
             return Err(AppError::Config(
@@ -1615,6 +1616,22 @@ impl AppState {
         self
     }
 
+    /// Bind an explicitly supplied Auth transport to the existing PostgreSQL
+    /// composition. This performs no connection or admission; serving startup
+    /// validates the transport in `from_config`.
+    #[must_use]
+    pub fn with_auth_database(mut self, pool: PgPool) -> Self {
+        self.auth_rest = self.auth_rest.map(|state| state.with_auth_database(pool));
+        self
+    }
+
+    fn session_verification(&self) -> Option<SessionVerification> {
+        Some(SessionVerification::new(
+            self.jwt_verifier.clone()?,
+            self.auth_rest.as_ref()?.auth_database()?.clone(),
+        ))
+    }
+
     #[must_use]
     pub fn with_platform_force_command_database(mut self, pool: PgPool) -> Self {
         self.platform_force_command_database = DatabaseDependency::Postgres(pool);
@@ -1703,7 +1720,7 @@ impl AppState {
             _ => DatabaseDependency::NotConfigured,
         };
 
-        let auth_database = match (config.role, &database, config.auth_rest.as_ref()) {
+        let auth_database = match (config.role, &database, config.jwt.as_ref()) {
             (AppRole::Api, DatabaseDependency::Postgres(business), Some(_)) => {
                 let url = config.auth_database_url.as_deref().ok_or_else(|| {
                     AppError::Config("AUTH_DATABASE_URL is required for API authentication".into())
@@ -3234,6 +3251,7 @@ fn tenant_config_seeder(store: PgOntologyStore) -> console_platform_rest::Tenant
 }
 
 pub fn build_router(state: AppState) -> Router {
+    let session_verification = state.session_verification();
     // The base router carries NO cross-cutting layers here. Per axum's `merge`
     // semantics, any layer applied to a router *before* it is merged with the
     // domain routers wraps only the base routes, not the merged-in ones â which
@@ -3331,52 +3349,52 @@ pub fn build_router(state: AppState) -> Router {
                     .route(AUDIT_ROUTE_PATH, get(audit_log))
                     .route("/api/v1/audit/attestation", get(audit_attestation))
                     .with_state(state.clone()),
-                state.jwt_verifier.clone(),
+                session_verification.clone(),
                 pool.clone(),
             );
             let domain_router = audit_router
                 .merge(console_telemetry::router(
                     console_telemetry::ConsoleTelemetryState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     ),
                 ))
                 .merge(console_dispatch_rest::router(DispatchRestState::new(
                     dispatch_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                     state.config.dispatch_timers,
                     state.dispatch_job_queue.clone(),
                     state.push_notifier.clone(),
                 )))
                 .merge(console_logistics_rest::router(LogisticsRestState::new(
                     logistics_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_attendance_rest::router(AttendanceRestState::new(
                     PgAttendanceStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_inventory_rest::router(InventoryRestState::new(
                     PgInventoryStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_equipment_rest::router(EquipmentRestState::new(
                     PgEquipment3rStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_financial_rest::router(
-                    FinancialRestState::new(financial_store, state.jwt_verifier.clone())
+                    FinancialRestState::new(financial_store, session_verification.clone())
                         .with_passkey_step_up(state.policy_step_up.clone())
                         .with_purchase_attachment_storage(state.sales_media_storage.clone()),
                 ))
                 .merge(console_inspection_rest::router(InspectionRestState::new(
                     inspection_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_support_rest::router({
                     let mut support_state = SupportRestState::new(
                         support_store,
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                         state.push_notifier.clone(),
                     );
                     if let Some(storefront_org) = state.config.storefront_org {
@@ -3385,79 +3403,79 @@ pub fn build_router(state: AppState) -> Router {
                     support_state
                 }))
                 .merge(console_identity_rest::router(
-                    IdentityRestState::new(org_store, state.jwt_verifier.clone())
+                    IdentityRestState::new(org_store, session_verification.clone())
                         .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
                 .merge(console_compliance_rest::router(ComplianceRestState::new(
                     compliance_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_integrity::router(IntegrityRestState::new(
                     integrity_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_registry_rest::router(
-                    RegistryRestState::new(registry_store, state.jwt_verifier.clone())
+                    RegistryRestState::new(registry_store, session_verification.clone())
                         .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
                 .merge(hr::router({
-                    let hr_state = hr::HrState::new(pool.clone(), state.jwt_verifier.clone());
+                    let hr_state = hr::HrState::new(pool.clone(), session_verification.clone());
                     hr_state.with_leave_command_store(leave_store.clone())
                 }))
                 .merge(console_recruiting_rest::router(RecruitingRestState::new(
                     PgRecruitingStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_evaluation_rest::router(EvaluationRestState::new(
                     evaluation_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // The hire handshake stays app-level: it shares one transaction
                 // with the HR-owned employee-creation core (see recruiting_hire).
                 .merge(recruiting_hire::router(
                     recruiting_hire::RecruitingHireState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
-                        hr::HrState::new(pool.clone(), state.jwt_verifier.clone())
+                        session_verification.clone(),
+                        hr::HrState::new(pool.clone(), session_verification.clone())
                             .with_leave_command_store(leave_store.clone()),
                     ),
                 ))
                 .merge(workflow_studio::router(
                     workflow_studio::WorkflowStudioState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     )
                     .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
                 .merge(workflow_object_context::router(
                     workflow_object_context::WorkflowObjectContextState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     ),
                 ))
                 .merge(collaboration::router(
                     collaboration::CollaborationState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     )
                     .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
                 .merge(action_inbox::router(action_inbox::ActionInboxState::new(
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(workbench::router(workbench::WorkbenchState::new(
                     Arc::new(workbench_native::NativeWorkbenchReaders::new(pool.clone())),
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(objects::router(objects::ObjectState::new(
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(lifecycle::router(lifecycle::LifecycleState::new(
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(office::router({
                     // Reuse the already-configured SeaweedFS handle (evidence /
@@ -3471,14 +3489,14 @@ pub fn build_router(state: AppState) -> Router {
                     };
                     office::OfficeState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                         state.config.office.clone(),
                         office_blobs,
                     )
                 }))
                 .merge(console_sales_rest::router({
                     let mut sales_state =
-                        SalesRestState::new(sales_store, state.jwt_verifier.clone());
+                        SalesRestState::new(sales_store, session_verification.clone());
                     if let Some(storefront_org) = state.config.storefront_org {
                         sales_state = sales_state.with_storefront_org(storefront_org);
                     }
@@ -3489,10 +3507,10 @@ pub fn build_router(state: AppState) -> Router {
                 }))
                 .merge(console_reporting_rest::router(KpiRestState::new(
                     kpi_repository,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_workorder_rest::router(
-                    WorkOrderRestState::new(work_order_store.clone(), state.jwt_verifier.clone())
+                    WorkOrderRestState::new(work_order_store.clone(), session_verification.clone())
                         .with_workflow_runtime(Some(
                             console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore::new(
                                 pool.clone(),
@@ -3503,7 +3521,7 @@ pub fn build_router(state: AppState) -> Router {
                     MobileRestState::new(
                         pool.clone(),
                         work_order_store,
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                         state.evidence_storage.clone(),
                     )
                     .with_passkey_step_up(state.policy_step_up.clone())
@@ -3516,17 +3534,17 @@ pub fn build_router(state: AppState) -> Router {
                 ))
                 .merge(console_facilities_rest::router(FacilitiesRestState::new(
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_production_rest::router(
-                    ProductionRestState::new(pool.clone(), state.jwt_verifier.clone())
+                    ProductionRestState::new(pool.clone(), session_verification.clone())
                         .with_service_principal_hmac_key(
                             state.config.production_service_principal_hmac_key,
                         ),
                 ))
                 .merge(console_messenger_rest::router(MessengerRestState::new(
                     messenger_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // Evidence-objects console surface (custody / fixity-verify /
                 // legal-hold). The fixity check HEADs the WORM (replica) bucket;
@@ -3544,18 +3562,18 @@ pub fn build_router(state: AppState) -> Router {
                         .as_ref()
                         .map(|(_, bucket)| bucket.clone())
                         .unwrap_or_default(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_notifications_rest::router(
                     NotificationRestState::new(
                         notification_store.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     ),
                 ))
                 .merge(console_inbox_rest::router(
                     InboxRestState::new(
                         PgInboxStore::new(pool.clone()),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     )
                     .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
@@ -3565,20 +3583,20 @@ pub fn build_router(state: AppState) -> Router {
                 .merge(console_leave_rest::router(
                     console_leave_rest::LeaveRestState::new(
                         leave_store,
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     ),
                 ))
                 .merge(console_benefit_rest::router(BenefitRestState::new(
                     benefit_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_consulting_rest::router(ConsultingRestState::new(
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_todos_rest::router(TodoRestState::new(
                     todo_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // Webmail (`/api/v1/mail/*`). The router ALWAYS mounts so the
                 // OpenAPI paths exist and the app boots without the master key;
@@ -3595,7 +3613,7 @@ pub fn build_router(state: AppState) -> Router {
                     CommsRestState::new(
                         PgMailStore::new(pool.clone()),
                         state.mail_cipher.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     )
                     .with_attachments(mail_attachment_store(&state))
                     .with_mox_transport(state.config.mail_mox_base_url.clone())
@@ -3609,23 +3627,23 @@ pub fn build_router(state: AppState) -> Router {
                         ontology_registry_store.clone(),
                         ontology_instance_store,
                         governance_store.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     )
                     .with_projected_dispatch(projected_dispatch_registry(pool.clone())),
                 ))
                 .merge(console_governance_rest::router(GovernanceRestState::new(
                     governance_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // Org-change lifecycle engine (조직 개편 결재): draft → preflight
                 // → ordered SoD approval → effective-dated apply (§15/§16).
                 .merge(console_orgchange_rest::router(OrgChangeRestState::new(
                     PgOrgChangeStore::new(pool.clone())
                         .with_employment_transfer(std::sync::Arc::new(PgEmploymentTransferPort)),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_platform_authz_rest::router(
-                    CedarPolicyRestState::new(cedar_policy_store, state.jwt_verifier.clone()),
+                    CedarPolicyRestState::new(cedar_policy_store, session_verification.clone()),
                 ))
                 // Notice board (사내 게시판): publish snapshots recipients into
                 // `notice_receipts` and fans out one notification per recipient
@@ -3634,21 +3652,21 @@ pub fn build_router(state: AppState) -> Router {
                 .merge(console_notices_rest::router(NoticeRestState::new(
                     PgNoticeStore::new(pool.clone())
                         .with_notification_sink(Arc::new(notification_store.clone())),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // Accounting GL vouchers (전표): create/submit/approve/post/reverse.
                 .merge(console_finance_gl_rest::router(FinanceGlRestState::new(
                     PgVoucherStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // Payroll draft-run visibility (admin org-wide + self payslips).
                 .merge(console_payroll_rest::router(PayrollRestState::new(
                     PgPayrollStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // Deterministic statistical projection (read-only, stateless).
                 .merge(console_analytics_quant_rest::router(
-                    AnalyticsQuantState::new(pool.clone(), state.jwt_verifier.clone()),
+                    AnalyticsQuantState::new(pool.clone(), session_verification.clone()),
                 ));
             // READ-ONLY WALL for PLATFORM "view as": wrap the WHOLE tenant
             // domain router so any request carrying a `view_as` token may use
@@ -3680,7 +3698,7 @@ pub fn build_router(state: AppState) -> Router {
             let platform_router = console_platform_rest::router(
                 PlatformRestState::new(
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                     PlatformProvisioner::new(state.config.coldstart_otp_ttl),
                 )
                 .with_view_as_issuer(state.view_as_issuer.clone())
@@ -3729,7 +3747,7 @@ pub fn build_router(state: AppState) -> Router {
             // lifetime (a task-local would not survive the upgrade anyway).
             timed.merge(console_platform_realtime::router(RealtimeRestState::new(
                 realtime_hub,
-                state.jwt_verifier.clone(),
+                session_verification.clone(),
             )))
         }
         DatabaseDependency::NotConfigured => router,
@@ -3795,9 +3813,10 @@ async fn compose_ui_screens(
     state: &AppState,
     headers: &HeaderMap,
 ) -> console_payroll_ui::ShippingScreens {
-    let (org_entities, people, runs, floors) = match (&state.database, &state.jwt_verifier) {
+    let (org_entities, people, runs, floors) = match (&state.database, state.session_verification())
+    {
         (DatabaseDependency::Postgres(pool), Some(verifier)) => {
-            let floors = ui_listing_floors(verifier, pool, headers).await;
+            let floors = ui_listing_floors(&verifier, pool, headers).await;
             let org = OrgChangeRestState::new(
                 PgOrgChangeStore::new(pool.clone()),
                 Some(verifier.clone()),
@@ -3858,7 +3877,7 @@ impl UiListingFloors {
 /// empty from omit. Listing failure stays collapsed until those helpers return
 /// a Result (rest crates are outside this lane).
 async fn ui_listing_floors(
-    verifier: &JwtVerifier,
+    verifier: &SessionVerification,
     pool: &PgPool,
     headers: &HeaderMap,
 ) -> UiListingFloors {
@@ -3983,7 +4002,7 @@ async fn readyz(State(state): State<AppState>) -> impl IntoResponse {
     let database = readiness_dependency_status(&state.database, "runtime").await;
     let command_databases_required = state.config.role == AppRole::Api
         && matches!(state.database, DatabaseDependency::Postgres(_));
-    let auth_ready = if command_databases_required && state.config.auth_rest.is_some() {
+    let auth_ready = if command_databases_required && state.config.jwt.is_some() {
         let dependency = state
             .auth_rest
             .as_ref()

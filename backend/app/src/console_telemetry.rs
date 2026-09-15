@@ -11,7 +11,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use axum::{Extension, Json, Router};
 use console_kernel_core::OrgId;
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::Principal;
 use console_platform_db::{DbError, with_org_conn};
 use console_platform_request_context::{current_org, with_request_context};
@@ -27,18 +27,21 @@ const MAX_DURATION_MS: i32 = 600_000;
 #[derive(Clone)]
 pub struct ConsoleTelemetryState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl ConsoleTelemetryState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
-        Self { pool, jwt_verifier }
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            pool,
+            session_verification,
+        }
     }
 }
 
 pub fn router(state: ConsoleTelemetryState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(CONSOLE_ROUTE_TELEMETRY_PATH, post(record_route_telemetry))
@@ -274,8 +277,18 @@ impl From<sqlx::Error> for TelemetryError {
 }
 
 impl From<console_platform_request_context::RequestContextError> for TelemetryError {
-    fn from(_: console_platform_request_context::RequestContextError) -> Self {
+    fn from(err: console_platform_request_context::RequestContextError) -> Self {
         tracing::error!("console route telemetry request context error");
+        if matches!(
+            err,
+            console_platform_request_context::RequestContextError::SessionVerificationUnavailable
+        ) {
+            return Self::new(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "unavailable",
+                "session verification unavailable",
+            );
+        }
         Self::new(
             StatusCode::INTERNAL_SERVER_ERROR,
             "internal",

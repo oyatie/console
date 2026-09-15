@@ -13,7 +13,7 @@ use axum::{Json, Router};
 use console_kernel_core::{
     AuditAction, AuditEvent, BranchScope, ErrorKind, KernelError, OrgId, UserId,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_db::{DbError, with_audits, with_org_conn};
 use console_platform_request_context::{RequestContextError, current_audit_context, current_org};
@@ -50,16 +50,19 @@ pub const CONSULTING_ROUTE_PATHS: &[&str] = &[
 #[derive(Clone)]
 pub struct ConsultingRestState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 impl ConsultingRestState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
-        Self { pool, jwt_verifier }
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            pool,
+            session_verification,
+        }
     }
 }
 pub fn router(state: ConsultingRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(
@@ -891,7 +894,7 @@ async fn principal(
     state: &ConsultingRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -915,6 +918,11 @@ fn rest_error_from_request_context(error: RequestContextError) -> RestError {
             "token is not authorized for consulting",
         )),
         RequestContextError::AccessScope(error) => RestError::kernel(error),
+        RequestContextError::SessionVerificationUnavailable => RestError::new(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "unavailable",
+            "session verification unavailable",
+        ),
         RequestContextError::VerifierUnavailable => RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
