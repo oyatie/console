@@ -415,41 +415,19 @@ fn mark_org_column(
 }
 
 fn org_column_definition_has_not_null(statement: &str) -> bool {
-    let lower = statement.to_ascii_lowercase();
-    let mut search_from = 0usize;
-
-    while let Some(relative) = lower[search_from..].find("org_id") {
-        let start = search_from + relative;
-        let end = start + "org_id".len();
-        if !identifier_boundaries(&lower, start, end) {
-            search_from = end;
-            continue;
+    let tokens = tokenize_sql(statement);
+    tokens.iter().enumerate().any(|(index, token)| {
+        if token != "org_id" {
+            return false;
         }
-
-        let tail = &lower[end..];
-        let clause_end = tail.find([',', ')', ';']).unwrap_or(tail.len());
-        let clause_tokens = tokenize_sql(&tail[..clause_end]);
-        if tokens_contain_sequence(&clause_tokens, &["not", "null"])
-            || tokens_contain_sequence(&clause_tokens, &["primary", "key"])
-        {
-            return true;
-        }
-        search_from = end;
-    }
-
-    false
-}
-
-fn identifier_boundaries(sql: &str, start: usize, end: usize) -> bool {
-    let before_ok = sql[..start]
-        .chars()
-        .next_back()
-        .is_none_or(|ch| !ch.is_ascii_alphanumeric() && ch != '_');
-    let after_ok = sql[end..]
-        .chars()
-        .next()
-        .is_none_or(|ch| !ch.is_ascii_alphanumeric() && ch != '_');
-    before_ok && after_ok
+        let tail = &tokens[index + 1..];
+        let end = tail
+            .iter()
+            .position(|token| token == "," || token == ")")
+            .unwrap_or(tail.len());
+        tokens_contain_sequence(&tail[..end], &["not", "null"])
+            || tokens_contain_sequence(&tail[..end], &["primary", "key"])
+    })
 }
 
 /// `ALTER TABLE [IF EXISTS] <name>` → the target table.
@@ -592,7 +570,8 @@ fn extract_array_string_literals(raw: &str) -> Vec<String> {
         for ch in region.chars() {
             if ch == '\'' {
                 if in_quote {
-                    let normalized = literal.trim().to_ascii_lowercase();
+                    // format(%I) quotes one exact identifier, including dots or case.
+                    let normalized = normalize_identifier(&literal);
                     if !normalized.is_empty() {
                         out.push(normalized);
                     }
@@ -675,14 +654,28 @@ fn check_owner_only_table_grants(file: &Path, sanitized: &str, result: &mut Gate
         if tokens.first().is_none_or(|token| token != "grant") {
             continue;
         }
-        let grants_to_runtime = tokens
-            .windows(2)
-            .any(|w| w[0] == "to" && (w[1] == "console_rt" || w[1] == "public"));
-        if !grants_to_runtime {
+        let Some(on) = tokens.iter().position(|token| token == "on") else {
+            continue;
+        };
+        let Some(to) = tokens
+            .iter()
+            .enumerate()
+            .skip(on + 1)
+            .find_map(|(index, token)| (token == "to").then_some(index))
+        else {
+            continue;
+        };
+        if !tokens[to + 1..]
+            .iter()
+            .any(|token| token == "console_rt" || token == "public")
+        {
             continue;
         }
+        // Only relation targets belong to this check, not privilege column
+        // lists before ON or similarly named roles after TO.
+        let targets = &tokens[on + 1..to];
         for table in &owner_only {
-            if tokens.iter().any(|token| token == table) {
+            if targets.iter().any(|token| token == table) {
                 result.violations.push(Violation {
                     kind: ViolationKind::OwnerOnlyTableGrant,
                     file: file.to_path_buf(),
@@ -958,13 +951,21 @@ fn sanitize_sql(content: &str) -> String {
             continue;
         }
         if in_double_quote {
-            if b == b'"' {
-                in_double_quote = false;
-                output.push(' ');
-            } else {
-                output.push((b as char).to_ascii_lowercase());
+            // Identifier spelling is semantic: quoted case and literal dots
+            // must survive for the shared tokenizer to distinguish tables.
+            let Some(ch) = content[index..].chars().next() else {
+                break;
+            };
+            output.push(ch);
+            index += ch.len_utf8();
+            if ch == '"' {
+                if next == Some(b'"') {
+                    output.push('"');
+                    index += 1;
+                } else {
+                    in_double_quote = false;
+                }
             }
-            index += 1;
             continue;
         }
 
@@ -990,7 +991,7 @@ fn sanitize_sql(content: &str) -> String {
             index += 1;
         } else if b == b'"' {
             in_double_quote = true;
-            output.push(' ');
+            output.push('"');
             index += 1;
         } else {
             output.push((b as char).to_ascii_lowercase());
@@ -1027,31 +1028,72 @@ fn dollar_quote_tag_at(content: &str, start: usize) -> Option<String> {
 }
 
 fn tokenize_sql(statement: &str) -> Vec<String> {
-    let mut tokens = Vec::new();
-    let mut current = String::new();
-
-    for ch in statement.chars() {
-        if ch.is_ascii_alphanumeric() || ch == '_' {
-            current.push(ch);
-        } else if !current.is_empty() {
-            tokens.push(normalize_identifier(&current));
-            current.clear();
+    let mut atoms = Vec::new();
+    let mut chars = statement.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch == '"' {
+            let mut identifier = String::new();
+            while let Some(next) = chars.next() {
+                if next == '"' {
+                    if chars.peek() == Some(&'"') {
+                        chars.next();
+                        identifier.push('"');
+                    } else {
+                        break;
+                    }
+                } else {
+                    identifier.push(next);
+                }
+            }
+            atoms.push(normalize_identifier(&identifier));
+        } else if ch.is_ascii_alphanumeric() || ch == '_' {
+            let mut identifier = String::from(ch);
+            while let Some(next) = chars.next_if(|c| c.is_ascii_alphanumeric() || *c == '_') {
+                identifier.push(next);
+            }
+            atoms.push(identifier.to_ascii_lowercase());
+        } else if matches!(ch, '.' | ',' | '(' | ')') {
+            atoms.push(ch.to_string());
         }
     }
-    if !current.is_empty() {
-        tokens.push(normalize_identifier(&current));
-    }
 
+    let mut tokens = Vec::new();
+    let mut index = 0;
+    while index < atoms.len() {
+        let mut identifier = atoms[index].clone();
+        index += 1;
+        let mut qualified = false;
+        while atoms.get(index).is_some_and(|atom| atom == ".") && index + 1 < atoms.len() {
+            qualified = true;
+            identifier.push('.');
+            identifier.push_str(&atoms[index + 1]);
+            index += 2;
+        }
+        // This migration gate's unqualified tables inhabit public. Preserve
+        // other schemas and quoted components; never erase arbitrary prefixes.
+        if qualified && let Some(table) = identifier.strip_prefix("public.") {
+            tokens.push(table.to_owned());
+        } else {
+            tokens.push(identifier);
+        }
+    }
     tokens
 }
 
+/// Canonical SQL spelling for one quoted identifier component. Lowercase plain
+/// identifiers coincide with their unquoted spelling; all other names retain
+/// quotes so e.g. "public.accounts" cannot alias public.accounts.
 fn normalize_identifier(identifier: &str) -> String {
-    identifier
-        .trim_matches(|ch: char| !ch.is_ascii_alphanumeric() && ch != '_')
-        .rsplit('.')
-        .next()
-        .unwrap_or("")
-        .to_ascii_lowercase()
+    if !identifier.is_empty()
+        && identifier
+            .chars()
+            .all(|ch| ch.is_ascii_lowercase() || ch.is_ascii_digit() || ch == '_')
+        && !identifier.starts_with(|ch: char| ch.is_ascii_digit())
+    {
+        identifier.to_owned()
+    } else {
+        format!("\"{}\"", identifier.replace('"', "\"\""))
+    }
 }
 
 fn path_ends_with_repo_relative(file: &Path, repo_relative: &str) -> bool {
