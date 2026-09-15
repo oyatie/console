@@ -1338,7 +1338,7 @@ export function evaluateActionPinChecks(
 export function evaluateWorkflowHardeningChecks(readText) {
   const result = createResult();
   const productionHardeningTestCommand =
-    "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs scripts/check-image-release-workflow.test.mjs";
+    "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs scripts/check-image-release-workflow.test.mjs scripts/account-custody-orchestration.test.mjs scripts/lib/dev-account-custody.test.mjs";
   const ciPath = ".github/workflows/ci.yml";
   const securityPath = ".github/workflows/security.yml";
   const imageReleasePath = ".github/workflows/image-release.yml";
