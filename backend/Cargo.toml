@@ -85,7 +85,7 @@ hex = "0.4.3"
 url = "2.5.8"
 bytes = "1.11.1"
 # Version verified live against crates.io 2026-06-12: jsonwebtoken 10.4.0.
-jsonwebtoken = { version = "10.4.0", default-features = false, features = ["rust_crypto", "use_pem"] }
+jsonwebtoken = { version = "11.0.0", default-features = false, features = ["rust_crypto", "use_pem"] }
 # apalis 1.0.0-rc.9, apalis-postgres 1.0.0-rc.8, apalis-sql 1.0.0-rc.9.
 # No stable apalis 1.0.0 release was available at verification time.
 apalis = { version = "=1.0.0-rc.9" }
@@ -97,7 +97,7 @@ calamine = { version = "0.35.0", features = ["dates"] }
 # downloaded staging bytes are authoritative; the declared content_type is
 # advisory). Pure-Rust, no extra runtime binary. Version verified live against
 # crates.io 2026-06-23: infer 0.19.0.
-infer = { version = "0.19.0", default-features = false, features = ["std"] }
+infer = { version = "0.22.0", default-features = false, features = ["std"] }
 # Cron parsing/evaluation for workflow_schedules (BE-AUTO). Versions verified
 # live against crates.io 2026-07-08: croner 3.0.1, chrono 0.4.45,
 # chrono-tz 0.10.4 (croner evaluates over chrono types; chrono-tz supplies the
@@ -105,7 +105,7 @@ infer = { version = "0.19.0", default-features = false, features = ["std"] }
 # must mean 09:00 KST, not UTC). chrono was already in the lockfile
 # transitively; `time` stays the workspace-wide datetime type and chrono is
 # confined to the cron boundary.
-croner = "3.0.1"
+croner = "4.0.0"
 chrono = { version = "0.4.45", default-features = false, features = ["std"] }
 chrono-tz = "0.10.4"
 # Versions verified live against crates.io 2026-06-12:
@@ -151,7 +151,7 @@ lettre = { version = "0.11.22", default-features = false, features = [
 chacha20poly1305 = "0.10.1"
 secrecy = "0.10.3"
 zeroize = "1.9.0"
-base64 = "0.22.1"
+base64 = "0.23.1"
 subtle = "2.6.1"
 # SSRF guard for outbound webmail connections (B-mail-2). Versions verified live
 # against the crates.io index 2026-06-23: hickory-resolver 0.26.1 (latest
@@ -348,7 +348,7 @@ console-platform-test-support = { path = "crates/platform/test-support" }
 # is TRUE in production builds. Each fix was correct and each left a sibling
 # spelling live. Parsing Rust with the parser rustc's own ecosystem uses ends
 # the enumeration instead of extending it.
-syn = { version = "2.0.117", default-features = false, features = ["full", "parsing", "printing", "clone-impls", "visit"] }
+syn = { version = "3.0.5", default-features = false, features = ["full", "parsing", "printing", "clone-impls", "visit"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
