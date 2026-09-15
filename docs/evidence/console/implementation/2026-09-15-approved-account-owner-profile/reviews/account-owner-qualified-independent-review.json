@@ -1,0 +1,73 @@
+{
+  "reviewer": "/root/owner_privilege_review",
+  "status": "CORRECTION_SOURCE_REVIEW_PASS_RUNTIME_PENDING",
+  "candidate_sha": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+  "prior_candidate_sha": "773bac705a25e8e6903e0a3c41752080915d6946",
+  "scope": "Independent source/generated correction review only; no database, Cargo, source or test writes.",
+  "previous_review_error": {
+    "acknowledgment": "My prior static source PASS missed the PL/pgSQL lexical scope introduced when the canonical SELECT is embedded in the generated DO block. Generator byte identity proves faithful copying, not SQL name resolution in that execution context.",
+    "actual_failure": "SQLSTATE42702: column reference dormant is ambiguous between DECLARE dormant boolean and the unqualified scalar column SELECT dormant FROM column_acl_profiles.",
+    "impact": "The actual operator finalizer fails during the first authoritative state assignment before the new grant is installed. All37 projection tests failed; deeper behavior was not reached. This was a product implementation regression, not fixture/environment failure.",
+    "lesson_applied": "Review the shared query in every host execution context, including enclosing procedural variables. Do not treat static/generator checks as an executable finalizer guarantee."
+  },
+  "correction_conclusions": [
+    "Exact correction qualifies both column_acl_profiles scalar references. Column qualification resolves the collision with the enclosing dormant variable while preserving the intended CTE result.",
+    "The entire two-file diff equals only those two string qualifications: once per expression in canonical source and once in each of three generated copies. No profile predicates, grants, locks, function checks or control flow changed.",
+    "The generated operator declares state, relation_name, target_owner, populated, dormant, fence_present and expected_fence_body. The new scalar references are now fully qualified; alias declarations AS dormant do not read the PL/pgSQL variable. No additional unqualified variable reference was introduced by this patch.",
+    "All37 projection test bytes, generated migration ledger and generator source remain unchanged from773bac70. Prior source-review and runtime-failure records are retained, not rewritten.",
+    "Corrected source is suitable for the same retained executable37 probe; actual runtime GREEN remains pending."
+  ],
+  "blocking_source_findings": [],
+  "source_files": {
+    "backend/app/src/account_custody_state.sql": {
+      "sha256": "bbaa00932e808745070ebb866c7050d5f5544961a3e7158d0aa1da58be7c8899",
+      "bytes": 7038
+    },
+    "ops/postgres-finalize-account-custody.sql": {
+      "sha256": "eea1ef091ebdacf3fe537bee293a0e0eedf077ab0033bb87f37d617fe6e75c5c",
+      "bytes": 30290
+    }
+  },
+  "checks": {
+    "candidate_clean": true,
+    "generator_check": {
+      "command": "python3 ops/generate-account-custody.py --check",
+      "exit_code": 0
+    },
+    "exact_embedded_canonical_query_copies": 3,
+    "exact_qualification_only_diff": true,
+    "retained37_test_sha256": "82510bc9ac573be671efeac769d97d144a8ed256539909a12dd34178502fd9bc"
+  },
+  "preserved_failed_run": {
+    "path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6",
+    "driver_receipt": {
+      "sha256": "0ffba1c27de6e9b5d0941dee60b1580263872cecc7c9e9b172ead53315fe34c8",
+      "bytes": 1609
+    },
+    "indexed_artifact_hashes_validated": 13,
+    "source_pre_post_equal": true,
+    "discovered_and_executed": 37,
+    "passed": 0,
+    "failed": 37,
+    "ignored": 0,
+    "filtered_out": 109,
+    "probe_exit": 1,
+    "cleanup": "confirmed owned container absent via successful bounded docker ps -a",
+    "ambiguous_dormant_SQLSTATE42702_occurrences": 35
+  },
+  "prior_review_bindings": {
+    "/private/tmp/account-owner-approved-independent-review.json": {
+      "sha256": "22ebae0563de01911de666ba90dafe930f09d0bf277ded19624b5bb1f12d64b9",
+      "bytes": 9867
+    },
+    "/private/tmp/account-owner-approved-independent-review-773bac70.json": {
+      "sha256": "22ebae0563de01911de666ba90dafe930f09d0bf277ded19624b5bb1f12d64b9",
+      "bytes": 9867
+    }
+  },
+  "remaining_holds": [
+    "Root runtime37GREEN on corrected exactSHA",
+    "Retained lifecycle/startup outcome classification",
+    "No production exposure, HA/no-loss certification or formal information-flow proof claimed"
+  ]
+}

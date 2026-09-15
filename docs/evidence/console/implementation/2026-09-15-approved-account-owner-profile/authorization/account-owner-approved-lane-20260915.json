@@ -1,0 +1,36 @@
+[
+  {
+    "lane": "FP04-exact-owner-key-lock-profile",
+    "base_sha": "5661e3135ec58f566b4a451b9ec7c5242457d29c",
+    "owner": "/root",
+    "allow": [
+      "backend/app/src/account_custody_state.sql",
+      "ops/generate-account-custody.py",
+      "ops/postgres-finalize-account-custody.sql"
+    ],
+    "probe": "DOCKER_CONTEXT=colima-console-custody-20260914 python3 /private/tmp/account-fence37-probe.py",
+    "target": "Complete dormant or exact three-part owner profile; real Account FK execution and read-only projection",
+    "test_sha256": "82510bc9ac573be671efeac769d97d144a8ed256539909a12dd34178502fd9bc",
+    "guide": "Extend existing canonical acl_profiles: dormant sixempty tableACL/no columnentries; prepared finalowners+2selfSELECTtableACL+exactsingle selfnongrantable UPDATE(accounts.id) columnACL. Preserve all other effective serving-denials, schema0226 and atomic profile/function checks. Add guarded owner GRANT UPDATE(id) only in dormant transition, skip allGRANTs on prepared replay. Same37test command GREEN.",
+    "pre_mortem": "Insufficient FK key-share permission or accidental serving/extra-column write authority; partial-profile repair",
+    "blast_radius": "Only existing finalizer SQL installed by explicit operator; no Account activation or HTTP pool yet.",
+    "detection": "37real cases plus separate actualPG SELECT/REFERENCES/UPDATE(id) alternatives; columnACL/xmin snapshot and finalfaultsequence oracle",
+    "rollback": "Source revert isolated; never transfer Account custody to serving roles.",
+    "stop_conditions": [
+      "Table custody drift",
+      "Unexpected privilege",
+      "Unverified fixture cleanup",
+      "Test weakening"
+    ],
+    "reviewers": [
+      "/root/owner_privilege_review"
+    ],
+    "holds": [
+      "Auth pool wiring and all legacy auth refusal",
+      "Lifecycle activation and full credential conversion",
+      "Production/HA/no-loss claims",
+      "Simultaneous superuser removal of prepared ACLs and function cannot be distinguished from historical dormant-v1"
+    ],
+    "authorization": "/private/tmp/account-owner-approved-authorization-20260915.json"
+  }
+]
