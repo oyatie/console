@@ -267,7 +267,7 @@ async fn account_fence_projection_null_and_database_failure_never_return_false(p
 
 async fn projection_catalog(pool: &PgPool) -> Value {
     sqlx::query_scalar(
-        "SELECT jsonb_build_object('columns',(SELECT jsonb_agg(jsonb_build_object('relation',c.relname,'number',a.attnum,'name',a.attname,'acl',a.attacl,'xmin',a.xmin::text) ORDER BY c.relname,a.attnum) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')),'functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_legacy_fenced_v1'),'terms_guard_functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_terms_receipts_immutable_v1'),'terms_guard_triggers',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(t),'xmin',t.xmin::text) ORDER BY t.oid),'[]'::jsonb) FROM pg_catalog.pg_trigger t WHERE t.tgrelid='public.account_terms_release_receipts'::regclass AND NOT t.tgisinternal),'relations',(SELECT jsonb_agg(jsonb_build_object('name',c.relname,'xmin',c.xmin::text,'owner',c.relowner,'acl',c.relacl,'rls',c.relrowsecurity,'force',c.relforcerowsecurity) ORDER BY c.relname) FROM pg_catalog.pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')))"
+        "SELECT jsonb_build_object('columns',(SELECT jsonb_agg(jsonb_build_object('relation',c.relname,'number',a.attnum,'name',a.attname,'acl',a.attacl,'xmin',a.xmin::text) ORDER BY c.relname,a.attnum) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')),'functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_legacy_fenced_v1'),'terms_current_functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_terms_current_v1'),'terms_guard_functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_terms_receipts_immutable_v1'),'terms_guard_triggers',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(t),'xmin',t.xmin::text) ORDER BY t.oid),'[]'::jsonb) FROM pg_catalog.pg_trigger t WHERE t.tgrelid='public.account_terms_release_receipts'::regclass AND NOT t.tgisinternal),'relations',(SELECT jsonb_agg(jsonb_build_object('name',c.relname,'xmin',c.xmin::text,'owner',c.relowner,'acl',c.relacl,'rls',c.relrowsecurity,'force',c.relforcerowsecurity) ORDER BY c.relname) FROM pg_catalog.pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')))"
     ).fetch_one(pool).await.unwrap()
 }
 
@@ -606,6 +606,30 @@ async fn account_fence_projection_prepared_profile_has_only_two_exact_owner_read
     assert_eq!(
         column_acl,
         vec![
+            (
+                "account_terms_head".into(),
+                "id".into(),
+                "console_terms_owner".into(),
+                "console_terms_owner".into(),
+                "SELECT".into(),
+                false,
+            ),
+            (
+                "account_terms_head".into(),
+                "manifest_sha256".into(),
+                "console_terms_owner".into(),
+                "console_terms_owner".into(),
+                "SELECT".into(),
+                false,
+            ),
+            (
+                "account_terms_head".into(),
+                "revision".into(),
+                "console_terms_owner".into(),
+                "console_terms_owner".into(),
+                "SELECT".into(),
+                false,
+            ),
             (
                 "account_terms_release_receipts".into(),
                 "id".into(),
@@ -1337,4 +1361,304 @@ async fn account_fence_projection_missing_auth_grantee_refuses_wrong_execute_acl
         projection_custody_verdict(&pool).await,
         "account_custody.finalized"
     );
+}
+
+// Narrow public-terms metadata custody only. Reuse the actual operator, genuine
+// Auth LOGIN and existing TEST_ONLY terms/Account data fixtures.
+mod terms_current {
+    use super::*;
+    use crate::account_browser::{seed_terms, terms_reference_rows};
+
+    async fn current(pool: &PgPool) -> Vec<(Vec<u8>, i64)> {
+        sqlx::query_as("SELECT manifest_sha256,revision FROM public.account_terms_current_v1()")
+            .fetch_all(pool)
+            .await
+            .expect("TERMS_CURRENT_OWNER_PREREQUISITE: actual narrow reader must be installed")
+    }
+
+    async fn assert_profile(pool: &PgPool) {
+        let exact: bool = sqlx::query_scalar(
+            r#"SELECT
+              (SELECT count(*)=1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+                WHERE n.nspname='public' AND p.proname='account_terms_current_v1')
+              AND EXISTS(SELECT 1 FROM pg_catalog.pg_proc p
+                JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+                JOIN pg_catalog.pg_roles r ON r.oid=p.proowner
+                JOIN pg_catalog.pg_language l ON l.oid=p.prolang
+                WHERE n.nspname='public' AND p.proname='account_terms_current_v1'
+                  AND r.rolname='console_terms_owner' AND l.lanname='sql'
+                  AND p.prokind='f' AND p.prosecdef AND NOT p.proisstrict AND p.proretset
+                  AND NOT p.proleakproof AND p.provolatile='s' AND p.proparallel='u' AND p.prosupport=0
+                  AND p.pronargs=0 AND p.proargtypes=''::oidvector
+                  AND p.proallargtypes=ARRAY['pg_catalog.bytea'::regtype::oid,'pg_catalog.int8'::regtype::oid]
+                  AND p.proargmodes=ARRAY['t','t']::"char"[]
+                  AND p.proargnames=ARRAY['manifest_sha256','revision']::text[]
+                  AND p.provariadic=0 AND p.pronargdefaults=0 AND p.proargdefaults IS NULL
+                  AND p.prorettype='pg_catalog.record'::regtype AND p.probin IS NULL
+                  AND p.prosqlbody IS NULL AND p.protrftypes IS NULL
+                  AND p.prosrc='SELECT h.manifest_sha256,h.revision FROM public.account_terms_head AS h WHERE h.id=1'
+                  AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']::text[]
+                  AND p.proacl IS NOT NULL AND cardinality(p.proacl)=2
+                  AND (SELECT count(*)=2 AND count(DISTINCT a.grantee)=2 AND bool_and(
+                    a.grantor=p.proowner AND a.privilege_type='EXECUTE' AND NOT a.is_grantable
+                    AND a.grantee IN (p.proowner,(SELECT oid FROM pg_catalog.pg_roles WHERE rolname='console_auth_rt')))
+                    FROM pg_catalog.aclexplode(p.proacl) a))"#,
+        )
+        .fetch_one(pool)
+        .await
+        .unwrap();
+        assert!(
+            exact,
+            "exact reviewed terms reader signature/body/owner/config/ACL"
+        );
+        let columns: Vec<(String, String, String, String, bool)> = sqlx::query_as(
+            "SELECT c.attname::text,pg_catalog.pg_get_userbyid(a.grantor)::text,pg_catalog.pg_get_userbyid(a.grantee)::text,a.privilege_type,a.is_grantable FROM pg_catalog.pg_attribute c CROSS JOIN LATERAL pg_catalog.aclexplode(c.attacl) a WHERE c.attrelid='public.account_terms_head'::regclass ORDER BY c.attnum,a.grantee,a.privilege_type",
+        ).fetch_all(pool).await.unwrap();
+        let expected: Vec<_> = ["id", "manifest_sha256", "revision"]
+            .into_iter()
+            .map(|column| {
+                (
+                    column.into(),
+                    "console_terms_owner".into(),
+                    "console_terms_owner".into(),
+                    "SELECT".into(),
+                    false,
+                )
+            })
+            .collect();
+        assert!(
+            columns == expected,
+            "only three exact nondelegable owner column reads"
+        );
+        let broad: bool = sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_class c CROSS JOIN LATERAL pg_catalog.aclexplode(c.relacl) a WHERE c.oid='public.account_terms_head'::regclass)",
+        ).fetch_one(pool).await.unwrap();
+        assert!(!broad, "reader adds no table-wide grant");
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn exact_owner_projection_is_auth_only_and_read_only(pool: PgPool) {
+        prepare_http_database(&pool).await;
+        let auth = real_auth_pool(&pool).await;
+        assert!(current(&auth).await.is_empty());
+        assert_profile(&pool).await;
+        seed_terms(&pool).await;
+        let subject = UserId::new();
+        insert_account_fence(&pool, subject, "ACTIVE").await;
+        let before = terms_reference_rows(&pool).await;
+        let expected: (Vec<u8>, i64) = sqlx::query_as(
+            "SELECT manifest_sha256,revision FROM public.account_terms_head WHERE id=1",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(current(&auth).await == vec![expected]);
+        assert!(fenced(&auth, *subject.as_uuid()).await.unwrap());
+        for login in [
+            TestDatabaseLogin::Business,
+            TestDatabaseLogin::LeaveCommand,
+            TestDatabaseLogin::OntologyCommand,
+            TestDatabaseLogin::PlatformForceCommand,
+        ] {
+            let other = PgPool::connect(&login_test_database_url(&pool, login))
+                .await
+                .unwrap();
+            assert_privilege_denial(
+                sqlx::query("SELECT * FROM public.account_terms_current_v1()")
+                    .execute(&other)
+                    .await,
+            );
+        }
+        for statement in [
+            "SELECT manifest_sha256,revision FROM public.account_terms_head",
+            "SELECT approval_bytes FROM public.account_terms_release_receipts",
+            "UPDATE public.account_terms_head SET revision=revision WHERE false",
+            "DELETE FROM public.account_terms_head WHERE false",
+        ] {
+            assert_privilege_denial(
+                sqlx::query(sqlx::AssertSqlSafe(statement))
+                    .execute(&auth)
+                    .await,
+            );
+        }
+        assert!(terms_reference_rows(&pool).await == before);
+        assert_eq!(
+            projection_custody_verdict(&pool).await,
+            "account_custody.finalized"
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn populated_prior_finalized_upgrade_and_replay_preserve_exact_rows(pool: PgPool) {
+        prepare_http_database_staging(&pool).await;
+        use sha2::Digest as _;
+        let historical = include_str!("fixtures/account-custody-terms-guard-v3-7c599773.sql");
+        assert_eq!(
+            hex::encode(sha2::Sha256::digest(historical.as_bytes())),
+            "eb090fe7a67ba216097a0ec04672030116bf0550ba6772ac17d90e888f94f7ab"
+        );
+        sqlx::raw_sql(historical).execute(&pool).await.unwrap();
+        let auth = real_auth_pool(&pool).await;
+        seed_terms(&pool).await;
+        let subject = UserId::new();
+        insert_account_fence(&pool, subject, "ACTIVE").await;
+        assert!(fenced(&auth, *subject.as_uuid()).await.unwrap());
+        let before_rows = terms_reference_rows(&pool).await;
+        assert_eq!(before_rows["head"].as_array().unwrap().len(), 1);
+        assert_eq!(before_rows["receipts"].as_array().unwrap().len(), 1);
+        assert!(!before_rows["accounts"].as_array().unwrap().is_empty());
+        assert!(!before_rows["security"].as_array().unwrap().is_empty());
+        let before_catalog = projection_catalog(&pool).await;
+        assert!(before_catalog["terms_current_functions"] == json!([]));
+        assert_eq!(
+            projection_custody_verdict(&pool).await,
+            "account_custody.upgrade_required"
+        );
+        finalize_account_custody(&pool).await;
+        assert_profile(&pool).await;
+        assert_eq!(
+            projection_custody_verdict(&pool).await,
+            "account_custody.finalized"
+        );
+        assert_eq!(current(&auth).await.len(), 1);
+        assert!(terms_reference_rows(&pool).await == before_rows);
+        let installed = projection_catalog(&pool).await;
+        // Upgrade permits only the reviewed new routine and three head-column
+        // ACL/xmin changes. Preserve every original function/guard/table field.
+        let unchanged = |mut value: Value| {
+            value
+                .as_object_mut()
+                .unwrap()
+                .remove("terms_current_functions");
+            for column in value["columns"].as_array_mut().unwrap() {
+                if column["relation"] == "account_terms_head"
+                    && [json!(1), json!(2), json!(3)].contains(&column["number"])
+                {
+                    column.as_object_mut().unwrap().remove("acl");
+                    column.as_object_mut().unwrap().remove("xmin");
+                }
+            }
+            value
+        };
+        assert!(unchanged(before_catalog) == unchanged(installed.clone()));
+        finalize_account_custody(&pool).await;
+        assert!(
+            projection_catalog(&pool).await == installed,
+            "valid replay preserves the new helper too"
+        );
+        assert!(terms_reference_rows(&pool).await == before_rows);
+        assert!(fenced(&auth, *subject.as_uuid()).await.unwrap());
+    }
+
+    async fn assert_drift(pool: &PgPool, mutation: &'static str, verdict: &'static str) {
+        prepare_http_database(pool).await;
+        let auth = real_auth_pool(pool).await;
+        assert!(current(&auth).await.is_empty());
+        assert_profile(pool).await;
+        seed_terms(pool).await;
+        let subject = UserId::new();
+        insert_account_fence(pool, subject, "ACTIVE").await;
+        assert_eq!(current(&auth).await.len(), 1);
+        let rows = terms_reference_rows(pool).await;
+        let valid = projection_catalog(pool).await;
+        sqlx::raw_sql(sqlx::AssertSqlSafe(mutation))
+            .execute(pool)
+            .await
+            .unwrap();
+        let tampered = projection_catalog(pool).await;
+        assert!(
+            tampered != valid,
+            "fault must change actual helper or column metadata"
+        );
+        assert_eq!(projection_custody_verdict(pool).await, verdict);
+        let error = sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
+            .execute(pool)
+            .await
+            .expect_err("operator must reject drift without repair");
+        let database = error.as_database_error().expect("PostgreSQL drift refusal");
+        assert!(database.code().as_deref() == Some("P0001"));
+        assert!(
+            database.message() == verdict,
+            "same fixed operator/read-only drift code"
+        );
+        assert!(
+            projection_catalog(pool).await == tampered,
+            "refusal preserves all catalog bytes including helper"
+        );
+        assert!(
+            terms_reference_rows(pool).await == rows,
+            "refusal preserves all fixture data"
+        );
+        assert!(fenced(&auth, *subject.as_uuid()).await.unwrap());
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn body_drift_refuses_without_repair(pool: PgPool) {
+        assert_drift(&pool, "UPDATE pg_catalog.pg_proc SET prosrc='SELECT h.manifest_sha256,h.revision FROM public.account_terms_head AS h WHERE false' WHERE oid='public.account_terms_current_v1()'::regprocedure", "account_terms_current.definition_mismatch").await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn owner_drift_refuses_without_repair(pool: PgPool) {
+        assert_drift(
+            &pool,
+            "ALTER FUNCTION public.account_terms_current_v1() OWNER TO console_account_owner",
+            "account_terms_current.definition_mismatch",
+        )
+        .await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn public_execute_drift_refuses_without_repair(pool: PgPool) {
+        assert_drift(
+            &pool,
+            "GRANT EXECUTE ON FUNCTION public.account_terms_current_v1() TO PUBLIC",
+            "account_terms_current.definition_mismatch",
+        )
+        .await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn overload_drift_refuses_without_repair(pool: PgPool) {
+        assert_drift(&pool, "CREATE FUNCTION public.account_terms_current_v1(uuid) RETURNS boolean LANGUAGE sql AS 'SELECT false'", "account_terms_current.definition_mismatch").await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn missing_required_owner_column_refuses_without_repair(pool: PgPool) {
+        assert_drift(
+            &pool,
+            "REVOKE SELECT(revision) ON public.account_terms_head FROM console_terms_owner",
+            "account_custody.unexpected_privilege",
+        )
+        .await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn extra_owner_column_refuses_without_repair(pool: PgPool) {
+        assert_drift(
+            &pool,
+            "GRANT SELECT(release_receipt_ref) ON public.account_terms_head TO console_terms_owner",
+            "account_custody.unexpected_privilege",
+        )
+        .await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn auth_column_grant_refuses_without_repair(pool: PgPool) {
+        assert_drift(
+            &pool,
+            "GRANT SELECT(revision) ON public.account_terms_head TO console_auth_rt",
+            "account_custody.unexpected_privilege",
+        )
+        .await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn helper_missing_with_new_grants_refuses_without_repair(pool: PgPool) {
+        assert_drift(
+            &pool,
+            "DROP FUNCTION public.account_terms_current_v1()",
+            "account_terms_current.profile_mismatch",
+        )
+        .await;
+    }
 }

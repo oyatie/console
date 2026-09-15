@@ -1,0 +1,98 @@
+{
+  "kind": "TERMS_CURRENT_OWNER_CUSTODY_ACCEPTANCE_GUIDE",
+  "base_sha": "dba42d1ab50afae99163f7b591e5749933d5dd25",
+  "author": "/root/inventory_repair",
+  "status": "FROZEN_FOR_INDEPENDENT_REVIEW; no implementation or runtime evidence",
+  "authority": {
+    "approved_parent_design_test_receipt": "/private/tmp/account-terms-read-acceptance-v2-independent-review-capture.json",
+    "sha256": "ef598801048f3297646b1f2254e299c19b0c9d640d6e10e0bf1bd4d3de38e25c",
+    "root_direction": "Exact body/error codes and three-grant expectation extension confirmed during this task; test candidate still needs independent review before import."
+  },
+  "scope": "Narrow terms metadata helper, collective exact custody profile and historical populated upgrade. No HTTP tests duplicated; no credential/CompanyActor transition or publication authorization.",
+  "mechanical_contract": {
+    "signature": "public.account_terms_current_v1() RETURNS TABLE (manifest_sha256 bytea, revision bigint)",
+    "body": "SELECT h.manifest_sha256,h.revision FROM public.account_terms_head AS h WHERE h.id=1",
+    "routine": "SQL/STABLE/SECURITY DEFINER, zero inputs, exact output names/types/modes, no overload, no STRICT/leakproof/support/default/variadic or SQL-standard parsed body; fixed search_path=pg_catalog,pg_temp only; console_terms_owner. Existing style uses AS text body, exact bytes without semicolon.",
+    "function_acl": "Exactly owner and console_auth_rt EXECUTE, owner grantor, neither grantable; no PUBLIC or business grantee.",
+    "head_acl": "Only owner SELECT(id,manifest_sha256,revision), no table-wide grants, no Auth direct table grants. Preserve all previous five column privileges and both Account owner table reads.",
+    "errors": {
+      "routine_drift": "account_terms_current.definition_mismatch",
+      "helper_missing_with_new_column_grants": "account_terms_current.profile_mismatch",
+      "column_acl_drift": "account_custody.unexpected_privilege"
+    },
+    "operator_error": "Fixed P0001 whose database.message exactly matches same read-only custody verdict."
+  },
+  "reuse_and_original_preservation": {
+    "auth_rest.rs": "Only pub(super) on existing account_browser::seed_terms and terms_reference_rows. Their bodies, data bytes and all original tests unchanged.",
+    "account_fence_projection.rs": "Add terms_current_functions to complete existing projection_catalog. Extend existing exact ordered column ACL vector with only three reviewed head owner SELECT entries; all previous five retained. Append nested terms_current module. Reversal of these enumerated additions/exposures reproduces all original bytes.",
+    "fixtures": "Only new fixture is actual immutable previous finalizer SQL from Git regular blob; never a manufactured schema/finalizer."
+  },
+  "historical_fixture": {
+    "commit": "7c599773ac0e4c7cdec4e4ca3deab9f9258b067b",
+    "source_path": "ops/postgres-finalize-account-custody.sql",
+    "git_blob": "d5732fb72801be5edcd6e1ccd9fcbcee55bbdad1",
+    "mode": "100644",
+    "registered_fixture": "backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql",
+    "sha256": "eb090fe7a67ba216097a0ec04672030116bf0550ba6772ac17d90e888f94f7ab",
+    "purpose": "Execute actual old fully finalized guard/fence/ACL state against actual migrations, then insert actual TEST_ONLY receipt/head and existing Account/security row before current upgrade. SQL-level preservation evidence only; no historical transport or production rollback proof."
+  },
+  "tests": [
+    "exact_owner_projection_is_auth_only_and_read_only",
+    "populated_prior_finalized_upgrade_and_replay_preserve_exact_rows",
+    "body_drift_refuses_without_repair",
+    "owner_drift_refuses_without_repair",
+    "public_execute_drift_refuses_without_repair",
+    "overload_drift_refuses_without_repair",
+    "missing_required_owner_column_refuses_without_repair",
+    "extra_owner_column_refuses_without_repair",
+    "auth_column_grant_refuses_without_repair",
+    "helper_missing_with_new_grants_refuses_without_repair"
+  ],
+  "test_count": {
+    "new_lexical": 10,
+    "base_projection_module": 56,
+    "candidate_projection_module": 66,
+    "runtime_discovered": 0,
+    "runtime_executed": 0
+  },
+  "oracles": {
+    "positive": "Actual authenticated restricted Auth pool first calls missing-owner boundary, empty head returns zero rows, populated singleton returns exact stored typed tuple, permanent fence remains usable, other real runtime transports and Auth direct custody operations get42501. Exact routine and head ACL catalog assertions.",
+    "upgrade": "Actual prior finalizer, nonempty head/receipt/accounts/security, current verdict upgrade_required, current finalizer reaches exact current profile. Complete retained data rows equal. Only reviewed helper plus three head column ACL/xmin fields may change; every other original catalog field remains equal. New helper is independently fully pinned. Valid replay compares complete installed catalog including helper and all private rows unchanged.",
+    "drift": "Body, owner, PUBLIC execute, overload, missing required head column, extra owner head column, Auth head column, missing helper with new grants. Each proves current positive function/profile then actual catalog alteration, exact read-only/operator refusal and unchanged post-tamper full catalog plus complete private reference data. No mutation is hidden by excluding helper from refusal/replay snapshots."
+  },
+  "baseline_classification": "Runtime0 here. Current source lacks helper; nine tests are expected to stop at first actual SELECT42883 missing-owner prerequisite, not nine independent behavioral findings. Historical-upgrade test reaches prior finalization/data then expects current upgrade_required; current source instead finalizes old profile. Root must record actual outcomes/counts and failure locations. Deeper restricted privileges/drift assertions remain unreached until owner exists.",
+  "commands": {
+    "focused": "cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_fence_projection::terms_current:: -- --test-threads=1",
+    "existing_profile": "cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_fence_projection::account_fence_projection_prepared_profile_has_only_two_exact_owner_reads -- --exact --test-threads=1",
+    "existing_replay": "cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_fence_projection::account_fence_projection_finalizer_replay_is_exactly_unchanged -- --exact --test-threads=1",
+    "runtime_owner": "Root only via admitted evidence driver, existing real PostgreSQL harness and exact cleanup/source-snapshot accounting. No Cargo/DB by author."
+  },
+  "lane_control": {
+    "owner": "/root source/integration/operator/Cargo/DB; author private tests only",
+    "immutable_target": "candidate.patch plus manifest hashes in this directory",
+    "admission": "Root imports approved test-only candidate and records exact current runnable boundary. Implementation only through tools/lanes/fanout.py admit/run; same admitted probe must be green before success. No source implementation starts from speculative drift failures.",
+    "pre_mortem": "New helper bypasses exact custody; metadata drift is silently repaired; historical populated profile is rejected as nonempty staging; exact retained rows or old fence/guard grants are rewritten; tests accidentally manufacture a historical schema.",
+    "blast_radius": "Two test files and one immutable historical operator fixture; later source owner work confined to reviewed terms reader/custody profile.",
+    "detection": "Exact byte reversal, historical blob hash, actual authenticated SQLx cases, strict profile and full replay/refusal catalog snapshots, private complete data comparisons, independent review.",
+    "rollback": "Discard candidate import if unapproved; preserve all prior artifacts. Source/operator rollback requires compatible historical readers and preserved head/receipt/security rows; never rewind head or revoke permanent fence.",
+    "stop_conditions": [
+      "Test/API/source hash mismatch",
+      "Need to weaken existing forbidden grants/assertions",
+      "Historical fixture differs from exact Git blob",
+      "Missing/nonexecutable/green actual implementation probe",
+      "Unreviewed source/operator/credential scope"
+    ],
+    "review_identities": {
+      "author": "/root/inventory_repair",
+      "independent": "Pending Capture/root assignment",
+      "integrator": "/root"
+    },
+    "head_sha": "dba42d1ab50afae99163f7b591e5749933d5dd25",
+    "remaining_holds": [
+      "Independent test review/import and current RED",
+      "Actual source custody implementation/admission",
+      "Deeper runtime assertions until helper exists",
+      "Complete Account lifecycle/production/legal/publication authority"
+    ]
+  }
+}

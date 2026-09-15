@@ -4148,7 +4148,7 @@ mod account_browser {
 
     /// Fixture inserts ONLY the reviewed immutable publication/head data. Runtime
     /// migration owns the actual tables, constraints, functions, roles and grants.
-    async fn seed_terms(pool: &PgPool) {
+    pub(super) async fn seed_terms(pool: &PgPool) {
         let present: bool = sqlx::query_scalar("SELECT to_regclass('public.account_terms_head') IS NOT NULL AND to_regclass('public.account_terms_release_receipts') IS NOT NULL")
         .fetch_one(pool).await.unwrap();
         assert!(
@@ -4187,7 +4187,7 @@ mod account_browser {
             })).unwrap()
     }
 
-    async fn terms_reference_rows(pool: &PgPool) -> Value {
+    pub(super) async fn terms_reference_rows(pool: &PgPool) -> Value {
         // Complete isolated-fixture rows, including unrelated Account/audit data.
         // Never print this snapshot or its retained approval bytes.
         sqlx::query_scalar(r#"SELECT jsonb_build_object(
@@ -6373,6 +6373,76 @@ mod account_browser {
             .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
             assert_retained_artifacts(&app).await;
             assert!(terms_reference_rows(&pool).await == before);
+        }
+    }
+    mod terms_read_security {
+        use super::*;
+
+        #[sqlx::test(migrations = false)]
+        async fn public_reads_require_neither_signing_keys_nor_webauthn_services(pool: PgPool) {
+            let mut app = fixture(&pool).await;
+            let state = state_with_key(
+                &pool,
+                app._artifacts.root.clone(),
+                &SigningKey::random(&mut OsRng),
+            )
+            .await;
+            let mut config = state.config().clone();
+            config.jwt = None;
+            config.auth_rest = None;
+            assert!(config.jwt.is_none() && config.auth_rest.is_none());
+            // Rebuild through genuine startup admission with no verification,
+            // issuance, or WebAuthn services; retain configured artifact custody.
+            app.service = build_router(AppState::from_config(config).await.unwrap());
+            let before = terms_reference_rows(&pool).await;
+            assert_current_terms(&app, 1).await;
+            assert_retained_artifacts(&app).await;
+            assert!(terms_reference_rows(&pool).await == before);
+        }
+
+        #[sqlx::test(migrations = false)]
+        async fn registered_tampering_is_unavailable_and_exact_restoration_recovers(pool: PgPool) {
+            let mut app = fixture(&pool).await;
+            let before = terms_reference_rows(&pool).await;
+            assert_current_terms(&app, 1).await;
+            assert_retained_artifacts(&app).await;
+            for (relative, namespace, digest) in [
+                (
+                    "fixtures/manifest.json",
+                    "manifests",
+                    MANIFEST_DIGEST.to_owned(),
+                ),
+                (
+                    "fixtures/privacy.txt",
+                    "content",
+                    manifest()["items"][1]["content_sha256"]
+                        .as_str()
+                        .unwrap()
+                        .to_owned(),
+                ),
+            ] {
+                let path = app._artifacts.root.join(relative);
+                let original = std::fs::read(&path).unwrap();
+                assert_eq!(hex::encode(Sha256::digest(&original)), digest);
+                // File still exists at its registered path. Identity is not
+                // availability, and bad bytes must never become an unknown404.
+                std::fs::write(&path, b"TEST_ONLY altered registered artifact").unwrap();
+                app.service = router(&pool, app._artifacts.root.clone()).await;
+                for uri in [
+                    format!("/api/v2/auth/terms/{namespace}/{digest}"),
+                    "/api/v2/auth/terms".to_owned(),
+                ] {
+                    request(&app, "GET", &uri, &Cookies::default(), None, &[])
+                        .await
+                        .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+                }
+                assert!(terms_reference_rows(&pool).await == before);
+                std::fs::write(&path, &original).unwrap();
+                app.service = router(&pool, app._artifacts.root.clone()).await;
+                assert_current_terms(&app, 1).await;
+                assert_retained_artifacts(&app).await;
+                assert!(terms_reference_rows(&pool).await == before);
+            }
         }
     }
 }

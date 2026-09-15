@@ -1,0 +1,62 @@
+{
+  "kind": "INDEPENDENT_PUBLIC_TERMS_SECURITY_TEST_REVIEW",
+  "reviewer": "/root/inventory_repair",
+  "author": "/root",
+  "base_sha": "dba42d1ab50afae99163f7b591e5749933d5dd25",
+  "candidate_directory": "/private/tmp/account-terms-security-tests-dba42d1a",
+  "manifest_sha256": "f01995994d6d40db30e6d10d905c6eb2b09f8cecd52c99921569c1682fca96c0",
+  "artifact_hashes": {
+    "module.rs": "4a7626a2107318315af1d61d228bd12b3c950551851f4e90351b1a626e330d75",
+    "candidate.patch": "f8b3980c251fd61842d3414db9bfce9df8b22eeacdf586ebb9830639797074bf",
+    "backend/app/tests/auth_rest.rs": "d16fef923a33f334b7c8d306d0f4c75fcb9eabda70853b8d2144ee9d367d5ad3"
+  },
+  "verdict": "APPROVE_EXACT_ADDITIVE_TWO_TEST_CANDIDATE",
+  "findings": [],
+  "static_checks": {
+    "path": "/private/tmp/account-terms-security-tests-independent-review-inventory/static-checks.json",
+    "sha256": "dcca0a59af99a15d07d3e92932ec13e2431fea255878a2f1c48c86b2f14701cd",
+    "exact_original_byte_restoration": true,
+    "private_patch_application_reproduces_candidate": true,
+    "rustfmt": "PASS",
+    "new_tests": 2,
+    "combined_with_custody_pub_super_only": "PASS"
+  },
+  "oracles": {
+    "keyless": "Clone actual existing AppState parsed config, clear both typed JWT and AuthRest service configurations, assert absence, reconstruct through actual AppState::from_config, then require current metadata and all exact retained artifact reads. Original configured artifact root/Auth URL are retained through clone; no direct state injection bypasses startup.",
+    "tampering": "Healthy current and exact artifact positive controls first. Check original registered bytes SHA256, overwrite existing same registered manifest then content path with changed bytes, reconstruct router and demand artifact/current503, preserve private reference rows. Restore exact original bytes and require current/all retained200 after each independent tamper phase.",
+    "no_effects": "Existing complete private terms-reference snapshots bracket HTTP/tamper/restoration phases. No snapshot or secret dumps.",
+    "reuse": "Only additive sibling terms_read_security module; removes exactly to original source. Existing fixture/state helper/request/error/exact bytes helper reused. No new data fixture/binary/dependency and no existing assertion modified.",
+    "overlap": "Two custody pub(super) declarations combine mechanically; removing security module from combined text exactly reproduces custody candidate auth_rest.rs."
+  },
+  "limits": [
+    "Runtime0; actual keyless configuration/HTTP behavior remains unproved until root execution.",
+    "Keyless test derives config from existing full fixture before clearing services; it proves effective typed service absence on rebuilt state, not key-management deployment custody.",
+    "No live cache invalidation requirement: tampering tests rebuild the router.",
+    "Named-table snapshots prove unchanged compared values, not all database effects/tracing.",
+    "No full Account/session/browser/production/publication/legal claim."
+  ],
+  "root_execution": "Import only reviewed exact candidate through one writer; preserve baseline/review identities and record actual selected discovered/executed counts, source snapshots, cleanup and failure causality.",
+  "pre_mortem": "Public terms accidentally require JWT/WebAuthn, or existing bad registered bytes become unknown404/cache stale success; fixture copied config could bypass startup.",
+  "blast_radius": "One additive existing test module; future product changes stay in approved terms/root configuration owner.",
+  "rollback": "Preserve candidate and prior source/evidence; no deletion or test weakening.",
+  "remaining_holds": [
+    "Root import/current executableRED and runtime review",
+    "Actual terms/custody implementation and full applicable regressions",
+    "Full Account lifecycle and production/legal/publication authority"
+  ],
+  "execution": {
+    "cargo": 0,
+    "docker": 0,
+    "database": 0,
+    "integration_writes": 0,
+    "rust_runtime_tests": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}
