@@ -65,10 +65,12 @@ pub(super) struct Binding {
     pub owner: String,
     pub object_kind: String,
     pub input: Validator,
+    reference: String,
 }
 pub(super) struct Schemas {
     pub input_schema: Validator,
     pub bindings: BTreeMap<String, Binding>,
+    resources: BTreeMap<String, Value>,
 }
 struct FixedSchemas(BTreeMap<String, Value>);
 impl Retrieve for FixedSchemas {
@@ -132,13 +134,19 @@ fn bound(
     Ok(Box::new(DecimalBound { bound, minimum }))
 }
 fn compile(reference: &str, resources: &BTreeMap<String, Value>) -> Result<Validator, CodecError> {
+    compile_value(&serde_json::json!({"$ref":reference}), resources)
+}
+fn compile_value(
+    value: &Value,
+    resources: &BTreeMap<String, Value>,
+) -> Result<Validator, CodecError> {
     jsonschema::options()
         .with_draft(jsonschema::Draft::Draft202012)
         .should_validate_formats(true)
         .with_retriever(FixedSchemas(resources.clone()))
         .with_keyword("x-decimal-min", minimum)
         .with_keyword("x-decimal-max", maximum)
-        .build(&serde_json::json!({"$ref":reference}))
+        .build(value)
         .map_err(|_| CodecError("registered schema initialization failed"))
 }
 pub(super) fn registered() -> Result<&'static Schemas, CodecError> {
@@ -196,6 +204,7 @@ fn build() -> Result<Schemas, CodecError> {
             owner: get("owner")?.to_owned(),
             object_kind: get("registered_object_kind")?.to_owned(),
             input: compile(&reference, &resources)?,
+            reference,
         };
         if bindings.insert(action.to_owned(), value).is_some() {
             return Err(CodecError("duplicate owner binding"));
@@ -204,6 +213,7 @@ fn build() -> Result<Schemas, CodecError> {
     Ok(Schemas {
         input_schema,
         bindings,
+        resources,
     })
 }
 
@@ -268,3 +278,50 @@ fn rewrite_references(value: &mut Value, document: &str) -> Result<(), CodecErro
 #[cfg(test)]
 #[path = "schema_tests.rs"]
 mod tests;
+
+// Fixed-schema editor reuse only: no external retrieval or current registration.
+pub(crate) fn draft_body(action: &str) -> Result<Value, CodecError> {
+    let schemas = registered()?;
+    let binding = schemas
+        .bindings
+        .get(action)
+        .ok_or(CodecError("unregistered draft action"))?;
+    Ok(serde_json::json!({"$ref":binding.reference}))
+}
+pub(crate) fn draft_resource(reference: &str) -> Result<&'static Value, CodecError> {
+    registered()?
+        .resources
+        .get(reference)
+        .ok_or(CodecError("unregistered draft reference"))
+}
+pub(crate) fn draft_validator(value: &Value) -> Result<Validator, CodecError> {
+    compile_value(value, &registered()?.resources)
+}
+pub(crate) fn draft_definition(name: &str, value: &Value) -> Result<bool, CodecError> {
+    static EDITOR: OnceLock<Result<BTreeMap<&'static str, Validator>, CodecError>> =
+        OnceLock::new();
+    let validators = EDITOR
+        .get_or_init(|| {
+            let schemas = registered()?;
+            let mut result = BTreeMap::new();
+            for (name, document) in [
+                ("FieldValue", "action-types.schema.json"),
+                ("Patch", "action-types.schema.json"),
+                ("InputSchemaRef", "action-types.schema.json"),
+                ("GovernedRevision", "types.schema.json"),
+            ] {
+                let reference = definition_uri(
+                    &format!("2026-09-13-integrated-design-30/{document}"),
+                    &format!("#/$defs/{name}"),
+                )?;
+                result.insert(name, compile(&reference, &schemas.resources)?);
+            }
+            Ok(result)
+        })
+        .as_ref()
+        .map_err(|error| *error)?;
+    Ok(validators
+        .get(name)
+        .ok_or(CodecError("unregistered draft definition"))?
+        .is_valid(value))
+}
