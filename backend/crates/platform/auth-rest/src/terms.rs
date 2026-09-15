@@ -14,7 +14,7 @@ use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use super::{AuthRestState, RestError};
+use super::{AuthRestState, RestError, hex_encode};
 
 pub(super) const CURRENT_PATH: &str = "/api/v2/auth/terms";
 pub(super) const MANIFEST_PATH: &str = "/api/v2/auth/terms/manifests/{sha256}";
@@ -104,7 +104,7 @@ impl TermsArtifacts {
 
     fn read(&self, entry: &ArtifactEntry, limit: u64) -> Result<Vec<u8>, RestError> {
         let bytes = read_bounded(&self.root, &entry.path, limit)?;
-        if format!("{:x}", Sha256::digest(&bytes)) != entry.sha256
+        if hex_encode(Sha256::digest(&bytes).as_ref()) != entry.sha256
             || std::str::from_utf8(&bytes).is_err()
         {
             return Err(unavailable());
@@ -160,7 +160,7 @@ async fn current_metadata(state: &AuthRestState) -> Result<TermsCurrent, RestErr
     if digest.len() != 32 || revision <= 0 {
         return Err(unavailable());
     }
-    let digest: String = digest.iter().map(|byte| format!("{byte:02x}")).collect();
+    let digest = hex_encode(&digest);
     if digest != artifacts.index.manifest.sha256 {
         return Err(unavailable());
     }
