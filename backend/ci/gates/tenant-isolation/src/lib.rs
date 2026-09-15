@@ -1217,6 +1217,74 @@ mod tests {
             .as_nanos()
     }
 
+    const ACCOUNT_CATALOG_TABLES: [&str; 6] = [
+        "accounts",
+        "account_security",
+        "account_security_events",
+        "account_terms_head",
+        "account_terms_acceptances",
+        "account_terms_release_receipts",
+    ];
+
+    #[test]
+    fn account_catalog_tables_are_owner_only() {
+        let mut failures = Vec::new();
+        for table in ACCOUNT_CATALOG_TABLES {
+            let dir = tmpdir(table);
+            write(
+                &dir,
+                "0001_catalog.sql",
+                &format!("CREATE TABLE {table} (id uuid PRIMARY KEY);"),
+            );
+            let result = check_migrations_root(&dir);
+            fs::remove_dir_all(&dir).unwrap();
+            if !result.passed()
+                || !owner_only_table_allowlist()
+                    .iter()
+                    .any(|(name, reason)| *name == table && !reason.is_empty())
+                || global_table_allowlist()
+                    .iter()
+                    .any(|(name, _)| *name == table)
+            {
+                failures.push((table, result.violations));
+            }
+        }
+        assert!(
+            failures.is_empty(),
+            "Account catalog must be owner-only, not global-read: {failures:?}"
+        );
+    }
+
+    #[test]
+    fn account_catalog_rejects_direct_runtime_and_public_grants() {
+        let mut missed = Vec::new();
+        for table in ACCOUNT_CATALOG_TABLES {
+            for role in ["console_rt", "PUBLIC"] {
+                let dir = tmpdir(table);
+                write(
+                    &dir,
+                    "0001_catalog.sql",
+                    &format!(
+                        "CREATE TABLE {table} (id uuid PRIMARY KEY); GRANT SELECT ON {table} TO {role};"
+                    ),
+                );
+                let result = check_migrations_root(&dir);
+                fs::remove_dir_all(&dir).unwrap();
+                if !result
+                    .violations
+                    .iter()
+                    .any(|violation| violation.kind == ViolationKind::OwnerOnlyTableGrant)
+                {
+                    missed.push((table, role, result.violations));
+                }
+            }
+        }
+        assert!(
+            missed.is_empty(),
+            "direct Account catalog grants escaped classification: {missed:?}"
+        );
+    }
+
     #[test]
     fn clean_tenant_table_passes() {
         let dir = tmpdir("clean");
