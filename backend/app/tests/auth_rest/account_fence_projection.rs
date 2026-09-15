@@ -267,7 +267,7 @@ async fn account_fence_projection_null_and_database_failure_never_return_false(p
 
 async fn projection_catalog(pool: &PgPool) -> Value {
     sqlx::query_scalar(
-        "SELECT jsonb_build_object('columns',(SELECT jsonb_agg(jsonb_build_object('relation',c.relname,'number',a.attnum,'name',a.attname,'acl',a.attacl,'xmin',a.xmin::text) ORDER BY c.relname,a.attnum) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')),'functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_legacy_fenced_v1'),'relations',(SELECT jsonb_agg(jsonb_build_object('name',c.relname,'xmin',c.xmin::text,'owner',c.relowner,'acl',c.relacl,'rls',c.relrowsecurity,'force',c.relforcerowsecurity) ORDER BY c.relname) FROM pg_catalog.pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')))"
+        "SELECT jsonb_build_object('columns',(SELECT jsonb_agg(jsonb_build_object('relation',c.relname,'number',a.attnum,'name',a.attname,'acl',a.attacl,'xmin',a.xmin::text) ORDER BY c.relname,a.attnum) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')),'functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_legacy_fenced_v1'),'terms_guard_functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_terms_receipts_immutable_v1'),'terms_guard_triggers',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(t),'xmin',t.xmin::text) ORDER BY t.oid),'[]'::jsonb) FROM pg_catalog.pg_trigger t WHERE t.tgrelid='public.account_terms_release_receipts'::regclass AND NOT t.tgisinternal),'relations',(SELECT jsonb_agg(jsonb_build_object('name',c.relname,'xmin',c.xmin::text,'owner',c.relowner,'acl',c.relacl,'rls',c.relrowsecurity,'force',c.relforcerowsecurity) ORDER BY c.relname) FROM pg_catalog.pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')))"
     ).fetch_one(pool).await.unwrap()
 }
 
@@ -331,6 +331,11 @@ async fn assert_projection_drift_is_not_repaired(
             "body fault must preserve language, volatility, config, ACL and every other catalog attribute"
         );
     }
+    assert_eq!(
+        projection_custody_verdict(pool).await,
+        "account_fence_projection.definition_mismatch",
+        "read-only admission must reject the same exact projection definition drift"
+    );
     let error = sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
         .execute(pool)
         .await
@@ -561,8 +566,9 @@ async fn account_fence_projection_installation_failure_rolls_back_custody_and_cr
     assert!(fenced(&auth, *subject.as_uuid()).await.unwrap());
 }
 
-// Additive exact collective custody-v2 profile tests. These grant only the
-// existing NOLOGIN owners read access; all serving denial assertions remain.
+// Exact collective current custody profile: two owner table reads plus
+// narrowly enumerated FK key-column rights and immutable receipt guard.
+// Every serving denial and broad/extra owner-privilege refusal remains.
 
 #[sqlx::test(migrations = false)]
 async fn account_fence_projection_prepared_profile_has_only_two_exact_owner_reads(pool: PgPool) {
@@ -599,19 +605,54 @@ async fn account_fence_projection_prepared_profile_has_only_two_exact_owner_read
     ).fetch_all(&pool).await.unwrap();
     assert_eq!(
         column_acl,
-        vec![(
-            "accounts".into(),
-            "id".into(),
-            "console_account_owner".into(),
-            "console_account_owner".into(),
-            "UPDATE".into(),
-            false,
-        )]
+        vec![
+            (
+                "account_terms_release_receipts".into(),
+                "id".into(),
+                "console_terms_owner".into(),
+                "console_terms_owner".into(),
+                "SELECT".into(),
+                false,
+            ),
+            (
+                "account_terms_release_receipts".into(),
+                "id".into(),
+                "console_terms_owner".into(),
+                "console_terms_owner".into(),
+                "UPDATE".into(),
+                false,
+            ),
+            (
+                "account_terms_release_receipts".into(),
+                "revision".into(),
+                "console_terms_owner".into(),
+                "console_terms_owner".into(),
+                "SELECT".into(),
+                false,
+            ),
+            (
+                "account_terms_release_receipts".into(),
+                "manifest_sha256".into(),
+                "console_terms_owner".into(),
+                "console_terms_owner".into(),
+                "SELECT".into(),
+                false,
+            ),
+            (
+                "accounts".into(),
+                "id".into(),
+                "console_account_owner".into(),
+                "console_account_owner".into(),
+                "UPDATE".into(),
+                false,
+            ),
+        ]
     );
     assert_eq!(
         projection_custody_verdict(&pool).await,
         "account_custody.finalized"
     );
+    assert_terms_receipt_guard_profile(&pool).await;
     let subject = UserId::new();
     insert_account_fence(&pool, subject, "ACTIVE").await;
     assert!(
@@ -660,7 +701,7 @@ async fn account_fence_projection_dormant_finalized_v1_is_upgradeable_without_da
     );
     assert_eq!(
         projection_custody_verdict(&pool).await,
-        "account_custody.finalized"
+        "account_custody.upgrade_required"
     );
     let data_before: Vec<i64> = sqlx::query_scalar("SELECT (SELECT count(*) FROM public.accounts) UNION ALL SELECT count(*) FROM public.account_security")
         .fetch_all(&pool).await.unwrap();
@@ -694,6 +735,11 @@ async fn assert_prepared_profile_drift_is_not_repaired(
     assert_ne!(
         tampered, valid,
         "actual profile mutation must reach PostgreSQL catalog"
+    );
+    assert_eq!(
+        projection_custody_verdict(pool).await,
+        expected_error,
+        "read-only admission must preserve the exact specific profile refusal"
     );
     let error = sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
         .execute(pool)
@@ -981,4 +1027,54 @@ async fn account_fence_projection_refuses_broad_parent_owner_update(pool: PgPool
         "account_custody.unexpected_privilege",
     )
     .await;
+}
+
+async fn assert_terms_receipt_guard_profile(pool: &PgPool) {
+    use sha2::Digest as _;
+    // Fixed test expectation, not a digest learned from the target database.
+    // Reviewed body: BEGIN; unconditional fixed P0001 refusal; END.
+    let expected_body = "BEGIN\n    RAISE EXCEPTION USING MESSAGE='account_terms_receipts.immutable', ERRCODE='P0001';\nEND;";
+    let expected_digest = hex::encode(sha2::Sha256::digest(expected_body.as_bytes()));
+    let exact: bool = sqlx::query_scalar(
+        r#"SELECT
+          (SELECT count(*)=1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+             WHERE n.nspname='public' AND p.proname='account_terms_receipts_immutable_v1')
+          AND EXISTS(SELECT 1 FROM pg_catalog.pg_proc p
+            JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+            JOIN pg_catalog.pg_roles r ON r.oid=p.proowner
+            JOIN pg_catalog.pg_language l ON l.oid=p.prolang
+            WHERE n.nspname='public' AND p.proname='account_terms_receipts_immutable_v1'
+              AND r.rolname='console_terms_owner' AND l.lanname='plpgsql'
+              AND p.prokind='f' AND NOT p.prosecdef AND NOT p.proisstrict AND NOT p.proretset
+              AND NOT p.proleakproof AND p.provolatile='v' AND p.proparallel='u' AND p.prosupport=0
+              AND p.pronargs=0 AND p.proargtypes=''::oidvector AND p.proargnames IS NULL
+              AND p.proallargtypes IS NULL AND p.proargmodes IS NULL AND p.provariadic=0
+              AND p.pronargdefaults=0 AND p.proargdefaults IS NULL
+              AND p.prorettype='pg_catalog.trigger'::regtype AND p.probin IS NULL
+              AND p.prosqlbody IS NULL AND p.protrftypes IS NULL
+              AND encode(sha256(convert_to(p.prosrc,'UTF8')),'hex')=$1
+              AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']::text[]
+              AND p.proacl IS NOT NULL AND cardinality(p.proacl)=0)
+          AND (SELECT count(*)=1 FROM pg_catalog.pg_trigger t
+            WHERE t.tgrelid='public.account_terms_release_receipts'::regclass AND NOT t.tgisinternal)
+          AND EXISTS(SELECT 1 FROM pg_catalog.pg_trigger t
+            JOIN pg_catalog.pg_proc p ON p.oid=t.tgfoid
+            JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+            WHERE t.tgrelid='public.account_terms_release_receipts'::regclass
+              AND t.tgname='account_terms_receipts_immutable_v1'
+              AND NOT t.tgisinternal AND t.tgenabled='A' AND t.tgtype=58
+              AND t.tgnargs=0 AND octet_length(t.tgargs)=0 AND t.tgattr=''::int2vector
+              AND t.tgqual IS NULL AND t.tgconstraint=0
+              AND NOT t.tgdeferrable AND NOT t.tginitdeferred
+              AND t.tgoldtable IS NULL AND t.tgnewtable IS NULL
+              AND n.nspname='public' AND p.proname='account_terms_receipts_immutable_v1')"#,
+    )
+    .bind(expected_digest)
+    .fetch_one(pool)
+    .await
+    .expect("exact receipt guard metadata readback");
+    assert!(
+        exact,
+        "current finalized profile requires the complete immutable receipt guard"
+    );
 }
