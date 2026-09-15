@@ -214,12 +214,7 @@ async fn account_fence_projection_execute_only_and_no_custody_business_grants(po
         );
     }
     // Installing the narrow projection must retain the frozen table custody verdict.
-    let verdict: String = sqlx::query_scalar(sqlx::AssertSqlSafe(include_str!(
-        "../../src/account_custody_state.sql"
-    )))
-    .fetch_one(&pool)
-    .await
-    .unwrap();
+    let verdict = projection_custody_verdict(&pool).await;
     assert_eq!(verdict, "account_custody.finalized");
 }
 
@@ -272,7 +267,7 @@ async fn account_fence_projection_null_and_database_failure_never_return_false(p
 
 async fn projection_catalog(pool: &PgPool) -> Value {
     sqlx::query_scalar(
-        "SELECT jsonb_build_object('functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_legacy_fenced_v1'),'relations',(SELECT jsonb_agg(jsonb_build_object('name',c.relname,'owner',c.relowner,'acl',c.relacl,'rls',c.relrowsecurity,'force',c.relforcerowsecurity) ORDER BY c.relname) FROM pg_catalog.pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')))"
+        "SELECT jsonb_build_object('functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_legacy_fenced_v1'),'relations',(SELECT jsonb_agg(jsonb_build_object('name',c.relname,'xmin',c.xmin::text,'owner',c.relowner,'acl',c.relacl,'rls',c.relrowsecurity,'force',c.relforcerowsecurity) ORDER BY c.relname) FROM pg_catalog.pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')))"
     ).fetch_one(pool).await.unwrap()
 }
 
@@ -481,4 +476,335 @@ async fn account_fence_projection_operator_refuses_serving_and_migration_logins(
         error.as_database_error().and_then(|e| e.code()).as_deref(),
         Some("42501")
     );
+}
+
+// Test fixture correction: honor canonical query's documented caller context.
+// Replace the frozen execute-only test's direct query_scalar include_str read
+// with projection_custody_verdict(&pool).await; assertion stays unchanged.
+async fn projection_custody_verdict(pool: &PgPool) -> String {
+    let mut transaction = pool.begin().await.unwrap();
+    sqlx::query("SET LOCAL search_path=pg_catalog,pg_temp")
+        .execute(&mut *transaction)
+        .await
+        .unwrap();
+    let verdict = sqlx::query_scalar(sqlx::AssertSqlSafe(include_str!(
+        "../../src/account_custody_state.sql"
+    )))
+    .fetch_one(&mut *transaction)
+    .await
+    .unwrap();
+    transaction.rollback().await.unwrap();
+    verdict
+}
+
+// Additive tests; append to the reviewed projection module after review.
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_finalizer_refuses_duplicate_owner_acl_without_auth(pool: PgPool) {
+    assert_projection_drift_is_not_repaired(
+        &pool,
+        "UPDATE pg_catalog.pg_proc SET proacl=ARRAY['console_account_owner=X/console_account_owner'::aclitem,'console_account_owner=X/console_account_owner'::aclitem] WHERE oid='public.account_legacy_fenced_v1(uuid)'::regprocedure",
+        false,
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_installation_failure_rolls_back_custody_and_created_function(
+    pool: PgPool,
+) {
+    prepare_http_database_staging(&pool).await;
+    let auth = real_auth_pool(&pool).await;
+    let before = projection_catalog(&pool).await;
+    assert_eq!(
+        before["functions"],
+        json!([]),
+        "fresh staging must not have the projection"
+    );
+    let pending = projection_custody_verdict(&pool).await;
+    assert_eq!(pending, "account_custody.pending");
+    // PostgreSQL's real ddl_command_end trigger aborts after the newly created
+    // function's owner transfer, before the subsequent EXECUTE grants. The
+    // operator still owns the entire custody+function installation statement.
+    sqlx::raw_sql(
+        "CREATE FUNCTION public.fence_fixture_fail_after_owner() RETURNS event_trigger LANGUAGE plpgsql AS $trigger_body$ BEGIN IF EXISTS(SELECT 1 FROM pg_catalog.pg_event_trigger_ddl_commands() command WHERE command.classid='pg_catalog.pg_proc'::regclass AND command.objid=pg_catalog.to_regprocedure('public.account_legacy_fenced_v1(uuid)')) THEN RAISE EXCEPTION 'fence_fixture.after_create_before_grant'; END IF; END; $trigger_body$; CREATE EVENT TRIGGER fence_fixture_post_create ON ddl_command_end WHEN TAG IN ('ALTER FUNCTION') EXECUTE FUNCTION public.fence_fixture_fail_after_owner();"
+    ).execute(&pool).await.unwrap();
+    let error = sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
+        .execute(&pool)
+        .await
+        .expect_err("injected post-CREATE DDL failure must abort installation");
+    assert_eq!(
+        error.as_database_error().and_then(|e| e.code()).as_deref(),
+        Some("P0001")
+    );
+    assert!(
+        error
+            .to_string()
+            .contains("fence_fixture.after_create_before_grant"),
+        "fault must be reached after CREATE, not an earlier prerequisite: {error}"
+    );
+    assert_eq!(
+        projection_catalog(&pool).await,
+        before,
+        "all six ownership changes and new function creation must roll back atomically"
+    );
+    let pending = projection_custody_verdict(&pool).await;
+    assert_eq!(pending, "account_custody.pending");
+    sqlx::raw_sql("DROP EVENT TRIGGER fence_fixture_post_create; DROP FUNCTION public.fence_fixture_fail_after_owner();")
+        .execute(&pool).await.unwrap();
+    finalize_account_custody(&pool).await;
+    assert!(
+        !fenced(&auth, Uuid::new_v4()).await.unwrap(),
+        "same installation succeeds once only the fault is removed"
+    );
+    let subject = UserId::new();
+    insert_account_fence(&pool, subject, "ACTIVE").await;
+    assert!(fenced(&auth, *subject.as_uuid()).await.unwrap());
+}
+
+// Additive exact collective custody-v2 profile tests. These grant only the
+// existing NOLOGIN owners read access; all serving denial assertions remain.
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_prepared_profile_has_only_two_exact_owner_reads(pool: PgPool) {
+    prepare_http_database(&pool).await;
+    let auth = real_auth_pool(&pool).await;
+    let acl: Vec<(String, String, String, String, bool)> = sqlx::query_as(
+        "SELECT c.relname::text,pg_catalog.pg_get_userbyid(a.grantor)::text,pg_catalog.pg_get_userbyid(a.grantee)::text,a.privilege_type,a.is_grantable FROM pg_catalog.pg_class c CROSS JOIN LATERAL pg_catalog.aclexplode(c.relacl) a WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts') ORDER BY c.relname,a.grantee,a.privilege_type"
+    ).fetch_all(&pool).await.unwrap();
+    assert_eq!(
+        acl,
+        vec![
+            (
+                "account_security".into(),
+                "console_account_owner".into(),
+                "console_account_owner".into(),
+                "SELECT".into(),
+                false
+            ),
+            (
+                "accounts".into(),
+                "console_account_owner".into(),
+                "console_account_owner".into(),
+                "SELECT".into(),
+                false
+            ),
+        ]
+    );
+    assert_eq!(
+        projection_custody_verdict(&pool).await,
+        "account_custody.finalized"
+    );
+    let subject = UserId::new();
+    insert_account_fence(&pool, subject, "ACTIVE").await;
+    assert!(
+        fenced(&auth, *subject.as_uuid()).await.unwrap(),
+        "real FK insert and definer read require both owner reads"
+    );
+    assert_privilege_denial(
+        sqlx::query("SELECT account_id FROM public.account_security")
+            .execute(&auth)
+            .await,
+    );
+    let before = projection_catalog(&pool).await;
+    finalize_account_custody(&pool).await;
+    assert_eq!(
+        projection_catalog(&pool).await,
+        before,
+        "prepared replay must not rewrite ACL or function metadata"
+    );
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_dormant_finalized_v1_is_upgradeable_without_data_change(
+    pool: PgPool,
+) {
+    prepare_http_database_staging(&pool).await;
+    let auth = real_auth_pool(&pool).await;
+    // Execute the actual frozen historical operator SQL, not a fixture that
+    // imitates owner transfer. This proves SQL-level compatibility only, not
+    // historical deployment transport or a production rollback procedure.
+    use sha2::Digest as _;
+    let historical = include_str!("fixtures/account-custody-dormant-v1-7af6dfd4.sql");
+    assert_eq!(
+        format!("{:x}", sha2::Sha256::digest(historical.as_bytes())),
+        "84e356b88be8762726c26df03a4990a19e98c0fcda3d48a73389d1d2a087559a",
+        "exact historical7af6dfd4 operator SQL blob must remain immutable"
+    );
+    sqlx::raw_sql(historical).execute(&pool).await.unwrap();
+    let before = projection_catalog(&pool).await;
+    assert_eq!(before["functions"], json!([]));
+    assert!(
+        before["relations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|r| r["acl"] == json!([]))
+    );
+    assert_eq!(
+        projection_custody_verdict(&pool).await,
+        "account_custody.finalized"
+    );
+    let data_before: Vec<i64> = sqlx::query_scalar("SELECT (SELECT count(*) FROM public.accounts) UNION ALL SELECT count(*) FROM public.account_security")
+        .fetch_all(&pool).await.unwrap();
+    finalize_account_custody(&pool).await;
+    assert!(!fenced(&auth, Uuid::new_v4()).await.unwrap());
+    let data_after: Vec<i64> = sqlx::query_scalar("SELECT (SELECT count(*) FROM public.accounts) UNION ALL SELECT count(*) FROM public.account_security")
+        .fetch_all(&pool).await.unwrap();
+    assert_eq!(data_before, data_after);
+    assert_eq!(
+        projection_custody_verdict(&pool).await,
+        "account_custody.finalized"
+    );
+}
+
+async fn assert_prepared_profile_drift_is_not_repaired(
+    pool: &PgPool,
+    mutation: &'static str,
+    expected_error: &'static str,
+) {
+    prepare_http_database(pool).await;
+    let auth = real_auth_pool(pool).await;
+    let subject = UserId::new();
+    insert_account_fence(pool, subject, "ACTIVE").await;
+    assert!(fenced(&auth, *subject.as_uuid()).await.unwrap());
+    let valid = projection_catalog(pool).await;
+    sqlx::raw_sql(sqlx::AssertSqlSafe(mutation))
+        .execute(pool)
+        .await
+        .unwrap();
+    let tampered = projection_catalog(pool).await;
+    assert_ne!(
+        tampered, valid,
+        "actual profile mutation must reach PostgreSQL catalog"
+    );
+    let error = sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
+        .execute(pool)
+        .await
+        .expect_err("profile drift must refuse, never repair into an accepted profile");
+    assert_eq!(
+        error.as_database_error().and_then(|e| e.code()).as_deref(),
+        Some("P0001")
+    );
+    assert!(
+        error.to_string().contains(expected_error),
+        "specific reached profile refusal: {error}"
+    );
+    assert_eq!(
+        projection_catalog(pool).await,
+        tampered,
+        "failed finalization cannot rewrite any metadata"
+    );
+    let present: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM public.account_security WHERE account_id=$1)",
+    )
+    .bind(subject.as_uuid())
+    .fetch_one(pool)
+    .await
+    .unwrap();
+    assert!(present);
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_half_profile_without_accounts_read(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "REVOKE SELECT ON public.accounts FROM console_account_owner",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_half_profile_without_security_read(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "REVOKE SELECT ON public.account_security FROM console_account_owner",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_owner_write(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "GRANT UPDATE ON public.account_security TO console_account_owner",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_owner_grant_option(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "GRANT SELECT ON public.account_security TO console_account_owner WITH GRANT OPTION",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_owner_wrong_grantor(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(&pool, "UPDATE pg_catalog.pg_class SET relacl=ARRAY['console_account_owner=r/console_terms_owner'::aclitem] WHERE oid='public.account_security'::regclass", "account_custody.unexpected_privilege").await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_security_events_read(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "GRANT SELECT ON public.account_security_events TO console_account_owner",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_terms_acceptances_read(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "GRANT SELECT ON public.account_terms_acceptances TO console_account_owner",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_terms_head_read(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "GRANT SELECT ON public.account_terms_head TO console_terms_owner",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_terms_receipts_read(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "GRANT SELECT ON public.account_terms_release_receipts TO console_terms_owner",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_function_with_all_owner_reads_removed(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "REVOKE SELECT ON public.accounts,public.account_security FROM console_account_owner",
+        "account_fence_projection.profile_mismatch",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_prepared_acl_with_function_deleted(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DROP FUNCTION public.account_legacy_fenced_v1(uuid)",
+        "account_fence_projection.profile_mismatch",
+    )
+    .await;
 }
