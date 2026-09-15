@@ -18,6 +18,7 @@ relay_pid=''
 echo "recovery-fixture run=$run evidence=$scratch"
 cleanup() {
   code=$?
+  local inventory
   trap - EXIT
   [[ -z "$relay_pid" ]] || kill "$relay_pid" 2>/dev/null || true
   docker rm -fv "$seed" "$standby" "$primary" >/dev/null 2>&1 || true
@@ -25,14 +26,26 @@ cleanup() {
   docker network rm "$network" >/dev/null 2>&1 || true
   # Keep safe evidence, remove ephemeral credentials only.
   rm -f "$scratch/container.env" "$scratch/pgpass"
-  if docker ps -aq --filter "label=console.recovery.run=$run" | rg -q .; then
-    echo 'FAIL: owned fixture container leaked' >&2; code=1
+  if inventory="$(docker ps -aq --filter "label=console.recovery.run=$run")"; then
+    if [[ -n "$inventory" ]]; then
+      echo 'FAIL: owned fixture container leaked' >&2; code=1
+    fi
+  else
+    echo 'FAIL: owned fixture container inventory unavailable' >&2; code=1
   fi
-  if docker volume ls -q --filter "label=console.recovery.run=$run" | rg -q .; then
-    echo 'FAIL: owned fixture volume leaked' >&2; code=1
+  if inventory="$(docker volume ls -q --filter "label=console.recovery.run=$run")"; then
+    if [[ -n "$inventory" ]]; then
+      echo 'FAIL: owned fixture volume leaked' >&2; code=1
+    fi
+  else
+    echo 'FAIL: owned fixture volume inventory unavailable' >&2; code=1
   fi
-  if docker network ls -q --filter "label=console.recovery.run=$run" | rg -q .; then
-    echo 'FAIL: owned fixture network leaked' >&2; code=1
+  if inventory="$(docker network ls -q --filter "label=console.recovery.run=$run")"; then
+    if [[ -n "$inventory" ]]; then
+      echo 'FAIL: owned fixture network leaked' >&2; code=1
+    fi
+  else
+    echo 'FAIL: owned fixture network inventory unavailable' >&2; code=1
   fi
   echo "recovery-fixture evidence=$scratch exit=$code"
   exit "$code"
