@@ -111,7 +111,9 @@ use console_ontology_canonical_domain::{
 use console_platform_db::durability::{
     CompletionError, DurabilityPolicy, DurabilityUnknown, with_durability_transaction,
 };
-use console_workflow_domain::{PayrollDraftStaging, PortFuture, StagePayrollDraft};
+use console_workflow_domain::{
+    PayrollDraftStaging, PayrollStageError, PayrollStageFuture, StagePayrollDraft,
+};
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Postgres, Row, Transaction};
@@ -509,6 +511,10 @@ pub enum PayRunError {
 }
 
 impl CanonicalPortError for PayRunError {
+    fn is_completion_unknown(&self) -> bool {
+        matches!(self, Self::DurabilityUnknown(_))
+    }
+
     fn into_kernel_error(self) -> KernelError {
         match self {
             Self::Blocked(_) => KernelError::validation(self.to_string()),
@@ -818,7 +824,7 @@ impl CanonicalPort for PgPayRunPort {
 /// draft, armed for the tenant, idempotent on the natural key — which is what
 /// lets the drain stage before it acks and still be exactly-once.
 impl PayrollDraftStaging for PgPayRunPort {
-    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PortFuture<'a, bool> {
+    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PayrollStageFuture<'a> {
         Box::pin(async move {
             let org = draft.org;
             with_durability_transaction(
@@ -839,10 +845,10 @@ impl PayrollDraftStaging for PgPayRunPort {
             )
             .await
             .map_err(|error| match error {
-                CompletionError::Operation(error) => {
-                    KernelError::from(crate::PgPayrollError::from(error))
-                }
-                CompletionError::Unknown(error) => KernelError::internal(error.to_string()),
+                CompletionError::Operation(error) => PayrollStageError::Operation(
+                    KernelError::from(crate::PgPayrollError::from(error)),
+                ),
+                CompletionError::Unknown(_) => PayrollStageError::CompletionUnknown,
             })
         })
     }

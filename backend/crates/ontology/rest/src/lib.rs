@@ -508,7 +508,13 @@ where
                         target.as_str()
                     )))
                 })?
-                .map_err(|error| ActionError::domain(error.into_kernel_error()))?;
+                .map_err(|error| {
+                    if error.is_completion_unknown() {
+                        ActionError::CompletionUnknown
+                    } else {
+                        ActionError::domain(error.into_kernel_error())
+                    }
+                })?;
 
             Ok(serde_json::json!({
                 "owner": receipt.owner().as_str(),
@@ -1622,6 +1628,8 @@ pub enum ActionError {
     /// A `projected_usecase` action whose `dispatch_target` has no registered
     /// domain handler (unwired or misconfigured). Fail-closed: no table write.
     NotWiredYet { target: Option<String> },
+    /// The owner could not confirm completion; replay the same command identity.
+    CompletionUnknown,
     /// A store / DB / context error.
     Store(PgOntologyError),
 }
@@ -3145,6 +3153,12 @@ impl RestError {
                 current: None,
             },
             ActionError::NotWiredYet { target } => Self::not_wired_yet(target.as_deref()),
+            ActionError::CompletionUnknown => Self {
+                status: StatusCode::SERVICE_UNAVAILABLE,
+                code: "completion_unknown",
+                message: "Completion could not be confirmed. Retry after service recovery with the original command_id and unchanged business input. A consumed approval may need renewal for the same action and target.".to_owned(),
+                current: None,
+            },
             ActionError::Store(error) => Self::from_ontology(error),
         }
     }

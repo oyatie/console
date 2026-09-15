@@ -582,8 +582,45 @@ pub trait PayrollDraftStaging: Send + Sync {
     /// Stages one draft. `true` when this call created it, `false` when the
     /// natural key already held an identical-provenance row; an error when the
     /// natural key held a DIFFERENT provenance (refused, never absorbed).
-    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PortFuture<'a, bool>;
+    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PayrollStageFuture<'a>;
 }
+
+/// A staging refusal or an unconfirmed completion, without adapter dependencies.
+#[derive(Debug)]
+pub enum PayrollStageError {
+    /// Preserve the owning operation's existing error classification.
+    Operation(KernelError),
+    /// Completion is unknown. Keep the same event for idempotent reconciliation.
+    CompletionUnknown,
+}
+
+impl std::fmt::Display for PayrollStageError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Operation(error) => std::fmt::Display::fmt(error, f),
+            Self::CompletionUnknown => f.write_str("payroll staging completion is unknown"),
+        }
+    }
+}
+
+impl std::error::Error for PayrollStageError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Operation(error) => Some(error),
+            Self::CompletionUnknown => None,
+        }
+    }
+}
+
+impl From<KernelError> for PayrollStageError {
+    fn from(error: KernelError) -> Self {
+        Self::Operation(error)
+    }
+}
+
+/// The payroll staging port preserves uncertainty separately from refusal.
+pub type PayrollStageFuture<'a> =
+    Pin<Box<dyn Future<Output = Result<bool, PayrollStageError>> + Send + 'a>>;
 
 #[cfg(test)]
 mod tests {

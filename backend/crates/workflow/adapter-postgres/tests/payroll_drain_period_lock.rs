@@ -16,7 +16,7 @@ use console_kernel_core::{KernelError, OrgId};
 // prove the drain calls something.
 use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
 use console_platform_request_context::scope_org;
-use console_workflow_domain::{PayrollDraftStaging, PortFuture, StagePayrollDraft};
+use console_workflow_domain::{PayrollDraftStaging, PayrollStageFuture, StagePayrollDraft};
 use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -212,7 +212,7 @@ struct LockAfterGate {
 }
 
 impl PayrollDraftStaging for LockAfterGate {
-    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PortFuture<'a, bool> {
+    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PayrollStageFuture<'a> {
         Box::pin(async move {
             sqlx::query(
                 "INSERT INTO period_locks (org_id, domain, period_start, period_end, reason) \

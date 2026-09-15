@@ -1,7 +1,20 @@
 operationId: executeOntologyAction
 summary: Execute an object action (single mutation path)
-description: Re-evaluates the §16 gate chain inside the writeback transaction (TOCTOU-safe), then dispatches an instance-revision
-  (append fixity-chained revision) or a projected use-case. Humans and automation use this same path.
+description: >-
+  Re-evaluates the gate chain and dispatches an instance revision or a projected
+  use-case. Humans and automation use this same path. Instance revisions and
+  their audit records share a transaction. Projected owners commit their effect
+  and immutable command receipt before the separate canonical success audit;
+  an audit failure can therefore return 500 after a confirmed owner effect.
+  Completion uncertainty returns 503 with error.code completion_unknown when
+  the owner can report it. A request timeout (408), disconnect, or lost response
+  can also leave completion uncertain without this JSON response. These outcomes
+  do not prove rollback, and receipt absence alone does not prove no effect.
+  After service recovery, retry with the original command_id, actor, target,
+  and unchanged business input under current authorization. If a required
+  approval was consumed, obtain a new approval for the same action and target
+  and update only four_eyes_request_ref. Replaying a confirmed receipt also
+  repairs a missing canonical success audit without repeating the owner effect.
 tags:
 - Ontology
 security:
@@ -20,7 +33,7 @@ requestBody:
         $ref: '#/components/schemas/OntologyActionRequest'
 responses:
   '200':
-    description: Action executed; the mutation and its audit row committed atomically.
+    description: Action execution and its success audit completed; projected owner effects and their canonical success audit use separate transactions.
     content:
       application/json:
         schema:
@@ -48,4 +61,17 @@ responses:
         schema:
           $ref: '#/components/schemas/ErrorBody'
   '503':
-    $ref: '#/components/responses/ServiceUnavailable'
+    description: >-
+      Service unavailable, or the projected owner could not confirm completion.
+      The completion_unknown code requires same-command reconciliation after
+      recovery; it does not assert success, cancellation, or rollback.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorBody'
+        examples:
+          completionUnknown:
+            value:
+              error:
+                code: completion_unknown
+                message: Completion could not be confirmed. Retry after service recovery with the original command_id and unchanged business input. A consumed approval may need renewal for the same action and target.
