@@ -326,6 +326,8 @@ test("quickstart supplies all six distinct login passwords and Compose accepts i
         CONSOLE_POSTGRES_ADMIN_PASSWORD: "admin-quickstart",
         CONSOLE_APP_POSTGRES_PASSWORD: "app-quickstart",
         CONSOLE_RT_POSTGRES_PASSWORD: "runtime-quickstart",
+        CONSOLE_AUTH_POSTGRES_PASSWORD: "auth-quickstart",
+        AUTH_DATABASE_URL: "postgres://console_auth_rt:auth-quickstart@postgres:5432/console_dev",
         CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: "leave-quickstart",
         CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: "ontology-quickstart",
         CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD: "platform-force-quickstart",
