@@ -3314,28 +3314,11 @@ async fn prepare_http_database(pool: &PgPool) {
 }
 
 fn account_custody_finalizer_sql() -> String {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../ops/postgres-finalize-account-custody.sql");
-    std::fs::read_to_string(path)
-        .expect("ACCOUNT_CUSTODY_FINALIZER_PREREQUISITE: production SQL file missing")
+    console_platform_test_support::account_custody_finalizer_sql()
 }
 
 async fn finalize_account_custody(pool: &PgPool) {
-    let identity: (String, String, bool) = sqlx::query_as(
-        "SELECT session_user::text,current_user::text,current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' AND (SELECT rolsuper FROM pg_roles WHERE rolname=current_user)",
-    ).fetch_one(pool).await.expect("inspect disposable finalization administrator");
-    assert_eq!(
-        identity,
-        (
-            "console_buck_admin".to_owned(),
-            "console_buck_admin".to_owned(),
-            true
-        )
-    );
-    sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
-        .execute(pool)
-        .await
-        .expect("actual production Account custody finalizer");
+    console_platform_test_support::finalize_account_custody(pool).await;
 }
 
 async fn prepare_http_database_staging(pool: &PgPool) {
@@ -3346,66 +3329,12 @@ async fn prepare_http_database_staging(pool: &PgPool) {
 }
 
 async fn prepare_http_migration_config(pool: &PgPool) -> AppConfig {
-    let mut connection = pool.acquire().await.expect("disposable admin connection");
-    let identity: (String, String, String, bool, bool) = sqlx::query_as(
-        r#"
-        SELECT session_user::text, current_user::text, current_database(),
-            current_setting('console.sqlx_test_bootstrap', true) = 'buck-sqlx-superuser-v1'
-            AND (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname = current_user)
-            AND (SELECT pg_get_userbyid(datdba) = current_user
-                 FROM pg_catalog.pg_database WHERE datname = current_database()),
-            NOT EXISTS (
-                SELECT 1 FROM pg_catalog.pg_class c
-                JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-                WHERE n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
-            )
-        "#,
-    )
-    .fetch_one(&mut *connection)
-    .await
-    .expect("inspect empty disposable HTTP test database");
-    assert_eq!(identity.0, "console_buck_admin");
-    assert_eq!(identity.1, "console_buck_admin");
-    assert!(
-        identity.3 && identity.4,
-        "requires marked empty SQLx database"
-    );
-    let suffix = identity
-        .2
-        .strip_prefix("_sqlx_test_")
-        .expect("SQLx database");
-    assert!(
-        suffix.len() == 52
-            && suffix
-                .bytes()
-                .all(|b| b.is_ascii_alphanumeric() || b == b'_')
-    );
-
-    let owner_binding = std::env::var("CONSOLE_APALIS_OWNER_DATABASE_URL")
-        .expect("missing disposable migration-owner transport");
-    let mut owner_url = Url::parse(&owner_binding).expect("valid migration-owner URL");
-    assert!(matches!(owner_url.scheme(), "postgres" | "postgresql"));
-    assert_eq!(owner_url.username(), "console_app");
-    assert!(owner_url.password().is_some_and(|p| !p.is_empty()));
-    assert!(owner_url.query().is_none() && owner_url.fragment().is_none());
-    let options = pool.connect_options();
-    assert_eq!(Some(identity.2.as_str()), options.get_database());
-    assert_eq!(owner_url.host_str(), Some(options.get_host()));
-    assert_eq!(owner_url.port().unwrap_or(5432), options.get_port());
-    owner_url.set_path(&identity.2);
-
-    // Provision only the empty database container. Product tables, grants and
-    // queue schema are created by the existing production migration boundary.
-    sqlx::raw_sql(
-        "DO $owner$ BEGIN          EXECUTE format('ALTER DATABASE %I OWNER TO console_app', current_database());          END $owner$;",
-    )
-    .execute(&mut *connection)
-    .await
-    .expect("assign empty test database to its real migration owner");
-    drop(connection);
     AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Migrate.to_string()),
-        ("DATABASE_URL", owner_url.to_string()),
+        (
+            "DATABASE_URL",
+            console_platform_test_support::prepare_test_migration_owner_url(pool).await,
+        ),
     ])
     .expect("production migration configuration")
 }
