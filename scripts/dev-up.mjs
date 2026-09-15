@@ -111,6 +111,8 @@ const APP_POSTGRES_PASSWORD =
   process.env.CONSOLE_APP_POSTGRES_PASSWORD ?? "console-dev-owner-change-me";
 const RT_POSTGRES_PASSWORD =
   process.env.CONSOLE_RT_POSTGRES_PASSWORD ?? "console-dev-runtime-change-me";
+const AUTH_POSTGRES_PASSWORD =
+  process.env.CONSOLE_AUTH_POSTGRES_PASSWORD ?? "console-dev-auth-change-me";
 const LEAVE_COMMAND_POSTGRES_PASSWORD =
   process.env.CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD ?? "console-dev-leave-command-change-me";
 const ONTOLOGY_COMMAND_POSTGRES_PASSWORD =
@@ -487,6 +489,8 @@ async function bringUpDeps() {
     CONSOLE_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
     CONSOLE_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
     CONSOLE_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
+    CONSOLE_AUTH_POSTGRES_PASSWORD: AUTH_POSTGRES_PASSWORD,
+    AUTH_DATABASE_URL: commandDatabaseUrl("console_auth_rt", AUTH_POSTGRES_PASSWORD, "postgres", 5432),
     CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
     CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
     CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:
@@ -526,15 +530,15 @@ async function bringUpDeps() {
 }
 
 function databaseUrl() {
-  return `postgres://console_app:${APP_POSTGRES_PASSWORD}@127.0.0.1:${PORTS.postgres}/${POSTGRES_DB}`;
+  return commandDatabaseUrl("console_app", APP_POSTGRES_PASSWORD);
 }
 
 function runtimeDatabaseUrl() {
-  return `postgres://console_rt:${RT_POSTGRES_PASSWORD}@127.0.0.1:${PORTS.postgres}/${POSTGRES_DB}`;
+  return commandDatabaseUrl("console_rt", RT_POSTGRES_PASSWORD);
 }
 
-function commandDatabaseUrl(role, password) {
-  return `postgres://${role}:${password}@127.0.0.1:${PORTS.postgres}/${POSTGRES_DB}`;
+function commandDatabaseUrl(role, password, host = "127.0.0.1", port = PORTS.postgres) {
+  return `postgres://${role}:${encodeURIComponent(password)}@${host}:${port}/${encodeURIComponent(POSTGRES_DB)}`;
 }
 
 // Dev-up builds exactly one Buck2 target for each invocation, then executes that
@@ -585,6 +589,8 @@ function reconcileDatabaseTopology(compose) {
       CONSOLE_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
       CONSOLE_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
       CONSOLE_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
+      CONSOLE_AUTH_POSTGRES_PASSWORD: AUTH_POSTGRES_PASSWORD,
+      AUTH_DATABASE_URL: commandDatabaseUrl("console_auth_rt", AUTH_POSTGRES_PASSWORD, "postgres", 5432),
       CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
       CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
       CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:
@@ -614,6 +620,8 @@ function finalizeDatabaseCustody(compose) {
       CONSOLE_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
       CONSOLE_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
       CONSOLE_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
+      CONSOLE_AUTH_POSTGRES_PASSWORD: AUTH_POSTGRES_PASSWORD,
+      AUTH_DATABASE_URL: commandDatabaseUrl("console_auth_rt", AUTH_POSTGRES_PASSWORD, "postgres", 5432),
       CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
       CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
       CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD: PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD,
@@ -661,11 +669,14 @@ function buildAppEnv(role) {
   // Operator transport belongs to the parent orchestrator, never its serving
   // or migration child. Clear libpq's alternate credential/target channels too.
   const parentEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
-    !/^(?:ACCOUNT_CUSTODY_|CONSOLE_POSTGRES_ADMIN_|CONSOLE_APP_POSTGRES_PASSWORD$|POSTGRES_|PG)/.test(key)));
+    !/^(?:ACCOUNT_CUSTODY_|CONSOLE_POSTGRES_ADMIN_|CONSOLE_APP_POSTGRES_PASSWORD$|CONSOLE_AUTH_POSTGRES_PASSWORD$|AUTH_DATABASE_URL$|POSTGRES_|PG)/.test(key)));
   return {
     ...parentEnv,
     CONSOLE_APP_ROLE: role,
     DATABASE_URL: role === "migrate" ? databaseUrl() : runtimeDatabaseUrl(),
+    ...(role === "api" ? {
+      AUTH_DATABASE_URL: commandDatabaseUrl("console_auth_rt", AUTH_POSTGRES_PASSWORD),
+    } : {}),
     LEAVE_COMMAND_DATABASE_URL: commandDatabaseUrl(
       "console_leave_cmd",
       LEAVE_COMMAND_POSTGRES_PASSWORD,
@@ -880,6 +891,8 @@ async function cmdDown() {
         CONSOLE_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
         CONSOLE_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
         CONSOLE_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
+        CONSOLE_AUTH_POSTGRES_PASSWORD: AUTH_POSTGRES_PASSWORD,
+        AUTH_DATABASE_URL: commandDatabaseUrl("console_auth_rt", AUTH_POSTGRES_PASSWORD, "postgres", 5432),
         CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
         CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
         CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:

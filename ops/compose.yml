@@ -116,6 +116,7 @@ services:
       POSTGRES_ADMIN_PASSWORD: ${CONSOLE_POSTGRES_ADMIN_PASSWORD:?set the cluster-admin database password}
       CONSOLE_APP_POSTGRES_PASSWORD: ${CONSOLE_APP_POSTGRES_PASSWORD:?set the migration-owner database password}
       CONSOLE_RT_POSTGRES_PASSWORD: ${CONSOLE_RT_POSTGRES_PASSWORD:?set the runtime database password}
+      CONSOLE_AUTH_POSTGRES_PASSWORD: ${CONSOLE_AUTH_POSTGRES_PASSWORD:?set a distinct auth database password}
       CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: ${CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD:?set a distinct leave command database password}
       CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ${CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD:?set a distinct ontology command database password}
       CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD: ${CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:?set a distinct platform-force command database password}
@@ -212,6 +213,9 @@ services:
     environment:
       <<: *app-env
       CONSOLE_APP_ROLE: api
+      # Supply a complete URL so reserved password characters can be encoded.
+      # Use the same selected database and auth credential as postgres-topology.
+      AUTH_DATABASE_URL: ${AUTH_DATABASE_URL:?set the encoded auth database URL for console_auth_rt}
       LEAVE_COMMAND_DATABASE_URL: postgresql://console_leave_cmd:${CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD:?set a distinct leave command database password}@postgres:5432/${CONSOLE_POSTGRES_DB:-console_prod}
       ONTOLOGY_COMMAND_DATABASE_URL: postgresql://console_ontology_cmd:${CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD:?set a distinct ontology command database password}@postgres:5432/${CONSOLE_POSTGRES_DB:-console_prod}
       PLATFORM_FORCE_COMMAND_DATABASE_URL: postgresql://console_platform_force_cmd:${CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD:?set a distinct platform-force command database password}@postgres:5432/${CONSOLE_POSTGRES_DB:-console_prod}

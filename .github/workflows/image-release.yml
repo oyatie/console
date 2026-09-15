@@ -993,6 +993,8 @@ jobs:
         run: |
           APP_PASSWORD="$(openssl rand -hex 32)"
           RT_PASSWORD="$(openssl rand -hex 32)"
+          AUTH_PASSWORD="$(openssl rand -hex 32)"
+          echo "::add-mask::$AUTH_PASSWORD"
           LEAVE_COMMAND_PASSWORD="$(openssl rand -hex 32)"
           ONTOLOGY_COMMAND_PASSWORD="$(openssl rand -hex 32)"
           PLATFORM_FORCE_COMMAND_PASSWORD="$(openssl rand -hex 32)"
@@ -1003,6 +1005,7 @@ jobs:
             -e POSTGRES_ADMIN_USER=postgres -e POSTGRES_ADMIN_PASSWORD=postgres \
             -e CONSOLE_APP_POSTGRES_PASSWORD="$APP_PASSWORD" \
             -e CONSOLE_RT_POSTGRES_PASSWORD="$RT_PASSWORD" \
+            -e CONSOLE_AUTH_POSTGRES_PASSWORD="$AUTH_PASSWORD" \
             -e CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$LEAVE_COMMAND_PASSWORD" \
             -e CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$ONTOLOGY_COMMAND_PASSWORD" \
             -e CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$PLATFORM_FORCE_COMMAND_PASSWORD" \
@@ -1011,6 +1014,7 @@ jobs:
           {
             echo "PROBE_OWNER_DATABASE_URL=postgres://console_app:${APP_PASSWORD}@127.0.0.1:5432/console_release_probe"
             echo "PROBE_RUNTIME_DATABASE_URL=postgres://console_rt:${RT_PASSWORD}@127.0.0.1:5432/console_release_probe"
+            echo "PROBE_AUTH_DATABASE_URL=postgres://console_auth_rt:${AUTH_PASSWORD}@127.0.0.1:5432/console_release_probe"
             echo "PROBE_LEAVE_COMMAND_DATABASE_URL=postgres://console_leave_cmd:${LEAVE_COMMAND_PASSWORD}@127.0.0.1:5432/console_release_probe"
             echo "PROBE_ONTOLOGY_COMMAND_DATABASE_URL=postgres://console_ontology_cmd:${ONTOLOGY_COMMAND_PASSWORD}@127.0.0.1:5432/console_release_probe"
             echo "PROBE_PLATFORM_FORCE_COMMAND_DATABASE_URL=postgres://console_platform_force_cmd:${PLATFORM_FORCE_COMMAND_PASSWORD}@127.0.0.1:5432/console_release_probe"
@@ -1028,6 +1032,7 @@ jobs:
             echo "POSTGRES_ADMIN_PASSWORD=postgres"
             echo "CONSOLE_APP_POSTGRES_PASSWORD=${APP_PASSWORD}"
             echo "CONSOLE_RT_POSTGRES_PASSWORD=${RT_PASSWORD}"
+            echo "CONSOLE_AUTH_POSTGRES_PASSWORD=${AUTH_PASSWORD}"
             echo "CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD=${LEAVE_COMMAND_PASSWORD}"
             echo "CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD=${ONTOLOGY_COMMAND_PASSWORD}"
             echo "CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD=${PLATFORM_FORCE_COMMAND_PASSWORD}"
@@ -1122,6 +1127,7 @@ jobs:
           docker run -d --network host --name console-app-probe \
             -e CONSOLE_APP_ROLE=api \
             -e DATABASE_URL="$PROBE_RUNTIME_DATABASE_URL" \
+            -e AUTH_DATABASE_URL="$PROBE_AUTH_DATABASE_URL" \
             -e LEAVE_COMMAND_DATABASE_URL="$PROBE_LEAVE_COMMAND_DATABASE_URL" \
             -e ONTOLOGY_COMMAND_DATABASE_URL="$PROBE_ONTOLOGY_COMMAND_DATABASE_URL" \
             -e PLATFORM_FORCE_COMMAND_DATABASE_URL="$PROBE_PLATFORM_FORCE_COMMAND_DATABASE_URL" \

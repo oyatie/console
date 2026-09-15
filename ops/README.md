@@ -23,6 +23,8 @@ before parsing or starting Compose. These files are not application credentials:
 export CONSOLE_POSTGRES_ADMIN_PASSWORD="$(openssl rand -hex 32)"
 export CONSOLE_APP_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
 export CONSOLE_RT_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
+export CONSOLE_AUTH_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
+export AUTH_DATABASE_URL="postgresql://console_auth_rt:${CONSOLE_AUTH_POSTGRES_PASSWORD}@postgres:5432/${CONSOLE_POSTGRES_DB:-console_prod}"
 export CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
 export CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
 export CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
@@ -186,15 +188,26 @@ export CONSOLE_POSTGRES_ADMIN_USER=console_cluster_admin
 export CONSOLE_POSTGRES_ADMIN_PASSWORD='<cluster bootstrap administrator password>'
 export CONSOLE_APP_POSTGRES_PASSWORD='<migration owner password>'
 export CONSOLE_RT_POSTGRES_PASSWORD='<runtime password>'
+export CONSOLE_AUTH_POSTGRES_PASSWORD='<distinct auth password from the secret manager>'
+export AUTH_DATABASE_URL='<complete postgresql://console_auth_rt:ENCODED_PASSWORD@postgres:5432/console_prod URL from the secret manager>'
 export CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD='<distinct value from the production secret manager>'
 export CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD='<another distinct value from the production secret manager>'
 export CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD='<a third distinct command-only value from the production secret manager>'
 ```
 
-All six passwords are mandatory and pairwise distinct. `postgres` starts with
+All seven passwords are mandatory and pairwise distinct. `AUTH_DATABASE_URL`
+must identify the same database and auth credential supplied to topology;
+percent-encode reserved password characters. Compose requires both auth inputs
+when parsing the full model, including dependency-only commands. Only the API
+receives the auth URL; only topology receives the raw auth password. The local
+`dev-up` command constructs these inputs, using `postgres:5432` for Compose and
+the published loopback port for its host API. Configuration checks alone do not
+prove that two transports connect to the same database.
+
+`postgres` starts with
 the cluster administrator, then the one-shot `postgres-topology` service runs
 `postgres-reconcile-topology.sh` on both fresh and existing volumes. It creates
-or pins the exact seven application roles, makes `console_app` the database/schema
+or pins the existing application roles and isolated `console_auth_rt` login, makes `console_app` the database/schema
 owner, gives that migration-only identity explicit `BYPASSRLS` for populated
 tenant-wide backfills, makes it a non-admin member of both NOLOGIN definers,
 and verifies readback. The `migrate` service then connects directly as
