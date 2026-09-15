@@ -361,12 +361,18 @@ mod current_profile_admission {
             "HISTORICAL_PROFILE_ADMISSION: exact old finalized profile must refuse current startup with upgrade_required"
         );
 
+        let expected_roots =
+            super::super::account_root_transition::expected_roots_after_backfill(&pool).await;
         // Same real operator API, no runtime mode and no test-built verifier.
         finalize_account_custody(&pool).await;
         let upgraded = complete_state(&pool).await;
+        let mut expected_rows = before["rows"].clone();
+        let mut roots = expected_roots.as_array().unwrap().clone();
+        roots.sort_by_key(|row| row["id"].as_str().unwrap().to_owned());
+        expected_rows["accounts"] = Value::Array(roots);
         assert!(
-            before["rows"] == upgraded["rows"],
-            "operator upgrade must preserve every retained row and receipt byte"
+            expected_rows == upgraded["rows"],
+            "operator upgrade preserves every old row and adds only exact missing legacy roots"
         );
         for original in before["functions"].as_array().unwrap() {
             assert!(

@@ -42,6 +42,8 @@ mod account_custody_startup;
 mod account_fence_projection;
 #[path = "auth_rest/account_fence_transport.rs"]
 mod account_fence_transport;
+#[path = "auth_rest/account_root_transition.rs"]
+mod account_root_transition;
 #[path = "auth_rest/account_storage.rs"]
 mod account_storage;
 #[path = "auth_rest/auth_target_parser.rs"]
@@ -3544,11 +3546,55 @@ async fn insert_account_fence(pool: &PgPool, subject: UserId, state: &str) {
         "Account schema prerequisite missing; legacy-fence assertions not reached"
     );
     let mut tx = pool.begin().await.unwrap();
-    sqlx::query("INSERT INTO accounts (id, created_at) VALUES ($1, now())")
-        .bind(subject.as_uuid())
-        .execute(&mut *tx)
-        .await
-        .unwrap();
+    let user: Option<(Uuid, OffsetDateTime)> =
+        sqlx::query_as("SELECT id,created_at FROM public.users WHERE id=$1 FOR KEY SHARE")
+            .bind(subject.as_uuid())
+            .fetch_optional(&mut *tx)
+            .await
+            .unwrap();
+    let root: Option<(Uuid, OffsetDateTime)> =
+        sqlx::query_as("SELECT id,created_at FROM public.accounts WHERE id=$1 FOR KEY SHARE")
+            .bind(subject.as_uuid())
+            .fetch_optional(&mut *tx)
+            .await
+            .unwrap();
+    if let Some(root) = root {
+        // Only an exact bridge-created legacy fixture root may be reused.
+        // Native fixture roots still use the original fresh INSERT below.
+        assert_eq!(
+            Some(root),
+            user,
+            "fixture root must equal the original legacy identity tuple"
+        );
+        let bridge: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_trigger WHERE tgrelid='public.users'::regclass AND tgname='00_account_legacy_user_root_v1' AND tgenabled='A' AND tgtype=5 AND NOT tgisinternal)")
+            .fetch_one(&mut *tx).await.unwrap();
+        assert!(
+            bridge,
+            "existing root reuse requires the installed legacy bridge"
+        );
+    } else {
+        let bridge: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_trigger WHERE tgrelid='public.users'::regclass AND tgname='00_account_legacy_user_root_v1')")
+            .fetch_one(&mut *tx).await.unwrap();
+        assert!(
+            user.is_none() || !bridge,
+            "fixture must not repair a missing bridged root"
+        );
+        sqlx::query("INSERT INTO accounts (id, created_at) VALUES ($1, now())")
+            .bind(subject.as_uuid())
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+    }
+    let fenced: bool =
+        sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM account_security WHERE account_id=$1)")
+            .bind(subject.as_uuid())
+            .fetch_one(&mut *tx)
+            .await
+            .unwrap();
+    assert!(
+        !fenced,
+        "fixture must add a new fence, never overwrite security"
+    );
     sqlx::query(
         "INSERT INTO account_security (account_id, security_state, security_generation, revision, updated_at, context_generation) \
          VALUES ($1, $2, 1, 1, now(), 1)",
