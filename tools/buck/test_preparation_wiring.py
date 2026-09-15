@@ -36,6 +36,11 @@ APP_CASES = [
     "durability_composition_tests::required_app_startup_admits_only_the_installed_observer",
     "durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply",
     "durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry",
+    "durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay",
+    "durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command",
+    "durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs",
+    "durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events",
+    "durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown",
 ]
 SUPERVISED_CASES = {**CASES, OBSERVER_CASE: "", **dict.fromkeys(APP_CASES, "")}
 LIVE_IF = "${{ needs.preflight.outputs.run_live_postgres == 'true' }}"

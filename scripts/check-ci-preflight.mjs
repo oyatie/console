@@ -53,7 +53,12 @@ const recoveryCommands = [
   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test durability_observer real_observer_installer_is_atomic_replay_exact_and_drift_refusing -- --exact --test-threads=1 --nocapture",
   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_app_startup_admits_only_the_installed_observer -- --exact --test-threads=1 --nocapture",
   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply -- --exact --test-threads=1 --nocapture",
-  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry -- --exact --test-threads=1 --nocapture"
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown -- --exact --test-threads=1 --nocapture"
 ];
 const skipLivePostgresCondition = "${{ needs.preflight.outputs.run_live_postgres != 'true' }}";
 /** Heavy proofs that are postsubmit-only (push / workflow_dispatch). */
@@ -1189,6 +1194,11 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("App recovery required_app_startup_admits_only_the_installed_observer", recoveryCommands[10], { if: recoveryRunCondition }),
     proofRun("App recovery required_api_projected_payroll_dispatch_waits_for_remote_apply", recoveryCommands[11], { if: recoveryRunCondition }),
     proofRun("App recovery required_workflow_spawn_keeps_unknown_staging_pending_until_retry", recoveryCommands[12], { if: recoveryRunCondition }),
+    proofRun("App recovery required_api_completion_unknown_reconciles_same_command_after_replay", recoveryCommands[13], { if: recoveryRunCondition }),
+    proofRun("App recovery required_api_receipt_absent_unknown_renews_approval_with_same_command", recoveryCommands[14], { if: recoveryRunCondition }),
+    proofRun("App recovery required_api_confirmed_owner_audit_failure_replays_and_repairs", recoveryCommands[15], { if: recoveryRunCondition }),
+    proofRun("App recovery required_workflow_typed_unknown_preserves_pending_and_failed_events", recoveryCommands[16], { if: recoveryRunCondition }),
+    proofRun("App recovery required_workflow_provenance_refusal_is_operation_not_unknown", recoveryCommands[17], { if: recoveryRunCondition }),
   ],
   "rust-fmt": [
     proofRun("rustfmt check", "cargo fmt --all -- --check"),

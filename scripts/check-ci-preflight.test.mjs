@@ -948,8 +948,8 @@ describe("CI preflight contract", () => {
       "postgres-reachability-platform": 3,
       "postgres-reachability-ontology": 3,
       "postgres-reachability-domain-a": 3,
-      // Pinned image setup, nine recovery scenarios, observer and three app cases.
-      "postgres-reachability-domain-b": 17,
+      // Pinned image setup, nine recovery scenarios, observer and eight app cases.
+      "postgres-reachability-domain-b": 22,
       "postgres-domain-reachability": 3,
       "required-ci": 1,
       "rust-fmt": 1,
@@ -1009,9 +1009,9 @@ describe("CI preflight contract", () => {
     // previously dark 13-test suite and subjects the new step to all bypasses.
     // 2026-08-28: +1 rust-fmt presubmit run step (oyatie lint analog).
     // +1: isolate the app dev-auth feature case so an earlier failure cannot hide it.
-    assert.equal(runStepCount, 151, "required and planned job run-step coverage must not shrink");
-    // Three app composition proofs extend the matrix: 151*3 = 453.
-    assert.equal(mutationCount, 453, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 156, "required and planned job run-step coverage must not shrink");
+    // Five additional app composition proofs extend the matrix: 156*3 = 468.
+    assert.equal(mutationCount, 468, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
