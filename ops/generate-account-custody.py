@@ -36,9 +36,11 @@ FENCE_INSTALL = """
         RAISE EXCEPTION 'account_fence_projection.role_mismatch';
     END IF;
     IF NOT fence_present THEN
-        -- Explicit dormant ACLs revoke even an owner's ordinary SELECT. The
-        -- parent read is also necessary for PostgreSQL's Account FK checks.
+        -- Explicit dormant ACLs revoke even an owner's ordinary SELECT.
+        -- PostgreSQL FK key-share checks also require parent-column UPDATE.
+        -- This is ordinary owner-only UPDATE authority, not a lock-only right.
         GRANT SELECT ON public.accounts, public.account_security TO console_account_owner;
+        GRANT UPDATE(id) ON public.accounts TO console_account_owner;
         EXECUTE pg_catalog.format('CREATE FUNCTION public.account_legacy_fenced_v1(subject_account_id uuid)
             RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER
             SET search_path=pg_catalog,pg_temp SET row_security=off AS %L', expected_fence_body);
