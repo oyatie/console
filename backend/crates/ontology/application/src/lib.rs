@@ -440,3 +440,7 @@ mod owner28_codec_tests;
 
 /// Plain normalized submission framing; does not admit business authority.
 pub mod owner28;
+
+// Pure draft patch acceptance; internal values do not confer current authority.
+#[cfg(test)]
+mod draft_patch_snapshot_tests;
