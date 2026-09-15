@@ -533,8 +533,8 @@ fn assert_exact_refresh_delta(
     );
     let before_tokens = before["tokens"].as_array().unwrap();
     let after_tokens = after["tokens"].as_array().unwrap();
-    let presented_hash = format!("{:x}", Sha256::digest(presented.as_bytes()));
-    let replacement_hash = format!("{:x}", Sha256::digest(replacement.as_bytes()));
+    let presented_hash = hex::encode(Sha256::digest(presented.as_bytes()));
+    let replacement_hash = hex::encode(Sha256::digest(replacement.as_bytes()));
     let original = before_tokens
         .iter()
         .find(|row| row["token_hash"] == presented_hash)
