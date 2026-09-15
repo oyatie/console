@@ -1535,7 +1535,7 @@ rust_test(
 
 rust_test(
     name = "console-app-itest-auth_rest",
-    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest.rs", "tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_fence_projection.rs", "tests/auth_rest/account_fence_transport.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/auth_target_parser.rs", "tests/auth_rest/publication_privileges.rs"] + glob(["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/auth_rest/actor-migration.csv", "tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/app", ["tests/auth_rest.rs", "tests/auth_rest/account_custody_lifecycle.rs", "tests/auth_rest/account_custody_startup.rs", "tests/auth_rest/account_fence_projection.rs", "tests/auth_rest/account_fence_transport.rs", "tests/auth_rest/account_storage.rs", "tests/auth_rest/auth_target_parser.rs", "tests/auth_rest/publication_privileges.rs"] + glob(["tests/auth_rest/account_storage.rs", "tests/auth_rest/publication_privileges.rs", "tests/auth_rest/actor-migration.csv", "tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql", "tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql"]), external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "auth_rest",
