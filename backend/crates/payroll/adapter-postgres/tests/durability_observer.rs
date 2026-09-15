@@ -475,4 +475,26 @@ async fn real_observer_installer_is_atomic_replay_exact_and_drift_refusing(owner
         snapshot(&mut connection).await == installed,
         "catalog drift escaped test rollback"
     );
+
+    // The fixed observer capability also requires a restricted Business
+    // recipient. These additive replay controls preserve all original39
+    // scenario oracles and restore each runtime-role mutation independently.
+    for (name, mutation) in [
+        (
+            "runtime_monitor_membership",
+            "GRANT pg_monitor TO console_rt",
+        ),
+        (
+            "runtime_direct_control_execute",
+            "GRANT EXECUTE ON FUNCTION pg_catalog.pg_control_system() TO console_rt",
+        ),
+        ("runtime_nologin", "ALTER ROLE console_rt NOLOGIN"),
+        ("runtime_superuser", "ALTER ROLE console_rt SUPERUSER"),
+        ("runtime_bypassrls", "ALTER ROLE console_rt BYPASSRLS"),
+        ("runtime_createdb", "ALTER ROLE console_rt CREATEDB"),
+        ("runtime_createrole", "ALTER ROLE console_rt CREATEROLE"),
+        ("runtime_replication", "ALTER ROLE console_rt REPLICATION"),
+    ] {
+        drift_refused(&mut connection, &sql, name, mutation).await;
+    }
 }
