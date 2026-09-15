@@ -186,10 +186,10 @@ const DEFAULT_HTTP_ADDR: &str = "0.0.0.0:8080";
 const INTELLIGENCE_BIND_PATH: &str = "/internal/intelligence/bind";
 const DEFAULT_SERVICE_NAME: &str = "console-app";
 const DEFAULT_SHUTDOWN_TIMEOUT_SECS: u64 = 10;
-// Blue/green may temporarily run four API pods and the worker rolling update
-// two workers. Six runtime connections per process, plus the API's two
-// 2-connection command pools, caps that surge at 52 and reserves eight of
-// PostgreSQL's configured 60 for migration/topology/operator work.
+// Four API pods and two workers can use 68 connections: six runtime connections
+// per process plus three 2-connection command pools and one auth pool per API.
+// Deployment sizing must also reserve migration/topology/operator capacity;
+// these pool limits do not certify that a 60-connection database supports surge.
 const RUNTIME_DATABASE_POOL_MAX_CONNECTIONS: u32 = 6;
 // These role-backed defaults are an operational correctness backstop for every
 // serving pool. They limit accidental/buggy work; they are not a security
@@ -1532,6 +1532,8 @@ pub struct AppState {
 }
 
 impl AppState {
+    /// Compose injected dependencies without connecting or admitting database
+    /// transports. Production serving startup uses [`Self::from_config`].
     pub fn new(config: AppConfig, database: DatabaseDependency) -> Result<Self, AppError> {
         let jwt_verifier = config
             .jwt
@@ -1701,10 +1703,47 @@ impl AppState {
             _ => DatabaseDependency::NotConfigured,
         };
 
+        let auth_database = match (config.role, &database, config.auth_rest.as_ref()) {
+            (AppRole::Api, DatabaseDependency::Postgres(business), Some(_)) => {
+                let url = config.auth_database_url.as_deref().ok_or_else(|| {
+                    AppError::Config("AUTH_DATABASE_URL is required for API authentication".into())
+                })?;
+                let auth = connect_command_pool(url, "console_auth_rt", "AUTH_DATABASE_URL")
+                    .await
+                    .map_err(|_| {
+                        AppError::Config(
+                            "AUTH_DATABASE_URL authentication or serving-role validation failed"
+                                .into(),
+                        )
+                    })?;
+                let business_target = observed_database_target(business).await;
+                let auth_target = observed_database_target(&auth).await;
+                match (business_target, auth_target) {
+                    (Ok(business), Ok(auth)) if business == auth => {}
+                    _ => {
+                        return Err(AppError::Config(
+                            "AUTH_DATABASE_URL must reach the same observed database target as DATABASE_URL"
+                                .into(),
+                        ));
+                    }
+                }
+                Some(auth)
+            }
+            _ => None,
+        };
+
         let mut state = Self::new(config.clone(), database)?;
         state.leave_command_database = leave_command_database;
         state.ontology_command_database = ontology_command_database;
         state.platform_force_command_database = platform_force_command_database;
+        if let Some(pool) = auth_database {
+            let auth_rest = state.auth_rest.take().ok_or_else(|| {
+                AppError::Config(
+                    "AUTH_DATABASE_URL requires configured authentication services".into(),
+                )
+            })?;
+            state.auth_rest = Some(auth_rest.with_auth_database(pool));
+        }
         if let (DatabaseDependency::Postgres(pool), Some(storage_config)) =
             (&state.database, config.storage.as_ref())
         {
@@ -1885,6 +1924,24 @@ async fn connect_command_pool(
         .map_err(AppError::Database)?;
     validate_database_pool_identity(&pool, env_name, expected_role).await?;
     Ok(pool)
+}
+
+/// Compare the server/database actually observed at startup, allowing URL
+/// spelling aliases that reach the same endpoint. Non-null TCP address/port
+/// decoding deliberately refuses Unix sockets and incomplete readbacks.
+/// This is not physical cluster identity or a guarantee about later reconnects,
+/// primary/replica freshness, proxy routing, restore generations or HA.
+async fn observed_database_target(
+    pool: &PgPool,
+) -> Result<(String, i64, String, i32), sqlx::Error> {
+    sqlx::query_as(
+        "SELECT pg_catalog.current_database()::text, d.oid::bigint, \
+         pg_catalog.inet_server_addr()::text, pg_catalog.inet_server_port() \
+         FROM pg_catalog.pg_database d WHERE d.datname=pg_catalog.current_database()",
+    )
+    // rls-arming: ok serving target admission reads only global PostgreSQL metadata
+    .fetch_one(pool)
+    .await
 }
 
 async fn reset_database_connection_state(conn: &mut PgConnection) -> Result<(), sqlx::Error> {
@@ -3926,6 +3983,21 @@ async fn readyz(State(state): State<AppState>) -> impl IntoResponse {
     let database = readiness_dependency_status(&state.database, "runtime").await;
     let command_databases_required = state.config.role == AppRole::Api
         && matches!(state.database, DatabaseDependency::Postgres(_));
+    let auth_ready = if command_databases_required && state.config.auth_rest.is_some() {
+        let dependency = state
+            .auth_rest
+            .as_ref()
+            .and_then(AuthRestState::auth_database)
+            .cloned()
+            .map_or(
+                DatabaseDependency::NotConfigured,
+                DatabaseDependency::Postgres,
+            );
+        let status = readiness_dependency_status(&dependency, "auth").await;
+        status.configured && status.ready
+    } else {
+        true
+    };
     let leave_command_database =
         readiness_dependency_status(&state.leave_command_database, "leave_command").await;
     let ontology_command_database =
@@ -3941,6 +4013,7 @@ async fn readyz(State(state): State<AppState>) -> impl IntoResponse {
         DatabaseDependency::NotConfigured => true,
     };
     let ready = database.healthy()
+        && auth_ready
         && custody_ready
         && (!command_databases_required
             || (leave_command_database.configured

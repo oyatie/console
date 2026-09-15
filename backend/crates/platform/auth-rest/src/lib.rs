@@ -180,6 +180,7 @@ pub struct AuthRestConfig {
 #[derive(Clone)]
 pub struct AuthRestState {
     pool: PgPool,
+    auth_database: Option<PgPool>,
     services: Option<AuthServices>,
 }
 
@@ -218,6 +219,7 @@ impl AuthRestState {
     pub fn disabled(pool: PgPool) -> Self {
         Self {
             pool,
+            auth_database: None,
             services: None,
         }
     }
@@ -249,6 +251,7 @@ impl AuthRestState {
 
         Ok(Self {
             pool,
+            auth_database: None,
             services: Some(AuthServices {
                 passkeys,
                 jwt_issuer,
@@ -264,6 +267,21 @@ impl AuthRestState {
                 email_sender: Arc::new(DisabledEmailSender),
             }),
         })
+    }
+
+    /// Retain the restricted authentication transport admitted by the
+    /// composition root, separately from the legacy Company business pool.
+    #[must_use]
+    pub fn with_auth_database(mut self, pool: PgPool) -> Self {
+        self.auth_database = Some(pool);
+        self
+    }
+
+    /// The retained transport used by application readiness. Constructors that
+    /// only compose injected dependencies do not perform transport admission.
+    #[must_use]
+    pub fn auth_database(&self) -> Option<&PgPool> {
+        self.auth_database.as_ref()
     }
 
     /// Install the outbound OTP email sender used by the open-signup endpoint.
