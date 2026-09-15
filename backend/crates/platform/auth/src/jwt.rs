@@ -470,6 +470,14 @@ impl JwtVerifier {
     }
 }
 
+#[derive(Deserialize)]
+struct LegacyAccessEnvelope {
+    #[serde(flatten)]
+    claims: AccessClaims,
+    #[serde(default)]
+    token_kind: serde_json::Value,
+}
+
 fn verify_access_token(
     token: &str,
     decoding_key: &DecodingKey,
@@ -479,30 +487,39 @@ fn verify_access_token(
     validation.set_issuer(&[settings.issuer.as_str()]);
     validation.set_audience(&[settings.audience.as_str()]);
     validation.set_required_spec_claims(&["exp", "iss", "aud", "sub"]);
-    let token = decode::<AccessClaims>(token, decoding_key, &validation)?;
+    let envelope = decode::<LegacyAccessEnvelope>(token, decoding_key, &validation)?.claims;
+    if matches!(
+        envelope.token_kind.as_str(),
+        Some("account_v1" | "account_csrf_v1")
+    ) {
+        return Err(AuthError::Jwt(
+            jsonwebtoken::errors::ErrorKind::InvalidToken.into(),
+        ));
+    }
+    let claims = envelope.claims;
     // Fail closed on a malformed tenant claim: the `org` claim arms
     // `app.current_org` for RLS, so a token whose `org` is not a valid UUID must
     // never be accepted — it could otherwise reach the DB with an unparseable or
     // empty tenant context.
-    OrgId::from_str(&token.claims.org).map_err(|_| {
+    OrgId::from_str(&claims.org).map_err(|_| {
         AuthError::InvalidStoredData("token org claim is not a valid uuid".to_owned())
     })?;
-    token.claims.access_scope()?;
-    if token.claims.view_as && !token.claims.group_roles.is_empty() {
+    claims.access_scope()?;
+    if claims.view_as && !claims.group_roles.is_empty() {
         return Err(AuthError::InvalidStoredData(
             "view-as tokens cannot carry group roles".to_owned(),
         ));
     }
-    validate_group_roles(&token.claims.group_roles)?;
+    validate_group_roles(&claims.group_roles)?;
     validate_tenant_context(
-        token.claims.tenant_context,
-        token.claims.group_context_id.as_deref(),
-        token.claims.actor_home_org.as_deref(),
-        &token.claims.roles,
-        &token.claims.group_roles,
-        token.claims.platform,
-        token.claims.view_as,
-        token.claims.read_only,
+        claims.tenant_context,
+        claims.group_context_id.as_deref(),
+        claims.actor_home_org.as_deref(),
+        &claims.roles,
+        &claims.group_roles,
+        claims.platform,
+        claims.view_as,
+        claims.read_only,
     )?;
-    Ok(token.claims)
+    Ok(claims)
 }
