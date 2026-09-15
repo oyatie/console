@@ -203,3 +203,297 @@ async fn account_fence_refresh_body_refuses_before_issuance(pool: PgPool) {
 async fn account_fence_refresh_cookie_refuses_before_issuance(pool: PgPool) {
     assert_fenced_refresh_has_no_issuance(&pool, true).await;
 }
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_transport_startup_consumes_configured_auth_credential(pool: PgPool) {
+    prepare_http_database(&pool).await;
+    let subject = UserId::from_uuid(Uuid::new_v4());
+    insert_account_fence(&pool, subject, "ACTIVE").await;
+    // Prove the real restricted auth credential reads the installed projection.
+    // A missing role, routine or database cannot manufacture this refusal.
+    assert_projection(&pool, subject, true).await;
+    let mut pairs = transport_pairs(&pool);
+    let original_auth_url = pairs
+        .iter()
+        .find(|(key, _)| *key == "AUTH_DATABASE_URL")
+        .map(|(_, value)| value.as_str())
+        .expect("configured original auth URL");
+    let direct_auth = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(1)
+        .acquire_timeout(std::time::Duration::from_secs(3))
+        .connect(original_auth_url)
+        .await
+        .expect("original configured auth credential must authenticate directly");
+    direct_auth.close().await;
+    let original = AppConfig::from_pairs(pairs.clone()).expect("valid configured transports");
+    assert!(
+        AppState::from_config(original).await.is_ok(),
+        "valid business and original auth transports must start"
+    );
+
+    // Change only the password at the same target and exact auth username.
+    // URL identity syntax, business credentials and database state stay valid.
+    let wrong_password = format!("TEST_ONLY_wrong_auth_{}", Uuid::new_v4().simple());
+    for (_, configured_url) in account_transport_urls(&pool) {
+        let configured = Url::parse(&configured_url).unwrap();
+        assert!(
+            configured.password() != Some(wrong_password.as_str()),
+            "negative credential must differ from every provisioned transport"
+        );
+    }
+    let auth_pair = pairs
+        .iter_mut()
+        .find(|(key, _)| *key == "AUTH_DATABASE_URL")
+        .expect("one configured auth transport");
+    let mut auth_url = Url::parse(&auth_pair.1).unwrap();
+    auth_url.set_password(Some(&wrong_password)).unwrap();
+    auth_pair.1 = auth_url.to_string();
+    let rejected_url = auth_pair.1.clone();
+    let config = AppConfig::from_pairs(pairs)
+        .expect("distinct wrong credential remains syntactically valid configuration");
+    // Require real password authentication, not trust-authenticated fixtures or
+    // a stopped database masquerading as an invalid credential refusal.
+    let wrong_login = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(1)
+        .acquire_timeout(std::time::Duration::from_secs(3))
+        .connect(&rejected_url)
+        .await;
+    let direct_error = match wrong_login {
+        Err(error) => error,
+        Ok(unexpected) => {
+            unexpected.close().await;
+            panic!("AUTH_FIXTURE_PASSWORD: invalid credential authenticated directly");
+        }
+    };
+    assert!(
+        direct_error
+            .as_database_error()
+            .and_then(|error| error.code())
+            .as_deref()
+            == Some("28P01"),
+        "wrong auth credential must fail with PostgreSQL invalid_password"
+    );
+    let error = match AppState::from_config(config).await {
+        Err(error) => error,
+        Ok(_) => panic!("AUTH_POOL_CREDENTIAL: startup ignored the invalid auth credential"),
+    };
+    let message = error.to_string();
+    assert!(
+        message.contains("AUTH_DATABASE_URL"),
+        "startup refusal must identify the auth transport"
+    );
+    assert!(
+        !message.contains(&wrong_password) && !message.contains(&rejected_url),
+        "startup refusal must not expose auth credential or connection URL"
+    );
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage(
+    pool: PgPool,
+) {
+    prepare_http_database(&pool).await;
+    let subject = UserId::from_uuid(Uuid::new_v4());
+    insert_account_fence(&pool, subject, "ACTIVE").await;
+    assert_projection(&pool, subject, true).await;
+    let auth_url = login_test_database_url(&pool, TestDatabaseLogin::Auth);
+    tokio::time::timeout(std::time::Duration::from_secs(3), async {
+        loop {
+            let before_start: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname=current_database() AND usename='console_auth_rt'",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            if before_start == 0 {
+                break;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(25)).await;
+        }
+    })
+    .await
+    .expect("direct projection control must close its auth pool");
+    let original_role: Value = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(original_role["rolcanlogin"], true);
+    let state = AppState::from_config(
+        AppConfig::from_pairs(transport_pairs(&pool)).expect("valid configured transports"),
+    )
+    .await
+    .expect("real configured startup must succeed before outage");
+    let router = build_router(state.clone());
+    let ready = |router: axum::Router| async move {
+        router
+            .oneshot(
+                Request::builder()
+                    .uri("/readyz")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap()
+            .status()
+    };
+    let outcome = std::panic::AssertUnwindSafe(async {
+        assert_eq!(ready(router.clone()).await, StatusCode::OK);
+        let retained: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+             WHERE datname=current_database() AND usename='console_auth_rt' \
+             AND backend_type='client backend'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(
+            retained > 0,
+            "AUTH_POOL_RETAINED: real startup must retain an authenticated auth backend"
+        );
+        let other_database_auth: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+             WHERE datname<>current_database() AND usename='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(
+            other_database_auth, 0,
+            "auth role fault requires exclusive fixture custody"
+        );
+        // Cluster-global role fault is permitted only inside this exclusive
+        // disposable SQLx harness. No credential, membership or grant changes.
+        // The outer cleanup restores LOGIN even when any assertion panics.
+        sqlx::query("ALTER ROLE console_auth_rt NOLOGIN")
+            .execute(&pool)
+            .await
+            .unwrap();
+        let can_login: bool = sqlx::query_scalar(
+            "SELECT rolcanlogin FROM pg_catalog.pg_roles WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(!can_login, "auth-only login fault must be installed");
+        let terminated: Vec<(i32, bool)> = sqlx::query_as(
+            "SELECT pid, pg_terminate_backend(pid, 5000) FROM pg_catalog.pg_stat_activity \
+             WHERE datname=current_database() AND usename='console_auth_rt' \
+             AND backend_type='client backend'",
+        )
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+        assert!(
+            !terminated.is_empty() && terminated.iter().all(|(_, stopped)| *stopped),
+            "terminate only the retained auth backends in this disposable database"
+        );
+        let remaining: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+             WHERE datname=current_database() AND usename='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(
+            remaining, 0,
+            "terminated auth backends must actually be gone"
+        );
+        let direct = sqlx::postgres::PgPoolOptions::new()
+            .max_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(3))
+            .connect(&auth_url)
+            .await;
+        let auth_error = match direct {
+            Err(error) => error,
+            Ok(unexpected) => {
+                unexpected.close().await;
+                panic!("AUTH_OUTAGE_FAULT: disabled auth LOGIN still authenticated");
+            }
+        };
+        assert!(
+            auth_error
+                .as_database_error()
+                .and_then(|error| error.code())
+                .as_deref()
+                == Some("28000"),
+            "outage must be PostgreSQL NOLOGIN refusal, not database/network failure"
+        );
+        // Every other serving role must still authenticate and execute work.
+        // This rules out the existing runtime/command health dependencies as
+        // the reason for a503 from the actual readyz handler.
+        for login in [
+            TestDatabaseLogin::Business,
+            TestDatabaseLogin::LeaveCommand,
+            TestDatabaseLogin::OntologyCommand,
+            TestDatabaseLogin::PlatformForceCommand,
+        ] {
+            let unaffected = console_platform_test_support::login_test_pool(&pool, login).await;
+            assert_eq!(
+                sqlx::query_scalar::<_, i32>("SELECT 1")
+                    .fetch_one(&unaffected)
+                    .await
+                    .unwrap(),
+                1
+            );
+            if matches!(login, TestDatabaseLogin::Business) {
+                // Same production custody SQL and transaction settings: NOLOGIN
+                // must not cause an unrelated catalog custody failure.
+                let mut tx = unaffected.begin().await.unwrap();
+                sqlx::query("SET TRANSACTION READ ONLY")
+                    .execute(&mut *tx)
+                    .await
+                    .unwrap();
+                sqlx::raw_sql(
+                    "SET LOCAL search_path=pg_catalog,pg_temp; SET LOCAL statement_timeout='3s'",
+                )
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+                let verdict: String =
+                    sqlx::query_scalar(include_str!("../../src/account_custody_state.sql"))
+                        .fetch_one(&mut *tx)
+                        .await
+                        .unwrap();
+                tx.commit().await.unwrap();
+                assert_eq!(verdict, "account_custody.finalized");
+            }
+            unaffected.close().await;
+        }
+        assert_eq!(
+            ready(router.clone()).await,
+            StatusCode::SERVICE_UNAVAILABLE,
+            "AUTH_READINESS: healthy business cannot hide unavailable retained auth transport"
+        );
+    })
+    .catch_unwind()
+    .await;
+    // This fixed restoration is outside the unwinding body. LOGIN was proved
+    // true before the fault; all other role attributes must remain identical.
+    let restore = sqlx::query("ALTER ROLE console_auth_rt LOGIN")
+        .execute(&pool)
+        .await;
+    let restored: Result<Value, _> = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+    )
+    .fetch_one(&pool)
+    .await;
+    if restore.is_err() || restored.as_ref().ok() != Some(&original_role) {
+        state.shutdown_realtime().await;
+        panic!("AUTH_OUTAGE_CLEANUP: exact original auth role was not restored");
+    }
+    if let Err(panic) = outcome {
+        state.shutdown_realtime().await;
+        std::panic::resume_unwind(panic);
+    }
+    // The same retained AppState/router must recover without reconstructing it.
+    let recovered = ready(router).await;
+    state.shutdown_realtime().await;
+    assert_eq!(
+        recovered,
+        StatusCode::OK,
+        "restored auth transport must recover readiness"
+    );
+}
