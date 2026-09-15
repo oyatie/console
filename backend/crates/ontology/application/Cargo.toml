@@ -13,9 +13,10 @@ serde.workspace = true
 serde_json.workspace = true
 time.workspace = true
 uuid.workspace = true
+sha2.workspace = true
+jsonschema = { version = "=0.56.0", default-features = false }
 
 [dev-dependencies]
-sha2.workspace = true
 hex.workspace = true
 
 [lints]
