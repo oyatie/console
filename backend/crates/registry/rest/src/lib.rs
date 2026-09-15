@@ -1426,7 +1426,11 @@ async fn verify_object_action_step_up(
     })?;
     verifier
         .verify_step_up_for_user(
-            state.store.pool(),
+            state
+                .session_verification
+                .as_ref()
+                .ok_or_else(|| RestError::unavailable("authentication storage unavailable"))?
+                .auth_pool(),
             step_up.ceremony_id,
             step_up.credential,
             *principal.user_id.as_uuid(),

@@ -32,6 +32,12 @@ impl SessionVerification {
         &self.verifier
     }
 
+    /// The admitted Auth transport for credential owners; never a Business pool.
+    #[must_use]
+    pub fn auth_pool(&self) -> &PgPool {
+        &self.auth_database
+    }
+
     /// Read the strict Account presence projection through the bound Auth pool.
     /// Only a successful `false` permits a legacy subject. Missing/NULL results
     /// and unavailable transport remain errors, never an unfenced result.

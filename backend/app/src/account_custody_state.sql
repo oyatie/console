@@ -2,7 +2,79 @@
 -- Caller must use search_path=pg_catalog,pg_temp. No Account/user rows are read.
 -- Historical shapes are fixed from reviewed0226. The only projected-out root
 -- objects are independently certified below; body hashes derive from source.
-WITH expected(name, owner_name, shape_sha256) AS (VALUES
+WITH auth7_expected(relation_name,column_name,constraint_name) AS (VALUES
+ ('auth_bootstrap_credentials','user_id','auth_bootstrap_credentials_account_v1'),
+ ('auth_refresh_token_families','user_id','auth_refresh_token_families_account_v1'),
+ ('auth_refresh_tokens','user_id','auth_refresh_tokens_account_v1'),
+ ('auth_webauthn_ceremonies','user_id','auth_webauthn_ceremonies_account_v1'),
+ ('auth_webauthn_credentials','user_id','auth_webauthn_credentials_account_v1'),
+ ('auth_device_login_handoffs','target_user_id','auth_device_login_handoffs_target_account_v1'),
+ ('auth_device_login_handoffs','approved_user_id','auth_device_login_handoffs_approved_account_v1')
+), auth7_keys AS (
+ SELECT e.*, c.oid AS source_oid,a.oid AS account_oid,ak.conindid AS account_index_oid,
+   ca.attnum AS source_attnum,aa.attnum AS account_attnum,
+   COALESCE(c.relkind='r' AND c.relpersistence='p' AND NOT c.relispartition
+     AND a.relkind='r' AND a.relpersistence='p' AND NOT a.relispartition
+     AND NOT EXISTS(SELECT 1 FROM pg_inherits i
+       WHERE i.inhrelid IN(c.oid,a.oid) OR i.inhparent IN(c.oid,a.oid))
+     AND ca.atttypid='pg_catalog.uuid'::regtype AND NOT ca.attisdropped AND ca.attnum>0
+     AND aa.atttypid='pg_catalog.uuid'::regtype AND aa.attnotnull AND NOT aa.attisdropped AND aa.attnum>0
+     AND ak.conkey=ARRAY[aa.attnum]::smallint[] AND ak.convalidated AND ak.conenforced
+     AND NOT ak.condeferrable AND NOT ak.condeferred
+     AND ai.indisprimary AND ai.indisunique AND ai.indisvalid AND ai.indisready
+     AND ai.indislive AND ai.indimmediate AND ai.indexprs IS NULL AND ai.indpred IS NULL,false) AS valid
+ FROM auth7_expected e
+ LEFT JOIN pg_class c ON c.oid=to_regclass('public.'||e.relation_name)
+ LEFT JOIN pg_class a ON a.oid=to_regclass('public.accounts')
+ LEFT JOIN pg_attribute ca ON ca.attrelid=c.oid AND ca.attname=e.column_name
+ LEFT JOIN pg_attribute aa ON aa.attrelid=a.oid AND aa.attname='id'
+ LEFT JOIN pg_constraint ak ON ak.conrelid=a.oid AND ak.contype='p'
+ LEFT JOIN pg_index ai ON ai.indexrelid=ak.conindid
+), auth7_fk AS (
+ SELECT k.*,f.oid AS fk_oid,
+   COALESCE(k.valid AND f.contype='f' AND f.connamespace='public'::regnamespace
+     AND f.conrelid=k.source_oid AND f.confrelid=k.account_oid AND f.contypid=0
+     AND f.conkey=ARRAY[k.source_attnum]::smallint[] AND f.confkey=ARRAY[k.account_attnum]::smallint[]
+     AND f.conindid=k.account_index_oid AND f.convalidated AND f.conenforced
+     AND NOT f.condeferrable AND NOT f.condeferred AND f.connoinherit
+     AND f.conislocal AND f.coninhcount=0 AND f.conparentid=0 AND NOT f.conperiod
+     AND f.confupdtype='r' AND f.confdeltype='r' AND f.confmatchtype='s'
+     AND f.confdelsetcols IS NULL AND f.conbin IS NULL AND f.conexclop IS NULL
+     AND f.conpfeqop=ARRAY['pg_catalog.=(uuid,uuid)'::regoperator::oid]
+     AND f.conppeqop=ARRAY['pg_catalog.=(uuid,uuid)'::regoperator::oid]
+     AND f.conffeqop=ARRAY['pg_catalog.=(uuid,uuid)'::regoperator::oid]
+     AND (SELECT count(*)=1 FROM pg_constraint other WHERE other.conname=k.constraint_name),false) AS valid_fk
+ FROM auth7_keys k LEFT JOIN pg_constraint f
+   ON f.conrelid=k.source_oid AND f.conname=k.constraint_name
+), auth7_ri_expected(function_name,on_source,trigger_type) AS (VALUES
+ ('RI_FKey_check_ins',true,5),('RI_FKey_check_upd',true,17),
+ ('RI_FKey_restrict_del',false,9),('RI_FKey_restrict_upd',false,17)
+), auth7_ri AS (
+ SELECT f.fk_oid,e.function_name,(SELECT count(*)=1 AND bool_and(
+     t.tgrelid=CASE WHEN e.on_source THEN f.source_oid ELSE f.account_oid END
+     AND t.tgconstrrelid=CASE WHEN e.on_source THEN f.account_oid ELSE f.source_oid END
+     AND t.tgconstrindid=f.account_index_oid AND t.tgconstraint=f.fk_oid
+     AND t.tgfoid=to_regprocedure('pg_catalog.'||quote_ident(e.function_name)||'()')
+     AND t.tgisinternal AND t.tgenabled='O' AND t.tgtype=e.trigger_type
+     AND NOT t.tgdeferrable AND NOT t.tginitdeferred
+     AND t.tgname::text ~ CASE WHEN e.on_source THEN '^RI_ConstraintTrigger_c_[0-9]+$' ELSE '^RI_ConstraintTrigger_a_[0-9]+$' END
+     AND t.tgnargs=0 AND octet_length(t.tgargs)=0 AND t.tgattr=''::int2vector
+     AND t.tgqual IS NULL AND t.tgparentid=0 AND t.tgoldtable IS NULL AND t.tgnewtable IS NULL)
+   FROM pg_trigger t WHERE t.tgconstraint=f.fk_oid
+     AND t.tgfoid=to_regprocedure('pg_catalog.'||quote_ident(e.function_name)||'()')) AS valid
+ FROM auth7_fk f CROSS JOIN auth7_ri_expected e
+), auth7_root_profile AS (
+ SELECT EXISTS(SELECT 1 FROM pg_constraint c JOIN auth7_expected e ON c.conname=e.constraint_name) AS present,
+   COALESCE((SELECT count(*)=7 AND bool_and(valid_fk) FROM auth7_fk)
+     -- Count every incoming Account FK on these six credential relations, even
+     -- an extra named FK whose Account-side RI triggers were removed by drift.
+     AND (SELECT count(*)=7 FROM pg_constraint c
+       WHERE c.contype='f' AND c.confrelid=to_regclass('public.accounts')
+         AND c.conrelid IN (SELECT source_oid FROM auth7_keys))
+     AND (SELECT count(*)=28 AND bool_and(valid) FROM auth7_ri)
+     AND (SELECT count(*)=28 FROM pg_trigger t JOIN auth7_fk f ON f.fk_oid=t.tgconstraint),false) AS valid
+),
+ expected(name, owner_name, shape_sha256) AS (VALUES
  ('accounts','console_account_owner','bf8b3a765aca8473b0bdcb977a3c2adbb2c1fe0dd775cc151faae1271427d3f9'),
  ('account_security','console_account_owner','6d97077ecd0b70761f3ac9396e862bb3906f0f3f20b9927356f3127da607bd25'),
  ('account_security_events','console_account_owner','4ede3fbfc37609d90f0288d26192baa8cb2f2893052233483767f91d90545e8d'),
@@ -26,7 +98,8 @@ SELECT wanted.name, jsonb_build_object(
  WHERE t.tgrelid=c.oid AND NOT (wanted.name='accounts' AND (
    t.tgname='account_roots_immutable_v1' OR t.tgconstraint IN (
      SELECT root_key.oid FROM pg_constraint root_key
-     WHERE root_key.conrelid=to_regclass('public.users') AND root_key.conname='users_account_root_v1')))) triggers),
+     WHERE root_key.conrelid=to_regclass('public.users') AND root_key.conname='users_account_root_v1')
+   OR ((SELECT valid FROM auth7_root_profile) AND t.tgconstraint IN (SELECT fk_oid FROM auth7_fk))))) triggers),
  'rules',(SELECT jsonb_agg(pg_get_ruledef(r.oid) ORDER BY r.rulename) FROM pg_rewrite r WHERE r.ev_class=c.oid),
  'policies',(SELECT count(*) FROM pg_policy p WHERE p.polrelid=c.oid),
  'inheritance',(SELECT count(*) FROM pg_inherits i WHERE i.inhrelid=c.oid OR i.inhparent=c.oid)
@@ -189,9 +262,12 @@ ORDER BY wanted.name), relations AS (
           AND p.prosqlbody IS NULL AND p.protrftypes IS NULL
           AND encode(sha256(convert_to(p.prosrc,'UTF8')),'hex')=(SELECT sha256 FROM routine_bodies WHERE name='account_legacy_fenced_v1')
           AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp','row_security=off']::text[]
-          AND (SELECT count(*)=2 AND count(DISTINCT a.grantee)=2 AND bool_and(a.grantor=p.proowner
+          AND (SELECT count(*)=CASE WHEN (SELECT valid FROM auth7_root_profile) THEN 4 ELSE 2 END
+                AND count(DISTINCT a.grantee)=CASE WHEN (SELECT valid FROM auth7_root_profile) THEN 4 ELSE 2 END AND bool_and(a.grantor=p.proowner
                 AND a.privilege_type='EXECUTE' AND NOT a.is_grantable
-                AND COALESCE(a.grantee IN (p.proowner,(SELECT oid FROM pg_roles WHERE rolname='console_auth_rt')),false))
+                AND COALESCE((a.grantee IN (p.proowner,(SELECT oid FROM pg_roles WHERE rolname='console_auth_rt'))
+                  OR ((SELECT valid FROM auth7_root_profile) AND a.grantee IN
+                    (SELECT oid FROM pg_roles WHERE rolname IN ('console_credential_owner','console_app')))),false))
                FROM pg_catalog.aclexplode(COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))) a)
  ) AS valid
 ), deactivation_guard AS (
@@ -215,10 +291,13 @@ ORDER BY wanted.name), relations AS (
      AND p.procost=100 AND p.prorows=0
      AND encode(sha256(convert_to(p.prosrc,'UTF8')),'hex')=(SELECT sha256 FROM routine_bodies WHERE name='account_company_deactivation_guard_v1')
      AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']::text[]
-     AND p.proacl IS NOT NULL AND cardinality(p.proacl)=2
-     AND (SELECT count(*)=2 AND count(DISTINCT a.grantee)=2 AND bool_and(
+     AND p.proacl IS NOT NULL AND cardinality(p.proacl)=CASE WHEN (SELECT valid FROM auth7_root_profile) THEN 4 ELSE 2 END
+     AND (SELECT count(*)=CASE WHEN (SELECT valid FROM auth7_root_profile) THEN 4 ELSE 2 END
+       AND count(DISTINCT a.grantee)=CASE WHEN (SELECT valid FROM auth7_root_profile) THEN 4 ELSE 2 END AND bool_and(
        a.grantor=p.proowner AND a.privilege_type='EXECUTE' AND NOT a.is_grantable
-       AND COALESCE(a.grantee IN (p.proowner,(SELECT oid FROM pg_roles WHERE rolname='console_rt')),false))
+       AND COALESCE((a.grantee IN (p.proowner,(SELECT oid FROM pg_roles WHERE rolname='console_rt'))
+         OR ((SELECT valid FROM auth7_root_profile) AND a.grantee IN
+           (SELECT oid FROM pg_roles WHERE rolname IN ('console_credential_owner','console_auth_rt')))),false))
        FROM aclexplode(p.proacl) a)
  ) AS valid
 ), deactivation_users AS (
@@ -399,6 +478,8 @@ SELECT CASE
  THEN 'account_custody.owner_topology_mismatch'
  WHEN EXISTS (SELECT 1 FROM relations WHERE oid IS NULL)
  THEN 'account_custody.catalog_missing'
+ WHEN (SELECT present AND NOT valid FROM auth7_root_profile)
+ THEN 'account_credentials.root_boundary_mismatch'
  WHEN (SELECT present AND NOT valid FROM root_profile)
  THEN 'account_root_transition.profile_mismatch'
  WHEN EXISTS (SELECT 1 FROM relations WHERE actual_shape IS DISTINCT FROM

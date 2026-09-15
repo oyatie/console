@@ -923,7 +923,13 @@ async fn verify_mobile_poll_step_up(
     })?;
     verifier
         .verify_mobile_step_up_for_user(
-            &state.pool,
+            state
+                .session_verification
+                .as_ref()
+                .ok_or_else(|| {
+                    CollaborationError::unavailable("authentication storage unavailable")
+                })?
+                .auth_pool(),
             step_up,
             *principal.user_id.as_uuid(),
             &expected_binding,

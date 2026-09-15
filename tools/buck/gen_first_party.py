@@ -110,7 +110,7 @@ RESOURCE_CONFIG = {
         },
     },
     "console-app": {
-        "srcs": ["src/account_custody_state.sql"],
+        "srcs": ["src/account_custody_state.sql", "src/account_credential_custody_state.sql"],
         "external": {
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
             **MIGRATION_TREE,
@@ -126,6 +126,7 @@ RESOURCE_CONFIG = {
                     "tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql",
                     "tests/auth_rest/fixtures/account-custody-root-input-d66e2112.sql",
                     "src/account_custody_state.sql",
+                    "src/account_credential_custody_state.sql",
                 ],
             },
             "tests/openapi_drift.rs": {
@@ -240,6 +241,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-app': {
         'unit': 'none',
         'integration': {
+            'tests/auth7_mobile_purpose.rs': 'postgres',
             'tests/account_migration.rs': 'postgres',
             'tests/action_inbox_api.rs': 'postgres',
             'tests/attendance_persona_api.rs': 'postgres',
@@ -817,6 +819,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-platform-auth': {
         'unit': 'none',
         'integration': {
+            'tests/auth7_legacy_projection.rs': 'postgres',
             'tests/jwt_es256.rs': 'none',
             'tests/jwt_verifier.rs': 'none',
             'tests/refresh_tokens.rs': 'postgres',

@@ -2435,7 +2435,11 @@ async fn verify_policy_step_up(
     })?;
     verifier
         .verify_step_up_for_user(
-            state.pool(),
+            state
+                .session_verification
+                .as_ref()
+                .ok_or_else(|| RestError::unavailable("session verification is not configured"))?
+                .auth_pool(),
             step_up.ceremony_id,
             step_up.credential,
             *principal.user_id.as_uuid(),
@@ -3951,12 +3955,9 @@ async fn get_branch(
 
 /// List the AUTHENTICATED user's OWN passkey credentials.
 ///
-/// Scoped to BOTH the caller (`principal.user_id`) AND the request's tenant: the
-/// read runs inside `with_org_conn(.., current_org()?, ..)`, which arms the
-/// `app.current_org` GUC so the FORCE-RLS `auth_webauthn_credentials` rows for
-/// this org become visible to the non-owner `console_rt` role. The `WHERE user_id`
-/// filter then narrows to the caller's own credentials. No secret material
-/// (passkey_json / public key / credential_id) ever leaves this handler.
+/// The fixed credential-owner projection checks the verified caller, Company,
+/// and Account fence in one statement snapshot. It returns only the existing
+/// self-service metadata and never exposes credential/private state.
 async fn list_passkeys(
     State(state): State<IdentityRestState>,
     headers: HeaderMap,
@@ -3973,15 +3974,15 @@ async fn list_passkeys(
                 let rows = sqlx::query(
                     r#"
                 SELECT id, created_at, last_used_at
-                FROM auth_webauthn_credentials
-                WHERE user_id = $1
+                FROM public.auth_legacy_self_passkeys_v1($1,$2)
                 ORDER BY created_at
                 "#,
                 )
+                .bind(*org.as_uuid())
                 .bind(user_id)
                 .fetch_all(tx.as_mut())
                 .await
-                .map_err(DbError::Sqlx)?;
+                .map_err(passkey_custody_error)?;
 
                 rows.into_iter()
                     .map(|row| {
@@ -4001,19 +4002,9 @@ async fn list_passkeys(
 
 /// Revoke ONE of the authenticated user's OWN passkey credentials.
 ///
-/// IDOR guard: the DELETE is constrained to `id = $1 AND user_id = $2`, so a user
-/// can never delete another user's credential even within the same org; a
-/// credential that is not the caller's own matches zero rows and yields 404.
-///
-/// Lockout guard: refuses to delete the caller's LAST remaining passkey. A user
-/// whose only login method is a single passkey would otherwise lock themselves
-/// out; deleting it returns 409 with a clear message. (A fresh sign-in OTP can
-/// only be minted by an admin, so the floor is enforced here rather than relying
-/// on a self-service recovery path.)
-///
-/// The whole operation runs in ONE tenant-armed transaction via `with_audits`:
-/// the count check, the ownership-scoped DELETE, and the audit row commit (or roll
-/// back) atomically together.
+/// The fixed owner operation checks ownership before its last-key floor and
+/// serializes concurrent deletes under the Company/users/Account guard. Its
+/// deletion and the existing audit row share this one Company transaction.
 async fn delete_passkey(
     State(state): State<IdentityRestState>,
     headers: HeaderMap,
@@ -4028,56 +4019,27 @@ async fn delete_passkey(
 
     with_audits::<_, (), RestError>(state.pool(), org, move |tx| {
         Box::pin(async move {
-            // Count the caller's own credentials INSIDE the tenant-armed tx so the
-            // last-passkey floor is computed against the same RLS-scoped view the
-            // DELETE acts on.
-            let total: i64 = sqlx::query_scalar(
-                "SELECT count(*) FROM auth_webauthn_credentials WHERE user_id = $1",
+            let deleted = sqlx::query(
+                "SELECT outcome, credential_id FROM public.auth_legacy_self_passkey_delete_v1($1,$2,$3)",
             )
+            .bind(*org.as_uuid())
             .bind(user_id)
+            .bind(id)
             .fetch_one(tx.as_mut())
             .await
-            .map_err(DbError::Sqlx)?;
-
-            // Ownership-scoped delete (IDOR guard): only the caller's OWN row by id
-            // can be removed. A non-matching id (unknown, or another user's) returns
-            // zero rows -> 404.
-            let credential_id: Option<String> = sqlx::query_scalar(
-                r#"
-                SELECT credential_id
-                FROM auth_webauthn_credentials
-                WHERE id = $1 AND user_id = $2
-                "#,
-            )
-            .bind(id)
-            .bind(user_id)
-            .fetch_optional(tx.as_mut())
-            .await
-            .map_err(DbError::Sqlx)?;
-
-            let Some(credential_id) = credential_id else {
-                return Err(RestError::new(
-                    StatusCode::NOT_FOUND,
-                    "not_found",
-                    "passkey not found",
-                ));
+            .map_err(passkey_custody_error)?;
+            let outcome: String = deleted.try_get("outcome").map_err(DbError::Sqlx)?;
+            let credential_id: Option<String> = deleted.try_get("credential_id").map_err(DbError::Sqlx)?;
+            let credential_id = match (outcome.as_str(), credential_id) {
+                ("deleted", Some(credential_id)) => credential_id,
+                ("not_found", None) => return Err(RestError::new(
+                    StatusCode::NOT_FOUND, "not_found", "passkey not found",
+                )),
+                ("last_key", None) => return Err(RestError::new(
+                    StatusCode::CONFLICT, "conflict", "cannot delete your last passkey; register another first",
+                )),
+                _ => return Err(RestError::internal("invalid passkey operation result")),
             };
-
-            // Lockout floor: never remove the caller's only login method.
-            if total <= 1 {
-                return Err(RestError::new(
-                    StatusCode::CONFLICT,
-                    "conflict",
-                    "cannot delete your last passkey; register another first",
-                ));
-            }
-
-            sqlx::query("DELETE FROM auth_webauthn_credentials WHERE id = $1 AND user_id = $2")
-                .bind(id)
-                .bind(user_id)
-                .execute(tx.as_mut())
-                .await
-                .map_err(DbError::Sqlx)?;
 
             let event = AuditEvent::new(
                 Some(actor),
@@ -4103,6 +4065,17 @@ async fn delete_passkey(
     .await?;
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+fn passkey_custody_error(error: sqlx::Error) -> RestError {
+    if matches!(&error, sqlx::Error::Database(db)
+        if db.code().as_deref() == Some("P0001") && db.message() == "auth_legacy.fenced")
+    {
+        RestError::unauthorized("session is no longer valid")
+    } else {
+        tracing::error!("passkey custody operation unavailable");
+        RestError::unavailable("passkey operation is unavailable")
+    }
 }
 
 // ---------------------------------------------------------------------------
