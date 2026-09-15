@@ -112,6 +112,7 @@ const PLAN = new Map([
   ["Console fanout planner exact-M regression", { tier: "fast" }],
   ["Buck PostgreSQL environment wrapper regression", { tier: "fast" }],
   ["Buck disposable PostgreSQL harness regression", { tier: "fast" }],
+  ["Preparation wiring and recovery fixture regressions", { tier: "fast" }],
   ["CI preflight contract", { tier: "fast" }],
   ["Canonical npm lockfile", { tier: "fast" }],
   ["Cargo.lock consistency", { tier: "fast" }],
