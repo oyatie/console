@@ -1,0 +1,10 @@
+{
+  "source_sha": "0007132535578f7abdafeb5192cd07c38376f06d",
+  "writer": "/root",
+  "preparer": "/root/capture_review",
+  "reviewer": "/root",
+  "manifest_sha256": "c76c38ad600cd32175459e8ccfaea72488ba27c3783987fba46e4cacb4f3c3a6",
+  "records_verified_imported": 181,
+  "verification": "Every listed archive regular/hash/roundtrip checked;167explicit private origins byte-identical and13immutable source blobs exact regular Git entries. Derived source index retained as preparer evidence. No unlisted payload imported.",
+  "full206_status": "Subsequent full206 at same source183PASS23FAIL;17browser+5storage gaps and1one-shot fixture regression; separately retained supplement pending. No broad GREEN claim."
+}
