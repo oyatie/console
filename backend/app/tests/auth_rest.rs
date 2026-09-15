@@ -3653,10 +3653,12 @@ async fn assert_legacy_denials(
     responses: impl IntoIterator<Item = http::Response<Body>>,
     known_secrets: &[&str],
 ) {
-    for response in responses {
+    for (ordinal, response) in responses.into_iter().enumerate() {
+        let status = response.status().as_u16();
         assert!(
             legacy_denial_is_safe(response, known_secrets).await,
-            "legacy refusal must be401 with v1 error JSON, no credential cookie/token fields or known secret echoes"
+            "legacy refusal must be401 with v1 error JSON, no credential cookie/token fields or known secret echoes; response {} returned HTTP {status}",
+            ordinal + 1
         );
     }
 }
