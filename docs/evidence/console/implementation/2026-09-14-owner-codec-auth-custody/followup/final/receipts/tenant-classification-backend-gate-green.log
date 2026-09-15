@@ -1,0 +1,4 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.24s
+     Running `target/debug/console-gate-tenant-isolation`
+console-gate-tenant-isolation: checking workspace at /private/tmp/console-production-tdd-preparation-20260913/backend
+console-gate-tenant-isolation: PASSED

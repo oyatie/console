@@ -1,0 +1,28 @@
+[
+  {
+    "lane": "preparation-oracle-register-refinement",
+    "owner": "/root/finish_migration",
+    "worktree": ".",
+    "base_sha": "b0ac94f9f2f5851a2bbd3ed808c4340249c93029",
+    "allow": [
+      "scripts/check-undeclared-imports.test.mjs",
+      "scripts/prototype-chain-lookup-baseline.json"
+    ],
+    "probe": "node --test scripts/check-undeclared-imports.test.mjs && node scripts/check-prototype-chain-lookups.mjs",
+    "target": "Stable historical evidence exclusion oracle and exact unchanged prototype residual locations",
+    "guide": "Apply only independently reviewed patch c835d2ec54758f3ea1044698e9ec0303c865da5a9067fcdff5eaf31ba49885b3. Preserve all20existing tests and assertions, allhistorybytes, all3registerexpressions and classifications. ExistingindexedGitfixture copies actualartifact Buffer; no scannerchanges. Two verifiedlineintegersrefresh only.",
+    "pre_mortem": "Scopechange mayhide realevidenceimport instead of testingexception; line refresh could blessnewsnippet.",
+    "blast_radius": "One test and one residualregister only.",
+    "detection": "Same20test+realprototypegate probe; retained prototype checker test suite.",
+    "rollback": "Revert isolated2filecommit preservingreceipts/logs.",
+    "stop_conditions": [
+      "Scannerchange",
+      "Testweakening",
+      "EvidenceorDependencychange"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": []
+  }
+]

@@ -1,0 +1,5 @@
+scripts/console/run-verification-queue.mjs:250: undefined-compare key="key" (not in scripts/prototype-chain-lookup-baseline.json): if (FORBIDDEN_WRAPPER_ENV.some((key) => process.env[key] !== undefined)) fail('wrapper-affecting environment is forbidden for compatible exact-SHA cohorts');
+scripts/console/run-verification-queue.mjs:313: optional-computed key="key" (not in scripts/prototype-chain-lookup-baseline.json): const available = () => Object.fromEntries(RESOURCE_KEYS.map((key) => [key, resourceBudgets?.[key] ?? Number.MAX_SAFE_INTEGER]));
+scripts/prototype-chain-lookup-baseline.json: stale residual no longer observed: scripts/console/run-verification-queue.mjs:249 undefined-compare key="key"
+scripts/prototype-chain-lookup-baseline.json: stale residual no longer observed: scripts/console/run-verification-queue.mjs:312 optional-computed key="key"
+prototype-chain lookup census FAILED: scanned=54 missing=0 findings=3 unknown=2 stale=2

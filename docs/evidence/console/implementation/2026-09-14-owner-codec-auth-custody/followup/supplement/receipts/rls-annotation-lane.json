@@ -1,0 +1,29 @@
+[
+  {
+    "lane": "VERIFY-rls-global-login-catalog",
+    "owner": "/root/finish_browser",
+    "base_sha": "9c846602511043014a039b77335e762e37032bea",
+    "allow": [
+      "backend/crates/platform/test-support/src/lib.rs"
+    ],
+    "probe": "cd backend && env CARGO_TARGET_DIR=/private/tmp/console-rls-annotation-target RUSTUP_TOOLCHAIN=1.98.1 cargo run --locked -p console-gate-rls-arming > /private/tmp/rls-annotation-probe-current.log 2>&1",
+    "target": "Precisely annotate global pg_roles restricted-login verification using existing reviewed marker mechanism",
+    "guide": "One comment immediately before fetch_one(&pool); no SQL/executor/assertion/test/gate edits. Same actual workspace gate RED\u2192GREEN; existing gate unit suite.",
+    "pre_mortem": "Overbroad exemption hides tenant query",
+    "blast_radius": "One catalog-read annotation in test support",
+    "detection": "Actualgate1violation resolves; exactdiff onecomment; existingmarker rejection/acceptance tests",
+    "rollback": "Revertonecomment",
+    "stop_conditions": [
+      "No reachedcatalog violation",
+      "Any privilege/query/test change",
+      "Unexpected remaining gateviolations"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Product/production acceptance"
+    ],
+    "review": "Reviewer approved narrow design before edit"
+  }
+]

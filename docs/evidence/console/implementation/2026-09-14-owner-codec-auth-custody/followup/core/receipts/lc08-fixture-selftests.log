@@ -1,0 +1,19 @@
+test_absence_requires_failure_and_exact_resource_name (__main__.machinery_tests.<locals>.Machinery.test_absence_requires_failure_and_exact_resource_name) ... ok
+test_cleanup_attempts_all_after_lost_reply (__main__.machinery_tests.<locals>.Machinery.test_cleanup_attempts_all_after_lost_reply) ... ok
+test_docker28_lowercase_absence_is_recognized (__main__.machinery_tests.<locals>.Machinery.test_docker28_lowercase_absence_is_recognized) ... ok
+test_docker29_daemon_absence_is_recognized (__main__.machinery_tests.<locals>.Machinery.test_docker29_daemon_absence_is_recognized) ... ok
+test_duplicate_cannot_replace_omitted_case (__main__.machinery_tests.<locals>.Machinery.test_duplicate_cannot_replace_omitted_case) ... ok
+test_exact_unique_roster_positive (__main__.machinery_tests.<locals>.Machinery.test_exact_unique_roster_positive) ... ok
+test_frozen_executable_mutation_refuses_before_execution (__main__.machinery_tests.<locals>.Machinery.test_frozen_executable_mutation_refuses_before_execution) ... ok
+test_frozen_executable_survives_build_output_replacement (__main__.machinery_tests.<locals>.Machinery.test_frozen_executable_survives_build_output_replacement) ... ok
+test_lost_create_reply_still_registers_cleanup_intent (__main__.machinery_tests.<locals>.Machinery.test_lost_create_reply_still_registers_cleanup_intent) ... ok
+test_missing_unknown_and_failed_case_refuse (__main__.machinery_tests.<locals>.Machinery.test_missing_unknown_and_failed_case_refuse) ... ok
+test_private_cleanup_runs_despite_inspection_exception (__main__.machinery_tests.<locals>.Machinery.test_private_cleanup_runs_despite_inspection_exception) ... ok
+test_real_head_change_refuses_even_when_selected_bytes_same (__main__.machinery_tests.<locals>.Machinery.test_real_head_change_refuses_even_when_selected_bytes_same) ... ok
+test_real_source_change_missing_and_symlink_refuse (__main__.machinery_tests.<locals>.Machinery.test_real_source_change_missing_and_symlink_refuse) ... ok
+test_unavailable_inspection_is_not_absence (__main__.machinery_tests.<locals>.Machinery.test_unavailable_inspection_is_not_absence) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.397s
+
+OK

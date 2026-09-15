@@ -1,0 +1,7 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.63s
+     Running `backend/target/debug/console-gate-tenant-isolation`
+console-gate-tenant-isolation: checking workspace at /private/tmp/console-production-tdd-preparation-20260913
+console-gate-tenant-isolation: FAILED - 3 violation(s):
+  [UnclassifiedTable] /private/tmp/console-production-tdd-preparation-20260913/buck-out/console-owner28-verification/art/root/39893c7e49283da4/third-party/rust/__sqlx-0.9.0.crate__/sqlx-0.9.0.crate/tests/sqlite/migrations/2_post.sql: table 'post' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale.
+  [UnclassifiedTable] /private/tmp/console-production-tdd-preparation-20260913/buck-out/console-owner28-verification/art/root/39893c7e49283da4/third-party/rust/__sqlx-0.9.0.crate__/sqlx-0.9.0.crate/tests/sqlite/migrations/3_comment.sql: table 'comment' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale.
+  [UnclassifiedTable] /private/tmp/console-production-tdd-preparation-20260913/buck-out/console-owner28-verification/art/root/39893c7e49283da4/third-party/rust/__sqlx-0.9.0.crate__/sqlx-0.9.0.crate/tests/sqlite/migrations/1_user.sql: table 'user' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale.

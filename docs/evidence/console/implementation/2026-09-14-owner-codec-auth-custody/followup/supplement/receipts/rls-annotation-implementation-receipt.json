@@ -1,0 +1,35 @@
+{
+  "lane": "VERIFY-rls-global-login-catalog",
+  "owner": "/root/finish_browser",
+  "base_sha": "9c846602511043014a039b77335e762e37032bea",
+  "head_sha": "8bb6e24e2dd31f0da5c552cbf7625903d0b794ae",
+  "source_sha256": "ee5928cf23917ddeb509246bef2fbb71993c144baa6183fd80d4a640a5b22e9c",
+  "scope": "One existing marker comment adjacent to pg_roles restricted-login fetch only; query/executor/assertions/gate/tests unchanged",
+  "probe": "cd backend && env CARGO_TARGET_DIR=/private/tmp/console-rls-annotation-target RUSTUP_TOOLCHAIN=1.98.1 cargo run --locked -p console-gate-rls-arming > /private/tmp/rls-annotation-probe-current.log 2>&1",
+  "red": "Actual workspace gate exactly1BarePoolQuery violation at login_test_pool fetch_one line343; fanoutadmitted cleanbase",
+  "green": "Same actualworkspacegatePASS; no violations",
+  "gate_tests": {
+    "executed": 10,
+    "passed": 10,
+    "ignored": 0,
+    "filtered": 0,
+    "binary_tests": 0,
+    "doc_tests": 0
+  },
+  "logs": {
+    "/private/tmp/rls-annotation-admit.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "/private/tmp/rls-annotation-probe-red.log": "6e617cf9a0642572ef112e84fa2e65d8905cb54c686e6f206ada1692b115be0c",
+    "/private/tmp/rls-annotation-probe-green.log": "0c35205acec0eba4fe6ca36aec22733726ca6773c79c1df72c3474d0cf5cf489",
+    "/private/tmp/rls-annotation-gate-tests.log": "529332a9ff0e0ef27f793a07197f06aeb20fd8325a8221cec273ebb2569668c6"
+  },
+  "independent_review": {
+    "receipt": "/private/tmp/rls-8bb6e24e-independent-review.json",
+    "sha256": "9db3cce8f9646f22e21897cbb2b8d744bb59c591c90b6dfaa26a5329db7d83cd",
+    "decision": "approved"
+  },
+  "holds": [
+    "Application/production acceptance"
+  ],
+  "isolation": "Privateworktree/privateCargo target only; root untouched",
+  "preservation": "Removing the sole annotation line recovers exact base source bytes"
+}

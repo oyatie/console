@@ -1,0 +1,487 @@
+{
+  "classification": "Historical completed follow-up evidence; not release or production authority",
+  "status": "FROZEN_PENDING_INDEPENDENT_REVIEW",
+  "prior_immutable_indexes": [
+    {
+      "path": "/private/tmp/console-followup-evidence-candidate",
+      "manifest_sha256": "18a1791a9527b8f76e488c5ca889f4bdeebead0a7c9eaae0b0338538b452bf62",
+      "records": 166
+    },
+    {
+      "path": "/private/tmp/console-followup-evidence-supplement",
+      "manifest_sha256": "5357c82c0a248b405580f6b09f65cd87aa2e515fb780f519b309564692270cba",
+      "records": 109
+    }
+  ],
+  "records": [
+    {
+      "source": "/private/tmp/account-classification-6e3133ea-independent-source-review.json",
+      "retained": "receipts/account-classification-6e3133ea-independent-source-review.json",
+      "sha256": "34da2092053b521e1b48b1aa3f2d04498f3df184a9edf3cdfef8602e6d3776d7",
+      "bytes": 1714
+    },
+    {
+      "source": "/private/tmp/account-classification-a053a44f-independent-test-design-review.json",
+      "retained": "receipts/account-classification-a053a44f-independent-test-design-review.json",
+      "sha256": "29cf4b55b35da91d9ff7a56e459b1faabaf67ab2dd4ee5e8b0d6d2cda8ac59e3",
+      "bytes": 1922
+    },
+    {
+      "source": "/private/tmp/account-classification-admit.log",
+      "retained": "receipts/account-classification-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/account-classification-disjoint-green.log",
+      "retained": "receipts/account-classification-disjoint-green.log",
+      "sha256": "9c8b6bdd525e8b2ce544c4f6ab20b5504d79244eb53a3a2bffcfc20f39b6a84f",
+      "bytes": 603
+    },
+    {
+      "source": "/private/tmp/account-classification-disjoint21.log",
+      "retained": "receipts/account-classification-disjoint21.log",
+      "sha256": "0a780404b31d342c8c43760b94a80f2fa4620439acdc41bb3e6b95dcde153312",
+      "bytes": 1643
+    },
+    {
+      "source": "/private/tmp/account-classification-full21.log",
+      "retained": "receipts/account-classification-full21.log",
+      "sha256": "bbc8bda531f34e4682fca91433d9fa13ed0522018d4bc0c6ea038b218db00ede",
+      "bytes": 2206
+    },
+    {
+      "source": "/private/tmp/account-classification-green.log",
+      "retained": "receipts/account-classification-green.log",
+      "sha256": "dd01782c000ff551476105358f95d675dd94f109d188d05b09268a6dda579ff9",
+      "bytes": 1083
+    },
+    {
+      "source": "/private/tmp/account-classification-lane.json",
+      "retained": "receipts/account-classification-lane.json",
+      "sha256": "a0f442dff3b53cacfb7b7a5452f81b3f645c48642f4a7b70585afe7f2eb1cc7a",
+      "bytes": 1466
+    },
+    {
+      "source": "/private/tmp/account-classification-red.log",
+      "retained": "receipts/account-classification-red.log",
+      "sha256": "704989f21c28499e8780844bb65122e5ab2895ff9a4404f78551dd5883e9c40e",
+      "bytes": 13648
+    },
+    {
+      "source": "/private/tmp/account-classification-serial-diagnostic.log",
+      "retained": "receipts/account-classification-serial-diagnostic.log",
+      "sha256": "f2a313e725863c29ebada307edaadc14ddf05b50566f266941539a7d34f24858",
+      "bytes": 464
+    },
+    {
+      "source": "/private/tmp/account-custody-gitops-declaration-review.json",
+      "retained": "receipts/account-custody-gitops-declaration-review.json",
+      "sha256": "e88aa67d1acd0beadb4f56bff78066e1897db98413d5b08688ca4b9a947c0a35",
+      "bytes": 1416
+    },
+    {
+      "source": "/private/tmp/account-custody-gitops-declaration-revised.md",
+      "retained": "receipts/account-custody-gitops-declaration-revised.md.txt",
+      "sha256": "918326a37cf26c581538f7f33f2d746ec58315275172382746bc2d758cbe200d",
+      "bytes": 4057
+    },
+    {
+      "source": "/private/tmp/account-custody-gitops-declaration.md",
+      "retained": "receipts/account-custody-gitops-declaration.md.txt",
+      "sha256": "7c03c9ad1483ee8671214d796756991a4e5d5d9f8c39ed020ce3a2c6bd9bba7b",
+      "bytes": 3873
+    },
+    {
+      "source": "/private/tmp/boundary-wiring-8f009060-independent-source-review.json",
+      "retained": "receipts/boundary-wiring-8f009060-independent-source-review.json",
+      "sha256": "6810b6ab5b6413b45ad21bb58309cb4039c206fe9e67af528c968702fb5c2496",
+      "bytes": 2072
+    },
+    {
+      "source": "/private/tmp/classification-fixture-and-wiring-count-preedit-review.json",
+      "retained": "receipts/classification-fixture-and-wiring-count-preedit-review.json",
+      "sha256": "916e41b365772d89b23ca44c98ba9943a11251934756091138164982d9c9de7d",
+      "bytes": 1313
+    },
+    {
+      "source": "/private/tmp/console-followup-core166-independent-retention-review.json",
+      "retained": "receipts/console-followup-core166-independent-retention-review.json",
+      "sha256": "de47e0a4db34f85a916f2e53beabc1b93ce25dc68099dd477f0a9fe8a632a154",
+      "bytes": 4781
+    },
+    {
+      "source": "/private/tmp/console-followup-supplement-independent-review.json",
+      "retained": "receipts/console-followup-supplement-independent-review.json",
+      "sha256": "bbf29b0976cd177f164ab3219bba3ad4eebf6af807016502de5a5ba24aad0c97",
+      "bytes": 2928
+    },
+    {
+      "source": "/private/tmp/console-supplement-independent-audit-results.json",
+      "retained": "receipts/console-supplement-independent-audit-results.json",
+      "sha256": "d605402ba4b3735978ea7c667a6d745bba9409bb89d913c6d70dded285a40527",
+      "bytes": 1758
+    },
+    {
+      "source": "/private/tmp/generated-d78730fe-independent-review.json",
+      "retained": "receipts/generated-d78730fe-independent-review.json",
+      "sha256": "f3615f93e8b3e49a7f7f8af8b01173134c2182e77b45a919e55879414ecb5ccb",
+      "bytes": 2377
+    },
+    {
+      "source": "/private/tmp/generated-tenant-resource-preedit-review.json",
+      "retained": "receipts/generated-tenant-resource-preedit-review.json",
+      "sha256": "53a4cff40b6030a847c3ce7fe1bb15e7198be374cc66dd1dc90e53a44cf664ab",
+      "bytes": 982
+    },
+    {
+      "source": "/private/tmp/gitops-3f0c4e17-independent-import-review.json",
+      "retained": "receipts/gitops-3f0c4e17-independent-import-review.json",
+      "sha256": "304c2fefbe059930edd30a6f71a9411c690d6fb3d046bd900967da0ff00e77fc",
+      "bytes": 953
+    },
+    {
+      "source": "/private/tmp/gitops-declaration-docmanifest.log",
+      "retained": "receipts/gitops-declaration-docmanifest.log",
+      "sha256": "28151539d3351403df294af0efc934598294dfde843e84973c481c1b5b4e6d22",
+      "bytes": 47
+    },
+    {
+      "source": "/private/tmp/gitops-declaration-full10.log",
+      "retained": "receipts/gitops-declaration-full10.log",
+      "sha256": "8670ff7c3cdfdc26fd65f527d41f6285afb73ee1009452a6f7aa6bbc05a80436",
+      "bytes": 1129
+    },
+    {
+      "source": "/private/tmp/gitops-declaration-red.log",
+      "retained": "receipts/gitops-declaration-red.log",
+      "sha256": "16d6a62f0deb8aab00cb783b8ccf88ceda1bc1ff7f93be2b7e591f01bf1779d9",
+      "bytes": 1858
+    },
+    {
+      "source": "/private/tmp/gitops-declaration-staged-independent-review.json",
+      "retained": "receipts/gitops-declaration-staged-independent-review.json",
+      "sha256": "8210ddc89ccb19467e23377c0710ca461909b47ab0303cb01ac69666c88f2ee1",
+      "bytes": 1645
+    },
+    {
+      "source": "/private/tmp/tenant-classification-backend-gate-green.log",
+      "retained": "receipts/tenant-classification-backend-gate-green.log",
+      "sha256": "6258c5fed961c8d0ade0df6ce7e4580a664120fe9f95c5470cc56393bef422d0",
+      "bytes": 286
+    },
+    {
+      "source": "/private/tmp/tenant-classification-integration-green.log",
+      "retained": "receipts/tenant-classification-integration-green.log",
+      "sha256": "ed0218612be5e0706a54829e59eba202513da2de3186ece8ab0c0eb19aef7f0e",
+      "bytes": 1747
+    },
+    {
+      "source": "/private/tmp/tenant-classification-integration-red.log",
+      "retained": "receipts/tenant-classification-integration-red.log",
+      "sha256": "f6ab414755ae8bb76ce73ab9baedea38e88cc69b86eb7a9e5e09e03b15655023",
+      "bytes": 2361
+    },
+    {
+      "source": "/private/tmp/tenant-classification-root-clippy.log",
+      "retained": "receipts/tenant-classification-root-clippy.log",
+      "sha256": "f819bc27ce366703d2be96d41e41f456d539ce54286e0ca90804d17dd914eb1c",
+      "bytes": 2422
+    },
+    {
+      "source": "/private/tmp/tenant-classification-root21.log",
+      "retained": "receipts/tenant-classification-root21.log",
+      "sha256": "6b8fdd2edb2c9ac0a4c76ee82a9f8d6dd222622a84c77f81f0c851e552327c32",
+      "bytes": 1751
+    },
+    {
+      "source": "/private/tmp/tenant-classification-whole-gate-green.log",
+      "retained": "receipts/tenant-classification-whole-gate-green.log",
+      "sha256": "41ec63ee18e7a68fd7aa361bf81d3f742f4d67a4f43a2296c97016e0cd3d8138",
+      "bytes": 1519
+    },
+    {
+      "source": "/private/tmp/tenant-oracle-11f9342e-independent-review.json",
+      "retained": "receipts/tenant-oracle-11f9342e-independent-review.json",
+      "sha256": "c62c18436c58dd39bf494cf8788b1d6be94df7809553726132cda6764104db9e",
+      "bytes": 1516
+    },
+    {
+      "source": "/private/tmp/verify-boundary-audit.log",
+      "retained": "receipts/verify-boundary-audit.log",
+      "sha256": "56cd80600f04ddf94c2bc116c3d0f175012382696228f82a1c9f428c65d04c58",
+      "bytes": 2677
+    },
+    {
+      "source": "/private/tmp/verify-boundary-leptos17.log",
+      "retained": "receipts/verify-boundary-leptos17.log",
+      "sha256": "873e888f783fa5c256cd48e805346c777ac8b247d47af371e92954a7c45eca25",
+      "bytes": 4562
+    },
+    {
+      "source": "/private/tmp/verify-boundary-tenant19.log",
+      "retained": "receipts/verify-boundary-tenant19.log",
+      "sha256": "9b916a7cf6ca827ecb067a626caf21a8f79aa77d386f7cda2701c9e106b9f9c7",
+      "bytes": 2178
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-admit.log",
+      "retained": "receipts/verify-boundary-wiring-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-final-gate.log",
+      "retained": "receipts/verify-boundary-wiring-final-gate.log",
+      "sha256": "3fd1f4a6d67e95db795b6e8b2128ada84700568608b7274b2f76ba2b961f88b4",
+      "bytes": 333
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-final-regressions.log",
+      "retained": "receipts/verify-boundary-wiring-final-regressions.log",
+      "sha256": "aa006e601b6c8a8bf37ae0e0c133f2d77e57c5036f3cab718241c0686dd1e672",
+      "bytes": 7105
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-green.log",
+      "retained": "receipts/verify-boundary-wiring-green.log",
+      "sha256": "1450d61bbdd13827aacc7fb76a429351a4d87ee6f8920b388473c624e4c5682e",
+      "bytes": 441
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-lane.json",
+      "retained": "receipts/verify-boundary-wiring-lane.json",
+      "sha256": "d7bece0433f49e06c12d11a92c5fb827cee3ffc9979617614dc237709cdaede2",
+      "bytes": 1560
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-probe.log",
+      "retained": "receipts/verify-boundary-wiring-probe.log",
+      "sha256": "ab412547ac950306620b2e59bd60d9582acfe1b2b46c782a76be51eeced96498",
+      "bytes": 966
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-regressions.log",
+      "retained": "receipts/verify-boundary-wiring-regressions.log",
+      "sha256": "a539a9d20c2f6f1f392c934438cd3d97a11e17fa2f48da562ddc59e8a05bdb56",
+      "bytes": 8072
+    },
+    {
+      "source": "/private/tmp/verify-generated-faces-admit.log",
+      "retained": "receipts/verify-generated-faces-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/verify-generated-faces-green.log",
+      "retained": "receipts/verify-generated-faces-green.log",
+      "sha256": "6c17d2b537ddd4f84e25ddd75d8a95fb8a5b1d79e845a32508da477ac1fcb823",
+      "bytes": 1371
+    },
+    {
+      "source": "/private/tmp/verify-generated-faces-lane.json",
+      "retained": "receipts/verify-generated-faces-lane.json",
+      "sha256": "9102f2170af504d851346736834af0182012f3a9fe6f4d1edbf618559f3e4d94",
+      "bytes": 1459
+    },
+    {
+      "source": "/private/tmp/verify-generated-faces-probe.log",
+      "retained": "receipts/verify-generated-faces-probe.log",
+      "sha256": "dc8a194504359befeda285175b71c7defa802e09332119079e40659918b33b00",
+      "bytes": 2603
+    },
+    {
+      "source": "/private/tmp/verify-generated-faces-refined-admit.log",
+      "retained": "receipts/verify-generated-faces-refined-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/verify-generated-faces-regenerate.log",
+      "retained": "receipts/verify-generated-faces-regenerate.log",
+      "sha256": "cfe2338354ac8756685169d4db126f6860f9b5ab87cc1140b1c2185b93b96dce",
+      "bytes": 37
+    },
+    {
+      "source": "/private/tmp/verify-generated-faces-unit.log",
+      "retained": "receipts/verify-generated-faces-unit.log",
+      "sha256": "a7709755ec6a428754b24d53fccd8a4aa6ea1c4e87237e2e688a1c1ed41490db",
+      "bytes": 1430
+    },
+    {
+      "git_source": "8f009060acbcc1560a93d0f609c016a6ed7bf1eb:.github/workflows/ci.yml",
+      "retained": "candidates/8f009060acbcc1560a93d0f609c016a6ed7bf1eb/.github/workflows/ci.yml.txt",
+      "sha256": "27d1cd15166fa8c1eb4b1ff531b34b0d4e2cbe0f856a34f0b860e0423bded055",
+      "bytes": 105700
+    },
+    {
+      "git_source": "8f009060acbcc1560a93d0f609c016a6ed7bf1eb:scripts/check-ci-preflight.mjs",
+      "retained": "candidates/8f009060acbcc1560a93d0f609c016a6ed7bf1eb/scripts/check-ci-preflight.mjs.txt",
+      "sha256": "49ef4a3c9b804c61451131fc3d0d194b0bdf8744753f9d26094785284e2d52fb",
+      "bytes": 172149
+    },
+    {
+      "git_source": "8f009060acbcc1560a93d0f609c016a6ed7bf1eb:scripts/check-ci-preflight.test.mjs",
+      "retained": "candidates/8f009060acbcc1560a93d0f609c016a6ed7bf1eb/scripts/check-ci-preflight.test.mjs.txt",
+      "sha256": "240b2c73486627cec54753fbcc259fe1b3f4f9ac8ad54155c86c00d2989d6061",
+      "bytes": 117848
+    },
+    {
+      "git_source": "8f009060acbcc1560a93d0f609c016a6ed7bf1eb:scripts/verify.mjs",
+      "retained": "candidates/8f009060acbcc1560a93d0f609c016a6ed7bf1eb/scripts/verify.mjs.txt",
+      "sha256": "8c262a9f46e64b4ed2d518ed8d969b4a9cc671401bf67ebd25f4d4ed6dac609a",
+      "bytes": 26540
+    },
+    {
+      "git_source": "a053a44f47714bdea685da6c82d97e994d2a7594:backend/ci/gates/tenant-isolation/src/lib.rs",
+      "retained": "candidates/a053a44f47714bdea685da6c82d97e994d2a7594/backend/ci/gates/tenant-isolation/src/lib.rs.txt",
+      "sha256": "480e388a3eb625865fa3eef4ef8684d7df4cfb36c9c8c66d31ef9e459fcd10a7",
+      "bytes": 65440
+    },
+    {
+      "git_source": "ad4e9b903cd783055672d02dc2d317ccbed30ead:backend/ci/gates/tenant-isolation/src/lib.rs",
+      "retained": "candidates/ad4e9b903cd783055672d02dc2d317ccbed30ead/backend/ci/gates/tenant-isolation/src/lib.rs.txt",
+      "sha256": "9a550de66033746e83f64373d8d71c776d48cee708ab14ebada528d206c76eb5",
+      "bytes": 66317
+    },
+    {
+      "git_source": "6e3133ea836d84250c9c09a09c1e204e60b7f3c8:backend/ci/gates/tenant-isolation/src/lib.rs",
+      "retained": "candidates/6e3133ea836d84250c9c09a09c1e204e60b7f3c8/backend/ci/gates/tenant-isolation/src/lib.rs.txt",
+      "sha256": "73e302da4f4cea98ec143626777023706f1ca33fcaed57910c820022ca3ed0dd",
+      "bytes": 66374
+    },
+    {
+      "git_source": "11f9342e0ce120a43a5f00d9da8dcfdce383c0e3:backend/ci/gates/tenant-isolation/src/lib.rs",
+      "retained": "candidates/11f9342e0ce120a43a5f00d9da8dcfdce383c0e3/backend/ci/gates/tenant-isolation/src/lib.rs.txt",
+      "sha256": "b6aed4bbe36617c67e77af241478bbd4fe58dd71fda1354e835ab09aee3479d7",
+      "bytes": 68439
+    },
+    {
+      "git_source": "11f9342e0ce120a43a5f00d9da8dcfdce383c0e3:backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs",
+      "retained": "candidates/11f9342e0ce120a43a5f00d9da8dcfdce383c0e3/backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs.txt",
+      "sha256": "dc7c97d6868096b8f970631a9cf7f4b5884127264f83158c2714319697c0b314",
+      "bytes": 8156
+    },
+    {
+      "git_source": "d78730fe222c40d625af1608ed8c4f5d797563ea:backend/app/BUCK",
+      "retained": "candidates/d78730fe222c40d625af1608ed8c4f5d797563ea/backend/app/BUCK.txt",
+      "sha256": "73ee62edecfeaa92a47d73e12052b36f8b86f1a34a4f0aec7e47d17c1120f0c0",
+      "bytes": 757658
+    },
+    {
+      "git_source": "d78730fe222c40d625af1608ed8c4f5d797563ea:backend/ci/gates/tenant-isolation/BUCK",
+      "retained": "candidates/d78730fe222c40d625af1608ed8c4f5d797563ea/backend/ci/gates/tenant-isolation/BUCK.txt",
+      "sha256": "ad8732aa6e8941a8cee3c00a9bcc03664a269ea5967734cea2b37ab8419d90f0",
+      "bytes": 3188
+    },
+    {
+      "git_source": "d78730fe222c40d625af1608ed8c4f5d797563ea:docs/program/executed-tests-baseline.json",
+      "retained": "candidates/d78730fe222c40d625af1608ed8c4f5d797563ea/docs/program/executed-tests-baseline.json.txt",
+      "sha256": "e21d8116318293ed19ef68be0970cfaf93cdd18b4f0681d4c01d13dba2b4d128",
+      "bytes": 35593
+    },
+    {
+      "git_source": "d78730fe222c40d625af1608ed8c4f5d797563ea:tools/buck/gen_first_party.py",
+      "retained": "candidates/d78730fe222c40d625af1608ed8c4f5d797563ea/tools/buck/gen_first_party.py.txt",
+      "sha256": "d37964871781c58c07ab1dc8f8de365b6fdb60f53fbb7a9ffe2ed5fc4bdc9b35",
+      "bytes": 66360
+    },
+    {
+      "git_source": "3f0c4e17b661eedc0bea76e8dda649aef958aa88:deploy/apps/console/LIVE-GITOPS-CHANGES.md",
+      "retained": "candidates/3f0c4e17b661eedc0bea76e8dda649aef958aa88/deploy/apps/console/LIVE-GITOPS-CHANGES.md.txt",
+      "sha256": "7e5952025458497542d7420f6e2384fddfa50c68be29c39b489087cfc15bb1e5",
+      "bytes": 7519
+    },
+    {
+      "git_source": "3f0c4e17b661eedc0bea76e8dda649aef958aa88:docs/documentation-index.json",
+      "retained": "candidates/3f0c4e17b661eedc0bea76e8dda649aef958aa88/docs/documentation-index.json.txt",
+      "sha256": "1016610f35b6c5465eb3b73e5c14b9264ba636993fea02983506aab09b29ce76",
+      "bytes": 148430
+    },
+    {
+      "git_source": "3f0c4e17b661eedc0bea76e8dda649aef958aa88:docs/documentation-manifest.seed.json",
+      "retained": "candidates/3f0c4e17b661eedc0bea76e8dda649aef958aa88/docs/documentation-manifest.seed.json.txt",
+      "sha256": "b368df50e71d9d01beb2ee5f3e099fb696881d54ba97445fcc71686ace745a2d",
+      "bytes": 137277
+    },
+    {
+      "git_source": "3f0c4e17b661eedc0bea76e8dda649aef958aa88:deploy/apps/console/base/account-finalize-job.yaml",
+      "retained": "candidates/3f0c4e17b661eedc0bea76e8dda649aef958aa88/deploy/apps/console/base/account-finalize-job.yaml.txt",
+      "sha256": "d4cca4fbaec30c884351395db568370bca372329a5d20f0b45f2a48e13780208",
+      "bytes": 3899
+    },
+    {
+      "git_source": "3f0c4e17b661eedc0bea76e8dda649aef958aa88:deploy/apps/console/base/kustomization.yaml",
+      "retained": "candidates/3f0c4e17b661eedc0bea76e8dda649aef958aa88/deploy/apps/console/base/kustomization.yaml.txt",
+      "sha256": "d0378973f2f4dee826e5441a0af2995560fcc76dbefbd8aab51a9756f1bda3c7",
+      "bytes": 371
+    },
+    {
+      "git_source": "3f0c4e17b661eedc0bea76e8dda649aef958aa88:deploy/apps/console/base/migrate-job.yaml",
+      "retained": "candidates/3f0c4e17b661eedc0bea76e8dda649aef958aa88/deploy/apps/console/base/migrate-job.yaml.txt",
+      "sha256": "e9ea2af77eca2f390549c2b98d8370b0fe6385e704a04f7d89d9b3f9d061c902",
+      "bytes": 2787
+    },
+    {
+      "git_source": "3f0c4e17b661eedc0bea76e8dda649aef958aa88:deploy/apps/console/base/migration-networkpolicy.yaml",
+      "retained": "candidates/3f0c4e17b661eedc0bea76e8dda649aef958aa88/deploy/apps/console/base/migration-networkpolicy.yaml.txt",
+      "sha256": "605c2f8570636959d36507ae9cabe8aae7253e079b14f71940dd3a2c7794eaa4",
+      "bytes": 1620
+    },
+    {
+      "source": "/private/tmp/console-followup-final69-original-retention.json",
+      "retained": "receipts/console-followup-final69-original-retention.json",
+      "sha256": "3a1c140502c89103dd44dd80147406240075ca62fbd17e8870f0147774df1fbf",
+      "bytes": 22685
+    },
+    {
+      "source": "/private/tmp/console-followup-verify-3f0c4e17.log",
+      "retained": "receipts/console-followup-verify-3f0c4e17.log",
+      "sha256": "a460258f5dd22bff53c382930de9ef6fa87e1bfd3b952c5a3d09475f3b62ee3b",
+      "bytes": 602665
+    },
+    {
+      "source": "/private/tmp/console-followup-verify-completed-receipt.json",
+      "retained": "receipts/console-followup-verify-completed-receipt.json",
+      "sha256": "1a0ccf39ead364d9b9ca872570b7254696d8e73c121a3c13d5878b7122123430",
+      "bytes": 39601
+    },
+    {
+      "source": "/private/tmp/console-followup-checkpoint.json",
+      "retained": "receipts/console-followup-checkpoint.json",
+      "sha256": "53a9e34bcced1c1f1416efde7f7309b35411f14f4483b63dafe628be1d2f26d9",
+      "bytes": 4896
+    },
+    {
+      "source": "/private/tmp/account-owner-update-final-approval-scope.json",
+      "retained": "receipts/account-owner-update-final-approval-scope.json",
+      "sha256": "2ad1717fb381e93ad97d35be1223d32777f1cad6312ba6322caf147550be5667",
+      "bytes": 2819
+    }
+  ],
+  "exclusions": [
+    {
+      "source": "/private/tmp/account-classification-probe-current.log",
+      "reason": "Mutable scratch pointer; pinned RED and successive diagnostic/GREEN logs retained instead"
+    }
+  ],
+  "pending_append": [],
+  "append_contract": [
+    "Keep every existing payload and record byte-identical; append new uniquely named payloads and records only.",
+    "Require prior manifest SHA match and root confirmation that each new source is complete.",
+    "Record previous manifest SHA when updating this candidate index; independently validate final index before promotion.",
+    "Never mutate the separate core166 or supplement109 indexes."
+  ],
+  "interpretation": [
+    "Boundary wiring review proves commands and static reachability; emitted attributes are not executed test counts.",
+    "Classification retains original1PASS1FAIL and20PASS1FAIL, serial diagnostic2PASS and disjoint2PASS/full21PASS. Timestamp fixture collision is a supported hypothesis, not directly proven causation.",
+    "tenant-classification-whole-gate-green.log is misleadingly named: actual root-cwd run FAILED3 by scanning Buck-vendored SQLite fixtures; retain alongside correct backend-cwd PASS. Neither rename nor conceal that failure.",
+    "Owner-only classification does not grant runtime privileges; parser historical accounts-negative was separately refined after approved enrollment, preserving unknown-catalog rejection.",
+    "Generated face review covers cheap first-party parity, resource metadata and static baseline; third-party expensive comparison remains a separate obligation.",
+    "GitOps records are source declaration only; unpublished image, independent PreSync prerequisites, DB-peer/controller network gaps and effective CNI/Argo HOLDs remain.",
+    "Core166 and supplement109 independent review receipts are retained explicitly; overlap is custody evidence, not extra unique test coverage.",
+    "Completed fast local verification is recorded; no implementation readiness, deployment, release, database privilege, or production approval is claimed."
+  ],
+  "previous_manifest_sha256": "3a1c140502c89103dd44dd80147406240075ca62fbd17e8870f0147774df1fbf",
+  "independent_review_location": "Sibling review artifact outside this immutable index; required before import."
+}

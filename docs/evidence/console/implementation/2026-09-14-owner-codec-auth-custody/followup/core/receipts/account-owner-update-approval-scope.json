@@ -1,0 +1,35 @@
+{
+  "classification": "Concrete proposed local source change; not approved or applied",
+  "base_sha": "e1f184fa19bd9a34569ef8bf1bc760e1f0144a50",
+  "paths": [
+    "backend/app/src/account_custody_state.sql",
+    "ops/generate-account-custody.py",
+    "ops/postgres-finalize-account-custody.sql"
+  ],
+  "proposed_grant": "GRANT UPDATE(id) ON public.accounts TO console_account_owner;",
+  "principal": "Existing isolated NOLOGIN table owner, no memberships; no serving-role grant",
+  "purpose": "PostgreSQL foreign-key checks require a parent-column UPDATE privilege for FOR KEY SHARE even with parent SELECT",
+  "validation": {
+    "dormant": "All six table ACLs empty and every column ACL empty",
+    "prepared": "Existing two exact owner SELECT table grants and exactly one non-grantable owner-to-self UPDATE column grant on accounts.id; no other privileges",
+    "replay": "Exact prepared profile and exact projection function only; no mutation during replay",
+    "partial_or_drift": "Refuse atomically; do not repair silently"
+  },
+  "unchanged": [
+    "Numbered migrations and existing FK constraints",
+    "Serving-role denials",
+    "Zero owner memberships",
+    "Exact read-only SECURITY DEFINER function",
+    "37 reviewed test assertions"
+  ],
+  "proof_required": [
+    "Same 37-case Account projection probe must pass",
+    "Retained Account lifecycle/startup regressions, with every failure classified",
+    "Independent review of exact final source and generated SQL"
+  ],
+  "approval_block": "Automatic approval review twice rejected persistent owner UPDATE(id) source change because exact target and privilege blast radius lacked explicit authorization",
+  "limitations": [
+    "Owner holds ordinary UPDATE(id) authority; do not call the owner read-only",
+    "No live database, production exposure, or HA/no-loss certification is authorized by this proposal"
+  ]
+}

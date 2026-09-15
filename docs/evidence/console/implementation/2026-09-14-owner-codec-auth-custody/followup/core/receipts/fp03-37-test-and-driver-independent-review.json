@@ -1,0 +1,49 @@
+{
+  "reviewer": "/root/finish_browser",
+  "decision": "approved-test-refinement-and-driver-source",
+  "test_candidate": {
+    "path": "/private/tmp/account_fence_projection_37_candidate.rs",
+    "sha256": "26b122f2a5d720da0322842baa746e768ad5f041f6946b09f5197b12a65196ab",
+    "base": "c23e4be0",
+    "test_functions_before": 30,
+    "test_functions_after": 37,
+    "removed": 0,
+    "refinements": [
+      "Catalog snapshot adds all six tables ordered pg_attribute ACL/xmin including system/emptyACL rows; previous function/relation assertions retained",
+      "Prepared positive adds exact one-row columnACL census; original twoSELECT census retained",
+      "Both intentionally dormant fault paths revoke UPDATE(id) as well as bothSELECTs; expected profile_mismatch remains meaningful"
+    ],
+    "additive_cases": [
+      "missing required column grant",
+      "wrong column (created_at verified in frozen0226)",
+      "extra owner column grant",
+      "grant option",
+      "wrong grantor",
+      "serving auth grantee",
+      "broad tableUPDATE"
+    ],
+    "limitations": [
+      "Seven new drift cases depend on successful prepared profile/FK setup; upcoming RED must distinguish that prerequisite from reached negative assertions",
+      "Not all-column/full-catalog correctness proof; actual execution needed"
+    ]
+  },
+  "driver": {
+    "path": "/private/tmp/account-fence37-driver.sh",
+    "sha256": "dbc79064b0ef3628bb919f3d8db623f4ee63befe84213e9280b817bd2c54f146",
+    "parent_sha256": "d60c6e7ae9bd68d6ff6a1e34904ebcc88394deb3983659502133d6370ea4530d",
+    "changes": [
+      "Scoped owned-container tmpfs1GiB to4GiB plus matching receipt",
+      "Distinct ownership label prefix",
+      "Additional frozen historicalSQL snapshot path"
+    ],
+    "unchanged": [
+      "Exact test filter and actual argv",
+      "Build interception",
+      "Bounded label-verified cleanup and successful absence readback",
+      "Source snapshot comparison",
+      "Pinned image"
+    ],
+    "bash_n": "PASS"
+  },
+  "execution": "Read-only review;0Rust/Postgres tests executed by reviewer"
+}

@@ -1,0 +1,111 @@
+warning: unused workspace dependency `console-attendance-application`
+   --> Cargo.toml:200:1
+    |
+200 | console-attendance-application = { path = "crates/attendance/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `cargo::unused_workspace_dependencies` is set to `warn` by default
+help: consider removing the workspace dependency `console-attendance-application`
+warning: unused workspace dependency `console-attendance-domain`
+   --> Cargo.toml:199:1
+    |
+199 | console-attendance-domain = { path = "crates/attendance/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-attendance-domain`
+warning: unused workspace dependency `console-comms-mailbox`
+   --> Cargo.toml:300:1
+    |
+300 | console-comms-mailbox = { path = "crates/comms/mailbox" }
+    | ^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-comms-mailbox`
+warning: unused workspace dependency `console-finance-gl-application`
+   --> Cargo.toml:216:1
+    |
+216 | console-finance-gl-application = { path = "crates/finance-gl/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-finance-gl-application`
+warning: unused workspace dependency `console-finance-gl-domain`
+   --> Cargo.toml:215:1
+    |
+215 | console-finance-gl-domain = { path = "crates/finance-gl/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-finance-gl-domain`
+warning: unused workspace dependency `console-inspection-application`
+   --> Cargo.toml:224:1
+    |
+224 | console-inspection-application = { path = "crates/inspection/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-inspection-application`
+warning: unused workspace dependency `console-inspection-domain`
+   --> Cargo.toml:223:1
+    |
+223 | console-inspection-domain = { path = "crates/inspection/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-inspection-domain`
+warning: unused workspace dependency `console-logistics-application`
+   --> Cargo.toml:232:1
+    |
+232 | console-logistics-application = { path = "crates/logistics/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-logistics-application`
+warning: unused workspace dependency `console-ontology-application`
+   --> Cargo.toml:320:1
+    |
+320 | console-ontology-application = { path = "crates/ontology/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-ontology-application`
+warning: unused workspace dependency `console-ontology-domain`
+   --> Cargo.toml:319:1
+    |
+319 | console-ontology-domain = { path = "crates/ontology/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-ontology-domain`
+warning: unused workspace dependency `console-orgchange-domain`
+   --> Cargo.toml:327:1
+    |
+327 | console-orgchange-domain = { path = "crates/orgchange/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-orgchange-domain`
+warning: unused workspace dependency `console-policy-adapter-postgres`
+   --> Cargo.toml:307:1
+    |
+307 | console-policy-adapter-postgres = { path = "crates/policy/adapter-postgres" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-policy-adapter-postgres`
+warning: workspace (manifest) generated 12 warnings
+   Compiling console-gate-tenant-isolation v0.1.0 (/private/tmp/console-tenant-qualified-tests-20260914/backend/ci/gates/tenant-isolation)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.46s
+     Running tests/qualified_table_identity.rs (/private/tmp/console-tenant-gate-cargo/debug/build/console-gate-tenant-isolation/341e104908d8b70e/out/qualified_table_identity-341e104908d8b70e)
+
+running 17 tests
+test unqualified_tenant_positive_control_remains_clean ... ok
+test same_basename_in_another_schema_cannot_supply_rls_evidence ... ok
+test qualified_create_reuses_existing_unqualified_dynamic_rls_evidence ... ok
+test other_schema_does_not_inherit_global_or_nullable_allowlists ... ok
+test mixed_public_create_and_unqualified_rls_share_identity ... ok
+test mixed_unqualified_create_and_quoted_public_rls_share_identity ... ok
+test dynamic_single_identifier_dot_is_not_schema_qualification ... ok
+test qualified_unknown_table_remains_unclassified ... ok
+test account_catalog_requires_explicit_classification_outside_parser_repair ... ok
+test dynamic_case_sensitive_identifier_cannot_supply_lowercase_rls ... ok
+test qualified_add_column_and_set_not_null_update_same_table ... ok
+test two_tables_in_one_schema_cannot_share_rls_evidence ... ok
+test qualified_nullable_exception_is_same_public_table ... ok
+test other_schema_or_column_name_is_not_an_owner_only_grant_target ... ok
+test public_global_table_resolves_to_existing_classification ... ok
+test quoted_case_or_dot_does_not_alias_existing_global_table ... ok
+test qualified_owner_only_grants_are_rejected_for_both_recipients ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

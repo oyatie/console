@@ -1,0 +1,28 @@
+{
+  "author": "/root/review_completeness",
+  "base": "c23e4be0aff7a94d40c11f25f16d97d65c348b8e",
+  "candidate": "/private/tmp/account_fence_projection_37_candidate.rs",
+  "sha256": "26b122f2a5d720da0322842baa746e768ad5f041f6946b09f5197b12a65196ab",
+  "static_test_count": 37,
+  "existing_test_count": 30,
+  "changes_to_existing": [
+    "Shared projection_catalog now includes every attribute row including system/NULL/empty ACLs with attnum,name,ACL,xmin across exact6relations.",
+    "Existing exact2tableSELECT positive additionally asserts exact singlecolumn UPDATE(id) to self-granting nonlogin account owner, no grant option.",
+    "Existing complete-owner-profile removal fault additionally revokes UPDATE(id) so same profile_mismatch assertion remains meaningful.",
+    "Existing postinstall full-dormant drift fault additionally revokes UPDATE(id), preserving sequence witness and explicit final non-dormant postcondition coverage."
+  ],
+  "new_seven_cases": [
+    "missing required key grant",
+    "wrong column substituted",
+    "extra column update",
+    "key grant option",
+    "wrong key grantor",
+    "serving key grantee",
+    "broad parent table UPDATE"
+  ],
+  "preservation": "Existing30 names and order verified exact; no old test removed/skipped; existing serving denial and exact error assertions preserved. New7names unique.",
+  "justification": "Root real PostgreSQL18.6 experiment showed SELECT and SELECT+REFERENCES fail actual FK KEY SHARE; exact owner UPDATE(id) succeeds. This is ordinary owner write privilege, not a special lock-only capability. No external serving grants are authorized.",
+  "experiment": "/private/tmp/fk-owner-permissions-probe-result.json",
+  "independent_review": "Requested /root/finish_browser; not self-approved",
+  "runtime_executed_by_author": 0
+}

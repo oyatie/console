@@ -1,0 +1,30 @@
+[
+  {
+    "lane": "TENANT-account-catalog-classification",
+    "owner": "/root",
+    "base_sha": "a053a44f47714bdea685da6c82d97e994d2a7594",
+    "worktree": "/private/tmp/console-account-classification-20260914",
+    "allow": [
+      "backend/ci/gates/tenant-isolation/src/lib.rs"
+    ],
+    "probe": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account-classification-cargo cargo test --locked --manifest-path backend/Cargo.toml -p console-gate-tenant-isolation --lib account_catalog_ -- --nocapture > /private/tmp/account-classification-probe-current.log 2>&1",
+    "target": "Six existing Account catalog relations are staticallyowner-only with directconsole_rt/PUBLIC grants rejected",
+    "guide": "Add six rationale entries to owner_only_table_allowlist only; preserve globalallowlist, parser and existingtests, all migrations/grants/runtime code.",
+    "pre_mortem": "Using global classification could hide runtime data exposure",
+    "blast_radius": "Static migrationgate only, six existing0226 relationnames",
+    "detection": "Twoactualtests cover6classification and12grantcases; existing19 tests",
+    "rollback": "Revert six entries; catalog gate becomesRED",
+    "stop_conditions": [
+      "AnySQL/runtime/grantchange",
+      "Removedtest",
+      "Globalallowlistaddition"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Database custody exactprofiles",
+      "Production exposure"
+    ]
+  }
+]

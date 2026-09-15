@@ -1,0 +1,1 @@
+confirmed owned container absent via successful bounded docker ps -a

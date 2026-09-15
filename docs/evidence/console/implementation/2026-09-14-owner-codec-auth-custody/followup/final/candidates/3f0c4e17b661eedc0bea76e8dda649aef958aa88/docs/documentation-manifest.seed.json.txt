@@ -1940,16 +1940,6 @@
     "archive_tag": null
   },
   {
-    "path": "docs/evidence/console/implementation/2026-09-14-owner-codec-auth-custody/followup/supplement/receipts/tenant-qualified-consumer-trace-20260914.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "960c453c644d74be21123bd00d61c6cd8a39e38b",
-    "archive_tag": null
-  },
-  {
     "path": "docs/evidence/console/openapi-integration-plan.md",
     "class": "evidence",
     "owner": "repository maintainers",

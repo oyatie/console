@@ -1,0 +1,60 @@
+{
+  "lane": "AC04-strict-serving-target-parser",
+  "owner": "/root/finish_migration",
+  "admission_spec": "/private/tmp/auth-parser-lane.json",
+  "approved_test_base": "63c1f0993f1498926f2da16fd886dcd3906aafd8",
+  "implementation_sha": "75c3d3979012ec8e1b6019d0f0305d51a67edb91",
+  "changed_paths": [
+    "backend/app/src/lib.rs"
+  ],
+  "tests_changed": false,
+  "logs": {
+    "auth-parser-exact-red.log": {
+      "sha256": "9e637f18c8c32c1026a33e61400ccaf14bbff17f22beaa715fb79396401828ac",
+      "summaries": [
+        "test result: FAILED. 2 passed; 6 failed; 0 ignored; 0 measured; 96 filtered out; finished in 0.14s"
+      ],
+      "path": "/private/tmp/auth-parser-exact-red.log"
+    },
+    "auth-parser-first-green.log": {
+      "sha256": "26eeed296daa16edcf10f4403f89b41044c99a70244b2114fea60f2f70aa3977",
+      "summaries": [
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 96 filtered out; finished in 0.63s"
+      ],
+      "path": "/private/tmp/auth-parser-first-green.log"
+    },
+    "auth-parser-auth7.log": {
+      "sha256": "777ee4d2603d72a231acf25e1fb182ae77364c4156a27ca2c8bb96486c0d5da4",
+      "summaries": [
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 97 filtered out; finished in 0.07s"
+      ],
+      "path": "/private/tmp/auth-parser-auth7.log"
+    },
+    "auth-parser-sibling-config.log": {
+      "sha256": "3471fd2c835c2ce8edd80f7aace22c3ad03e3bbd4d8823fc1fcd51568c2ce911",
+      "summaries": [
+        "test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 146 filtered out; finished in 0.01s"
+      ],
+      "path": "/private/tmp/auth-parser-sibling-config.log"
+    }
+  },
+  "proof_boundary": "StrictURL syntax and non-disclosing config admission only; no actual pool identity/binding, fixedport typedcarrier, Account auth, HA, schema, or privilegegrant changes",
+  "status": "COMPLETE admitted parser lane: same probeGREEN and relevant regressions/clippy/formatPASS; actual pool and caller alignment remain separate",
+  "clippy": {
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER='' CARGO_INCREMENTAL=1 CARGO_BUILD_JOBS=4 CARGO_TARGET_DIR=/private/tmp/console-auth-parser-cargo SQLX_OFFLINE=true cargo clippy --locked --manifest-path backend/Cargo.toml -p console-app --lib --test auth_rest -- -D warnings",
+    "exit": 0,
+    "log": "/private/tmp/auth-parser-clippy.log",
+    "sha256": "f05ef1a1d4cc577dd9bd2b5395768eef752372f3473babbe5c5dbd3a67ec8aff",
+    "note": "Cargo retained future-incompatibility advisory for preexisting dependency proc-macro-error2; clippy -Dwarnings exited0."
+  },
+  "format_check": "rustfmt --edition2024 --configskip_children=true --check backend/app/src/lib.rs PASS",
+  "diff_check": "git diff --check 63c1f099 HEAD PASS",
+  "source_sha256": "e57e5601742b72837fd6bad174e63e396eaa6e6b6ebe0d8b516bc69286a49acd",
+  "worktree_clean": true,
+  "independent_review": {
+    "path": "/private/tmp/auth-parser-75c3d397-independent-review.json",
+    "sha256": "33200e6c48feeb190794eeb1baade14065a20efbe5843a70a866fc3642aac787",
+    "decision": "APPROVE bounded strict grammar"
+  },
+  "caller_alignment_proposal": "/private/tmp/auth-launch-caller-alignment-20260914.md"
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "lane": "VERIFY-generated-first-party-faces",
+    "owner": "/root",
+    "base_sha": "11f9342e0ce120a43a5f00d9da8dcfdce383c0e3",
+    "worktree": "/private/tmp/console-production-tdd-preparation-20260913",
+    "allow": [
+      "backend/app/BUCK",
+      "backend/ci/gates/tenant-isolation/BUCK",
+      "tools/buck/gen_first_party.py"
+    ],
+    "probe": "PATH=/private/tmp/console-authority30-dotslash:$PATH tools/buck/preflight.sh > /private/tmp/verify-generated-faces-probe.log 2>&1",
+    "target": "Generated first-party Buck sources and test targets match current Rust source",
+    "guide": "Add only tests/qualified_table_identity.rs resource none metadata entry for console-gate-tenant-isolation; run existinggenerator; inspect expectedapp/tenantBUCK only. No generator algorithm changes.",
+    "pre_mortem": "Untracked compileincludes or ungeneratedtesttargets hide source fromBuck",
+    "blast_radius": "Generated twofirst-partybuildfaces",
+    "detection": "ActualcheapgeneratedfaceRED/GREEN and generateddiffreview",
+    "rollback": "Revert generatedfaces; source mismatchremainsRED",
+    "stop_conditions": [
+      "Generator algorithm change",
+      "Thirdparty/lockfilechange",
+      "Unrelatedfacechange"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Expensivethirdparty facecomparison beforemerge"
+    ],
+    "preedit_review": "/private/tmp/generated-tenant-resource-preedit-review.json"
+  }
+]

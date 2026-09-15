@@ -1,0 +1,18 @@
+✔ database-backed CI and release probes reconcile, migrate, and serve with separate identities (2.676459ms)
+✔ the dev boot path never aliases command URLs to DATABASE_URL (0.914708ms)
+✔ append-only migration 0167 declares serving-role bounds and nonclaims (0.537625ms)
+✔ topology reconciliation drains every serving role after changing defaults (0.49925ms)
+✔ live Argo, base, prod, and secret wiring remain DARK-topology-free (26.104291ms)
+✔ DARK overlays opt into the portable governed command-database component (0.67575ms)
+✔ governed command-database component declares seven roles, topology readback, ordering, and bounded Job networking (1.616666ms)
+✔ DARK OCI and self-host renders include the governed topology without changing live prod (350.233875ms)
+✔ DARK operating contract locks whole-Application activation, credentials, rotation, and capacity (1.154083ms)
+✔ DARK secrets component contains exactly three typed ExternalSecrets and live wiring does not reference it (0.933666ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 429.571375

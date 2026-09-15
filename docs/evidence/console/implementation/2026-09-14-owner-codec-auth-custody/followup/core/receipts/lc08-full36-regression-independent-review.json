@@ -1,0 +1,42 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "LC08_REGRESSIONS_PASS_WITH_THREE_KNOWN_STORAGE_HOLDS",
+  "run": "/private/tmp/account-custody-regression-783b5cac",
+  "commit": "783b5cac7dbcca150f906aceb433e9be00ce01c9",
+  "driver_sha256": "ce4dc9671c85147ac75439f46ab81fa45eba62cc99cfd6af04c51ed95b423a4b",
+  "artifact_hashes_verified": 13,
+  "source_before_after": "clean and exactlyequal",
+  "cleanup": "successful bounded listing confirms ownedcontainerabsent",
+  "executed": 36,
+  "passed": 33,
+  "failed": 3,
+  "ignored": 0,
+  "filtered": 95,
+  "elapsed_seconds": 146.07,
+  "module_results": {
+    "account_custody_lifecycle": "22PASSincluding11macrohostilecases+concurrentfinalizers",
+    "account_custody_startup": "11PASS",
+    "account_storage": "3FAILretainedlegacycustodyprerequisites"
+  },
+  "failure_details": [
+    {
+      "location": "thread 'account_storage::account_custody_has_no_company_ownership_or_destructive_foreign_keys' (28483623) panicked at app/tests/auth_rest/account_storage.rs:177:9:",
+      "reason": "auth_refresh_token_families: Company provenance must not be mandatory custody ownership"
+    },
+    {
+      "location": "thread 'account_storage::account_custody_owners_and_effective_column_grants_are_separate_from_business' (28483649) panicked at app/tests/auth_rest/account_storage.rs:388:5:",
+      "reason": "custody must have distinct NOLOGIN owners: [(\"auth_webauthn_ceremonies\", \"console_app\", true), (\"auth_refresh_token_families\", \"console_app\", true), (\"auth_webauthn_credentials\", \"console_app\", true), (\"auth_refresh_tokens\", \"console_app\", true), (\"auth_bootstrap_credentials\", \"console_app\", true), (\"auth_device_login_handoffs\", \"console_app\", true), (\"auth_webauthn_ceremony_bindings\", \"console_app\", true), (\"account_terms_acceptances\", \"console_account_owner\", false), (\"accounts\", \"console_account_owner\", false), (\"account_security\", \"console_account_owner\", false), (\"account_security_events\", \"console_account_owner\", false), (\"account_terms_release_receipts\", \"console_terms_owner\", false), (\"account_terms_head\", \"console_terms_owner\", false)]"
+    },
+    {
+      "location": "thread 'account_storage::company_login_cannot_read_or_mutate_account_custody_even_with_company_context' (28483709) panicked at app/tests/auth_rest/account_storage.rs:361:18:",
+      "reason": "Company LOGIN must have no direct custody privilege: PgQueryResult { rows_affected: 0 }"
+    }
+  ],
+  "comparison": "Prior96537feb36run had32PASS4FAIL. Onlypreviousconcurrentfinalizersfailure nowpasses; same3legacyaccountstorageholdsremain. Targeted same1probe alsoGREEN independentlyrecorded.",
+  "limits": [
+    "Overall36command still exits1; do not report fullsuiteGREEN or Accountstoragecompletion.",
+    "OwnerUPDATE(id) grant remains unimplemented and automaticapprovalblocked; no claim full37projectionGREEN.",
+    "Reviewer inspected rootexecution only; no ownCargo/PostgreSQLrun.",
+    "tmpfsfixture does not demonstrate durability,HAorproductionexposure readiness."
+  ]
+}

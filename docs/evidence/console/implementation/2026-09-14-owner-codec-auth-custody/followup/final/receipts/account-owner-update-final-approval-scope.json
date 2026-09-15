@@ -1,0 +1,52 @@
+{
+  "classification": "Concrete proposed local source change; not approved or applied",
+  "base_sha": "3f0c4e17b661eedc0bea76e8dda649aef958aa88",
+  "paths": [
+    "backend/app/src/account_custody_state.sql",
+    "ops/generate-account-custody.py",
+    "ops/postgres-finalize-account-custody.sql"
+  ],
+  "proposed_grant": "GRANT UPDATE(id) ON public.accounts TO console_account_owner;",
+  "principal": "Existing isolated NOLOGIN table owner, no memberships; no serving-role grant",
+  "purpose": "PostgreSQL foreign-key checks require a parent-column UPDATE privilege for FOR KEY SHARE even with parent SELECT",
+  "validation": {
+    "dormant": "All six table ACLs empty and every column ACL empty",
+    "prepared": "Existing two exact owner SELECT table grants and exactly one non-grantable owner-to-self UPDATE column grant on accounts.id; no other privileges",
+    "replay": "Exact prepared profile and exact projection function only; no mutation during replay",
+    "partial_or_drift": "Refuse atomically; do not repair silently"
+  },
+  "unchanged": [
+    "Numbered migrations and existing FK constraints",
+    "Serving-role denials",
+    "Zero owner memberships",
+    "Exact read-only SECURITY DEFINER function",
+    "37 reviewed test assertions"
+  ],
+  "proof_required": [
+    "Same 37-case Account projection probe must pass",
+    "Retained Account lifecycle/startup regressions, with every failure classified",
+    "Independent review of exact final source and generated SQL"
+  ],
+  "approval_block": "Automatic approval review twice rejected persistent owner UPDATE(id) source change because exact target and privilege blast radius lacked explicit authorization",
+  "limitations": [
+    "Owner holds ordinary UPDATE(id) authority; do not call the owner read-only",
+    "No live database, production exposure, or HA/no-loss certification is authorized by this proposal"
+  ],
+  "status": "PENDING_EXPLICIT_USER_APPROVAL_NOT_APPLIED",
+  "source_bindings": {
+    "backend/app/src/account_custody_state.sql": {
+      "sha256": "be5598bb58e748b2b30f32b96223e83b9913b5afff9ba9008294a4bc9e1d3744",
+      "bytes": 6463
+    },
+    "ops/generate-account-custody.py": {
+      "sha256": "d29407b2e4a0894dd4c4440b2b4a699c113115bf1d746802b57c7a82745a7500",
+      "bytes": 9900
+    },
+    "ops/postgres-finalize-account-custody.sql": {
+      "sha256": "9ba7c8be9c7e517e4c0b948e81452da55038fae95934547c2c7f80d74cca3f8f",
+      "bytes": 28419
+    }
+  },
+  "execution_scope": "Local source implementation and disposable verification after approval. No live database change or production exposure.",
+  "historical_proof_boundary": "Latest 37-case Account projection run recorded 4 PASS / 33 FAIL on its historical candidate; it is not claimed rerun on this base. The approved source change must turn the same 37-case probe green."
+}

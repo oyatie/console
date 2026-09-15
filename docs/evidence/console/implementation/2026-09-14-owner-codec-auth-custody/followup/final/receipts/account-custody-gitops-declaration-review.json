@@ -1,0 +1,23 @@
+{
+  "author": "/root/finish_browser",
+  "status": "DRAFT_SOURCE_DECLARATION_NOT_DEPLOYMENT_APPROVAL",
+  "draft": "/private/tmp/account-custody-gitops-declaration.md",
+  "draft_sha256": "7c03c9ad1483ee8671214d796756991a4e5d5d9f8c39ed020ce3a2c6bd9bba7b",
+  "read_source_head": "11f9342e0ce120a43a5f00d9da8dcfdce383c0e3",
+  "source_sha256": {
+    "deploy/apps/console/base/account-finalize-job.yaml": "d4cca4fbaec30c884351395db568370bca372329a5d20f0b45f2a48e13780208",
+    "deploy/apps/console/base/kustomization.yaml": "d0378973f2f4dee826e5441a0af2995560fcc76dbefbd8aab51a9756f1bda3c7",
+    "deploy/apps/console/base/migrate-job.yaml": "e9ea2af77eca2f390549c2b98d8370b0fe6385e704a04f7d89d9b3f9d061c902",
+    "deploy/apps/console/base/migration-networkpolicy.yaml": "605c2f8570636959d36507ae9cabe8aae7253e079b14f71940dd3a2c7794eaa4"
+  },
+  "review_basis": "gitdiff origin/main exact4paths, existingcheck-command-database-wiring.test.mjs93-171 and LC07source-independent-review boundblobs",
+  "holds": [
+    "Existing ledger POST-PIVOT header retained",
+    "No liveArgo/deployment/readiness or releaseclaim",
+    "Unpublishedcustodyimage and absent productiondigestoverride",
+    "PreSync independently provisionednamespace/database/secrets/TLS/inventory",
+    "DBpeer/controlplane networkallowances and effectiveCNI policyunion",
+    "Policyreplacement/initialsync enforcement unverified"
+  ],
+  "root_edits": false
+}

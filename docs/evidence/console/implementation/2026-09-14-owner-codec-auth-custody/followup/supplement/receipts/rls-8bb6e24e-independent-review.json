@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "9c846602511043014a039b77335e762e37032bea",
+  "head_sha": "8bb6e24e2dd31f0da5c552cbf7625903d0b794ae",
+  "verdict": "APPROVE exact local catalog-read annotation",
+  "source_sha256": {
+    "backend/crates/platform/test-support/src/lib.rs": "ee5928cf23917ddeb509246bef2fbb71993c144baa6183fd80d4a640a5b22e9c"
+  },
+  "changes": "One adjacent rls-arming reason comment on login_test_pool fetch; exact query, executor, session/current user and five admin assertions unchanged",
+  "rationale": "pg_catalog.pg_roles restricted current-user metadata is cluster-global; no Company records; session identity verification occurs before any tenant context",
+  "evidence": [
+    "/private/tmp/rls-annotation-probe-red.log exact1BarePoolQuery at this fetch",
+    "/private/tmp/rls-annotation-probe-green.log same workspacegate PASSED",
+    "/private/tmp/rls-annotation-gate-tests.log existing10testsPASS"
+  ],
+  "limits": [
+    "Marker mechanism itself unchanged; review applies only to this query",
+    "No runtime PostgreSQL or arbitrary-query authorization proof",
+    "No grant/schema/production authority change"
+  ]
+}

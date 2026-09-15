@@ -1,0 +1,14 @@
+{
+  "executed": 8,
+  "passed": 8,
+  "controls": [
+    "ci positive",
+    "nightly positive",
+    "omit auth API binding",
+    "reuse runtime password",
+    "early successful exit",
+    "omit new nightly proof",
+    "neuter new nightly proof",
+    "soft fail new nightly proof"
+  ]
+}

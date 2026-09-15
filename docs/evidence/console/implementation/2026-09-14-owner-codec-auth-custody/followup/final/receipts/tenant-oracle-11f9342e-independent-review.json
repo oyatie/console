@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVE explicit parser oracle refinement after separate owner-only enrollment",
+  "base_sha": "ad490bbf6acaf704cbe47c92ad6cbeb1adfe724f",
+  "head_sha": "11f9342e0ce120a43a5f00d9da8dcfdce383c0e3",
+  "test_sha256": "dc7c97d6868096b8f970631a9cf7f4b5884127264f83158c2714319697c0b314",
+  "review": [
+    "Exact test name, accounts sentinel and expected detail changed to unregistered_catalog; UnclassifiedTable assertion preserved",
+    "All19integration tests retained",
+    "Integrated scanner includes separately approved sixowner-only classifications and complete6classification/12grant controls",
+    "Historical accounts-unclassified contract intentionally superseded only after separate classification approval"
+  ],
+  "observed_evidence": {
+    "/private/tmp/tenant-classification-integration-red.log": "18PASS1FAIL on obsolete accounts expectation",
+    "/private/tmp/tenant-classification-integration-green.log": "19executed19PASS",
+    "/private/tmp/tenant-classification-root21.log": "21executed21PASS",
+    "/private/tmp/tenant-classification-backend-gate-green.log": "Actual repository gate from required backend cwd PASS"
+  },
+  "limits": [
+    "Wrong repository-root cwd scan included buckvendor fixtures; retained but not an applicationfailure or valid gate success",
+    "Static classification and scanner tests do not certify database privileges or tenant isolation at runtime",
+    "Prior projection37/storage/production HOLDs remain"
+  ]
+}

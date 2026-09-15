@@ -1,0 +1,229 @@
+warning: unused workspace dependency `console-attendance-application`
+   --> Cargo.toml:200:1
+    |
+200 | console-attendance-application = { path = "crates/attendance/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `cargo::unused_workspace_dependencies` is set to `warn` by default
+help: consider removing the workspace dependency `console-attendance-application`
+warning: unused workspace dependency `console-attendance-domain`
+   --> Cargo.toml:199:1
+    |
+199 | console-attendance-domain = { path = "crates/attendance/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-attendance-domain`
+warning: unused workspace dependency `console-comms-mailbox`
+   --> Cargo.toml:300:1
+    |
+300 | console-comms-mailbox = { path = "crates/comms/mailbox" }
+    | ^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-comms-mailbox`
+warning: unused workspace dependency `console-finance-gl-application`
+   --> Cargo.toml:216:1
+    |
+216 | console-finance-gl-application = { path = "crates/finance-gl/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-finance-gl-application`
+warning: unused workspace dependency `console-finance-gl-domain`
+   --> Cargo.toml:215:1
+    |
+215 | console-finance-gl-domain = { path = "crates/finance-gl/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-finance-gl-domain`
+warning: unused workspace dependency `console-inspection-application`
+   --> Cargo.toml:224:1
+    |
+224 | console-inspection-application = { path = "crates/inspection/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-inspection-application`
+warning: unused workspace dependency `console-inspection-domain`
+   --> Cargo.toml:223:1
+    |
+223 | console-inspection-domain = { path = "crates/inspection/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-inspection-domain`
+warning: unused workspace dependency `console-logistics-application`
+   --> Cargo.toml:232:1
+    |
+232 | console-logistics-application = { path = "crates/logistics/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-logistics-application`
+warning: unused workspace dependency `console-ontology-application`
+   --> Cargo.toml:320:1
+    |
+320 | console-ontology-application = { path = "crates/ontology/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-ontology-application`
+warning: unused workspace dependency `console-ontology-domain`
+   --> Cargo.toml:319:1
+    |
+319 | console-ontology-domain = { path = "crates/ontology/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-ontology-domain`
+warning: unused workspace dependency `console-orgchange-domain`
+   --> Cargo.toml:327:1
+    |
+327 | console-orgchange-domain = { path = "crates/orgchange/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-orgchange-domain`
+warning: unused workspace dependency `console-policy-adapter-postgres`
+   --> Cargo.toml:307:1
+    |
+307 | console-policy-adapter-postgres = { path = "crates/policy/adapter-postgres" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-policy-adapter-postgres`
+warning: workspace (manifest) generated 12 warnings
+   Compiling libc v0.2.186
+   Compiling zerofrom v0.1.8
+   Compiling typenum v1.20.1
+   Compiling stable_deref_trait v1.2.1
+   Compiling yoke v0.8.3
+   Compiling serde_core v1.0.228
+   Compiling jobserver v0.1.35
+   Compiling cc v1.2.63
+   Compiling cmake v0.1.58
+   Compiling zerovec v0.11.6
+   Compiling aws-lc-sys v0.45.0
+   Compiling serde v1.0.228
+   Compiling cfg-if v1.0.4
+   Compiling smallvec v1.15.2
+   Compiling tinystr v0.8.3
+   Compiling writeable v0.6.3
+   Compiling litemap v0.8.2
+   Compiling icu_locale_core v2.2.0
+   Compiling potential_utf v0.1.5
+   Compiling hybrid-array v0.4.12
+   Compiling zerotrie v0.2.4
+   Compiling utf8_iter v1.0.4
+   Compiling icu_provider v2.2.0
+   Compiling icu_collections v2.2.0
+   Compiling num-conv v0.2.2
+   Compiling pin-project-lite v0.2.17
+   Compiling cmov v0.5.4
+   Compiling zeroize v1.9.0
+   Compiling time-core v0.1.8
+   Compiling ctutils v0.4.2
+   Compiling time-macros v0.2.27
+   Compiling crypto-common v0.2.2
+   Compiling block-buffer v0.12.1
+   Compiling generic-array v0.14.7
+   Compiling icu_normalizer_data v2.2.0
+   Compiling icu_properties_data v2.2.0
+   Compiling futures-core v0.3.32
+   Compiling icu_properties v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling digest v0.11.3
+   Compiling rustls-pki-types v1.14.1
+   Compiling crossbeam-utils v0.8.21
+   Compiling scopeguard v1.2.0
+   Compiling equivalent v1.0.2
+   Compiling once_cell v1.21.4
+   Compiling lock_api v0.4.14
+   Compiling idna_adapter v1.2.2
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling parking_lot_core v0.9.12
+   Compiling mio v1.2.1
+   Compiling socket2 v0.6.4
+   Compiling tinyvec_macros v0.1.1
+   Compiling bytes v1.11.1
+   Compiling memchr v2.8.2
+   Compiling futures-sink v0.3.32
+   Compiling itoa v1.0.18
+   Compiling rand_core v0.10.1
+   Compiling untrusted v0.9.0
+   Compiling percent-encoding v2.3.2
+   Compiling foldhash v0.2.0
+   Compiling powerfmt v0.2.0
+   Compiling allocator-api2 v0.2.21
+   Compiling form_urlencoded v1.2.2
+   Compiling deranged v0.5.8
+   Compiling tokio v1.52.3
+   Compiling hashbrown v0.16.1
+   Compiling tinyvec v1.11.0
+   Compiling parking_lot v0.12.5
+   Compiling digest v0.10.7
+   Compiling idna v1.1.0
+   Compiling tracing-core v0.1.36
+   Compiling concurrent-queue v2.5.0
+   Compiling zmij v1.0.23
+   Compiling cpufeatures v0.2.17
+   Compiling parking v2.2.1
+   Compiling log v0.4.32
+   Compiling hashbrown v0.17.1
+   Compiling crc-catalog v2.5.0
+   Compiling subtle v2.6.1
+   Compiling slab v0.4.12
+   Compiling futures-task v0.3.32
+   Compiling futures-io v0.3.32
+   Compiling indexmap v2.14.0
+   Compiling futures-util v0.3.32
+   Compiling tokio-stream v0.1.18
+   Compiling crc v3.4.0
+   Compiling tracing v0.1.44
+   Compiling event-listener v5.4.1
+   Compiling sha2 v0.10.9
+   Compiling serde_json v1.0.150
+   Compiling url v2.5.8
+   Compiling futures-intrusive v0.5.0
+   Compiling unicode-normalization v0.1.25
+   Compiling time v0.3.47
+   Compiling hashlink v0.11.1
+   Compiling chacha20 v0.10.2
+   Compiling getrandom v0.4.2
+   Compiling crossbeam-queue v0.3.12
+   Compiling webpki-roots v1.0.8
+   Compiling hmac v0.13.0
+   Compiling thiserror v2.0.18
+   Compiling num-traits v0.2.19
+   Compiling either v1.16.0
+   Compiling cpufeatures v0.3.0
+   Compiling uuid v1.23.3
+   Compiling unicode-properties v0.1.4
+   Compiling unicode-bidi v0.3.18
+   Compiling base64 v0.22.1
+   Compiling stringprep v0.1.5
+   Compiling sha2 v0.11.0
+   Compiling atoi v2.0.0
+   Compiling hkdf v0.13.0
+   Compiling rand v0.10.1
+   Compiling futures-channel v0.3.32
+   Compiling md-5 v0.11.0
+   Compiling byteorder v1.5.0
+   Compiling whoami v2.1.2
+   Compiling hex v0.4.3
+   Compiling bitflags v2.13.0
+   Compiling dotenvy v0.15.7
+    Checking console-gate-tenant-isolation v0.1.0 (/private/tmp/console-tenant-qualified-tests-20260914/backend/ci/gates/tenant-isolation)
+error: used `expect()` on an `Option` value
+   --> ci/gates/tenant-isolation/src/lib.rs:978:22
+    |
+978 |             let ch = content[index..].chars().next().expect("character boundary");
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: if this value is `None`, it will panic
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#expect_used
+    = note: requested on the command line with `-D clippy::expect-used`
+
+error: used `expect()` on an `Option` value
+    --> ci/gates/tenant-isolation/src/lib.rs:1075:33
+     |
+1075 |                 identifier.push(chars.next().expect("peeked character"));
+     |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: if this value is `None`, it will panic
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#expect_used
+
+error: could not compile `console-gate-tenant-isolation` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
