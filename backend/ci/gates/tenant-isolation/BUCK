@@ -61,3 +61,19 @@ rust_test(
         ":console-gate-tenant-isolation-lib",
     ],
 )
+
+rust_test(
+    name = "console-gate-tenant-isolation-itest-qualified_table_identity",
+    mapped_srcs = repo_mapped_srcs("backend/ci/gates/tenant-isolation", ["tests/qualified_table_identity.rs"]),
+    crate = "qualified_table_identity",
+    edition = "2024",
+    crate_root = "backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/ci/gates/tenant-isolation"},
+    labels = ["owner.backend.ci.gates.tenant-isolation", "domain.ci", "test.integration", "resource.none"],
+    deps = [
+        "//third-party/rust:sqlx",
+        "//third-party/rust:tokio",
+        ":console-gate-tenant-isolation-lib",
+    ],
+)
