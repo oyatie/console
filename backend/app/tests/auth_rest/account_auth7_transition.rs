@@ -159,7 +159,13 @@ fn preserved_columns(before: &Value, after: &Value, table: &str) {
         "populated preservation fixture required for {table}"
     );
     let keys: BTreeSet<_> = original[0].as_object().unwrap().keys().collect();
-    let mut expected: Vec<_> = original.iter().map(Value::to_string).collect();
+    // JSON object insertion order is not a stored value. Normalize both sides
+    // recursively; keep row multiplicity, array order and every value intact.
+    let canonical = |mut row: Value| {
+        row.sort_all_objects();
+        row.to_string()
+    };
+    let mut expected: Vec<_> = original.iter().map(|row| canonical(row.clone())).collect();
     let mut actual: Vec<_> = after[table]
         .as_array()
         .unwrap()
@@ -174,7 +180,7 @@ fn preserved_columns(before: &Value, after: &Value, table: &str) {
                 .iter()
                 .map(|key| (key.to_string(), object[*key].clone()))
                 .collect();
-            Value::Object(projection).to_string()
+            canonical(Value::Object(projection))
         })
         .collect();
     expected.sort();
