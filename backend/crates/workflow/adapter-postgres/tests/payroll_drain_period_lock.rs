@@ -130,7 +130,11 @@ async fn payroll_period_lock_blocks_draft_creation_and_unlock_restores(owner_poo
 
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let store = PgWorkflowRuntimeStore::new(rt_pool.clone());
-    let payroll_staging = PgPayRunPort::new(rt_pool.clone(), tokio::runtime::Handle::current());
+    let payroll_staging = PgPayRunPort::new(
+        rt_pool.clone(),
+        tokio::runtime::Handle::current(),
+        console_platform_db::durability::DurabilityPolicy::local_development(),
+    );
 
     // (a) Locked → drain creates nothing, event stays PENDING (retryable).
     let created = scope_org(
@@ -234,7 +238,11 @@ async fn a_lock_acquired_after_the_read_gate_still_blocks_the_staging_write(owne
     let staging = LockAfterGate {
         lock_pool: owner_pool.clone(),
         org: org_uuid,
-        inner: PgPayRunPort::new(rt_pool, tokio::runtime::Handle::current()),
+        inner: PgPayRunPort::new(
+            rt_pool,
+            tokio::runtime::Handle::current(),
+            console_platform_db::durability::DurabilityPolicy::local_development(),
+        ),
     };
 
     let created = scope_org(org, store.drain_payroll_job_outbox(org, 10, &staging))

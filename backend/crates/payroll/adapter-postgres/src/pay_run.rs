@@ -108,6 +108,9 @@ use console_ontology_canonical_domain::{
     CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget,
     ObjectKey, PayRun, Preflight, ReceiptOwner,
 };
+use console_platform_db::durability::{
+    CompletionError, DurabilityPolicy, DurabilityUnknown, with_durability_transaction,
+};
 use console_workflow_domain::{PayrollDraftStaging, PortFuture, StagePayrollDraft};
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
@@ -492,6 +495,8 @@ pub enum PayRunError {
     #[error(transparent)]
     Database(#[from] sqlx::Error),
     #[error(transparent)]
+    DurabilityUnknown(#[from] DurabilityUnknown),
+    #[error(transparent)]
     Lifecycle(#[from] crate::lifecycle::LifecycleError),
     #[error("command {0} was already applied with a different payload")]
     DigestConflict(Uuid),
@@ -511,7 +516,7 @@ impl CanonicalPortError for PayRunError {
                 KernelError::conflict(self.to_string())
             }
             Self::Lifecycle(err) => lifecycle_into_kernel_error(err),
-            Self::Database(_) | Self::UnreadableReceipt(_, _) => {
+            Self::Database(_) | Self::DurabilityUnknown(_) | Self::UnreadableReceipt(_, _) => {
                 KernelError::internal(self.to_string())
             }
         }
@@ -558,12 +563,21 @@ impl From<StageDraftError> for PayRunError {
 pub struct PgPayRunPort {
     pool: PgPool,
     runtime: tokio::runtime::Handle,
+    durability: DurabilityPolicy,
 }
 
 impl PgPayRunPort {
     #[must_use]
-    pub const fn new(pool: PgPool, runtime: tokio::runtime::Handle) -> Self {
-        Self { pool, runtime }
+    pub const fn new(
+        pool: PgPool,
+        runtime: tokio::runtime::Handle,
+        durability: DurabilityPolicy,
+    ) -> Self {
+        Self {
+            pool,
+            runtime,
+            durability,
+        }
     }
 
     async fn write(&self, command: &PayRunCommand) -> Result<CommandReceipt, PayRunError> {
@@ -572,19 +586,36 @@ impl PgPayRunPort {
             return Err(PayRunError::Blocked(preflight.blockers().to_vec()));
         }
 
+        let command = command.clone();
+        with_durability_transaction(
+            &self.pool,
+            command.org_id,
+            &self.durability,
+            move |tx| Box::pin(async move { Self::write_in_tx(tx, &command).await }),
+            |error| {
+                !matches!(
+                    error,
+                    PayRunError::Database(_)
+                        | PayRunError::Lifecycle(crate::lifecycle::LifecycleError::Db(_))
+                        | PayRunError::DurabilityUnknown(_)
+                )
+            },
+        )
+        .await
+        .map_err(|error| match error {
+            CompletionError::Operation(error) => error,
+            CompletionError::Unknown(error) => PayRunError::DurabilityUnknown(error),
+        })
+    }
+
+    async fn write_in_tx(
+        tx: &mut Transaction<'_, Postgres>,
+        command: &PayRunCommand,
+    ) -> Result<CommandReceipt, PayRunError> {
         let digest = payload_digest(command);
         let org = *command.org_id.as_uuid();
         let actor = *command.actor_id.as_uuid();
         let command_uuid = *command.command_id.as_uuid();
-
-        let mut tx = self.pool.begin().await?;
-        // Transaction-local, so it is cleared on COMMIT/ROLLBACK and never leaks
-        // to the next checkout of a pooled connection. Unset fails closed: RLS
-        // shows no rows and accepts no writes.
-        sqlx::query("SELECT set_config('app.current_org', $1, true)")
-            .bind(org.to_string())
-            .execute(&mut *tx)
-            .await?;
 
         if let Some(stored) = sqlx::query(
             "SELECT actor_id, payload_digest, receipt, created_at \
@@ -592,7 +623,7 @@ impl PgPayRunPort {
         )
         .bind(org)
         .bind(command_uuid)
-        .fetch_optional(&mut *tx)
+        .fetch_optional(&mut **tx)
         .await?
         {
             let stored_digest: Vec<u8> = stored.get("payload_digest");
@@ -639,26 +670,19 @@ impl PgPayRunPort {
                     connector: connector.clone(),
                     job: job.clone(),
                 };
-                let (id, created) =
-                    stage_draft_run_returning_id_in_tx(&mut tx, org, &draft).await?;
+                let (id, created) = stage_draft_run_returning_id_in_tx(tx, org, &draft).await?;
                 draft_run_id = Some(id);
                 created
             }
             PayRunQuery::SubmitRun { .. } => {
-                crate::lifecycle::submit_run_in_tx(&mut tx, run_id, actor).await?;
+                crate::lifecycle::submit_run_in_tx(tx, run_id, actor).await?;
                 true
             }
             PayRunQuery::DecideRun {
                 decision, reason, ..
             } => {
-                crate::lifecycle::decide_run_in_tx(
-                    &mut tx,
-                    run_id,
-                    actor,
-                    decision,
-                    reason.as_deref(),
-                )
-                .await?;
+                crate::lifecycle::decide_run_in_tx(tx, run_id, actor, decision, reason.as_deref())
+                    .await?;
                 true
             }
         };
@@ -709,10 +733,9 @@ impl PgPayRunPort {
         .bind(command.object_type_id)
         .bind(receipt_owner.as_str())
         .bind(receipt_target.as_str())
-        .fetch_one(&mut *tx)
+        .fetch_one(&mut **tx)
         .await?;
 
-        tx.commit().await?;
         Ok(receipt(
             command,
             target,
@@ -798,9 +821,10 @@ impl PayrollDraftStaging for PgPayRunPort {
     fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PortFuture<'a, bool> {
         Box::pin(async move {
             let org = draft.org;
-            console_platform_db::with_org_conn::<_, bool, crate::PgPayrollError>(
+            with_durability_transaction(
                 &self.pool,
                 org,
+                &self.durability,
                 move |tx| {
                     Box::pin(async move {
                         // `stage_draft_run_in_tx` folds the freeze-window gate
@@ -808,14 +832,18 @@ impl PayrollDraftStaging for PgPayRunPort {
                         // the write share one snapshot — a period lock committed
                         // after the drain's phase-1 read but before this write is
                         // refused atomically, never slipped past.
-                        stage_draft_run_in_tx(tx, *org.as_uuid(), &draft)
-                            .await
-                            .map_err(crate::PgPayrollError::from)
+                        stage_draft_run_in_tx(tx, *org.as_uuid(), &draft).await
                     })
                 },
+                |error| !matches!(error, StageDraftError::Db(_)),
             )
             .await
-            .map_err(console_kernel_core::KernelError::from)
+            .map_err(|error| match error {
+                CompletionError::Operation(error) => {
+                    KernelError::from(crate::PgPayrollError::from(error))
+                }
+                CompletionError::Unknown(error) => KernelError::internal(error.to_string()),
+            })
         })
     }
 }

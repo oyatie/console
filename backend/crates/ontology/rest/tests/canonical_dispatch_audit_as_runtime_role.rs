@@ -497,7 +497,11 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         .register_port(PgJobPositionPort::new(rt.clone(), handle.clone()))
         .register_port(PgPersonPort::new(rt.clone(), handle.clone()))
         .register_port(employment_port.clone())
-        .register_port(PgPayRunPort::new(rt.clone(), handle.clone()));
+        .register_port(PgPayRunPort::new(
+            rt.clone(),
+            handle.clone(),
+            console_platform_db::durability::DurabilityPolicy::local_development(),
+        ));
     let state = OntologyRestState::new(
         PgOntologyStore::new(rt.clone()).with_command_pool(cmd),
         PgInstanceStore::new(rt.clone()),

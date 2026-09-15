@@ -4,6 +4,7 @@
 use console_kernel_core::{OrgId, UserId};
 use console_ontology_canonical_domain::{CanonicalPort, CommandId, CommandReceipt};
 use console_payroll_adapter_postgres::pay_run::{PayRunCommand, PayRunQuery, PgPayRunPort};
+use console_platform_db::durability::DurabilityPolicy;
 use console_platform_test_support::{TestDatabaseLogin, login_test_pool, seed_org_and_super_admin};
 use console_workflow_domain::{PayrollDraftStaging, StagePayrollDraft};
 use serde_json::{Value, json};
@@ -49,7 +50,48 @@ fn create(org: OrgId, actor: UserId) -> PayRunCommand {
 // The descriptor's stable peer identity is admitted by this owned two-node
 // fixture, whose isolated network, resource labels and replication secret are
 // independently checked by recovery_control. This is not production mTLS proof.
+async fn install_reviewed_observer(owner: &PgPool) {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../../ops/postgres-install-durability-observer.sql");
+    let sql = std::fs::read_to_string(path).expect("real shared observer installer is required");
+    control("assert-topology");
+    let mut transaction = owner.begin().await.unwrap();
+    sqlx::raw_sql("SET LOCAL statement_timeout='15s'; SET LOCAL lock_timeout='2s'")
+        .execute(transaction.as_mut())
+        .await
+        .unwrap();
+    let (database, admitted): (String, bool) = sqlx::query_as(
+        "SELECT current_database(), session_user='console_buck_admin' AND current_user=session_user \
+         AND current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' \
+         AND (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=current_user) \
+         AND (SELECT pg_get_userbyid(datdba)=current_user FROM pg_catalog.pg_database WHERE datname=current_database())",
+    ).fetch_one(transaction.as_mut()).await.unwrap();
+    assert!(
+        admitted,
+        "marked disposable admin-owned database required before installer"
+    );
+    assert_eq!(
+        owner.connect_options().get_database(),
+        Some(database.as_str())
+    );
+    let suffix = database
+        .strip_prefix("_sqlx_test_")
+        .expect("SQLx fixture database required");
+    assert!(
+        suffix.len() == 52
+            && suffix
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'_')
+    );
+    sqlx::raw_sql(sqlx::AssertSqlSafe(sql))
+        .execute(transaction.as_mut())
+        .await
+        .unwrap();
+    transaction.commit().await.unwrap();
+}
+
 async fn admitted_fixture_descriptor(owner: &PgPool, timeout_ms: u64) -> Value {
+    install_reviewed_observer(owner).await;
     control("assert-topology");
     let row = sqlx::query("SELECT c.system_identifier::text AS system_id, pg_postmaster_start_time() AS primary_start, r.usesysid::bigint AS role_oid, r.usename::text AS role_name, host(r.client_addr) AS client_addr, x.ssl FROM pg_control_system() c CROSS JOIN pg_replication_slots s JOIN pg_stat_replication r ON r.pid=s.active_pid JOIN pg_stat_ssl x ON x.pid=r.pid WHERE s.slot_name='console_recovery_s1' AND s.slot_type='physical' AND s.active AND r.application_name='console_recovery_s1' AND r.usename='console_fixture_replica' AND r.state='streaming'")
         .fetch_one(owner).await.unwrap();
@@ -71,12 +113,13 @@ async fn admitted_fixture_descriptor(owner: &PgPool, timeout_ms: u64) -> Value {
     })
 }
 
-// Current-API baseline only: this owner has no policy argument yet. The
-// supplied descriptor records intended stable fixture admission but cannot
-// configure the current owner. The future binding diff changes this construction
-// and installs the real native observer; all test assertions remain identical.
-fn required_port(pool: PgPool, _descriptor: &Value) -> PgPayRunPort {
-    PgPayRunPort::new(pool, tokio::runtime::Handle::current())
+// Bind the real owner to the independently admitted fixture descriptor.
+fn required_port(pool: PgPool, descriptor: &Value) -> PgPayRunPort {
+    PgPayRunPort::new(
+        pool,
+        tokio::runtime::Handle::current(),
+        DurabilityPolicy::from_json(&descriptor.to_string()).expect("validated fixture policy"),
+    )
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
