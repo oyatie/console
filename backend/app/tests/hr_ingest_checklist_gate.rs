@@ -44,8 +44,9 @@ struct JsonResponse {
 // Deny path: no checklist evidence ⇒ 403, before the run row is even touched.
 // Nothing is written — the run (seeded DRY_RUN) is untouched, zero events.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn apply_without_checklist_denies_and_writes_nothing(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = keys();
     let admin = UserId::new();
     seed_admin(&owner_pool, admin).await;
@@ -56,6 +57,7 @@ async fn apply_without_checklist_denies_and_writes_nothing(owner_pool: PgPool) {
             runtime_role_pool(&owner_pool).await,
             keys.public_pem.clone(),
         )
+        .await
         .unwrap(),
     );
     let token = bearer(&keys, admin);
@@ -113,8 +115,9 @@ async fn apply_without_checklist_denies_and_writes_nothing(owner_pool: PgPool) {
 // Allow path: checklist acknowledged ⇒ the real mutation runs (run flips to
 // APPLIED) and the audit event carries the gate outcome.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn apply_with_checklist_admits_and_applies(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = keys();
     let admin = UserId::new();
     seed_admin(&owner_pool, admin).await;
@@ -125,6 +128,7 @@ async fn apply_with_checklist_admits_and_applies(owner_pool: PgPool) {
             runtime_role_pool(&owner_pool).await,
             keys.public_pem.clone(),
         )
+        .await
         .unwrap(),
     );
     let token = bearer(&keys, admin);
@@ -280,7 +284,15 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -289,4 +301,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

@@ -30,8 +30,9 @@ struct JsonResponse {
     json: Value,
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn readiness_counts_only_inspectable_active_payroll_close_statuses(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let org = OrgId::knl();
     let user = UserId::new();
@@ -63,6 +64,7 @@ async fn readiness_counts_only_inspectable_active_payroll_close_statuses(pool: P
             leave_command_role_pool(&pool).await,
             keys.public_pem.clone(),
         )
+        .await
         .unwrap(),
     );
     let token = bearer(&keys, org, user, &["SUPER_ADMIN"]);
@@ -104,8 +106,9 @@ async fn readiness_counts_only_inspectable_active_payroll_close_statuses(pool: P
     assert_eq!(active.json["payroll"]["active_close_runs"], 4);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let org = OrgId::knl();
     let user = UserId::new();
@@ -117,6 +120,7 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
             leave_command_role_pool(&pool).await,
             keys.public_pem.clone(),
         )
+        .await
         .unwrap(),
     );
     let token = bearer(&keys, org, user, &["SUPER_ADMIN"]);
@@ -594,8 +598,9 @@ async fn employee_create_is_idempotent_unique_and_tenant_scoped(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn employee_create_rejects_unknown_org_unit_uuid(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let org = OrgId::knl();
     let user = UserId::new();
@@ -607,6 +612,7 @@ async fn employee_create_rejects_unknown_org_unit_uuid(pool: PgPool) {
             leave_command_role_pool(&pool).await,
             keys.public_pem.clone(),
         )
+        .await
         .unwrap(),
     );
     let token = bearer(&keys, org, user, &["SUPER_ADMIN"]);
@@ -636,8 +642,9 @@ async fn employee_create_rejects_unknown_org_unit_uuid(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn deactivated_super_admin_cannot_create_employee(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let org = OrgId::knl();
     let user = UserId::new();
@@ -649,6 +656,7 @@ async fn deactivated_super_admin_cannot_create_employee(pool: PgPool) {
             leave_command_role_pool(&pool).await,
             keys.public_pem.clone(),
         )
+        .await
         .unwrap(),
     );
     // Mint the token FIRST, then deactivate: the token's SUPER_ADMIN roles stay
@@ -725,8 +733,9 @@ async fn deactivated_super_admin_cannot_create_employee(pool: PgPool) {
     assert_no_employee_writes(&pool, org, "PEOPLE-ROLE-REVOKED", "role-revoked-key").await;
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn revoked_grant_executive_cannot_create_employee(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let org = OrgId::knl();
     let branch = seed_branch(&pool, org, "People revoked-grant branch").await;
@@ -739,6 +748,7 @@ async fn revoked_grant_executive_cannot_create_employee(pool: PgPool) {
             leave_command_role_pool(&pool).await,
             keys.public_pem.clone(),
         )
+        .await
         .unwrap(),
     );
     let token = bearer(&keys, org, executive, &["EXECUTIVE"]);
@@ -1078,11 +1088,16 @@ async fn scoped_role_pool(owner_pool: &PgPool, role: &'static str) -> PgPool {
         .unwrap()
 }
 
-fn app_state(
+async fn app_state(
     runtime_pool: PgPool,
     leave_command_pool: PgPool,
     public_key_pem: String,
 ) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &runtime_pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -1091,5 +1106,6 @@ fn app_state(
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(runtime_pool))
+        .map(|state| state.with_auth_database(auth_database))
         .map(|state| state.with_leave_command_database(leave_command_pool))
 }

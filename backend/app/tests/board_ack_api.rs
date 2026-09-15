@@ -25,8 +25,9 @@ const AUDIENCE: &str = "console-api";
 const NOTICES: &str = "/api/v1/notices";
 const OTHER_ORG: Uuid = Uuid::from_u128(0x8404_8404_8404_8404_8404_8404_8404_8404);
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn board_notice_publishes_to_scoped_audience_with_ack_tracking(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     grant_runtime_role(&pool).await;
     let rt = runtime_role_pool(&pool).await;
@@ -306,10 +307,14 @@ async fn send(
         }
         None => Body::empty(),
     };
-    let response = build_router(app_state(pool.clone(), keys.public_pem.clone()).unwrap())
-        .oneshot(builder.body(request_body).unwrap())
-        .await
-        .unwrap();
+    let response = build_router(
+        app_state(pool.clone(), keys.public_pem.clone())
+            .await
+            .unwrap(),
+    )
+    .oneshot(builder.body(request_body).unwrap())
+    .await
+    .unwrap();
     let status = response.status();
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let json = if bytes.is_empty() {
@@ -320,7 +325,12 @@ async fn send(
     (status, json)
 }
 
-fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     AppState::new(
         AppConfig::from_pairs([
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
@@ -331,6 +341,7 @@ fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::
         ])?,
         DatabaseDependency::Postgres(pool),
     )
+    .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn seed_branch(pool: &PgPool, org: Uuid, name: &str) -> BranchId {

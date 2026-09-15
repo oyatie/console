@@ -105,7 +105,12 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, keys: &Keys) -> AppState {
+async fn app_state(pool: PgPool, keys: &Keys) -> AppState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -117,7 +122,9 @@ fn app_state(pool: PgPool, keys: &Keys) -> AppState {
         ("CONSOLE_WEBAUTHN_RP_ORIGIN", RP_ORIGIN.to_owned()),
     ])
     .unwrap();
-    AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
+    AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
+        .unwrap()
 }
 
 async fn seed_super_admin(pool: &PgPool, user_id: UserId, label: &str) {
@@ -451,8 +458,9 @@ async fn finding_count(owner_pool: &PgPool, definition_id: &str) -> i64 {
     .unwrap()
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn distinct_approver_applies_staged_revision_without_finding(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = keys();
     let svc = passkey_service();
     let publisher = UserId::new();
@@ -462,7 +470,7 @@ async fn distinct_approver_applies_staged_revision_without_finding(owner_pool: P
     let (mut pub_auth, pub_cred) =
         register_passkey(&owner_pool, &svc, publisher, "publisher").await;
     let (mut app_auth, app_cred) = register_passkey(&owner_pool, &svc, approver, "approver").await;
-    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys));
+    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys).await);
     let pub_token = bearer(&keys, publisher);
     let app_token = bearer(&keys, approver);
 
@@ -512,14 +520,15 @@ async fn distinct_approver_applies_staged_revision_without_finding(owner_pool: P
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn exempt_self_approval_is_allowed_and_recorded(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = keys();
     let svc = passkey_service();
     let publisher = UserId::new();
     seed_super_admin(&owner_pool, publisher, "solo").await;
     let (mut auth, cred) = register_passkey(&owner_pool, &svc, publisher, "solo").await;
-    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys));
+    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys).await);
     let token = bearer(&keys, publisher);
 
     let id = create_and_activate(
@@ -560,8 +569,9 @@ async fn exempt_self_approval_is_allowed_and_recorded(owner_pool: PgPool) {
 /// version number must be denied (422), or the four-eyes control this PR adds is
 /// bypassed. The active version starts normally; the revision becomes startable
 /// only after a DISTINCT actor approves (which appends a new PUBLISHED version).
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn start_gates_on_approved_version_only(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = keys();
     let svc = passkey_service();
     let publisher = UserId::new();
@@ -572,7 +582,7 @@ async fn start_gates_on_approved_version_only(owner_pool: PgPool) {
         register_passkey(&owner_pool, &svc, publisher, "start-publisher").await;
     let (mut app_auth, app_cred) =
         register_passkey(&owner_pool, &svc, approver, "start-approver").await;
-    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys));
+    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys).await);
     let pub_token = bearer(&keys, publisher);
     let app_token = bearer(&keys, approver);
 
@@ -690,14 +700,15 @@ async fn start_gates_on_approved_version_only(owner_pool: PgPool) {
 /// step-up gated) — a rolled-back definition's new active version carries
 /// `version_status = 'ROLLED_BACK'`, not `PUBLISHED`, and manual start must
 /// still resolve and run it without a pin (the default/unpinned path).
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn rollback_then_manual_start_uses_rolled_back_active_version(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = keys();
     let svc = passkey_service();
     let actor = UserId::new();
     seed_super_admin(&owner_pool, actor, "rollback-actor").await;
     let (mut auth, cred) = register_passkey(&owner_pool, &svc, actor, "rollback-actor").await;
-    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys));
+    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys).await);
     let token = bearer(&keys, actor);
 
     let id = create_and_activate(
@@ -779,14 +790,15 @@ async fn rollback_then_manual_start_uses_rolled_back_active_version(owner_pool: 
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn withdraw_discards_staged_revision(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = keys();
     let svc = passkey_service();
     let publisher = UserId::new();
     seed_super_admin(&owner_pool, publisher, "withdrawer").await;
     let (mut auth, cred) = register_passkey(&owner_pool, &svc, publisher, "withdrawer").await;
-    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys));
+    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys).await);
     let token = bearer(&keys, publisher);
 
     let id = create_and_activate(
@@ -825,14 +837,15 @@ async fn withdraw_discards_staged_revision(owner_pool: PgPool) {
 // §16 org-scope automation gate (85 판정, BE-ingest-checklist-gates).
 // ===========================================================================
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn org_scope_direct_activate_requires_four_eyes(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = keys();
     let svc = passkey_service();
     let publisher = UserId::new();
     seed_super_admin(&owner_pool, publisher, "org-gate").await;
     let (mut auth, cred) = register_passkey(&owner_pool, &svc, publisher, "org-gate").await;
-    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys));
+    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys).await);
     let token = bearer(&keys, publisher);
 
     let created = send(
@@ -908,14 +921,15 @@ async fn org_scope_direct_activate_requires_four_eyes(owner_pool: PgPool) {
     assert_eq!(published.json["status"], "ACTIVE");
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn personal_scope_direct_activate_stays_direct(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = keys();
     let svc = passkey_service();
     let publisher = UserId::new();
     seed_super_admin(&owner_pool, publisher, "personal-gate").await;
     let (mut auth, cred) = register_passkey(&owner_pool, &svc, publisher, "personal-gate").await;
-    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys));
+    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys).await);
     let token = bearer(&keys, publisher);
 
     let created = send(
@@ -949,14 +963,15 @@ async fn personal_scope_direct_activate_stays_direct(owner_pool: PgPool) {
     assert_eq!(published.json["status"], "ACTIVE");
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn org_scope_run_requires_four_eyes(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = keys();
     let svc = passkey_service();
     let publisher = UserId::new();
     seed_super_admin(&owner_pool, publisher, "run-gate").await;
     let (mut auth, cred) = register_passkey(&owner_pool, &svc, publisher, "run-gate").await;
-    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys));
+    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys).await);
     let token = bearer(&keys, publisher);
 
     // Direct-activate an org-scope definition (create_and_activate already
@@ -1015,14 +1030,15 @@ async fn org_scope_run_requires_four_eyes(owner_pool: PgPool) {
 
 /// A run four-eyes ref is SINGLE-USE: once a run consumes it, replaying the same
 /// ref on a fresh run is denied — the M1 replay hole closed end-to-end.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn org_scope_run_four_eyes_ref_is_single_use(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = keys();
     let svc = passkey_service();
     let publisher = UserId::new();
     seed_super_admin(&owner_pool, publisher, "run-replay").await;
     let (mut auth, cred) = register_passkey(&owner_pool, &svc, publisher, "run-replay").await;
-    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys));
+    let service = build_router(app_state(runtime_role_pool(&owner_pool).await, &keys).await);
     let token = bearer(&keys, publisher);
 
     let id = create_and_activate(

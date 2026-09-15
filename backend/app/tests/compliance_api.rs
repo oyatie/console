@@ -17,10 +17,15 @@ use tower::ServiceExt;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn consent_routes_audit_transitions_and_report_status(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = TestFixture::new(&pool, "Consent API", "Consent Branch").await;
-    let service = build_router(app_state(pool.clone(), fixture.public_key_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), fixture.public_key_pem.clone())
+            .await
+            .unwrap(),
+    );
     let body = json!({ "branch_id": fixture.branch_id });
 
     let grant = post_json(
@@ -88,10 +93,15 @@ async fn consent_routes_audit_transitions_and_report_status(pool: PgPool) {
     }
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn ping_ingestion_rejects_without_granted_consent(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = TestFixture::new(&pool, "Consent Ping", "No Consent Branch").await;
-    let service = build_router(app_state(pool.clone(), fixture.public_key_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), fixture.public_key_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let ping = post_json(
         service,
@@ -114,10 +124,15 @@ async fn ping_ingestion_rejects_without_granted_consent(pool: PgPool) {
     assert_eq!(location_collection_log_count(&pool).await, 0);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn withdrawal_route_destroys_location_pings_and_logs(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = TestFixture::new(&pool, "Consent Destroy", "Destroy Branch").await;
-    let service = build_router(app_state(pool.clone(), fixture.public_key_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), fixture.public_key_pem.clone())
+            .await
+            .unwrap(),
+    );
     let transition_body = json!({ "branch_id": fixture.branch_id });
 
     let grant = post_json(
@@ -160,10 +175,15 @@ async fn withdrawal_route_destroys_location_pings_and_logs(pool: PgPool) {
     assert_eq!(coordinate_audit_count(&pool).await, 0);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_can_read_and_export_consent_ledger(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = TestFixture::new(&pool, "Consent Ledger", "Ledger Branch").await;
-    let service = build_router(app_state(pool.clone(), fixture.public_key_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), fixture.public_key_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let grant = post_json(
         service.clone(),
@@ -207,13 +227,18 @@ async fn admin_can_read_and_export_consent_ledger(pool: PgPool) {
     assert!(!csv.body.contains("37.5665"));
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn ceo_covert_audit_stream_requires_clearance_and_audits_successful_read(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = TestFixture::new(&pool, "CEO Audit", "CEO Audit Branch").await;
     let sensitive_event_id = seed_ceo_covert_audit_event(&pool, fixture.admin_id).await;
     grant_ceo_covert_clearance(&pool, fixture.admin_id).await;
     seed_subject_freshness(&pool, fixture.admin_id).await;
-    let service = build_router(app_state(pool.clone(), fixture.public_key_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), fixture.public_key_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let denied = get(
         service.clone(),
@@ -243,13 +268,18 @@ async fn ceo_covert_audit_stream_requires_clearance_and_audits_successful_read(p
     assert_eq!(audit_count(&pool, "audit_stream.ceo_read").await, 1);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn ceo_covert_access_log_read_is_clearance_gated_and_audited(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = TestFixture::new(&pool, "CEO Access", "CEO Access Branch").await;
     seed_ceo_covert_audit_event(&pool, fixture.admin_id).await;
     grant_ceo_covert_clearance(&pool, fixture.admin_id).await;
     seed_subject_freshness(&pool, fixture.admin_id).await;
-    let service = build_router(app_state(pool.clone(), fixture.public_key_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), fixture.public_key_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let first_read = get_json(
         service.clone(),
@@ -421,7 +451,15 @@ fn issue_token(
     })?)
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -431,6 +469,7 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
     ])?;
 
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn seed_branch(pool: &PgPool, region_name: &str, branch_name: &str) -> BranchId {

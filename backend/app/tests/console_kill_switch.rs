@@ -18,8 +18,9 @@ const TEST_AUDIENCE: &str = "console-api";
 const CONSOLE_ROLLOUT_FLAG: &str = "console_carbon_copy";
 const CONSOLE_KILL_SWITCH_FLAG: &str = "console_legacy_kill_switch";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn console_kill_switch_forces_legacy_for_all_users_and_audits(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -60,7 +61,7 @@ async fn console_kill_switch_forces_legacy_for_all_users_and_audits(pool: PgPool
         vec![branch_id],
     )
     .unwrap();
-    let service = build_router(app_state(pool.clone(), public_key_pem).unwrap());
+    let service = build_router(app_state(pool.clone(), public_key_pem).await.unwrap());
 
     let before = get_json(
         service.clone(),
@@ -214,7 +215,15 @@ fn issue_token(
     })?)
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -224,6 +233,7 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
     ])?;
 
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn seed_branch(

@@ -75,8 +75,14 @@ async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn object_type_cas_is_enforced_by_the_real_router(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &owner_pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let org = OrgId::knl();
     let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "ontology-cas-http").await;
     let auth = test_auth(actor, org);
@@ -86,7 +92,10 @@ async fn object_type_cas_is_enforced_by_the_real_router(owner_pool: PgPool) {
             .with_command_pool(command_role_pool(&owner_pool).await),
         PgInstanceStore::new(runtime_pool.clone()),
         PgGovernanceStore::new(runtime_pool),
-        Some(auth.verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            auth.verifier,
+            auth_database.clone(),
+        )),
     ));
 
     let created = request_json(
@@ -216,8 +225,14 @@ async fn object_type_cas_is_enforced_by_the_real_router(owner_pool: PgPool) {
 /// The list endpoint must compose the caller's request context, the RLS tenant
 /// floor, and the enforced object-policy residual. This test deliberately uses
 /// the HTTP router rather than invoking the adapter primitive directly.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn instance_list_composes_enforced_permit_forbid_and_tenant_scope(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &owner_pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let org = OrgId::knl();
     let actor = seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "ontology-list-http").await;
     let auth = test_auth(actor, org);
@@ -227,7 +242,10 @@ async fn instance_list_composes_enforced_permit_forbid_and_tenant_scope(owner_po
         PgOntologyStore::new(runtime_pool.clone()).with_command_pool(command_pool),
         PgInstanceStore::new(runtime_pool.clone()),
         PgGovernanceStore::new(runtime_pool.clone()),
-        Some(auth.verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            auth.verifier,
+            auth_database.clone(),
+        )),
     ));
 
     let created = request_json(
@@ -359,10 +377,16 @@ async fn instance_list_composes_enforced_permit_forbid_and_tenant_scope(owner_po
     assert!(!body_text(&denied.body).contains("visible-to-owner"));
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn instance_list_fails_closed_for_unsupported_or_malformed_enforced_policy(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &owner_pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let org = OrgId::knl();
     let actor =
         seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "ontology-list-invalid").await;
@@ -373,7 +397,10 @@ async fn instance_list_fails_closed_for_unsupported_or_malformed_enforced_policy
             .with_command_pool(command_role_pool(&owner_pool).await),
         PgInstanceStore::new(runtime_pool.clone()),
         PgGovernanceStore::new(runtime_pool.clone()),
-        Some(auth.verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            auth.verifier,
+            auth_database.clone(),
+        )),
     ));
     let created = request_json(
         service.clone(),

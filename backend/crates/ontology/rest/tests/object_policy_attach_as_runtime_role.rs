@@ -60,8 +60,9 @@ fn policies_path(stable_key: &str) -> String {
 /// Deny-by-default is the ground state and it survives this slice: a published
 /// type with no attached policy serves nothing, and the ONLY thing that changes
 /// that is an org-authored permit written through the audited HTTP writer.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn an_attached_permit_is_the_only_thing_that_makes_instances_visible(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "policy-attach").await;
     let type_id = fx
         .publish("policyattach", instance_type_draft("policyattach"))
@@ -235,10 +236,11 @@ async fn an_attached_permit_is_the_only_thing_that_makes_instances_visible(owner
 /// purpose: this defect predates the writer and must be red against `main` with
 /// no new route present at all. It is also the permanent guard for policies
 /// attached by any other surface (the policy studio, a fixture, a migration).
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_row_hidden_from_the_list_is_refused_by_id_as_of_history_traverse_acting_and_resolve(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "policy-unfiltered").await;
     let type_id = fx
         .publish("policyreads", linked_instance_type_draft("policyreads"))
@@ -458,10 +460,11 @@ async fn a_row_hidden_from_the_list_is_refused_by_id_as_of_history_traverse_acti
 /// object type (`by_type`), and a node whose only path ran through a hidden one
 /// is dropped even though the node itself is permitted -- otherwise its surviving
 /// depth discloses the length of the hidden path.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_traversal_gates_each_node_by_its_own_type_and_drops_what_only_a_hidden_path_reached(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "policy-graph").await;
     let web = fx
         .publish("policyweb", linked_instance_type_draft("policyweb"))
@@ -563,8 +566,9 @@ async fn a_traversal_gates_each_node_by_its_own_type_and_drops_what_only_a_hidde
 /// A stack-based re-walk (`frontier.pop()`) reaches `far` first through the long
 /// arm, records 3, and the `Vacant` guard then refuses to lower it when the
 /// short arm arrives -- reporting a node as further from the root than it is.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_fully_permitted_traversal_reports_shortest_hop_depths(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "policy-depth").await;
     let type_id = fx
         .publish("policydepth", linked_instance_type_draft("policydepth"))
@@ -646,10 +650,11 @@ async fn a_fully_permitted_traversal_reports_shortest_hop_depths(owner_pool: PgP
 /// arm, the effect that must agree across catalog row, attachment and the
 /// `0170` trigger, and the fresh-discriminator `stable_key` that makes two
 /// policies on one type legal under the `(org, key, status)` UNIQUE.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_forbid_attached_beside_a_permit_wins_and_two_policies_may_share_a_type(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "policy-forbid").await;
     let type_id = fx
         .publish("policyforbid", instance_type_draft("policyforbid"))
@@ -747,10 +752,11 @@ async fn a_forbid_attached_beside_a_permit_wins_and_two_policies_may_share_a_typ
 /// purpose: a NEGATIVE "nothing was written" claim must be made by a reader that
 /// cannot miss a row. Every ISOLATION assertion still goes through the router on
 /// the genuine `console_rt` pool.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_row_hidden_from_the_list_is_refused_by_preflight_execute_and_lifecycle(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "policy-writes").await;
     let type_id = fx
         .publish("policywrites", editable_instance_type_draft("policywrites"))
@@ -938,10 +944,11 @@ async fn a_row_hidden_from_the_list_is_refused_by_preflight_execute_and_lifecycl
 // 3. Refusals. Written now, because these are the ones that get dropped later.
 // ---------------------------------------------------------------------------
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn the_attach_route_refuses_unauthorized_unrepresentable_and_malformed_policies(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "policy-attach-refusals").await;
     let good_id = fx
         .publish("policygood", instance_type_draft("policygood"))
@@ -1179,8 +1186,9 @@ async fn the_attach_route_refuses_unauthorized_unrepresentable_and_malformed_pol
 /// paths -- a hole, not a fix. The assertion is positive on purpose: rows must
 /// come back, so neither the loud 500 branch nor the silent empty-list branch can
 /// pass it.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_dotted_object_type_key_is_policyable_end_to_end(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "policy-dotted").await;
     let type_id = fx
         .publish("hr.employee", instance_type_draft("hr.employee"))
@@ -1233,8 +1241,9 @@ async fn a_dotted_object_type_key_is_policyable_end_to_end(owner_pool: PgPool) {
 /// The fixture below reproduces the ELSE branch of `stage_object_type` directly
 /// — same columns, same fresh id, same `max + 1` — because reaching it over HTTP
 /// needs the full four-eyes publish dance for a fact this states in six lines.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_row_survives_a_revision_of_its_object_type(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "policy-superseded").await;
     let v1 = fx
         .publish("superseded", instance_type_draft("superseded"))
@@ -1326,10 +1335,11 @@ async fn a_row_survives_a_revision_of_its_object_type(owner_pool: PgPool) {
 /// assertion fails on `attach_object_policy_rows|true|console_ontology_writer|
 /// false|true` and the other 26 tests in this file all pass. The per-name query
 /// this replaced could not fail on it at all.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn the_attach_definer_is_owned_by_a_non_bypassrls_role_under_a_pinned_search_path(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let attributes: Vec<String> = sqlx::query_scalar(
         r#"
         SELECT p.proname || '|' || p.prosecdef::TEXT || '|' || r.rolname || '|'
@@ -1540,8 +1550,9 @@ async fn the_attach_definer_is_owned_by_a_non_bypassrls_role_under_a_pinned_sear
 /// Every case runs as a genuine, non-superuser, non-BYPASSRLS login — both roles
 /// asserted, not assumed — because a superuser or BYPASSRLS session makes each
 /// refusal below vacuous.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn the_attach_definer_refuses_every_forgery_the_route_would_have_refused(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "definer-hardening").await;
     let type_id = fx
         .publish("definerhard", instance_type_draft("definerhard"))
@@ -1833,8 +1844,9 @@ async fn the_attach_definer_refuses_every_forgery_the_route_would_have_refused(o
 /// Known ceiling: that substring also prefix-matches `attach_object_policy_rows`.
 /// It cannot arise here, because the call names the 8-argument entrypoint by its
 /// argument list; the sibling probe below carries the same ceiling.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn console_rt_cannot_execute_the_attach_definer_at_all(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "rt-definer-revoked").await;
     let type_id = fx
         .publish("rtrevoked", instance_type_draft("rtrevoked"))
@@ -1905,8 +1917,9 @@ async fn console_rt_cannot_execute_the_attach_definer_at_all(owner_pool: PgPool)
 ///
 /// Its own test, not a tail assertion on the one above: behind a failing assert it
 /// would never execute, and an unexecuted probe is not evidence.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn the_command_credential_cannot_skip_the_audit_row(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "cmd-cannot-skip-audit").await;
     let type_id = fx
         .publish("skipaudit", instance_type_draft("skipaudit"))
@@ -2043,10 +2056,11 @@ async fn the_attach_schema_grants_exactly_the_audited_command_credential(owner_p
 /// any connection is taken, so the blocks below are deliberately VALID: an
 /// invalid set would be refused by the validator and this test would pass without
 /// the command-pool check existing at all.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_store_with_no_command_pool_refuses_to_attach_rather_than_using_the_read_pool(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "no-cmd-pool").await;
     let type_id = fx
         .publish("nocmdpool", instance_type_draft("nocmdpool"))
@@ -2120,10 +2134,11 @@ async fn a_store_with_no_command_pool_refuses_to_attach_rather_than_using_the_re
 /// the one credential the attach route holds, and every other test in this file
 /// stays green because they all attach through the route, which would keep
 /// working.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn the_command_credential_holds_no_direct_write_on_the_tables_the_definer_writes(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "cmd-no-table-write").await;
     fx.publish("cmdnowrite", instance_type_draft("cmdnowrite"))
         .await;
@@ -2245,8 +2260,9 @@ async fn the_command_credential_holds_no_direct_write_on_the_tables_the_definer_
 /// pair, so the route-level assertion can only measure their LENGTH (32/16) — and
 /// a definer that ignored arguments 7 and 8 and wrote its own constants would
 /// satisfy that.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn the_definer_writes_the_audit_row_itself_carrying_the_supplied_trace(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "definer-writes-audit").await;
     let type_id = fx
         .publish("defineraudit", instance_type_draft("defineraudit"))
@@ -2326,8 +2342,9 @@ async fn the_definer_writes_the_audit_row_itself_carrying_the_supplied_trace(own
 /// because `audit_events.trace_id` is `CHAR(32) NOT NULL` (`0003:16`) and nothing
 /// in the row-writer reads arguments 7 or 8 — so the policy INSERTs have already
 /// happened when the audit INSERT raises, which is the ordering the claim is about.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn an_unwritable_audit_row_rolls_the_policy_rows_back_with_it(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "audit-atomic").await;
     let type_id = fx
         .publish("auditatomic", instance_type_draft("auditatomic"))
@@ -2414,10 +2431,16 @@ async fn an_unwritable_audit_row_rolls_the_policy_rows_back_with_it(owner_pool: 
 /// 500 is indistinguishable from the database being broken — which is the one
 /// alarm that must not be ambiguous while an operator is deciding whether to roll
 /// back.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn the_attach_route_is_service_unavailable_when_the_registry_has_no_command_pool(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &owner_pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let fx = Fixture::build(&owner_pool, "route-no-cmd-pool").await;
     // Published through the WIRED fixture: a registry with no command pool cannot
     // publish either, and this test is about attach, not about publish.
@@ -2432,7 +2455,10 @@ async fn the_attach_route_is_service_unavailable_when_the_registry_has_no_comman
         PgOntologyStore::new(fx.runtime_pool.clone()),
         PgInstanceStore::new(fx.runtime_pool.clone()),
         PgGovernanceStore::new(fx.runtime_pool.clone()),
-        Some(auth.verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            auth.verifier,
+            auth_database.clone(),
+        )),
     ));
     let request = Request::builder()
         .method("POST")
@@ -2511,8 +2537,9 @@ async fn the_attach_route_is_service_unavailable_when_the_registry_has_no_comman
 ///
 /// No object-policy test can ever catch this: the object-policy read path never
 /// reads `generated_policy_text`. It needs this probe or it needs none.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn an_attached_object_policy_never_joins_the_org_wide_enforced_set(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "orgwide-narrowing").await;
     fx.publish("orgwide", instance_type_draft("orgwide")).await;
 
@@ -2596,10 +2623,11 @@ async fn an_attached_object_policy_never_joins_the_org_wide_enforced_set(owner_p
 /// This probe was RED before that change: `permit(principal, action ==
 /// Action::"view", resource)` minted through the definer made `authorize_object_row`
 /// return `Allow` for a principal that owns nothing.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_definer_minted_row_cannot_choose_the_cedar_that_decides_policy_authorize(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "orgwide-typescoped").await;
     let type_id = fx
         .publish("typescoped", instance_type_draft("typescoped"))
@@ -2770,8 +2798,9 @@ async fn a_definer_minted_row_cannot_choose_the_cedar_that_decides_policy_author
 /// mint a validator-invalid or non-canonical row from `console_rt` to the command
 /// role, and made the minting audited, but it did not make one unmintable. The
 /// loader still has to refuse it on every read.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_forged_enforced_row_the_read_path_cannot_re_validate_fails_closed(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "loader-revalidation").await;
     let honest = fx
         .publish("loaderhonest", instance_type_draft("loaderhonest"))
@@ -2990,10 +3019,11 @@ async fn a_forged_enforced_row_the_read_path_cannot_re_validate_fails_closed(own
 /// permits every row of the type. A forbid inverts into a blanket permit and the
 /// rows it exists to hide are served, with the catalog still reading `forbid` to
 /// anyone who audits the table.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_catalog_row_whose_blocks_disagree_with_its_effect_is_refused_on_every_read(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "effect-drift").await;
     let honest = fx
         .publish("driftcontrol", instance_type_draft("driftcontrol"))
@@ -3114,10 +3144,11 @@ async fn a_catalog_row_whose_blocks_disagree_with_its_effect_is_refused_on_every
 ///     fail on, and with only one policy on the type it would instead produce a
 ///     deny-by-default `200 []` -- a refusal by accident, which would have made
 ///     the red indistinguishable from a fail-closed loader.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_catalog_row_whose_normalized_row_is_unparseable_is_refused_on_every_read(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "unparseable-row").await;
     let scoping = fx
         .publish("parsecontrol", instance_type_draft("parsecontrol"))
@@ -3224,10 +3255,11 @@ async fn a_catalog_row_whose_normalized_row_is_unparseable_is_refused_on_every_r
 /// makes a legal policy unauthorable and its type permanently invisible, while a
 /// route bound of 33 turns a 422 the caller can act on into the definer's `RAISE`,
 /// which the REST layer reports as an unhandled 500.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn thirty_two_conditions_attach_and_thirty_three_are_refused_by_the_route(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "policy-bound").await;
     let type_id = fx
         .publish("policybound", instance_type_draft("policybound"))
@@ -3447,8 +3479,9 @@ fn every_ontology_route_is_classified_for_instance_visibility() {
 /// The sweep is the TOTALITY check the per-route tests above are not: those pin
 /// four routes in detail, this one pins that there are no OTHERS. Adding a route
 /// forces an entry; an entry that claims `Gated` and is not fails here.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn every_gated_route_refuses_a_policy_hidden_instance(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fx = Fixture::build(&owner_pool, "policy-sweep").await;
     let type_id = fx
         .publish("policysweep", editable_instance_type_draft("policysweep"))
@@ -3603,6 +3636,11 @@ struct Fixture {
 
 impl Fixture {
     async fn build(owner_pool: &PgPool, tag: &str) -> Self {
+        let auth_database = console_platform_test_support::login_test_pool(
+            owner_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let org = OrgId::knl();
         let actor = seed_org_and_super_admin(owner_pool, *org.as_uuid(), tag).await;
         let auth = test_auth(actor, org);
@@ -3615,11 +3653,17 @@ impl Fixture {
             PgOntologyStore::new(runtime_pool.clone()).with_command_pool(command_pool.clone()),
             PgInstanceStore::new(runtime_pool.clone()),
             PgGovernanceStore::new(runtime_pool.clone()),
-            Some(auth.verifier.clone()),
+            Some(console_platform_auth::SessionVerification::new(
+                auth.verifier.clone(),
+                auth_database.clone(),
+            )),
         ))
         .merge(console_governance_rest::router(GovernanceRestState::new(
             PgGovernanceStore::new(runtime_pool.clone()),
-            Some(auth.verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                auth.verifier,
+                auth_database.clone(),
+            )),
         )));
         let approver =
             seed_org_and_super_admin(owner_pool, *org.as_uuid(), &format!("{tag}-approver")).await;

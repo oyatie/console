@@ -16,8 +16,9 @@ use tower::ServiceExt;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn dispatch_queue_is_authenticated_authorized_and_scope_closed(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_pem = signing_key
@@ -29,7 +30,7 @@ async fn dispatch_queue_is_authenticated_authorized_and_scope_closed(pool: PgPoo
     let member = UserId::new();
     seed_user(&pool, administrator, "ADMIN", branch).await;
     seed_user(&pool, member, "MEMBER", branch).await;
-    let service = build_router(app_state(pool, public_pem.clone()).unwrap());
+    let service = build_router(app_state(pool, public_pem.clone()).await.unwrap());
     let admin_token = issue_token(
         private_pem.as_bytes(),
         public_pem.as_bytes(),
@@ -174,7 +175,12 @@ fn issue_token(
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(pool: PgPool, public_pem: String) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     AppState::new(
         AppConfig::from_pairs([
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
@@ -185,6 +191,7 @@ fn app_state(pool: PgPool, public_pem: String) -> Result<AppState, console_app::
         ])?,
         DatabaseDependency::Postgres(pool),
     )
+    .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn seed_branch(pool: &PgPool) -> BranchId {

@@ -32,8 +32,9 @@ const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 const OTHER_ORG: Uuid = Uuid::from_u128(0x0000_0000_0000_0000_0000_0000_0000_9999);
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn search_persons_scoped_to_active_and_shared_branch(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::new();
     let branch_x = seed_branch(&pool, "Region X", "Branch X").await;
     let branch_y = seed_branch(&pool, "Region Y", "Branch Y").await;
@@ -96,8 +97,9 @@ async fn search_persons_scoped_to_active_and_shared_branch(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn search_equipment_gated_by_work_order_read_all(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::new();
     let branch = seed_branch(&pool, "Region G", "Branch G").await;
 
@@ -140,8 +142,9 @@ async fn search_equipment_gated_by_work_order_read_all(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn search_support_ticket_and_org_unit_are_branch_scoped(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::new();
     let branch_in = seed_branch(&pool, "Region Scope In", "Scoped Visible Branch").await;
     let branch_out = seed_branch(&pool, "Region Scope Out", "Scoped Hidden Branch").await;
@@ -197,8 +200,9 @@ async fn search_support_ticket_and_org_unit_are_branch_scoped(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn search_denies_cross_org_by_omission(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::new();
     let branch = seed_branch(&pool, "Region KNL", "Branch KNL").await;
     let knl_user = UserId::new();
@@ -218,8 +222,9 @@ async fn search_denies_cross_org_by_omission(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn search_empty_query_is_empty_and_limit_clamps(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::new();
     let branch = seed_branch(&pool, "Region E", "Branch E").await;
     let caller = UserId::new();
@@ -304,10 +309,8 @@ async fn search(
     q: &str,
     limit: Option<i64>,
 ) -> (StatusCode, Value) {
-    let service = build_router(app_state(
-        runtime_role_pool(pool).await,
-        keys.public_pem.clone(),
-    ));
+    let service =
+        build_router(app_state(runtime_role_pool(pool).await, keys.public_pem.clone()).await);
     let mut uri = format!("/api/v1/search?q={}", urlencoding(q));
     if let Some(limit) = limit {
         uri.push_str(&format!("&limit={limit}"));
@@ -472,7 +475,12 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+async fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -481,7 +489,9 @@ fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])
     .unwrap();
-    AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
+    AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
+        .unwrap()
 }
 
 struct Keys {

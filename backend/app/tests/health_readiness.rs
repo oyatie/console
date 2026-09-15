@@ -269,7 +269,12 @@ mod authorized {
             .unwrap()
     }
 
-    fn jwt_app_state(runtime_pool: PgPool, public_key_pem: String) -> AppState {
+    async fn jwt_app_state(runtime_pool: PgPool, public_key_pem: String) -> AppState {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &runtime_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let config = AppConfig::from_pairs([
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -278,7 +283,9 @@ mod authorized {
             ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
         ])
         .unwrap();
-        AppState::new(config, DatabaseDependency::Postgres(runtime_pool)).unwrap()
+        AppState::new(config, DatabaseDependency::Postgres(runtime_pool))
+            .map(|state| state.with_auth_database(auth_database))
+            .unwrap()
     }
 
     async fn seed_user(pool: &PgPool, org: OrgId, user: UserId, role: &str) {
@@ -348,8 +355,9 @@ mod authorized {
         (status, String::from_utf8(bytes.to_vec()).unwrap())
     }
 
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    #[sqlx::test(migrations = false)]
     async fn ui_shell_omits_runs_unless_payroll_run_read(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
         let keys = keys();
         let org = OrgId::knl();
         let super_admin = UserId::new();
@@ -358,10 +366,9 @@ mod authorized {
         seed_user(&pool, org, member, "MEMBER").await;
         let run = seed_run(&pool, org, super_admin).await;
 
-        let service = build_router(jwt_app_state(
-            runtime_role_pool(&pool).await,
-            keys.public_pem.clone(),
-        ));
+        let service = build_router(
+            jwt_app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).await,
+        );
 
         let (status, unauth) = get_ui(service.clone(), None).await;
         assert_eq!(status, StatusCode::OK, "{unauth}");
@@ -420,8 +427,9 @@ mod authorized {
         .unwrap();
     }
 
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    #[sqlx::test(migrations = false)]
     async fn ui_shipping_screens_deny_by_omission(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
         let keys = keys();
         let org = OrgId::knl();
         let super_admin = UserId::new();
@@ -431,10 +439,9 @@ mod authorized {
         seed_user(&pool, org, member, "MEMBER").await;
         let run = seed_run(&pool, org, super_admin).await;
 
-        let service = build_router(jwt_app_state(
-            runtime_role_pool(&pool).await,
-            keys.public_pem.clone(),
-        ));
+        let service = build_router(
+            jwt_app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).await,
+        );
         let admin = bearer(&keys, org, super_admin, "SUPER_ADMIN");
         let member_tok = bearer(&keys, org, member, "MEMBER");
 
@@ -525,8 +532,9 @@ mod authorized {
     }
 
     /// ADR-0025 §4 persona real-backend E2E on org/HR/payroll `/_ui`.
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    #[sqlx::test(migrations = false)]
     async fn ui_persona_e2e(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
         let keys = keys();
         let org = OrgId::knl();
         let member = UserId::new();
@@ -554,10 +562,9 @@ mod authorized {
         seed_user(&pool, other_org, foreign, "SUPER_ADMIN").await;
         grant_group_viewer(&pool, other_org, foreign).await;
 
-        let service = build_router(jwt_app_state(
-            runtime_role_pool(&pool).await,
-            keys.public_pem.clone(),
-        ));
+        let service = build_router(
+            jwt_app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).await,
+        );
         let member_tok = bearer(&keys, org, member, "MEMBER");
         let admin_tok = bearer(&keys, org, admin, "ADMIN");
         let exec_tok = bearer(&keys, org, executive, "EXECUTIVE");
@@ -752,8 +759,9 @@ mod authorized {
             (status, headers, bytes)
         }
 
-        #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+        #[sqlx::test(migrations = false)]
         async fn foreign_group_mutations_do_not_influence_authorized_ssr_bytes(pool: PgPool) {
+            console_platform_test_support::prepare_account_test_database(&pool).await;
             let keys = keys();
             let a = OrgId::knl();
             let actor_a = UserId::new();
@@ -780,7 +788,8 @@ mod authorized {
                 "this is cross-tenant, not intra-Group Company separation"
             );
             let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
-            let service = build_router(jwt_app_state(runtime.clone(), keys.public_pem.clone()));
+            let service =
+                build_router(jwt_app_state(runtime.clone(), keys.public_pem.clone()).await);
             let token_a = bearer(&keys, a, actor_a, "SUPER_ADMIN");
             let token_b = bearer(&keys, b, actor_b, "SUPER_ADMIN");
             let paths = ["/_ui", "/_ui/organization", "/_ui/hr", "/_ui/payroll"];

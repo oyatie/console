@@ -41,7 +41,12 @@ fn keys() -> (String, String) {
     (private_pem, public_pem)
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+async fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -53,7 +58,9 @@ fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
         ("CONSOLE_REQUEST_TIMEOUT_SECS", "1".to_owned()),
     ])
     .unwrap();
-    AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
+    AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
+        .unwrap()
 }
 
 fn issue_token(private_key_pem: &[u8], public_key_pem: &[u8]) -> String {
@@ -89,11 +96,12 @@ fn issue_token(private_key_pem: &[u8], public_key_pem: &[u8]) -> String {
 /// Body limit (2 MiB) is now applied to the FULLY-merged router, so a normal
 /// JSON domain route rejects an oversized body with 413 — before the fix it was
 /// applied only to the base router and the merged domain routes had NO limit.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn oversized_json_to_a_domain_route_is_rejected_413(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let (private_pem, public_pem) = keys();
     let token = issue_token(private_pem.as_bytes(), public_pem.as_bytes());
-    let service = build_router(app_state(pool, public_pem));
+    let service = build_router(app_state(pool, public_pem).await);
 
     // 3 MiB JSON body, well over the 2 MiB global default, to a normal domain
     // route (`POST /api/work-orders`). The body limit rejects it with 413
@@ -126,11 +134,12 @@ async fn oversized_json_to_a_domain_route_is_rejected_413(pool: PgPool) {
 /// `DefaultBodyLimit::max(16 MiB)` (applied deeper, in `registry/rest`) wins
 /// over the 2 MiB global default applied on the merged router. The request is
 /// allowed past the limit layer and fails later for a content reason (not 413).
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn import_route_keeps_16_mib_allowance_over_global_2_mib(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let (private_pem, public_pem) = keys();
     let token = issue_token(private_pem.as_bytes(), public_pem.as_bytes());
-    let service = build_router(app_state(pool, public_pem));
+    let service = build_router(app_state(pool, public_pem).await);
 
     // 3 MiB upload: over the 2 MiB global default, under 16 MiB. If the global
     // limit applied here it would be 413; instead the per-route 16 MiB wins.
@@ -176,10 +185,11 @@ async fn import_route_keeps_16_mib_allowance_over_global_2_mib(pool: PgPool) {
 /// timeout layer). With JWT configured but no bearer header, the pre-upgrade
 /// auth check returns 401 — proving the route is wired and not blocked by the
 /// timeout layer.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn realtime_ws_route_is_reachable_under_a_short_timeout(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let (_private_pem, public_pem) = keys();
-    let state = app_state(pool, public_pem);
+    let state = app_state(pool, public_pem).await;
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
     let server = tokio::spawn(async move {

@@ -19,8 +19,9 @@ const TEST_AUDIENCE: &str = "console-api";
 /// Exercises the composed app router rather than a constant: authentication,
 /// distinct compliance actions, org-scope denial, branch authorization, request
 /// validation, server-derived actor, and the adapter's audit writer all execute.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn compliance_catalog_enforces_real_scope_and_audits(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_key = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key = signing_key
@@ -46,7 +47,11 @@ async fn compliance_catalog_enforces_real_scope_and_audits(pool: PgPool) {
         super_admin,
         "SUPER_ADMIN",
     );
-    let service = build_router(app_state(pool.clone(), public_key.to_string()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), public_key.to_string())
+            .await
+            .unwrap(),
+    );
 
     let unauthenticated = request(
         service.clone(),
@@ -243,7 +248,12 @@ fn issue_token(private: &[u8], public: &[u8], user_id: UserId, role: &str) -> St
     .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     AppState::new(
         AppConfig::from_pairs([
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
@@ -254,6 +264,7 @@ fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::
         ])?,
         DatabaseDependency::Postgres(pool),
     )
+    .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn seed_branch(pool: &PgPool, name: &str) -> BranchId {

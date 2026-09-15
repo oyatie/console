@@ -23,10 +23,11 @@ use tower::ServiceExt;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn benefit_catalog_routes_enforce_pbac_and_audit_catalog_and_lifecycle_writes(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -53,10 +54,7 @@ async fn benefit_catalog_routes_enforce_pbac_and_audit_catalog_and_lifecycle_wri
         org,
         vec!["SUPER_ADMIN".to_owned()],
     );
-    let service = build_router(app_state(
-        console_rt_pool(&owner_pool).await,
-        public_key_pem,
-    ));
+    let service = build_router(app_state(console_rt_pool(&owner_pool).await, public_key_pem).await);
     let create_body = benefit_body();
 
     let denied = request(
@@ -287,7 +285,12 @@ async fn seed_tenant_user(pool: &PgPool, org: OrgId, user: UserId, role: &str, n
     .unwrap();
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+async fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -296,7 +299,9 @@ fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])
     .unwrap();
-    AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
+    AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
+        .unwrap()
 }
 
 fn issue_token(
