@@ -1268,9 +1268,11 @@ async fn assert_fresh_capacity_retained(
             .await
             .expect("FRESH_SYNCREP_ATTEMPT_DEADLINE: queued owner must honor its own policy budget")
             .unwrap_err();
-        assert_eq!(error.kind, console_kernel_core::ErrorKind::Internal);
         assert!(
-            error.message.starts_with("database durability UNKNOWN:"),
+            matches!(
+                error,
+                console_workflow_domain::PayrollStageError::CompletionUnknown
+            ),
             "FRESH_SYNCREP_ATTEMPT_UNKNOWN: queued stage cannot claim success or known rollback: {error}"
         );
         assert_exact_fresh_waiter(owner, backend).await;
@@ -1510,10 +1512,12 @@ async fn fresh_stage_transport_error_closes_pool_before_reconciliation(owner: Pg
         .expect("FRESH_SYNCREP_TRANSPORT: owner did not report the terminated COMMIT transport")
         .unwrap()
         .unwrap_err();
-    assert_eq!(error.kind, console_kernel_core::ErrorKind::Internal);
     assert!(
-        error.message.starts_with("database durability UNKNOWN:"),
-        "FRESH_SYNCREP_UNKNOWN: stage must retain the existing UNKNOWN error boundary: {error}"
+        matches!(
+            error,
+            console_workflow_domain::PayrollStageError::CompletionUnknown
+        ),
+        "FRESH_SYNCREP_UNKNOWN: stage must retain the typed UNKNOWN error boundary: {error}"
     );
     // Request capacity immediately after UNKNOWN, while owned async cleanup
     // may still be running. A new physical connection is a failure, even if

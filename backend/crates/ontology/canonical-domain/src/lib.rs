@@ -582,6 +582,12 @@ pub trait CanonicalQuery {
 /// must preserve the real distinction: conflict → 409, validation → 422,
 /// database / unreadable receipt → 500.
 pub trait CanonicalPortError: std::fmt::Display + Send {
+    /// The owner could not confirm completion. False does not prove rollback.
+    /// Preserve this classification before converting to the kernel taxonomy.
+    fn is_completion_unknown(&self) -> bool {
+        false
+    }
+
     /// Consume the port error into a [`KernelError`].
     fn into_kernel_error(self) -> KernelError;
 }

@@ -17,7 +17,7 @@ use console_notifications_domain::NotificationLink;
 use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use console_workflow_domain::{
     FinalizeWaitingTaskCommand, FinalizeWaitingTaskContext, FinalizedWaitingTask, NewRun,
-    NodeStepCommit, PayrollDraftStaging, PortFuture, PostFinalizationRejection,
+    NodeStepCommit, PayrollDraftStaging, PayrollStageError, PortFuture, PostFinalizationRejection,
     PostFinalizationRejectionCommand, RunRecord, RunStatus, RunTerminalTimestamp, RunTransition,
     StagePayrollDraft, WaitingTaskStatus, WorkflowRuntimePort,
 };
@@ -884,14 +884,24 @@ impl PgWorkflowRuntimeStore {
                     created += drafts_created;
                     staged.push((event_id, run_id, drafts_created));
                 }
-                Err(err) => {
-                    // Leave the event PENDING. The next tick re-claims it and the
-                    // restage is a no-op if a partial write did land.
+                Err(PayrollStageError::CompletionUnknown) => {
+                    // Neither uncertainty nor refusal changes the retryable
+                    // event's status, attempt count, delivery, or audit history.
+                    tracing::warn!(
+                        outcome = "unknown",
+                        %event_id,
+                        %run_id,
+                        %source_label,
+                        "payroll staging completion is unknown; event stays retryable"
+                    );
+                }
+                Err(PayrollStageError::Operation(err)) => {
                     tracing::warn!(
                         %event_id,
+                        %run_id,
                         %source_label,
                         error = %err,
-                        "payroll draft staging failed; event stays pending"
+                        "payroll draft staging failed; event stays retryable"
                     );
                 }
             }
