@@ -626,7 +626,7 @@ async fn account_fence_projection_dormant_finalized_v1_is_upgradeable_without_da
     use sha2::Digest as _;
     let historical = include_str!("fixtures/account-custody-dormant-v1-7af6dfd4.sql");
     assert_eq!(
-        format!("{:x}", sha2::Sha256::digest(historical.as_bytes())),
+        hex::encode(sha2::Sha256::digest(historical.as_bytes())),
         "84e356b88be8762726c26df03a4990a19e98c0fcda3d48a73389d1d2a087559a",
         "exact historical7af6dfd4 operator SQL blob must remain immutable"
     );
