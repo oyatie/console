@@ -1,0 +1,1274 @@
+{
+  "owner": "/root",
+  "base_sha": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+  "target": "docs/evidence/console/implementation/2026-09-15-payroll-required-completion",
+  "method": "copy only these regular files after hash verification; never recursively copy source directory",
+  "files": [
+    {
+      "path": "artifact-manifest.json",
+      "sha256": "9acf87a16d27264b478c5c79ec2125e78a263193f06a98d38faff22c4311d9dc"
+    },
+    {
+      "path": "artifacts/payroll-928e1e48-ci-closure/diff-check.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+    },
+    {
+      "path": "artifacts/payroll-928e1e48-ci-closure/format.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+    },
+    {
+      "path": "artifacts/payroll-928e1e48-ci-closure/results.json.gz",
+      "sha256": "8c19685b650f49daca3832051de1ddf57b842e6ff89f5af4bcda40805060e877"
+    },
+    {
+      "path": "artifacts/payroll-928e1e48-ci-closure/same-ci-probe.log.gz",
+      "sha256": "4086342f2118ae49ea7c0172cc311159d442c515185934244ca02e1d64f70807"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-3238e8c6-tests-v3-capture/README.md.gz",
+      "sha256": "614c613be3b68ba8393245fc68e1c0169fc1b1646131d7255383fac88f368481"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-3238e8c6-tests-v3-capture/acceptance.patch.gz",
+      "sha256": "c9182a73754d28b94c6f4c3b9298fd89e9328b0ffdcba5f7e3597b4b96df7d70"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-3238e8c6-tests-v3-capture/constructor-design.patch.gz",
+      "sha256": "ae419a7d126cae10de8aff82d75769f427a3ef99dbc95c1a6b21a640802e6690"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-3238e8c6-tests-v3-capture/durability_composition_tests.rs.gz",
+      "sha256": "fed7b718dd25170b70eec8b57bc766781fd3ea11d78f9a3d158f0578e5a48d4d"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-3238e8c6-tests-v3-capture/fixture-authoring.json.gz",
+      "sha256": "c287ec416d460d957a2c20f291cd529beff03cf0ffa6c184f924f16b1c462ecd"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-3238e8c6-tests-v3-capture/fixture.patch.gz",
+      "sha256": "869dd015099e81dfb955dedc8fccfd9a93c016a9e946a2b8ba890565902d07e4"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-3238e8c6-tests-v3-capture/manifest.json.gz",
+      "sha256": "13290887372df7421efb6a255797ba0363b0fa691d637cd0e93ca7004f5796e4"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-3238e8c6-tests-v3-capture/reachability-plan.json.gz",
+      "sha256": "0b98a1137876285e21fcc833a8ac0e621115231be482e2be1a8493b13730a5bc"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-3238e8c6-tests-v3-capture/source-bindings.json.gz",
+      "sha256": "db5502fb30858d20c7b04efdd8ee82c0b08e3651afb36ca7bb694d7c9397a8bd"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-3238e8c6-tests-v3-capture/verification.json.gz",
+      "sha256": "8358fc2724292e76761f294f89a1d67497c8490f7f57032b9dd204e953ac619a"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/REVIEW.json.gz",
+      "sha256": "f46bd0bad183a082939f0382699fc7d9b097ce5c01d1829e258568f254ec6e0d"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/candidate.patch.gz",
+      "sha256": "ffa974d24869985087ebc6f7a43bcf62dc5b26775a45d47bc6bcf636579ce019"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/config-command-mutation-bound.log.gz",
+      "sha256": "6a291679623d55e39d4e993e4c2f26ee7bbbd067ad312b16c32411472d88a129"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/config-command-mutation-exact.log.gz",
+      "sha256": "72cac1a8982f725aec5d8f6523e80070c55302580d0ac194ed953d4f4ddc8200"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/config-command-mutation.log.gz",
+      "sha256": "e5e642ca3aaf83e9556e67a3ca4858420b65411cc8bd9c37d12c8bc2aa6c04ac"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/config-exact-validation.json.gz",
+      "sha256": "89cab046ec5ccfc9e2bab729ad60b2c1f4ae8957625fe58b7516a7c40126ebb7"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/focused-bound-validation.json.gz",
+      "sha256": "1a1c611369c41898310a950ea7075fbc9e03299101a6d5dc175406146aef30e5"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/focused-preflight-bound.log.gz",
+      "sha256": "dbb29c27e54579d15f342bc88112f4c68fae70c3eb1c1e452577cbc7e7df6274"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/focused-preflight.log.gz",
+      "sha256": "29cf3cff5a598b677f905ba427a65a08a1b12c380d68939c3e444b92ddb0d49d"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/focused-validation.json.gz",
+      "sha256": "68fe2c131a1c1da5ff8e73344b77a55b870c18c06d7e6f496c0ddf582f2f18ef"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/manifest.json.gz",
+      "sha256": "925baa20a797ce5439a9d6588360aefa2b1cc3d33149a42cd8a0cd20dfd80bde"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/mechanical-verification.json.gz",
+      "sha256": "ed45ba713acd5102ea9303fdae9f3844734948a27b94317fd003c088eafd7d2f"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/metadata.json.gz",
+      "sha256": "51b0823397ecda0b9f89f460a3b04e67cf545a23970189b71212351aa2476dd3"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-preflight-f0431013-v2-fast/validation-baseline.json.gz",
+      "sha256": "aa68d89ba7b858be53b933ec11b91518490e04b0cf233a106b07d439b3dbb638"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-runtime-2931be9e/required_api_projected_payroll_dispatch_waits_for_remote_apply.log.gz",
+      "sha256": "18dc4e79d4dc0599f50018b061e7253c184cea43447cd6cacad819eb2daf4e8b"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-runtime-2931be9e/required_app_startup_admits_only_the_installed_observer.log.gz",
+      "sha256": "9f74c0f518cd97d8099f3d5784cf1cec901404cfece4903be0f812e8a742ffd2"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-runtime-2931be9e/required_workflow_spawn_keeps_unknown_staging_pending_until_retry.log.gz",
+      "sha256": "df749f5b9fbfff44c9be4d94ba39906854480921672efafe7012f492100e52f1"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-runtime-2931be9e/results.json.gz",
+      "sha256": "7a1130b2073c677f678a0c7f73b3cf7fc76a26e4f6b039c1b113cc0dc55ad45a"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-v3-independent-fast/review.json.gz",
+      "sha256": "173a9a347464cf339b7d3949fdab7ead7e68c342da4d287ac77207462a94916f"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-v3-root-import.json.gz",
+      "sha256": "379b3e2a3180dc4adfe74754b1efbba629e5daccb5f92db29038f395f47e5daa"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v1/README.md.gz",
+      "sha256": "7d61bebcad3c18ba0baf598870a6b72ca7b891ce78a4aefedf1f254ac16a2245"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v1/candidate.patch.gz",
+      "sha256": "8905e0d06f0398be9163e8bfcdf40d5b8210d2a494e0ec06effb8e31df6c0ec6"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v1/manifest.json.gz",
+      "sha256": "e5c05a5fa56bcd7ae474aa9027f2f31e92745f5b3037c0c5577a0bad02b1d2eb"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v1/node-executed-tests-source-only.log.gz",
+      "sha256": "f4a2f3ceb52bcda30d1591b8ee804e3ee92cf09afab79337faf665df2f7a03f1"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v1/node-recovery-invocations.log.gz",
+      "sha256": "a22643a05ebda5d624108df5de5946558d7410921208698cec21c08c96931302"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v1/python-wiring.log.gz",
+      "sha256": "36c9e8f677d1c894057ba38b1ab1848b1dd06fc47fa1b1dccf1209941fa645d9"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v1/verification.json.gz",
+      "sha256": "962a614cede78b30559d36d80bbb3394b98e99e5d062b5a8afbda919ef70d2ea"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v2/README.md.gz",
+      "sha256": "1e454470cfed0fd7260cad31b7b19c47736623df4a14daa68dd0816c24b3094f"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v2/candidate.patch.gz",
+      "sha256": "c23816f27ae96e96598ca6f894b3a533d24966e501ab10be826ffb5bcc6e15d3"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v2/manifest.json.gz",
+      "sha256": "fc4e90efeeb8ecfa20907aeee4743d4040b4049b9347532a3e916cf57f7404bb"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v2/node-executed-tests-source-only.log.gz",
+      "sha256": "149de71e4a090a44ea56e7d8305b17f42635f38be427564592b6ad475be99a53"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v2/node-recovery-invocations.log.gz",
+      "sha256": "9f43b5660dcfa248df991303a4bc14647dd955b263f19dbdca02a6e7c65b0820"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v2/python-wiring.log.gz",
+      "sha256": "8e0cac9540c155b82793936eed3f727585e516de74e351c895ab6751595b154b"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v2/verification.json.gz",
+      "sha256": "d880a322b5611a593f0ad83029d7dc908eafae77aad8c861511a5b8315dc5ecc"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v3/README.md.gz",
+      "sha256": "175b4687e5bb744be8f498f832c33daa8721adbeca42a3d4da3003d8e5fa30ea"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v3/candidate.patch.gz",
+      "sha256": "8acf2d37395b8b10f18c13cb18620a3f49e3b6ae80a7f86a3a44b59f5676d90d"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v3/manifest.json.gz",
+      "sha256": "5f0ae7322a57d99f787dfac144d04d83074117984907ea524c3850a0cb3f9b2c"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v3/node-executed-tests-source-only.log.gz",
+      "sha256": "c0e32c1efe3088c0d5004bfe2c8be915f4f0146633b3cc2a776fab1a0939c587"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v3/node-recovery-invocations.log.gz",
+      "sha256": "e8172eda954189e965609de3c06198ebc123b72649bcbcc350d769ee8adfdd08"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v3/python-wiring.log.gz",
+      "sha256": "e80b6732dbe3ad8772f47fedc86eee51470fe416b37fd4ed809ba2298e6a98d9"
+    },
+    {
+      "path": "artifacts/payroll-app-composition-wiring-f0431013-capture-v3/verification.json.gz",
+      "sha256": "769196905a8bdfe1e10dd4e0e26aa10af889ea793a4750fdb7f55f8a6a7cf013"
+    },
+    {
+      "path": "artifacts/payroll-app-config-c60ccaf0-v1-capture-review/capture.json.gz",
+      "sha256": "7fbbec75f0c84721b5a64945921f31d6373d29b69d45de5cb76cf4b549e98678"
+    },
+    {
+      "path": "artifacts/payroll-app-config-c60ccaf0-v1-capture-review/committed-formatting-binding.json.gz",
+      "sha256": "8ffe84ed0e50d2d33a854c416045141b21faee0791c973cf6922e7fe823efb00"
+    },
+    {
+      "path": "artifacts/payroll-app-config-c60ccaf0-v1-capture-review/constructor-preservation.json.gz",
+      "sha256": "738b131f56bd48bf513258507b1b897d0acdf1f8a4569f9ca02f1503264aae19"
+    },
+    {
+      "path": "artifacts/payroll-app-config-c60ccaf0-v1-capture-review/review.json.gz",
+      "sha256": "0c024e8b2a0a206011dbe7475c2522a57ec963ecba64fb4f9fad3d4be4fb9cbe"
+    },
+    {
+      "path": "artifacts/payroll-app-config-c60ccaf0-v1-capture-review/reviewed.patch.gz",
+      "sha256": "1c954603d026ece252264c3a0223ac377c8a493081eed509bfafd3346dc847e5"
+    },
+    {
+      "path": "artifacts/payroll-app-discovery-2931be9e/app-ordinary-discovery.log.gz",
+      "sha256": "8d408a7d565820ded84d4cb395088080922d0ddcaabbbfd80f7400247e2f9e0c"
+    },
+    {
+      "path": "artifacts/payroll-app-discovery-2931be9e/app-recovery-discovery.log.gz",
+      "sha256": "492ee38d97e9d89c8693886c76140318335c88c3b849ebb05100af239df1cad5"
+    },
+    {
+      "path": "artifacts/payroll-app-discovery-2931be9e/results.json.gz",
+      "sha256": "90fee3ff62881623b472653739651efe8da4da5f9bcf4d24dd0ffd3a56034571"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v1-independent-fast/javascript-source-controls.log.gz",
+      "sha256": "587c419633f28660560875ba9d5d6d43bc1e0485efdcc49dc8edb9717d70090d"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v1-independent-fast/python-source-controls.log.gz",
+      "sha256": "9fc85490f5be51afcc81b1d29f2a37d40a3c1baec6deb255e3b20e579f5944eb"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v1-independent-fast/review.json.gz",
+      "sha256": "387b571dc9768b8e7cb29349d9d0c5c0ecc323d89ac29212abe09a08aa961483"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v2-independent-fast/remaining-family-controls.log.gz",
+      "sha256": "8c493b4ccca776fb278bb089dd6c41eb9b75a75501f8dfbb33984a5f97b09cf1"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v2-independent-fast/review.json.gz",
+      "sha256": "dfdfb45174c04aa6671bc0956942e6a2c27d405c34ecd9253b1b7d66c8d7c2a6"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v2-independent-fast/verification.json.gz",
+      "sha256": "dedcd83e8c91a25133964be8f5c71f7dbae26a719c6c76c4b4acfb3d0fc04b9e"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v3-independent-fast/manifest.json.gz",
+      "sha256": "b2cf6dc484f8f1af5dd2b830991d1b8a015c737ec51d22b233a06be69df9df40"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v3-independent-fast/node-invocations.json.gz",
+      "sha256": "58874212a24748c0ba5b22fd61eb70e4963aa589e6c46c530d0e1bef5b2915b1"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v3-independent-fast/node-invocations.log.gz",
+      "sha256": "ae310890ac94046424bfc873ce2fa8d3989adc2c0264eed31f0eaca4fb9ad68a"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v3-independent-fast/node-source-selected.json.gz",
+      "sha256": "cad0d8d1410ba06d43ce87a4fdecffb328823de38ee5b362d44d4a3a4d3a0787"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v3-independent-fast/node-source-selected.log.gz",
+      "sha256": "6bc4c656b28e4f3cfecf64c216e2d3269fde550a2c60faf4d498b84a4cd7cbd2"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v3-independent-fast/python-wiring.json.gz",
+      "sha256": "778f430ec7e58ade8ee5e6c2454ee1530192d020193343bbaa967b9704b17fcc"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v3-independent-fast/python-wiring.log.gz",
+      "sha256": "ba9a18afc00da82c7713ef72fdbd5d39d8783c8962bb758d0975d5fb036a1761"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v3-independent-fast/review.json.gz",
+      "sha256": "1d1797b4a69184cc05347a1a8b1ce3cff8b42d84051f747ebebd8de1f862b365"
+    },
+    {
+      "path": "artifacts/payroll-app-wiring-v3-independent-fast/verification.json.gz",
+      "sha256": "376f2f50aa93ffa32464e9bf659ef26182d40560158bf45ca3ff0ff0791c514e"
+    },
+    {
+      "path": "artifacts/payroll-ce4916d2-checks/clippy.log.gz",
+      "sha256": "97c14f8e485838b2e3762ac070b2383402862da3aadb65713674a362a7415556"
+    },
+    {
+      "path": "artifacts/payroll-ce4916d2-checks/config.log.gz",
+      "sha256": "28d43476472f23bc83d3fe9ecdf45133ddc97e1d6cf8d382090be67f74c40f42"
+    },
+    {
+      "path": "artifacts/payroll-ce4916d2-checks/lane.json.gz",
+      "sha256": "9c30fbcd24c196db7bb4840303251cdfd77d06f3ebeb3c4c47d597fcd9bffec4"
+    },
+    {
+      "path": "artifacts/payroll-ce4916d2-checks/observer49-actual.log.gz",
+      "sha256": "1a2b87ca04ad1ec79668ba348a988ddbabc3346c13913856154719bbde8aaa24"
+    },
+    {
+      "path": "artifacts/payroll-ce4916d2-checks/observer49-red-admission.log.gz",
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5"
+    },
+    {
+      "path": "artifacts/payroll-ce4916d2-checks/results.json.gz",
+      "sha256": "66de805662d4e197525d57af5a740cf994bf2f4781d000ddf522562b4cef1ff8"
+    },
+    {
+      "path": "artifacts/payroll-ce4916d2-checks/unknown-reconnect.log.gz",
+      "sha256": "09b0faa84d5efc1c6e0a6bf8bc6ab06f79ff518987760722375fed546be06440"
+    },
+    {
+      "path": "artifacts/payroll-ci-f0431013-closure/lane.json.gz",
+      "sha256": "8998529a5a039947a0a7d67e6cea3ece6f1c9456b2d0cdddf354b9d74784c3a3"
+    },
+    {
+      "path": "artifacts/payroll-ci-f0431013-closure/probe-e27623ab-positive-gains-failure.log.gz",
+      "sha256": "a26fe0aaa03152904c065ba2ee62aab8992877f9d79481eda3a9c13c9eaed181"
+    },
+    {
+      "path": "artifacts/payroll-ci-f0431013-closure/probe-red-baseline.log.gz",
+      "sha256": "9d9b1a74ba016ed2e61d2b010611f2aa2297c9f1507107b29f53df69b1db52d2"
+    },
+    {
+      "path": "artifacts/payroll-ci-f0431013-closure/probe.log.gz",
+      "sha256": "4086342f2118ae49ea7c0172cc311159d442c515185934244ca02e1d64f70807"
+    },
+    {
+      "path": "artifacts/payroll-ci-nine-roster-96c378e3-v1-fast/REVIEW.json.gz",
+      "sha256": "fb05dc2fb25d381f2ed33e0daa67a59f87acadc4c40d4faaf350fce19ee2d74c"
+    },
+    {
+      "path": "artifacts/payroll-ci-nine-roster-96c378e3-v1-fast/candidate.patch.gz",
+      "sha256": "ebc3816043ece8a1255c70ea076f4d2531ec1dad75c67bad8019532fc6c20481"
+    },
+    {
+      "path": "artifacts/payroll-ci-nine-roster-96c378e3-v1-fast/draft-metadata.json.gz",
+      "sha256": "6f40fa63c1db5a8b589efd6a604d57a951db9b8976d4dcf5f07124f4a52a7663"
+    },
+    {
+      "path": "artifacts/payroll-ci-nine-roster-96c378e3-v1-fast/manifest.json.gz",
+      "sha256": "f07d6f533ad931a1f17394cfa7c0def965bbd25485c5ac6822ce1f53b858b582"
+    },
+    {
+      "path": "artifacts/payroll-ci-nine-roster-96c378e3-v1-fast/python-wiring-freeze.log.gz",
+      "sha256": "5d58f6305d0205bde681e8288f46ca701e5c979950f28c2ea90bf72c0b60d8b4"
+    },
+    {
+      "path": "artifacts/payroll-ci-nine-roster-96c378e3-v1-fast/recovery-invocations-freeze.log.gz",
+      "sha256": "e41dd8f2aca57a684d8313314367bc435962971cab5d8ff754efba37e0fd90bc"
+    },
+    {
+      "path": "artifacts/payroll-ci-nine-roster-96c378e3-v1-fast/run-step-mutations-freeze.log.gz",
+      "sha256": "07ca7d23591639a52b820ec71a1e4a5de957314441e77dcd98c65f551a5adf9c"
+    },
+    {
+      "path": "artifacts/payroll-ci-nine-roster-96c378e3-v1-fast/validation.json.gz",
+      "sha256": "a3b85f2d4c2789d6adfa59bfaa279d038df444f64a7ef37e5207f6a7a3375ebe"
+    },
+    {
+      "path": "artifacts/payroll-ci-preflight-27399fb3-independent-inventory-v1/REVIEW.json.gz",
+      "sha256": "f9e86f1365849ec5e8c2113dcbc49090375870915c86d8fa180a78efa4fe92fd"
+    },
+    {
+      "path": "artifacts/payroll-ci-preflight-27399fb3-independent-inventory-v1/manifest.json.gz",
+      "sha256": "a6b1f432a3eec11eb6878f962afb158dbbc19cbc694e5ac6bbbf5836464234c0"
+    },
+    {
+      "path": "artifacts/payroll-ci-preflight-27399fb3-independent-inventory-v1/mechanical-verification.json.gz",
+      "sha256": "7619c393e17465999f57c966693c61b4cac0207d7a92b5d0869ac63a7ac25edc"
+    },
+    {
+      "path": "artifacts/payroll-ci-preflight-27399fb3-independent-inventory-v1/root-candidate.patch.gz",
+      "sha256": "7b464d96974f832ae7e5635c811fd6f4bcd1e9dbfd8dda5d163fc68d8bcf3f22"
+    },
+    {
+      "path": "artifacts/payroll-ci-preflight-27399fb3-independent-inventory-v1/source-verification.json.gz",
+      "sha256": "07a7890898556b96ec6075a05283fa9f1299e6dea185625fb1e9f68ff68d9509"
+    },
+    {
+      "path": "artifacts/payroll-ci-root-27399fb3-wiring.patch.gz",
+      "sha256": "7b464d96974f832ae7e5635c811fd6f4bcd1e9dbfd8dda5d163fc68d8bcf3f22"
+    },
+    {
+      "path": "artifacts/payroll-ci-v3-root-import.json.gz",
+      "sha256": "91b311d4ea0d78f21ca9a3f3f86fe85ee5f6963725319df69a5d144a56aacfd8"
+    },
+    {
+      "path": "artifacts/payroll-config-c60ccaf0-lane.json.gz",
+      "sha256": "028f6bb0098eff91c6eed06c22332a194a7c3dc9b5cccdedfca52400e4db9e6f"
+    },
+    {
+      "path": "artifacts/payroll-config9-c60ccaf0-red.log.gz",
+      "sha256": "9f2f2e83b774db83386fc230505957091ca8e41ce3854a1de5f571afef663949"
+    },
+    {
+      "path": "artifacts/payroll-config9-integration-check-v1.log.gz",
+      "sha256": "2af0eff22dfcbeb4aded532d45a599f00ca53885191e900655dee23a58dd44f3"
+    },
+    {
+      "path": "artifacts/payroll-durability-docs-5e6cd576-independent-review-fast.json.gz",
+      "sha256": "5362c07de9113f02ee33aaa6fc016610ee3a8bcb33ec4170255494a45e7018e0"
+    },
+    {
+      "path": "artifacts/payroll-durability6-172243b3-run-v1/1-replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply.log.gz",
+      "sha256": "7a56bf86341510d3711de1df7da071c5bf665b98f47b2567122017f180396d0c"
+    },
+    {
+      "path": "artifacts/payroll-durability6-172243b3-run-v1/2-lost_commit_transport_reply_replays_one_real_payroll_effect.log.gz",
+      "sha256": "d6cabb7124ae12a0bd92289cec46eac3cf61fc5b1600493dbf4963d6c372da47"
+    },
+    {
+      "path": "artifacts/payroll-durability6-172243b3-run-v1/3-fresh_commit_wait_release_requires_explicit_remote_confirmation.log.gz",
+      "sha256": "417868d22307c29b9867bef4a29fd38f91ddc88d196cf56399689eb28614d3e8"
+    },
+    {
+      "path": "artifacts/payroll-durability6-172243b3-run-v1/4-staging_success_and_idempotent_restage_wait_for_remote_confirmation.log.gz",
+      "sha256": "2c3e159b794b2f684919fb5ac70fff4fedbde521224fa2fd233fb9c562b82ced"
+    },
+    {
+      "path": "artifacts/payroll-durability6-172243b3-run-v1/5-required_remote_unknown_is_bounded_and_never_local_fallback.log.gz",
+      "sha256": "07e10f118f5d6aac300f48c73b203649a884037cc501da8f9b014cce388cfac2"
+    },
+    {
+      "path": "artifacts/payroll-durability6-172243b3-run-v1/6-finite_remote_bound_and_repeated_replay_preserve_exact_rows.log.gz",
+      "sha256": "f45f3e0bc458c07a7e25b70dff0aa9d8f9655d21837b158b90c3af9d7ad91023"
+    },
+    {
+      "path": "artifacts/payroll-durability6-172243b3-run-v1/results.json.gz",
+      "sha256": "34c6bb961259ea4d03f2642b8f4f4f485654686dbfeb910922e47ad05f75474a"
+    },
+    {
+      "path": "artifacts/payroll-durability6-172243b3-run-v1/source-after.json.gz",
+      "sha256": "d0b44612e1b50cad6d94cd0238e7b28c721f6f6097fff155f176a8d62f48cc31"
+    },
+    {
+      "path": "artifacts/payroll-durability6-172243b3-run-v1/source-before.json.gz",
+      "sha256": "d0b44612e1b50cad6d94cd0238e7b28c721f6f6097fff155f176a8d62f48cc31"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-baseline-delta.json.gz",
+      "sha256": "be69aab0adef2e8596802448564f95ac84d3a52aab8025bd806eb49a393cd721"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-baseline-gains-candidate/baseline.json.gz",
+      "sha256": "c4979177588c06248471849fc376b034098f9dfea157ddb53c741fd7cc7f000a"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-baseline-gains-candidate/candidate.patch.gz",
+      "sha256": "d80b54c8060474053d04c48258926bd5d9f507d5a92bc675af6b6e34a7630fc4"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-baseline-gains-candidate/manifest.json.gz",
+      "sha256": "ac35bbd2aef39414eeb46908d972c5c26c4c7cce7885abbfa807c64d05e07032"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-baseline-gains-independent-fast/review.json.gz",
+      "sha256": "325155fd5ab1a1ac907d15e2ba019503f6bfb4960c490a4cfe4507c650a08cb5"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-baseline-readback.json.gz",
+      "sha256": "33df107d923f7952ac224d94a30d7d34e74d75b5de0284199f95f2a1e75c6af4"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/app-config21.log.gz",
+      "sha256": "9efffebb6eea92d20bb35d4b2464550074ef186df5a314312fe9629af81faed0"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/ci-reachability-same-probe.log.gz",
+      "sha256": "a26fe0aaa03152904c065ba2ee62aab8992877f9d79481eda3a9c13c9eaed181"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/executed-checker15.log.gz",
+      "sha256": "6aa71e7b24ab35205dacd041528526a9724944c18095c331f6691d49766472e5"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/preflight-gate.log.gz",
+      "sha256": "b792a4464b2d3eb2ab961ad7921dd05a14f1760de99a3677b6e447c96d20ab38"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/preflight66.log.gz",
+      "sha256": "0d5f4750b5c420b4cf3633113c33a03f48efbd402f59aa0a842e67732735dfeb"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/preparation15.log.gz",
+      "sha256": "274fe5d5d0aefaeace25493721d9ec50658fd16fa85623c7d7e7ca44ec91065b"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/recovery-invocations84.log.gz",
+      "sha256": "b5e2c35f92d6a30ca7d6b9fec5c310299a631f8424cfd6636c3b958ebf32580b"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/results.json.gz",
+      "sha256": "d61703c30231cbc8c80e23d1d970ef6397ee4d483c6502773157e6d15127adc9"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-1-Recovery_replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply.log.gz",
+      "sha256": "4f48ce4400db783fd1cdf41dd574acfa42bba7c6194c696fe02745eb484c1c8b"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-10-Certify_durability_observer_in_a_dedicated_disposable_cluster.log.gz",
+      "sha256": "2b7018dd66684f58480a54243ebc463fc6219e44b244f862181f5b429f7f4161"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-11-App_recovery_required_app_startup_admits_only_the_installed_observer.log.gz",
+      "sha256": "b165987a08d1eb1ad73b7d9e3b68bec70d99d0b1f32c53c9195245a4bce4c6da"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-12-App_recovery_required_api_projected_payroll_dispatch_waits_for_remote_apply.log.gz",
+      "sha256": "e32481f950d5d693db22c7616b5eadd3b2c3439cc32b6a3d0afd7e56de1e2ece"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-13-App_recovery_required_workflow_spawn_keeps_unknown_staging_pending_until_retry.log.gz",
+      "sha256": "897430651e410e9a01f74743d6b8de062de16d88151a954bcee1d5f984ebfd1f"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-2-Recovery_lost_commit_transport_reply_replays_one_real_payroll_effect.log.gz",
+      "sha256": "75d47a0bc050211b2542c5886628ca5ad364bc2cae4746401f14ce11a44ca961"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-3-Recovery_fresh_commit_wait_release_requires_explicit_remote_confirmation.log.gz",
+      "sha256": "31782751a4c9cf9a18b3e08cc079a1a3c0640db1bdc83e52b6425d983280cd44"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-4-Recovery_staging_success_and_idempotent_restage_wait_for_remote_confirmation.log.gz",
+      "sha256": "74ba26981875c01af3106d488ac271e406659e8631be1736da03d76e7c15a88f"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-5-Recovery_required_remote_unknown_is_bounded_and_never_local_fallback.log.gz",
+      "sha256": "066bc6210f1f306aa5f99f6ee8f79a4a29fa9cbc279151c07125e338ab2e9c32"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-6-Recovery_finite_remote_bound_and_repeated_replay_preserve_exact_rows.log.gz",
+      "sha256": "9810ed88e5ebdb09405a8131e34d6923f019caea1c9f3f2ca8af416bc7cf59de"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-7-Recovery_fresh_commit_deadline_retains_capacity_until_replay_resumes.log.gz",
+      "sha256": "8677cac51dad7c45824b70366c526f564ea483d0393fa70a073f472fa133cf19"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-8-Recovery_aborted_fresh_stage_retains_capacity_until_native_wait_ends.log.gz",
+      "sha256": "71067aba137484b6309c28ab7209b57b4b915b9300c82903e94a57e53f2f5e38"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-9-Recovery_fresh_stage_transport_error_closes_pool_before_reconciliation.log.gz",
+      "sha256": "c9d0eb53f8d403d9ff43c934f7ff6aa7a92765551128cdfd54113c628b32353d"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/runtime-counts.json.gz",
+      "sha256": "1b4979d2c7f4c4c08f168179a9cd011c02eae2883a9fa426506ff0d78e4a4284"
+    },
+    {
+      "path": "artifacts/payroll-e27623ab-closure/strict-clippy.log.gz",
+      "sha256": "61714a73227dd5270e8bb2ccea01ac34271b937ba471c2f5e36e924d156ab337"
+    },
+    {
+      "path": "artifacts/payroll-explicit-local-constructor-amendment.json.gz",
+      "sha256": "c41bbb7bf332c5fd5840f793bb208f28bb8ffa5e643c8f295a601b40d211e729"
+    },
+    {
+      "path": "artifacts/payroll-f0431013-gates/ci66-same-probe.log.gz",
+      "sha256": "82e2ca9f68e107522897963595a6fc5541a0b6b32fd708093bdfa50ed798f1d5"
+    },
+    {
+      "path": "artifacts/payroll-f0431013-gates/executed-checker15.log.gz",
+      "sha256": "61e3fe8aec87fdb56dc2f5728b7c6e9e4fd53bf80142fd617b1cd661113f58b5"
+    },
+    {
+      "path": "artifacts/payroll-f0431013-gates/invocations31.log.gz",
+      "sha256": "594dd35077bccd800c3474cbf2131d1f64118146c8544468b3e0325e9a690bfb"
+    },
+    {
+      "path": "artifacts/payroll-f0431013-gates/launch36.log.gz",
+      "sha256": "f2c4f77bd713c404b89b54f54298804bbd9727b8c080a2cd1caed2f467318237"
+    },
+    {
+      "path": "artifacts/payroll-f0431013-gates/orchestration51.log.gz",
+      "sha256": "9194d97913340ecebeb661c44857cf38776b469a2a625a3497698aa8220803c0"
+    },
+    {
+      "path": "artifacts/payroll-f0431013-gates/preparation9.log.gz",
+      "sha256": "3e08e5c4997ac915d4cb68eea4fe4a53a272edb077f4f0502f2af5d583881066"
+    },
+    {
+      "path": "artifacts/payroll-f0431013-gates/results.json.gz",
+      "sha256": "393b3659e14df4f9258cb8928f6064bec1e9e94e8af00f7992516c8c76cc02ea"
+    },
+    {
+      "path": "artifacts/payroll-f0431013-gates/verify.log.gz",
+      "sha256": "f45ec6c5473a946106c3db8b64e4dd4e6e0cb6e8ee282ec4eb09ec1438c3e3e1"
+    },
+    {
+      "path": "artifacts/payroll-fixture-closure-v2-root-independent-review-fast.json.gz",
+      "sha256": "ff33d422aea051e203635b226d6e17775aefc4fd3008647c08367b564acdbd5c"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-tests-f0431013-v1-inventory/README.md.gz",
+      "sha256": "9f3a8dae4fd2cb1e33cb98e5f3f22fcab62058b8ed7c848155c89eb3d870eae5"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-tests-f0431013-v1-inventory/base.rs.gz",
+      "sha256": "b60620c88e85ca97cfedb6a0bf30dc06c47a40c805edc6c11df1858dfbbc854c"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-tests-f0431013-v1-inventory/candidate.patch.gz",
+      "sha256": "c288dab54ec1bb0fc7eb4b452e8658bddf4ddb23a343e0348cebe69ca4c1a275"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-tests-f0431013-v1-inventory/changed-region.rs.gz",
+      "sha256": "e8cb49dcd511dcbae3a46cd4ae1767a2bb3d8a3118a27296d7b439b450bc6543"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-tests-f0431013-v1-inventory/historical-results.json.gz",
+      "sha256": "9cb2d1e3d740e691adce126781abd5b16cec9a4346f70bde5e737b29e2483782"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-tests-f0431013-v1-inventory/manifest.json.gz",
+      "sha256": "de0f0692ac61288c42a74880b9ebd5ceaea9338195b368234eda5b45512e41c9"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-tests-f0431013-v1-inventory/recovery.rs.gz",
+      "sha256": "db6ee4b5f26ba9c326d5c1ae9b1f12278ff1f84e8eda00f360bc00bfc151ac93"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-tests-f0431013-v1-inventory/source-bindings.json.gz",
+      "sha256": "9980780cbf700821f254d1b52d11b0f010b4930baf56fa011d7fca5ee8fdd943"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-tests-f0431013-v1-inventory/verification.json.gz",
+      "sha256": "2e8e248f77e537658ed910e806e59c770bfd52c5db3f46ad2a2ad3490b255c1b"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-tests-f0431013-v1-review-capture/review.json.gz",
+      "sha256": "b80cfa96c5af6842fa1a7e559ec62462104b584feb8b8c9ab492af316ca2129d"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-v1-independent-fast/review.json.gz",
+      "sha256": "2e6596edb7ee220d6e8a86e4eaa1a83e65482d27ddd5fe6ab4a9818e7cbdbe50"
+    },
+    {
+      "path": "artifacts/payroll-fresh-retained-capacity-v1-independent-fast/verification.json.gz",
+      "sha256": "243464070fd4c8a319cf5ed3bafa96a1b04615a0b8e54eacf1665eb46a693701"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v1-inventory/REPORT.md.gz",
+      "sha256": "25a339262c9c80ca9283e0bce5cce635c7f2bf9283849ca94681352034946ce9"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v1-inventory/evidence.json.gz",
+      "sha256": "599c5d9eaf7b156ab3739e1f8618f7175af29e80ac1c425d8f98b1786f01bb76"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v1-inventory/fresh_cleanup_tests.rs.gz",
+      "sha256": "9d939b0728eefc6ee8898ebd991184807926ebc6697559bcd657ba58506f4ee0"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v1-inventory/manifest.json.gz",
+      "sha256": "ed423cb2af23906b6228db7e5cdca3c419eeb9f3b6c42aa25314fd7b26e9fa44"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v2-inventory/REPORT.md.gz",
+      "sha256": "15f9bb07285852d80afcfa327877f787456f950edde504fdacd067084c20b237"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v2-inventory/candidate.patch.gz",
+      "sha256": "f8501600e21cf0de598a05d85bca7b39e473a72cb13526978ba5caba6fb6487c"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v2-inventory/checks.json.gz",
+      "sha256": "8528752c1b4770066fa6721c3c9e4b62f589ebe89b34a5e0cf3c536e4004f718"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v2-inventory/fresh_cleanup_tests.rs.gz",
+      "sha256": "03abd997ab2c4b8433c43eeb7985c99aed09b4f49a504c0de6c901310656f778"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v2-inventory/manifest.json.gz",
+      "sha256": "64dca3f0c07fb5ce1980be0b01a9ed4e7a6f5729def2d6cfa23e87bd83c82a89"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v3-inventory/REPORT.md.gz",
+      "sha256": "86c624a0929ef1e2fcd606be0f1610adfde1690f75ad0957d58b940698f48e92"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v3-inventory/added_transport_error_test.rs.gz",
+      "sha256": "2f30e5534eeb322295774a30d61076d781311ef51a66d0e1d1f09335090a4c4d"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v3-inventory/candidate.patch.gz",
+      "sha256": "cdf03508abe65c9ed03cec5672b0b4db3912f15319c0ae929d68a58c910d7fbe"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v3-inventory/checks.json.gz",
+      "sha256": "df3f4b65c6c10002ce8b00a82b12d53702726c8069e6d809b02c7ee230037a2f"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v3-inventory/fresh_cleanup_tests.rs.gz",
+      "sha256": "bb26519379018e5c47cbaab758a6adabfd3e533efa9ad98c09d3cc01aaf01312"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v3-inventory/manifest.json.gz",
+      "sha256": "93cbb404cbb944f2ea6a6ce0970092c1472f2cf5bc0a1d20dd5745cf3a154d92"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-review-v3-inventory/v2-to-v3.patch.gz",
+      "sha256": "097eae20f763edc1c39c2537da67c9407774e85071553c61b4877efebfedbca5"
+    },
+    {
+      "path": "artifacts/payroll-fresh-syncrep-cleanup-v1-independent-review-fast.json.gz",
+      "sha256": "3179cd292bde92ddcbedb2998b1289acbe3b5e8b2ffbfb49c33f8d1319492b6c"
+    },
+    {
+      "path": "artifacts/payroll-fresh3-1fad1eff-green/aborted_fresh_stage_retains_capacity_until_native_wait_ends.log.gz",
+      "sha256": "d0bf8c353b64cc8f9ebff3620737bfcfb8bec626134541612c1505bf3441328f"
+    },
+    {
+      "path": "artifacts/payroll-fresh3-1fad1eff-green/fresh_commit_deadline_reclaims_backend_before_replay_resumes.log.gz",
+      "sha256": "b95bd04c398e5d2868babab48a929ab1578048e9b45a14505da68384648abce7"
+    },
+    {
+      "path": "artifacts/payroll-fresh3-1fad1eff-green/fresh_stage_transport_error_closes_pool_before_reconciliation.log.gz",
+      "sha256": "549e9b513fe44722699ab53d5bebc9e29dc09339b16c8c9e84df4636d7aa5b4b"
+    },
+    {
+      "path": "artifacts/payroll-fresh3-1fad1eff-green/results.json.gz",
+      "sha256": "9cb2d1e3d740e691adce126781abd5b16cec9a4346f70bde5e737b29e2483782"
+    },
+    {
+      "path": "artifacts/payroll-fresh3-5e6cd576-red/lanes.json.gz",
+      "sha256": "3bc4d7bf814d7e876697bc1821cf6ab0009dab20cb1830ed07639786a39ffcf3"
+    },
+    {
+      "path": "artifacts/payroll-fresh3-5e6cd576-red/red-baseline/aborted_fresh_stage_retains_capacity_until_native_wait_ends.log.gz",
+      "sha256": "bb3b8e637e1e0e7ca2ad035d76ada7cfa5e6e183ff4753de7a40959feea5274f"
+    },
+    {
+      "path": "artifacts/payroll-fresh3-5e6cd576-red/red-baseline/fresh_commit_deadline_reclaims_backend_before_replay_resumes.log.gz",
+      "sha256": "50207ba06f2b2073e9323ef9b44d4a87dcfa0b5a0d4723ff8d8f11ee8412a2aa"
+    },
+    {
+      "path": "artifacts/payroll-fresh3-5e6cd576-red/red-baseline/fresh_stage_transport_error_closes_pool_before_reconciliation.log.gz",
+      "sha256": "1eefbaecb960b4749330c25c86c137bc820a93aecf4a0155d9e4c66eb3b5d03b"
+    },
+    {
+      "path": "artifacts/payroll-fresh3-5e6cd576-red/red-baseline/lanes.json.gz",
+      "sha256": "3bc4d7bf814d7e876697bc1821cf6ab0009dab20cb1830ed07639786a39ffcf3"
+    },
+    {
+      "path": "artifacts/payroll-launch-implementation-efe433f0-independent-review-fast.json.gz",
+      "sha256": "7cc3cfa113ad782e59b070eb3c0d3236b2b64652ab43e59213cf76528965ff1a"
+    },
+    {
+      "path": "artifacts/payroll-local-app-fixtures-ce875a60-independent-v1-capture/proof.json.gz",
+      "sha256": "7abb11e5b3e877d2ae90fe9d24e7979b252f956e9d6fc19c5d1f9ac53e88c185"
+    },
+    {
+      "path": "artifacts/payroll-local-app-fixtures-ce875a60-independent-v1-capture/review.json.gz",
+      "sha256": "7b4cde35cfaad7d7045f4738dfa14dc5f48b58b6aa9747e641ff6f6b87d2ed78"
+    },
+    {
+      "path": "artifacts/payroll-local-app-fixtures-ce875a60-independent-v1-capture/reviewed.patch.gz",
+      "sha256": "38851e27f200aec204b4a184dc5e0209044ee28515c1aee29bc8ce90f4080339"
+    },
+    {
+      "path": "artifacts/payroll-local-app-fixtures-ce875a60-v1-inventory/REVIEW.md.gz",
+      "sha256": "2bc26e363b0b6c55c1eadc24460f8ad65a60970e447dec9afe0d36cab0ba93c8"
+    },
+    {
+      "path": "artifacts/payroll-local-app-fixtures-ce875a60-v1-inventory/candidate.patch.gz",
+      "sha256": "38851e27f200aec204b4a184dc5e0209044ee28515c1aee29bc8ce90f4080339"
+    },
+    {
+      "path": "artifacts/payroll-local-app-fixtures-ce875a60-v1-inventory/changes.json.gz",
+      "sha256": "629dbb6ba218ee20426d6cd15048c6f5cdd51ff265dd0ccfc9adb93181d71296"
+    },
+    {
+      "path": "artifacts/payroll-local-app-fixtures-ce875a60-v1-inventory/checks.json.gz",
+      "sha256": "f37ef2c4c81770b0981d11862e288f8aa58ba29f3a75bdc9f2e3a84c4d58ff2c"
+    },
+    {
+      "path": "artifacts/payroll-local-app-fixtures-ce875a60-v1-inventory/manifest.json.gz",
+      "sha256": "cda29ea3cf965827556e57e62f6dfc9f4e6153977389915666270e794d3a369a"
+    },
+    {
+      "path": "artifacts/payroll-native-commit-timer-refutation-1fad1eff-v1-inventory/FINDING.md.gz",
+      "sha256": "b5742f835bdd80aadcbe2bcb8c0be22ff0460ccff9ca626cafd991c8046a7f03"
+    },
+    {
+      "path": "artifacts/payroll-native-commit-timer-refutation-1fad1eff-v1-inventory/evidence.json.gz",
+      "sha256": "00009cbf514de714a90215c72e69af90ed82a4b89eea0ac0dffd422ff3d1923b"
+    },
+    {
+      "path": "artifacts/payroll-native-commit-timer-refutation-1fad1eff-v1-inventory/manifest.json.gz",
+      "sha256": "c90be8b1d77bd6bb0213434b27c71a43e929bc1ba018d50a9bd288c607bb307d"
+    },
+    {
+      "path": "artifacts/payroll-native-retained-capacity-design-1fad1eff-review-capture/review.json.gz",
+      "sha256": "724dcfc26d9fb0cc6269e88980d33116425e2e2ba38ce6657f7c364baaac9771"
+    },
+    {
+      "path": "artifacts/payroll-native-retained-capacity-f0431013-correction-review-capture/review.json.gz",
+      "sha256": "e0e5e299be81bfa5b198071967a575bb7ea45e8daa2e584fa231f9868e209ca1"
+    },
+    {
+      "path": "artifacts/payroll-native-retained-capacity-f0431013-root-v1/correction.patch.gz",
+      "sha256": "003943a154dbe58d46a0dd35d68911887c944e80024c7be97fe2cf157afe2029"
+    },
+    {
+      "path": "artifacts/payroll-native-retained-capacity-f0431013-root-v1/durability.rs.gz",
+      "sha256": "cb21fcbfd86dcb9137a40603a4b751b07254305a812dac32fc6107140de01859"
+    },
+    {
+      "path": "artifacts/payroll-native-retained-capacity-f0431013-root-v1/guide.json.gz",
+      "sha256": "2a5bcafa1279c7b8a0a5a0c7f5bb29b3d8669bbbaf6c9f73a501835e7a1ea4c2"
+    },
+    {
+      "path": "artifacts/payroll-native-wait-capacity-design-review-1fad1eff-v1-fast.json.gz",
+      "sha256": "2602d462e0a086fbecc900711fd8b3adb46ca310fefd3135c69b9563e1e8fe81"
+    },
+    {
+      "path": "artifacts/payroll-native-wait-retained-capacity-1fad1eff-v1-inventory/FINDING.md.gz",
+      "sha256": "baace6da2f19367567f743b1bce766cfd86a1bd6bdc57b9fcecd19eaef67013a"
+    },
+    {
+      "path": "artifacts/payroll-native-wait-retained-capacity-1fad1eff-v1-inventory/manifest.json.gz",
+      "sha256": "7ec4b2fe577f2636852f173ca3f6ca50518ff564436204f9cee74db253eb23b2"
+    },
+    {
+      "path": "artifacts/payroll-native-wait-retained-capacity-1fad1eff-v1-inventory/source-bindings.json.gz",
+      "sha256": "5db6ead3a61de4d0f82993784f4d0fe1f3a4f6bcb2fd730a3450d63139dfce74"
+    },
+    {
+      "path": "artifacts/payroll-observer-8e92db15-independent-v1-capture/review.json.gz",
+      "sha256": "26f72cc180e590aec43a85af064dc5ff094492f52ef98e895e4af22a205bce20"
+    },
+    {
+      "path": "artifacts/payroll-observer-8e92db15-independent-v1-capture/reviewed.patch.gz",
+      "sha256": "0ab45353cae8e30b7938e90c9544c0651cb9b94093ce9c972d27ef84c6c6a80d"
+    },
+    {
+      "path": "artifacts/payroll-observer-8e92db15-independent-v1-capture/source-bindings.json.gz",
+      "sha256": "3d727926305772332436fdc9c900f37e0e0c39b4dd71db15cc0e8055a55f50e1"
+    },
+    {
+      "path": "artifacts/payroll-observer-8e92db15-lane.json.gz",
+      "sha256": "6bab0b91d81e534e4316daec723f521afb9741e7a76371f4d898acf4f6650055"
+    },
+    {
+      "path": "artifacts/payroll-observer-8e92db15-red.log.gz",
+      "sha256": "f2d367499637652494daf423e87401322648e2c7ede53a3561076eddab33c5ca"
+    },
+    {
+      "path": "artifacts/payroll-observer-and-durability7-200e4253-run-v1/1-real_observer_installer_is_atomic_replay_exact_and_drift_refusing.log.gz",
+      "sha256": "c7f30940c5c885bff43f779694f184fdd6a33861def865cd139582354c12d5e7"
+    },
+    {
+      "path": "artifacts/payroll-observer-and-durability7-200e4253-run-v1/2-replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply.log.gz",
+      "sha256": "4109551254025ff11d32d50d5817f0b019a15bdc9462b06a2154d50a480c9843"
+    },
+    {
+      "path": "artifacts/payroll-observer-and-durability7-200e4253-run-v1/3-lost_commit_transport_reply_replays_one_real_payroll_effect.log.gz",
+      "sha256": "80a7e27bef02c1b5943ff75c68c6c800f2b0a1ec680a2080ced2f7670226f146"
+    },
+    {
+      "path": "artifacts/payroll-observer-and-durability7-200e4253-run-v1/4-fresh_commit_wait_release_requires_explicit_remote_confirmation.log.gz",
+      "sha256": "92b7d89403886be20b6c4bff340b39d8f3bef9fc20f71763c9a41a2b6cef8516"
+    },
+    {
+      "path": "artifacts/payroll-observer-and-durability7-200e4253-run-v1/5-staging_success_and_idempotent_restage_wait_for_remote_confirmation.log.gz",
+      "sha256": "61260c7b04eb22a4d2a80e02ba461f3ced1491b8c43b56d8757a1b906414f557"
+    },
+    {
+      "path": "artifacts/payroll-observer-and-durability7-200e4253-run-v1/6-required_remote_unknown_is_bounded_and_never_local_fallback.log.gz",
+      "sha256": "0bdb06a83712e429431c55e1448fb84e9c92e2a72a3b6d51d3f5384c203f55bb"
+    },
+    {
+      "path": "artifacts/payroll-observer-and-durability7-200e4253-run-v1/7-finite_remote_bound_and_repeated_replay_preserve_exact_rows.log.gz",
+      "sha256": "e9e96cea5fd49a90600ee7c604cc3d5dc2d56c234e44ad8a323aac8561d33051"
+    },
+    {
+      "path": "artifacts/payroll-observer-and-durability7-200e4253-run-v1/results.json.gz",
+      "sha256": "6649d0c9550fe0d477bac300991ca726c9fb617af6341c50c6a1310482cfac15"
+    },
+    {
+      "path": "artifacts/payroll-observer-and-durability7-200e4253-run-v1/source-after.json.gz",
+      "sha256": "06f683973cb673068a72710a13a49618a3d48dd182286a92bc10bc177d4f4292"
+    },
+    {
+      "path": "artifacts/payroll-observer-and-durability7-200e4253-run-v1/source-before.json.gz",
+      "sha256": "06f683973cb673068a72710a13a49618a3d48dd182286a92bc10bc177d4f4292"
+    },
+    {
+      "path": "artifacts/payroll-observer-ce875a60-v1-failure.log.gz",
+      "sha256": "04fb2d94c1aeda66a7d568f77d6270ec0302f8032efd30528e80f82cf8fe5a9e"
+    },
+    {
+      "path": "artifacts/payroll-observer-ci-200e4253-v2-independent-review-fast.json.gz",
+      "sha256": "79fee1cf4d1bbce18c0911a30389646908d2e767b364c60608d5e7ea3002d902"
+    },
+    {
+      "path": "artifacts/payroll-observer-ci-200e4253-v2-root/manifest.json.gz",
+      "sha256": "2f5d9d93cca1299b58269de943e458ce0068ce89685512eda24ec69226cbc1e3"
+    },
+    {
+      "path": "artifacts/payroll-observer-f1eb2a46-body-injector-failure.log.gz",
+      "sha256": "334a197efa6e6da1b7efd3d20ea7dd006a54abf504349d59016934636d8f3f9c"
+    },
+    {
+      "path": "artifacts/payroll-observer-membership-ce4916d2-independent-v1-capture/base.sql.gz",
+      "sha256": "94c5a68263aee642c77f0d1e7ecd3fa072f14a5d151bde253278e3009582d80a"
+    },
+    {
+      "path": "artifacts/payroll-observer-membership-ce4916d2-independent-v1-capture/cumulative-original-review.patch.gz",
+      "sha256": "0dc680cc5ca13b04a622ef2bb9b1f66bbb2b7824557b95a32aba6a9d87fc951b"
+    },
+    {
+      "path": "artifacts/payroll-observer-membership-ce4916d2-independent-v1-capture/observed49-semantic-red.log.gz",
+      "sha256": "1a2b87ca04ad1ec79668ba348a988ddbabc3346c13913856154719bbde8aaa24"
+    },
+    {
+      "path": "artifacts/payroll-observer-membership-ce4916d2-independent-v1-capture/post.sql.gz",
+      "sha256": "bec554a4b3294f557f87639ae8cf77c2930a3c4875a69f1a64420bc66acbb6b1"
+    },
+    {
+      "path": "artifacts/payroll-observer-membership-ce4916d2-independent-v1-capture/review.json.gz",
+      "sha256": "eabc1dd8ce999e3d8efc14674a278255267f8b11ab721c7b6e6c1a2bdd07c58a"
+    },
+    {
+      "path": "artifacts/payroll-observer-membership-ce4916d2-independent-v1-capture/reviewed.patch.gz",
+      "sha256": "d4ef94612f2320e46651db2b856b1417ead3571b9538eefcb1118278067c6f31"
+    },
+    {
+      "path": "artifacts/payroll-observer-membership-ce4916d2-independent-v1-capture/supplied-lane.json.gz",
+      "sha256": "9c30fbcd24c196db7bb4840303251cdfd77d06f3ebeb3c4c47d597fcd9bffec4"
+    },
+    {
+      "path": "artifacts/payroll-observer-native-transition-evidence-v1-capture/evidence.json.gz",
+      "sha256": "4e0c51f99407dabf2d1b0316f41fa543ecfb4eee5dbe274ec8bff4c4d777b1a6"
+    },
+    {
+      "path": "artifacts/payroll-observer-native-transition-evidence-v1-capture/f7edcfab-installer.sql.gz",
+      "sha256": "829760e966a859a47f8e70aada5b0b6e8c1248a86f1c8126a873092dd42e4f2a"
+    },
+    {
+      "path": "artifacts/payroll-observer-native-transition-evidence-v1-capture/recipient-f7edcfab-semantic-red.log.gz",
+      "sha256": "59c46257b5d7853beda264bbb5c09c7bcbeac45403312b0b40eae4f7fb9261da"
+    },
+    {
+      "path": "artifacts/payroll-observer-native9-root-approval.json.gz",
+      "sha256": "bb721350a543cb17330704b8fdf0216fc9405b927cb0f8c69a8f36ee016225f7"
+    },
+    {
+      "path": "artifacts/payroll-observer-recipient-controls-200e4253-v1-capture/durability_observer.rs.gz",
+      "sha256": "d63e15840acbc76765c24e3d83b6998117299dabf3ced8ece8971a57f81c58e7"
+    },
+    {
+      "path": "artifacts/payroll-observer-recipient-controls-200e4253-v1-capture/manifest.json.gz",
+      "sha256": "b2dbdea1be88c6aa99781ce88a6c7888fb829e38c62ff7608046628c1009ebbb"
+    },
+    {
+      "path": "artifacts/payroll-observer-recipient-controls-200e4253-v1-capture/tests.patch.gz",
+      "sha256": "648d2e238049def87470744c47a8510e20ba8a03159ed2198201eeb30e02f8a1"
+    },
+    {
+      "path": "artifacts/payroll-observer-recipient-f1eb2a46-lane.json.gz",
+      "sha256": "232538a7ca42738faa7a1baff01b8ff8b936082655aecd46412f6b78b4a746f6"
+    },
+    {
+      "path": "artifacts/payroll-observer-recipient-f7edcfab-lane.json.gz",
+      "sha256": "4e5aba5278b2f8a0c8346edf3b0b942b4231189cc386a80e75741a0903737488"
+    },
+    {
+      "path": "artifacts/payroll-observer-recipient-f7edcfab-semantic-red.log.gz",
+      "sha256": "59c46257b5d7853beda264bbb5c09c7bcbeac45403312b0b40eae4f7fb9261da"
+    },
+    {
+      "path": "artifacts/payroll-observer-recipient-native-controls-f1eb2a46-v2-capture/durability_observer.rs.gz",
+      "sha256": "f08d4312d3c8342ddad9c047141c00e6384d47eb7e672206e0b88f02e648469d"
+    },
+    {
+      "path": "artifacts/payroll-observer-recipient-native-controls-f1eb2a46-v2-capture/manifest.json.gz",
+      "sha256": "21cfe59cbe742bbdb47592c1b4332667fbea184ca1491bb9dc52cbe270afe448"
+    },
+    {
+      "path": "artifacts/payroll-observer-recipient-native-controls-f1eb2a46-v2-capture/observed-function-body-injector-failure.log.gz",
+      "sha256": "334a197efa6e6da1b7efd3d20ea7dd006a54abf504349d59016934636d8f3f9c"
+    },
+    {
+      "path": "artifacts/payroll-observer-recipient-native-controls-f1eb2a46-v2-capture/tests.patch.gz",
+      "sha256": "d0732954d7d6c7cec52b04f305eccd1d354510729c45de718586abd3d48f97cc"
+    },
+    {
+      "path": "artifacts/payroll-observer-recipient8-root-approval.json.gz",
+      "sha256": "0dfb866139970a705cec065f5214ebecd3712f61488b27772ed874ea662cc3e7"
+    },
+    {
+      "path": "artifacts/payroll-observer-replication-membership-a3a1ff8a-v3-capture/durability_observer.rs.gz",
+      "sha256": "4e4dc52484c3813c25b250a5bdbc9c2ce2ba04550a632f85f8f73c05e85ad4f1"
+    },
+    {
+      "path": "artifacts/payroll-observer-replication-membership-a3a1ff8a-v3-capture/manifest.json.gz",
+      "sha256": "0108731a9796d5a854ab68e7d7b0545b48b83204539dc3cc74c07ee0f0ebe618"
+    },
+    {
+      "path": "artifacts/payroll-observer-replication-membership-a3a1ff8a-v3-capture/tests.patch.gz",
+      "sha256": "7b731409dc235ee38e745983a9f713e03031d4d3899480fd2d06d682a43b2981"
+    },
+    {
+      "path": "artifacts/payroll-observer48-a3a1ff8a-green.log.gz",
+      "sha256": "3fa015b1eb70326f1ed7e231d40a35cffd3a22b837cbca1fee06267f573777e3"
+    },
+    {
+      "path": "artifacts/payroll-observer49-root-test-approval.json.gz",
+      "sha256": "c09432c5cef0d5323fc9afec898d3cf8ce3191358db5a96f4794cb237ac59670"
+    },
+    {
+      "path": "artifacts/payroll-paused-reconnect-200e4253-independent-v1-capture/observed-reconnect-failure.log.gz",
+      "sha256": "0bdb06a83712e429431c55e1448fb84e9c92e2a72a3b6d51d3f5384c203f55bb"
+    },
+    {
+      "path": "artifacts/payroll-paused-reconnect-200e4253-independent-v1-capture/review.json.gz",
+      "sha256": "8f670ed5c1d8da0a060134e9af2d85c53c656fe1e7c1b92549648fe773e5514e"
+    },
+    {
+      "path": "artifacts/payroll-paused-reconnect-200e4253-independent-v1-capture/reviewed.patch.gz",
+      "sha256": "04a98efc010e834a0c39d80a71f09ae618a7d1303c3bacb2299e9d5452ac1c08"
+    },
+    {
+      "path": "artifacts/payroll-paused-reconnect-200e4253-v1-inventory/REVIEW.md.gz",
+      "sha256": "4708029e2d42974f6853c9f23473cc76702d2f1428c8bd39f8182c4135f4f31c"
+    },
+    {
+      "path": "artifacts/payroll-paused-reconnect-200e4253-v1-inventory/candidate.patch.gz",
+      "sha256": "04a98efc010e834a0c39d80a71f09ae618a7d1303c3bacb2299e9d5452ac1c08"
+    },
+    {
+      "path": "artifacts/payroll-paused-reconnect-200e4253-v1-inventory/checks.json.gz",
+      "sha256": "7bd0c11c53887c330ffde8da8be6121172103a677fc56294e6845587c77b7024"
+    },
+    {
+      "path": "artifacts/payroll-paused-reconnect-200e4253-v1-inventory/manifest.json.gz",
+      "sha256": "500a09f22553dc0811fc33623135a7bcf19615cee2d9b8433aecc2cc3b874f62"
+    },
+    {
+      "path": "artifacts/payroll-read-visibility-design-supplement-96c378e3-v1-fast.json.gz",
+      "sha256": "04fdb67f5883a6d6dbb38eccb386f2a1f2f666cdbe45b020c778f745adc67a27"
+    },
+    {
+      "path": "artifacts/payroll-reconnect-amendment-root-approval.json.gz",
+      "sha256": "ea62d0767206f5f2992495e115434fa16a19f889c480bd0d178960610e2c8f11"
+    },
+    {
+      "path": "artifacts/payroll-remote-completion172243b3-lane.json.gz",
+      "sha256": "09ff405fc4c1dcafd57271d9c5dca1d822f0147b6d6f0c9cfad1ffead8f4c8f0"
+    },
+    {
+      "path": "artifacts/payroll-required-explicit-gate-design-correction-1fad1eff-v1-fast.json.gz",
+      "sha256": "eb8636ac411a63e963fda43d9c8cec9ba41408373955562dbd51c79a9a0ea4bb"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-2f4cb8db-results/aborted_fresh_stage_retains_capacity_until_native_wait_ends.log.gz",
+      "sha256": "5f113760f84879a8a8b65ab9c773ea03dec496fb5f206b051c05cd4f1fd3c362"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-2f4cb8db-results/fresh_commit_deadline_retains_capacity_until_replay_resumes.log.gz",
+      "sha256": "b123c022c0e6c7f81b5780db6ae3d0c62f0399c4c120ec1ae53ad6090d74a1df"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-2f4cb8db-results/fresh_stage_transport_error_closes_pool_before_reconciliation.log.gz",
+      "sha256": "6068872921f63a37521eae05ead3b54a19c833c7eb85a93aefabf653e54c9064"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-2f4cb8db-results/results.json.gz",
+      "sha256": "a1692bfeca0dcadefefb0601414ab3d1f76ab6995fbcc7aefa8f65b70e44660b"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-def8e170-red/aborted_fresh_stage_retains_capacity_until_native_wait_ends.log.gz",
+      "sha256": "5f113760f84879a8a8b65ab9c773ea03dec496fb5f206b051c05cd4f1fd3c362"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-def8e170-red/admission.log.gz",
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-def8e170-red/fresh_commit_deadline_retains_capacity_until_replay_resumes.log.gz",
+      "sha256": "b123c022c0e6c7f81b5780db6ae3d0c62f0399c4c120ec1ae53ad6090d74a1df"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-def8e170-red/fresh_stage_transport_error_closes_pool_before_reconciliation.log.gz",
+      "sha256": "6068872921f63a37521eae05ead3b54a19c833c7eb85a93aefabf653e54c9064"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-def8e170-red/lanes.json.gz",
+      "sha256": "fc78f5d4c7fabfb6ff50d0e2c8b32d642bd9e38ead0d0d4b1db0f604fa7c7c2a"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-def8e170-red/red-baseline/aborted_fresh_stage_retains_capacity_until_native_wait_ends.log.gz",
+      "sha256": "c8121a6e9a0ca38d193cac9f6e07e96f41fa43b705b7dc7bd2fc96fc8bc8a09f"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-def8e170-red/red-baseline/fresh_commit_deadline_retains_capacity_until_replay_resumes.log.gz",
+      "sha256": "963f6511f9748420985b62d2a4b3385c80a349b8350667836a30123de16ad17f"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-def8e170-red/red-baseline/fresh_stage_transport_error_closes_pool_before_reconciliation.log.gz",
+      "sha256": "f11d2d22db7d13c686de23e3ce09f4146a1c293f1b972d9466aa69cf68823436"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-def8e170-red/red-classification.json.gz",
+      "sha256": "b771b89b1e56222d5a30f91cf123bd14f50c9cbd61cf9d175b0c01869987d328"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-red-green-independent-fast/review.json.gz",
+      "sha256": "d627cafa18e1838ee51239759462fce342a4e3c737b7961866bc3fc9ac57bb44"
+    },
+    {
+      "path": "artifacts/payroll-retained-capacity-root-revision-approval.json.gz",
+      "sha256": "e888c68698f4de15eaaca80485fb0bcb9df38d9192af8490d3841419161fa377"
+    },
+    {
+      "path": "artifacts/payroll-typed-unknown-approval-clarification-2931be9e-v1-inventory/CLARIFICATION.md.gz",
+      "sha256": "aca1287b723d8478f7b5a2a9d38ef4ddb214423d32de3e14e68d8f339e6cd345"
+    },
+    {
+      "path": "artifacts/payroll-typed-unknown-approval-clarification-2931be9e-v1-inventory/manifest.json.gz",
+      "sha256": "05e87c4a9215fa1cc5344aada39fdeb0e450872a69c9e69512119aa17829d2c2"
+    },
+    {
+      "path": "artifacts/payroll-typed-unknown-approval-clarification-2931be9e-v1-inventory/source-bindings.json.gz",
+      "sha256": "8593b241fda3a8d0ccb6eeaf76e8b570e30817c85774eeda4004151aeafcc75a"
+    },
+    {
+      "path": "artifacts/payroll-typed-unknown-boundaries-f0431013-v1-inventory/DESIGN.md.gz",
+      "sha256": "d676b70f79c4849d98a29cf8f6b58a075935d498f404aa1a0eda85de57948bca"
+    },
+    {
+      "path": "artifacts/payroll-typed-unknown-boundaries-f0431013-v1-inventory/manifest.json.gz",
+      "sha256": "41b0a0d6b628df711d019be136772bd1ffe5d7f74662f31ad67d0568b2f8604e"
+    },
+    {
+      "path": "artifacts/payroll-typed-unknown-boundaries-f0431013-v1-inventory/source-bindings.json.gz",
+      "sha256": "0a414f86d5cc88b059a4cdffeab57d95f4e7e79f033770121cdca2bf4625f428"
+    },
+    {
+      "path": "artifacts/payroll-typed-unknown-boundaries-f0431013-v1-review-capture/review.json.gz",
+      "sha256": "efe2ccc1de083b419781488cfbacf7b38e0160ec3d4804e56ea79474981da477"
+    },
+    {
+      "path": "artifacts/payroll7-200e4253-root-verification.json.gz",
+      "sha256": "e0ba9506098b9cce66dbc36bb28246ad0111cc1268e9e5f0794a805dd94f30e7"
+    },
+    {
+      "path": "completion.json",
+      "sha256": "4b11f5241fbd307449dc749aa9a6b8f90dad7ce1da22c44eb0b76e5c990955ef"
+    },
+    {
+      "path": "git-source-manifest.json",
+      "sha256": "131ce98a5f7de2f2c6ddc4cd796e26d532355346e17fe6d4230c4ca506e328f6"
+    },
+    {
+      "path": "sources/928e1e4815f5e6336f85667bc27529b5c4fe8b0c/docs/program/executed-tests-baseline.json.gz",
+      "sha256": "c4979177588c06248471849fc376b034098f9dfea157ddb53c741fd7cc7f000a"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/.github/workflows/ci.yml.gz",
+      "sha256": "5bb2ff3572ebf8a98cbb358ba1825087ca21785c16f89f015596f06763d3c59e"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/app/Cargo.toml.gz",
+      "sha256": "dc22560f4307b45d92bf8d01cbf05604e5b332006c69eb0cf0527ac63639c338"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/app/src/durability_composition_tests.rs.gz",
+      "sha256": "fed7b718dd25170b70eec8b57bc766781fd3ea11d78f9a3d158f0578e5a48d4d"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/app/src/lib.rs.gz",
+      "sha256": "06de9053605467e8c2653186f86109f7155ab7a9d5cf44799232d2b429f5575c"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/app/src/workflow_drain.rs.gz",
+      "sha256": "a78792d2e3c5642b9fa15132c8967b14ee021576dbabc0cebbef8cb7b162bd1e"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/app/tests/database_durability_config.rs.gz",
+      "sha256": "9348a3fd5768522a91ebc06d8d0a318100c01083bb600caf0232c7e6c5559a27"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/crates/payroll/adapter-postgres/src/pay_run.rs.gz",
+      "sha256": "c146831d8a4021efda057d66b75b39e4dc93c861b5c90d7de66d53ee7ffc7291"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/crates/payroll/adapter-postgres/tests/durability_observer.rs.gz",
+      "sha256": "4e4dc52484c3813c25b250a5bdbc9c2ce2ba04550a632f85f8f73c05e85ad4f1"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/crates/payroll/adapter-postgres/tests/recovery.rs.gz",
+      "sha256": "db6ee4b5f26ba9c326d5c1ae9b1f12278ff1f84e8eda00f360bc00bfc151ac93"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/crates/platform/db/src/durability.rs.gz",
+      "sha256": "cb21fcbfd86dcb9137a40603a4b751b07254305a812dac32fc6107140de01859"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/check-ci-preflight.mjs.gz",
+      "sha256": "757320566bcaf74dc923b281a369ec3b138ad224e1cd0d320c3d359bf6549755"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/check-ci-preflight.test.mjs.gz",
+      "sha256": "0136232d5d1a0c235e3d4b0b6856968c874e22b91a51c026ae4876d2c40a6eed"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/check-executed-tests.mjs.gz",
+      "sha256": "1a84b991f5672057e04417a78ebfcd7662a547f84caa9fc2c16495c326915c7c"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/check-executed-tests.test.mjs.gz",
+      "sha256": "82898cedbd131a111db5856956e7d6a3aa1613c9c4807efa119557f4d003eb6f"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/lib/recovery-test-invocations.mjs.gz",
+      "sha256": "c9a96b5cb98de6cf0c0383f9f6cb20f496bbf2b9d2eed24a3759ba57265a35e0"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/lib/recovery-test-invocations.test.mjs.gz",
+      "sha256": "3a9f64b343833fc84c851561e228acdbeebbab1233b85de5120900e9a3be28be"
+    },
+    {
+      "path": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/tools/lanes/recovery/supervise_recovery.py.gz",
+      "sha256": "2892882f044fc4aea72628dca4972b971c3873ee67bb90d88e5748f27d831d19"
+    }
+  ],
+  "omitted": "unlisted historical manifest backup retained privately; no runtime state imported",
+  "stop": "any missing, symlink, mismatched file, integration dirty state or absent independent final review"
+}
