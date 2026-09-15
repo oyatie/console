@@ -10,10 +10,10 @@ const observerSource = readFileSync(new URL("../../backend/crates/payroll/adapte
 const appSource = readFileSync(new URL("../../backend/app/src/durability_composition_tests.rs", import.meta.url), "utf8");
 const appRecoveryCases = value => supervisedSourceCases(value, APP_CASES, "durability_composition_tests::");
 const appLibSource = readFileSync(new URL("../../backend/app/src/lib.rs", import.meta.url), "utf8");
-test("actual required recovery commands resolve nine owners, the isolated installer and three app cases", () => {
+test("actual required recovery commands resolve nine owners, the isolated installer and eight app cases", () => {
   const result = recoveryTestInvocations(workflow, source, observerSource, appSource, appLibSource);
   assert.deepEqual(result.failures, []);
-  assert.equal(result.invocations.length, 13);
+  assert.equal(result.invocations.length, 18);
 });
 
 const mutations = {
