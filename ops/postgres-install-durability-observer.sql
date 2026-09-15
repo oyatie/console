@@ -112,6 +112,19 @@ GRANT EXECUTE ON FUNCTION public.console_durability_observation_v1(name, oid)
         RAISE EXCEPTION 'durability_observer.partial_installation';
     END IF;
 
+    -- Certify the recipient after closing the known initial PUBLIC grant.
+    -- Existing elevated access is drift; never strip or silently repair it.
+    SELECT r.rolcanlogin AND NOT r.rolsuper AND NOT r.rolbypassrls
+       AND NOT r.rolcreatedb AND NOT r.rolcreaterole AND NOT r.rolreplication
+       AND NOT pg_catalog.pg_has_role(r.oid,'pg_read_all_stats','MEMBER')
+       AND NOT pg_catalog.pg_has_role(r.oid,'pg_monitor','MEMBER')
+       AND NOT pg_catalog.pg_has_role(r.oid,observer,'MEMBER')
+       AND NOT pg_catalog.has_function_privilege(r.oid,'pg_catalog.pg_control_system()','EXECUTE')
+      INTO valid FROM pg_catalog.pg_roles r WHERE r.oid=runtime_role;
+    IF valid IS DISTINCT FROM true THEN
+        RAISE EXCEPTION 'durability_observer.runtime_profile_mismatch';
+    END IF;
+
     -- Certification is identical after an initial install and on a no-op replay.
     -- A failed postcondition rolls back every new role, membership and ACL.
     SELECT NOT r.rolcanlogin AND NOT r.rolsuper AND NOT r.rolbypassrls
