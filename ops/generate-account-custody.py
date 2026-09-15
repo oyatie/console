@@ -111,6 +111,20 @@ BEGIN
        AND state IS DISTINCT FROM 'account_custody.upgrade_required' THEN
         RAISE EXCEPTION USING MESSAGE=COALESCE(state,'account_custody.catalog_missing'), ERRCODE='P0001';
     END IF;
+    -- Auth LOGIN topology is an operator precondition, including replay.
+    -- Serving availability belongs to the retained Auth transport's health
+    -- check; temporarily stopping that LOGIN does not corrupt custody metadata.
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_auth_rt'
+          AND rolcanlogin AND NOT rolsuper AND NOT rolbypassrls AND NOT rolinherit
+          AND NOT rolcreatedb AND NOT rolcreaterole AND NOT rolreplication
+    ) OR EXISTS (
+        SELECT 1 FROM pg_catalog.pg_auth_members m
+        JOIN pg_catalog.pg_roles r ON r.oid=m.member OR r.oid=m.roleid
+        WHERE r.rolname='console_auth_rt'
+    ) THEN
+        RAISE EXCEPTION 'account_fence_projection.role_mismatch';
+    END IF;
     -- The same complete read-only contract certifies historical input before
     -- any mutation and current output afterward. No second routine validator.
     SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p
