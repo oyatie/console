@@ -754,6 +754,10 @@ async fn app_state(
     .await;
     Ok(AppState::new(
         AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".into()),
             ("CONSOLE_JWT_ISSUER", ISSUER.into()),

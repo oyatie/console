@@ -947,6 +947,8 @@ async fn required_remote_unknown_is_bounded_and_never_local_fallback(owner: PgPo
         finish_command(call).await.is_err(),
         "in-flight sender epoch must not rebind"
     );
+    control("resume-replay");
+    drop(resume);
     tokio::time::timeout(Duration::from_secs(10), async {
         loop {
             let rebound: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_replication_slots s JOIN pg_stat_replication r ON r.pid=s.active_pid WHERE s.slot_name='console_recovery_s1' AND r.usename='console_fixture_replica' AND r.state='streaming' AND (r.pid<>$1 OR r.backend_start<>$2))")
@@ -955,8 +957,6 @@ async fn required_remote_unknown_is_bounded_and_never_local_fallback(owner: PgPo
             tokio::time::sleep(Duration::from_millis(20)).await;
         }
     }).await.expect("owned standby reconnects with a new sender epoch");
-    control("resume-replay");
-    drop(resume);
     let sent = command.clone();
     let replayed = finish_command(tokio::task::spawn_blocking(move || {
         stable_port.execute(&sent)

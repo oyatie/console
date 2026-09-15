@@ -34,7 +34,9 @@ async fn readyz_is_ready_without_configured_dependencies() -> Result<(), Box<dyn
 #[tokio::test]
 async fn readyz_returns_503_when_configured_database_is_unreachable()
 -> Result<(), Box<dyn std::error::Error>> {
-    let config = app_config(AppRole::Api)?;
+    let mut config = app_config(AppRole::Api)?;
+    config.database_durability =
+        Some(console_platform_db::durability::DurabilityPolicy::local_development());
     let pool = PgPoolOptions::new()
         .max_connections(1)
         .acquire_timeout(Duration::from_millis(100))
@@ -276,6 +278,10 @@ mod authorized {
         )
         .await;
         let config = AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
             ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),

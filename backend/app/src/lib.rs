@@ -5398,6 +5398,10 @@ mod readiness_tests {
 
     fn api_config() -> AppConfig {
         AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ])
@@ -6179,6 +6183,10 @@ mod command_database_config_tests {
     #[test]
     fn api_accepts_distinct_leave_command_database_url() {
         let config = AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#,
+            ),
             ("CONSOLE_APP_ROLE", "api"),
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
@@ -6822,9 +6830,14 @@ mod command_database_config_tests {
                 "postgresql://console_app:migration-secret@db/console",
             ),
         ] {
-            let config =
-                AppConfig::from_pairs([("CONSOLE_APP_ROLE", role), ("DATABASE_URL", database_url)])
-                    .unwrap();
+            let mut pairs = vec![("CONSOLE_APP_ROLE", role), ("DATABASE_URL", database_url)];
+            if role == "worker" {
+                pairs.push((
+                    "CONSOLE_DATABASE_DURABILITY",
+                    r#"{"mode":"local_development"}"#,
+                ));
+            }
+            let config = AppConfig::from_pairs(pairs).unwrap();
 
             assert!(config.leave_command_database_url.is_none());
             assert!(config.ontology_command_database_url.is_none());
