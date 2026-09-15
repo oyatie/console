@@ -680,7 +680,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "d37990f526fe240891c0b06d85ac22e5ec2b1d0a",
+      "blob_sha": "1afc2720a71faad1005ce07caa566691ba0b1f2d",
       "archive_tag": null
     },
     {
@@ -700,7 +700,7 @@
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "c6f0d5b445f7bdcc2b8759e67cf5dfbb20f57ab6",
+      "blob_sha": "0d20897072f3fe46d19f8b6cd38bb114e965dbbe",
       "archive_tag": null
     },
     {
@@ -1124,13 +1124,23 @@
       "archive_tag": null
     },
     {
+      "path": "docs/decisions/ADR-0045-clean-architecture-rings.md",
+      "blob_sha": "436f79a6f044a1ef1024865dbc651ed5f805d537",
+      "class": "decision",
+      "owner": "repository maintainers",
+      "status": "active",
+      "replacement": null,
+      "retention": "retain",
+      "archive_tag": null
+    },
+    {
       "path": "docs/decisions/README.md",
       "class": "decision",
       "owner": "repository maintainers",
       "status": "active",
       "replacement": null,
       "retention": "retain",
-      "blob_sha": "20eb1a09be80ca900a8664de2da0a536ec936f2e",
+      "blob_sha": "2509d6955a5c8a6434fd17141c913dc5761bc178",
       "archive_tag": null
     },
     {

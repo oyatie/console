@@ -5,7 +5,8 @@
 //! without triggering the `expect_used` / `unwrap_used` / `panic` lints.
 
 use console_gate_layer_boundary::{
-    Layer, ViolationKind, check, check_ui_surfaces, classify_crate, load_metadata,
+    KNOWN_REST_OR_WORKER_SKIP_EDGES, KNOWN_REST_WITHOUT_APPLICATION, Layer, ViolationKind, check,
+    check_ui_surfaces, classify_crate, load_metadata,
 };
 use std::fs;
 use std::path::PathBuf;
@@ -28,6 +29,25 @@ fn write_file(path: &std::path::Path, content: &str) -> Result<(), Box<dyn std::
         fs::create_dir_all(parent)?;
     }
     fs::write(path, content)?;
+    Ok(())
+}
+
+fn write_demo_application(ws: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+    let dir = ws.join("crates/demo/application");
+    write_file(
+        &dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-application"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(&dir.join("src/lib.rs"), "// application use cases\n")?;
     Ok(())
 }
 
@@ -462,7 +482,7 @@ fn contracts_workspace(
             r#"
 [workspace]
 resolver = "3"
-members = ["crates/contracts", "{other_dir}"]
+members = ["crates/contracts", "{other_dir}", "crates/demo/application"]
 
 [workspace.package]
 edition = "2024"
@@ -473,6 +493,8 @@ unsafe_code = "forbid"
 "#
         ),
     )?;
+
+    write_demo_application(&ws)?;
 
     let contracts_dir = ws.join("crates/contracts");
     write_file(
@@ -636,7 +658,7 @@ fn gate_detects_html_smuggled_inside_existing_rest_crate() -> Result<(), Box<dyn
         r#"
 [workspace]
 resolver = "3"
-members = ["crates/demo/rest"]
+members = ["crates/demo/rest", "crates/demo/application"]
 
 [workspace.package]
 edition = "2024"
@@ -647,6 +669,7 @@ unsafe_code = "forbid"
 "#,
     )?;
 
+    write_demo_application(&ws)?;
     let rest_dir = ws.join("crates/demo/rest");
     write_file(
         &rest_dir.join("Cargo.toml"),
@@ -1022,7 +1045,7 @@ fn gate_passes_clean_rest_crate_without_ui_markers() -> Result<(), Box<dyn std::
         r#"
 [workspace]
 resolver = "3"
-members = ["crates/demo/rest"]
+members = ["crates/demo/rest", "crates/demo/application"]
 
 [workspace.package]
 edition = "2024"
@@ -1033,6 +1056,7 @@ unsafe_code = "forbid"
 "#,
     )?;
 
+    write_demo_application(&ws)?;
     let rest_dir = ws.join("crates/demo/rest");
     write_file(
         &rest_dir.join("Cargo.toml"),
@@ -1059,6 +1083,240 @@ workspace = true
     assert!(
         ui_violations.is_empty(),
         "clean -rest must not trip ui-surface scan, got: {ui_violations:#?}"
+    );
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// ADR-0045: Rest/Worker may not skip Use Cases to Entities or gateway impls.
+// ---------------------------------------------------------------------------
+
+fn rest_skip_workspace(
+    tag: &str,
+    dep_dir: &str,
+    dep_name: &str,
+) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let ws = temp_workspace(tag)?;
+    write_file(
+        &ws.join("Cargo.toml"),
+        &format!(
+            r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/rest", "crates/demo/application", "{dep_dir}"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#
+        ),
+    )?;
+    write_demo_application(&ws)?;
+    write_file(
+        &ws.join(dep_dir).join("Cargo.toml"),
+        &format!(
+            r#"
+[package]
+name = "{dep_name}"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#
+        ),
+    )?;
+    write_file(&ws.join(dep_dir).join("src/lib.rs"), "// skip target\n")?;
+    let dep_rel = dep_dir.rsplit('/').next().ok_or("dep_dir")?;
+    write_file(
+        &ws.join("crates/demo/rest").join("Cargo.toml"),
+        &format!(
+            r#"
+[package]
+name = "console-demo-rest"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+{dep_name} = {{ path = "../{dep_rel}" }}
+
+[lints]
+workspace = true
+"#
+        ),
+    )?;
+    write_file(
+        &ws.join("crates/demo/rest").join("src/lib.rs"),
+        "// rest skip fixture\n",
+    )?;
+    Ok(ws)
+}
+
+#[test]
+fn gate_forbids_rest_depends_on_domain() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = rest_skip_workspace("rest-domain", "crates/demo/domain", "console-demo-domain")?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    let detail = result
+        .violations
+        .iter()
+        .find(|v| v.kind == ViolationKind::IllegalLayerEdge)
+        .map(|v| v.detail.clone())
+        .unwrap_or_default();
+    assert!(
+        detail.contains("console-demo-rest (rest) → console-demo-domain (domain)"),
+        "Rest → Domain must be forbidden (ADR-0045), got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_forbids_rest_depends_on_adapter() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = rest_skip_workspace(
+        "rest-adapter",
+        "crates/demo/adapter-postgres",
+        "console-demo-adapter-postgres",
+    )?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    let detail = result
+        .violations
+        .iter()
+        .find(|v| v.kind == ViolationKind::IllegalLayerEdge)
+        .map(|v| v.detail.clone())
+        .unwrap_or_default();
+    assert!(
+        detail.contains("console-demo-rest (rest) → console-demo-adapter-postgres (adapter)"),
+        "Rest → Adapter must be forbidden (ADR-0045), got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_allows_rest_depends_on_application() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("rest-application")?;
+    write_file(
+        &ws.join("Cargo.toml"),
+        r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/rest", "crates/demo/application"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+    )?;
+    write_demo_application(&ws)?;
+    let rest_dir = ws.join("crates/demo/rest");
+    write_file(
+        &rest_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-rest"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+console-demo-application = { path = "../application" }
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(&rest_dir.join("src/lib.rs"), "// rest → application\n")?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    assert!(
+        result.passed(),
+        "Rest → Application must be allowed, got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_detects_rest_without_application_crate() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("rest-no-app")?;
+    write_file(
+        &ws.join("Cargo.toml"),
+        r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/rest"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+    )?;
+    let rest_dir = ws.join("crates/demo/rest");
+    write_file(
+        &rest_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-rest"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(&rest_dir.join("src/lib.rs"), "// rest without use cases\n")?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::MissingApplicationRing
+                && v.crate_name == "console-demo-rest"),
+        "Rest without a sibling application crate must fail, got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn adr0045_ratchet_covers_this_workspace() -> Result<(), Box<dyn std::error::Error>> {
+    let backend = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let (metadata, edition) = load_metadata(&backend)?;
+    let result = check(&metadata, &edition);
+    assert!(
+        result.passed(),
+        "HEAD must be green under ADR-0045 with the shrink-only ratchet, got: {:#?}",
+        result.violations
+    );
+    assert!(
+        !KNOWN_REST_OR_WORKER_SKIP_EDGES.is_empty(),
+        "the skip ratchet is the current debt; an empty list means this test is vacuous"
+    );
+    assert_eq!(
+        KNOWN_REST_WITHOUT_APPLICATION,
+        &[
+            "console-analytics-quant-rest",
+            "console-consulting-rest",
+            "console-facilities-rest",
+            "console-orgchange-rest",
+            "console-payroll-rest",
+            "console-production-rest",
+        ]
     );
     Ok(())
 }

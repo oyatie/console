@@ -31,7 +31,7 @@ related: []
 
 | ID | Status | Decision and scope |
 |---|---|---|
-| [ADR-0001](ADR-0001-modularmonolith-cargo-workspace-with-compilerenforced-cleanarchitecture.md) | accepted, amended | Modular-monolith Rust workspace and compiler-enforced layering; crate family gains `ui` and `Layer::Ui` edges by ADR-0041 |
+| [ADR-0001](ADR-0001-modularmonolith-cargo-workspace-with-compilerenforced-cleanarchitecture.md) | accepted, amended | Modular-monolith Rust workspace and compiler-enforced layering; crate family gains `ui` and `Layer::Ui` edges by ADR-0041; Clean Architecture rings and Rest/Worker skip ratchet by ADR-0045 |
 | [ADR-0002](ADR-0002-auditfirst-transactional-discipline-audit-event-in.md) | accepted, amended | Audit event in the same transaction; append-only audit store; exclusion-set cardinality and binding amended by ADR-0029 and ADR-0040 |
 | [ADR-0003](ADR-0003-branchscoped-authorization-model-nonnull-branch-scope.md) | accepted, amended | Non-null branch scope and default-deny authorization; `BranchScope::All` derivation and `org_id` composition amended by ADR-0028 |
 | [ADR-0004](ADR-0004-passkeysfirst-auth-with-rotating-refreshtoken-families.md) | accepted | Passkey-first local auth and rotating refresh-token families |
@@ -75,6 +75,7 @@ related: []
 | [ADR-0042](ADR-0042-ssr-document-authorization-transport.md) | proposed | States that SSR document navigations cannot carry the bearer-only principal transport, so no browser reaches an authorized screen; names the SSR-session-cookie, client-bootstrap, and edge-injection options and recommends the first for separate design review; decides nothing, amends nothing, and clears no HOLD |
 | [ADR-0043](ADR-0043-required-ci-coverage.md) | proposed | Measures that `Required / CI` aggregates six jobs and excludes the backend (cargo and Buck legs), domain-unit, company-conformance, generated-faces and migration-rehearsal families, so `dev` stayed red across 65 consecutive integration runs at `51d939dc` while the required context passed; finds the release block already refuses a red tip and has been silently holding the train, so the gap is notification rather than enforcement; prices the merge-queue, presubmit-required, report-the-red-branch and rename options and recommends the last two; decides nothing and changes no protection |
 | [ADR-0044](ADR-0044-rust-toolchain-pin.md) | proposed | Pins the Rust toolchain to one root file read by one action and enforced by one gate, and defines how it is rolled; decides no channel and clears no HOLD. |
+| [ADR-0045](ADR-0045-clean-architecture-rings.md) | accepted | Amends ADR-0001: four Clean Architecture rings with inward dependencies; Rest/Worker must not skip Use Cases to Domain or Adapter except a shrink-only ratchet; does not create missing application crates or clear HOLDs |
 
 ## Effective relationship graph
 
@@ -90,6 +91,7 @@ related: []
 - ADR-0040 amends ADR-0029's closed-at-two cardinality (and ADR-0002's matching sentence) to add one bound console route-telemetry carve-out after `backend/app/src` entered the audit-coverage handler-surface set (console-937 / gh#396). LocationPing bindings from ADR-0029 remain in force.
 - ADR-0030 amends ADR-0025's stack-bound structural prescriptions only — the carbon-copy visual authority, the `web/src/console/**` path and two-shell composition, and the spine boundary as enumerated. ADR-0025 remains accepted for its §4 nine-item slice bar, `/overview` and Work Hub semantics, workflow/policy authority, and rollout discipline. ADR-0023 is `related` only, and ADR-0001, ADR-0009, and ADR-0012 gain nothing from it. ADR-0041 later accepts `Layer::Ui` (the ADR-0001 amendment ADR-0030 §6 deferred) without retiring §8 absence-as-green; that is an amendment of ADR-0030, not of ADR-0025.
 - ADR-0041 amends ADR-0001 by adding `ui` to the crate family and accepting `Layer::Ui` with legal edges `Ui → {Contracts, Ui}` and `App → Ui`. It amends ADR-0030 by allowing `-ui` members without rewriting ADR-0030's historical Decision text and without retiring §8's no-mounted-shell CI assertion. Classification of the `-ui` suffix precedes `crates/platform/`. Import/export is not the data-entry base (자료실 later); the comms rail is out of this slice.
+- ADR-0045 amends ADR-0001's enforced dependency direction: Clean Architecture rings (Entities, Use Cases, Interface Adapters, Frameworks) with Rest/Worker forbidden from Domain and Adapter except a shrink-only ratchet, and a required sibling `*-application` crate for `Layer::Rest`. It does not amend ADR-0041's Ui edges.
 - ADR-0031 amends the contract-mechanism half of ADR-0009's Decision only. The canonical pivot independently places ADR-0009's ts/swift/kotlin client-generation, dual-build, and web+Android-then-iOS sequencing outside current scope; they cannot dispatch work or resurrect deleted surfaces.
 
 ### Accepted without amendment — `related` only
