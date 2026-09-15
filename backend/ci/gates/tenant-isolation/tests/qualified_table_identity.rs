@@ -202,3 +202,34 @@ fn account_catalog_requires_explicit_classification_outside_parser_repair() {
         "accounts",
     );
 }
+
+fn dynamic_protection(literal: &str) -> String {
+    format!("DO $$ DECLARE t text; BEGIN
+        FOREACH t IN ARRAY ARRAY['{literal}'] LOOP
+        EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
+        EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY', t);
+        EXECUTE format('CREATE POLICY org_isolation ON %I USING (org_id = current_setting(''app.current_org'', true)::uuid)', t);
+        END LOOP; END $$;")
+}
+#[test]
+fn dynamic_single_identifier_dot_is_not_schema_qualification() {
+    violation(
+        &format!(
+            "CREATE TABLE public.widgets (org_id uuid NOT NULL); {}",
+            dynamic_protection("public.widgets")
+        ),
+        ViolationKind::OrgColumnWithoutRls,
+        "widgets",
+    );
+}
+#[test]
+fn dynamic_case_sensitive_identifier_cannot_supply_lowercase_rls() {
+    violation(
+        &format!(
+            "CREATE TABLE widgets (org_id uuid NOT NULL); {}",
+            dynamic_protection("Widgets")
+        ),
+        ViolationKind::OrgColumnWithoutRls,
+        "widgets",
+    );
+}
