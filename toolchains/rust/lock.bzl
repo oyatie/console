@@ -10,7 +10,7 @@ RUST_CHANNEL = "nightly-2026-09-10"
 # The hosts a sysroot is assembled for. Emitted rather than restated in
 # Starlark: a second hand-maintained copy of this list is exactly the kind
 # of second source of truth this whole design exists to remove.
-RUST_HOSTS = ["x86_64-unknown-linux-gnu","aarch64-apple-darwin"]
+RUST_HOSTS = ["x86_64-unknown-linux-gnu","aarch64-unknown-linux-gnu","aarch64-apple-darwin"]
 
 # package -> target triple -> (url, sha256)
 RUST_DIST = {
@@ -19,6 +19,11 @@ RUST_DIST = {
             "url": "https://static.rust-lang.org/dist/2026-09-10/clippy-nightly-aarch64-apple-darwin.tar.xz",
             "sha256": "fe84080a28fac7d37b1615b0594e88ecb51417a3b85da2b0a5dfa4cc76d8c1d5",
             "strip_prefix": "clippy-nightly-aarch64-apple-darwin/clippy-preview",
+        },
+        "aarch64-unknown-linux-gnu": {
+            "url": "https://static.rust-lang.org/dist/2026-09-10/clippy-nightly-aarch64-unknown-linux-gnu.tar.xz",
+            "sha256": "a546f937af89d222147b1facc9ce1190b14f3de3ae016299c66d35a2df6a8e73",
+            "strip_prefix": "clippy-nightly-aarch64-unknown-linux-gnu/clippy-preview",
         },
         "x86_64-unknown-linux-gnu": {
             "url": "https://static.rust-lang.org/dist/2026-09-10/clippy-nightly-x86_64-unknown-linux-gnu.tar.xz",
@@ -31,6 +36,11 @@ RUST_DIST = {
             "url": "https://static.rust-lang.org/dist/2026-09-10/rust-std-nightly-aarch64-apple-darwin.tar.xz",
             "sha256": "796f94a02e82dd861318976faf72a1100a2a989c97360423420eb5a3def3574a",
             "strip_prefix": "rust-std-nightly-aarch64-apple-darwin/rust-std-aarch64-apple-darwin",
+        },
+        "aarch64-unknown-linux-gnu": {
+            "url": "https://static.rust-lang.org/dist/2026-09-10/rust-std-nightly-aarch64-unknown-linux-gnu.tar.xz",
+            "sha256": "ea5a64d8ce87fc4aefee2fe3863edc650093438985f15e8ab9c0b4b76622e9fc",
+            "strip_prefix": "rust-std-nightly-aarch64-unknown-linux-gnu/rust-std-aarch64-unknown-linux-gnu",
         },
         "wasm32-unknown-unknown": {
             "url": "https://static.rust-lang.org/dist/2026-09-10/rust-std-nightly-wasm32-unknown-unknown.tar.xz",
@@ -49,6 +59,11 @@ RUST_DIST = {
             "sha256": "3ec7f328305e15e40113d1ec40d56330ceae138119a630dfa3735b1e4fba1e34",
             "strip_prefix": "rustc-nightly-aarch64-apple-darwin/rustc",
         },
+        "aarch64-unknown-linux-gnu": {
+            "url": "https://static.rust-lang.org/dist/2026-09-10/rustc-nightly-aarch64-unknown-linux-gnu.tar.xz",
+            "sha256": "50276135ce9dfc2139c07df1bde73efd0a44dd9260330b3d72e03a356d020cb3",
+            "strip_prefix": "rustc-nightly-aarch64-unknown-linux-gnu/rustc",
+        },
         "x86_64-unknown-linux-gnu": {
             "url": "https://static.rust-lang.org/dist/2026-09-10/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz",
             "sha256": "8eb09375e66bffd8f5e50d0745228aa07cbbb9040ec13b0c0e9e6cd6a122749d",
@@ -60,6 +75,11 @@ RUST_DIST = {
             "url": "https://static.rust-lang.org/dist/2026-09-10/rustfmt-nightly-aarch64-apple-darwin.tar.xz",
             "sha256": "23892f63b0f63d48cea6f5069f80627c947acbcd3a389f218dd1363dd0dd9613",
             "strip_prefix": "rustfmt-nightly-aarch64-apple-darwin/rustfmt-preview",
+        },
+        "aarch64-unknown-linux-gnu": {
+            "url": "https://static.rust-lang.org/dist/2026-09-10/rustfmt-nightly-aarch64-unknown-linux-gnu.tar.xz",
+            "sha256": "4d234d6b74aed95c3d33d171de0e3fc5bf8aed2b994ce105291d8d93bbd33bc0",
+            "strip_prefix": "rustfmt-nightly-aarch64-unknown-linux-gnu/rustfmt-preview",
         },
         "x86_64-unknown-linux-gnu": {
             "url": "https://static.rust-lang.org/dist/2026-09-10/rustfmt-nightly-x86_64-unknown-linux-gnu.tar.xz",

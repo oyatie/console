@@ -18,6 +18,13 @@ xz_hash = "xz${pkg}${triple}"
 `)(DIST_FILE[pkg] ?? pkg);
 
 describe("lock-rust-toolchain", () => {
+  it("requires native compiler artifacts for the ARM Linux CI runner", () => {
+    const wanted = required(parsePin(PIN)).map((pair) => pair.join("@"));
+    for (const pkg of ["rustc", "rust-std", "clippy-preview", "rustfmt-preview"]) {
+      assert.ok(wanted.includes(`${pkg}@aarch64-unknown-linux-gnu`), pkg);
+    }
+  });
+
   it("routes a dated nightly to its dated manifest and a stable to its own", () => {
     assert.equal(
       manifestUrl("nightly-2026-09-10"),
