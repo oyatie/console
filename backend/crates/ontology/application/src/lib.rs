@@ -433,3 +433,7 @@ mod tests {
         assert_eq!(ctx["c"], 3);
     }
 }
+
+// Test-first generic owner submission framing, separate from native payroll codecs.
+#[cfg(test)]
+mod owner28_codec_tests;
