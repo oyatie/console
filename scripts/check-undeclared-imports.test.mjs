@@ -328,7 +328,13 @@ describe("undeclared import gate", () => {
   });
 
   it("goes red on the archived artifact the moment the classification is removed", () => {
-    const { findings } = evaluateUndeclaredImports(repoRoot, []);
+    const artifact = "docs/evidence/console/wave4/L-F1/browser-window-host.mjs";
+    // Replay the exact archived artifact without pinning the growing archive census.
+    const root = fixture({
+      "package.json": emptyManifest,
+      [artifact]: readFileSync(join(repoRoot, artifact)),
+    });
+    const { findings } = evaluateUndeclaredImports(root, []);
 
     assert.deepEqual(findings, [
       { file: "docs/evidence/console/wave4/L-F1/browser-window-host.mjs", line: 30, specifier: "playwright" },

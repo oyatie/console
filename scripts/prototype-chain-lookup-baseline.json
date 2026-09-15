@@ -4,7 +4,7 @@
   "residuals": [
     {
       "file": "scripts/console/run-verification-queue.mjs",
-      "line": 249,
+      "line": 250,
       "kind": "undefined-compare",
       "key": "key",
       "snippet": "if (FORBIDDEN_WRAPPER_ENV.some((key) => process.env[key] !== undefined)) fail('wrapper-affecting environment is forbidden for compatible exact-SHA cohorts');",
@@ -12,7 +12,7 @@
     },
     {
       "file": "scripts/console/run-verification-queue.mjs",
-      "line": 312,
+      "line": 313,
       "kind": "optional-computed",
       "key": "key",
       "snippet": "const available = () => Object.fromEntries(RESOURCE_KEYS.map((key) => [key, resourceBudgets?.[key] ?? Number.MAX_SAFE_INTEGER]));",
