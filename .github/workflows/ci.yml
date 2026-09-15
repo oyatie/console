@@ -1432,6 +1432,24 @@ jobs:
         working-directory: .
         run: env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test openapi_drift
 
+      - name: Tenant SQL identity regression
+        id: tenant-sql-identity
+        if: ${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}
+        working-directory: .
+        run: env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-gate-tenant-isolation --test qualified_table_identity
+
+      - name: Audit signature compatibility regression
+        id: audit-signature-compatibility
+        if: ${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}
+        working-directory: .
+        run: env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-audit-chain --test ed25519_compatibility
+
+      - name: Leptos common action SSR regression
+        id: leptos-common-action-ssr
+        if: ${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}
+        working-directory: .
+        run: env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-ui --features ssr --test common_action_composer
+
       - name: Cargo console-app inline PostgreSQL suite
         id: app-inline-pg
         if: ${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}

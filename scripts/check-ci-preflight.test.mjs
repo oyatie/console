@@ -937,7 +937,7 @@ describe("CI preflight contract", () => {
       preflight: 34,
       "domain-unit": 2,
       // -1: the expand/contract rehearsal moved to its own job.
-      backend: 26,
+      backend: 29,
       "migration-expand-contract": 5,
       "kubernetes-manifests": 8,
       "repo-gates": 26,
@@ -1009,9 +1009,9 @@ describe("CI preflight contract", () => {
     // previously dark 13-test suite and subjects the new step to all bypasses.
     // 2026-08-28: +1 rust-fmt presubmit run step (oyatie lint analog).
     // +1: isolate the app dev-auth feature case so an earlier failure cannot hide it.
-    assert.equal(runStepCount, 137, "required and planned job run-step coverage must not shrink");
-    // Four added preparation/recovery steps: 137*3 = 411.
-    assert.equal(mutationCount, 411, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 140, "required and planned job run-step coverage must not shrink");
+    // Three added Rust regression steps: 140*3 = 420.
+    assert.equal(mutationCount, 420, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
