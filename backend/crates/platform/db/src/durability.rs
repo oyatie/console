@@ -236,42 +236,6 @@ impl Drop for RetainedConnection {
     }
 }
 
-/// PostgreSQL disables transaction_timeout before SyncRep, and suppresses a
-/// statement timer that is >= a positive transaction_timeout. Arm a shorter
-/// positive native timer before COMMIT so cancellation can wake that wait.
-async fn bound_commit_wait(
-    transaction: &mut Transaction<'_, Postgres>,
-    deadline: Instant,
-) -> Result<(), DurabilityUnknown> {
-    let (statement_ms, transaction_ms): (i64, i64) = sqlx::query_as(
-        "SELECT (SELECT setting::bigint FROM pg_settings WHERE name='statement_timeout'), \
-         (SELECT setting::bigint FROM pg_settings WHERE name='transaction_timeout')",
-    )
-    .fetch_one(&mut **transaction)
-    .await?;
-    let remaining = deadline
-        .saturating_duration_since(Instant::now())
-        .as_millis();
-    let mut cap = i64::try_from(remaining)
-        .map_err(|_| DurabilityUnknown::new("native completion timer exceeds range"))?;
-    if statement_ms > 0 {
-        cap = cap.min(statement_ms);
-    }
-    if transaction_ms > 0 {
-        cap = cap.min(transaction_ms - 1);
-    }
-    if cap <= 0 {
-        return Err(DurabilityUnknown::new(
-            "no positive native completion timer remains",
-        ));
-    }
-    sqlx::query("SELECT set_config('statement_timeout', $1, true)")
-        .bind(format!("{cap}ms"))
-        .execute(&mut **transaction)
-        .await?;
-    Ok(())
-}
-
 #[derive(Debug, PartialEq, Eq)]
 struct OperationEpoch {
     observer_pid: i32,
@@ -344,7 +308,8 @@ async fn observe(
 /// Run one tenant-scoped owner transaction and confirm its completion. The
 /// closure must neither commit nor roll back the borrowed transaction. A known
 /// rejection preserves its domain error after confirmed rollback; unknown
-/// transport outcomes and dropped futures close the retained connection.
+/// transport outcomes and dropped futures retain pool capacity until the same
+/// channel drains and closes; a pending native COMMIT may await peer recovery.
 pub async fn with_durability_transaction<F, T, E>(
     pool: &PgPool,
     org: OrgId,
@@ -400,9 +365,6 @@ where
             }
         };
         // This also ends receipt replay's read transaction before capturing WAL.
-        if let Some(deadline) = deadline {
-            bound_commit_wait(&mut transaction, deadline).await?;
-        }
         ensure_deadline(deadline)?;
         transaction
             .commit()
