@@ -1,0 +1,76 @@
+▶ ADR governance gate
+  ✔ uses node:path primitives instead of POSIX-only path splitting (0.640042ms)
+  ✔ accepts a complete corpus and the reserved never-issued ADR-0013 index row (13.834ms)
+  ✔ rejects duplicate ADR IDs (1.589834ms)
+  ✔ rejects missing required id frontmatter (1.234667ms)
+  ✔ rejects missing required status frontmatter (0.935375ms)
+  ✔ rejects missing required doc_status frontmatter (1.125166ms)
+  ✔ rejects missing required date frontmatter (0.765125ms)
+  ✔ rejects missing required owner frontmatter (1.269583ms)
+  ✔ rejects missing required related frontmatter (0.922083ms)
+  ✔ rejects malformed and nonexistent local ADR relationship references (1.278417ms)
+  ✔ rejects an impossible ADR calendar date (1.092167ms)
+  ✔ rejects an impossible design-note calendar date (1.5555ms)
+  ✔ rejects one-sided amend and supersession relationships (1.202292ms)
+  ✔ rejects a proposed ADR that claims amendment or supersession authority (1.185708ms)
+  ✔ rejects an accepted record that treats a proposed ADR as its superseder (1.099125ms)
+  ✔ rejects an accepted ADR that amends a non-accepted target (1.147458ms)
+  ✔ rejects an ADR that declares a superseder without becoming superseded (0.967959ms)
+  ✔ rejects index status that promotes a proposed ADR to accepted (0.719041ms)
+  ✔ rejects an index link that does not target the indexed ADR file (0.802292ms)
+  ✔ rejects Markdown files that evade the ADR or design-note filename contracts (1.3715ms)
+  ✔ rejects stale cross-repository references that still use ADR-0022 for portability (1.448083ms)
+  ✔ scans tracked IaC text for retired ADR identities (1.230458ms)
+  ✔ rejects a proposed ADR whose prose claims active supersession (0.935416ms)
+  ✔ rejects a proposed ADR whose subject ID claims active supersession in prose (1.058666ms)
+  ✔ rejects a proposed ADR whose bold subject ID claims active supersession (0.914625ms)
+  ✔ rejects a proposed ADR whose inline-code subject ID claims active supersession (0.992292ms)
+  ✔ allows conditional proposal language and ADR references in a design-note index row (0.904459ms)
+  ✔ rejects design notes without a valid parent ADR (0.8445ms)
+  ✔ rejects issuing the reserved ADR-0013 number (0.688458ms)
+✔ ADR governance gate (44.71075ms)
+▶ immutable execution evidence scope
+  ✖ retains recorded rejected ADR inputs in machine evidence logs (2.206042ms)
+  ✔ still rejects retired authority in docs/evidence/stale.md (1.175041ms)
+  ✔ still rejects retired authority in deploy/stale.log (0.688625ms)
+  ✔ still rejects retired authority in docs/evidence-other/stale.log (1.048791ms)
+✖ immutable execution evidence scope (5.253458ms)
+ℹ tests 33
+ℹ suites 2
+ℹ pass 32
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 107.173208
+
+✖ failing tests:
+
+test at scripts/check-adrs.test.mjs:556:3
+✖ retains recorded rejected ADR inputs in machine evidence logs (2.206042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'docs/evidence/run/probe.log:1: ADR-0022 is the local-identity decision, not the portability/HA decision; use ADR-0024 or its DN-0001/DN-0002 notes',
+  +   'docs/evidence/run/probe.log:2: ADR-0022 is the local-identity decision, not the portability/HA decision; use ADR-0024 or its DN-0001/DN-0002 notes'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-production-tdd-preparation-20260913/scripts/check-adrs.test.mjs:561:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at node:internal/test_runner/test:1887:71
+      at node:internal/per_context/primordials:504:82
+      at new Promise (<anonymous>)
+      at new SafePromise (node:internal/per_context/primordials:478:3)
+      at node:internal/per_context/primordials:504:9
+      at Array.map (<anonymous>) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'docs/evidence/run/probe.log:1: ADR-0022 is the local-identity decision, not the portability/HA decision; use ADR-0024 or its DN-0001/DN-0002 notes', 'docs/evidence/run/probe.log:2: ADR-0022 is the local-identity decision, not the portability/HA decision; use ADR-0024 or its DN-0001/DN-0002 notes' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

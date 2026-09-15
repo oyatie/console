@@ -1,0 +1,44 @@
+[
+  {
+    "lane": "payroll-typed-unknown-1",
+    "probe": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture > /private/tmp/payroll-typed-c1301628-admission/1.log 2>&1",
+    "prompt": "Root owns implementation; follow approved typed DESIGN1ca5c188 and primary V4 tests, existing error envelope503 completion_unknown/default classifier/consumer PayrollStageError. No global KernelError, endpoint or dependency. Root manually classifies raw probe each time; compile/fixture failures are not admission. Same command mustGREEN. Preserve Account4-file private lane and tests.",
+    "allow": [
+      "backend/crates/ontology/canonical-domain/src/lib.rs",
+      "backend/crates/ontology/rest/src/lib.rs",
+      "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "backend/crates/workflow/domain/src/lib.rs",
+      "backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml",
+      "backend/openapi/openapi.yaml"
+    ]
+  },
+  {
+    "lane": "payroll-typed-unknown-2",
+    "probe": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command -- --exact --test-threads=1 --nocapture > /private/tmp/payroll-typed-c1301628-admission/2.log 2>&1",
+    "prompt": "Root owns implementation; follow approved typed DESIGN1ca5c188 and primary V4 tests, existing error envelope503 completion_unknown/default classifier/consumer PayrollStageError. No global KernelError, endpoint or dependency. Root manually classifies raw probe each time; compile/fixture failures are not admission. Same command mustGREEN. Preserve Account4-file private lane and tests.",
+    "allow": [
+      "backend/crates/ontology/canonical-domain/src/lib.rs",
+      "backend/crates/ontology/rest/src/lib.rs",
+      "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "backend/crates/workflow/domain/src/lib.rs",
+      "backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml",
+      "backend/openapi/openapi.yaml"
+    ]
+  },
+  {
+    "lane": "payroll-typed-unknown-4",
+    "probe": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events -- --exact --test-threads=1 --nocapture > /private/tmp/payroll-typed-c1301628-admission/4.log 2>&1",
+    "prompt": "Root owns implementation; follow approved typed DESIGN1ca5c188 and primary V4 tests, existing error envelope503 completion_unknown/default classifier/consumer PayrollStageError. No global KernelError, endpoint or dependency. Root manually classifies raw probe each time; compile/fixture failures are not admission. Same command mustGREEN. Preserve Account4-file private lane and tests.",
+    "allow": [
+      "backend/crates/ontology/canonical-domain/src/lib.rs",
+      "backend/crates/ontology/rest/src/lib.rs",
+      "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "backend/crates/workflow/domain/src/lib.rs",
+      "backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml",
+      "backend/openapi/openapi.yaml"
+    ]
+  }
+]

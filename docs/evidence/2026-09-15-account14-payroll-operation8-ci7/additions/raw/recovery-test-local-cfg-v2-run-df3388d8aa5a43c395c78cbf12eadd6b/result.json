@@ -1,0 +1,39 @@
+{
+  "head": "6fa6443d5b3a9df81f2a254d6c875942be64a488",
+  "results": [
+    {
+      "name": "audit-coverage",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "-p",
+        "console-gate-audit-coverage"
+      ],
+      "cwd": "/private/tmp/console-production-tdd-preparation-20260913/backend",
+      "exit": 1
+    },
+    {
+      "name": "rls-arming",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "-p",
+        "console-gate-rls-arming"
+      ],
+      "cwd": "/private/tmp/console-production-tdd-preparation-20260913/backend",
+      "exit": 1
+    },
+    {
+      "name": "recovery-roster",
+      "command": [
+        "node",
+        "--test",
+        "scripts/lib/recovery-test-invocations.test.mjs"
+      ],
+      "cwd": "/private/tmp/console-production-tdd-preparation-20260913",
+      "exit": 1
+    }
+  ]
+}

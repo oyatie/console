@@ -10637,8 +10637,21 @@ paths:
     post:
       operationId: executeOntologyAction
       summary: Execute an object action (single mutation path)
-      description: Re-evaluates the §16 gate chain inside the writeback transaction (TOCTOU-safe), then dispatches an instance-revision
-        (append fixity-chained revision) or a projected use-case. Humans and automation use this same path.
+      description: >-
+        Re-evaluates the gate chain and dispatches an instance revision or a projected
+        use-case. Humans and automation use this same path. Instance revisions and
+        their audit records share a transaction. Canonical projected owners commit their effect
+        and immutable command receipt before the separate canonical success audit;
+        an audit failure can therefore return 500 after a confirmed owner effect.
+        Completion uncertainty returns 503 with error.code completion_unknown when
+        the owner can report it. A request timeout (408), disconnect, or lost response
+        can also leave completion uncertain without this JSON response. These outcomes
+        do not prove rollback, and receipt absence alone does not prove no effect.
+        For canonical projected actions, after service recovery retry with the original command_id, actor, target,
+        and unchanged business input under current authorization. If a required
+        approval was consumed, obtain a new approval for the same action and target
+        and update only four_eyes_request_ref. Replaying a confirmed canonical receipt also
+        repairs a missing canonical success audit without repeating the owner effect.
       tags:
       - Ontology
       security:
@@ -10657,7 +10670,7 @@ paths:
               $ref: '#/components/schemas/OntologyActionRequest'
       responses:
         '200':
-          description: Action executed; the mutation and its audit row committed atomically.
+          description: Action execution completed. Canonical projected owner effects and their canonical success audit use separate transactions; other projected handlers own their audit behavior.
           content:
             application/json:
               schema:
@@ -10685,7 +10698,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
         '503':
-          $ref: '#/components/responses/ServiceUnavailable'
+          description: >-
+            Service unavailable, or the projected owner could not confirm completion.
+            The completion_unknown code requires same-command reconciliation after
+            recovery; it does not assert success, cancellation, or rollback.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              examples:
+                completionUnknown:
+                  value:
+                    error:
+                      code: completion_unknown
+                      message: Completion could not be confirmed. Retry after service recovery with the original command_id and unchanged business input. A consumed approval may need renewal for the same action and target.
   /api/v1/ontology/actions/{action_key}/preflight:
     post:
       operationId: preflightOntologyAction
@@ -17872,6 +17898,228 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '503':
           description: Realtime is unavailable.
+  /api/v2/auth/terms:
+    get:
+      tags:
+      - auth
+      operationId: getCurrentTerms
+      summary: Read the current required terms release
+      description: >-
+        Public, unauthenticated metadata for the current required terms release.
+        The response identifies the selected manifest and revision only when the manifest
+        and all required content are available and verified. Current metadata is never
+        served from a cached release when the current terms authority is unavailable.
+        This operation sets no cookies and does not redirect.
+      security: []
+      responses:
+        '200':
+          description: Current release metadata. The manifest URL identifies the same digest as terms_version.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TermsCurrent'
+        '503':
+          description: The current terms authority is unavailable, its selected release is absent or unsupported, or a required artifact is unavailable or invalid.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error:
+                  code: authority_unavailable
+                  message: Terms authority unavailable
+  /api/v2/auth/terms/content/{sha256}:
+    get:
+      tags:
+      - auth
+      operationId: getTermsContent
+      summary: Read immutable terms content
+      description: >-
+        Public, unauthenticated read of registered retained content by its exact-byte
+        SHA-256 digest. The response preserves the verified UTF-8 bytes, at most 65536 bytes,
+        with Content-Type text/plain; charset=utf-8. Retained reads remain available
+        independently of the current terms authority and passkey or signing configuration.
+        This operation sets no cookies and does not redirect.
+      security: []
+      parameters:
+      - name: sha256
+        in: path
+        required: true
+        description: SHA-256 digest of the exact artifact bytes, encoded as 64 lowercase hexadecimal characters.
+        schema:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+      responses:
+        '200':
+          description: Exact verified UTF-8 bytes of the immutable content.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: ['public, max-age=31536000, immutable']
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: The digest is invalid, or no artifact with this digest is registered while artifact metadata is available.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error:
+                  code: not_found
+                  message: Terms artifact not found
+        '503':
+          description: Artifact metadata is unavailable, or the registered artifact is missing or invalid.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error:
+                  code: authority_unavailable
+                  message: Terms authority unavailable
+  /api/v2/auth/terms/manifests/{sha256}:
+    get:
+      tags:
+      - auth
+      operationId: getTermsManifest
+      summary: Read an immutable terms manifest
+      description: >-
+        Public, unauthenticated read of a registered retained manifest by its exact-byte
+        SHA-256 digest. The response preserves the verified JSON bytes, at most 16384 bytes,
+        with Content-Type application/json; charset=utf-8. Retained reads remain available
+        independently of the current terms authority and passkey or signing configuration.
+        This operation sets no cookies and does not redirect.
+      security: []
+      parameters:
+      - name: sha256
+        in: path
+        required: true
+        description: SHA-256 digest of the exact artifact bytes, encoded as 64 lowercase hexadecimal characters.
+        schema:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+      responses:
+        '200':
+          description: Exact verified bytes of the immutable manifest.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: ['public, max-age=31536000, immutable']
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TermsManifest'
+        '404':
+          description: The digest is invalid, or no artifact with this digest is registered while artifact metadata is available.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error:
+                  code: not_found
+                  message: Terms artifact not found
+        '503':
+          description: Artifact metadata is unavailable, or the registered artifact is missing or invalid.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error:
+                  code: authority_unavailable
+                  message: Terms authority unavailable
   /api/v2/leave/requests:
     get:
       tags:
@@ -38203,6 +38451,73 @@ components:
       - PREVENTION
       - MANAGEMENT
       - RECEPTION
+    TermsCurrent:
+      type: object
+      additionalProperties: false
+      required:
+      - terms_version
+      - terms_revision
+      - manifest_url
+      properties:
+        terms_version:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+          description: SHA-256 digest of the exact current manifest bytes.
+        terms_revision:
+          type: string
+          pattern: '^[1-9][0-9]*$'
+          description: Positive current terms revision encoded as a decimal string.
+        manifest_url:
+          type: string
+          pattern: '^/api/v2/auth/terms/manifests/[0-9a-f]{64}$'
+          description: Canonical relative manifest URL whose final segment equals terms_version.
+    TermsManifest:
+      type: object
+      additionalProperties: false
+      required:
+      - format_version
+      - fixture_only
+      - items
+      properties:
+        format_version:
+          type: integer
+          enum: [1]
+        fixture_only:
+          type: boolean
+          description: Whether the manifest identifies fixture-only content.
+        items:
+          type: array
+          minItems: 1
+          maxItems: 8
+          description: Required agreements with distinct terms_kind values. Every content digest identifies registered content.
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - terms_kind
+            - title
+            - locale
+            - content_sha256
+            - required
+            properties:
+              terms_kind:
+                type: string
+                pattern: '^[a-z][a-z0-9_.-]{0,63}$'
+              title:
+                type: string
+                minLength: 1
+                maxLength: 128
+              locale:
+                type: string
+                minLength: 2
+                maxLength: 32
+              content_sha256:
+                type: string
+                pattern: '^[0-9a-f]{64}$'
+                description: SHA-256 digest of the exact UTF-8 content bytes.
+              required:
+                type: boolean
+                enum: [true]
     TimeChangeCoverageEvidence:
       type: object
       additionalProperties: false

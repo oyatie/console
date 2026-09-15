@@ -1,0 +1,20 @@
+{
+  "purpose": "Replay exact independently reviewed patch, no new implementation. Original invalid report retained.",
+  "base_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "implementation_candidate_sha": "46084033e3a368a656df7609da0832ba6a4d981c",
+  "checker_candidate_sha": "20a3cfb72c2d477ea836a2f31f258c17ba8498fc",
+  "replay_worktree": "/private/tmp/console-native30-formatter-revalidation-20260914",
+  "patch_sha256": "445c7a65eba32a98b2d65f31c3b5d8351b3610d0b1cc7a79491fd5d46395e6c5",
+  "changed_files": [
+    "backend/crates/platform/request-context/src/lib.rs"
+  ],
+  "outside_allowlist": [],
+  "candidate_source_bytes_equal": true,
+  "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-request-context --lib",
+  "executed": 20,
+  "passed": 20,
+  "failed": 0,
+  "exit_code": 0,
+  "log_sha256": "61ffb7fac4654aa8fa0005bdb14241456ce3b02a1ff0fbe2de5ddbc1b9d2e246",
+  "result": "CORRECTED_ISOLATION_AND_SAME_PROBE_PASS; not a claim original fanout run returned success"
+}

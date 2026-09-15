@@ -1,0 +1,49 @@
+{
+  "reviewer": "/root/finish_migration",
+  "manifest_sha256": "c2c6e3f8e439b2c4fca00107f573e0aaafb59e42a89a5a3223493cc5030f7b8b",
+  "members_verified": 31,
+  "disposition": "REVISE_BOUNDED_HYDRATION_ORACLE_SOURCE",
+  "independent_helper_execution": {
+    "command": "cargo +1.98.1 test --locked --offline --manifest-path /private/tmp/console-browser-owner-producer-r3-20260914/helper-smoke/Cargo.toml",
+    "discovered": 14,
+    "executed": 14,
+    "passed": 14
+  },
+  "findings": [
+    {
+      "id": "BR3-PAGES",
+      "source": "browser-acceptance-producer.rs:draft_history",
+      "problem": "Continuation count<=page_budget allows last read to be budget+1.",
+      "fix": "Track every fetched page before call;refuse before exceeding actual budget."
+    },
+    {
+      "id": "BR3-NEWREV",
+      "source": "browser-runtime-helpers.rs:validate_history_delta",
+      "problem": "New receipt may point to old retained head revision while unrelated extra revision supplies +1 count; current any-revision matching permits this false receipt witness.",
+      "fix": "Identify unique newly added revision and require new receipt.revision_id=head_revision_id=new revision identity;hostile old-head+orphan-new control."
+    },
+    {
+      "id": "BR3-WASM",
+      "source": "playwright/hydration.spec.cjs:openHydrated",
+      "problem": "200 WASM magic bytes prove fetch;autosave could execute entirely in plain JS without actual WASM module instantiation.",
+      "fix": "Add actual successful app WASM instantiation witness or narrow explicit claim;no fake routes or API responses."
+    },
+    {
+      "id": "BR3-CANARY-COPY",
+      "source": "playwright/acceptance.spec.cjs",
+      "problem": "Scoped canary comment names global coverage marker but actual4fields are person display_name,employee_number,wage source_note,hidden evidence narrative.",
+      "fix": "Correct comment;do not claim aggregate completeness absence from these marker checks."
+    }
+  ],
+  "accepted": [
+    "NoJS303 versus proposed JSON200DraftAck/409DefinitiveNoEffect same path/owner/CSRF transport explicitly held for approval",
+    "Actual request command ID matched to ordinary parsed DraftAck receipt and complete paged history",
+    "Offline conflicting real authenticated second browser;no API fulfillment or manufactured status",
+    "WASM failure route only aborts transport;manual path retained",
+    "Canary4 producer and readonly assertions agree",
+    "Runtime observation JSON generated in owned private directory; new JS fixture/hydration files and sibling requires need finalmapper assets"
+  ],
+  "owner_compiled": 0,
+  "browser_app_executed": 0,
+  "limits": "Review of four new authored behavior cases and helper machinery;no production hydration execution or full noninterference claim."
+}

@@ -1,0 +1,19 @@
+{
+  "owner": "/root",
+  "decision": "APPROVE_EXACT_TEST_SOURCE_FOR_IMPORT_AND_REAL_RED_CLASSIFICATION",
+  "actual_integration_base": "77915b07ffd7b8dc41a84b2c9284da24c8ed1fca",
+  "reviewed_test_base": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+  "source_sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+  "patch_sha256": "b8c1845c5bd33ae5952c53165cd910ca7325e4f87ea1b501c1eb1aac60f2a04c",
+  "design": ["19f29899b2c7bf3d6ac448c0daec73f0cdfba6f648458a86b044333c73ddb773", "fee7092299e1a758c3e26d4334efa56e0671dc9f2a57f0a81632a9dc7293f35e"],
+  "independent_review": "Fast reviewed Inventory revisions; Fast authored the original8 draft. Root independently read the entire guard_races module and approved original8 and revisions. No claim that Fast independently authored/reviewed original8.",
+  "review_conclusions": [
+    "Exact existing6 preserved, with2historical legacy positives and4known semantic failures.",
+    "Race controls use native FK locks and exact blocker PIDs; held-credential NOWAIT has positive55P03/restoration witnesses. Blockers and tasks are released/joined before outcome assertions.",
+    "Backend death requires57P01 and exact full state restoration; cancellation or generic task error cannot satisfy it.",
+    "Unsupported isolation refuses before effects; Company/native-only/missing/NULL/unsupported LOGIN boundary cases are explicit.",
+    "Guard profile pins exact narrow non-grantable users ACLs, executable routine metadata and drift refusal/no-repair; upgrade must not replay root backfill."
+  ],
+  "limits": ["0Rust tests executed by this review", "Missing guard42883 is a stage blocker, not proof of deeper assertion validity", "Dedicated cancellation/unrelated-subject/replay-lock/hidden-authority and broader profile mutation acceptance remain separately visible", "Actual RED and lane admission still required before implementation"],
+  "authority": "Existing user authorization for implementation and independently reviewed exact test corrections; no production, credential-reset or legal authority"
+}

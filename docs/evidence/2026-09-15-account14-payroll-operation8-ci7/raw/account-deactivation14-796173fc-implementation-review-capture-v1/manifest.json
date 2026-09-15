@@ -1,0 +1,19 @@
+{
+  "status": "FROZEN_INDEPENDENT_IMPLEMENTATION_SOURCE_REVIEW",
+  "reviewer": "/root/capture_review",
+  "candidate_manifest_sha256": "ffc4c20e28afea6a1c33b4fdc6b3c9bc47bb72ea629a6958577e8a157a97f48d",
+  "files": {
+    "independent-bindings-check.json": "4467ff576c641959c9f94079396a34d70665f6d8957d4c337d1db6e4de2fecf9",
+    "review.json": "962de6ddf4bb83ca57815dd6d369f379d2d0471dfc8e5ed3e8943945feba6555",
+    "source-bindings.json": "8cc70893eacc8574d8860a0959ee69f6a6b9201701ac6d26a2453b931f93af9a",
+    "supplemental-source-bindings.json": "58311302e81b0bbb29a3386b968edef2f5199a8b7e0aed6a58bf213e2f0fd6f3",
+    "verification-output.json": "bd8fbee26e0ef12dcce7b9b839d6abe17873a0ae9edc9a0cbae453ff53207a81"
+  },
+  "counts": {
+    "source_bindings": 16,
+    "mechanical_checks": 18,
+    "compiler_discovered": 0,
+    "runtime_executed": 0,
+    "integration_writes": 0
+  }
+}

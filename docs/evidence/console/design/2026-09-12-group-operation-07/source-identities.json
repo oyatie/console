@@ -1,0 +1,66 @@
+{
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "sources": [
+    {
+      "path": "backend/crates/platform/group/src/lib.rs",
+      "git_blob": "c5058b642b760f3b258a405afa2882ea9bfc3442",
+      "sha256": "260f3f3e1bb5c0837f6d7a7847e13db559fab30bfe2ec7ed623fb9a497aad636"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0060_create_groups_and_membership.sql",
+      "git_blob": "680808ff2cdecdb61ee890d5759d387df8b225f6",
+      "sha256": "96ba3f2dd50fcceaa76c0dde4d3809f98f2a0d81c3bb5d4f246d0498d947852c"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0062_platform_group_management.sql",
+      "git_blob": "40e785c8f8d814888fd7d36beaae53d59b9a6923",
+      "sha256": "5e80cf2acb9fe66e95c758b16337ad9161c9333442d6ff34c8c603794d8912c2"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0096_create_subject_authz_versions.sql",
+      "git_blob": "ff904e6cfcf12fd9cb1286461bdc6f0ba57ddb87",
+      "sha256": "37e32d51ee3bf1861b10f168ca62cc6b4a9802fdde0a48c1e86f5152b11a2de8"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql",
+      "git_blob": "8b11fcb989d474c72822368b0ad7c6b9c2c68a64",
+      "sha256": "90ded6b338aa92907dc98bf74bc1fa563e05a4a8acb5d748aa24a44e237ff720"
+    },
+    {
+      "path": "backend/crates/ontology/application/src/prepared.rs",
+      "git_blob": "5c4ec8cd030b463bdf6364a3110c8f84b7c58757",
+      "sha256": "82b2bb5c13ae7cbf0b2f5127f496eaae31a0a336ce8d048f4757a0f6e0890117"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0177_ontology_action_command_receipts.sql",
+      "git_blob": "477fbc4fe47c7e9374cffa6fd117e2a98d397c19",
+      "sha256": "c4ef36f24582b1d3034c7212877103bb72724138bef1d66dabbef24410fa40ba"
+    },
+    {
+      "path": "backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "git_blob": "8de02d08b143ed387e4f7737e2b3066dd4084519",
+      "sha256": "4b22816b36ae67a0aea4ab68e7cce1ba2e8be8c8fc61c7aa8bd82ce5f8423df5"
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/lifecycle.rs",
+      "git_blob": "5d356d3479a3847506e976be86e360ef7a961f70",
+      "sha256": "070c1da569abd4dab31326f2d21953b480dd39d59b21cd5eed3df92b4aa401ae"
+    },
+    {
+      "path": "backend/crates/payroll/rest/src/lib.rs",
+      "git_blob": "bf3a7418f85bab6970071e7ae681f402c17ddc6a",
+      "sha256": "664994055e852f400eabf7446d792e106cd9c3d5db2a647bef00bd531ea60f32"
+    },
+    {
+      "path": "backend/crates/ontology/canonical-domain/src/lib.rs",
+      "git_blob": "cf5228bd32e503c4fdd588d19e529810df9c69f8",
+      "sha256": "1dcca76fcdd0888251926185e1dc830f21ce40d65cd83026383e3c428d1156be"
+    },
+    {
+      "path": "backend/crates/ontology/canonical-adapter-postgres/src/org_unit.rs",
+      "git_blob": "84ac477f7a1cff76f5052f06c3d7a45b23897799",
+      "sha256": "08ddf639038f0941ca0e53292c198f0be0846126d542ec6b9e0b5e46c34b649d"
+    }
+  ],
+  "scope": "Static owner/transaction/control trace, not existing Group write capability or runtime proof."
+}

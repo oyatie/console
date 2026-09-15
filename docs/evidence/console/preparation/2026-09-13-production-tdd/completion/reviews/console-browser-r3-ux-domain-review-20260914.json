@@ -1,0 +1,47 @@
+{
+  "reviewer": "/root/review_completeness",
+  "candidate_manifest_sha256": "c2c6e3f8e439b2c4fca00107f573e0aaafb59e42a89a5a3223493cc5030f7b8b",
+  "verified_members_hashes_sizes": 31,
+  "verdict": "ONE_TARGETED_SOURCE_CORRECTION_REQUIRED",
+  "scope": "BrowserR3 UX/domain/security selected hydration gate, independent machinery review handled separately.",
+  "findings": [
+    {
+      "id": "BR1",
+      "file": "browser-acceptance-producer.rs::run_case Draft branch",
+      "issue": "No-business-effect assertion uses only draft-history manifest.domain_effects, which can miss a wrong wage side effect not enrolled into the draft effect graph.",
+      "fix": "Read actual existing payroll::read_contract_wage_history for actual fixture employee before/after browser and assert unchanged. No new owner/interface/fixture needed."
+    }
+  ],
+  "closed_source_gap": "FI3 selected hydration/autosave/stale/offline/WASM-fallback acceptance bodies now authored; successful owner-backed execution still prerequisite.",
+  "assessment": [
+    "Actual WASM response bytes plus input-triggered fetch and durable owner ACK/history identifies functional client path beyond JS-enabled SSR marker.",
+    "Actual second authenticated browser saves new revision while first offline; stale local input retained and current-recovery link exposes winning acknowledged input.",
+    "WASM request aborted only, no response fulfillment; labelled manual fallback submits ordinary HTML command.",
+    "Offline input explicitly unacknowledged; reconnect successful command matches exactly one new persisted revision/receipt; no mid-COMMIT loss theorem claimed.",
+    "200JSONDraftAck/409ResultObservation is an explicit narrow transport refinement needing consolidated approval; both normalization paths preserve ordinary current authorization/CSRF/draft owner."
+  ],
+  "checks": [
+    {
+      "command": "node --check /private/tmp/console-browser-owner-producer-r3-20260914/playwright/hydration.spec.cjs",
+      "exit_code": 0,
+      "kind": "javascript_parser"
+    },
+    {
+      "command": "node --check /private/tmp/console-browser-owner-producer-r3-20260914/playwright/fixture.cjs",
+      "exit_code": 0,
+      "kind": "javascript_parser"
+    },
+    {
+      "command": "node --check /private/tmp/console-browser-owner-producer-r3-20260914/playwright/playwright.config.cjs",
+      "exit_code": 0,
+      "kind": "javascript_parser"
+    }
+  ],
+  "application_executed": 0,
+  "remaining_holds": [
+    "BR1 source correction and successor review",
+    "Consolidated transport amendment approval",
+    "Actual application execution and human task observations before slice acceptance",
+    "Independent child-process/history checker review"
+  ]
+}

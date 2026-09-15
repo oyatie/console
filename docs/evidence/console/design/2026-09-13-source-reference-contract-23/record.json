@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_source_result_identity_and_recovery_mapping",
+  "recorded_at": "2026-09-13T04:20:44.179795+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+  "reviewed_contract_sha": "596356ec5c4778a6d835900d657f6a96b03ef9e4",
+  "predecessor_record": "../2026-09-12-effect-manifest-sql-22/record.json",
+  "predecessor_record_sha256": "50d1b7ea7eed63492ae92cc9b88301467d4a7b28c8c5e0c64fca0bfa286f95e6",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "files": [
+    {
+      "path": "contract.txt",
+      "bytes": 10995,
+      "sha256": "228d38e3dd1cb10cc26dbc1f7ff9e1a8f2b91a389624da166dbf80efd71ae0b2"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 1955,
+      "sha256": "8d8854b678f09c2fb787caed4cb040dfab306db38efa8134d56152abdf61cd3e"
+    },
+    {
+      "path": "input-storage-flow.csv",
+      "bytes": 3941,
+      "sha256": "57e3e6b46be12d4de23240e16a963861932b343368a680cd5b5b690519b159da"
+    },
+    {
+      "path": "options.txt",
+      "bytes": 1813,
+      "sha256": "63286e60cfdbc29dcc1c2d7791027406c0637ab7749d35b8c2b34d2d9d3bc6f5"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 3156,
+      "sha256": "d6479b81de13d2bb2d31aebbca370b8c371e521037747e6e4e485a167c3908d4"
+    },
+    {
+      "path": "readiness.json",
+      "bytes": 1442,
+      "sha256": "8c59f54d12fdb48b5c85b5022f604b59cb20c39f68e488b7b2a87013621605b4"
+    },
+    {
+      "path": "reference-map.json",
+      "bytes": 3537,
+      "sha256": "88e526905f0c20942dd0338c1156de5d58d83fa23ba12f4d00aaa5e4dcd7dae5"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 820,
+      "sha256": "17d2d437199c230a25102dd9708e6ee541430dbeda82a0512ab30704c6021c05"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 2464,
+      "sha256": "22da00e7e4a2f2ee29d7205c1876c73fff38c9f35574dba22b9efae7cf10c610"
+    },
+    {
+      "path": "review.html",
+      "bytes": 1819,
+      "sha256": "463069eb8b3611d99d22a5d5c50c414ae7de2afbfda85ba13a8364f491c190df"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 568,
+      "sha256": "be2223737d1d0ff9c67046b5c20205bffc3d64201dcef637e6b146f949d8296c"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 4767,
+      "sha256": "ab9fa9e4a658732bd5a0f5177b2d5e94fa0967ef80c17230b621e4cf1f7ac77d"
+    },
+    {
+      "path": "source-reference.sql.txt",
+      "bytes": 28178,
+      "sha256": "a1116c31753ea0b2e7b6c6aec1be8e1b89bbc7f90192b8153194b278fde9eb0e"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1784,
+      "sha256": "2f16156bc0199174c41f0107548678f9ec9fcf8cf504db0e4a458e38cdb356fb"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 4975,
+      "sha256": "483512645dbb582f59b653ebefb7824ce26e82ca3a850ee9d74913e365b5db53"
+    }
+  ],
+  "remaining_holds": [
+    "F01 full source custody/adoption/Account and batch input envelope",
+    "F02 complete seven source/head/domain projections and owner bodies; current head completeness, subjects, roster/legacy downgrade and final participant integration",
+    "F03 retention/adoption/provider; F04 actual identity/Cedar/log/egress information-flow proof boundaries",
+    "F05-F08 migration/journal/recovery/harness final contracts",
+    "W01-W03 final integration reconciliation, current-authority alignment, four final integrated rounds and explicit design/test SHA approvals",
+    "Actual SQL/catalog/races/load/Verus proof not executed; separate production/payment/legal authority"
+  ]
+}

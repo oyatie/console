@@ -1,0 +1,99 @@
+{
+  "reviewer": "/root/review_completeness",
+  "candidate_sha": "e58858b928be25c9d09b1623b9f3d007a66e6d36",
+  "verdict": "SOURCE_ACCEPTED_RUNTIME_MACHINERY_SUCCESSOR_REQUIRED",
+  "source_bindings": {
+    ".dockerignore": {
+      "git_blob": "32f7890d4b8400db3683189c93c295f28d6bb062",
+      "sha256": "4c4fb6f15b5611811d5214b1f2c7c4a7f96873a728ec01bfd9bbb59268ac5586"
+    },
+    ".github/workflows/image-release.yml": {
+      "git_blob": "06fb21ad726a7d4f1006788624d3bbed7b83b4ab",
+      "sha256": "e4f8a2a3426904954ce8c1f8389765252074974f18f20e1258bc58779a3ea868"
+    },
+    "deploy/apps/console/base/account-finalize-job.yaml": {
+      "git_blob": "934d8c0ab060f129fd81507293c2f6897a931fde",
+      "sha256": "d4cca4fbaec30c884351395db568370bca372329a5d20f0b45f2a48e13780208"
+    },
+    "deploy/apps/console/base/migration-networkpolicy.yaml": {
+      "git_blob": "cb105c3e292232fe0f7b5b2e29b0a9eb01ec95f3",
+      "sha256": "605c2f8570636959d36507ae9cabe8aae7253e079b14f71940dd3a2c7794eaa4"
+    },
+    "deploy/apps/console/base/migrate-job.yaml": {
+      "git_blob": "cfd75a9b551744fdb3c405ea3c4a668d3c6acc7b",
+      "sha256": "e9ea2af77eca2f390549c2b98d8370b0fe6385e704a04f7d89d9b3f9d061c902"
+    },
+    "deploy/apps/console/base/kustomization.yaml": {
+      "git_blob": "eae7dfc432a20386fbaee046323732c5a98a14f1",
+      "sha256": "d0378973f2f4dee826e5441a0af2995560fcc76dbefbd8aab51a9756f1bda3c7"
+    },
+    "ops/README.md": {
+      "git_blob": "6b51a28a537114ab28c571891db3a8bb30070e7d",
+      "sha256": "e5d5c47dad6bc2c85808eef181bfded9b87d03420d091e719fb4ee897e6a7e50"
+    },
+    "ops/compose.yml": {
+      "git_blob": "2f05ba77822fc6c8bd786ec4ec30328bce0de437",
+      "sha256": "953b254c5de3b870ec85494751410c72090d46017c1d14ea67361745ebf875ab"
+    },
+    "ops/account-custody.Dockerfile": {
+      "git_blob": "a0b73bce142951cd6308428274ef30bbdc071699",
+      "sha256": "582301f82a88bc25cc5f949bb6b13c384adec9f0377e031387a40efc111f3b73"
+    },
+    "scripts/dev-up.mjs": {
+      "git_blob": "0cf83bf802ee286e417ff42b3f75399fdfa7d80b",
+      "sha256": "6affb0a9d63fb630eea18fcae0959e91944282135c3cad1b11819c61704a6c75"
+    },
+    "scripts/dev-up-compose.test.mjs": {
+      "git_blob": "f4af2450ccc12724982e90b439f56a75bb81773e",
+      "sha256": "bb95ead0dfc5711dbbcbb23dd8b12688f943edbc5f974cd22ecea95bfa1f135f"
+    },
+    "scripts/lib/dev-account-custody.mjs": {
+      "git_blob": "225a8144cab003ed75e19200253fd44974dcb7ba",
+      "sha256": "40e411ef4bff4d77dba6197a586afe680e7a693387668b3d6858fed779022aba"
+    },
+    "scripts/lib/dev-account-custody.test.mjs": {
+      "git_blob": "4416098bf690f3155e269ec7617b8aa57ffa3da9",
+      "sha256": "e4cc26ed669435f450ec9e7bb56bcf698e1827426e25da059b23d8d5bcc2c3f9"
+    },
+    "scripts/account-custody-orchestration.test.mjs": {
+      "git_blob": "1e953fc24e14813ca7eb7537f8ca7986c916dc2b",
+      "sha256": "90599ae648e23bf306828854e7970706fff18fb452f5a0b16446a0063763aca4"
+    }
+  },
+  "independent_controls": {
+    "command": "node --test scripts/account-custody-orchestration.test.mjs scripts/lib/dev-account-custody.test.mjs",
+    "discovered": 80,
+    "executed": 80,
+    "passed": 80,
+    "failed": 0,
+    "skipped": 0,
+    "log": "/private/tmp/lc07-e588-independent-controls.log"
+  },
+  "source_findings": [
+    "Dockerignore includes only dedicated Dockerfile and three exact operator artifacts beneath ops; ops secrets/inventories remain excluded.",
+    "dev-up-compose fixture adds required temporary config-only inventory/password/CA paths without changing original assertion or claiming TLS execution.",
+    "Pinned OpenSSL generates non-CA TLS leaf; real Node crypto checks reject CA leaf, mismatched key, hostname/IP and expiry failures.",
+    "Local helper preserves independent inventory, refuses unsafe paths and dangling symlinks, uses bounded named owner-checked TLS provisioning; exact missing-image errors alone allow pinned pull.",
+    "Compose finalization gates app/worker; host up/bootstrap finalizes before seed/spawn with stripped ambient operator env. Network policies precede PreSync jobs, and unpublished Kubernetes image plus external inventory/operator provisioning remain deployment HOLDs."
+  ],
+  "runtime_review": {
+    "script": "/private/tmp/lc07-runtime-smoke.mjs",
+    "script_sha256": "3fd106b6fa40f77c6c832946b66b8016cd3a45f9e3d97f1339172e4a96a61252",
+    "recorded_source_head": "96cd8f773ce68d758e928e1ca09d5956c34bf2ae",
+    "recorded_binary_sha256": "7d00251004cb5cd117bd1161808832e78188cc1a2af970c5a31266aa674673ad",
+    "reported_passes": 7,
+    "status": "observed logs, not accepted as final reusable machinery",
+    "required_successor": [
+      "Portable source/binary/staging inputs and exact source/binary pre-post hash binding.",
+      "Free-port and child ownership/readiness checks to exclude preexisting service false positive.",
+      "Independent owned container/network/volume absence checks even if compose down fails; remove or explicitly inventory retained project operator image.",
+      "Narrow no-mutation claim to six owner roster checks unless stronger snapshots are added; assert exact expected per-table owner mapping.",
+      "Bound API shutdown and handle spawn failure."
+    ]
+  },
+  "limits": [
+    "No actual Docker or Cargo executed by reviewer.",
+    "Reviewed source scope excludes unrelated account request-context Rust changes.",
+    "Host native API and local operator image observations are not published application image execution, Kubernetes/CNI enforcement, production deployment, or complete state immutability proof."
+  ]
+}

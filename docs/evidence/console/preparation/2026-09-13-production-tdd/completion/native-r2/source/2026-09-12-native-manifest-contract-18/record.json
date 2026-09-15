@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_native_manifest_design_with_open_contracts",
+  "recorded_at": "2026-09-12T22:48:51.600467+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "8575461bae72c4242e76d11a79deefdedaf67f86",
+  "reviewed_contract_sha": "720b0920fcfd8277f11686081937ccd09a77f1f0",
+  "predecessor_record": "../2026-09-12-integrated-admission-17/record.json",
+  "predecessor_record_sha256": "01ac180f925f1a0ab91c5e1c73175fc65184071ee1d53c92b345b55c1adc3c16",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "files": [
+    {
+      "path": "entry.txt",
+      "bytes": 1812,
+      "sha256": "123afbb882ee931348e8d23085a759a013a6f629c5c5f88c79fed15f77ae8f4d"
+    },
+    {
+      "path": "native-contract.txt",
+      "bytes": 8939,
+      "sha256": "ecb0d073f1998a87e05968c96505e3d4fdb5264647460ec77931067bfd95c5dd"
+    },
+    {
+      "path": "native-types.schema.json",
+      "bytes": 25641,
+      "sha256": "cf49487e8de7a427092b6f97c0b8a7d901f3805d465403c5f7dc54c9f419f62b"
+    },
+    {
+      "path": "normalization-vectors.json",
+      "bytes": 48731,
+      "sha256": "0176d3bdc77fdca3119ebfb3a98dc7269807516fe09b3aec694e71d4f5ac12f7"
+    },
+    {
+      "path": "owner-and-migration.txt",
+      "bytes": 9535,
+      "sha256": "48ab817eef2e1bec6d7e786d5d3001c5b4935c3aa615eb0e2ec3548bc31086dc"
+    },
+    {
+      "path": "physical-contract.sql.txt",
+      "bytes": 19021,
+      "sha256": "531c8b6acdb596544f2d1a75d001267fe4255a62a89229eff212af84eb06f1db"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 4556,
+      "sha256": "5ec8219306e32eb4e2656b7d09a57c5a5e480901ad76791851f2e069fd22fdb4"
+    },
+    {
+      "path": "readiness.json",
+      "bytes": 2260,
+      "sha256": "1919479e2f7ab8ddfb3ef4378fa158eab4a50c036ec92fbafea04b2264df3e5d"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 879,
+      "sha256": "e668ffa4db7dcf2484d29db780d7d93ef0f6f5450504768c2a260c11332b69fa"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1921,
+      "sha256": "b31d0e169c56e9f33df1eeb6d42c6d21d07419ad2bd2bcfe6c163f47fc01268c"
+    },
+    {
+      "path": "review.html",
+      "bytes": 2273,
+      "sha256": "e916ff213f850086d18c8f9dfe7bc9778f2772889adf09134e5747335bf064f7"
+    },
+    {
+      "path": "scalar-and-encoding.txt",
+      "bytes": 5556,
+      "sha256": "fd9f54f39801df50120a03b685c9a37497179741a98ce4e5fc563f8bfbfd4157"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 584,
+      "sha256": "33c56405d4149940dd2b0c37f2902029ec59a603874337cc0d386950db8f5c80"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 12402,
+      "sha256": "97d19cd7752036e43526c98d049f830dbb677ce7863fff13e76157269ed1c4c9"
+    },
+    {
+      "path": "source-slot-cardinality.json",
+      "bytes": 8978,
+      "sha256": "c7b3de12a98592a2e3cb2d7de7de90469cc4b282fe247d76a528fb91e4123fa0"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1985,
+      "sha256": "541e5828f61651bb7aa39dfd61b435ca7c65659709afb38d5d1794301869b90f"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 5451,
+      "sha256": "eee42f0fc9ed333fe75ef5d959ea811063720a7812dd02b8cc5e38892cecfaf9"
+    }
+  ],
+  "remaining_holds": [
+    "F01/F02 partial: transitive source-owner payloads, complete owner/helper/trigger/ACL/lifecycle/index contracts",
+    "F03-F08 admission/custody/provider issuance/recovery/migration/harness closures from17",
+    "Final authority-aligned integrated design review4 rounds and exact design SHA approval",
+    "Executable tests independent review and exact test SHA approval",
+    "Implementation via actual named RED probe admission; runtime/migration/restore/load proof",
+    "Separate release/exposure/legal/payment authority"
+  ]
+}

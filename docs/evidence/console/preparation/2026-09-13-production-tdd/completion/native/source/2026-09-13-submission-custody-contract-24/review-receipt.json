@@ -1,0 +1,44 @@
+{
+  "recorded_at": "2026-09-13T05:22:59.204262+00:00",
+  "status": "SCOPED_INPUT_AND_RETAINED_SUBMISSION_ACCEPTANCE_ONLY",
+  "reviewed_candidate_sha": "5648b52576090c63feed9630f27f8ebfeeb2fdaa",
+  "reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "candidate_sha": "5648b52576090c63feed9630f27f8ebfeeb2fdaa",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Retained full11file review; exact1line assertion correction reviewed. Input/preparation/command/snapshot DAG, bounded framing, Account/attempt identity, concrete immutable byteholder and separate evidence protection coherent within scope.",
+      "independently_verified_static_sha": "5648b52576090c63feed9630f27f8ebfeeb2fdaa",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "candidate_sha": "5648b52576090c63feed9630f27f8ebfeeb2fdaa",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Retained full11file review; exact1line assertion correction reviewed. Input/preparation/command/snapshot DAG, bounded framing, Account/attempt identity, concrete immutable byteholder and separate evidence protection coherent within scope.",
+      "independently_verified_static_sha": "5648b52576090c63feed9630f27f8ebfeeb2fdaa",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "counts_as_final_integrated_round": false,
+  "remaining_holds": [
+    "Full source bodies/projection/head and current semantic validation",
+    "Sealed unit/linkage/state/retained-location and reverse result/purpose adoption physical constraints",
+    "Complete required-evidence inventory/cardinality/lock plan",
+    "Fixed owner SQL signatures/bodies/canonical decoder correspondence/ACL/downgrade enforcement",
+    "F05-F08 migration/provider/journal/recovery/harness final contracts",
+    "W01-W04 integration, current-authority alignment,4 integrated design reviews/exact approval then executable tests/exact approval/RED admission",
+    "Actual SQL/full schema/product/runtime/load/Verus verification not performed; release/production/legal/payment authority separate"
+  ]
+}

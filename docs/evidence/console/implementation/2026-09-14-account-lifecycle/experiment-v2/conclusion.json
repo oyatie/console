@@ -1,0 +1,74 @@
+{
+  "status": "PASS_REVISED_BOUNDED_EXPERIMENT",
+  "base_sha": "cca76fee191c3e8e64b4ac823fccf893830204a1",
+  "v1_preserved": "/private/tmp/console-account-lifecycle-experiment-20260914 unchanged",
+  "controls": [
+    "PASS db_a225legacySQL",
+    "PASS real console_app ownership transfer refused",
+    "PASS injected failure rolls back all6ownerships",
+    "PASS omitted sixth transfer detected and transaction rolled back",
+    "PASS extra direct column grant detected and rolled back",
+    "PASS finalizer+base topology replay preserve custody+legacy catalog",
+    "PASS six actual runtime LOGIN privilege refusals",
+    "PASS db_b225legacySQL after db_a custodyfinalization; db_a custodyretained"
+  ],
+  "counts": {
+    "control_groups_passed": 8,
+    "immutable_legacy_sql_applications": 450,
+    "databases": 2,
+    "authenticated_login_positives": 6,
+    "exact_table_42501_refusals": 6,
+    "new_hostile_checker_controls": 2,
+    "required_evidence_copies": 20,
+    "successful_evidence_copies": 20,
+    "rust_tests_executed": 0
+  },
+  "evidence_copies": {
+    "app-owner-refusal.log": "b17aa7b8a48576a53019d1348ce24e27e9b3cbb43d99a549238f59cd69f869a7",
+    "transfer-fail.log": "f2fde6d2bcc2addea0e93f11fffbd0cf0680e9380133381301013b741354ba7f",
+    "transfer-omitted.log": "f3f3efed5a8eb3de4af3c3e7e099027ec78a832bba0de0733f022f276d806daa",
+    "extra-column-grant.log": "b459127aab26101ef198698ac6bc338bf087ee73997a55dc9321f2d7e917f955",
+    "legacy-before.json": "122a828209e745777b5c66ebae0fd41b8605bb9fee5b578aac2b405d1870c85b",
+    "legacy-after.json": "122a828209e745777b5c66ebae0fd41b8605bb9fee5b578aac2b405d1870c85b",
+    "custody-before.json": "21f514fe39a5c34a2da32146e6cad9ff6ff8823ae83fb2360a99556ba7992584",
+    "custody-after.json": "21f514fe39a5c34a2da32146e6cad9ff6ff8823ae83fb2360a99556ba7992584",
+    "login-positive-accounts.log": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+    "refusal-accounts.log": "065ec2ba894579f0cb921817cf49e634abcd3c50fafb25894b1a105451adeec4",
+    "login-positive-account_security.log": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+    "refusal-account_security.log": "e346903b05a16cd2271016b43b6d6e1c3550c14e751fde94353b4b6783292b59",
+    "login-positive-account_security_events.log": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+    "refusal-account_security_events.log": "3b8a4704991a8ae0b6903bed2cbecc882fdf96d738224b789f942771a8c1177b",
+    "login-positive-account_terms_acceptances.log": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+    "refusal-account_terms_acceptances.log": "2d4eed4546ade8619c45d3ab75bafd167a59690ad00cf3a77d9a4ed1371d2bc3",
+    "login-positive-account_terms_head.log": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+    "refusal-account_terms_head.log": "8665b6e23c6f3ceb0ce4f35973110987cbed103fea79229e943657d6087d0e73",
+    "login-positive-account_terms_release_receipts.log": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+    "refusal-account_terms_release_receipts.log": "5b3ec71b39c115adc06b8c4a93a2e91e9d753e3c686d1b75d502642572208210"
+  },
+  "replay": {
+    "reconstruction_command": "python3 recreate-inputs.py <archive_directory> <console_repository> <fresh_destination>",
+    "execution_command": "python3 <fresh_destination>/run.py",
+    "source_manifest": "sources.json pins exact base225migration blobs and all v2source scripts; run.py verifies hashes and exact migration roster. recreate-inputs.py obtains225files with git show exact base and checks eachhash.",
+    "container_inputs": "Fresh staging copies explicit11source SQL/shell inputs +225verifiedmigrations +newprivate600envfile only; no earlier logs/results/secrets imported."
+  },
+  "mechanism": [
+    "Each real TCP console_rt connection positive records current_user,current_database,1; exact42501 table refusal required; all12logs copied andhashed.",
+    "Omit sixth ownership transfer -> real checker emits wrongowner account_terms_release_receipts; transaction abort restores all6owners.",
+    "Add direct SELECT(id) column grant -> real checker emits custodyprivilege console_rt accounts; transaction rollback removesgrant; subsequent custodycheck passes.",
+    "Any evidence-copy nonzero marks experiment FAIL and nonzero exit. All20copies independently verified successful."
+  ],
+  "cleanup": {
+    "container": "console-account-lifecycle-experiment-23bb28feba62",
+    "exit_code": 0,
+    "secret_file_removed": true
+  },
+  "limitations": [
+    "Disposable psql SQL-file experiment; actual production run_migrations/SQLx/finalization readiness path not implemented or tested. No fake ledger.",
+    "Schema uses explicitly transformed dormant draft with owner-transfer section omitted and ACLrevoke preserved. Neither original productdraft nor existing v1experiment modified.",
+    "Exact6admin transfer SQL is research input, not productionfinalizer with version/hash/admission checks.",
+    "Legacy catalog snapshot covers tableowners/ACL/columns/nullability/columnACL/constraintdefinitions, not all functions/triggers/defaults or whole-system informationflow.",
+    "No Account/security/head/consent/receipt rows, credentials, fences or runtimeactivation inserted."
+  ],
+  "raw_result_sha256": "9cb7a20250892962298096b74dd3ae46d18a6ff57bfdff177f85e1e7014a447c",
+  "source_manifest_sha256": "288c6cdce8d56f80cf552934b6fc6220ec43b79232c9ba391a840d02dbaa9721"
+}

@@ -1,0 +1,75 @@
+{
+  "status": "INDEPENDENTLY_REVIEWED_TEST_CANDIDATE_NOT_USER_APPROVED",
+  "base_sha": "828ce25cfb795e25ec8e97be536a536a2dd55a0a",
+  "owner": "/root",
+  "design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "toolchain": "Rust1.98.1",
+  "remaining_holds": [
+    "Consolidated first-vertical preparation incomplete",
+    "Exact ephemeral Account FK test correction remains blocked pending explicit user approval",
+    "User approval of consolidated test SHA",
+    "No production exposure/payment/legal/capacity authority"
+  ],
+  "source": "backend/app/tests/health_readiness.rs",
+  "source_sha256": "d3f4d8751cdf7740615ca29f8c23febaa0e7081e9e1f4e13de1cc535c10996d8",
+  "reviewer": "/root/fresh29_security",
+  "review_verdict": "ACCEPT_SOURCE; exact source and logs reviewed; no independent rerun",
+  "counts": {
+    "discovered": 10,
+    "executed": 10,
+    "passed": 10,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0
+  },
+  "artifacts": [
+    {
+      "path": "ssr-discovery-reviewed.log.gz",
+      "raw_sha256": "35bab0deb15d0a491a7d0741ce132155ae89d359baace1496ed60c79fe832695"
+    },
+    {
+      "path": "ssr-execution-reviewed.log.gz",
+      "raw_sha256": "523a02058722bbb96fa57f11b2b990740d181b8e1b7358e2e2d4c53a131f3604"
+    },
+    {
+      "path": "ssr-clippy-reviewed.log.gz",
+      "raw_sha256": "34570ef9b0fb75f563922c124a88e5dae345c9876d331c2bb02fade75a3e5599"
+    }
+  ],
+  "discovered_names": [
+    "authorized::tenant_observation::foreign_group_mutations_do_not_influence_authorized_ssr_bytes",
+    "authorized::ui_persona_e2e",
+    "authorized::ui_shell_omits_runs_unless_payroll_run_read",
+    "authorized::ui_shipping_screens_deny_by_omission",
+    "healthz_reports_process_liveness_and_role",
+    "metrics_endpoint_exposes_the_slo_http_duration_histogram",
+    "readyz_is_ready_without_configured_dependencies",
+    "readyz_returns_503_when_configured_database_is_unreachable",
+    "ui_pkg_serves_committed_hydrate_assets",
+    "ui_shell_serves_empty_ssr_html"
+  ],
+  "commands": [
+    "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --manifest-path backend/Cargo.toml -p console-app --test health_readiness -- --list",
+    "DOCKER_CONTEXT=colima-console-design30 RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --only app-health-readiness-pg --runner cargo --num-threads 1",
+    "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo clippy --manifest-path backend/Cargo.toml -p console-app --test health_readiness -- -D warnings"
+  ],
+  "new_tests": 1,
+  "inherited_tests": 9,
+  "classification": "PASS: four productionSSRroutes retain all status/header/HTMLbytes across two foreignGroup nativePayRun/name mutation phases with actual restrictedBusiness LOGIN",
+  "limits": [
+    "No browserhydration/noJSinteractions execution",
+    "No universal partialfield/currentAccountcontext policy theorem",
+    "No timing/log/egress proof",
+    "Setup writer seed_run uses retained legacy SETROLE fixture; request router uses actualLOGIN"
+  ],
+  "premortem": "Empty/failed SSR looks safely identical while no authorized content is exercised",
+  "detection": "Explicit Aorg/person/run rows; Bdistinct Group,updatedname/row/run ownview positive; fullbody/headercomparison",
+  "blast_radius": "One nested test module inside existing healthreadiness; inherited bytes preserved",
+  "rollback": "Only disposable fixture rows and local test source",
+  "stop_conditions": [
+    "AorBpositive fixture absent",
+    "Baseline nondeterministic",
+    "Foreign-only change influences Aresponse"
+  ],
+  "dependency_notice": "proc-macro-error2 2.0.1 futurecompatibility notice; clippy exit0, not resolved"
+}

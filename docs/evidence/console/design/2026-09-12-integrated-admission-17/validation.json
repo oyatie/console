@@ -1,0 +1,58 @@
+{
+  "candidate_sha": "83b07970260587ad3b4ec07893721b299a40d555",
+  "recorded_at": "2026-09-12T22:20:11.231472+00:00",
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.7",
+    "git": "git version 2.55.0"
+  },
+  "invocations": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-integrated-admission-17/verify-packet.py --commit 83b07970260587ad3b4ec07893721b299a40d555",
+      "exit_code": 0,
+      "result": {
+        "candidate_sha": "83b07970260587ad3b4ec07893721b299a40d555",
+        "evidence_core_files": 16,
+        "source_blobs": 83,
+        "conceptual_records": 71,
+        "shared_custody_records": 9,
+        "admission_records": 2,
+        "constraints": 26,
+        "open_design_items": 8,
+        "nonexecutable_proof_cases": 35,
+        "reader_links": 14,
+        "workload_arithmetic": "pass",
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "w04_complete": false
+      }
+    },
+    {
+      "command": "git diff --check 8cff8c887650f9ad8b876bdb604ee1230cc367a1..83b07970260587ad3b4ec07893721b299a40d555",
+      "exit_code": 0,
+      "result": "No whitespace errors across final candidate delta"
+    },
+    {
+      "command": "git status --short",
+      "at_sha": "83b07970260587ad3b4ec07893721b299a40d555",
+      "exit_code": 0,
+      "result": "clean before receipts"
+    }
+  ],
+  "earlier_diagnostics": [
+    {
+      "candidate_sha": "753c4b4c",
+      "command": "git diff --cached --check",
+      "exit_code": 2,
+      "cause": "CSV writer emitted CRLF; 62 line-ending diagnostics",
+      "resolution": "Both CSVs normalized to LF in 6babf2c96e4e12a4b0a0fef56405a6e07ec95396 before review. No test changed."
+    }
+  ],
+  "limits": [
+    "Evidence consistency checks only; no executed SQL/ACL/role/migration/restore/load/browser or product test",
+    "35 cases are proposed nonexecutable oracles; not 35 passing tests",
+    "No whole-repository gate result claimed; no authority files changed"
+  ],
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0
+}

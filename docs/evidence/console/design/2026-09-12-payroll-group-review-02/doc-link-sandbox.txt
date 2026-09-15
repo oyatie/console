@@ -1,0 +1,4 @@
+command: node scripts/check-doc-links.mjs
+reviewed candidate: c2d5dd43df11af789e3a3a413a4aaf8b48221605
+exit_code: 1
+docs/documentation-index.json: cannot establish exact Git index-tree custody

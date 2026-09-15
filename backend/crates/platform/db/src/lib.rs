@@ -26,6 +26,7 @@
 
 pub mod audit_tx;
 pub mod code_issuance;
+pub mod durability;
 pub mod error;
 pub mod governance_finding;
 pub mod lifecycle;

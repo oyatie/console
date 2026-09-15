@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Behavior locks for the first-party Rust BUCK graph generator."""
 
+import ast
 import importlib.util
 import inspect
+import json
 import re
 import shutil
 import subprocess
@@ -10,6 +12,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 GENERATOR_PATH = Path(__file__).with_name("gen_first_party.py")
@@ -328,6 +331,56 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
         )
 
         self.assertIn("src/workbench.rs", config["srcs"])
+
+    def test_auth_storage_module_and_frozen_actor_map_are_materialized(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        crate = Path(GENERATOR.REPO) / "backend/app"
+        materialized = {
+            file.relative_to(crate).as_posix()
+            for pattern in config["srcs"]
+            for file in crate.glob(pattern)
+            if file.is_file()
+        }
+        for required in ("tests/auth_rest/account_storage.rs", "tests/auth_rest/actor-migration.csv"):
+            self.assertTrue((crate / required).is_file(), "real candidate input must exist")
+            self.assertIn(required, materialized, "Cargo-readable test input is missing from Buck materialization")
+        roots = GENERATOR.discovered_test_resource_keys(str(crate), "console-app")
+        self.assertIn(("console-app", "test.integration", "tests/auth_rest.rs"), roots)
+        self.assertNotIn(("console-app", "test.integration", "tests/auth_rest/account_storage.rs"), roots,
+                         "nested module tests must execute through their Cargo root, not an invalid duplicate crate")
+
+    def test_native_cargo_roots_include_module_only_and_directory_main(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            crate = Path(directory)
+            (crate / "Cargo.toml").write_text('[package]\nname="fixture"\nversion="0.0.0"\nedition="2024"\n')
+            (crate / "tests/cases").mkdir(parents=True)
+            (crate / "tests/native").mkdir()
+            (crate / "tests/suite.rs").write_text('#[path="cases/scenarios.rs"] mod scenarios;\n')
+            (crate / "tests/cases/scenarios.rs").write_text('#[test] fn nested_case() {}\n')
+            (crate / "tests/native/main.rs").write_text('#[test] fn directory_case() {}\n')
+            roots = GENERATOR.discovered_test_resource_keys(str(crate), "fixture")
+            self.assertEqual(roots, {
+                ("fixture", "test.integration", "tests/suite.rs"),
+                ("fixture", "test.integration", "tests/native/main.rs"),
+            })
+            _, helpers = GENERATOR.integration_test_sources(str(crate))
+            self.assertEqual(helpers, ["tests/cases/scenarios.rs"])
+            self.assertEqual(GENERATOR.integration_test_name("tests/native/main.rs"), "native")
+
+    def test_custom_cargo_test_discovery_and_name_collisions_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            crate = Path(directory)
+            base = '[package]\nname="fixture"\nversion="0.0.0"\nedition="2024"\n'
+            for override in ('autotests=false\n', 'autotests=true\n', '\n[[test]]\nname="custom"\npath="custom.rs"\n'):
+                (crate / "Cargo.toml").write_text(base + override)
+                with self.subTest(override=override), self.assertRaisesRegex(ValueError, "custom Cargo test discovery"):
+                    GENERATOR.integration_test_sources(str(crate))
+            (crate / "Cargo.toml").write_text(base)
+            (crate / "tests/same").mkdir(parents=True)
+            (crate / "tests/same.rs").write_text('#[test] fn file_case() {}\n')
+            (crate / "tests/same/main.rs").write_text('#[test] fn directory_case() {}\n')
+            with self.assertRaisesRegex(ValueError, "colliding Cargo integration test names"):
+                GENERATOR.integration_test_sources(str(crate))
 
     def test_cross_package_path_modules_are_explicit_mapped_inputs(self) -> None:
         expected = {
@@ -792,9 +845,9 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             source_text,
             re.MULTILINE,
         )
-        self.assertEqual(164, len(ordinary_tests))
+        self.assertEqual(166, len(ordinary_tests))
         self.assertEqual(len(ordinary_tests), len(ordinary_gates))
-        self.assertEqual(23, len(sqlx_tests))
+        self.assertEqual(31, len(sqlx_tests))
         self.assertEqual(len(sqlx_tests), len(sqlx_gates))
         self.assertEqual(
             ("dev-auth",),
@@ -961,7 +1014,7 @@ class TestResourceClassification(unittest.TestCase):
                 labels = GENERATOR.test_labels(
                     package_path,
                     test_type,
-                    GENERATOR.requires_postgres(package_name, test_type, test_file),
+                    GENERATOR.resource_requirement(package_name, test_type, test_file),
                 )
                 self.assertEqual(1, len(set(labels) & GENERATOR.TEST_TYPE_LABELS))
                 self.assertEqual(1, len(set(labels) & GENERATOR.RESOURCE_LABELS))
@@ -1166,6 +1219,167 @@ class FeatureAndEnvPropagationTests(unittest.TestCase):
         # The fence: integration tests must NOT inherit the declaration.
         itest = blocks["probe-envmain-itest-it"]
         self.assertNotIn("CARGO_PKG_NAME", itest, itest)
+
+OWNER28_ASSETS = [
+    'src/owner28_schemas/owner-bindings.json',
+    'src/owner28_schemas/2026-09-12-native-manifest-contract-18/native-types.schema.json',
+    'src/owner28_schemas/2026-09-12-source-payload-contract-19/source-types.schema.json',
+    'src/owner28_schemas/2026-09-13-integrated-design-30/control-types.schema.json',
+    'src/owner28_schemas/2026-09-13-integrated-design-30/action-types.schema.json',
+    'src/owner28_schemas/2026-09-13-integrated-design-30/types.schema.json',
+    'src/owner28_schemas/2026-09-13-integrated-design-30/journal-types.schema.json',
+    'src/owner28_schemas/2026-09-13-submission-custody-contract-24/submission-types.schema.json',
+] + ['src/codec-goldens/owner-' + case + suffix for case in ['attempt-create-run', 'case-response', 'direct-wage', 'gated-calculate', 'publication'] for suffix in ['.bin', '.json']]
+
+
+class OwnerResourcesTests(unittest.TestCase):
+    def render(self, name):
+        temp = tempfile.TemporaryDirectory(prefix='owner28-GENERATOR-')
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name)
+        package = root / 'backend/crates/ontology/application'
+        for relative in ['src/lib.rs', *OWNER28_ASSETS, 'src/unrelated.json', 'src/private.env', 'src/owner28_schemas/private.key', 'src/codec-goldens/private.env', 'docs/evidence/secret.json']:
+            file = package / relative
+            file.parent.mkdir(parents=True, exist_ok=True)
+            file.write_text('#[cfg(test)] mod tests {}' if relative == 'src/lib.rs' else 'synthetic mapped resource')
+        with patch.object(GENERATOR, 'REPO', str(root)):
+            GENERATOR.emit(str(package), name, [], {}, [], {})
+        text = (package / 'BUCK').read_text()
+        mappings = [line for line in text.splitlines() if 'mapped_srcs = ' in line]
+        self.assertEqual(len(mappings), 2, 'both actual library and unit-test targets must be emitted')
+        result = []
+        for line in mappings:
+            self.assertNotIn('external =', line, 'owner resources must not import unrelated evidence trees')
+            patterns = self.mapping_patterns(line)
+            result.append({str(file.relative_to(package)) for pattern in patterns for file in package.glob(pattern) if file.is_file()})
+        return result
+
+    def mapping_patterns(self, line):
+        match = re.fullmatch(r'    mapped_srcs = repo_mapped_srcs\("backend/crates/ontology/application", glob\((\[.*\])\)\),', line)
+        self.assertIsNotNone(match, 'entire mapping must be one bounded local glob, no ignored suffix')
+        patterns = json.loads(match.group(1))
+        self.assertTrue(all(isinstance(pattern, str) for pattern in patterns))
+        return patterns
+
+    def test_mapping_oracle_rejects_extra_lists_globs_and_external_inputs(self):
+        positive = '    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/application", glob(["src/**/*.rs"])),'
+        self.assertEqual(self.mapping_patterns(positive), ['src/**/*.rs'])
+        for changed in [
+            positive.replace('])),', ']) + ["src/private.env"]),'),
+            positive.replace('])),', ']) + glob(["src/private.env"])), '),
+            positive.replace('])),', ']), external = {"//private:secret": "private.env"}),'),
+        ]:
+            self.assertNotEqual(changed, positive)
+            with self.assertRaises((AssertionError, json.JSONDecodeError)):
+                self.mapping_patterns(changed)
+
+    def test_owner_library_and_unit_map_all_eighteen_local_assets_only(self):
+        expected = {'src/lib.rs', *OWNER28_ASSETS}
+        for mapped in self.render('console-ontology-application'):
+            self.assertEqual(mapped, expected)
+
+    def test_identical_files_in_unrelated_package_do_not_gain_resource_mapping(self):
+        for mapped in self.render('console-equipment-domain'):
+            self.assertEqual(mapped, {'src/lib.rs'})
+
+class AccountResourcesTests(unittest.TestCase):
+    def render_account(self):
+        temporary = tempfile.TemporaryDirectory(prefix='account-generator-')
+        self.addCleanup(temporary.cleanup)
+        root = Path(temporary.name)
+        package = root / 'backend/app'
+        inputs = {
+            'src/lib.rs': '#[cfg(test)] mod tests {}',
+            'src/account_custody.rs': 'const SQL: &str = include_str!("account_custody_state.sql");',
+            'src/account_custody_state.sql': 'SELECT 1;',
+            'src/private.sql': 'not an authorized mapped input',
+            'tests/auth_rest.rs': '#[path="auth_rest/account_fence_projection.rs"] mod projection; #[path="auth_rest/account_root_transition.rs"] mod root_transition;',
+            'tests/auth_rest/account_fence_projection.rs': 'const OLD: &str = include_str!("fixtures/account-custody-dormant-v1-7af6dfd4.sql"); const V2: &str = include_str!("fixtures/account-custody-projection-v2-69e3ca9c.sql");',
+            'tests/auth_rest/account_root_transition.rs': 'const OLD: &str = include_str!("fixtures/account-custody-root-input-d66e2112.sql"); const STATE: &str = include_str!("../../src/account_custody_state.sql");',
+            'tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql': 'synthetic fixture mapping',
+            'tests/auth_rest/fixtures/account-custody-projection-v2-69e3ca9c.sql': 'synthetic projection-v2 fixture mapping',
+            'tests/auth_rest/fixtures/account-custody-root-input-d66e2112.sql': 'synthetic root-transition historical fixture mapping',
+            'tests/auth_rest/fixtures/private.sql': 'not an authorized mapped input',
+        }
+        for relative, content in inputs.items():
+            file = package / relative
+            file.parent.mkdir(parents=True, exist_ok=True)
+            file.write_text(content)
+        with patch.object(GENERATOR, 'REPO', str(root)):
+            GENERATOR.emit(str(package), 'console-app', [], {}, [], {})
+        return package, (package / 'BUCK').read_text()
+
+    def local_mapping(self, package, generated, target):
+        block = generated.split('name = "' + target + '",', 1)[1].split('\n)', 1)[0]
+        expression = block.split('mapped_srcs = ', 1)[1].split('\n    crate', 1)[0].strip().removesuffix(',')
+        call = ast.parse(expression, mode='eval').body
+        self.assertIsInstance(call, ast.Call)
+        self.assertIsInstance(call.func, ast.Name)
+        self.assertEqual(call.func.id, 'repo_mapped_srcs')
+        self.assertEqual(len(call.args), 2)
+        self.assertEqual(ast.literal_eval(call.args[0]), 'backend/app')
+        # External labels are existing, separately tested contracts. Never ignore
+        # extra arguments or unexpected syntax in the local input expression.
+        self.assertLessEqual(len(call.keywords), 1)
+        for keyword in call.keywords:
+            self.assertEqual(keyword.arg, 'external')
+            external = ast.literal_eval(keyword.value)
+            self.assertIsInstance(external, dict)
+            self.assertTrue(all(isinstance(k, str) and isinstance(v, str) for k, v in external.items()))
+        def strings(node):
+            self.assertIsInstance(node, ast.List)
+            result = ast.literal_eval(node)
+            self.assertTrue(all(isinstance(value, str) for value in result))
+            return result
+        def expand(patterns):
+            return {file.relative_to(package).as_posix() for pattern in patterns for file in package.glob(pattern) if file.is_file()}
+        def evaluate(node):
+            if isinstance(node, ast.List):
+                paths = strings(node)
+                self.assertTrue(all((package / path).is_file() for path in paths))
+                return set(paths)
+            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+                return evaluate(node.left) | evaluate(node.right)
+            self.assertIsInstance(node, ast.Call)
+            self.assertIsInstance(node.func, ast.Name)
+            self.assertEqual(node.func.id, 'glob')
+            self.assertEqual(len(node.args), 1)
+            self.assertLessEqual(len(node.keywords), 1)
+            excluded = set()
+            for keyword in node.keywords:
+                self.assertEqual(keyword.arg, 'exclude')
+                excluded = expand(strings(keyword.value))
+            return expand(strings(node.args[0])) - excluded
+        return evaluate(call.args[1])
+
+    def test_account_compile_time_custody_sql_is_mapped_in_library_and_unit(self):
+        package, generated = self.render_account()
+        expected = {'src/lib.rs', 'src/account_custody.rs', 'src/account_custody_state.sql'}
+        for target in ['console-app', 'console-app-unit']:
+            self.assertEqual(self.local_mapping(package, generated, target), expected)
+
+    def test_auth_rest_maps_exact_historical_fixture_without_sql_glob(self):
+        package, generated = self.render_account()
+        expected = {'tests/auth_rest.rs', 'tests/auth_rest/account_fence_projection.rs',
+                    'tests/auth_rest/account_root_transition.rs',
+                    'tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql',
+                    'tests/auth_rest/fixtures/account-custody-projection-v2-69e3ca9c.sql',
+                    'tests/auth_rest/fixtures/account-custody-root-input-d66e2112.sql',
+                    'src/account_custody_state.sql'}
+        self.assertEqual(self.local_mapping(package, generated, 'console-app-itest-auth_rest'), expected)
+
+    def test_account_mapping_oracle_detects_broad_globs_and_extra_private_inputs(self):
+        package, _ = self.render_account()
+        def mapping(expression):
+            return 'name = "fixture",\n    mapped_srcs = repo_mapped_srcs("backend/app", ' + expression + '),\n    crate = "fixture",\n)'
+        exact = '["src/lib.rs", "src/account_custody.rs", "src/account_custody_state.sql"]'
+        expected = {'src/lib.rs', 'src/account_custody.rs', 'src/account_custody_state.sql'}
+        self.assertEqual(self.local_mapping(package, mapping(exact), 'fixture'), expected)
+        for expression in [exact + ' + glob(["src/**"])', exact + ' + glob(["tests/**"])', exact + ' + ["src/private.sql"]']:
+            self.assertNotEqual(self.local_mapping(package, mapping(expression), 'fixture'), expected)
+        for expression in [exact + ' + unknown()', 'glob(["src/**"], unexpected = [])']:
+            with self.assertRaises(AssertionError):
+                self.local_mapping(package, mapping(expression), 'fixture')
 
 
 if __name__ == "__main__":

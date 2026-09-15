@@ -1,0 +1,28 @@
+{
+  "owner": "/root",
+  "base_sha": "0dac266707787a8afa86cfbb9b0be3a2533dc42c",
+  "immutable_target": "Map existing new nested attendance test helper into generated first-party test inputs with unchanged test target membership",
+  "allowed_paths": [
+    "backend/crates/attendance/adapter-postgres/BUCK",
+    "docs/evidence/console/preparation/2026-09-13-production-tdd"
+  ],
+  "forbidden": "No product implementation, assertion, generator algorithm, Cargo.lock/dependency or other generated face changes",
+  "mechanical_guide": "On clean reviewed source base run immutable first-party preflight; classify actual generated output drift; fanout admit same probe; run existing generator serially; inspect allowlist and preserve377labels; same probe green at frozen generated candidate",
+  "probe": "PATH=\"/private/tmp/console-authority30-dotslash:$PATH\" RUSTUP_TOOLCHAIN=1.98.1 fnm exec --using=24.16.0 tools/buck/preflight.sh > /private/tmp/console-prep-load-mapping-probe.log 2>&1",
+  "pre_mortem": "Cargo helper compiles but Buck excludes it",
+  "blast_radius": "Existing attendance integration input lists only; nested helper is not a standalone test crate",
+  "detection": "Immutable generated first-party drift gate and exact target census",
+  "rollback": "Preserve base source/tree, no sharedreset",
+  "stop_conditions": [
+    "Prerequisite rather than generated-drift failure",
+    "Any unexpected output path",
+    "Prior target name omitted/duplicated",
+    "Review finding"
+  ],
+  "reviewer": "/root/fresh29_operations",
+  "remaining_holds": [
+    "Complete firstverticalprep",
+    "Blocked exact ephemeralFKcorrection",
+    "No testapproval/productadmission"
+  ]
+}

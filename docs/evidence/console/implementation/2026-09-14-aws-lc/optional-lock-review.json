@@ -1,0 +1,50 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "INACTIVE_OPTIONAL_LOCK_RETENTION_CONFIRMED",
+  "question": "Whether retained Ring lock entries require actual compilation or can be removed by ordinary lock regeneration",
+  "experiment": "Fresh isolated crates using pinned cached upstream packages; no Console edits, no builds, no shared target. Cargo1.98.1 offline generate-lockfile, update --workspace, and tree --target all --edges normal,build.",
+  "cases": [
+    {
+      "dependency": "rustls-webpki=0.103.13",
+      "features": "default=false;std,aws-lc-rs",
+      "fresh_lock_contains_ring": "0.17.14",
+      "update_workspace_retains_ring": true,
+      "active_normal_build_alltarget_tree_ring_lines": 0
+    },
+    {
+      "dependency": "hickory-proto=0.26.1",
+      "features": "default=false;std",
+      "fresh_lock_contains_ring": "0.17.14",
+      "update_workspace_retains_ring": true,
+      "active_normal_build_alltarget_tree_ring_lines": 0
+    },
+    {
+      "dependency": "ring=0.17.14 optional=true on tiny root",
+      "features": "not enabled",
+      "fresh_lock_contains_ring": "0.17.14",
+      "active_normal_build_alltarget_tree_ring_lines": 0
+    }
+  ],
+  "source_explanation": [
+    "rustls-webpki0.103.13 declares optional ring0.17 plus ring feature; hickory-proto0.26.1 declares optional ring0.17 plus dnssec-ring. Those alternative provider declarations survive into lock resolution even when unused by selected build.",
+    "A lock/resolved-package inventory is broader than the actually activated normal/build graph. Metadata node presence/features alone cannot be promoted into evidence that Ring was compiled for the selected product."
+  ],
+  "regeneration_conclusion": "Fresh locks reproduce Ring and update --workspace retains it. Ordinary regeneration is therefore not a reliable removal method for these exact current manifests; manual deletion would fight Cargo resolution rather than establish a supported build.",
+  "precise_final_caveat": "Ring is removed from Console first-party dependencies and the verified selected build graph. Cargo.lock still records Ring as an inactive optional upstream alternative. That does not establish universal absence from every lockfile, metadata inventory, vendored source bundle or future feature combination.",
+  "options_without_overclaim": [
+    "Keep reproducible Cargo lock and gate actual build/feature closure, with an accurate activated dependency inventory or SBOM. Separately verify Buck/vendor publication; a full cargo vendor bundle may include inactive locked alternatives.",
+    "For literal zero Ring package references, alter the dependency manifests/closure: an upstream release or upstream-accepted feature/package split without that optional dependency, a reviewed local patch/fork, or replacement/removal of the offending upstream dependency can achieve it. A fork is one option, not a mathematical necessity.",
+    "Do not expand into replacing TLS/certificate/DNS stacks merely to make a lockfile string disappear unless literal lock/vendor removal is an explicit requirement with accepted cost. No such dependency redesign is implemented by this evidence."
+  ],
+  "preserved_failed_attempt": "Initial hickory probe included nonexistent tokio feature; failed before resolution, preserved in results.json. Corrected std-only fresh probe succeeded; no failure counted as PASS.",
+  "artifacts": {
+    "results.json": "b1f5b5a8eac4200c185ce1675e347a2fb206d4167070be29ec51ef8de779113d",
+    "corrected-results.json": "79c366f46e0d0cd5ce45546515502d84f920212397c0ded106b8ddb8aa98589f",
+    "webpki/Cargo.toml": "bf807a9e8ce3a9dc8cc3dfa9553ec3cfe17d99a39fddefae34c0d52fd4fd8ad0",
+    "webpki/Cargo.lock": "db82fa8a16fbb6adfa19b8bdb9f9abb4b2d0e6b8b305cd716f9d9de402bb4344",
+    "hickory/Cargo.toml": "29ec7646609aeabb2af6a66b61b4007b04e634d89249398315a7d8fb81230c00",
+    "hickory/Cargo.lock": "00286980fb89bfaaa4cb1a7809b81437cf98a5289ef45822f9923619512fef3d",
+    "rootoptional/Cargo.toml": "99bd0ee80996f479cab2260f5d1f6767e6ad8be0155fcf05235fde72c20664f4",
+    "rootoptional/Cargo.lock": "1688e63c0d8b8978107ffef27614759ed3db83da2400bd4eeb2a9dc93238afe8"
+  }
+}

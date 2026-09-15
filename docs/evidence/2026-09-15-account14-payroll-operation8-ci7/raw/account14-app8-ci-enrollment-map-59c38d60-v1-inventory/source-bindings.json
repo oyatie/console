@@ -1,0 +1,26 @@
+{
+  "head_sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "files": {
+    ".github/workflows/ci.yml": "3ac68326e809780332a35a2e90043e8409ce69fcef1b75595dbb8ee22f7a070d",
+    "scripts/lib/recovery-test-invocations.mjs": "498ac4f0cd4e3f0c465257ab8f1de0311b9b24098aa160f541d16099e71f20da",
+    "scripts/lib/recovery-test-invocations.test.mjs": "2a71ce282b6373a3d533597121f23bdd9f76a4f1ddd8cf0e3435c91d3e448260",
+    "tools/buck/test_preparation_wiring.py": "73c75ae43fcc996ab2830b6c83eaf5b5da0064d6b7a66057523035e1e7814dd0",
+    "scripts/check-ci-preflight.mjs": "8ff3871b60b343bbc80c6028bad3fb42e85694bf836c7f43fe4bd398d5a0fd60",
+    "scripts/check-ci-preflight.test.mjs": "94a13437619d7f19c78668b517e06ba2a89dfb8a1c3aabed238463c578be8a70",
+    "docs/program/executed-tests-baseline.json": "166ed21d79532582dc59a90cbd73f6a415d8409a6ecf58864d4f5b05d8ffea99",
+    "scripts/check-executed-tests.mjs": "2c0bda91295ed90e47a5917f6dd2d6a85591196d179f3411fe7741a9601640ee",
+    "scripts/check-executed-tests.test.mjs": "06af633d29548b565bbeb0e588ece7247a1d5c9ae1fd9029cd191dbfcda39f02",
+    "scripts/lib/executed-tests-baseline.mjs": "2666c2006ba7fc0c383f6b294109455e9153dc41c51acc81b5813ef48c6afb1a",
+    "tools/ci/postgres-cargo-map.json": "2b41e0b864e3e053bd1f6ff2ea380dce0683659297b4ee5ac88a6e06273afc54",
+    "tools/ci/cargo_needs_postgres.sh": "d75b1877eb24a4f16168d7e26294677c5711de95444ff7484fffc8b1a2f08a29",
+    "tools/ci/postgres-partition.mjs": "99cab75623ac358c3cebbf8edc22a0164060796716362017f3bab33c7b02d5c3",
+    "backend/app/src/durability_composition_tests.rs": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+    "backend/app/src/lib.rs": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+    "backend/app/Cargo.toml": "adc778c0805ebdfa275f5de8f9f34d426240a538aff1da3d8685e11493e788bc",
+    "backend/app/BUCK": "5679f785e8e67abe1d6c77ad1defe0cfe4732f294c33037dead2f0524396fd7b",
+    "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+    "backend/crates/identity/adapter-postgres/BUCK": "900dd790a6fd37448d89285758e22139c3cbef4e9d2ccbbc39e912523d8eb1cb",
+    "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs": "0e436f1ec3936c67ad423e2b61c7199dfebdb4c87c16a4657d592611adb0169c",
+    "package.json": "03f8bbb467bdf64b81d5b23a0b75a4c12e4a4b29a6189ad131bc3b78542c0b67"
+  }
+}

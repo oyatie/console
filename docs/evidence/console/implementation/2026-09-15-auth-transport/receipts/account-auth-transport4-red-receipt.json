@@ -1,0 +1,32 @@
+{
+  "base_sha": "a2aa1ff712d882a639f2be504336223a0486c3a2",
+  "admission": "/private/tmp/account-auth-transport4-admission.log",
+  "evidence": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb",
+  "actual_tests": {
+    "executed": 4,
+    "passed": 1,
+    "failed": 3,
+    "ignored": 0,
+    "filtered": 144
+  },
+  "meaningful_red": [
+    "AUTH_DATABASE_BINDING",
+    "AUTH_POOL_RETAINED",
+    "AUTH_POOL_CREDENTIAL"
+  ],
+  "blocked_deeper_behavior": "Auth-only outage/restored readiness awaits actual retained backend; no claim those fault assertions executed in RED",
+  "cleanup": "confirmed owned container absent via successful bounded docker ps -a",
+  "source_pre_post": "clean and equal",
+  "writer_transfer": {
+    "from": "/root",
+    "to": "/root/next_auth_context",
+    "root": "/private/tmp/console-production-tdd-preparation-20260913",
+    "allow": [
+      "backend/app/src/lib.rs",
+      "backend/crates/platform/auth-rest/src/lib.rs"
+    ],
+    "root_writes": "paused until implementation delivery",
+    "target": "same four-test command green",
+    "reviewer": "/root/finish_browser"
+  }
+}

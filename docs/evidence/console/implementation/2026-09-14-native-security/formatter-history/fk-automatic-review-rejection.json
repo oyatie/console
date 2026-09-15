@@ -1,0 +1,7 @@
+{
+  "action": "Apply exact previously reviewed ephemeral FK test correction",
+  "applied": false,
+  "user_response": "다음",
+  "rejection": "This applies a security-related test exception that can weaken custody assertions; the user's ambiguous “다음” does not clearly approve this exact patch after the automatic reviewer required explicit approval.",
+  "resolution": "Do not retry or bypass. Finish unaffected formatter lane; ask explicit approval for exact patch in consolidated final response."
+}

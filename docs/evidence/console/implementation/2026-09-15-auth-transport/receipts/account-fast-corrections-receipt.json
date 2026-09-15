@@ -1,0 +1,24 @@
+{
+  "base_sha": "bfb9ed6d9c74c1d94adb18c1e78d18d080b5b7e2",
+  "owner": "/root",
+  "review": "/private/tmp/account-auth-fast-gate-candidate-review.json",
+  "adr_admission": "/private/tmp/account-adr-logscope-admission.log",
+  "adr_red": "/private/tmp/account-adr-logscope-red.log",
+  "fast_failures": "/private/tmp/account-auth-verify-fast-20260915.log",
+  "guide": "Apply exact reviewed evidence-log scope, mandatoryfive-role expectations, one independentlyreviewedissuerhash. Preserve allotherchecks/logbytes.",
+  "pre_mortem": "Overbroadevidence exclusion concealsactivebadrefs; hash refresh hidesunreviewedcode",
+  "detection": "4additiveboundarytests + retainedauthissuer mutation tests; exactbase/candidatehashes",
+  "blast_radius": "Developmentverificationonly; no release execution/credentialchanges",
+  "rollback": "Revert local checker/expectedpin edits; preservedtests and historicalevidence remain",
+  "stop_conditions": [
+    "unexpected changedsourcehash",
+    "unexplained failingcase",
+    "lostguard"
+  ],
+  "holds": [
+    "Product/auth/production readiness"
+  ],
+  "reviewers": [
+    "/root/fast_gate_review"
+  ]
+}

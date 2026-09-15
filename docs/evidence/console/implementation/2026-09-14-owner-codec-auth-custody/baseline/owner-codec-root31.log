@@ -1,0 +1,39 @@
+   Compiling console-ontology-application v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/application)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.15s
+     Running unittests src/lib.rs (/private/tmp/console-account30-cargo/debug/deps/console_ontology_application-4785b4eab40d4b02)
+
+running 31 tests
+test prepared::tests::an_unknown_control_point_refuses_the_whole_command ... ok
+test prepared::tests::an_undeclared_param_is_refused ... ok
+test owner28::limits_tests::owner_protocol_shared_parse_budget_and_numeric_diagnostics_are_bounded ... ok
+test prepared::tests::malformed_edits_are_refused_at_preparation_not_at_writeback ... ok
+test prepared::tests::four_eyes_binds_to_the_instance_for_an_edit_and_the_type_for_a_create ... ok
+test prepared::tests::a_failing_criterion_is_reported_not_raised ... ok
+test prepared::tests::gates_read_checklist_and_egress_from_the_one_prepared_command ... ok
+test prepared::tests::preparation_does_not_require_the_writeback_only_inputs ... ok
+test owner28::limits_tests::owner_protocol_duplicate_nested_keys_and_container_limits_refuse ... ok
+test prepared::tests::projected_actions_report_criteria_they_cannot_evaluate ... ok
+test prepared::tests::the_edits_resolve_against_the_base_the_gates_were_evaluated_from ... ok
+test prepared::tests::the_writeback_requires_a_command_id ... ok
+test prepared::tests::the_writeback_requires_an_expected_revision_for_an_instance_edit ... ok
+test tests::control_points_parse_and_reject_unknown_gate ... ok
+test tests::egress_auto_clears_only_when_no_side_effects ... ok
+test tests::edits_resolve_value_and_param_and_reject_ambiguity ... ok
+test tests::evaluation_context_lets_params_win ... ok
+test tests::params_enforce_declared_keys_and_required ... ok
+test tests::submission_criteria_pass_fail_and_fail_closed ... ok
+test owner28::schema::tests::missing_reachable_schema_fails_and_decimal_bounds_are_exact ... ok
+test owner28::schema::tests::definition_resource_rewrite_preserves_ref_sibling_constraints ... ok
+test owner28_codec_tests::rust_owner_decoder_rejects_public_numeric_tokens_duplicate_keys_and_future_gate_digest ... ok
+test owner28::limits_tests::owner_protocol_rejects_tag_oversize_and_noncanonical_json ... ok
+test owner28::schema::tests::all_fifty_five_registered_input_validators_compile ... ok
+test owner28::limits_tests::owner_protocol_truncation_every_boundary_and_trailing_bytes ... ok
+test owner28_codec_tests::rust_owner_gated_calculate_matches_independent_literal_bytes ... ok
+test owner28_codec_tests::rust_owner_direct_wage_matches_independent_literal_bytes ... ok
+test owner28_codec_tests::rust_owner_case_response_matches_independent_literal_bytes ... ok
+test owner28_codec_tests::rust_owner_publication_matches_independent_literal_bytes ... ok
+test owner28_codec_tests::rust_owner_attempt_create_run_matches_independent_literal_bytes ... ok
+test owner28::limits_tests::owner_protocol_schema_and_identity_refusals_do_not_use_fixture_matching ... ok
+
+test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+

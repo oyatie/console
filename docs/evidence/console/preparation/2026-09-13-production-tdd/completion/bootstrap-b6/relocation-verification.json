@@ -1,0 +1,55 @@
+{
+  "source": "/private/tmp/console-native28-test-bootstrap-b6-20260913",
+  "manifest_sha256": "4173bce3087ba47eb47e0215dbc5c309a4b423d4a3eb145e8d822bc1e2d4f0ee",
+  "all_original_members_verified": true,
+  "files": [
+    {
+      "original": "account-enrollment-producer.rs",
+      "retained": "account-enrollment-producer.rs",
+      "original_sha256": "a260c3b99ba1f78027d43da19b9a87ca1948ad0fbd07dd1cf84aa691c764b982",
+      "retained_sha256": "a260c3b99ba1f78027d43da19b9a87ca1948ad0fbd07dd1cf84aa691c764b982"
+    },
+    {
+      "original": "b5-parent-manifest.json",
+      "retained": "b5-parent-manifest.json",
+      "original_sha256": "ce522b7397419d422eb57fe0b366b37c55c491ee7fee734064957625b359057a",
+      "retained_sha256": "ce522b7397419d422eb57fe0b366b37c55c491ee7fee734064957625b359057a"
+    },
+    {
+      "original": "bootstrap-contract.md",
+      "retained": "bootstrap-contract.txt",
+      "original_sha256": "cf9fba5fd1e0781eacea0bda71f342619aa45778290d67bc7fdba70b887a5e3d",
+      "retained_sha256": "cf9fba5fd1e0781eacea0bda71f342619aa45778290d67bc7fdba70b887a5e3d"
+    },
+    {
+      "original": "dependencies/operator-custody-producer.rs",
+      "retained": "dependencies/operator-custody-producer.rs",
+      "original_sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03",
+      "retained_sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03"
+    },
+    {
+      "original": "deployment-root-producer.rs",
+      "retained": "deployment-root-producer.rs",
+      "original_sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3",
+      "retained_sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3"
+    },
+    {
+      "original": "ordinary-issuer-bootstrap.rs",
+      "retained": "ordinary-issuer-bootstrap.rs",
+      "original_sha256": "50e0fb9e77889f6acaf3111b920453f2c5c7b5e4800bdfbb848ddb63aa8ad494",
+      "retained_sha256": "50e0fb9e77889f6acaf3111b920453f2c5c7b5e4800bdfbb848ddb63aa8ad494"
+    },
+    {
+      "original": "publish-then-root-producer.rs",
+      "retained": "publish-then-root-producer.rs",
+      "original_sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027",
+      "retained_sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027"
+    },
+    {
+      "original": "syntax-execution.json",
+      "retained": "syntax-execution.json",
+      "original_sha256": "54cfe004a59b7237e6cb540cb4576c9823207acd5b0938a2051d76e900e53637",
+      "retained_sha256": "54cfe004a59b7237e6cb540cb4576c9823207acd5b0938a2051d76e900e53637"
+    }
+  ]
+}

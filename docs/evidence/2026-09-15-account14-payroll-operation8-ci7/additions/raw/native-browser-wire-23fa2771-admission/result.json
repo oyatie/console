@@ -1,0 +1,32 @@
+{
+  "head": "23fa277133e83916d094f9b2423b48fd5af65ce4",
+  "admission_exit": 0,
+  "supervised_cargo_exit": 101,
+  "tests": {
+    "discovered": 216,
+    "executed": 1,
+    "passed": 0,
+    "failed": 1,
+    "ignored": 0,
+    "filtered": 215
+  },
+  "raw_failure": "HTTP404 versus200 at Response::json4034",
+  "backtrace_callers": [
+    4528,
+    4654,
+    4818
+  ],
+  "source_interpretation": "registration/start response; preceding sequential public terms and artifact assertions completed",
+  "unreached": [
+    "native activation",
+    "Account live session",
+    "CompanyActor/context catalog and contexts"
+  ],
+  "log_sha256": "eea0804f982f6456fff1da3b7a258cf77b510199608ae7a7c8e52468a7258a23",
+  "independent_review": "/private/tmp/native-browser-start-trace-23fa2771-capture.json",
+  "not_claimed": [
+    "terms production publication authority",
+    "native endpoint completion",
+    "HTTP GREEN"
+  ]
+}

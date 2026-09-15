@@ -1,0 +1,13 @@
+{
+  "invocation": "rustfmt --edition 2024 /private/tmp/console-security-owner-assertions-s2-20260913/*.rs",
+  "exit_code": 0,
+  "parsed_top_level_rust_files": 6,
+  "source_discovered_test_functions": 25,
+  "cargo_compiled": 0,
+  "cargo_discovered": 0,
+  "executed": 0,
+  "behavioral_red": 0,
+  "notes": [
+    "Missing ordinary production owner modules/catalog and serialized dependency registration. No cargo/product test was invoked; syntax-only status cannot establish a red lane."
+  ]
+}

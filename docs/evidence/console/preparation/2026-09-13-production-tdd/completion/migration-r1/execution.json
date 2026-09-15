@@ -1,0 +1,75 @@
+{
+  "source_test_functions": 7,
+  "owner_compiled": 0,
+  "owner_executed": 0,
+  "parser_checks": [
+    {
+      "file": "migration-rollback-tests.rs",
+      "command": [
+        "rustfmt",
+        "+1.98.1",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-migration-readiness-r1-20260913/migration-rollback-tests.rs"
+      ],
+      "exit": 0
+    },
+    {
+      "file": "migration-admission-tests.rs",
+      "command": [
+        "rustfmt",
+        "+1.98.1",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-migration-readiness-r1-20260913/migration-admission-tests.rs"
+      ],
+      "exit": 0
+    },
+    {
+      "file": "postgres-snapshot-producer.rs",
+      "command": [
+        "rustfmt",
+        "+1.98.1",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-migration-readiness-r1-20260913/postgres-snapshot-producer.rs"
+      ],
+      "exit": 0
+    }
+  ],
+  "machinery_compile": {
+    "final_exit": 0,
+    "initial_exit": 101,
+    "cause": "SQLx0.9 SqlSafeStr; fixed audited generated identifiers"
+  },
+  "machinery_runs": [
+    {
+      "id": 1,
+      "exit": 0,
+      "checks": 7
+    },
+    {
+      "id": 2,
+      "exit": 1,
+      "cause": "temporary initdb server readiness race; no product assertions"
+    },
+    {
+      "id": 3,
+      "exit": 1,
+      "cause": "proc1 executable symlink unavailable; no product assertions"
+    },
+    {
+      "id": 4,
+      "exit": 0,
+      "checks": 7,
+      "final_bytes": true
+    }
+  ],
+  "claims": "Fixture checks are not owner behavioral RED or runtime migration proof"
+}

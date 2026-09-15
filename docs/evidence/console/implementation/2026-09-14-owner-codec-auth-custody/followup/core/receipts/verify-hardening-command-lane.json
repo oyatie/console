@@ -1,0 +1,29 @@
+[
+  {
+    "lane": "VERIFY-hardening-command-enrollment",
+    "owner": "/root/finish_browser",
+    "worktree": "/private/tmp/console-verify-canonical-hardening-20260914",
+    "base_sha": "9c846602511043014a039b77335e762e37032bea",
+    "allow": [
+      "scripts/check-production-hardening.mjs"
+    ],
+    "probe": "NODE_PATH=/private/tmp/console-production-tdd-preparation-20260913/node_modules node --test --test-name-pattern='accepts active CI, security, and image-release workflow gates' scripts/check-production-hardening.test.mjs",
+    "target": "Canonical hardening checker requires newly enrolled authcaller suite alongside every retained suite",
+    "guide": "Add scripts/auth-launch-callers.test.mjs to exact productionHardeningTestCommand literal matching reviewedpackage script. No other predicates or test changes. Preserve failclosed equality and all mandatory suites.",
+    "pre_mortem": "Exact expected command drift makes honest packagegate fail; relaxing equality could hide omitted suites",
+    "blast_radius": "One existing canonical string in development checker",
+    "detection": "Existing actualactiveworkflow test REDtoGREEN plus focused evaluateWorkflowHardeningChecks suite",
+    "rollback": "Revert boundedsource; do not remove newtest enrollment",
+    "stop_conditions": [
+      "Removedsuite",
+      "Weakenedpredicate",
+      "Testedit"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Production and application acceptance"
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+# Independent telemetry test resource classification review
+
+Reviewer /root/preparation_recovery, read-only. Repository writer /root.
+
+APPROVE exact proposed correction: add #[cfg(not(feature = "test-postgres"))] immediately before each of only the two new #[test] attributes in backend/app/src/console_telemetry.rs::security_diagnostic_sink_tests. Preserve both assertion bodies and normal resource.none execution. Update tools/buck/test_gen_first_party.py ordinary app test count164 to166 mechanically. No earlier test change, skip/ignore or reduced assertion is authorized.
+
+Evidence: tools/buck/gen_first_party.py:1064-1073 declares a separate console-app itest-inline-postgres target compiled with the inert test-postgres feature. tools/buck/test_gen_first_party.py:419-447 asserts that all ordinary #[test]/#[tokio::test] cases have cfg(not(feature = "test-postgres")), all23sqlx cases have the complementary feature guard, and manifest has no default features. backend/app/Cargo.toml declares test-postgres=[] and no default feature. Thus adding unguarded hermetic tests breaks the established mutually exclusive partition and duplicates ordinary tests in the PG feature binary.
+
+Normal CI execution remains .github/workflows/ci.yml:1390-1394: env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib. Its existing !cancelled()+buck-app+run_heavy condition and no test name filter execute both new ordinary tests. The separate PG invocation at1415 uses --features test-postgres and --test-threads=1; the correction keeps it23PG tests. The ordinary suite becomes166 while existing bodies remain unchanged.
+
+This is appropriate resource classification, not a claim of repaired telemetry behavior. Prior source hash84d10c46eaade3f2ac0fd9808e0fd2f61ad256c00e33c96c7735cdb112db8095 and exact67693004 two-test behavioral RED log remain historical evidence. Root must bind fresh corrected source hash/head and replay the same two normal tests, recording discovered166/executed2/filtered164 if unchanged. Generator partition proof and ordinary CI reachability must remain green. No Cargo rerun or repository edit was performed by reviewer.
+
+Blast radius: two new tests' feature selection and mechanical count. Detection: existing exhaustive gate-count invariant, unchanged normal CI argv, same two normal behavioral assertions. Rollback: targeted new revision preserving prior evidence. Stop if ordinary tests disappear from normal build, assertions change, an existing test is gated differently, or source/command custody differs from reviewed correction.

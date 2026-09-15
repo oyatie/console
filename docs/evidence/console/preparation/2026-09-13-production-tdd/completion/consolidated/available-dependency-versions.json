@@ -1,0 +1,61 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "source": "backend/Cargo.lock",
+  "existing_lock_entries": {
+    "rand": [
+      {
+        "version": "0.8.6",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "5ca0ecfa931c29007047d1bc58e623ab12e5590e8c7cc53200d5202b69266d8a"
+      },
+      {
+        "version": "0.9.4",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "44c5af06bb1b7d3216d91932aed5265164bf384dc89cd6ba05cf59a35f5f76ea"
+      },
+      {
+        "version": "0.10.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "d2e8e8bcc7961af1fdac401278c6a831614941f6164ee3bf4ce61b7edb162207"
+      }
+    ],
+    "regex": [
+      {
+        "version": "1.12.4",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "f1292b7759ae1cb9ec195452d1390a074f0cd8541ab7a5a8c31cd6db45d4a6ba"
+      }
+    ],
+    "tempfile": [
+      {
+        "version": "3.27.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
+      }
+    ],
+    "cookie": [],
+    "csv": [],
+    "openssl": [
+      {
+        "version": "0.10.80",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "a45fa2aa886c42762255da344f0a0d313e254066c46aad76f300c3d3da62d967"
+      }
+    ]
+  },
+  "note": "Actual isolated helper compilation verified these versions. Product direct dev-dependency activation and lock generation remain serialized test assembly; no transitive import assumption.",
+  "additional_verified": {
+    "cookie": {
+      "version": "0.18.2",
+      "checksum": "1a373e3602691c3cdea496d2f0ee5935151e6168fe87739483c463db1b2f2f87",
+      "source": "https://index.crates.io/co/ok/cookie",
+      "evidence": "../browser-r2/helper-smoke/Cargo.lock"
+    },
+    "csv": {
+      "version": "1.4.0",
+      "checksum": "52cd9d68cf7efc6ddfaaee42e7288d3a99d613d4b50f76ce9827ae0c6e14f938",
+      "source": "https://index.crates.io/3/c/csv",
+      "evidence": "../browser-r2/helper-smoke/Cargo.lock"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "container": "console-fk-owner-selfgrant-6ed48628abc245309ab2b022f1fee3a9",
+  "image": "postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280",
+  "network": "none",
+  "storage": "256MiB tmpfs; no durability claim",
+  "cases": [
+    {
+      "case": "owner SELECT only",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "ERROR:  permission denied for table accounts\nCONTEXT:  SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""
+    },
+    {
+      "case": "owner REFERENCES too",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "ERROR:  permission denied for table accounts\nCONTEXT:  SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""
+    },
+    {
+      "case": "owner UPDATE(id) instead of REFERENCES",
+      "exit": 0,
+      "stdout": "INSERT 0 1",
+      "stderr": ""
+    }
+  ],
+  "acl": {
+    "exit": 0,
+    "stdout": "accounts|{fixture_owner=r/fixture_owner}|id|{fixture_owner=w/fixture_owner}\naccounts|{fixture_owner=r/fixture_owner}|note|",
+    "stderr": ""
+  },
+  "result": "PASS: FK owner requires row-lock privilege; exact UPDATE(id) suffices",
+  "cleanup": "exact label checked; owned container removed; successful absence readback"
+}

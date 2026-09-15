@@ -1,0 +1,230 @@
+{
+  "kind": "account-custody-lifecycle-refinement-v1",
+  "status": "PROPOSED_MATERIAL_DESIGN_AND_FIXTURE_AMENDMENT_NOT_IMPLEMENTED",
+  "base_sha": "b6f81a7bf155eaf7289ce26811cfb2a2d52ce0ea",
+  "account_draft_base_sha": "cca76fee191c3e8e64b4ac823fccf893830204a1",
+  "owner": "/root",
+  "scope": "Complete the dormant Account/terms catalog boundary using existing administrator custody, without changing existing authentication or activating Account enrollment.",
+  "approved_fk_change": "cca76fee191c3e8e64b4ac823fccf893830204a1; already applied; no further approval requested",
+  "decision": {
+    "preserve": [
+      "Historical migrations 0001 through 0225 byte-for-byte",
+      "Exact original two console_app memberships and direct migration identity before/after run_migrations",
+      "No Account, security, credential, actor, acceptance or publication seed rows",
+      "No serving access or Account activation from schema presence",
+      "No administrator credentials in API/worker/auth pools",
+      "Existing FK test assertions except the already approved exact ephemeral edge correction"
+    ],
+    "reject": [
+      "New console_app owner memberships, even SET-only or temporary",
+      "Reusing ontology/leave owners for Account custody",
+      "Historical migration edits",
+      "Superuser replacement for the production run_migrations boundary",
+      "Fixture-only ALTER OWNER or fabricated migration/finalization receipts",
+      "An exposed SECURITY DEFINER DDL helper"
+    ],
+    "owner_mapping": {
+      "accounts": "console_account_owner",
+      "account_security": "console_account_owner",
+      "account_security_events": "console_account_owner",
+      "account_terms_acceptances": "console_account_owner",
+      "account_terms_head": "console_terms_owner",
+      "account_terms_release_receipts": "console_terms_owner"
+    }
+  },
+  "phases": [
+    {
+      "name": "provision",
+      "contract": "Existing operator topology boundary creates/validates two NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION owners. No incoming/outgoing membership edges. Preserve original two-edge graph. Serialize cluster-global topology reconciliation; it is not a per-DB migration phase toggle."
+    },
+    {
+      "name": "migrate",
+      "contract": "Unchanged production run_migrations identity applies additive 0226 and Apalis. 0226 creates six empty relations and clears inherited PUBLIC/table/column ACL exposure transactionally, owned by console_app pending finalization. It may not claim final custody. No owner transfer attempted by console_app."
+    },
+    {
+      "name": "finalize",
+      "contract": "Existing separately authenticated administrator executes fixed, release-bound SQL on the intended DB. No arbitrary SQL/object/owner input. Use one transaction, fixed ordered relation locks, local lock_timeout 5s and statement_timeout 60s. Validate exact relation kinds, columns, constraints and validated composite FKs, source ownership, zero membership reachability, expected ACLs, no partition/inheritance or shadow relations, and emptiness before any ownership change. Transfer exact six relations to fixed owners, remove only expected staging ACLs, recheck final catalog and all effective table/column/SET access before commit. Unknown owner, mixed ownership, nonempty staging, unexpected grants, shape or trigger/rule drift fails with no repair. Finalized exact state is read-only idempotent success; never transfer back to console_app."
+    },
+    {
+      "name": "admit",
+      "contract": "For DB-backed api and worker, AppState::from_config performs the shared catalog custody verifier before returning a usable state or starting consumers; readyz rechecks actual metadata and returns unavailable on missing, partial, pending or drifted custody. Direct binary launch cannot bypass this gate. Migrate is exempt from serving custody admission so it can create staging. The existing genuine no-database test configuration follows its existing behavior and cannot be enabled to bypass a configured DB failure. Deployment finalization success is required in addition to, not instead of, live catalog readback. The verifier requires no private-row reads, administrator secret or new access grants. Account enrollment remains disabled until its independent global fence and owner contracts pass."
+    }
+  ],
+  "provenance": "Production operator wrapper validates target DB and successful release-bound SQLx migration ledger/checksums plus actual migration-job success, then invokes shared structural SQL. Missing ledger or checksum mismatch is a production failure; no bypass flag. The shared SQL independently checks exact physical prerequisites and is the same statement boundary used by marked SQLx fixtures and raw migration experiments. Raw probes lack SQLx ledger legitimately, invoke shared SQL directly through their administrator, retain source/order execution manifest, and cannot be claimed as production-wrapper or app startup proof.",
+  "integration_targets": [
+    {
+      "path": "ops/postgres-reconcile-topology.sh",
+      "change": "Provision zero-edge owners; retain old two-edge assertions, add exact zero-edge owner assertions. Pre/post reconcile must preserve valid final custody and reject drift."
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql",
+      "change": "Creation and default-exposure removal only; no seeds, no transfer, no legacy DDL."
+    },
+    {
+      "path": "ops/postgres-finalize-account-custody.sql",
+      "change": "New fixed production SQL owner-transfer and validation boundary, invoked only via existing administrative operations transport; not an HTTP or runtime helper."
+    },
+    {
+      "path": "ops/postgres-finalize-account-custody.sh",
+      "change": "Narrow psql wrapper, distinct authenticated administrator and exact target DB, -X/ON_ERROR_STOP, private credentials, failure propagation. Validate approved SQLx ledger/checksums; no missing-ledger escape hatch. Do not invoke global reconciliation as finalization."
+    },
+    {
+      "path": "ops/compose.yml",
+      "change": "Post-migrate one-shot finalizer, API and worker depend on completion. Admin secret mounted only to operator container."
+    },
+    {
+      "path": "scripts/dev-up.mjs",
+      "change": "Both up/bootstrap finalize after migrations before seed/serve; propagate failure."
+    },
+    {
+      "path": "deploy/apps/console/base/migrate-job.yaml",
+      "change": "Explicit ordered migration and separate finalization PreSync jobs; reference existing operator identity provisioned outside application. No real secret creation, cluster change or production exposure in this amendment."
+    },
+    {
+      "path": "backend/app/src/lib.rs",
+      "change": "Shared custody metadata verifier called by DB-backed api/worker AppState::from_config before usable state and by readyz for drift detection. Migrate exempt; preserve genuine no-DB tests and all existing strict identity checks. No privilege or payload grants."
+    },
+    {
+      "path": "backend/app/tests/auth_rest.rs",
+      "change": "After real run_migrations, execute exact production finalization SQL through already verified marked disposable administrator connection. No inline substitute DDL, fixtures remain after finalization; assertions unchanged."
+    },
+    {
+      "path": "backend/ci/gates/writer-ownership/canonical-enforce-in-container.sh",
+      "change": "Finalize actual probe DB after raw migrations and before census; no fake ledger. Bind copied finalizer file to candidate."
+    },
+    {
+      "path": "backend/ci/gates/writer-ownership/canonical-enforce.sh",
+      "change": "Transport exact production finalizer into owned disposable container."
+    },
+    {
+      "path": ".github/workflows/image-release.yml",
+      "change": "Actual image smoke DB must finalize before app starts, not merely another canonical probe DB."
+    }
+  ],
+  "future_ddl": "This v1 finalizer is a single immutable six-table custody transition, not a generic privileged migration engine. Once transferred, console_app cannot ALTER these tables or add referencing FKs without separate authority. Subsequent Account/credential/actor DDL must use versioned operator-owned transitions through the same isolated operator lifecycle, with exact migration order/checksum, populated-data compatibility and tests approved before that lane. Never reclaim ownership, add REFERENCES/SET grants, or widen v1 silently. This is a dependency of the next Account lane and remains HOLD, not an omitted production guarantee.",
+  "rollback": "Before enrollment, a failed finalizer transaction rolls back all changes and leaves empty staging inaccessible. On uncertain commit, inspect exact whole post-state; completed state succeeds read-only, pending state retries the same bounded transaction, mixed/drifted state stops. Do not drop tables, erase history, restore legacy credentials or revoke Account fences. Software rollback differs from data rollback; no down migration or automatic custody reversal.",
+  "premortem": [
+    "A separate probe finalizes but actual SQLx/test/serving DB does not",
+    "Unexpected default/column grants leak metadata or rows",
+    "Owner role can be assumed via indirect membership",
+    "One of six tables changes owner before crash",
+    "Second fresh DB fails immutable0165 because global membership changed",
+    "Finalizer runs against wrong DB or schema-shaped hostile object",
+    "Later FK migration assumes console_app still owns Account",
+    "CLI accepts migration success as full deployment success"
+  ],
+  "blast_radius": "Exact six dormant relations in the authenticated target DB; two new cluster roles are provisioned only via existing cluster operator. No existing credential, Company payroll or actor data mutation.",
+  "stop_conditions": [
+    "Unexpected source/target identity or catalog drift",
+    "Any nonempty staging Account catalog",
+    "New role membership or runtime access",
+    "Any legacy migration checksum changes",
+    "Any test semantic weakening beyond separately approved patch",
+    "Missing real deployment administrator binding before exposure",
+    "Missing or green lane RED at the implementation boundary"
+  ],
+  "approval_required": "One consolidated revision-bound design and fixture amendment, because this changes the security-sensitive migration completion boundary. DELIVERY.md high-risk method item3 requires material design changes return to review. Prior FK approval and rejected four-edge test proposal do not authorize this lifecycle.",
+  "holds": [
+    "User approval of this exact lifecycle and fixture revision",
+    "Production operator credential provisioning and deployment remain separate exposure authority",
+    "Account/credential ownership conversion, global legacy fence, runtime owner functions, actor FKs and browser/auth behavior remain unimplemented",
+    "Catalog experiment is not real app migration/SQLx/production certification"
+  ],
+  "test_acceptance": [
+    {
+      "id": "LC01",
+      "boundary": "real production SQLx migration + production finalizer",
+      "cases": [
+        "fresh empty DB",
+        "existing0225 upgraded DB"
+      ],
+      "oracle": "Exact225historicalchecksums unchanged; selected terms complete-tupleFK test reaches/passes actual catalog; exact6NOLOGINowners and table/column/SETdenial; zero newAccountrows."
+    },
+    {
+      "id": "LC02",
+      "boundary": "production wrapper",
+      "cases": [
+        "wrong admin",
+        "wrong DB",
+        "missing SQLx ledger",
+        "wrong checksum",
+        "migration job failure"
+      ],
+      "oracle": "Each specific input independently refuses before transfer; snapshot all6owners/ACLs unchanged, no zero-test pass."
+    },
+    {
+      "id": "LC03",
+      "boundary": "shared SQL finalizer",
+      "cases": [
+        "missing relation",
+        "wrong shape",
+        "unvalidated compositeFK",
+        "wrong owner",
+        "mixed owners",
+        "unexpected ACL or columnACL",
+        "membership path",
+        "trigger/rule/inheritance drift",
+        "nonempty staging"
+      ],
+      "oracle": "One altered precondition per case; exact stable refusal and full transaction snapshot preservation; nominal case must succeed."
+    },
+    {
+      "id": "LC04",
+      "boundary": "DB transaction",
+      "cases": [
+        "failure after3of6owner changes",
+        "commit succeeds then client loses response",
+        "repeat already finalized"
+      ],
+      "oracle": "All6rollback or all6committed; readback resolves actual state; retry no seeds/ACLchange/reclaim; compare full relation/column/constraint/trigger/rule/ACL catalog supported by oracle."
+    },
+    {
+      "id": "LC05",
+      "boundary": "api+worker direct startup and readyz",
+      "cases": [
+        "pending at startup",
+        "finalized at startup",
+        "post-startowner/ACLdrift",
+        "migration runmode",
+        "existing noDBtestmode"
+      ],
+      "oracle": "Both DB-backed serving roles refuse pending before work; healthy control starts; readyz degrades on drift; migrate creates staging; absent DB configuration not failure bypass."
+    },
+    {
+      "id": "LC06",
+      "boundary": "same cluster two DBs",
+      "cases": [
+        "concurrent DB_A finalization and DB_B historical0165",
+        "two finalizers sameDB"
+      ],
+      "oracle": "Exact original2memberships throughout; bothDBsreach expectedfullstate; bounded timeout/retry on sameDB; requests recorded including canceled/failed attempts."
+    },
+    {
+      "id": "LC07",
+      "boundary": "orchestration",
+      "cases": [
+        "Compose",
+        "dev-up up",
+        "dev-up bootstrap",
+        "Argo PreSync",
+        "image smoke",
+        "HTTP SQLx fixture",
+        "raw canonical probe"
+      ],
+      "oracle": "Actual target DB finalized after migration and before serving; finalizer failure blocks downstream; no duplicate fixtureDDL; admincredentials absent applicationpools/containers; rawprobedoesnotclaimSQLxwrapperproof."
+    },
+    {
+      "id": "LC08",
+      "boundary": "evidence machinery",
+      "cases": [
+        "positive control",
+        "omitted transfer",
+        "omitted relation/request",
+        "null/empty query result",
+        "false refusal caused by connection failure"
+      ],
+      "oracle": "Independent checker detects seeded badcases; deniedloginassertions require successfullogin positivecontrol and specific privilegeSQLSTATE/message, not arbitrary nonzero exit."
+    }
+  ],
+  "test_package_status": "Acceptance obligations and existing RED are recorded; new lifecycle tests, wrapper and readiness owner do not yet exist. This refinement approval does not claim executable lifecycle TDD admission or Account completion. Test source/candidate and independent review must be completed before each dependent implementation lane."
+}

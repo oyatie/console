@@ -1,0 +1,33 @@
+[
+  {
+    "binary": "/private/tmp/console-account30-cargo/debug/deps/recovery-ed6f34010a6cea16",
+    "size": 28060632,
+    "mtime": 1789497990.1949604,
+    "sha256": "cf7efd861fd7930701e74de15f4627fa9dfd28800992227e3027d973bdf79b45",
+    "bounded_manifest_path_strings": [
+      "/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/adapter-postgres",
+      "/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/test-support"
+    ]
+  },
+  {
+    "binary": "/private/tmp/console-account30-cargo/debug/deps/durability_observer-f6ed774501799e57",
+    "size": 19386760,
+    "mtime": 1789498260.9061413,
+    "sha256": "9a50e17ac4306f4cec25fafe494e485e81d2b2a9c31fe67f633952c1ab487058",
+    "bounded_manifest_path_strings": [
+      "/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/adapter-postgres",
+      "/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/test-support"
+    ]
+  },
+  {
+    "binary": "/private/tmp/console-account30-cargo/debug/deps/console_app-b68d3f23bb411cd1",
+    "size": 316740976,
+    "mtime": 1789497821.0161328,
+    "sha256": "60ba996d99e7518434355a2a426e26df9d903b0679aada10e3e8338bf9fbd408",
+    "bounded_manifest_path_strings": [
+      "/private/tmp/console-production-tdd-preparation-20260913/backend/app",
+      "/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/adapter-postgres",
+      "/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/test-support"
+    ]
+  }
+]

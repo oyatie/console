@@ -1,0 +1,117 @@
+{
+  "source_commit": "7c599773ac0e4c7cdec4e4ca3deab9f9258b067b",
+  "writer": "/root",
+  "files": [
+    {
+      "path": "manifest.json",
+      "source": "/private/tmp/account-token-crypto-implementation-b2c52e27/manifest.json",
+      "source_sha256": "8b869b6fad5b138b458f114cb23107855a83839b5e9aaf4c5f2e8a5e5758cfa8",
+      "sha256": "8b869b6fad5b138b458f114cb23107855a83839b5e9aaf4c5f2e8a5e5758cfa8",
+      "bytes": 2254
+    },
+    {
+      "path": "guide.json",
+      "source": "/private/tmp/account-token-crypto-implementation-b2c52e27/guide.json",
+      "source_sha256": "8bad4b1bfc81af40a6b680ec5c1f96d5115962cd93f41f9d3ad2a5c52452d1b5",
+      "sha256": "8bad4b1bfc81af40a6b680ec5c1f96d5115962cd93f41f9d3ad2a5c52452d1b5",
+      "bytes": 5345
+    },
+    {
+      "path": "independent-source-review.json",
+      "source": "/private/tmp/account-token-crypto-implementation-b2c52e27-independent-review-capture.json",
+      "source_sha256": "d7d4ccd6f1e9b5cbc9bdfccf85a5ae6a3c5d9a3ebe24caf8549a847aa24c15cb",
+      "sha256": "d7d4ccd6f1e9b5cbc9bdfccf85a5ae6a3c5d9a3ebe24caf8549a847aa24c15cb",
+      "bytes": 10383
+    },
+    {
+      "path": "independent-runtime-review.json",
+      "source": "/private/tmp/account-crypto-7c599773-independent-runtime-review-capture.json",
+      "source_sha256": "d52452c3d4887bd2ed899081831b7a02ed98ecb4b3d4a7325c511df19c812217",
+      "sha256": "d52452c3d4887bd2ed899081831b7a02ed98ecb4b3d4a7325c511df19c812217",
+      "bytes": 14917
+    },
+    {
+      "path": "commands.json",
+      "source": "/private/tmp/account-crypto-runtime-command-receipt-7c599773.json",
+      "source_sha256": "2e4a75e36d15b1df336ae8c58fb31b5a629e50a8da18d8691385b3f5a5ba757a",
+      "sha256": "2e4a75e36d15b1df336ae8c58fb31b5a629e50a8da18d8691385b3f5a5ba757a",
+      "bytes": 2346
+    },
+    {
+      "path": "build-checks.json",
+      "source": "/private/tmp/account-crypto-build-checks-2179b0da.json",
+      "source_sha256": "67fd6d36d5c4c35c753df3cbc51854866d9e88bc4c265198ea86e3b8059e4ad3",
+      "sha256": "67fd6d36d5c4c35c753df3cbc51854866d9e88bc4c265198ea86e3b8059e4ad3",
+      "bytes": 753
+    },
+    {
+      "path": "red-receipt.json",
+      "source": "/private/tmp/account-crypto15-b2c52e27-red-receipt.json",
+      "source_sha256": "1f9845c2dea6b0f41b5892d12a5b09399d5b3b9466147497d4cb6ccd350e9319",
+      "sha256": "1f9845c2dea6b0f41b5892d12a5b09399d5b3b9466147497d4cb6ccd350e9319",
+      "bytes": 792
+    },
+    {
+      "path": "lane-spec.json",
+      "source": "/private/tmp/account-crypto-owner-lane-spec-b2c52e27.json",
+      "source_sha256": "148493f217d3d3f60f357b9b51751330fba64740c0609ebbcec3bbe4f0bbc647",
+      "sha256": "148493f217d3d3f60f357b9b51751330fba64740c0609ebbcec3bbe4f0bbc647",
+      "bytes": 3519
+    },
+    {
+      "path": "admission.log.gz",
+      "source": "/private/tmp/account-crypto15-b2c52e27-admission.log",
+      "source_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "bytes": 65
+    },
+    {
+      "path": "red.log.gz",
+      "source": "/private/tmp/account-crypto15-initial-red.log",
+      "source_sha256": "54eb421dba22bfc6b1aa1a5c88b2c4a823029c51a2bfe78cd2ce6c6452454ecc",
+      "sha256": "739e8a853f72744151efdddd84aa1b0de3ebefcfaa0d635a5b2b8b70c534e538",
+      "bytes": 1954
+    },
+    {
+      "path": "green15.log.gz",
+      "source": "/private/tmp/account-crypto15-b2c52e27-green.log",
+      "source_sha256": "2858215d1369ded53db34ba7fdbc0e8cc5fcf0a68c23f2f52e6731641d0f829d",
+      "sha256": "e4493d74341e4f5c1009627e3d67aa495ade04e620d7437288a10079b25e1977",
+      "bytes": 799
+    },
+    {
+      "path": "regression36.log.gz",
+      "source": "/private/tmp/account-crypto36-b2c52e27-regression.log",
+      "source_sha256": "106041aa8188cd811c30e95aff41387381b6397f50c8d9f36f9b939ccac2fa70",
+      "sha256": "252127bcc29bc6970f1fa00f231370699b9c6c888ec5796be3fb63a035d53429",
+      "bytes": 1273
+    },
+    {
+      "path": "clippy.log.gz",
+      "source": "/private/tmp/account-crypto-b2c52e27-clippy.log",
+      "source_sha256": "709daf425107ae30e2cec748e54f9a391b7d9230b83db3bc7cf68bdc154ad91a",
+      "sha256": "46c538f638d270810301ef02dfbcd87c26c90d9c4c4129d2df7ed0be969a4377",
+      "bytes": 205
+    },
+    {
+      "path": "all-targets.log.gz",
+      "source": "/private/tmp/account-crypto-alltargets-2179b0da.log",
+      "source_sha256": "d44b052f75ef5ffe5d0c46294401bc31d9c3687ef7c1fd90d378303b9b2b02a6",
+      "sha256": "7775ed2a461face44dc5a0c6a001a1f0c376e09ae971a0a35c50106dba6e0f05",
+      "bytes": 1251
+    },
+    {
+      "path": "format.log.gz",
+      "source": "/private/tmp/account-crypto-fmt-2179b0da.log",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20
+    }
+  ],
+  "verification": "Auth source/API/tests match independent reviews. Selected15 and regression36 overlap; do not sum as unique tests. Generator ran174BUCKfiles with no changes.",
+  "remaining_holds": [
+    "Account live state/family/primary authentication and browser workflow",
+    "Whole Console implementation and production acceptance",
+    "Production exposure and legal content"
+  ]
+}

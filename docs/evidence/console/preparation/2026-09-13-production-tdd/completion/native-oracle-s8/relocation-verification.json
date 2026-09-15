@@ -1,0 +1,59 @@
+{
+  "manifest_sha256": "07722dd57f91c3533fda58e96ca44e6bb8e5a2d996e86813cd27a6a63981aaf1",
+  "files": [
+    {
+      "original": "binder-sequence.rs",
+      "retained": "binder-sequence.rs",
+      "original_sha256": "f037f11cef0cffd4f1a2c2aabf2dd0d8d1f2e4ee613ecb343158f0b97d22b2de",
+      "retained_sha256": "f037f11cef0cffd4f1a2c2aabf2dd0d8d1f2e4ee613ecb343158f0b97d22b2de"
+    },
+    {
+      "original": "caller-map.json",
+      "retained": "caller-map.json",
+      "original_sha256": "89cf8fb91e91791d72d6ca76183da6774f721d8a1a8f4f5910bb1409df6369ac",
+      "retained_sha256": "89cf8fb91e91791d72d6ca76183da6774f721d8a1a8f4f5910bb1409df6369ac"
+    },
+    {
+      "original": "interface-refinement.txt",
+      "retained": "interface-refinement.txt",
+      "original_sha256": "116fe53b70efb1e68993e9bb5971ee672d410649da74f67c9dbb5a1291adab12",
+      "retained_sha256": "116fe53b70efb1e68993e9bb5971ee672d410649da74f67c9dbb5a1291adab12"
+    },
+    {
+      "original": "native-lifecycle-tests.rs",
+      "retained": "native-lifecycle-tests.rs",
+      "original_sha256": "3373e4b6792464b80cf2d15d113e1d2a731029e9919d47d565f75cd38e9130c1",
+      "retained_sha256": "3373e4b6792464b80cf2d15d113e1d2a731029e9919d47d565f75cd38e9130c1"
+    },
+    {
+      "original": "native-owner-tests.rs",
+      "retained": "native-owner-tests.rs",
+      "original_sha256": "af5a8f7fc6c271ce224285a10fde6fcef414c57e9ba80e5d28d27d83ec19d213",
+      "retained_sha256": "af5a8f7fc6c271ce224285a10fde6fcef414c57e9ba80e5d28d27d83ec19d213"
+    },
+    {
+      "original": "negative-assertions.rs",
+      "retained": "negative-assertions.rs",
+      "original_sha256": "c7fb20a83e8a51d4b261b601b510aaab10a3365ae55b63bff6fb461b7448334d",
+      "retained_sha256": "c7fb20a83e8a51d4b261b601b510aaab10a3365ae55b63bff6fb461b7448334d"
+    },
+    {
+      "original": "source-owner-producer.rs",
+      "retained": "source-owner-producer.rs",
+      "original_sha256": "109c120bda9e95d9f46a34969b7c2227e5b66c95b35214f6b59db1e37fa4d815",
+      "retained_sha256": "109c120bda9e95d9f46a34969b7c2227e5b66c95b35214f6b59db1e37fa4d815"
+    },
+    {
+      "original": "source-owner-tests.rs",
+      "retained": "source-owner-tests.rs",
+      "original_sha256": "13147153d86ec2685cec72a27dbedf1b82fd419d215d0e0410c623c6a09b11b6",
+      "retained_sha256": "13147153d86ec2685cec72a27dbedf1b82fd419d215d0e0410c623c6a09b11b6"
+    },
+    {
+      "original": "syntax-execution.json",
+      "retained": "syntax-execution.json",
+      "original_sha256": "d6dce828643e7349e98c6b71c0d8a86455ff65fa922e7555c2b44a6484d0c620",
+      "retained_sha256": "d6dce828643e7349e98c6b71c0d8a86455ff65fa922e7555c2b44a6484d0c620"
+    }
+  ]
+}

@@ -25,6 +25,17 @@ import {
   evaluateWorkflowHardeningChecks,
 } from "./check-production-hardening.mjs";
 
+describe("Account custody deployment", () => {
+  it("executes orchestration and local provisioning security controls", () => {
+    const result = spawnSync(process.execPath, ["--test",
+      "scripts/account-custody-orchestration.test.mjs",
+      "scripts/lib/dev-account-custody.test.mjs"], {
+      cwd: fileURLToPath(new URL("..", import.meta.url)), encoding: "utf8", timeout: 60_000,
+    });
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  });
+});
+
 describe("production authority blocked observation static integration", () => {
   it("requires the explicit-SHA evaluator package wiring and focused hardening suite inclusion", () => {
     const pkg = JSON.parse(
@@ -888,7 +899,7 @@ const validWorkflowFiles = {
   "package.json": JSON.stringify({
     scripts: {
       "test:production-hardening":
-        "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs scripts/check-image-release-workflow.test.mjs",
+        "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs scripts/check-image-release-workflow.test.mjs scripts/account-custody-orchestration.test.mjs scripts/lib/dev-account-custody.test.mjs",
       "check:production-authority-blocked":
         "node scripts/check-production-authority-blocked.mjs",
     },
@@ -2533,5 +2544,21 @@ exit 0
     assert.match(result.combined, /advanced before Argo refresh/);
     assert.doesNotMatch(calls, /argocd\.argoproj\.io\/refresh=hard/);
     assert.doesNotMatch(result.combined, /deployed and verified/);
+  });
+});
+
+
+describe("recovery evidence oracle", () => {
+  it("executes the independent restore-verification controls", () => {
+    const result = spawnSync("python3", [
+      "-m", "unittest", "discover", "-s", "ops/dr", "-p", "test_recovery_manifest.py",
+    ], {
+      cwd: fileURLToPath(new URL("../", import.meta.url)),
+      encoding: "utf8",
+      timeout: 30_000,
+      env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" },
+    });
+    assert.equal(result.status, 0, result.stderr || result.error?.message);
+    assert.match(result.stderr, /Ran [1-9][0-9]* tests/);
   });
 });

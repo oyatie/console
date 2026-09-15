@@ -1,0 +1,94 @@
+{
+  "sources": [
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/PRODUCT.md",
+      "git_blob": "6a3992e258d7eecf4d2cd11422ee01d521a01017",
+      "sha256": "d9740519950695c0b09bcd173b3a8bac2ff52f41f16eee9cb6984f3ca67e3979"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/DELIVERY.md",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0155_create_ontology_instances.sql",
+      "git_blob": "fa789dcba967c1af10cb6076879c30a7bdff770a",
+      "sha256": "bed9b9af5592814d5008cd8e06236b5ee57dfd604a8ed399cc9f0aff0078e1cf"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0031_runtime_role_and_immutable_org.sql",
+      "git_blob": "14d8ed330de4d779067de50e158dbc15b293605f",
+      "sha256": "f2b9537ef1c063f55fcbfe7519a4769690bfd3f613eb8704c6cd36dbda062329"
+    },
+    {
+      "commit": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "git_blob": "5ca655e24b73882cbb14943af37697fa46373150",
+      "sha256": "531b300818f5328de6b47b3e1ab04761784f5c087824c36f984fef3d3ed9d928"
+    },
+    {
+      "commit": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/retention-records.json",
+      "git_blob": "fe4a6b0781766f15f2d15d68578f0260b891c5e9",
+      "sha256": "e98cf009c8dc8622436b3e23ad9288dd3d1dc9f41927985c3607cd7647131d81"
+    },
+    {
+      "commit": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/retention-and-recovery.txt",
+      "git_blob": "e6d179ea1b93c1d07171654e8c140269cae946ed",
+      "sha256": "b66bdeac58be1dcca57e74af0b889d1e1c6afe3f0900849bc6e7ec780ece18c3"
+    },
+    {
+      "commit": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/retention-contract.txt",
+      "git_blob": "4aca7112465a8588e5b5b5bd8902ddc8c9eb6ffd",
+      "sha256": "33c036143089dc54d26c045c34d7f688c41f4224de495a0d7db1bb2411eafc08"
+    },
+    {
+      "commit": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/execution-contract.txt",
+      "git_blob": "53bd4d767eb554804008bac84e90bc49b59da727",
+      "sha256": "d71b303bfecc59534e11cfc5850f9e383791c560913cab756ba8a380f5ba6ea0"
+    },
+    {
+      "commit": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/effect-manifest.sql.txt",
+      "git_blob": "995676aea6c02ca639ae75ecb591dc52633a7569",
+      "sha256": "5a666884fcedb30627e6210e5591acd313b058650580de8d91c09268bc666603"
+    },
+    {
+      "commit": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/implementation-closure-map.json",
+      "git_blob": "a2d884ba4bed1a0c252346d2bfcba07ec5413e70",
+      "sha256": "f28e210b63c5c4bd5867e7f5a789820d09d4af73a68ac1665fbeeb10669d4d8a"
+    },
+    {
+      "commit": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/source-reference.sql.txt",
+      "git_blob": "17af92c6ced79ef57610ff6feb52ed22f4d264b1",
+      "sha256": "a1116c31753ea0b2e7b6c6aec1be8e1b89bbc7f90192b8153194b278fde9eb0e"
+    },
+    {
+      "commit": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/storage.sql.txt",
+      "git_blob": "ea7c1f3bf66a60de2140750dc47bcc7bf2047e6f",
+      "sha256": "d5deaeb0f39f3b93dbf2424566c86bc4df770bd36a0d7f0f7bee52e9a19193f0"
+    },
+    {
+      "commit": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/contract.txt",
+      "git_blob": "aff2d8d025e41ac1f24b0a29270f57abe5eff155",
+      "sha256": "cf7c1eeba17475722d7d93e76e5b144805dadca39502c4a824998e986d81c3c2"
+    },
+    {
+      "commit": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/framing-vectors.json",
+      "git_blob": "14fe574fb0d47add5b0ff348317c072f1f6d4f7e",
+      "sha256": "4d4cb9ab6a81f909a9073e41782729c02c6da8a1a10ccdea2586e93742b7d17f"
+    }
+  ]
+}

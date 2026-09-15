@@ -1,0 +1,22 @@
+{
+  "classification": "evidence",
+  "base_sha": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+  "structural_counts": {
+    "new_tables": 0,
+    "foreign_keys": 35,
+    "unique_targets": 21,
+    "generated_columns": 44
+  },
+  "source_families": 7,
+  "admission_families": 3,
+  "screen_cases": 11,
+  "nonexecuted_cases": 20,
+  "product_tests_written": 0,
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "verus_proofs_executed": 0,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "w04_complete": false
+}

@@ -1,0 +1,63 @@
+{
+  "kind": "ACCOUNT_TERMS_READ_ADDITIVE_ACCEPTANCE_CANDIDATE",
+  "version": 2,
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "author": "/root/inventory_repair",
+  "status": "Awaiting independent review; not installed/admitted/runtime-proven",
+  "allowed_target_paths": [
+    "backend/app/tests/auth_rest.rs"
+  ],
+  "supersedes": {
+    "candidate": "/private/tmp/account-terms-read-acceptance-v1-candidate-f96eddd3",
+    "manifest_sha256": "56b7c9501cb4abb357ba07c645dacd5d1c98e05eae66818cb562a96e6a33dadb",
+    "preserved": true
+  },
+  "artifacts": {
+    "base-auth_rest.rs": "9e62c1e0c2c4d81cc8c5d6c62210d59851bcdb44a11e26f49c4eab10478d7b25",
+    "terms_read_module.rs": "36cc2eb5bba0928c0d5dbb7b38f5159e6e31c9cc75ea91dbe4faed353216b4fc",
+    "fixture-extraction.json": "2c0a511deb6435000aed5c5d838f9accc792e8051c61d039894ce4838abce93a",
+    "backend/app/tests/auth_rest.rs": "b3192f03a5257737a2538f4311f808044409d65817e9dc4f576b8306cc0ef9f0",
+    "candidate.patch": "104c00f183c4191290af6c877777c2c0c6a4dfb3d8b74cb39e5294677d6d0329",
+    "guide.json": "79d1f21c56db438304039a016f6ec107016f6006a5951856ca0485a9476a0c26"
+  },
+  "checks": [
+    {
+      "command": "rustfmt --edition 2024 --config skip_children=true --check /private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/backend/app/tests/auth_rest.rs",
+      "result": "PASS",
+      "runtime_tests_executed": 0
+    },
+    {
+      "command": "git apply --check /private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/candidate.patch",
+      "cwd": "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/apply-check-base",
+      "result": "PASS on isolated frozen base before application; applying it reproduced candidate source exactly",
+      "runtime_tests_executed": 0
+    },
+    {
+      "command": "private Python byte-restoration check",
+      "result": "PASS: reverse only appended module, two header assertions and recorded existing fixture extraction -> exact original source bytes",
+      "runtime_tests_executed": 0
+    }
+  ],
+  "preliminary_static_attempts": [
+    {
+      "command": "first rustfmt skip_children=true check",
+      "result": "Only new function declarations required line wrapping; adjusted those declarations, final check PASS. No original source formatting changed."
+    }
+  ],
+  "test_counts": {
+    "new_selected_lexical": 3,
+    "base_browser_module_lexical": 25,
+    "candidate_browser_module_lexical": 28,
+    "base_direct_source_attributes": 57,
+    "candidate_direct_source_attributes": 60,
+    "parent_base_reachable_auth_rest_binary": 181,
+    "expected_reachable_auth_rest_binary": 184,
+    "parent_base_broader_account_runtime": 191,
+    "expected_broader_account_runtime_after_only_these_three": 194,
+    "runtime_discovered_here": 0,
+    "runtime_executed_here": 0
+  },
+  "runtime": "Root exclusively owns Cargo/PostgreSQL. Existing404 evidence is inherited and not a run of this exact candidate. Run actual focused3 before implementation admission; later owners must preserve full reachable baseline.",
+  "no_integration_source_writes": true,
+  "review_receipts": []
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "lane": "native30-status-custody",
+    "probe": "python3 tools/lanes/test_status_custody.py",
+    "allow": [
+      "tools/lanes/fanout.py"
+    ],
+    "prompt": "Repair only tools/lanes/fanout.py changed-path custody parsing. Exact clean base0863a6175fb2d010f5894af52c72e3c85fed297c, owned root /Users/jasonlee/Developer/console-lanes/lane-native30-status-custody, sole implementer. Read README/DELIVERY and narrow helper callers. Named probe python3 tools/lanes/test_status_custody.py must start8executed1pass7behavioral failures and end8pass; preserve all tests byte-for-byte, including existing tools/lanes/fanout.test.py. Root authored real-Git regressions after actual false breach from _git.stdout.strip chopping leading status space. Approved narrow implementation guide: use existing subprocess/os stdlib for git status --porcelain=v1 -z --untracked-files=all, checked command, bytes split at NUL, retain exact paths via os.fsdecode, retain both destination/source for R/C status records; do not strip paths; fail closed on Git failure. _git has only one caller and can be removed. Do not change admission, allowlist, run, subprocess security, model flags, tests or any other paths. Pre-mortem missing path could falsely permit escape; rename source matters even if destination allowed. Blast radius lane evidence utility only. Detection new8real Git checks plus existing python3 tools/lanes/fanout.test.py; run both and py_compile, diff --check. Rollback scoped helper revert, no data. Stop on outside-scope need. Independent test review /private/tmp/console-lane-status-tests-review.json must be accepted before edit. Do not commit or stage; root records exact SHA and independent review. Note outer running harness has old loaded helper and may still give false BREACH for tools path after your correct edit; do not weaken it or manipulate staging. Root will retain original result and independently revalidate with corrected helper. No product/FK changes. RUSTC_WRAPPER empty env was for Rust formatter only; these Python tests should use normal env so existing sccache configuration assertions execute."
+  }
+]

@@ -1,0 +1,99 @@
+[2026-09-14T21:18:57.751-04:00] Starting new buck2 daemon...
+[2026-09-14T21:19:01.807-04:00] Connected to new buck2 daemon.
+[2026-09-14T21:19:01.823-04:00] Build ID: 9914260e-0144-453d-bd7f-fce0470d16ca
+[2026-09-14T21:19:08.910-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (download_file archive.tar.gz), and 36 other actions
+[2026-09-14T21:19:16.009-04:00] Waiting on root//third-party/rust:once_cell-1.21.4.crate (prelude//platforms:default#39893c7e49283da4) -- action (http_archive once_cell-1.21.4.crate) [local_execute], and 95 other actions
+[2026-09-14T21:19:23.109-04:00] Waiting on root//third-party/rust:serde_derive-1.0.228.crate (prelude//platforms:default#11a256c53bf8083e) -- action (http_archive serde_derive-1.0.228.crate) [local_execute], and 65 other actions
+[2026-09-14T21:19:30.110-04:00] Waiting on root//third-party/rust:libc-0.2.186.crate (prelude//platforms:default#5732820ad45f622d) -- action (http_archive libc-0.2.186.crate), and 23 other actions
+[2026-09-14T21:19:37.209-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (http_archive cpython_archive) [local_execute], and 1 other actions
+[2026-09-14T21:19:44.311-04:00] Waiting on root//third-party/rust:zerocopy-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (deps 6) [local_execute], and 119 other actions
+[2026-09-14T21:19:51.409-04:00] Waiting on root//third-party/rust:getrandom-0.4 (prelude//platforms:default#39893c7e49283da4) -- action (deps 6) [local_execute], and 85 other actions
+[2026-09-14T21:19:58.410-04:00] Waiting on root//third-party/rust:heck-0.5 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 74 other actions
+[2026-09-14T21:20:05.410-04:00] Waiting on root//third-party/rust:outref-0.5 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 61 other actions
+[2026-09-14T21:20:12.510-04:00] Waiting on root//third-party/rust:memchr-2 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 49 other actions
+[2026-09-14T21:20:19.510-04:00] Waiting on root//third-party/rust:regex-syntax-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 53 other actions
+[2026-09-14T21:20:26.609-04:00] Waiting on root//third-party/rust:regex-syntax-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 52 other actions
+[2026-09-14T21:20:33.610-04:00] Waiting on root//third-party/rust:regex-syntax-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 52 other actions
+[2026-09-14T21:20:40.710-04:00] Waiting on root//third-party/rust:regex-syntax-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]), and 52 other actions
+[2026-09-14T21:20:47.710-04:00] Waiting on root//third-party/rust:typenum-1 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 42 other actions
+[2026-09-14T21:20:54.711-04:00] Waiting on root//third-party/rust:lock_api-0.4 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 38 other actions
+[2026-09-14T21:21:01.811-04:00] Waiting on root//third-party/rust:unicode-general-category-1-build-script-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 36 other actions
+[2026-09-14T21:21:08.910-04:00] Waiting on root//third-party/rust:_time-macros-0.2 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc proc-macro) [local_execute], and 31 other actions
+[2026-09-14T21:21:16.011-04:00] Waiting on root//third-party/rust:regex-automata-0.4 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 34 other actions
+[2026-09-14T21:21:23.110-04:00] Waiting on root//third-party/rust:proc-macro2-1 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 36 other actions
+[2026-09-14T21:21:30.211-04:00] Waiting on root//third-party/rust:crypto-common-0.2 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 31 other actions
+[2026-09-14T21:21:37.212-04:00] Waiting on root//third-party/rust:deranged-0.5 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 24 other actions
+[2026-09-14T21:21:44.311-04:00] Waiting on root//third-party/rust:serde_json-1 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 22 other actions
+[2026-09-14T21:21:51.412-04:00] Waiting on root//third-party/rust:time-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 9 other actions
+[2026-09-14T21:21:58.511-04:00] Waiting on root//third-party/rust:syn-2 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 4 other actions
+[2026-09-14T21:22:05.511-04:00] Waiting on root//third-party/rust:_ref-cast-impl-1 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc proc-macro) [local_execute], and 4 other actions
+[2026-09-14T21:22:12.611-04:00] Waiting on root//third-party/rust:_serde_derive-1 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc proc-macro) [local_execute], and 5 other actions
+[2026-09-14T21:22:19.710-04:00] Waiting on root//third-party/rust:zerocopy-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 13 other actions
+[2026-09-14T21:22:26.711-04:00] Waiting on root//third-party/rust:zerocopy-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 10 other actions
+[2026-09-14T21:22:33.811-04:00] Waiting on root//third-party/rust:zerocopy-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 11 other actions
+[2026-09-14T21:22:40.910-04:00] Waiting on root//third-party/rust:zerocopy-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]), and 10 other actions
+[2026-09-14T21:22:47.911-04:00] Waiting on root//third-party/rust:fluent-uri-0.4 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 8 other actions
+[2026-09-14T21:22:54.911-04:00] Waiting on root//third-party/rust:fluent-uri-0.4 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 3 other actions
+[2026-09-14T21:23:01.914-04:00] Waiting on root//third-party/rust:parking_lot-0.12 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 4 other actions
+[2026-09-14T21:23:09.011-04:00] Waiting on root//third-party/rust:jsonschema-value-0.56 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 4 other actions
+[2026-09-14T21:23:16.011-04:00] Waiting on root//third-party/rust:referencing-0.56 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-14T21:23:23.111-04:00] Waiting on root//third-party/rust:jsonschema-0.56 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-14T21:23:30.211-04:00] Waiting on root//third-party/rust:jsonschema-0.56 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-14T21:23:37.312-04:00] Waiting on root//third-party/rust:jsonschema-0.56 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-14T21:23:44.412-04:00] Waiting on root//third-party/rust:jsonschema-0.56 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-14T21:23:51.413-04:00] Waiting on root//third-party/rust:jsonschema-0.56 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-14T21:23:58.513-04:00] Waiting on root//third-party/rust:jsonschema-0.56 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-14T21:24:05.612-04:00] Waiting on root//third-party/rust:jsonschema-0.56 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-14T21:24:12.712-04:00] Waiting on root//third-party/rust:jsonschema-0.56 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-14T21:24:19.713-04:00] Waiting on root//third-party/rust:jsonschema-0.56 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-14T21:24:26.812-04:00] Waiting on root//backend/crates/ontology/application:console-ontology-application-unit (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-14T21:24:33.912-04:00] Waiting on root//backend/crates/ontology/application:console-ontology-application-unit (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-14T21:24:40.912-04:00] Waiting on root//backend/crates/ontology/application:console-ontology-application-unit (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-14T21:24:48.012-04:00] Waiting on root//backend/crates/ontology/application:console-ontology-application-unit (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-14T21:24:55.112-04:00] Waiting on root//backend/crates/ontology/application:console-ontology-application-unit (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-14T21:25:02.212-04:00] Waiting on Test console-ontology-application-unit --  [local_execute]
+[2026-09-14T21:25:04.198-04:00] ✓ Pass: root//backend/crates/ontology/application:console-ontology-application-unit (5.9s)
+[2026-09-14T21:25:04.198-04:00] ---- STDOUT ----
+[2026-09-14T21:25:04.198-04:00]
+[2026-09-14T21:25:04.198-04:00] running 31 tests
+[2026-09-14T21:25:04.198-04:00] test prepared::tests::an_unknown_control_point_refuses_the_whole_command ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28::limits_tests::owner_protocol_shared_parse_budget_and_numeric_diagnostics_are_bounded ... ok
+[2026-09-14T21:25:04.198-04:00] test prepared::tests::an_undeclared_param_is_refused ... ok
+[2026-09-14T21:25:04.198-04:00] test prepared::tests::gates_read_checklist_and_egress_from_the_one_prepared_command ... ok
+[2026-09-14T21:25:04.198-04:00] test prepared::tests::four_eyes_binds_to_the_instance_for_an_edit_and_the_type_for_a_create ... ok
+[2026-09-14T21:25:04.198-04:00] test prepared::tests::a_failing_criterion_is_reported_not_raised ... ok
+[2026-09-14T21:25:04.198-04:00] test prepared::tests::malformed_edits_are_refused_at_preparation_not_at_writeback ... ok
+[2026-09-14T21:25:04.198-04:00] test prepared::tests::preparation_does_not_require_the_writeback_only_inputs ... ok
+[2026-09-14T21:25:04.198-04:00] test prepared::tests::projected_actions_report_criteria_they_cannot_evaluate ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28::limits_tests::owner_protocol_duplicate_nested_keys_and_container_limits_refuse ... ok
+[2026-09-14T21:25:04.198-04:00] test prepared::tests::the_edits_resolve_against_the_base_the_gates_were_evaluated_from ... ok
+[2026-09-14T21:25:04.198-04:00] test prepared::tests::the_writeback_requires_a_command_id ... ok
+[2026-09-14T21:25:04.198-04:00] test tests::control_points_parse_and_reject_unknown_gate ... ok
+[2026-09-14T21:25:04.198-04:00] test prepared::tests::the_writeback_requires_an_expected_revision_for_an_instance_edit ... ok
+[2026-09-14T21:25:04.198-04:00] test tests::edits_resolve_value_and_param_and_reject_ambiguity ... ok
+[2026-09-14T21:25:04.198-04:00] test tests::egress_auto_clears_only_when_no_side_effects ... ok
+[2026-09-14T21:25:04.198-04:00] test tests::evaluation_context_lets_params_win ... ok
+[2026-09-14T21:25:04.198-04:00] test tests::params_enforce_declared_keys_and_required ... ok
+[2026-09-14T21:25:04.198-04:00] test tests::submission_criteria_pass_fail_and_fail_closed ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28::schema::tests::missing_reachable_schema_fails_and_decimal_bounds_are_exact ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28::schema::tests::definition_resource_rewrite_preserves_ref_sibling_constraints ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28::schema::tests::all_fifty_five_registered_input_validators_compile ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28::limits_tests::owner_protocol_rejects_tag_oversize_and_noncanonical_json ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28_codec_tests::rust_owner_attempt_create_run_matches_independent_literal_bytes ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28_codec_tests::rust_owner_publication_matches_independent_literal_bytes ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28::limits_tests::owner_protocol_truncation_every_boundary_and_trailing_bytes ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28::limits_tests::owner_protocol_schema_and_identity_refusals_do_not_use_fixture_matching ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28_codec_tests::rust_owner_case_response_matches_independent_literal_bytes ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28_codec_tests::rust_owner_decoder_rejects_public_numeric_tokens_duplicate_keys_and_future_gate_digest ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28_codec_tests::rust_owner_direct_wage_matches_independent_literal_bytes ... ok
+[2026-09-14T21:25:04.198-04:00] test owner28_codec_tests::rust_owner_gated_calculate_matches_independent_literal_bytes ... ok
+[2026-09-14T21:25:04.198-04:00]
+[2026-09-14T21:25:04.198-04:00] test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.66s
+[2026-09-14T21:25:04.198-04:00]
+[2026-09-14T21:25:04.198-04:00]
+[2026-09-14T21:25:04.198-04:00] ---- STDERR ----
+[2026-09-14T21:25:04.198-04:00]
+[2026-09-14T21:25:04.210-04:00] Cache hits: 0%
+[2026-09-14T21:25:04.210-04:00] Commands: 520 (cached: 0, remote: 0, local: 520)
+[2026-09-14T21:25:04.210-04:00] Network: Up: 0B  Down: 24MiB
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

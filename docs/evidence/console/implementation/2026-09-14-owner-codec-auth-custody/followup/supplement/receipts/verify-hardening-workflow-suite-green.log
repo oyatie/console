@@ -1,0 +1,31 @@
+▶ production hardening workflow gates
+  ✔ rejects missing blocked-observation evaluator wiring, alias, and focused suite (52.946625ms)
+  ✔ accepts active CI, security, and image-release workflow gates (16.189792ms)
+  ✔ pins the finite image-release admission convergence budget (14.574042ms)
+  ✔ binds the documented GitHub environment Team response shape exactly (22.164458ms)
+  ✔ rejects removing the canonical Python promotion suite (14.304458ms)
+  ✔ rejects a non-false production authorization or missing unprotected preflight (30.559708ms)
+  ✔ rejects missing one-shot reset, immutable verifier inputs, or rebase behavior (41.714ms)
+  ✔ rejects recovery without an exact required candidate SHA (16.057292ms)
+  ✔ rejects production digest promotion without an explicit required false-by-default dispatch input (12.150708ms)
+  ✔ rejects production digest promotion on push or outside dev (11.74875ms)
+  ✔ rejects production digest promotion without the production environment (13.134625ms)
+  ✔ rejects production promotion without exact independent Team reviewer enforcement (121.625209ms)
+  ✔ rejects workflow reruns in both preflight and protected promotion jobs (18.198583ms)
+  ✔ rejects release-probe checkout without explicit job-level contents read (23.151583ms)
+  ✔ rejects a mutable release-probe checkout reference (33.975084ms)
+  ✔ rejects release-probe topology use before checkout (9.871167ms)
+  ✔ rejects release-probe without post-migration canonical-enforce (9.797959ms)
+  ✔ rejects release-probe canonical-enforce sequenced after boot (9.9095ms)
+  ✔ rejects persisted release-probe checkout credentials (18.010458ms)
+  ✔ does not let the following preflight job satisfy release-probe checks (9.987791ms)
+  ✔ rejects workflow gates that only appear in comments or unused literals (1.1605ms)
+✔ production hardening workflow gates (502.869375ms)
+ℹ tests 21
+ℹ suites 1
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 575.27625

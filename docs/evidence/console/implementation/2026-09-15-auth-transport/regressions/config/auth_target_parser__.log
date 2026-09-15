@@ -1,0 +1,23 @@
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `console-app` (bin "console-app") generated 1 warning
+warning: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.96s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/auth_rest.rs (/private/tmp/console-account30-cargo/debug/deps/auth_rest-1c2af398acf7d944)
+
+running 8 tests
+test auth_target_parser::account_target_accepts_existing_tcp_tls_and_operational_queries ... ok
+test auth_target_parser::account_target_ambient_pgoptions_cannot_smuggle_role_or_gucs ... ok
+test auth_target_parser::account_target_effective_query_password_preserves_distinctness ... ok
+test auth_target_parser::account_target_rejection_prevents_sqlx_unknown_parameter_secret_logging ... ok
+test auth_target_parser::account_target_rejects_malformed_percent_and_invalid_allowed_values ... ok
+test auth_target_parser::account_target_rejects_sqlx_destination_and_startup_overrides ... ok
+test auth_target_parser::account_target_rejects_unknown_and_duplicate_decoded_query_keys ... ok
+test auth_target_parser::account_target_requires_explicit_tcp_host_database_and_no_fragment ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 140 filtered out; finished in 0.64s
+

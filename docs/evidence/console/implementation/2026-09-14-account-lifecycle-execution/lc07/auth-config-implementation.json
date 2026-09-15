@@ -1,0 +1,111 @@
+{
+  "owner": "/root/finish_browser",
+  "independent_reviewer": "/root/finish_migration",
+  "base_sha": "96cd8f773ce68d758e928e1ca09d5956c34bf2ae",
+  "candidate_sha": "5a599b20e3f34f69098d98130768ab9b859db3c5",
+  "worktree": "/private/tmp/console-auth-config-20260914",
+  "status": "GREEN_INDEPENDENTLY_APPROVED",
+  "admission": "Root executed exact existing5testRED1pass4fail89filtered and tools/lanes/fanout.py admit; /private/tmp/account-auth-config-base-red.log.",
+  "implementation": [
+    "Retains AUTH_DATABASE_URL as AppConfig.auth_database_url.",
+    "Requires explicit nonempty transport only API+configured runtimeDB+enabled authREST. Worker/migrate/noDB/disabledAuth retain optionality.",
+    "Any supplied auth URL validates exact console_auth_rt identity and effective decoded password through existing shared validators; auth credential must differ from every supplied runtime/command credential.",
+    "AppConfig manual Debug prints typed operational role/address and configuration presence flags, never credential URLs or private provider/signing values.",
+    "No connection opening, new pool, role/grant, token issuance, schema or auth routing change."
+  ],
+  "source_hashes": {
+    "backend/app/src/lib.rs": "a081cfb018edbe49ae6f49527af33a25f8b103f927d0e4d73b671b7a601c5341",
+    "backend/app/tests/auth_rest.rs": "d4739a2d104e386c5296e03569c96e42297cc9e30b16a9dd47d0e9ef33ed4b9e"
+  },
+  "test_preservation": "Original5 unchanged. Added2 independently approved tests from /private/tmp/account-auth-config-extra-tests-approval.json. Fixed pre-existing let_and_return in migration fixture without changing expression/assertion; rustfmt2older spans formatting only, independently disclosed for review.",
+  "verification": [
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_auth_database_",
+      "phase": "original5 before additive tests",
+      "executed": 5,
+      "passed": 5,
+      "filtered": 89,
+      "exit": 0,
+      "log": "/private/tmp/account-auth-config-green.log",
+      "log_sha256": "4759a394feb28afe87aa96a715920bf5fa2369f77f811ff106ff73edcb96f8e8"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_auth_database_",
+      "phase": "final approved7",
+      "executed": 7,
+      "passed": 7,
+      "filtered": 89,
+      "exit": 0,
+      "log": "/private/tmp/account-auth-config-seven-green.log",
+      "log_sha256": "f0531a1ee7c0cfd9fec91cfb531f31843205705d860839d23ce4fa138bfd272e"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib command_database_config_tests",
+      "executed": 20,
+      "passed": 20,
+      "filtered": 146,
+      "exit": 0,
+      "log": "/private/tmp/account-auth-config-sibling-green.log",
+      "log_sha256": "1c0cfbf5f27147c276641e13147ffb89c8384992b1289aec084680484062b6c6"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test config",
+      "executed": 12,
+      "passed": 12,
+      "filtered": 0,
+      "exit": 0,
+      "log": "/private/tmp/account-auth-config-existing-green.log",
+      "log_sha256": "7aa81a16b994b658301bac186ee2b0208d9242607c9caf69676189e93a8bac6a"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo clippy --locked --manifest-path backend/Cargo.toml -p console-app --lib --test auth_rest --test config -- -D warnings",
+      "exit": 0,
+      "log": "/private/tmp/account-auth-config-clippy-final.log",
+      "log_sha256": "9b353492fa38c7c3c114e382494006ab09fe9057b0891c81c3f77b45b5084e90"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 rustfmt --edition 2024 --check backend/app/src/lib.rs backend/app/tests/auth_rest.rs",
+      "exit": 0
+    }
+  ],
+  "earlier_check_failure": "Initial clippy found pre-existing auth_rest prepare_http_migration_config let_and_return; exact mechanical correction independently accepted then final clippy passed. No suppressed diagnostic or skipped tests.",
+  "test_binary": {
+    "path": "/private/tmp/console-account30-cargo/debug/deps/auth_rest-f643e8058f67b6a1",
+    "sha256": "da37f912b5e3b8acadaf57743dfb6574fc77940a1550518e4cfbd3f0efab74db"
+  },
+  "premortem": [
+    "Parser validates but discards transport",
+    "DSN spelling hides shared/overridden credential",
+    "Debug/errors expose credentials",
+    "New required config breaks worker/migrate/noDB/disabledAuth modes"
+  ],
+  "detection": [
+    "Explicit retained value test andDebug canaries",
+    "Original wrongrole/options/decoded-password tests",
+    "4mode optionality and20existing sibling+12configuration regressions",
+    "Independent source review"
+  ],
+  "blast_radius": "Configuration parsing andDebug projection; configured auth APIs lacking AUTH_DATABASE_URL now correctly fail startup config. No persisted data or remote state changed.",
+  "rollback": "Code-only revert of implementation; no data rollback. Reverting does not establish Account least-privilege safety and cannot justify exposure.",
+  "stop_conditions": [
+    "Auth pool wiring/DDL/role creation needed",
+    "Semantic fixture weakening",
+    "Required migration/generated/lockfile changes"
+  ],
+  "remaining_holds": [
+    "Actual restricted console_auth_rt pool/topology and legacy fence next lane",
+    "Credential conversion, Account activation/current-context wiring",
+    "Production exposure and real credential provisioning"
+  ],
+  "independent_review_result": {
+    "reviewer": "/root/finish_migration",
+    "candidate": "5a599b20e3f34f69098d98130768ab9b859db3c5",
+    "verdict": "APPROVE_NARROW_CONFIG_IMPLEMENTATION",
+    "executed": 7,
+    "passed": 7,
+    "filtered": 89,
+    "source_and_binary_hashes": "matched",
+    "receipt": "reviewer writing separate receipt; approval delivered in team message"
+  },
+  "cargo_lease": "released"
+}

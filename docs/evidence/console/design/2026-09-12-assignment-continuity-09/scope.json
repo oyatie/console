@@ -1,0 +1,20 @@
+{
+  "status": "proposed_pending_independent_review",
+  "scope": "B04 bounded deterministic task assignment and continuity; W01 behavior candidate",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "e3712a2cbf485c197e0769c20789800c825863e9",
+  "scenarios": 64,
+  "screen_states": 16,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "selected_architecture": "Same PostgreSQL transaction: protected Group capacity accounting plus one Company workflow/draft/receipt; no distributed reservation TTL",
+  "remaining": [
+    "W04 exact SQL/ACL/API and all-route owner/lock/migration integration",
+    "W02 integrated V01\u2013V10",
+    "W03 monetary self-service publication and correction",
+    "Whole-design consensus and explicit design/test SHA approval",
+    "Current authority alignment; qualified production/source and operational evidence"
+  ]
+}

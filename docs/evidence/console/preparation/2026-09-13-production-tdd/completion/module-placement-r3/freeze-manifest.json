@@ -1,0 +1,84 @@
+{
+  "author": "/root",
+  "status": "CUSTODY_SIZE_SUPPLEMENT_ONLY_SOURCE_BYTES_UNCHANGED",
+  "reviewed_author_manifest_sha256": "19c5a9b674457291f11528be7a944f2d373dc1eefea4b1049d32decdd72432df",
+  "source_manifest": "author-freeze-manifest.json",
+  "reason": "Author manifest pins hashes without byte counts; preserve it unchanged and record verified byte counts under root custody.",
+  "files": [
+    {
+      "path": "account_migration-declarations.rs",
+      "sha256": "81867bbcd986662230a293a01deb409ba5439d2eedcccdc7ebfdad26d45e8d80",
+      "bytes": 2021
+    },
+    {
+      "path": "auth_rest-declarations.rs",
+      "sha256": "a2a3ec5921505e257c94a77176408582315d91c559c3344eabda76306efba77b",
+      "bytes": 3543
+    },
+    {
+      "path": "build.py",
+      "sha256": "cad2b9bf94876eafc748f66ba00fce7fc9d80441eaecbb90d46583ea692ef5f1",
+      "bytes": 10306
+    },
+    {
+      "path": "check.py",
+      "sha256": "1e986e3230cfbb7a5fa3367e381c7c9595fcef30a4f064fb37cddc61689e8cdf",
+      "bytes": 2578
+    },
+    {
+      "path": "checker-execution.txt",
+      "sha256": "a56ed6694c80b08aadc17fb2a2aca5b51a53259011b4e3da743d553634a0691a",
+      "bytes": 116
+    },
+    {
+      "path": "checks.json",
+      "sha256": "d9878fea75289c5385181fdceba260dd99510e5d47f43bd92916f6bad833080b",
+      "bytes": 1405
+    },
+    {
+      "path": "dev-dependencies.json",
+      "sha256": "b298faf0d3a96e245248f46038453a84702abf8ca0a3da1b162072ee8903a585",
+      "bytes": 2392
+    },
+    {
+      "path": "external-crate-reference-census.json",
+      "sha256": "d2b3659f13785f5dcc59da6f779ffa56d6a012f4781fe6167d340f5a2e71ac85",
+      "bytes": 19532
+    },
+    {
+      "path": "mechanical-guide.txt",
+      "sha256": "f6ce62b4dbc00bf33def1af286e12526bf8d57dba392cad4b9aba44b01dec122",
+      "bytes": 7379
+    },
+    {
+      "path": "module-placement.json",
+      "sha256": "3f42fb56a372335f771b6d5d716d6314b7b3a47ac09af2cf04a1f22679667da7",
+      "bytes": 131938
+    },
+    {
+      "path": "native_acceptance-declarations.rs",
+      "sha256": "600a3ebfeea5a275b25fb62a736c4cd7c383158c93e8846b9b013d139b49c462",
+      "bytes": 3431
+    },
+    {
+      "path": "r1-parent-manifest.json",
+      "sha256": "f811e23cf36574d1bc4b0761da0dd4a2435d2a5e54f20b459bd08662d5be7227",
+      "bytes": 1490
+    },
+    {
+      "path": "r2-parent-manifest.json",
+      "sha256": "d808059c55052407cee15dec445d19105a05b709af8c65c9bcd14bb946479e02",
+      "bytes": 1792
+    },
+    {
+      "path": "selection-base.json",
+      "sha256": "255c4213d3d0748da92cccbadbfaaccafdc5c54434cb0e2b5637c1e879b321b6",
+      "bytes": 21149
+    },
+    {
+      "path": "author-freeze-manifest.json",
+      "sha256": "19c5a9b674457291f11528be7a944f2d373dc1eefea4b1049d32decdd72432df",
+      "bytes": 2042
+    }
+  ]
+}

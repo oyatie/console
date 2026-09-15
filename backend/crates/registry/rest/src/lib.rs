@@ -21,7 +21,7 @@ use console_kernel_core::{
     KernelError, POSTAL_CODE_MAX_CHARS, PROVINCE_MAX_CHARS, SiteId, TraceContext, UserId,
     validate_bounded_text, validate_coordinate_pair,
 };
-use console_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
+use console_platform_auth::{PasskeyAuthenticationCredential, PasskeyService, SessionVerification};
 use console_platform_authz::{
     Action, Feature, Principal, Role, authorize_capability, authorize_org_wide,
 };
@@ -96,16 +96,16 @@ const OBJECT_ACTION_EXECUTION_TOTAL: &str = "object_action_execution_total";
 #[derive(Clone)]
 pub struct RegistryRestState {
     store: PgRegistryStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     passkey_step_up: Option<PasskeyService>,
 }
 
 impl RegistryRestState {
     #[must_use]
-    pub fn new(store: PgRegistryStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(store: PgRegistryStore, session_verification: Option<SessionVerification>) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
             passkey_step_up: None,
         }
     }
@@ -118,7 +118,7 @@ impl RegistryRestState {
 }
 
 pub fn router(state: RegistryRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(
@@ -1426,7 +1426,11 @@ async fn verify_object_action_step_up(
     })?;
     verifier
         .verify_step_up_for_user(
-            state.store.pool(),
+            state
+                .session_verification
+                .as_ref()
+                .ok_or_else(|| RestError::unavailable("authentication storage unavailable"))?
+                .auth_pool(),
             step_up.ceremony_id,
             step_up.credential,
             *principal.user_id.as_uuid(),
@@ -1947,7 +1951,7 @@ async fn principal_from_headers(
     state: &RegistryRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for registry API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
@@ -1959,6 +1963,9 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for registry API")
         }
@@ -1978,7 +1985,8 @@ fn rest_error_from_request_context(
         console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        console_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken
+        | console_platform_request_context::RequestContextError::LegacySessionRejected => {
             RestError::unauthorized("invalid bearer token")
         }
         console_platform_request_context::RequestContextError::InvalidClaim(message) => {

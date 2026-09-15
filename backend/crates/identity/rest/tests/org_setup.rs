@@ -66,7 +66,12 @@ impl Harness {
         }
     }
 
-    fn service(&self) -> Router {
+    async fn service(&self) -> Router {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &self.pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let verifier = JwtVerifier::from_es256_public_pem(
             JwtSettings {
                 issuer: TEST_ISSUER.to_owned(),
@@ -77,8 +82,14 @@ impl Harness {
         )
         .unwrap();
         router(
-            IdentityRestState::new(PgOrgStore::new(self.pool.clone()), Some(verifier))
-                .with_passkey_step_up(Some(passkey_service())),
+            IdentityRestState::new(
+                PgOrgStore::new(self.pool.clone()),
+                Some(console_platform_auth::SessionVerification::new(
+                    verifier,
+                    auth_database.clone(),
+                )),
+            )
+            .with_passkey_step_up(Some(passkey_service())),
         )
     }
 
@@ -227,8 +238,9 @@ async fn fresh_step_up_assertion(pool: &PgPool, user_id: UserId, display_name: &
     })
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_manages_users_and_reads_applied_org_structure(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let admin_branch = seed_branch(&pool).await;
     let admin_branch_id = admin_branch.to_string();
@@ -326,8 +338,9 @@ async fn admin_manages_users_and_reads_applied_org_structure(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn people_directory_filters_scope_orders_and_counts_truthfully(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let visible_branch = seed_branch(&pool).await;
     let hidden_branch = seed_branch(&pool).await;
@@ -530,10 +543,11 @@ async fn people_directory_filters_scope_orders_and_counts_truthfully(pool: PgPoo
 /// The people directory is a runtime-authz surface: custom roles become
 /// effective only when the resolver sees ACTIVE assignments, and every grant
 /// is bounded by both its branch condition and the caller's live membership.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn people_directory_custom_role_resolution_is_active_only_and_membership_bounded(
     pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch_a = seed_branch(&pool).await;
     let branch_b = seed_branch(&pool).await;
@@ -766,8 +780,9 @@ async fn people_directory_custom_role_resolution_is_active_only_and_membership_b
 /// Directory is a scrape surface: HTTP items are a DirectoryPerson key
 /// allowlist (no `phone` / `salary` / `bank_account` / `rrn` / `won`) even when
 /// a number is stored. User GET / users list keep `UserSummary.phone`.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn directory_people_omits_phone_while_user_get_keeps_it(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch = seed_branch(&pool).await;
     let admin = seed_user(&pool, "Directory Dto Admin", &["ADMIN"], Some(branch)).await;
@@ -873,8 +888,9 @@ async fn directory_people_omits_phone_while_user_get_keeps_it(pool: PgPool) {
     assert_directory_item_json_allowlist(&reader_page);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn non_super_admin_cannot_create_elevated_user(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let admin_branch = seed_branch(&pool).await;
     let admin = seed_user(&pool, "Branch Admin", &["ADMIN"], Some(admin_branch)).await;
@@ -896,8 +912,9 @@ async fn non_super_admin_cannot_create_elevated_user(pool: PgPool) {
     assert_eq!(status, StatusCode::FORBIDDEN, "{body:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_can_grant_admin_to_existing_executive_in_scope(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let admin_branch = seed_branch(&pool).await;
     let admin = seed_user(&pool, "Branch Admin", &["ADMIN"], Some(admin_branch)).await;
@@ -940,8 +957,9 @@ async fn admin_can_grant_admin_to_existing_executive_in_scope(pool: PgPool) {
     assert_eq!(roles, BTreeSet::from(["ADMIN", "EXECUTIVE"]));
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn profile_edit_resending_current_assignments_needs_no_receipt(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     // The legacy user-edit form re-sends the user's current roles/branches on a
     // phone-only edit. Delta-scoped, that is a no-op and must NOT demand an
     // impact-preview receipt (the admin-01-03 regression).
@@ -965,8 +983,9 @@ async fn profile_edit_resending_current_assignments_needs_no_receipt(pool: PgPoo
     assert_eq!(status, StatusCode::OK, "{updated:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn real_role_change_without_a_receipt_is_rejected(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     // A genuine role change (not an escalation the actor lacks authority for, so
     // not FORBIDDEN) without a preview receipt is a 422 at the REST layer.
     let harness = Harness::new(pool.clone()).await;
@@ -988,8 +1007,9 @@ async fn real_role_change_without_a_receipt_is_rejected(pool: PgPool) {
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{body:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_cannot_grant_new_executive_role_on_update(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let admin_branch = seed_branch(&pool).await;
     let admin = seed_user(&pool, "Branch Admin", &["ADMIN"], Some(admin_branch)).await;
@@ -1009,8 +1029,9 @@ async fn admin_cannot_grant_new_executive_role_on_update(pool: PgPool) {
     assert_eq!(status, StatusCode::FORBIDDEN, "{body:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_cannot_remove_existing_executive_role_on_update(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let admin_branch = seed_branch(&pool).await;
     let admin = seed_user(&pool, "Branch Admin", &["ADMIN"], Some(admin_branch)).await;
@@ -1036,8 +1057,9 @@ async fn admin_cannot_remove_existing_executive_role_on_update(pool: PgPool) {
     assert_eq!(status, StatusCode::FORBIDDEN, "{body:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn super_admin_creates_executive_user(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     // SUPER_ADMIN resolves to BranchScope::All; no branch membership needed.
     let super_admin = seed_user(&pool, "Cold Start Admin", &["SUPER_ADMIN"], None).await;
@@ -1059,8 +1081,9 @@ async fn super_admin_creates_executive_user(pool: PgPool) {
     assert_eq!(user["roles"].as_array().unwrap()[0], "EXECUTIVE");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn any_authenticated_user_edits_own_profile(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     // The seeded cold-start admin fixes its own display name via /users/me.
     let me = seed_user(&pool, "Cold Start Admin", &["SUPER_ADMIN"], None).await;
@@ -1083,8 +1106,9 @@ async fn any_authenticated_user_edits_own_profile(pool: PgPool) {
     assert_eq!(after["phone"], "010-9999-0000");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn console_rollout_opt_in_persists_per_user_and_is_audited(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch = seed_branch(&pool).await;
     let admin = seed_user(&pool, "Console Admin", &["SUPER_ADMIN"], Some(branch)).await;
@@ -1204,8 +1228,9 @@ async fn console_rollout_opt_in_persists_per_user_and_is_audited(pool: PgPool) {
     assert_eq!(after_snap["effective_new_console"], false);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mechanic_cannot_manage_users(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch = seed_branch(&pool).await;
     let mechanic = seed_user(&pool, "정비공", &["MECHANIC"], Some(branch)).await;
@@ -1222,8 +1247,9 @@ async fn mechanic_cannot_manage_users(pool: PgPool) {
     assert_eq!(status, StatusCode::OK);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_user_writes_audit_event(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch = seed_branch(&pool).await;
     let admin = seed_user(&pool, "Branch Admin", &["ADMIN"], Some(branch)).await;
@@ -1256,8 +1282,9 @@ async fn create_user_writes_audit_event(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn user_role_or_branch_update_requires_policy_preview_receipt(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let current_branch = seed_branch(&pool).await;
     let next_branch = seed_branch(&pool).await;
@@ -1295,8 +1322,9 @@ async fn user_role_or_branch_update_requires_policy_preview_receipt(pool: PgPool
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn user_role_and_branch_update_consumes_policy_preview_receipt_and_audits(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let current_branch = seed_branch(&pool).await;
     let next_branch = seed_branch(&pool).await;
@@ -1393,8 +1421,9 @@ async fn user_role_and_branch_update_consumes_policy_preview_receipt_and_audits(
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn deactivate_and_activate_are_reversible_archived_lifecycle(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch = seed_branch(&pool).await;
     let super_admin = seed_user(&pool, "Lifecycle Owner", &["SUPER_ADMIN"], None).await;
@@ -1451,8 +1480,9 @@ async fn deactivate_and_activate_are_reversible_archived_lifecycle(pool: PgPool)
 // Policy Studio assignment preview
 // ---------------------------------------------------------------------------
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn policy_assignment_preview_requires_role_manage_and_target_branch_scope(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let allowed_branch = seed_branch(&pool).await;
     let blocked_branch = seed_branch(&pool).await;
@@ -1497,10 +1527,11 @@ async fn policy_assignment_preview_requires_role_manage_and_target_branch_scope(
     assert_eq!(status, StatusCode::NOT_FOUND, "{body:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn policy_assignment_preview_validates_custom_roles_and_never_mutates_assignments(
     pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch = seed_branch(&pool).await;
     let super_admin = seed_user(&pool, "Policy Owner", &["SUPER_ADMIN"], None).await;
@@ -1827,8 +1858,9 @@ async fn policy_assignment_preview_validates_custom_roles_and_never_mutates_assi
     assert_eq!(assigned_policy_role_ids(&pool, target).await, before);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn policy_role_create_persists_abac_pbac_conditions_and_catalog_returns_them(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let super_admin = seed_user(&pool, "Policy Owner", &["SUPER_ADMIN"], None).await;
     let token = harness.token(super_admin, &["SUPER_ADMIN"], vec![]);
@@ -1912,8 +1944,9 @@ async fn policy_role_create_persists_abac_pbac_conditions_and_catalog_returns_th
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn policy_role_create_rejects_scope_widening_custom_features(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let super_admin = seed_user(&pool, "Policy Owner", &["SUPER_ADMIN"], None).await;
     let token = harness.token(super_admin, &["SUPER_ADMIN"], vec![]);
@@ -1943,8 +1976,9 @@ async fn policy_role_create_rejects_scope_widening_custom_features(pool: PgPool)
     assert_eq!(count, 0);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn policy_role_catalog_exposes_policy_version_and_assignment_writes_bump_it(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let super_admin = seed_user(&pool, "Policy Owner", &["SUPER_ADMIN"], None).await;
     let target = seed_user(&pool, "Policy Target", &["ADMIN"], None).await;
@@ -2135,8 +2169,9 @@ async fn policy_role_catalog_exposes_policy_version_and_assignment_writes_bump_i
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{body:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn policy_role_create_rejects_unknown_condition_attribute(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let super_admin = seed_user(&pool, "Policy Owner", &["SUPER_ADMIN"], None).await;
     let token = harness.token(super_admin, &["SUPER_ADMIN"], vec![]);
@@ -2173,8 +2208,9 @@ async fn policy_role_create_rejects_unknown_condition_attribute(pool: PgPool) {
     assert_eq!(count, 0);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn branch_scoped_policy_managers_are_limited_to_branch_condition_scope(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let allowed_branch = seed_branch(&pool).await;
     let blocked_branch = seed_branch(&pool).await;
@@ -2374,8 +2410,9 @@ async fn branch_scoped_policy_managers_are_limited_to_branch_condition_scope(poo
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn branch_scoped_policy_managers_cannot_remove_out_of_scope_assignments(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let allowed_branch = seed_branch(&pool).await;
     let blocked_branch = seed_branch(&pool).await;
@@ -2460,8 +2497,9 @@ async fn branch_scoped_policy_managers_cannot_remove_out_of_scope_assignments(po
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn assignment_save_rejects_stale_preview_when_current_assignments_changed(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let allowed_branch = seed_branch(&pool).await;
     let blocked_branch = seed_branch(&pool).await;
@@ -2544,8 +2582,9 @@ async fn assignment_save_rejects_stale_preview_when_current_assignments_changed(
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn assignment_save_rejects_stale_preview_when_target_branches_changed(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let allowed_branch = seed_branch(&pool).await;
     let blocked_branch = seed_branch(&pool).await;
@@ -2620,8 +2659,9 @@ async fn assignment_save_rejects_stale_preview_when_target_branches_changed(pool
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn assignment_save_rejects_stale_preview_when_role_definition_changed(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let allowed_branch = seed_branch(&pool).await;
     let blocked_branch = seed_branch(&pool).await;
@@ -2725,8 +2765,9 @@ async fn assignment_save_rejects_stale_preview_when_role_definition_changed(pool
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn policy_role_update_requires_passkey_step_up_and_writes_snapshot(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let super_admin = seed_user(&pool, "Policy Owner", &["SUPER_ADMIN"], None).await;
     let token = harness.token(super_admin, &["SUPER_ADMIN"], vec![]);
@@ -2842,8 +2883,9 @@ async fn policy_role_update_requires_passkey_step_up_and_writes_snapshot(pool: P
     assert_eq!(snapshot["after_snapshot"]["role"]["status"], "DRAFT");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn policy_role_status_update_requires_passkey_step_up_and_preserves_draft(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let super_admin = seed_user(&pool, "Policy Owner", &["SUPER_ADMIN"], None).await;
     let token = harness.token(super_admin, &["SUPER_ADMIN"], vec![]);
@@ -2888,8 +2930,9 @@ async fn policy_role_status_update_requires_passkey_step_up_and_preserves_draft(
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn policy_role_status_transitions_are_fail_closed_and_audited(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let super_admin = seed_user(&pool, "Policy Owner", &["SUPER_ADMIN"], None).await;
     let token = harness.token(super_admin, &["SUPER_ADMIN"], vec![]);
@@ -3030,8 +3073,9 @@ async fn policy_role_status_transitions_are_fail_closed_and_audited(pool: PgPool
 // Passkey self-management
 // ---------------------------------------------------------------------------
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn list_passkeys_returns_only_the_callers_own_credentials(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch = seed_branch(&pool).await;
     let me = seed_user(&pool, "정비공", &["MECHANIC"], Some(branch)).await;
@@ -3065,8 +3109,9 @@ async fn list_passkeys_returns_only_the_callers_own_credentials(pool: PgPool) {
     assert!(first.get("created_at").is_some());
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn delete_passkey_enforces_ownership_idor(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch = seed_branch(&pool).await;
     let me = seed_user(&pool, "정비공", &["MECHANIC"], Some(branch)).await;
@@ -3095,8 +3140,9 @@ async fn delete_passkey_enforces_ownership_idor(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn delete_passkey_refuses_last_remaining_credential(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch = seed_branch(&pool).await;
     let me = seed_user(&pool, "정비공", &["MECHANIC"], Some(branch)).await;
@@ -3117,8 +3163,9 @@ async fn delete_passkey_refuses_last_remaining_credential(pool: PgPool) {
     assert_eq!(still, 1);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn delete_passkey_succeeds_and_writes_audit_when_others_remain(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch = seed_branch(&pool).await;
     let me = seed_user(&pool, "정비공", &["MECHANIC"], Some(branch)).await;
@@ -3170,8 +3217,9 @@ fn json_string_set(value: &Value) -> BTreeSet<String> {
 /// router pool (RLS armed), and proves a branch-scoped MEMBER gets a strictly
 /// narrower grant set than ADMIN — the structural replacement for the frontend
 /// hardcoding role lists.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn me_authz_projects_roles_scope_and_capabilities(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch = seed_branch(&pool).await;
     let admin = seed_user(&pool, "Branch Admin", &["ADMIN"], Some(branch)).await;
@@ -3239,8 +3287,9 @@ async fn me_authz_projects_roles_scope_and_capabilities(pool: PgPool) {
 /// ignoring `EffectiveFeatureGrant::branch_scope` — so a branch-A-only grant
 /// made the UI believe the action was available on branch B too, where the
 /// real `authorize()` call would 403.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn me_authz_narrows_capability_to_the_grants_own_branch_scope(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let branch_a = seed_branch(&pool).await;
     let branch_b = seed_branch(&pool).await;
@@ -3393,7 +3442,7 @@ async fn send_with_headers(
         }
         None => builder.body(Body::empty()).unwrap(),
     };
-    let response = harness.service().oneshot(request).await.unwrap();
+    let response = harness.service().await.oneshot(request).await.unwrap();
     let status = response.status();
     let headers = response.headers().clone();
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
@@ -4056,8 +4105,9 @@ async fn seed_passkey(pool: &PgPool, user_id: UserId) -> uuid::Uuid {
     id
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn workspace_put_enforces_object_shape_and_size_bound(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let me = seed_user(&pool, "Workspace User", &["SUPER_ADMIN"], None).await;
     let token = harness.token(me, &["SUPER_ADMIN"], vec![]);
@@ -4093,8 +4143,9 @@ async fn workspace_put_enforces_object_shape_and_size_bound(pool: PgPool) {
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{body:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn workspace_me_endpoint_scopes_layout_to_current_principal(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone()).await;
     let user_a = seed_user(&pool, "Workspace User A", &["MECHANIC"], None).await;
     let user_b = seed_user(&pool, "Workspace User B", &["MECHANIC"], None).await;

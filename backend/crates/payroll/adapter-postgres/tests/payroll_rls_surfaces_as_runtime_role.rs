@@ -127,7 +127,11 @@ async fn seed_actor(owner_pool: &PgPool, org: Uuid) -> UserId {
 
 async fn seed_run(owner_pool: &PgPool, org: Uuid, actor: UserId) -> Uuid {
     let runtime_pool = runtime_role_pool(owner_pool).await;
-    let pay_run = PgPayRunPort::new(runtime_pool, tokio::runtime::Handle::current());
+    let pay_run = PgPayRunPort::new(
+        runtime_pool,
+        tokio::runtime::Handle::current(),
+        console_platform_db::durability::DurabilityPolicy::local_development(),
+    );
     let created = execute_sync(
         &pay_run,
         PayRunCommand {

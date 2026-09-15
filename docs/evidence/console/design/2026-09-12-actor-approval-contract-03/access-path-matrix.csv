@@ -1,0 +1,17 @@
+id,entry,independent_checks,positive,denied_or_revoked,owner,scope
+P01,목록·인사카드·직접 URL,entity discover/read; field read; Company scope,동일 객체의 허용 필드만 렌더,객체 존재 또는 필드값/hidden key 누출 없음,target owner + UI projection,current design
+P02,채팅 객체 링크·카드,thread read; linked object discover/read; properties,수신자별 허용 카드,sender snapshot/token 미전파; 제목/thumbnail 미누출,comms ref owner + target projection owner,common foundation; comms later activation
+P03,인용·전달·고정·메시지편집,message rights; referenced resource current rights,같은 ref를 현재권한으로 표현,전달/고정이 객체권한을 부여하지 않음,comms owner + target owner,common foundation
+P04,검색·mentions·푸시·메일 알림,channel rights; result/object/field metadata rights,허용된 알림/검색결과,숨긴 제목·금액·건수·snippet 누출 없음,search/notification projection + target owner,common foundation
+P05,외부메일·링크 scanner,public vs protected target; recipient entitlement,명시적 public 또는 별도 share범위만,내부 링크로 객체 공개/권한발급/GET state change 없음,comms transport + share/target owner,common foundation
+P06,객체 공유·재공유,share/delegate permission; issuer ceiling; target restrictions; approved recipient/time scope,별도 승인된 narrow grant와 receipt,object read/thread send로 공유권한 상승 불가; 만료/회수 즉시 미래접근 거부,share owner + target policy owner,separate sharing contract required
+P07,첨부·미리보기·다운로드,attachment entity/properties; download operation,허용된 파일만 현재 접근,영구 storage URL/token 우회 없음; 이미 반출한 평문 소급회수 주장 없음,storage/target owner,common foundation
+P08,화면 버튼·단축키·객체 quick action,exact action execute; fields; state/revision; evidence,현재 허용된 명령만 owner commit,view-only 사용자 상태변경 무효과; 클라이언트 위조 거부,domain Action owner,current design
+P09,REST·SSR server function·mobile,same application owner authorization; request integrity,같은 명령·같은권한 결과,직접호출/CSRF/누락 validator 우회 없음,adapter + same Action owner,all reached adapters before activation
+P10,prepare→권한회수→execute,nonmutating prepare; current guarded execute,여전히 유효한 정확명령만 commit,stale witness로 실행·gate소비·task완료 없음,Action + policy owner,current design
+P11,열린 탭·캐시·실시간구독,current subscriber/resource/field versions,허용된 업데이트만 전달,회수 후 stream/SSR/hydration/cache 원값 노출 차단,projection/subscription + target owner,current design and future subscriptions
+P12,부분 편집·sheet write-back,field write; exact target; owning Action,의도한 허용필드만 수정,redacted roundtrip가 숨긴값 null처리하지 않음; unauthorized edit 무효과,field/domain owner; sheet adapter,current forms; sheet later
+P13,일괄처리·automation,each target/action + exact actor/workload authority,권한 내 Company별효과와 정확결과,worker권한으로 viewer 상승 불가; 불허 타겟효과 없음,workflow + domain owners,B03/B04 open
+P14,합계·정렬·수식·export,derived disclosure; lineage; export operation,별도 허용된 결과만 공개,차분/수식/로그로 hidden data 역산 금지,projection/derived owner,aggregate current; sheet later
+P15,history·audit·receipt replay,current readback disclosure; immutable actor/payload match,허용된 원 결과 회복; new effect 없음,과거권한으로 비밀조회 불가; 회수가 committed effect를 삭제하지 않음,receipt + target owner,current design
+P16,권한영향 미리보기·수동복구,configuration/recovery capability; delegated ceiling; preview disclosure,승인된 정책변경/복구만 수행,impersonation/비밀조회/운영자 backdoor 없음,policy/identity owner,current design; detailed screens open

@@ -1,0 +1,328 @@
+[
+  {
+    "id": "V01",
+    "name": "범위·기간 선택",
+    "route": "/_ui/workspaces/payroll",
+    "entry": "내 업무/업무공간/허용 deep link",
+    "typed_input_and_defaults": "서버 허용 Company refs 집합; 기간; 이전 허용 필터만 기본값",
+    "mandatory_information": "현재 선택 범위·법인 식별·조회 시점; hidden 법인 수 없음",
+    "ready_actions": [
+      "NAV_SCOPE"
+    ],
+    "success": "허용 범위 적용; V02 이동",
+    "empty": "선택 가능한 허용 범위 없음; 나의 기록/허용 업무공간",
+    "incomplete": "허용 범위/기간 미선택; 선택부터 완료",
+    "partial": "알 수 있는 법인 조회 실패만 표시; 범위 합계 없음",
+    "stale": "권한/멤버십 변경; 선택 다시 검증; old draft 불변",
+    "unknown_binding": null,
+    "contract_refs": "UX1.2;GO1"
+  },
+  {
+    "id": "V02",
+    "name": "전사·법인 급여 진행",
+    "route": "/_ui/workspaces/payroll?scope=:permitted&period=:period",
+    "entry": "V01/내 업무/복귀 context",
+    "typed_input_and_defaults": "허용 run/Company selection; 상태/담당 필터",
+    "mandatory_information": "각 허용 run 준비/결과·시간·정확 다음 업무; 집계는 별도권한",
+    "ready_actions": [
+      "NAV_INPUTS",
+      "LAUNCH_GROUP_CALC"
+    ],
+    "success": "선택 계산 접수 시 V09; 개별 결과는 owner receipt",
+    "empty": "허용 범위에 작업 없음; 권한 있으면 V03 생성",
+    "incomplete": "계산 준비 안 된 선택; V04 보완 또는 명시 subset",
+    "partial": "허용/조회성공 범위만 표시; 전체 완료/금액 추정 금지",
+    "stale": "관찰 갱신 필요; immutable action manifest 별도",
+    "unknown_binding": "Group launch command/operation receipt",
+    "contract_refs": "UX1.7;GO1"
+  },
+  {
+    "id": "V03",
+    "name": "급여 작업 만들기",
+    "route": "/_ui/workspaces/payroll/new",
+    "entry": "V02 생성/허용 객체 action",
+    "typed_input_and_defaults": "ONE Company ref; 사업 기간/pay_date; typed native run purpose; correlation/command 자동 생성",
+    "mandatory_information": "법적 Company·고용관계 기본 대상·기존 겹치는 run·기간 기준",
+    "ready_actions": [
+      "DRAFT_SAVE",
+      "CREATE_RUN"
+    ],
+    "success": "생성 receipt의 실제 draft_run_id로 V04 이동",
+    "empty": "기본 대상0: 생성 가능 owner profile이면0명 staged; 준비완료 아님",
+    "incomplete": "필수 기간/범위 누락; typed error 수정",
+    "partial": "허용되지 않은 대상은 집계하지 않음; 정확 승인 범위 필요",
+    "stale": "기존 run/원천/대상 변경; preview 다시 확인",
+    "unknown_binding": "create command receipt; correlation만으로 성공추정 금지",
+    "contract_refs": "UX1.4;P02"
+  },
+  {
+    "id": "V04",
+    "name": "대상·입력·근거",
+    "route": "/_ui/workspaces/payroll/runs/:run/inputs",
+    "entry": "V03/V07 차단 항목/관련 task",
+    "typed_input_and_defaults": "허용 Employment/source refs; 입력 source revision; verification case의 typed evidence refs",
+    "mandatory_information": "준비 체크·누락 담당·현재/이전 입력 차이·필수 narrative·적용 기간; REVIEWING 중인 단위 정정은 whole prepare/recalculate 대신 current cycle revision 경로",
+    "ready_actions": [
+      "NAV_WAGE",
+      "VERIFY_SOURCE",
+      "PREPARE_INPUT",
+      "DRAFT_SAVE",
+      "REVISE_REVIEW_CYCLE"
+    ],
+    "success": "새 input revision receipt; V06 close review",
+    "empty": "대상 없음: 선정/근로관계 owner로; 마감/계산 금지",
+    "incomplete": "근거 누락: exact source form/case 또는 담당 task; 추정값 금지",
+    "partial": "PC1 허용 입력 단위만 준비; hidden 필수단위는 별도 적격 task",
+    "stale": "새 원 사실/verification/roster 버전; old snapshot 실행 금지",
+    "unknown_binding": "prepare/verify command receipt 및 owner case truth",
+    "contract_refs": "UX1.3;PC1;P02;P03"
+  },
+  {
+    "id": "V05",
+    "name": "계약급여 입력·정정",
+    "route": "/_ui/workspaces/hr/employments/:employment/contract-wage",
+    "entry": "V04 항목/Person·Employment 객체/허용 deep link",
+    "typed_input_and_defaults": "Company/Employment refs 자동; effective_from date; wage kind typed supported; amount_won 정수; standard hours; evidence refs/narrative",
+    "mandatory_information": "현재 계약값·효력일·정정 대상 revision·영향 기간; 저장가능과 계산지원 구분",
+    "ready_actions": [
+      "DRAFT_SAVE",
+      "SAVE_WAGE",
+      "OPEN_HISTORY"
+    ],
+    "success": "wage fact readback 후 호출 V04로 복귀; 재준비 안내",
+    "empty": "현재 계약급여 없음: 권한 있는 생성 입력;0원 자동값 없음",
+    "incomplete": "필수 amount/date/evidence 부족 또는 지원되지 않는 profile; 정확 owner exception",
+    "partial": "숨긴 salary field 편집/역산 금지; 담당 작업을 적격자로 연결",
+    "stale": "같은 효력일/correction revision 충돌; 허용diff와 새CAS 검토",
+    "unknown_binding": "exact wage command receipt; timeout blind POST 금지",
+    "contract_refs": "UX1.4;FD1;P01;G08"
+  },
+  {
+    "id": "V06",
+    "name": "근태 마감 검토",
+    "route": "/_ui/workspaces/payroll/runs/:run/close",
+    "entry": "V04 준비 결과/허용 작업",
+    "typed_input_and_defaults": "fixed input revision; explicit attest defaultfalse; source/period refs 시스템 연결",
+    "mandatory_information": "대상·근태/휴가 미결·기간 lock·필수 차단과 경고 분리",
+    "ready_actions": [
+      "CLOSE_ATTENDANCE",
+      "NAV_INPUTS"
+    ],
+    "success": "마감 receipt로 V07; 승인/법률 적합/휴가 허용 뜻 아님",
+    "empty": "대상0이면 마감 불가; V04 대상 보완",
+    "incomplete": "attest 미확인 또는 필수자료 부족; 현재 근거 확인",
+    "partial": "본인 결정 필수 evidence 전체권한 없으면 실행불가; scoped work별 진행",
+    "stale": "preflight 이후 source/period 변화; current 검토부터",
+    "unknown_binding": "close command receipt/owner state",
+    "contract_refs": "UX1.4;P04"
+  },
+  {
+    "id": "V07",
+    "name": "계산 결과·차이",
+    "route": "/_ui/workspaces/payroll/runs/:run",
+    "entry": "V06/작업목록/결과 link",
+    "typed_input_and_defaults": "current fixed run/input/calculation refs; 허용 행·차이 필터",
+    "mandatory_information": "저장 version·차단 행·근거·허용 전후차이·현재성; payable=false; current cycle/R/C coverage when authorized; Unit/Common proposal labels",
+    "ready_actions": [
+      "CALCULATE",
+      "OPEN_REVIEW_CYCLE",
+      "SUBMIT_REVIEW",
+      "NAV_INPUTS",
+      "CORRECT_APPROVED",
+      "OPEN_RELEASE",
+      "REVISE_REVIEW_CYCLE"
+    ],
+    "success": "정확 계산/검토요청/정정 receipt에 따른 다음 상태",
+    "empty": "계산결과 없음: 준비/마감 후 실제 계산;0원 명세 아님",
+    "incomplete": "미계산/차단 단위는 원 입력 task 보완; 총액 미확정",
+    "partial": "허용 행과 부분coverage만; hidden/net 총액 추정없음",
+    "stale": "old result는 역사; 새 source 준비/재마감/재계산 필요",
+    "unknown_binding": "calculate/submit/correction command 및 immutable receipt",
+    "contract_refs": "UX1.7;AC1;PC1"
+  },
+  {
+    "id": "V08",
+    "name": "급여안·검토단위 결정",
+    "route": "/_ui/workspaces/payroll/runs/:run/reviews/:proposal",
+    "entry": "내 검토 업무/V07 제출 결과/허용 link",
+    "typed_input_and_defaults": "exact proposal/submission refs; APPROVE or REJECT; 거절 reason; required evidence; DRAFT submission explicit attestation; typed Unit/Common proposal; revise inputs=committed source correction refs + affected proposal CAS",
+    "mandatory_information": "정확 범위·원 제출자·source/계산·차이·필수 이슈·현재 허용 상태",
+    "ready_actions": [
+      "DECIDE_REVIEW",
+      "REQUEST_GATE",
+      "CANCEL_PENDING",
+      "SUBMIT_REVIEW",
+      "REVISE_REVIEW_CYCLE",
+      "WITHDRAW_REVIEW_DECISION",
+      "CANCEL_REVIEW_CYCLE",
+      "NAV_INPUTS",
+      "NAV_WAGE"
+    ],
+    "success": "내 exact 검토 완료; 전역 completion은 별도 허용 evidence",
+    "empty": "할당 검토 없음 또는 이미 종료; 현재 receipt로",
+    "incomplete": "필수근거 미충족/동일인/추가gate필요; blind approve 없음",
+    "partial": "PC1 exact 단위만; 나머지 숨긴 대상 승인하지 않음",
+    "stale": "proposal/source/policy 변경; 새 현재 intent/gate 필요; REVIEWING 단위 정정은 REVISE_REVIEW_CYCLE; 이미 전체 APPROVED면 AC1 successor",
+    "unknown_binding": "decision command/coverage receipt; gate permit≠decision",
+    "contract_refs": "UX1.7;AC1;PC1"
+  },
+  {
+    "id": "V09",
+    "name": "전사 계산 실행·복구",
+    "route": "/_ui/operations/:operation",
+    "entry": "V02 selected launch/내업무/허용 link",
+    "typed_input_and_defaults": "immutable selected manifest; resume/stop 선택; binding을 사용자재입력하지 않음",
+    "mandatory_information": "PREPARING/ACTIVE/STOPPED 및 perCompany last-known/receipt; hidden counts 없음",
+    "ready_actions": [
+      "RESULT_RECONCILE",
+      "RESUME_GROUP",
+      "STOP_GROUP"
+    ],
+    "success": "허용 selected 범위 계산 완료; 지급/승인 아님",
+    "empty": "알려진 op의 실대상0은 owner invariant오류; 신규빈 GET은 생성안함",
+    "incomplete": "준비/현재 actor 권한 부족: current owner 보완; 입력유지",
+    "partial": "성공/대기/차단/unknown 각 대상 사실; 전체성공토스트 금지",
+    "stale": "membership incarnation/actorcontext 변경; GO1 새검토/명시resume",
+    "unknown_binding": "parent/child command receipts; 기존 mirror absence로 no-effect 추정금지",
+    "contract_refs": "UX1.7;GO1"
+  },
+  {
+    "id": "V10",
+    "name": "나의 급여 기록",
+    "route": "/_ui/me/payroll",
+    "entry": "나의 기록/본인 공개 알림/계정 로그인",
+    "typed_input_and_defaults": "authorized issuer/Employment/period/publication 선택",
+    "mandatory_information": "공개 검토본 kind·원 version·허용 금액/basis·정정경고·내요청",
+    "ready_actions": [
+      "OPEN_OWN_REQUEST",
+      "REFRESH"
+    ],
+    "success": "허용 publication 조회; 읽음/수신=급여동의 아님",
+    "empty": "공개된 검토본 없음; 기간문의 가능; 내부 run 유무 숨김",
+    "incomplete": "허용 과거기록 source 확인불가: 문의/복구",
+    "partial": "허용 필드만; 종속 totals/deltas도 별도 공개정책",
+    "stale": "공개 본문은 불변; 현재 정정/보안상태 재조회",
+    "unknown_binding": null,
+    "contract_refs": "UX1.7;PR1;EC1"
+  },
+  {
+    "id": "S01",
+    "name": "결정 실행허가",
+    "route": "/_ui/approvals/:gate",
+    "entry": "V08 추가허가 요청/허용 gate 업무",
+    "typed_input_and_defaults": "exact D command/gate binding; allow/refuse; policy-required reason",
+    "mandatory_information": "D의 의도·허가 범위·유효기간·허가자 독립성; salary decision과 구분",
+    "ready_actions": [
+      "DECIDE_GATE",
+      "REFRESH"
+    ],
+    "success": "gate receipt; D는 V08에서 exact decision 명시 실행",
+    "empty": "진행 gate없음; 자동 payroll승인 없음",
+    "incomplete": "필수 scope/증거/자연인검증 부족; owner repair",
+    "partial": "gate 필수 검토범위를 못보면 결정불가; 적격자task",
+    "stale": "gate expired/revoked/contentchanged: 새 intent; old허가 재사용금지",
+    "unknown_binding": "governance command receipt; payroll상태는 별도",
+    "contract_refs": "UX1.7;AC1"
+  },
+  {
+    "id": "S02",
+    "name": "본인 검토본 공개·표시 정정",
+    "route": "/_ui/workspaces/payroll/runs/:run/publications",
+    "entry": "V07 공개/허용 publication 객체 action",
+    "typed_input_and_defaults": "ONE Company; exact approved subject manifest/projection; optional predecessor CAS",
+    "mandatory_information": "허용 수신대상/범위·검토증거·public projection 종류·미지급 의미",
+    "ready_actions": [
+      "DRAFT_SAVE",
+      "RELEASE_REVIEW",
+      "REPLACE_PROJECTION"
+    ],
+    "success": "publication receipt·현재slot; 본인 V10; 지급발행 아님",
+    "empty": "공개대상0: 실행없음; 수신권한/대상 보완",
+    "incomplete": "미승인/subject proof/source 미준비; whole selection block or explicit subset",
+    "partial": "필수 대상metadata 불가하면 선택불가; amounts read없이 publish는PR1조건",
+    "stale": "source/subject/projection/current-slot 변경: preview refresh",
+    "unknown_binding": "publication/replace command receipt; 중복CURRENT 금지",
+    "contract_refs": "UX1.7;PR1"
+  },
+  {
+    "id": "S03",
+    "name": "내 확인·정정 요청",
+    "route": "/_ui/me/payroll/requests/:request_or_new",
+    "entry": "V10 항목/기간문의/내요청 link",
+    "typed_input_and_defaults": "own publication OR Employment/period; IssueType ref; selected items; optional expected amount/qty; narrative/evidence",
+    "mandatory_information": "선택 원항목/basis·제출공개 범위·실제 case상태·답변·정정본",
+    "ready_actions": [
+      "DRAFT_SAVE",
+      "SUBMIT_OWN_REQUEST",
+      "OWN_CASE_UPDATE",
+      "OPEN_HISTORY"
+    ],
+    "success": "case 접수/본인 추가response receipt; 새published 결과와 답변 확인",
+    "empty": "기존 request없음: authorized own input; nopublication도 기간문의 가능",
+    "incomplete": "필수 type/연결정보 부족; 대체금액/첨부 강요없음",
+    "partial": "본인 허용 content만; 내부 coworker/handler정보 별도",
+    "stale": "request revision/own권한 변화; 새evidence 검토후 CAS",
+    "unknown_binding": "case submit/update receipt; handler없어도 접수보존",
+    "contract_refs": "UX1.7;PR1;FD1"
+  },
+  {
+    "id": "S04",
+    "name": "급여 문의·정정 처리",
+    "route": "/_ui/work-items/:task/payroll-request",
+    "entry": "내 업무/허용 case link",
+    "typed_input_and_defaults": "current request revision; exact issue dispositions/response; domain correction/publication refs",
+    "mandatory_information": "최신 narrative·각 issue·허용 근거·원액/현재정정상태·다음 필요업무",
+    "ready_actions": [
+      "DRAFT_SAVE",
+      "RESPOND_CASE",
+      "HANDOVER_PLAN",
+      "OPEN_HISTORY"
+    ],
+    "success": "exact case response/actual corrected publication +task outcome; capacity release조건",
+    "empty": "현재 할당없음/이미처리됨; 현재허용 결과확인",
+    "incomplete": "미답변 issue/필수 hiddenevidence/미공개정정본; 완료차단",
+    "partial": "볼수있는 근거만; 전체필수 issue불가하면 적격handler",
+    "stale": "새request evidence/assignment epoch; oldresponse 실행금지",
+    "unknown_binding": "response/domaineffect receipt; 재배정만으로 case완료 금지",
+    "contract_refs": "UX1.7;PR1;WA2"
+  },
+  {
+    "id": "S05",
+    "name": "업무 인계 요청·지시",
+    "route": "/_ui/work-items/handover/:plan_or_new",
+    "entry": "내업무/task선택/업무지시/부재·업무량 예외",
+    "typed_input_and_defaults": "actual taskIDs/epochs; trigger/rule ref; temporary/permanent; period; nominee optional",
+    "mandatory_information": "현재 실제담당·허용 후보·saved work·권한내 영향/예외·plan상태",
+    "ready_actions": [
+      "DRAFT_SAVE",
+      "HANDOVER_PLAN",
+      "STOP_HANDOVER"
+    ],
+    "success": "요청대기/실제 task별 transfer receipt 구분; completed transfer보존",
+    "empty": "선택 task없음: 허용 실제 task선택; fraction sharing 없음",
+    "incomplete": "부적격/과부하/unknown/Group stop필요: 같은 WA1복구경로",
+    "partial": "Company별 actual plan결과; hidden workload/대상개수 없음",
+    "stale": "task/plan/policy/capacity 변화; activeplan은stop후 successor",
+    "unknown_binding": "Company plan/task receipt; stop fence후 새effect불가",
+    "contract_refs": "UX1.5;WA1;WA2"
+  },
+  {
+    "id": "S06",
+    "name": "초안 이력·선택 복원",
+    "route": "/_ui/drafts/:draft/history",
+    "entry": "입력 form 이력/허용 pinned revision link",
+    "typed_input_and_defaults": "authorized revision/schema/field selection; restore preview",
+    "mandatory_information": "허용 과거값/현재차이·schema·보존/이용가능상태; 원 입력 보존",
+    "ready_actions": [
+      "DRAFT_RESTORE",
+      "REFRESH"
+    ],
+    "success": "새 draft revision 저장; origin form으로 복귀; 업무 실행없음",
+    "empty": "허용 이력없음/knownexpired: current form복귀; hidden버전수없음",
+    "incomplete": "schema/retention/integrity불가: 복원차단·owner복구",
+    "partial": "개별 pinned 권한은 whole timeline권한아님; denied old값보존",
+    "stale": "현재draft/epoch변경: restore preview재검토",
+    "unknown_binding": "restore command/save receipt; 새버전 중복append 방지",
+    "contract_refs": "UX1.5;FD1"
+  }
+]

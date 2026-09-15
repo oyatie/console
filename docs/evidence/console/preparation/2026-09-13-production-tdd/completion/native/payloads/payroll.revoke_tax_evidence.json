@@ -1,0 +1,14 @@
+{
+  "kind": "payroll.revoke_tax_evidence",
+  "body": {
+    "head_ref": {
+      "family": "TAX_EVIDENCE",
+      "ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "evidence_id": "3d6c16d0-0584-548a-8aa0-cff1efdd18bb",
+        "revision": "1"
+      }
+    },
+    "evidence_refs": []
+  }
+}

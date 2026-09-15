@@ -1,0 +1,162 @@
+{
+  "kind": "READ_ONLY_ACCOUNT_CUTOVER_AND_LEGACY_WRITER_ADDENDUM",
+  "author": "/root/inventory_repair",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "previous_guide": {
+    "path": "/private/tmp/account-browser-next-slice-f96eddd3-guide.json",
+    "sha256": "6f27c512ae9eba775c2a0de9b9e2da0bb39d1ed89af4994e0a6dce058fb99251"
+  },
+  "conclusion": "The approved final choice is Account ownership of existing auth tables with permanent Account-security fencing, explicit state mapping, restricted Auth custody, and writer/FK/role closure before enable. Current source does not establish an approved stable accounts-only legacy runtime mode or users-to-accounts trigger. Root-only staging is mechanically unfenced, but that is not proof of a permitted coherent coexistence protocol. Do not begin replacement DDL merely because browser routes are404.",
+  "authority_evidence": [
+    {
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/account-contract.txt:8",
+      "fact": "accounts is independent immutable identity preserving users UUIDs; account_security is its mandatory guard; unknown security state must not invent access."
+    },
+    {
+      "source": "same account-contract.txt:9-10",
+      "fact": "Retain existing auth names/bytes; retarget user_id to accounts; remove both simple and composite users/Company FKs; nonauthorizing nullable provenance; no business credential grants or permissive Company credential RLS."
+    },
+    {
+      "source": "same account-contract.txt:15-16",
+      "fact": "account_security existence is irreversible legacy-auth fence regardless of state. Only separately guarded unmigrated legacy auth may continue. New Account resolver denies missing guard/family metadata, never baseline0."
+    },
+    {
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/migration-and-proof.txt sections1 and2b-e",
+      "fact": "Explicit security mapping preserves historical denial and key deletion; proven active valid credentials may become ACTIVE, proven suspension stays suspended, ambiguous denial becomes RECOVERY_REQUIRED. Before each fence, pause/drain or terminate all accepted legacy requests/streams/refresh writers and reconcile unknown effects. Complete auth/actor FK/role/owner/purge closure before enable."
+    },
+    {
+      "source": "ops/generate-account-custody.py:16-20",
+      "fact": "Canonical FENCE_BODY locks existing accounts row and returns EXISTS account_security. An accounts-only row returnsfalse; missing account_security is not accepted by the required Account session contract."
+    }
+  ],
+  "transition_alternatives": [
+    {
+      "alternative": "Approved completed Account transition under controlled admission/drain",
+      "status": "The approved target/sequence, requiring exact executable migration/preservation evidence before any live use. Existing approvals authorize preparation toward it, not a claim that source/live census or rehearsal is complete.",
+      "mechanics": "Inventory each existing and future creator, preserve stable UUIDs/bytes/revocations, close credential writers/readers and old employer authority, install constrained Auth procedures, then explicitly map/create security guards under paused/drained admission. Advance protocol/custody and enable only tested surfaces. Company data action actor closure remains separately reached owner work.",
+      "tradeoff": "Largest source dependency surface, but does not require inventing a lasting root-without-guard authority mode."
+    },
+    {
+      "alternative": "Staged root-only backfill plus explicit legacy coexistence",
+      "status": "Not proven adopted as a runtime contract by the read authority. Mechanically possible before fence creation, but cannot be silently assumed.",
+      "requirements": "Precisely define root-only as staging, which role creates it for every future legacy users writer, authorization/idempotency/rollback, prevention of arbitrary existing Account claim/merge, no security row or access upgrade, handling of deletes/inactive history, and when authoritative guard creation cuts over. Under existing AS1 final schema it must remain impossible to authenticate ACCOUNT_V1 without a guard. Prove all legacy positive/negative paths while business credential privileges are withdrawn.",
+      "tradeoff": "Avoids immediately fencing old sessions; expands transition machinery and ongoing writer dependencies. An automatic INSERT users trigger is an extra mechanism needing review, not an inevitable requirement or an approved shortcut."
+    },
+    {
+      "alternative": "Parallel new Account credential/session tables or dual Company-authorizing ownership",
+      "status": "Conflicts with approved AS1 retain-existing-tables/no-duplicate-sessions contract; not the chosen implementation.",
+      "reason": "Avoiding FKs by a second credential/session store, sentinel Company, optional missing-org parser, or OR-combined legacy RLS defeats explicit ownership and protocol separation."
+    },
+    {
+      "alternative": "Globally create security rows automatically or permanently disable all legacy entry",
+      "status": "Cannot infer from browser approval.",
+      "reason": "Automatically fences everyone and changes approved legacy compatibility; unsourced ACTIVE or RECOVERY_REQUIRED mapping is not the required preservation proof. A blanket legacy503 can mask writer breakage and is not green compatibility."
+    }
+  ],
+  "writer_inventory": {
+    "authoritative_minimum": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/writer-enrollment.csv:E01-E08,E17; this is source-confirmed minimum, not a live catalog census.",
+    "production_user_creators": [
+      {
+        "path": "backend/crates/identity/adapter-postgres/src/lib.rs",
+        "function": "create_user",
+        "line": 106,
+        "insert_line": 142,
+        "risk": "Company business transaction inserts users only, then Company audit/branches; no Account root or guard. Root creation cannot be delegated by broad business credential authority."
+      },
+      {
+        "path": "backend/crates/platform/provisioning/src/lib.rs",
+        "function": "signup_open_member",
+        "line": 223,
+        "insert_line": 244,
+        "risk": "Creates KNL MEMBER then bootstrap OTP in the same legacy transaction. BW31 must not call it for Account signup."
+      },
+      {
+        "path": "backend/crates/platform/provisioning/src/lib.rs",
+        "function": "upsert",
+        "line": 738,
+        "insert_line": 810
+      },
+      {
+        "path": "backend/crates/platform/provisioning/src/lib.rs",
+        "function": "onboard_tenant",
+        "line": 1021,
+        "insert_line": 1053
+      },
+      {
+        "path": "backend/crates/platform/provisioning/src/lib.rs",
+        "function": "apply_roster_tx",
+        "line": 2089,
+        "insert_line": 2164
+      },
+      {
+        "path": "backend/crates/platform/db/migrations/0036_platform_onboarding.sql",
+        "function": "platform_set_organization_status",
+        "line": 159,
+        "insert_line": 247,
+        "risk": "Stored live function creates replacement cold-admin user and deletes bootstrap data; migrate current function definition in a new migration, never edit historical SQL."
+      },
+      {
+        "path": "backend/crates/platform/db/migrations/0064_platform_group_accounts.sql",
+        "function": "platform_create_group_account",
+        "line": 127,
+        "insert_line": 185,
+        "risk": "Stored Group account creator inserts legacy users; must not mint global Account proof from employer role."
+      }
+    ],
+    "credential_mutators": [
+      "platform/auth/src/webauthn.rs:328,703,850 plus ceremony/mobile-binding functions; account guard lock order is different from legacy ceremony-first order.",
+      "platform/auth/src/refresh.rs:49,156,372; token/family writes currently Company scoped and audit-coupled; existing Account fence check is a separate pool read requiring cutover drain.",
+      "platform/provisioning/src/lib.rs:313 reset_credentials_for_user;2396 issue_bootstrap_if_needed_tx; consume_open_credentials_tx:594; registration/login handoff owners. Outstanding bootstrap proof never authenticates a migrated Account.",
+      "identity/adapter-postgres/src/lib.rs:488 deactivate_user and2229 sweep_user_credentials_tx delete passkeys/revoke families; retain identity-shutdown protection while separating Company relationship state.",
+      "platform/auth-rest/src/lib.rs:1446,1488 and identity/rest/src/lib.rs around4075 duplicate self-key routes; delegate one guarded owner, preserve last-key proof.",
+      "platform_provisioning remove_tenant:1769 and force_remove_tenant:1857 call stored procedures. Current direct purge body0196 and catalog closure0208 must exclude/protect Account custody even when legacy org provenance remains."
+    ],
+    "lexical_census_not_reached_runtime": {
+      "method": "git grep -n -E against immutable backend tree; counts source plus SQL plus tests; source paths may contain cfg(test) code. This is a dependency locator, not a complete executable-writer claim.",
+      "users_insert_sites": 239,
+      "users_insert_files": 192,
+      "users_insert_test_or_test_support_files": 178,
+      "users_insert_other_src_files": 8,
+      "credential_family_token_bootstrap_insert_sites": 23,
+      "credential_family_token_bootstrap_insert_files": 11
+    },
+    "fixture_implications": "Most legacy fixtures seed users after migrations; one-time preexisting-row backfill cannot help them. Shared test-support seeds at46/92/248 and direct auth/provisioning/identity fixtures need genuine transition-aware seed composition if required, with the same reviewed production owner path and no assertion changes. Do not add roots/security automatically to make tests stop failing unless that is the adopted transition semantics.",
+    "focused_preservation_suites": [
+      "platform/auth/tests/{refresh_tokens,webauthn_ceremony,webauthn_ceremony_replay,webauthn_registration_deactivated_user}.rs",
+      "platform/provisioning/tests/{bootstrap_passkey,bootstrap_passkey_replay,rls_auth_chain_as_runtime_role,self_enroll_handoff_as_runtime_role}.rs",
+      "identity/adapter-postgres/tests/{deactivate_revokes_credentials,user_lifecycle_noop_replay}.rs",
+      "identity/rest/tests/org_setup.rs; platform/auth-rest/tests/{dev_auth_session,group_admin_tenant_context}.rs",
+      "Current App reader10+reader7 and frozen storage/browser suites; new-user creation after migration must be tested, not only restored old rows."
+    ]
+  },
+  "current_red_update": {
+    "run": "/private/tmp/account-auth-rest-full191-d66893a4b503455d9b32c863556eaf04",
+    "source_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+    "independently_parsed_log_counts": {
+      "executed": 191,
+      "pass": 168,
+      "fail": 23,
+      "ignored": 0,
+      "filtered": 0
+    },
+    "browser": "Root reports25browser=7PASS18FAIL same404 boundaries; independent full source/cleanup/runtime evidence review pending in root lane, not performed by this addendum.",
+    "nonbrowser_failed_tests": [
+      "account_storage::account_custody_has_no_company_ownership_or_destructive_foreign_keys",
+      "account_storage::account_custody_owners_and_effective_column_grants_are_separate_from_business",
+      "account_storage::all_46_enrolled_actor_references_use_exact_account_or_company_actor_keys",
+      "account_storage::company_login_cannot_read_or_mutate_account_custody_even_with_company_context",
+      "account_storage::handoff_target_storage_accepts_an_account_without_company_or_employer_user"
+    ],
+    "scope": "The46actor references test is broader than Company-free browser signup. Its independent immutable inventory must not be weakened or declared satisfied by the12 browser routes. Keep it as reached RED and explicit remaining dependency until those approved domain actor transitions are integrated."
+  },
+  "implementation_admission_recommendation": "After current RED review, admit only a complete exact owner delta with frozen interface/schema plan. Core crypto and HTTP private preparations can be disjoint, but SQL identity ownership, legacy creator behavior, custody generated profiles and root activation remain serialized. The browser404 evidence proves work exists, not that all23 failed tests fit two independent2-file implementation lanes.",
+  "remaining_uncertainty": "A source-only review cannot decide every existing-user migration state or active request drain outcome. Source docs specify the approved final target and activation sequence, but exact coexistence mechanism and production catalog/state mapping need their own executable closure. This does not request new user permission or supersede persistent approvals.",
+  "source_sha256": {
+    "ops/generate-account-custody.py": "75a78dfe6eed8cc5ac9830b369e7876e7b6a9557c34d578f9bf3704c0caa365a",
+    "docs/evidence/console/design/2026-09-12-account-policy-technical-13/migration-and-proof.txt": "bf730839a8c9feb25c44452a82db9d3e0250f8b6da6fcffce7c7933397ea503a",
+    "docs/evidence/console/design/2026-09-12-account-policy-technical-13/writer-enrollment.csv": "18003250ed6430eaf54cdff4fa968610ef419f1ebeb06467e23a32f5e0a53aa4",
+    "backend/crates/identity/adapter-postgres/src/lib.rs": "ef620495a547484ededbb8b2e080222b47a63119534ff6f48f722116c9edd32a",
+    "backend/crates/platform/provisioning/src/lib.rs": "e4892c3e83014cbde9a7432810af61a5f32f8b678f2e4f7342dcc22e29d53815",
+    "backend/app/tests/auth_rest/account_storage.rs": "5aaad30f462ee34f0c1cefdec7ccb9a467cce036c3890b83aed353b912629add"
+  }
+}

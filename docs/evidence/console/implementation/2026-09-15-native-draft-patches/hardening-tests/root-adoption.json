@@ -1,0 +1,24 @@
+{
+  "test_base": "3807135a511f899d3a46788c337cf9d3e07ee362",
+  "test_candidate_manifest_sha256": "705d1d37caecd609343a5b599b497470bccf1ccc942616ce5f2c050e5225113e",
+  "author": "/root/inventory_repair",
+  "independent_reviewer": "/root/capture_review",
+  "root_adoption": "Approved bounded additive tests under ongoing authorized implementation/review corrections. Original12 full file prefix preserved; no test weakening.",
+  "new_tests": [
+    "draft_patch_snapshot_tests::duplicate_item_ids_across_registered_collections_refuse",
+    "draft_patch_snapshot_tests::insert_requires_fresh_live_id_before_later_removal",
+    "draft_patch_snapshot_tests::create_container_requires_fresh_live_id_before_subtree_removal",
+    "draft::schema::tests::conflicting_registered_reference_sibling_refuses",
+    "draft::schema::tests::unsupported_registered_container_assertion_refuses"
+  ],
+  "runtime_executed": 0,
+  "expected_full_application_count": 48,
+  "reason": "Expose actual cross-collection live item ID reuse and latent structural-schema fail-open cases. Each negative has a valid positive control.",
+  "remaining_holds": [
+    "Actual source-bound RED admission",
+    "Reviewed source correction and same GREEN",
+    "Clippy and final fast verification",
+    "Durable/current-policy/SSR workflow and production/payment/legal authority"
+  ],
+  "independent_review_sha256": "f0dd61aeadfab8c143105924aa3a63c7e97d1f58e523da98a920eb00365368a2"
+}

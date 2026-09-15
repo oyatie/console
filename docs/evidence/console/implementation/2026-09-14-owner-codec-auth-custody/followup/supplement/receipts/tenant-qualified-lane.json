@@ -1,0 +1,30 @@
+[
+  {
+    "lane": "tenant-qualified-table-identity",
+    "owner": "/root/finish_migration",
+    "base_sha": "39d4e93ab7547b3887670e092b561034dd738a28",
+    "worktree": ".",
+    "allow": [
+      "backend/ci/gates/tenant-isolation/src/lib.rs"
+    ],
+    "probe": "CARGO_TARGET_DIR=/private/tmp/console-tenant-gate-cargo CARGO_BUILD_JOBS=4 cargo test --locked --manifest-path backend/Cargo.toml -p console-gate-tenant-isolation --test qualified_table_identity",
+    "target": "Canonical defaultpublic table identity without schema/quoted aliasing across all staticgate consumers",
+    "guide": "Preserve quote boundaries in sanitizer; shared tokenizer preserves and resolves qualified identifier tokens; public lowercase schema elides only as canonical default. Preserve quotes for identifiers requiring them. Grant classification reads ON relation targets up to TO, not columns or roles. Existing dynamic unqualified keys remain same. Tests unchanged, no allowlists SQL dependencies or other files.",
+    "pre_mortem": "Factaliasing hides missingRLS or introduces incorrect allowlist exceptions",
+    "blast_radius": "Static tenantisolation gate identifier scanner only",
+    "detection": "Exact14 reviewedtests +existing19 +realrepositorygate",
+    "rollback": "Revert isolated lib.rs diff while retaining testevidence",
+    "stop_conditions": [
+      "Testweakening",
+      "Allowlistchange",
+      "SQL/grantmutation",
+      "Dependencychange"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Static scanner is not generalSQL semantic or runtimeisolation proof"
+    ]
+  }
+]

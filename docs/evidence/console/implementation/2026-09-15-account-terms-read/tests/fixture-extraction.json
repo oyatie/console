@@ -1,0 +1,6 @@
+{
+  "original_head": "    async fn router_with_key(\n        pool: &PgPool,\n        root: PathBuf,\n        signing_key: &SigningKey,\n    ) -> axum::Router {\n        let mut pairs = vec![",
+  "new_head": "    async fn router_with_key(\n        pool: &PgPool,\n        root: PathBuf,\n        signing_key: &SigningKey,\n    ) -> axum::Router {\n        build_router(state_with_key(pool, root, signing_key).await)\n    }\n\n    async fn state_with_key(pool: &PgPool, root: PathBuf, signing_key: &SigningKey) -> AppState {\n        let mut pairs = vec![",
+  "original_tail": "        pairs.extend(account_transport_urls(pool));\n        build_router(\n            AppState::from_config(AppConfig::from_pairs(pairs).unwrap())\n                .await\n                .unwrap(),\n        )\n    }",
+  "new_tail": "        pairs.extend(account_transport_urls(pool));\n        AppState::from_config(AppConfig::from_pairs(pairs).unwrap())\n            .await\n            .unwrap()\n    }"
+}

@@ -1,0 +1,64 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-native28-owner-assertions-s1-20260913/native-owner-tests.rs"
+      ],
+      "returncode": 0,
+      "claim": "Rust parser only; no typecheck/compile/test discovery"
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-native28-owner-assertions-s1-20260913/binder-sequence.rs"
+      ],
+      "returncode": 0,
+      "claim": "Rust parser only; no typecheck/compile/test discovery"
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-native28-owner-assertions-s1-20260913/native-owner-producer.rs"
+      ],
+      "returncode": 0,
+      "claim": "Rust parser only; no typecheck/compile/test discovery"
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-native28-owner-assertions-s1-20260913/native-fixture.rs"
+      ],
+      "returncode": 0,
+      "claim": "Rust parser only; no typecheck/compile/test discovery"
+    }
+  ],
+  "parsed_files": 4,
+  "cargo_discovered": 0,
+  "executed": 0,
+  "rust_compiled": false
+}

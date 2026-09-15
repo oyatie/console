@@ -26,8 +26,9 @@ use uuid::Uuid;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn resolves_kinds_and_denies_by_omission(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -273,8 +274,9 @@ async fn resolves_kinds_and_denies_by_omission(pool: PgPool) {
 /// status). The deny fires before any lookup (id-independent), so it
 /// introduces no existence oracle; membership-gated kinds (support_ticket)
 /// stay at membership parity.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn resolve_enforces_domain_feature_guards(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -373,8 +375,9 @@ async fn resolve_enforces_domain_feature_guards(pool: PgPool) {
 /// kinds. Negative coverage is mandatory (this resolver's history includes a
 /// cross-branch leak): cross-branch account, non-self passkey, and non-self /
 /// unaccepted consent must all be denied by omission.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn resolves_identity_kinds_and_denies_by_omission(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -580,8 +583,9 @@ async fn resolves_identity_kinds_and_denies_by_omission(pool: PgPool) {
 /// records nothing; an out-of-scope/absent subject (resolves to exists:false)
 /// records nothing; and a person reached incidentally by an object_graph WALK
 /// records nothing (traversing a graph is not viewing a card).
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn person_direct_resolve_audits_non_self_only(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -765,7 +769,11 @@ async fn resolve_graph(
     kind: &str,
     id: &str,
 ) -> (StatusCode, Value) {
-    let service = build_router(app_state(pool.clone(), public_key_pem.to_owned()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), public_key_pem.to_owned())
+            .await
+            .unwrap(),
+    );
     let response = service
         .oneshot(
             Request::builder()
@@ -823,7 +831,11 @@ async fn resolve(
     kind: &str,
     id: &str,
 ) -> (StatusCode, Value) {
-    let service = build_router(app_state(pool.clone(), public_key_pem.to_owned()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), public_key_pem.to_owned())
+            .await
+            .unwrap(),
+    );
     let response = service
         .oneshot(
             Request::builder()
@@ -1023,8 +1035,20 @@ fn issue_token_with_roles(
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -1032,4 +1056,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

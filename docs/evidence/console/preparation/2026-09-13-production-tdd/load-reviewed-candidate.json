@@ -1,0 +1,107 @@
+{
+  "status": "INDEPENDENTLY_REVIEWED_TEST_CANDIDATE_NOT_USER_APPROVED",
+  "base_sha": "828ce25cfb795e25ec8e97be536a536a2dd55a0a",
+  "owner": "/root",
+  "design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "toolchain": "Rust1.98.1",
+  "remaining_holds": [
+    "Consolidated first-vertical preparation incomplete",
+    "Exact ephemeral Account FK test correction remains blocked pending explicit user approval",
+    "User approval of consolidated test SHA",
+    "No production exposure/payment/legal/capacity authority"
+  ],
+  "source": "backend/crates/attendance/adapter-postgres/tests/concurrency/open_loop.rs",
+  "source_sha256": "f8a7bab5934b03ecc42a46a30d6c17630ab464d717c08d1c65c1e192ad0f04a8",
+  "reviewer": "/root/fresh29_operations",
+  "review_verdict": "ACCEPT_SOURCE; exact source and logs reviewed; no independent rerun",
+  "counts": {
+    "discovered": 8,
+    "executed": 8,
+    "passed": 8,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0
+  },
+  "artifacts": [
+    {
+      "path": "load-discovery-reviewed.log.gz",
+      "raw_sha256": "9f40a417d673922cd2afc552aabd6763d0ab98773d690911990b02bbe3b7910a"
+    },
+    {
+      "path": "load-execution-reviewed.log.gz",
+      "raw_sha256": "dff163bd23cec1b6750d8151461a3dda35369d30abd19b52adbfab48ee8c5849"
+    },
+    {
+      "path": "load-clippy-reviewed.log.gz",
+      "raw_sha256": "ce5109d34128916cb57ebd7f459e652a5a36e42e94dc9a83f5311fa3a87ed749"
+    }
+  ],
+  "discovered_names": [
+    "close_amendment_uses_runtime_role_without_updating_immutable_close_and_replays_idempotently",
+    "concurrent_branch_month_closes_commit_one_snapshot_and_one_audit",
+    "concurrent_identical_substitutions_replay_once_and_changed_immutable_payload_conflicts",
+    "local_faults::cancelled_exact_owner_lock_wait_has_no_effect_and_login_pool_retries",
+    "local_faults::cancelled_staged_close_before_audit_commit_rolls_back_effect_and_audit",
+    "local_faults::suppressed_postcommit_response_reconciles_real_close_without_second_effect",
+    "open_loop::disjoint_absolute_arrivals_reconcile_each_intent_effect_and_audit",
+    "open_loop::hot_month_preserves_neighbor_and_fixed_recovery_arrivals"
+  ],
+  "commands": [
+    "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --manifest-path backend/Cargo.toml -p console-attendance-adapter-postgres --test concurrency -- --list",
+    "DOCKER_CONTEXT=colima-console-design30 RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo RUST_TEST_NOCAPTURE=1 fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --only attendance-concurrency-postgres --runner cargo --num-threads 1",
+    "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo clippy --manifest-path backend/Cargo.toml -p console-attendance-adapter-postgres --test concurrency -- -D warnings"
+  ],
+  "new_tests": 2,
+  "inherited_tests": 6,
+  "classification": "PASS: bounded local actual close-owner characterization; not an implementation RED",
+  "bounds": {
+    "offered_intents_each": 12,
+    "owned_tasks": 4,
+    "serving_connections": 2,
+    "sqlx_waiter_conservative_cap": 4,
+    "generator_queue_items": 0,
+    "generator_queue_bytes": 0,
+    "history_wire_bytes": 16384,
+    "arrival_and_invocation_lag_us": 100000,
+    "intent_age_us": 3000000,
+    "scenario_deadline_seconds": 20
+  },
+  "oracle_negative_assertions": {
+    "control": 14,
+    "hot": 17,
+    "not_rust_test_counts": true
+  },
+  "limits": [
+    "Not CP28 capacity comparison or 60minute workload acceptance",
+    "No deployment-equivalent hardware/population/productionpool evidence",
+    "No COMMITambiguity,replication,fencing,design30receipt or tenantauth proof",
+    "Outer timeout is failure with cleanup unverified, never recoveryPASS; disposable runner cleans owned DB",
+    "Observer ownerpool is separate from servingpool; no measured totalRAM/storage bound"
+  ],
+  "premortem": "Late generator misses hotphase, queued-but-uninvoked victim misclassified, orphan audit hidden, cancellation mistaken for no-effect",
+  "detection": "Absolute schedules and lag assertions, actual2session gate census, independent ownervictim/row/audit readback,14+17mutants, allslot drain",
+  "blast_radius": "One nested test helper plus3line import; no owner implementation/schema/dependency edits",
+  "rollback": "Disposable fixture DB and gate; preserved initial reviewed source/log; no shared Git reset",
+  "stop_conditions": [
+    "Any incorrecteffect/audit/foreign attribution stops acceptance",
+    "Missed schedule invalidates run; never shift recovery",
+    "Unresolved cleanup/outcome remains inconclusive"
+  ],
+  "history_artifact": "load-histories.json",
+  "observed": [
+    {
+      "hot": false,
+      "committed": 12,
+      "client_rejected": 0,
+      "recovery_committed": 4,
+      "max_invocation_lag_us": 2739
+    },
+    {
+      "hot": true,
+      "committed": 9,
+      "client_rejected": 3,
+      "recovery_committed": 4,
+      "max_invocation_lag_us": 2091
+    }
+  ]
+}

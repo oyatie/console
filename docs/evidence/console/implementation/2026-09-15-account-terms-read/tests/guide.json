@@ -1,0 +1,281 @@
+{
+  "kind": "BOUNDED_ACCOUNT_TERMS_PUBLIC_READ_OWNER_GUIDE",
+  "status": "Reviewable proposal and additive acceptance candidate; not implementation admission or a frozen internal API",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "authority": {
+    "entry": "README.md; docs/current/PRODUCT.md; docs/current/ROADMAP.md; docs/current/DELIVERY.md",
+    "design30": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+    "bw31": "5f9f3b15704deaf8e81a682e4475af489d164210",
+    "test_approvals": {
+      "browser04": "2b1a7d3494e6545fa5ee63597a3e285143435505",
+      "session05": "3305cd3fdce03a04d4b5d354617dd911d9da49ca",
+      "terms06": "1e2ea6d2060a3d875e531a9a9e8f749984d0a171"
+    },
+    "receipts": "docs/evidence/console/approvals/2026-09-13-{design30,wire31,browser04,session05,terms06}/*-approval.json",
+    "status_caution": "Frozen proposed/awaiting-approval labels in original packets are historical; later exact approval receipts govern. terms06 also retains later user direction consolidating preparation/review instead of piecemeal checkpoints."
+  },
+  "ownership": {
+    "investigation_and_private_candidate": "/root/inventory_repair",
+    "integration_source_and_authority_writer": "/root",
+    "serialized_resources": [
+      "migrations",
+      "canonical custody-state query",
+      "custody generator and generated SQL",
+      "Cargo/lockfiles",
+      "PostgreSQL",
+      "runtime acceptance"
+    ],
+    "forbidden_for_this_candidate": [
+      "integration source edits",
+      "Cargo or database runs",
+      "new fixture bytes",
+      "new test binary",
+      "Account credential transition",
+      "publication implementation"
+    ]
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "outcome": "Anonymous browser can fetch current authoritative terms metadata and exact registered immutable manifest/content bytes; retained bytes survive an unsupported current head; unavailable registered bytes produce 503 and restoring them restores the same reads without durable read effects.",
+  "evidence_vs_inference": {
+    "facts": [
+      "Base has the terms schema, strict custody owner/profile checks, genuine restricted Auth transport, TEST_ONLY artifact fixture, and public HTTP helpers; no three terms GET routes or configured artifact loader exist.",
+      "Existing browser25 includes public no-head503, but positive terms and retention/outage cases proceed through enrollment; they cannot be complete GREEN on public reads alone.",
+      "Parent full191 at frozen base reported168PASS/23FAIL; browser25 reported7PASS/18FAIL, all18 first fail HTTP404. This is inherited runtime evidence, not a run by this author."
+    ],
+    "inference": "Public reads can be implemented independently of Account credential/FK retargeting if their terms metadata authority is exposed by a narrow existing-owner function and strict custody profiles are updated coherently.",
+    "not_proved": [
+      "No new test runtime or compile result yet",
+      "No native publisher/authenticated operator/content-authority proof",
+      "No actual browser rendering or acknowledgment/consent proof",
+      "No Account registration, live session, or production exposure completion"
+    ]
+  },
+  "three_routes": [
+    {
+      "route": "GET /api/v2/auth/terms",
+      "source": "Current database head is authoritative; never choose revision or current digest from the local index.",
+      "success": "200 closed TermsCurrent: terms_version, positive decimal-string terms_revision, manifest_url. Exact head manifest and every required registered content item must be serviceable. no-store and Pragma no-cache, no Set-Cookie/Location.",
+      "failure": "Absent/unavailable head, unsupported current artifact, or unavailable registered current bytes ->503 authority_unavailable."
+    },
+    {
+      "route": "GET /api/v2/auth/terms/manifests/{sha256}",
+      "success": "200 exact registered manifest bytes, application/json; charset=utf-8, no cookies or redirects; immutable caching permitted.",
+      "failure": "Healthy registry with unknown digest ->404 not_found; registered but unavailable artifact ->503 authority_unavailable."
+    },
+    {
+      "route": "GET /api/v2/auth/terms/content/{sha256}",
+      "success": "200 exact registered content bytes, text/plain; charset=utf-8, nosniff, no cookies or redirects; immutable caching permitted.",
+      "failure": "Healthy registry with unknown digest ->404 not_found; registered but unavailable artifact ->503 authority_unavailable."
+    }
+  ],
+  "minimal_proposed_interfaces": {
+    "database": {
+      "signature": "public.account_terms_current_v1() RETURNS TABLE (manifest_sha256 bytea, revision bigint)",
+      "rationale": "These are the only two values required by current metadata. Existing head composite FK already binds the receipt/revision/digest tuple. Do not add future enrollment locking/acceptance behavior to this reader.",
+      "body_shape": "SQL STABLE SECURITY DEFINER; fixed search_path=pg_catalog,pg_temp; SELECT h.manifest_sha256,h.revision FROM public.account_terms_head AS h WHERE h.id=1. Return zero/one rows; no caller arguments, locks or mutations.",
+      "owner": "existing nonlogin console_terms_owner",
+      "acl": "Only required owner SELECT(id,manifest_sha256,revision) on account_terms_head; revoke PUBLIC and business execution; grant EXECUTE only to console_auth_rt. Auth gets no table SELECT. Exact function definition and grant profile must be enrolled in existing custody readback.",
+      "not_frozen": "Internal API proposal only. Public acceptance tests do not depend on this function name or implementation shape."
+    },
+    "configuration": {
+      "input": "Existing test-owned CONSOLE_ACCOUNT_TERMS_ARTIFACT_ROOT config pair. Production currently ignores it.",
+      "composition": "Parse the optional trusted artifact root independently of AuthRestConfig signing/WebAuthn service setup; inject once into existing AuthRestState. Proposed with_account_terms_artifact_root(root: PathBuf) setter; no second router/state framework. Retained public terms should not require a private signing key or WebAuthn service. Any separate current-head Auth transport admission remains at existing AppConfig/AppState owner and must preserve absent-root modes.",
+      "failure_boundary": "Missing/corrupt artifacts close terms authority rather than failing all AppState construction or unrelated established sessions; existing outage fixture rebuilds router successfully before503."
+    },
+    "http_owner": {
+      "path": "A small private terms module under backend/crates/platform/auth-rest/src, mounted by its existing router and existing AppState merge outside Company middleware.",
+      "transport": "Use retained auth_database only for head; never fallback to the Company pool or query Accounts/company_actors/legacy credentials.",
+      "dependencies": "Reuse existing axum/http/serde_json/sha2/sqlx/std; no new dependency or general registry service."
+    },
+    "artifacts": {
+      "fixture_layout": "Trusted root contains fixtures/artifact-index.json; manifest path fixtures/manifest.json; two content paths fixtures/service.txt and fixtures/privacy.txt. Reuse the exact pinned layout; do not invent multi-manifest registry syntax.",
+      "classification": "Retain registered identity separately from file-read availability so a registered missing file is503, not404. A missing/unparseable registry cannot establish a healthy unknown-artifact classification.",
+      "boundary": "Validate path digest as exactly64 lowercase hex; resolve only trusted registered entries, never concatenate caller-selected paths or fetch remote URLs. Bound manifest/content reads and validate SHA256 against exact bytes and required manifest item bindings using BW31 bounds/schema.",
+      "scope": "TEST_ONLY fixture serviceability is engineering evidence only. Runtime read work neither publishes production terms nor establishes qualified release/content approval.",
+      "runtime_read_choice": "Root direction: load trusted registry metadata once; bounded exact artifact bytes plus digest reread per request allows missing/tampered registered artifact503 and restoration recovery without a speculative cache invalidation service. Existing outage acceptance only requires rebuild semantics; per-request reread is an implementation choice beyond that minimum."
+    }
+  },
+  "source_map": [
+    {
+      "path": "backend/app/tests/auth_rest.rs",
+      "lines": [
+        4100,
+        4135,
+        4149,
+        4188,
+        4434,
+        4682,
+        5863,
+        5898,
+        5933,
+        6157
+      ],
+      "role": "Existing genuine router/config, metadata seeding, private reference snapshots, public no-head negative, sequential head changes, exact retained/current assertions, outage-and-rebuild precedent."
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/src/lib.rs",
+      "lines": [
+        158,
+        181,
+        227,
+        275,
+        308
+      ],
+      "role": "Existing config/state/services/Auth transport/router owners."
+    },
+    {
+      "path": "backend/app/src/lib.rs",
+      "lines": [
+        885,
+        1109,
+        1568,
+        1624,
+        1762,
+        3717
+      ],
+      "role": "Composition config, restricted pool injection, mounting outside Company middleware."
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql",
+      "lines": [
+        68,
+        88,
+        95,
+        99
+      ],
+      "role": "Retained receipt/head exact FK and acceptance schema; no new Account migration needed for reads."
+    },
+    {
+      "path": "backend/app/src/account_custody_state.sql",
+      "lines": [
+        1,
+        39,
+        68,
+        105,
+        114,
+        148
+      ],
+      "role": "Strict closed catalog/routine/column-grant profiles. Do not broaden them generically."
+    },
+    {
+      "path": "ops/generate-account-custody.py",
+      "lines": [
+        16,
+        24,
+        31,
+        135,
+        137,
+        158
+      ],
+      "role": "Canonical helper installation and generated finalizer; populated ready-profile upgrade/preservation needs exact evidence."
+    },
+    {
+      "path": "ops/postgres-finalize-account-custody.sql",
+      "role": "Generated, single root writer; never hand-edit."
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt",
+      "lines": [
+        9,
+        10,
+        11,
+        12
+      ],
+      "role": "Approved through later receipt: public bytes, shared current authority, retention and independent publication boundary."
+    }
+  ],
+  "acceptance": {
+    "existing_fixture_helpers": [
+      "fixture",
+      "request",
+      "assert_current_terms",
+      "assert_retained_artifacts",
+      "seed_next_terms_head",
+      "terms_reference_rows",
+      "router",
+      "Artifacts",
+      "AppState::with_auth_database"
+    ],
+    "new_tests": [
+      {
+        "name": "account_browser::terms_read::current_head_and_retained_bytes_are_authoritative_and_read_only",
+        "checks": [
+          "Current revision1 and all three exact retained artifacts succeed first",
+          "Both namespaces reject healthy-registry unknown digest404",
+          "Same manifest digest at authoritative revision2 is returned without router reconstruction",
+          "Head revision3 points to unregistered digest: current503 while original retained manifest and contents remain200",
+          "Full private terms-reference row snapshots unchanged around every HTTP read phase; fixture administrator changes are separately bracketed"
+        ]
+      },
+      {
+        "name": "account_browser::terms_read::registered_content_loss_and_restore_preserve_public_read_state",
+        "checks": [
+          "Healthy current and exact retained positive controls first",
+          "Remove only unique fixture privacy file; rebuild existing router",
+          "Registered content503 and current503",
+          "Restore exact fixture bytes and rebuild; current and all retained bytes200",
+          "Full private terms-reference rows unchanged through read/outage/restore phases"
+        ]
+      },
+      {
+        "name": "account_browser::terms_read::auth_database_outage_closes_current_authority_but_retains_public_bytes",
+        "checks": [
+          "Use existing account_transport_urls to connect actual restricted Auth PgPool; verify current_user=console_auth_rt",
+          "Preserve existing genuine AppState::from_config admission, inject actual pool via existing with_auth_database",
+          "Current metadata and all retained immutable bytes200 before fault",
+          "Close only the injected Auth pool",
+          "Current metadata503 while exact retained bytes200; full private terms-reference row snapshot unchanged"
+        ]
+      }
+    ],
+    "existing_assertion_additions": "Two no-Set-Cookie/no-Location assertions added to assert_current_terms. Extract the exact existing router_with_key AppState config/from_config body into state_with_key; original router wrapper calls build_router with it. Existing config pairs, real startup admission and assertions remain unchanged. Reversing only the module addition, header assertions, and recorded mechanical fixture extraction reproduces all frozen original source bytes.",
+    "no_new_fixtures": "No Account creation/login/enrollment/company_actors access; no duplicated manifest/content; no new binary/framework.",
+    "focused_command": "cargo test -p console-app --test auth_rest account_browser::terms_read:: -- --test-threads=1",
+    "existing_companion_command": "cargo test -p console-app --test auth_rest account_browser::public_terms_without_authority_returns_503 -- --exact --test-threads=1",
+    "counts": "3 new selected tests; browser module25->28. Direct auth_rest.rs test attributes57->60. Parent baseline reachable auth_rest binary181->184 and broader Account runtime191->194 after these3 only. Source attributes, reachable binary discovery and broader runtime totals are different metrics. These are expected/lexical counts; this candidate author has0 runtime discovered/executed.",
+    "limitations": "No live cache-invalidation requirement. Tests intentionally rebuild after file loss/restoration as existing tests do. No-head negative reused rather than duplicated. Initial RED must be actually recorded by root; missing/non-executable/green probe stops implementation admission. Auth-pool loss proves fail-closed current responses with retained bytes independent; only implementation review can prove no attempted fallback to Business, as an unprivileged fallback could also fail503. Private-key-independent public configuration is owner guidance and not independently isolated by these three tests."
+  },
+  "lane_control": {
+    "status": "NOT_ADMITTED; private test and owner proposal only",
+    "immutable_target": "candidate.patch and manifest hashes in this directory, based on frozen f96",
+    "mechanical_guide": "Review exact candidate; root installs test-only source; run actual focused3 and existing no-head1 to record current-interface RED. Start implementation only through tools/lanes/fanout.py admit/run after approved immutable test target. Root serializes custody/config changes. Same exact focused command must finish GREEN before lane success.",
+    "pre_mortem": "A local artifact index might falsely become current authority; registered missing bytes might become404; a cached revision might ignore head changes; broad ACLs might bypass restricted Auth custody; startup might abort unrelated services.",
+    "blast_radius": "Three anonymous public GETs, trusted artifact configuration, narrow terms metadata owner/ACL, corresponding custody-state/finalizer profiles. No Account credentials, Company identity, publication write, session authority, or business RLS.",
+    "detection": "Focused positive/artifact-outage/Auth-pool-outage/retained read acceptance; exact no-effects snapshots; existing strict startup/custody role tests; independently reviewed exact helper definitions/ACLs; positive populated-profile upgrade preservation where owner changes require it.",
+    "rollback": "Disable the new read route/config release while preserving head/receipts/bytes and compatible readers. Custody owner changes require their own reviewed compatible-reader rollback; never delete data or rewind publication head.",
+    "stop_conditions": [
+      "Unapproved authority/API change",
+      "Missing, green or non-executable current lane probe",
+      "Requirement for credential migration/CompanyActor/publication work",
+      "Need to weaken strict custody checks or existing tests",
+      "New dependency/registry format without demonstrated necessity"
+    ],
+    "review_identities": {
+      "author": "/root/inventory_repair",
+      "integrator": "/root",
+      "independent_review": "Pending root-assigned reviewer; this author cannot approve own candidate"
+    },
+    "head_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+    "remaining_HOLDs": [
+      "Test approval and actual runtime RED",
+      "Narrow helper/custody upgrade review and preservation proof",
+      "Full Account registration/session/context browser lifecycle",
+      "Qualified content and operator publication authority",
+      "Browser compatibility/capacity/recovery acceptance",
+      "Production exposure and legal/compliance conclusions"
+    ]
+  },
+  "version": 2,
+  "supersedes": {
+    "candidate": "/private/tmp/account-terms-read-acceptance-v1-candidate-f96eddd3",
+    "manifest_sha256": "56b7c9501cb4abb357ba07c645dacd5d1c98e05eae66818cb562a96e6a33dadb",
+    "preserved": true
+  }
+}

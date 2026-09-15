@@ -1,0 +1,66 @@
+{
+  "classification": "PARSER_ONLY_NOT_COMPILER_OR_RUNTIME",
+  "historical_record": "../native-assertions-s4/syntax-execution.json retains original S3 invocation; this supplements actual S4 final source",
+  "checks": [
+    {
+      "file": "native-assertions-s4/native-lock-custody-tests.rs",
+      "source_sha256": "e403a7fba260b93e2339500514c9af4221b7beec40de69244150fd20e1fc0200",
+      "argv": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s4/native-lock-custody-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "native-assertions-s4/native-retention-tests.rs",
+      "source_sha256": "7a9fcd10fa625169996169046d1eacc289ef9ce4c3bacdd883aa03122e873ed7",
+      "argv": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s4/native-retention-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "native-assertions-s4/native-stream-budget-tests.rs",
+      "source_sha256": "f09718517bbe3690d4ab8073dd55ce792375a4a0bb15f2fd80703bba12feba52",
+      "argv": [
+        "rustup",
+        "run",
+        "1.98.1",
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s4/native-stream-budget-tests.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    }
+  ],
+  "parsed_files": 3,
+  "owner_compiled": 0,
+  "owner_executed": 0
+}

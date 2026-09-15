@@ -1,0 +1,31 @@
+{
+  "kind": "PRIVATE_ADDITIVE_ACCOUNT_CRYPTO_ACCEPTANCE_CANDIDATE_V3",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "author": "/root/inventory_repair",
+  "allowed_paths": [
+    "backend/crates/platform/auth/tests/jwt_es256.rs"
+  ],
+  "files": {
+    "backend/crates/platform/auth/tests/jwt_es256.rs": {
+      "preimage_sha256": "3c91384d6f602f7ad6828d0579007644fd56451a6def89836959c9da063a292d",
+      "candidate_sha256": "ecc5020a2478a262b89a26c531f2809d434999bc71a4a2b901420cf5974dd3fb",
+      "existing_prefix_preserved": true,
+      "bytes": 54152,
+      "added_module_lines": 881
+    }
+  },
+  "artifacts": {
+    "candidate.patch": "2110b59ce1877b226a29d09dc952054b9e2c49d45f7419755232cf592531b19e",
+    "account_crypto_module.rs": "2949976eb0f2d1eaf220b5bdc7aabb6873acc2942c6f15a8b3492924dac0cbc9",
+    "api.json": "8727208acdfee7e100994f7f12870655423842ff619c5503774bc1b767317ac3",
+    "guide.json": "1d6b18fcc4b4e6e8a6e3ab1dfc7a1380102a0a9f4250a4b2d2c96bd60d4f9cdf"
+  },
+  "static_selected": 15,
+  "static_total": 29,
+  "runtime_executed": 0,
+  "supersedes": {
+    "root": "/private/tmp/account-token-crypto-acceptance-v2-candidate-f96eddd3",
+    "manifest_sha256": "6de28e55b4a71ca90a8d88b06fe72b8323cbf33abda9e614e03095f86ba98097",
+    "reason": "Root/Capture requested removal of redundant legacy duplicate/marker test (Fast owns those cases); strengthen no-echo oracle with hostile unknown FIELD NAME for both protocols. API unchanged."
+  }
+}

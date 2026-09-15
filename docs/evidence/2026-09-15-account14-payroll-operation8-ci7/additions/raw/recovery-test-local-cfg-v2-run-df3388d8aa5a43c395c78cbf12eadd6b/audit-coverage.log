@@ -1,0 +1,7 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `/private/tmp/console-account30-cargo/debug/console-gate-audit-coverage`
+console-gate-audit-coverage: checking workspace at /private/tmp/console-production-tdd-preparation-20260913/backend
+console-gate-audit-coverage: FAILED - 3 violation(s):
+  [MissingAuditEvent] /private/tmp/console-production-tdd-preparation-20260913/backend/app/src/durability_composition_tests.rs::seed_completion: state-changing handler must construct AuditEvent and call with_audit
+  [MissingAuditEvent] /private/tmp/console-production-tdd-preparation-20260913/backend/app/src/durability_composition_tests.rs::required_api_confirmed_owner_audit_failure_replays_and_repairs: state-changing handler must construct AuditEvent and call with_audit
+  [MissingAuditEvent] /private/tmp/console-production-tdd-preparation-20260913/backend/app/src/durability_composition_tests.rs::required_workflow_typed_unknown_preserves_pending_and_failed_events: state-changing handler must construct AuditEvent and call with_audit

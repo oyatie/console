@@ -1,0 +1,13 @@
+{
+  "kind": "group.operation.stop",
+  "body": {
+    "operation": {
+      "group_id": "09ad2e62-9379-53ca-83e1-e8c453553dca",
+      "operation_id": "5913ac29-a994-5e44-b1f8-bd432bb4c44a",
+      "control_epoch": "1",
+      "dispatch_epoch": "1",
+      "manifest_digest": "9d5bc3aa2835bc80d82479f4f233345ee6ee4625b16ebc78a372cc3ff80a3ea8"
+    },
+    "reason": "검토 근거를 확인했습니다."
+  }
+}

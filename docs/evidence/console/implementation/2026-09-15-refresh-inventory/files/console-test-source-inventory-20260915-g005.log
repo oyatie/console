@@ -1,0 +1,278 @@
+G005 workflow lifecycle gate passed (277 checks).
+- package script check:g005-workflow-lifecycle
+- CI runs G005 workflow lifecycle gate
+- G005 workflow lifecycle matrix: present
+- enterprise UI route audit register: present
+- G005 matrix schema version 1
+- G005 matrix goal id
+- G005 matrix records live-evidence non-claim policy
+- G005 matrix routePaths
+- G005 matrix dependency routePaths
+- requiredBackendTests
+- G005 backend contract inventory
+- G005 safety assertions
+- G005 route /overview: path
+- G005 route /overview: owner marker
+- G005 route /overview: required story
+- G005 route /approvals: path
+- G005 route /approvals: owner marker
+- G005 route /approvals: required story
+- G005 route /settings/workflows: path
+- G005 route /settings/workflows: owner marker
+- G005 route /settings/workflows: required story
+- G005 route /work-orders/:id: path
+- G005 route /work-orders/:id: owner marker
+- G005 route /work-orders/:id: required story
+- G005 route /intake: path
+- G005 route /intake: owner marker
+- G005 route /intake: required story
+- G005 route /daily-plan: path
+- G005 route /daily-plan: owner marker
+- G005 route /daily-plan: required story
+- G005 route /automate: path
+- G005 route /automate: owner marker
+- G005 route /automate: required story
+- G005 route group overview: covered
+- G005 route group approvals: covered
+- G005 route group workflow-builder: covered
+- G005 route group work-order-detail: covered
+- G005 route group intake: covered
+- G005 route group planned-work: covered
+- enterprise route audit has G005-owned rows
+- route audit /overview: represented in G005 matrix
+- route audit /approvals: represented in G005 matrix
+- route audit /settings/workflows: represented in G005 matrix
+- route audit /work-orders/:id: represented in G005 matrix
+- route audit /intake: represented in G005 matrix
+- route audit /daily-plan: represented in G005 matrix
+- route audit /automate: represented in G005 matrix
+- G005 matrix route /overview: exists in route audit
+- G005 matrix route /overview: ownerLane contains G005
+- G005 matrix route /overview: browser story required
+- G005 matrix route /overview: comment/evidence story
+- G005 matrix route /overview: sourceObject
+- G005 matrix route /overview: lifecycleStates
+- G005 matrix route /overview: denialScopeTest
+- G005 matrix route /overview: groupScopeStory
+- G005 matrix route /overview: no weak fallback marker
+- G005 matrix route /overview: no weak unclassified marker
+- G005 matrix route /overview: no weak demo marker
+- G005 matrix route /overview: no weak placeholder marker
+- G005 matrix route /overview: no weak coming soon marker
+- G005 matrix route /overview: no weak black background marker
+- G005 matrix route /overview: no weak text wall marker
+- G005 matrix route /overview: screenshot/trace is explicitly non-closed
+- G005 matrix route /approvals: exists in route audit
+- G005 matrix route /approvals: ownerLane contains G005
+- G005 matrix route /approvals: browser story required
+- G005 matrix route /approvals: comment/evidence story
+- G005 matrix route /approvals: sourceObject
+- G005 matrix route /approvals: lifecycleStates
+- G005 matrix route /approvals: denialScopeTest
+- G005 matrix route /approvals: groupScopeStory
+- G005 matrix route /approvals: no weak fallback marker
+- G005 matrix route /approvals: no weak unclassified marker
+- G005 matrix route /approvals: no weak demo marker
+- G005 matrix route /approvals: no weak placeholder marker
+- G005 matrix route /approvals: no weak coming soon marker
+- G005 matrix route /approvals: no weak black background marker
+- G005 matrix route /approvals: no weak text wall marker
+- G005 matrix route /approvals: screenshot/trace is explicitly non-closed
+- G005 matrix route /settings/workflows: exists in route audit
+- G005 matrix route /settings/workflows: ownerLane contains G005
+- G005 matrix route /settings/workflows: browser story required
+- G005 matrix route /settings/workflows: comment/evidence story
+- G005 matrix route /settings/workflows: sourceObject
+- G005 matrix route /settings/workflows: lifecycleStates
+- G005 matrix route /settings/workflows: denialScopeTest
+- G005 matrix route /settings/workflows: groupScopeStory
+- G005 matrix route /settings/workflows: no weak fallback marker
+- G005 matrix route /settings/workflows: no weak unclassified marker
+- G005 matrix route /settings/workflows: no weak demo marker
+- G005 matrix route /settings/workflows: no weak placeholder marker
+- G005 matrix route /settings/workflows: no weak coming soon marker
+- G005 matrix route /settings/workflows: no weak black background marker
+- G005 matrix route /settings/workflows: no weak text wall marker
+- G005 matrix route /settings/workflows: screenshot/trace is explicitly non-closed
+- G005 matrix route /work-orders/:id: exists in route audit
+- G005 matrix route /work-orders/:id: ownerLane contains G005
+- G005 matrix route /work-orders/:id: browser story required
+- G005 matrix route /work-orders/:id: comment/evidence story
+- G005 matrix route /work-orders/:id: sourceObject
+- G005 matrix route /work-orders/:id: lifecycleStates
+- G005 matrix route /work-orders/:id: denialScopeTest
+- G005 matrix route /work-orders/:id: groupScopeStory
+- G005 matrix route /work-orders/:id: no weak fallback marker
+- G005 matrix route /work-orders/:id: no weak unclassified marker
+- G005 matrix route /work-orders/:id: no weak demo marker
+- G005 matrix route /work-orders/:id: no weak placeholder marker
+- G005 matrix route /work-orders/:id: no weak coming soon marker
+- G005 matrix route /work-orders/:id: no weak black background marker
+- G005 matrix route /work-orders/:id: no weak text wall marker
+- G005 matrix route /work-orders/:id: screenshot/trace is explicitly non-closed
+- G005 matrix route /intake: exists in route audit
+- G005 matrix route /intake: ownerLane contains G005
+- G005 matrix route /intake: browser story required
+- G005 matrix route /intake: comment/evidence story
+- G005 matrix route /intake: sourceObject
+- G005 matrix route /intake: lifecycleStates
+- G005 matrix route /intake: denialScopeTest
+- G005 matrix route /intake: groupScopeStory
+- G005 matrix route /intake: no weak fallback marker
+- G005 matrix route /intake: no weak unclassified marker
+- G005 matrix route /intake: no weak demo marker
+- G005 matrix route /intake: no weak placeholder marker
+- G005 matrix route /intake: no weak coming soon marker
+- G005 matrix route /intake: no weak black background marker
+- G005 matrix route /intake: no weak text wall marker
+- G005 matrix route /intake: screenshot/trace is explicitly non-closed
+- G005 matrix route /daily-plan: exists in route audit
+- G005 matrix route /daily-plan: ownerLane contains G005
+- G005 matrix route /daily-plan: browser story required
+- G005 matrix route /daily-plan: comment/evidence story
+- G005 matrix route /daily-plan: sourceObject
+- G005 matrix route /daily-plan: lifecycleStates
+- G005 matrix route /daily-plan: denialScopeTest
+- G005 matrix route /daily-plan: groupScopeStory
+- G005 matrix route /daily-plan: no weak fallback marker
+- G005 matrix route /daily-plan: no weak unclassified marker
+- G005 matrix route /daily-plan: no weak demo marker
+- G005 matrix route /daily-plan: no weak placeholder marker
+- G005 matrix route /daily-plan: no weak coming soon marker
+- G005 matrix route /daily-plan: no weak black background marker
+- G005 matrix route /daily-plan: no weak text wall marker
+- G005 matrix route /daily-plan: screenshot/trace is explicitly non-closed
+- G005 matrix route /automate: exists in route audit
+- G005 matrix route /automate: ownerLane contains G005
+- G005 matrix route /automate: browser story required
+- G005 matrix route /automate: comment/evidence story
+- G005 matrix route /automate: sourceObject
+- G005 matrix route /automate: lifecycleStates
+- G005 matrix route /automate: denialScopeTest
+- G005 matrix route /automate: groupScopeStory
+- G005 matrix route /automate: no weak fallback marker
+- G005 matrix route /automate: no weak unclassified marker
+- G005 matrix route /automate: no weak demo marker
+- G005 matrix route /automate: no weak placeholder marker
+- G005 matrix route /automate: no weak coming soon marker
+- G005 matrix route /automate: no weak black background marker
+- G005 matrix route /automate: no weak text wall marker
+- G005 matrix route /automate: screenshot/trace is explicitly non-closed
+- G005 dependency route /dispatch: exists in route audit
+- G005 dependency route /dispatch: G005 workflow dependencies
+- G005 dependency route /dispatch: required story
+- G005 dependency route /support: exists in route audit
+- G005 dependency route /support: G005 workflow/object lifecycle
+- G005 dependency route /support: required story
+- G005 dependency route /financial: exists in route audit
+- G005 dependency route /financial: approval/payment line
+- G005 dependency route /financial: required story
+- backend contract backend/app/src/workflow_studio.rs: present
+- backend contract backend/app/src/workflow_studio.rs: rationale
+- backend contract backend/app/src/workflow_studio.rs required snippets
+- backend contract backend/app/src/workflow_studio.rs: WORKFLOW_STUDIO_DEFINITION_SIMULATE_PATH_TEMPLATE
+- backend contract backend/app/src/workflow_studio.rs: WORKFLOW_STUDIO_DEFINITION_PUBLISH_PATH_TEMPLATE
+- backend contract backend/app/src/workflow_studio.rs: internal.approvals
+- backend contract backend/app/src/workflow_studio.rs: internal.notifications
+- backend contract backend/app/src/workflow_studio.rs: internal.mail
+- backend contract backend/app/src/workflow_studio.rs: internal.audit
+- backend contract backend/app/src/workflow_studio.rs: purchase_payment_approval
+- backend contract backend/app/src/workflow_studio.rs: required_payment_line: true
+- backend contract backend/app/src/workflow_studio.rs: validate_publishable
+- backend contract backend/app/src/workflow_studio.rs: missing_approval_line
+- backend contract backend/app/src/workflow_studio.rs: missing_payment_line
+- backend contract backend/app/src/workflow_studio.rs: verify_workflow_step_up
+- backend contract backend/app/src/workflow_studio.rs: passkey_step_up_required
+- backend contract backend/app/src/workflow_studio.rs: with_audit
+- backend contract backend/app/src/workflow_studio.rs: record_workflow_studio_request
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: present
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: rationale
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql required snippets
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: workflow_definitions
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: workflow_definition_versions
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: workflow_definition_events
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: approval_line
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: payment_line
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: notification_rules
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: required_approval_line
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: required_payment_line
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: workflow_studio_append_only_immutable
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: CREATE POLICY org_isolation
+- backend contract backend/crates/platform/db/migrations/0069_create_workflow_studio.sql: GRANT SELECT, INSERT, UPDATE, DELETE ON workflow_definitions
+- backend contract backend/crates/platform/db/migrations/0068_work_order_approval_decision_comments.sql: present
+- backend contract backend/crates/platform/db/migrations/0068_work_order_approval_decision_comments.sql: rationale
+- backend contract backend/crates/platform/db/migrations/0068_work_order_approval_decision_comments.sql required snippets
+- backend contract backend/crates/platform/db/migrations/0068_work_order_approval_decision_comments.sql: signing-equivalent business events
+- backend contract backend/crates/platform/db/migrations/0068_work_order_approval_decision_comments.sql: decision_comment
+- backend contract backend/crates/platform/db/migrations/0068_work_order_approval_decision_comments.sql: work_order_approval_steps
+- backend contract backend/crates/workorder/rest/src/lib.rs: present
+- backend contract backend/crates/workorder/rest/src/lib.rs: rationale
+- backend contract backend/crates/workorder/rest/src/lib.rs required snippets
+- backend contract backend/crates/workorder/rest/src/lib.rs: /api/approval-items
+- backend contract backend/crates/workorder/rest/src/lib.rs: list_approval_items
+- backend contract backend/crates/workorder/rest/src/lib.rs: REPORT_SUBMITTED
+- backend contract backend/crates/workorder/rest/src/lib.rs: ADMIN_REVIEW
+- backend contract backend/crates/workorder/rest/src/lib.rs: NOT IN ('FINAL_COMPLETED', 'REJECTED', 'ARCHIVED', 'CANCELLED')
+- backend contract backend/crates/workorder/rest/src/lib.rs: /approvals?source=work-order&focus=
+- backend contract backend/crates/workorder/rest/src/lib.rs: /daily-plan?planId=
+- backend contract backend/crates/workorder/rest/src/lib.rs: #target-change-
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: present
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: rationale
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs required snippets
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: approval comment is required
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: reject memo is required
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: decision_comment
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: work_order.approve
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: work_order.reject
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: list_daily_plans
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: DRAFT/REQUESTED
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: daily_plan.review
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: daily_plan.confirm
+- backend contract backend/crates/workorder/adapter-postgres/src/lib.rs: create_outsource_work
+- backend contract backend/crates/workorder/domain/src/lib.rs: present
+- backend contract backend/crates/workorder/domain/src/lib.rs: rationale
+- backend contract backend/crates/workorder/domain/src/lib.rs required snippets
+- backend contract backend/crates/workorder/domain/src/lib.rs: approval_line_complete
+- backend contract backend/crates/workorder/domain/src/lib.rs: completion_evidence_verified
+- backend contract backend/crates/workorder/domain/src/lib.rs: ApprovalLine
+- backend contract backend/crates/workorder/domain/src/lib.rs: approve_next
+- backend contract backend/crates/workorder/domain/src/lib.rs: FinalCompletionInterlock
+- backend contract backend/crates/platform/db/migrations/0008_create_work_orders.sql: present
+- backend contract backend/crates/platform/db/migrations/0008_create_work_orders.sql: rationale
+- backend contract backend/crates/platform/db/migrations/0008_create_work_orders.sql required snippets
+- backend contract backend/crates/platform/db/migrations/0008_create_work_orders.sql: work_order_approval_steps
+- backend contract backend/crates/platform/db/migrations/0008_create_work_orders.sql: work_order_status_history
+- backend contract backend/crates/platform/db/migrations/0008_create_work_orders.sql: DRAFT
+- backend contract backend/crates/platform/db/migrations/0008_create_work_orders.sql: REQUESTED
+- backend contract backend/crates/platform/db/migrations/0008_create_work_orders.sql: APPROVED
+- backend contract backend/crates/platform/db/migrations/0008_create_work_orders.sql: REJECTED
+- backend contract backend/crates/platform/db/migrations/0008_create_work_orders.sql: FINAL_CONFIRMED
+- backend contract backend/crates/platform/db/migrations/0009_create_evidence_media.sql: present
+- backend contract backend/crates/platform/db/migrations/0009_create_evidence_media.sql: rationale
+- backend contract backend/crates/platform/db/migrations/0009_create_evidence_media.sql required snippets
+- backend contract backend/crates/platform/db/migrations/0009_create_evidence_media.sql: evidence_media
+- backend contract backend/crates/platform/db/migrations/0009_create_evidence_media.sql: worm_replica_status
+- backend contract backend/crates/platform/db/migrations/0009_create_evidence_media.sql: unverified_evidence_admin_queue
+- backend contract backend/crates/platform/db/migrations/0052_add_evidence_media_processing.sql: present
+- backend contract backend/crates/platform/db/migrations/0052_add_evidence_media_processing.sql: rationale
+- backend contract backend/crates/platform/db/migrations/0052_add_evidence_media_processing.sql required snippets
+- backend contract backend/crates/platform/db/migrations/0052_add_evidence_media_processing.sql: processing_status
+- backend contract backend/crates/platform/db/migrations/0052_add_evidence_media_processing.sql: PROCESSING
+- backend contract backend/crates/platform/db/migrations/0052_add_evidence_media_processing.sql: READY
+- backend contract backend/crates/platform/db/migrations/0052_add_evidence_media_processing.sql: FAILED
+- backend contract backend/crates/platform/db/migrations/0019_harden_worm_and_alert_leases.sql: present
+- backend contract backend/crates/platform/db/migrations/0019_harden_worm_and_alert_leases.sql: rationale
+- backend contract backend/crates/platform/db/migrations/0019_harden_worm_and_alert_leases.sql required snippets
+- backend contract backend/crates/platform/db/migrations/0019_harden_worm_and_alert_leases.sql: evidence_media_reject_terminal_completion
+- backend contract backend/crates/platform/db/migrations/0019_harden_worm_and_alert_leases.sql: FINAL_COMPLETED
+- backend contract backend/crates/platform/db/migrations/0019_harden_worm_and_alert_leases.sql: ARCHIVED
+- backend contract backend/crates/platform/db/migrations/0019_harden_worm_and_alert_leases.sql: CANCELLED
+- backend contract backend/crates/platform/db/migrations/0019_harden_worm_and_alert_leases.sql: PENDING
+- backend contract backend/crates/platform/db/migrations/0019_harden_worm_and_alert_leases.sql: SENT
+- backend contract backend/crates/platform/db/migrations/0019_harden_worm_and_alert_leases.sql: FAILED
+- G005 backend test backend/app/tests/workorder_api.rs: present
+- G005 backend test backend/crates/workorder/domain/tests/approval_and_assignment.rs: present
+- G005 backend test backend/crates/workorder/rest/tests/mobile_evidence.rs: present
+- G005 backend test backend/crates/platform/storage/tests/evidence_processing_rls_surfaces_as_runtime_role.rs: present
+- G005 executable workflow/approval lifecycle
+- G005 server-owned scoped approval feed

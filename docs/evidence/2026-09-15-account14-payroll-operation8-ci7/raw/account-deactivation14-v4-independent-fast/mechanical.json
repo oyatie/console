@@ -1,0 +1,94 @@
+{
+  "status": "PASS_PRIVATE_INDEPENDENT_STATIC_CHECKS",
+  "manifest_sha256": "6c7d529c31e5d52da3ce99307d346fe46ebfa5b53f3b54115a5a661c1703c5fd",
+  "source_sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+  "patch_sha256": "b8c1845c5bd33ae5952c53165cd910ca7325e4f87ea1b501c1eb1aac60f2a04c",
+  "verified_manifest_files": 10,
+  "original6_prefix26081_exact": true,
+  "all_V2_races_witnesses_helpers_scope_unchanged_except_short_slug": true,
+  "exact14_names": [
+    "deactivate_revokes_passkeys_and_sessions_as_runtime_role",
+    "active_account_custody_survives_company_deactivation_and_replay",
+    "nonactive_account_security_is_not_reclassified_by_company_deactivation",
+    "unavailable_account_authority_preserves_fenced_subject_before_company_effect",
+    "unavailable_account_authority_cannot_select_unfenced_legacy_revocation",
+    "unfenced_legacy_subject_still_loses_keys_families_and_refresh_after_company_deactivation",
+    "immediate_security_fk_waits_for_account_root_update_lock",
+    "enrollment_commit_winner_uses_fresh_fenced_snapshot",
+    "enrollment_rollback_winner_selects_exact_legacy_sweep",
+    "company_commit_holds_native_fk_until_legacy_sweep_commits",
+    "business_backend_death_rolls_back_partial_company_and_credential_effects",
+    "repeatable_read_and_serializable_refuse_without_effects",
+    "guard_requires_company_subject_context_and_business_only_execution",
+    "exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift"
+  ],
+  "five_source_preimages_match_current": true,
+  "current_head": "77915b07ffd7b8dc41a84b2c9284da24c8ed1fca",
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/account-deactivation14-928e1e48-v4-inventory/candidate.patch"
+      ],
+      "cwd": "/private/tmp/account14-v4-independent-apply-dhron2sx",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/account-deactivation14-928e1e48-v4-inventory/candidate.patch"
+      ],
+      "cwd": "/private/tmp/account14-v4-independent-apply-dhron2sx",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--check",
+        "/private/tmp/account-deactivation14-928e1e48-v4-inventory/candidate.patch"
+      ],
+      "cwd": "/private/tmp/account14-v4-independent-apply-dhron2sx",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "/private/tmp/account-deactivation14-928e1e48-v4-inventory/candidate.patch"
+      ],
+      "cwd": "/private/tmp/account14-v4-independent-apply-dhron2sx",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2024",
+        "/private/tmp/account-deactivation14-928e1e48-v4-inventory/deactivate_revokes_credentials.rs"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "compiler_discovered": 0,
+  "runtime_executed": 0,
+  "cargo_invocations": 0,
+  "database_calls": 0,
+  "repository_writes": 0
+}

@@ -1,0 +1,25 @@
+{
+  "kind": "APPROVED_NARROW_TEST_FIXTURE_CORRECTION",
+  "base_sha": "7b930e0d02a2ce0b925b2ee34ed81bff474f925a",
+  "author": "/root/capture_review",
+  "independent_reviewer": "/root/inventory_repair",
+  "approval_and_integration": "/root",
+  "authorization": "Persistent user direction authorizes reversible in-scope fixes and testing without repeat permission. All existing assertions preserved; no skipped/deleted/quarantined test or lowered expectation.",
+  "patch_sha256": "bd90d233d06f8255fca2fd650c1f5e3f99fe991473d33550411581b196393ab8",
+  "independent_review_sha256": "f98b99639cb00375c35888f0a44701140fa1d14c3c7f4642fe2bc6d42e782d76",
+  "actual_red": {
+    "run": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab",
+    "executed": 1,
+    "failed": 1,
+    "filtered": 205,
+    "cause": "Same injected REVOKEs fired three times as new legitimate helper grants ran; fault reachability witness expected exactly once.",
+    "later_assertions": "Catalog rollback and positive recovery unreached inRED."
+  },
+  "change": "Guard fixture with its existing nontransactional sequence is_called. All fault effect, error, witness1, rollback and recovery assertions unchanged. No product edit.",
+  "green": "Pending unchanged selected1probe",
+  "remaining_holds": [
+    "Same selected1GREEN and independent runtime review",
+    "Separate actual OpenAPI regressions",
+    "Account/browser/fullConsole implementation and production acceptance"
+  ]
+}

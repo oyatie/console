@@ -1,0 +1,16 @@
+{
+  "kind": "ROOT_ONLY_FINITE_NPM_RETENTION_COPY_GUIDE",
+  "source_head": "d66e2112cf0d96c2ed490f1c85b8250f870390df",
+  "candidate_root": "/private/tmp/npm-verify-retention-d66e2112-inventory",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/npm-fast-verification",
+  "manifest": "/private/tmp/npm-verify-retention-d66e2112-inventory/retention-allowlist.json",
+  "manifest_sha256": "9bd55072df15052ed220ff5ecce9f248c59410854f515e1bc426744a18320c3d",
+  "copy_records": 3,
+  "steps": [
+    "Verify the exact manifest hash; inspect the completed original log/command/review and source bindings.",
+    "For each finite record verify regular original/archive, exact sizes and SHA256, deterministic gzip and exact decompression.",
+    "Root alone copies the three enumerated archives and exact manifest/guide; refuse any existing unequal destination and do not overwrite historical evidence.",
+    "Read back each destination and compare compressed and decompressed sizes/hashes. Retain independent import review separately.",
+    "Do not import the private preparer or static-extraction scratch file. Do not execute imported evidence. Preserve exact fast-tier counts and all listed HOLDs."
+  ]
+}

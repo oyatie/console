@@ -1,0 +1,73 @@
+# Independent receipt durability completion proposal
+
+Read-only design review; no application modifications or runtime proof in this turn.
+Original task base d03166244500aed5d3e1d058bef723a0c3d678e4; integration observed at ebea26a790b2ee363e2924ca76c5085e4c4e1ee6. This is a proposal, not an admitted implementation lane or final-head approval.
+Lenses: Cartesian doubt, Systems Thinking, Red Team, Operability, Zero-trust.
+
+## Decision
+Use an opt-in shared durable transaction-completion primitive. Confirm an immutable post-commit WAL upper bound against an explicitly admitted replica policy before returning success. A successful SQL COMMIT, including a FOR KEY SHARE transaction, does not itself prove remote apply: PostgreSQL 18.6 SyncRep cancellation warns then returns locally committed success; SQLx 0.9 notices are logged, not returned as errors. Clearing synchronous_standby_names also releases waiters. Row-lock replay introduces WAL/MultiXact/privilege work while retaining these failure modes. Driver warning capture plus immutable topology safeguards is possible but larger and more brittle than explicit confirmation.
+
+Use the existing platform/db layer, preserving caller-owned composition. Do not introduce a generic event bus, replication topology parser, or independent domain transaction. Do not modify with_org_conn globally.
+
+## Smallest correct mechanism
+1. Explicit startup/config admission distinguishes locally durable development from required remote-replay production policy. Missing/invalid required policy is failure, never inferred async fallback. A fixed admitted replica fixture is sufficient to implement the first experiment; it is not arbitrary CNPG quorum certification.
+2. Acquire PgConnection, then begin its borrowed transaction; retaining the same connection after COMMIT binds capture to the transaction's server. Fresh writes and replay both use this completion boundary. Existing pool.begin() consumes its pool connection at commit, so adjust ownership at the outer owner.
+3. After successful local COMMIT, obtain one pg_current_wal_insert_lsn() upper bound on the same connection and bind to trusted cluster identity, timeline, admitted primary epoch. Capture after COMMIT is necessary to cover its commit WAL. Never refresh the target in the wait loop.
+4. Independently observe admitted standby replay at or past the bound on the same WAL ancestry. Use a narrowly privileged fixed observation function or a separately credentialed observation connection; runtime must not get broad pg_monitor/admin rights. A definer function must have fixed search_path, no caller-selected SQL/server identities, restricted EXECUTE, explicit output fields, and admission checks. An application_name string or numeric LSN alone is not replica identity or ancestry proof. Primary-side pg_stat_replication can supply walsender replay progress only after the replica/session identity and epoch have been admitted.
+5. Bound observation time and resources; mismatch, cancellation, unavailable observer, topology change, or deadline returns typed durability-unknown. Preserve command identifier for same-ID reconciliation. Never imply rollback of already committed data or auto-reissue with a new identifier.
+6. No observer can replace promotion fencing. Old-primary writes and response/egress must be fenced; promoted replicas must satisfy ancestry and watermark admission. Identity checks before/after polling detect observed changes but cannot close a subsequent failover/response race without the operational fencing protocol. Keep this explicit as an exposure gate.
+
+A replay-only experiment can establish the regression mechanism, but cannot claim complete durable mutation completion while fresh COMMIT still trusts cancellable SyncRep. No independent tx helper may certify a receipt produced in its still-uncommitted outer transaction.
+
+## Caller inventory
+Eight direct ont_action_command_receipts SELECT sites, not thirteen. Thirteen canonical target literals are not thirteen receipt readers.
+- payroll/adapter-postgres/src/pay_run.rs ~591: own transaction, early replay return ~606, fresh commit ~715.
+- ontology/canonical-adapter-postgres/src/company.rs ~254: own transaction, early replay ~269, fresh commit ~346.
+- same org_unit.rs ~297: early replay ~312, fresh commit ~427.
+- same job_position.rs ~366: early replay ~381, fresh commit ~516.
+- same person.rs ~316: write_in_tx replay ~331; standalone wrapper commits ~291.
+- same employment.rs ~604: write_in_tx replay ~619; standalone wrapper commits ~578; transfer composition ~924.
+- ontology/rest/src/lib.rs ~2423: InstanceRevision within with_audits, replay yields zero audits; outer owner requires completion.
+- same REST ~1769: authorization-routing peek under with_org_conn; not durable success itself. Leave read helper unchanged and assert downstream completion cannot be bypassed.
+
+Indirect outer owners:
+- app/hr.rs create_employee_core (~1068) calls person write_in_tx (~1282). employee create outer with_audits ~908.
+- app/recruiting_hire.rs ~91: outer with_audits encloses create_employee_core and recruiting linkage. Certify after entire outer commit.
+- app/lib.rs PgEmploymentTransferPort ~2596 composes employment::reassign_org_unit_via_transfers_in_tx into orgchange adapter.
+- orgchange/adapter-postgres/src/lib.rs effectuate ~2042 and archive ~2215 own with_audits around apply_ops and transfers. Certify at owner, not each employee command.
+Other idempotency stores require separately scoped inventory before a whole-platform durability claim; production_idempotency_claims and logistics receipts exist. Messenger read acknowledgments are not automatically command receipt completion.
+
+## Concrete affected paths
+- backend/crates/platform/db/src/durability.rs (new small shared module), lib.rs export, error.rs typed committed-uncertainty.
+- platform/db/src/audit_tx.rs: opt-in durable counterpart or explicit policy parameter at selected mutation owners; avoid implicit process globals and blanket read waits.
+- Six canonical/payroll port files above: remove early success bypass and use common owner completion.
+- ontology/rest/src/lib.rs InstanceRevision outer owner; app/hr.rs; app/recruiting_hire.rs; orgchange adapter outer owners.
+- Existing application construction/config wiring passes a durable completion policy/context to selected owners. Decide explicit local versus required-replica policy at composition root, not per request.
+- Narrow observation capability migration and ops/postgres-reconcile-topology.sh only if fixed primary observer is selected. Serialize migrations and role grants with root writer.
+- ErrorKind currently only Validation, NotFound, Forbidden, Conflict, InvalidTransition, Internal (kernel/core/src/error.rs). Add reviewed machine-readable committed-unknown/reconcile contract at application boundary, or preserve equivalent structured result; a bare generic 500 hides ambiguity. Domain adapters and app/lib.rs transfer error matching must propagate it without flattening.
+
+## Required experiments/tests before success claim
+1. Paused admitted standby, receipt visible on primary, original writer terminated: replay cannot succeed until confirmed replay watermark; unpause succeeds with byte-identical receipt and exactly one real effect.
+2. Query cancel while initial COMMIT waits: SQL WARNING does not permit fresh durable success until explicit replay confirmation. Test ordinary pg_cancel_backend separately from transport termination.
+3. Clear synchronous_standby_names while waiting: release local COMMIT but explicit observer continues withholding durable success.
+4. Wrong application_name peer, wrong cluster/system identity, incompatible timeline, stale admission epoch, no observer privilege, dropped observation connection: typed UNKNOWN or admission refusal, no success.
+5. Capture fixed bound after outer COMMIT; continuous unrelated WAL generation cannot continually move the bound. A borrowed inner writer cannot certify its own uncommitted receipt.
+6. Concurrent receipt replays produce no second business effect and no lock-induced receipt tuple mutation; bounded waiter/pool occupancy and cancellation cleanup under hot command load.
+7. Lost success response reconciles using exact original command ID. No automatic different-ID retry after UNKNOWN.
+8. Person employee-create and recruiting atomic composition, employment transfer effectuate/archive, InstanceRevision zero-audit replay, all six standalone owners reach the common completion helper.
+9. Runtime-role tests prove least-privilege observation grants and fail-closed behavior. Local/dev explicit policy has separate acceptance and no production guarantee.
+10. Independent review of observer progress witness, request count/history completeness, positive controls, and failure injection. Existing recovery test's SyncRep wait_event witness is strategy-specific; change it only via reviewed receipt to an explicit observer-wait witness that proves the request reached the new boundary. A 300ms nonreturn alone is not evidence of progress.
+
+## Existing harness
+backend/crates/payroll/adapter-postgres/tests/recovery.rs contains replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply and lost_commit_transport_reply_replays_one_real_payroll_effect. Use real fsync-enabled two-node recovery harness, not regular tests whose server has fsync off. Root owns execution. Production topology has unresolved durability admission/fencing evidence; this design does not certify it.
+
+## Source evidence
+PostgreSQL REL_18_6 xact.c ~1547-1557: SyncRep only with XID + WAL; locks remain held while waiting.
+https://raw.githubusercontent.com/postgres/postgres/REL_18_6/src/backend/access/transam/xact.c
+heapam.c ~5355-5450: fresh permanent tuple lock emits WAL; already-held lock may short-circuit ~4890-4930.
+https://raw.githubusercontent.com/postgres/postgres/REL_18_6/src/backend/access/heap/heapam.c
+syncrep.c ~317-326: user cancel WARNING and stop waiting; ~968-994 clearing sync names wakes waiters.
+https://raw.githubusercontent.com/postgres/postgres/REL_18_6/src/backend/replication/syncrep.c
+select.sgml: row locking requires UPDATE privilege on at least one column.
+https://raw.githubusercontent.com/postgres/postgres/REL_18_6/doc/src/sgml/ref/select.sgml
+Local SQLx 0.9 connection/stream.rs NoticeResponse handler logs notices. Existing migration0177 SELECT/INSERT grants do not revoke default UPDATE; topology default privileges can already supply it, so inspect effective grants before changing any.

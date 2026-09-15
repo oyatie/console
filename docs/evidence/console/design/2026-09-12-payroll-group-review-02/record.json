@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "class": "evidence",
+  "status": "frozen_independent_gap_review",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "reviewed_inventory_sha": "e32464893ed8b91ca411311c2607a06adcc7ea22",
+  "owner": "Codex /root; sole writer",
+  "frozen_utc": "2026-09-12T01:12:10.036923+00:00",
+  "entry": "review.html",
+  "inventory_verdict": "ACCEPTED",
+  "product_design_verdict": "CHANGES_REQUIRED",
+  "approved_design_sha": null,
+  "approved_test_sha": null,
+  "authority": "Review evidence and proposals only; active authorities unchanged; no implementation lane",
+  "review_identities": [
+    "/root/design_round1",
+    "/root/design_round2",
+    "/root/design_round3",
+    "/root/design_round4"
+  ],
+  "validation": "validation.json",
+  "mechanical_guide": "entry.txt",
+  "files": [
+    {
+      "path": "doc-link-check.txt",
+      "bytes": 781,
+      "sha256": "f01e4113150e0be10288d2ce1bf6e225518a5cc36e8907ee64cc59835a4602ff"
+    },
+    {
+      "path": "doc-link-sandbox.txt",
+      "bytes": 193,
+      "sha256": "517e4b2885dd4e4edb74d1c2e8572995e09aebacfa756ecedb2f0605cdf113a2"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 1818,
+      "sha256": "a0b9fa59fbc84466f169ca381ef29c5b97852029f90032642f3fd7422b41ae5b"
+    },
+    {
+      "path": "full-diff-check.txt",
+      "bytes": 27065,
+      "sha256": "379e437eb54520463c9366d21a47b504760d9846cd292fedb27932501d6563a7"
+    },
+    {
+      "path": "gap-register.csv",
+      "bytes": 2705,
+      "sha256": "935b7c32fbbf1f04e37c0547d25e707482d1f2200c7faea297cba18fd7110136"
+    },
+    {
+      "path": "independent-reviews.json",
+      "bytes": 8294,
+      "sha256": "ac219fcd3174efde41fd1d2b6d45e11260f61e8eed38ebcc45d9535698df780d"
+    },
+    {
+      "path": "inventory-readback.json",
+      "bytes": 484,
+      "sha256": "cca6ec71abc50b90437f132b06ae05ba3c2c0c53efe65f82224abeb5f245c906"
+    },
+    {
+      "path": "resolution-contract.txt",
+      "bytes": 23341,
+      "sha256": "8b4b693d18f127ea8e66a4ff7d26a76f35a68cf5ffc2e639efc076d73281c7b0"
+    },
+    {
+      "path": "review.html",
+      "bytes": 10396,
+      "sha256": "30442fce72589eef819f172f0e81409a04c2836513fb2d232343d7bcb31a7cdc"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 4456,
+      "sha256": "a57383cd4dc6567dcb4c3b862dd3161ce44c9fae7394972aad9fa4cf6248f114"
+    },
+    {
+      "path": "test-oracle-plan.csv",
+      "bytes": 7123,
+      "sha256": "ce8697e2de7e24e4e7ec2ec1a8499f0cb56da4f9045641ff3de4546c4ad7d8af"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1328,
+      "sha256": "3ae6a80921d0c9ebf7b0048e13b3a49c8eda2797d0591ea6fefff9f0c30bd1f6"
+    }
+  ]
+}

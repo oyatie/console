@@ -1,0 +1,37 @@
+{
+  "owner": "/root",
+  "base_sha": "3457cda7bf9452cb2fcfcc1eea826e1347a81b13",
+  "approved_design_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "inherited_approved_test_sha": "2b1a7d3494e6545fa5ee63597a3e285143435505",
+  "immutable_target": "Executable B06/B07 signed request-proof validation and same-Account family isolation candidates; no product implementation",
+  "allowed_paths": [
+    "backend/app/tests/auth_rest.rs",
+    "docs/evidence/console/tests/2026-09-13-account-session-05",
+    "docs/evidence/console/approvals/2026-09-13-browser04"
+  ],
+  "forbidden": "Product,DDL,roles,lockfiles,generated,CI,current authority and main index changes",
+  "mechanical_guide": [
+    "Root sole writer; independent reviewers read-only",
+    "Reuse real configured router, migrations, signed primary login and Account state snapshots",
+    "Test signing key injection confined to existing fixture ownership; negative proofs derive from actual issued proof",
+    "Preserve existing44tests; separately reviewed new test SHA",
+    "No synthetic UV/resident browser assurance claim"
+  ],
+  "pre_mortem": "Unreached schema prerequisite mistaken for parser proof; invalid signature masks claim checks; same-Account fixture is actually same family; negative consumes refresh before valid control",
+  "blast_radius": "Isolated auth_rest test source, evidence and owned disposable test runtime",
+  "detection": "Decode and independently verify exact signed controls; distinct family claims and DB readback; before/after snapshot; final positive owner operation",
+  "rollback": "Retain base and all evidence; no shared Git reset; stop own VM",
+  "stop_conditions": [
+    "Material design ambiguity",
+    "Product mutation needed",
+    "Unclassified runtime failure",
+    "Independent blocking review"
+  ],
+  "remaining_holds": [
+    "New candidate review/test-SHA approval",
+    "Full Account coverage",
+    "12 baseline buildscript fixups",
+    "Implementation admission",
+    "Production/legal authority"
+  ]
+}

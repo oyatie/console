@@ -1,0 +1,4 @@
+npm notice run verify
+npm notice run node scripts/verify.mjs fast
+CI steps missing from scripts/verify.mjs (classify each as fast/db/ci-only):
+  preflight: Preparation wiring and recovery fixture regressions

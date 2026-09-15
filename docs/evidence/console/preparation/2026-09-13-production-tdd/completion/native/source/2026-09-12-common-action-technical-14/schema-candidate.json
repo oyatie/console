@@ -1,0 +1,192 @@
+{
+  "status": "PROPOSED_SCHEMA_CONTRACT_NOT_DDL",
+  "tables": [
+    {
+      "name": "ont_action_input_schema_revisions",
+      "owner": "ontology registry command owner",
+      "columns": {
+        "org_id": "UUID",
+        "schema_id": "UUID",
+        "revision": "BIGINT positive",
+        "action_type_id": "UUID",
+        "codec_version": "RegisteredVersion",
+        "definition": "ClosedTypedInputSchema",
+        "definition_digest": "BYTEA32",
+        "created_by": "CompanyActorId",
+        "created_at": "TIMESTAMPTZ"
+      },
+      "primary_key": [
+        "org_id",
+        "schema_id",
+        "revision"
+      ],
+      "constraints": [
+        "Composite action row FK; same schema family fixed to action binding/codec",
+        "Immutable published row; no UPDATE/DELETE; typed definition field IDs/names unique and stable across permitted upgrade",
+        "Exact schema digest and registered normalization; field IDs admitted into PA1 property registry",
+        "All required nested owner codecs exist before executable enrollment"
+      ],
+      "access": "FORCE Company RLS USING/WITH CHECK; composite Company FKs; no direct PUBLIC or arbitrary runtime mutation. Exact owner function ACLs require unified DDL proof.",
+      "lock": "Company authority EXCLUSIVE -> type-key guard -> insert/publish; shared reads pin immutable schema"
+    },
+    {
+      "name": "ont_action_runtime_bindings",
+      "owner": "ontology registry command owner with compiled domain registration",
+      "columns": {
+        "org_id": "UUID",
+        "action_type_id": "UUID",
+        "object_type_id": "UUID",
+        "owner_key": "ClosedOwnerKey",
+        "owner_action": "ClosedDispatchTarget",
+        "input_schema_id": "UUID",
+        "codec_version": "RegisteredVersion",
+        "fingerprint_protocol": "CCF1",
+        "draft_requirement": "REQUIRED|PERMITTED|NOT_APPLICABLE",
+        "result_contract": "RegisteredResultVersion",
+        "manifest_digest": "BYTEA32"
+      },
+      "primary_key": [
+        "org_id",
+        "action_type_id"
+      ],
+      "constraints": [
+        "Composite FK ensures action belongs to exact Company/type snapshot",
+        "Immutable tuple; no arbitrary owner/SQL/dispatch strings",
+        "Schema family exactly belongs to action; publication rejects unresolved codec/result owner",
+        "Live enrollment and compatibility governed separately by current registry/Company authority; no immutable row implies permanent executable permission"
+      ],
+      "access": "FORCE Company RLS USING/WITH CHECK; composite Company FKs; no direct PUBLIC or arbitrary runtime mutation. Exact owner function ACLs require unified DDL proof.",
+      "lock": "Company EXCLUSIVE before registry publication; no late bound hot swap"
+    },
+    {
+      "name": "ont_draft_controls",
+      "owner": "ontology common instance adapter",
+      "columns": {
+        "org_id": "UUID",
+        "draft_id": "UUID same ont_instances.id",
+        "action_type_id": "UUID",
+        "object_type_id": "UUID action target schema",
+        "initial_input_schema_ref": "ExactInputSchemaRef",
+        "target_binding": "ExistingTarget|CreateScope (typed immutable)",
+        "custody_kind": "ACCOUNT|WORK_ITEM",
+        "custody_account_id": "UUID nullable",
+        "work_item_id": "UUID nullable",
+        "creator_account_id": "UUID",
+        "intent_slot": "BoundedOwnerSlot",
+        "intent_key": "BYTEA32",
+        "state": "EDITABLE|SEALED|CONSUMED|DISCARDED|EXPIRED",
+        "editing_epoch": "BIGINT positive",
+        "editing_nonce": "BYTEA32 opaque",
+        "assignment_generation": "BIGINT nullable",
+        "active_attempt_id": "UUID nullable",
+        "retention_state": "LIVE|QUARANTINED|PAYLOAD_REMOVED",
+        "control_revision": "BIGINT positive",
+        "created_at": "TIMESTAMPTZ",
+        "updated_at": "TIMESTAMPTZ"
+      },
+      "primary_key": [
+        "org_id",
+        "draft_id"
+      ],
+      "constraints": [
+        "Composite same-Company instance FK to retained head/tombstone; type positively INPUT_DRAFT_V1",
+        "XOR Account custody with exact Account FK or existing WorkItem Company FK; work assignment owner proof current",
+        "Partial UNIQUE(org_id,intent_key) WHERE state IN(EDITABLE,SEALED); tuple equality checked on digest match",
+        "Intent key CCF1 of immutable Company/custody/action/target/owner-slot; collisions conflict rather than conflate",
+        "SEALED iff active_attempt references matching READY attempt, except unresolved observer does not mutate stored phase; deferred owner constraint verified at transaction commit",
+        "Control revision is lifecycle concurrency only, not payload history; immutable bindings never retarget",
+        "PAYLOAD_REMOVED never ordinary editable/readable; retain tombstone; explicit retention operation only",
+        "Head/current open revision Company consistency checked under owner guard; compatible constrained terminal cleanup W04b-05"
+      ],
+      "access": "FORCE Company RLS USING/WITH CHECK; composite Company FKs; no direct PUBLIC or arbitrary runtime mutation. Exact owner function ACLs require unified DDL proof. Read through current custody/field projection only; Company administrator access alone insufficient.",
+      "lock": "TX1 work/plan/assignment first; slot(if start), control, attempt, command, common head"
+    },
+    {
+      "name": "ont_draft_submission_attempts",
+      "owner": "ontology common draft owner, participating in business owner transaction",
+      "columns": {
+        "org_id": "UUID",
+        "attempt_id": "UUID",
+        "draft_id": "UUID",
+        "source_revision_id": "UUID lineage",
+        "source_revision_version": "BIGINT positive",
+        "source_hash": "BYTEA32",
+        "input_schema_ref": "ExactInputSchemaRef",
+        "original_account_id": "UUID",
+        "original_assignment_generation": "BIGINT nullable",
+        "sealed_editing_epoch": "BIGINT positive",
+        "domain_command_id": "UUID",
+        "action_type_id": "UUID",
+        "owner_key": "ClosedOwnerKey",
+        "owner_action": "ClosedDispatchTarget",
+        "object_type_id": "UUID",
+        "target_binding": "ExactTypedTarget",
+        "codec_version": "RegisteredVersion",
+        "normalized_input": "Closed typed immutable snapshot, nullable only after authorized disposal",
+        "expected_refs": "Typed exact immutable basis",
+        "reason": "Bounded immutable narrative, payload custody",
+        "gate_ref": "ExactGateRequestPayloadRef nullable",
+        "command_fingerprint": "BYTEA32 CCF1",
+        "state": "READY|SUCCEEDED|REJECTED_NO_EFFECT|CANCELLED",
+        "state_revision": "BIGINT positive",
+        "result_refs": "RegisteredOwnerReceipt/Result refs nullable",
+        "adoption_receipt_ref": "RegisteredDomainAdoptionRef nullable",
+        "payload_state": "RETAINED|ADOPTED|ERASED",
+        "created_at": "TIMESTAMPTZ",
+        "completed_at": "TIMESTAMPTZ nullable"
+      },
+      "primary_key": [
+        "org_id",
+        "attempt_id"
+      ],
+      "constraints": [
+        "UNIQUE(org_id,domain_command_id); composite FK draft control; no second active READY attempt per draft",
+        "Original CompanyActor/action/type/schema/target/input/basis/context immutable and fingerprint-bound; phase update cannot rewrite input",
+        "Source lineage verified under pin fence; not permanent restrictive FK to deletable revision payload; exact existing pin while required",
+        "SUCCEEDED requires same-Company exact domain receipt and result owner; terminal states monotonic",
+        "No committed RUNNING/outcome_UNKNOWN transition or timer cancellation; uncertain observation pins/reconciles",
+        "Erasing payload/reason/expected refs only eligible RR1 owner operation, never ordinary update; fingerprint and minimal lineage/tombstone retained",
+        "Domain adoption first retains complete required submission data/evidence under domain owner before releasing draft pin; original actor never rewritten",
+        "Reservation holds future Company/domain_command fence and proves absent receipt/binding; every direct alias rechecks this provenance even when attempt_ref omitted"
+      ],
+      "access": "FORCE Company RLS USING/WITH CHECK; composite Company FKs; no direct PUBLIC or arbitrary runtime mutation. Exact owner function ACLs require unified DDL proof. Normalized payload requires current attempt/history/property authorization; never generic receipt serialization.",
+      "lock": "Control -> attempt -> Company command fence; business completion in same owner transaction as effect/receipt"
+    }
+  ],
+  "existing_transitions": [
+    {
+      "table": "ont_instance_revisions",
+      "change": "Add immutable integrity_protocol LEGACY_V0|DRAFT_CCF1 (default legacy for existing writer); new draft row binds exact input schema and database-precision times via registered attributes/owner record; protect discriminator and all fixity fields in trigger; no old hash rewrite"
+    },
+    {
+      "table": "ont_instances",
+      "change": "Positive immutable registered draft classification plus head/revision consistency compatible with RR1 quarantine; generic lifecycle cannot bypass control"
+    },
+    {
+      "table": "ont_action_types / ont_property_defs / ont_object_types",
+      "change": "Reuse registry owner and immutable snapshots; guarded draft actions installed before generic create fallback; input schema ref projection, no duplicate field rules"
+    },
+    {
+      "table": "ont_action_command_receipts",
+      "change": "Explicit format/fingerprint protocol defaults LEGACY_V0; new CCF1 exact action/type/binding metadata immutable, new draft receipts minimal; extend0223 closed owner/target with named roster only"
+    },
+    {
+      "table": "RR1 pins/adoption/disposal metadata",
+      "change": "Mandatory live source pins and payload-copy inventory integration; exact common retention/adoption DDL/functions remain W04b-05, no independent JSON list asserted as pin authority"
+    },
+    {
+      "table": "workflow/Group/capacity controls",
+      "change": "Own transaction participants per09/12; exact physical schema W04b-04, no draft-owner workflow DML"
+    }
+  ],
+  "limits": {
+    "body_bytes": 65536,
+    "normalized_input_bytes": 65536,
+    "schema_fields": 128,
+    "depth": 8,
+    "list_elements_cap": 256,
+    "history_page": 50,
+    "compare_revisions": 2
+  },
+  "authority": "Evidence only; exact DDL/ACL/runtime proof and approved integrated design/test SHAs remain required"
+}

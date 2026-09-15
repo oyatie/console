@@ -1,0 +1,26 @@
+{
+  "base_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "owner": "/root",
+  "private_implementer": "/root/inventory_repair",
+  "guide": "/private/tmp/account14-app8-ci-enrollment-map-59c38d60-v1-inventory/MAP.md",
+  "premortem": "new real cases remain unreachable or grouped steps hide later failures",
+  "blast_radius": [
+    ".github/workflows/ci.yml",
+    "scripts/lib/recovery-test-invocations.mjs",
+    "scripts/lib/recovery-test-invocations.test.mjs",
+    "tools/buck/test_preparation_wiring.py",
+    "scripts/check-ci-preflight.mjs",
+    "scripts/check-ci-preflight.test.mjs",
+    "docs/program/executed-tests-baseline.json"
+  ],
+  "detection": "exact same source roster probe and preflight mutation/executed inventory checks",
+  "rollback": "reject private candidate or exact reviewed inverse; preserve tests",
+  "stop": "nonsemantic RED, stale roster, scope drift, assertion weakening",
+  "remaining_holds": [
+    "admission result",
+    "independent candidate review",
+    "same probe green",
+    "runtime all8 App plus retained owner controls",
+    "production authority"
+  ]
+}

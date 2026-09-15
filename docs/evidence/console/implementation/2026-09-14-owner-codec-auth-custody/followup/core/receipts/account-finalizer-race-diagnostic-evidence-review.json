@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/review_completeness",
+  "run": "/private/tmp/account-finalizer-diagnostic-e1f184fa",
+  "head": "e1f184fa19bd9a34569ef8bf1bc760e1f0144a50",
+  "artifacts_verified": 13,
+  "clean_source_prepost_equal": true,
+  "cleanup": "confirmed owned container absent via successful bounded docker ps -a",
+  "executed": 1,
+  "passed": 0,
+  "failed": 1,
+  "ignored": 0,
+  "filtered": 130,
+  "observed_failure": {
+    "sqlstate": "P0001",
+    "message": "account_custody.unexpected_privilege",
+    "where": "inline_code_block line108 initial pre-lock verdict refusal"
+  },
+  "conclusion": "Actual coordinated concurrent finalizer fails pre-lock metadata validation; not a lock-timeout failure. Prior broad run error has now been reproduced with diagnostic evidence.",
+  "inference": "Initial canonical scan can acquire catalog-helper relation locks and observe catalog snapshots/cache state across the first finalizer commit before reaching explicit locks. Precise internal helper ordering not instrumented; no claim of source-level PostgreSQL proof.",
+  "proposed_correction": "Cheap exact6public relation existence/kind preflight, then bounded named ONLY relation locks, then unchanged canonical authoritative inspection before any mutation. Preserve all semantic checks and expected missing/shape/ACL refusal reasons; no owner privilege changes.",
+  "limits": [
+    "No implementation by reviewer and no correction runtime success yet.",
+    "No change to rejected owner UPDATE patch; its separate approval block remains."
+  ]
+}

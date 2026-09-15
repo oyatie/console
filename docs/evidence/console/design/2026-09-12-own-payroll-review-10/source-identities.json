@@ -1,0 +1,76 @@
+{
+  "sources": [
+    {
+      "path": "docs/current/PRODUCT.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "6a3992e258d7eecf4d2cd11422ee01d521a01017",
+      "sha256": "d9740519950695c0b09bcd173b3a8bac2ff52f41f16eee9cb6984f3ca67e3979"
+    },
+    {
+      "path": "docs/current/DELIVERY.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4"
+    },
+    {
+      "path": "backend/crates/payroll/rest/src/lib.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "bf3a7418f85bab6970071e7ae681f402c17ddc6a",
+      "sha256": "664994055e852f400eabf7446d792e106cd9c3d5db2a647bef00bd531ea60f32"
+    },
+    {
+      "path": "backend/crates/payroll/rest/src/payslip_draft.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "d2d6db3a6f6e48f85da4a05908ea97eb04ebabdd",
+      "sha256": "783ebaa28d1a84244018700546db156204f009a5553361dad760da10561cd348"
+    },
+    {
+      "path": "backend/crates/payroll/rest/src/lifecycle.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "33bf65ac2d3975bf41f888461082e0afb0903c6c",
+      "sha256": "49ad599ed56162070b9430a35cce3c34c4f2e18743767c6f5c28587aba834aed"
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/lib.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "31577036b6d781676fa119e5786963ce8aad8b74",
+      "sha256": "69e44f5c5aacde19e13254fc92d3b32b9298970e62c930de19dcb56a9b9bdec1"
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/lifecycle.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "5d356d3479a3847506e976be86e360ef7a961f70",
+      "sha256": "070c1da569abd4dab31326f2d21953b480dd39d59b21cd5eed3df92b4aa401ae"
+    },
+    {
+      "path": "backend/crates/inbox/domain/src/lib.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "76cf7a65e0a401d6a5e489a7d903822107aa3183",
+      "sha256": "61fad35dc4a3e56515049b9ff327a636acb9c11a425105d348796ddf16f78c6e"
+    },
+    {
+      "path": "backend/crates/inbox/application/src/lib.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "b96eef7ba45ea2852a9a4f8453426031270004d3",
+      "sha256": "e399a1381750dd227d90c924479ddae338620da2920d7e3eb244bcee96682e7f"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/continuity-and-certificates.txt",
+      "commit": "0c2e1541c91d1c5f6f5bed740114b44c16006135",
+      "git_blob": "71107594f55b9ef777458158f0bdb80eb6166889",
+      "sha256": "a91fdb7e08c744993f0fa8003eb01ef52c3c9a3c028fd845f0d482c717fcde15"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/approval-and-correction.txt",
+      "commit": "0c2e1541c91d1c5f6f5bed740114b44c16006135",
+      "git_blob": "65405491d11d7462db9ba5ddf085c26ec3b36737",
+      "sha256": "9b30d44c8714521e12f6d6e76929486168f8c3bb3b917d56257a3897dc4869e9"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/assignment-contract.txt",
+      "commit": "0c2e1541c91d1c5f6f5bed740114b44c16006135",
+      "git_blob": "48326384b790e580180878e2ed7970cefece6933",
+      "sha256": "79e9bc3e344e2736aab88ad3a1c533e147d6679e5d3827e2ae2497dd84776637"
+    }
+  ]
+}

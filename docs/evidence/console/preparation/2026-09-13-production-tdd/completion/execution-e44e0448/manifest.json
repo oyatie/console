@@ -1,0 +1,51 @@
+{
+  "base_sha": "e44e0448abee62ea7d296ffca4ace3b3dbfbdb85",
+  "files": [
+    {
+      "source_path": "/private/tmp/console-preparation-request-context-67693004.log",
+      "retained_path": "execution-e44e0448/console-preparation-request-context-67693004.log.gz",
+      "sha256": "f5a84ef8ca622867c6ecdc4468be3516152d1213c6eda02e0c43c449bd498e53"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-wiring-r3-installed-red.log",
+      "retained_path": "execution-e44e0448/console-preparation-wiring-r3-installed-red.log.gz",
+      "sha256": "b87a3a7b79f28ea33ca44c44dfb7714e71265cfc74b37a5c0445725efcd05a3c"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-browser-r2-discovery.log",
+      "retained_path": "execution-e44e0448/console-preparation-browser-r2-discovery.log.gz",
+      "sha256": "d5ffad4f3a24a251027d9bb20eb9220154bb7021d5480cbc36455e4b4a5f29ae"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-browser-r2-execution.log",
+      "retained_path": "execution-e44e0448/console-preparation-browser-r2-execution.log.gz",
+      "sha256": "46cbf2e166a8b7250d8f8af24bf927e410865893407dc2a8e3604b70e9de771d"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-browser-r3-execution.log",
+      "retained_path": "execution-e44e0448/console-preparation-browser-r3-execution.log.gz",
+      "sha256": "d7fe1074bf48b641bee098faf0c567bc851c8857aa46dcb2435fcd4eee383d28"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-native-r2-integrated.log",
+      "retained_path": "execution-e44e0448/console-preparation-native-r2-integrated.log.gz",
+      "sha256": "0e4e9358d2e254755500b26a2b916181c8a8971e258350e22ee57d70097ca8c4"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-native-r2-schema-integrated.log",
+      "retained_path": "execution-e44e0448/console-preparation-native-r2-schema-integrated.log.gz",
+      "sha256": "00435535dfb7c8114d212b063a1a3af2c3a5797188e626a645d6e091415d992f"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-telemetry-resource-correction.log",
+      "retained_path": "execution-e44e0448/console-preparation-telemetry-resource-correction.log.gz",
+      "sha256": "c9120f507da2c885ee6ff3748fd3b24a2cf4b69e5006e3b1b3e156f400d06fca"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-app-pg-discovery.log",
+      "retained_path": "execution-e44e0448/console-preparation-app-pg-discovery.log.gz",
+      "sha256": "c1c90bb606612e5f9ae78909278f64353a8d50599c066986d3ac138099c272eb"
+    }
+  ],
+  "note": "Browser and telemetry test revisions are exact source-hash bound below; base plus these root-owned changes was used."
+}

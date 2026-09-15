@@ -1,0 +1,362 @@
+[
+  {
+    "index": 1,
+    "name": "replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 36.39,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "8"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "1f7ca8062c7332d1b09e936f154ff5b95397e0f280c8f758c91f79586e7a9b20"
+  },
+  {
+    "index": 2,
+    "name": "lost_commit_transport_reply_replays_one_real_payroll_effect",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT=after-commit-response python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery lost_commit_transport_reply_replays_one_real_payroll_effect -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 25.47,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "8"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "7089c771a31ba6a1b2ac2931be6f08a36bc7776a2392c3234fd9d9d01da61584"
+  },
+  {
+    "index": 3,
+    "name": "fresh_commit_wait_release_requires_explicit_remote_confirmation",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_commit_wait_release_requires_explicit_remote_confirmation -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 28.15,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "8"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "7398f6abd2f3990b08e444c87baec09fb643f00d57e3be93dc61e01e2a5ee39a"
+  },
+  {
+    "index": 4,
+    "name": "staging_success_and_idempotent_restage_wait_for_remote_confirmation",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery staging_success_and_idempotent_restage_wait_for_remote_confirmation -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 25.83,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "8"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "8e650333ba51def55fd2c3c92903eb45fd4d90bd30a4a2a1cc2e54194ee4f7e7"
+  },
+  {
+    "index": 5,
+    "name": "required_remote_unknown_is_bounded_and_never_local_fallback",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery required_remote_unknown_is_bounded_and_never_local_fallback -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 27.34,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "8"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "24f463e2c652be8d62fd82d3d2aa28f3e16bd6559ae90c368990135abf700ef7"
+  },
+  {
+    "index": 6,
+    "name": "finite_remote_bound_and_repeated_replay_preserve_exact_rows",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery finite_remote_bound_and_repeated_replay_preserve_exact_rows -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 26.59,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "8"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "5c63bd93569b6b94eac7145ae35c02bf1c1b0802c8818f395c8018a6af102e13"
+  },
+  {
+    "index": 7,
+    "name": "fresh_commit_deadline_retains_capacity_until_replay_resumes",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_commit_deadline_retains_capacity_until_replay_resumes -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 48.67,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "8"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "91d2dd43344984729a4c7ca028506d2f4b32eb4a49ee0e16845938406352661d"
+  },
+  {
+    "index": 8,
+    "name": "aborted_fresh_stage_retains_capacity_until_native_wait_ends",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery aborted_fresh_stage_retains_capacity_until_native_wait_ends -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 30.9,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "8"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "9613c6eca4528cb9925099cc27755a09d22a75e82bda6f55cb84a0373ae77429"
+  },
+  {
+    "index": 9,
+    "name": "fresh_stage_transport_error_closes_pool_before_reconciliation",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_stage_transport_error_closes_pool_before_reconciliation -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 24.29,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "8"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "3bc1ea722eb27cfd6afb082cdc8375edf569390ce5bc156d29719cc7d2478ee5"
+  },
+  {
+    "index": 10,
+    "name": "real_observer_installer_is_atomic_replay_exact_and_drift_refusing",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test durability_observer real_observer_installer_is_atomic_replay_exact_and_drift_refusing -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 36.79,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "0"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "e19fa98ad2413881d2be9d886394b99f95082b7603d123f6bb71d548164323e8"
+  },
+  {
+    "index": 11,
+    "name": "durability_composition_tests::required_app_startup_admits_only_the_installed_observer",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_app_startup_admits_only_the_installed_observer -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 32.3,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "30"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "c4d5a08cd1746e1734b82e3adea2b117dcf73c34005c9cc6cdb1fb6ac189ad51"
+  },
+  {
+    "index": 12,
+    "name": "durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 32.15,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "30"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "5b233604702e5599bf859defe58d6171adee52a0dd16ddadb070d8e1f3956693"
+  },
+  {
+    "index": 13,
+    "name": "durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 34.58,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "30"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "7b8630adad64cc829a0a771e6dac59386cde6bdc64ce9c2f9ad5966d9a59313e"
+  },
+  {
+    "index": 14,
+    "name": "durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 34.7,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "30"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "9068656de328ef41dd67b5e66bf1298051722520bc54e4f4ddf52f1a6f5ca5b0"
+  },
+  {
+    "index": 15,
+    "name": "durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 29.94,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "30"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "b843b3f210c8fc7e0c8daea5fe477e553032007b5f21573027f958b393ca7f64"
+  },
+  {
+    "index": 16,
+    "name": "durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 28.52,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "30"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "792db476f74618b22c4ea6a8b6f5f0dcd361f242ec7fb2eaeb6e245c677e40d6"
+  },
+  {
+    "index": 17,
+    "name": "durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 38.62,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "30"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "97ac4e56c8c21007a1eadbeb9c4babec24c6dea93c66343561653c03fb3141d7"
+  },
+  {
+    "index": 18,
+    "name": "durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown",
+    "sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 28.33,
+    "counts": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "30"
+      ]
+    ],
+    "exact_one_pass": true,
+    "log_sha256": "475193525004a45bc6602e49d777293282475836e061350907048675563de710"
+  }
+]

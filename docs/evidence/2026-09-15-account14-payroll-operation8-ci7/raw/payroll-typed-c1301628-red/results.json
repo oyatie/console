@@ -1,0 +1,42 @@
+[
+  {
+    "case": 1,
+    "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture",
+    "exit": 101,
+    "seconds": 77.57,
+    "log_sha256": "b64af9a81dc23445869cd65244e4d8e0837cbddc79b50eafb3572b5b6db1098e"
+  },
+  {
+    "case": 2,
+    "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command -- --exact --test-threads=1 --nocapture",
+    "exit": 101,
+    "seconds": 20.34,
+    "log_sha256": "c1e968fc7f92be032c411009e505f36929c0d960bf7270cfa97af21f4856b1b0"
+  },
+  {
+    "case": 3,
+    "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 21.56,
+    "log_sha256": "e97674bafcdcc991df046aecd96fe837e86db8880e53c75bb4326b66bfb27771"
+  },
+  {
+    "case": 4,
+    "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events -- --exact --test-threads=1 --nocapture",
+    "exit": 101,
+    "seconds": 25.35,
+    "log_sha256": "b1946ffdffcdf03a94d49fc287cf6682e66ac92800fd56a397fea64bd625ebc4"
+  },
+  {
+    "case": 5,
+    "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+    "command": "cargo test --locked --manifest-path backend/Cargo.toml -p console-ontology-rest --lib projected_dispatch_derivation::diagnostic_unknown_prefix_does_not_classify_an_operation_error -- --exact --test-threads=1 --nocapture",
+    "exit": 0,
+    "seconds": 27.9,
+    "log_sha256": "c91ba84b35582929fae6ff3fc42fc04883f5fd3cbd8d43af61e18f9e52c6fb1f"
+  }
+]

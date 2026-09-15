@@ -1,0 +1,15 @@
+test binaries defined         : 384
+reachable from a CI step      : 381
+declared test attrs in reachable sources: 2902  (static; cfg/ignore-unaware)
+executed nowhere              : 4
+reachable only through buck2  : 13  (--gap to list; the Buck2 exit has to wire these)
+  dark  backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs
+  dark  backend/crates/payroll/ui/tests/common_action_composer.rs --features ssr
+  dark  backend/crates/platform/audit-chain/tests/ed25519_compatibility.rs
+  dark  backend/crates/platform/storage/tests/seaweedfs_worm.rs
+
+3 test binary(ies) execute nowhere and are not named in docs/program/executed-tests-baseline.json:
+  backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs
+  backend/crates/payroll/ui/tests/common_action_composer.rs --features ssr
+  backend/crates/platform/audit-chain/tests/ed25519_compatibility.rs
+Wire each into a workflow step, or the repository has 3 more test(s) that cannot fail.

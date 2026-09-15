@@ -1,0 +1,24 @@
+{
+  "candidate": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+  "command": "env -u BUCK_ISOLATION_DIR DOCKER_CONTEXT=colima-console-custody-20260914 bash /private/tmp/account-custody-regression-driver.sh /private/tmp/console-production-tdd-preparation-20260913 0d6fa31656ec9051cecd3b0da767a9174d4dee94 /private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b",
+  "summary": "test result: FAILED. 33 passed; 3 failed; 0 ignored; 0 measured; 110 filtered out; finished in 122.38s",
+  "case_results": {
+    "lifecycle": 22,
+    "startup": 11
+  },
+  "failed_names": [
+    "account_storage::account_custody_has_no_company_ownership_or_destructive_foreign_keys",
+    "account_storage::account_custody_owners_and_effective_column_grants_are_separate_from_business",
+    "account_storage::company_login_cannot_read_or_mutate_account_custody_even_with_company_context"
+  ],
+  "scope": "Same3 legacy credential-custody requirements remain failing as historical run. The6 newAccountrelations ownerprofile is verified separately by37caseprobe; broad legacy custody conversion is not complete.",
+  "unchanged_failure_reasons": [
+    "Legacy auth_refresh_token_families still has mandatory org provenance",
+    "Legacy auth credential relations still owned by console_app LOGIN",
+    "Company runtime retains direct legacy credential permissions"
+  ],
+  "evidence": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b",
+  "cleanup": "confirmed owned container absent via successful bounded docker ps -a",
+  "probe_exit": 1,
+  "log_sha256": "9a0ebd4bf3f80707316afc820083eaba4a52628fe4e3ebd12a452662443ee701"
+}

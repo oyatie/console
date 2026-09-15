@@ -1,0 +1,261 @@
+{
+  "status": "PROPOSED_EXACT_KEY_REQUIREMENTS_NOT_COMPLETE_SOURCE_DDL",
+  "rows": [
+    {
+      "code": 1,
+      "family": "CALENDAR",
+      "owner": "attendance",
+      "table": "work_calendar_revisions",
+      "root_column": "calendar_id",
+      "primary_key": [
+        "org_id",
+        "calendar_id",
+        "revision"
+      ],
+      "required_exact_revision_effect_key": [
+        "org_id",
+        "calendar_id",
+        "revision",
+        "command_id",
+        "custody_digest"
+      ],
+      "required_claim_basis_key": null,
+      "source_index_fields": [
+        "covered_start",
+        "covered_end_exclusive",
+        "zone"
+      ],
+      "source_payload_contract": "source19-v1",
+      "custody_digest": "source19 event custody for admissions; exact published source custody record for other kinds, full canonical carrier remains F01",
+      "common_lineage": "retained draft/control/attempt identity, no permanent FK to disposable private attributes",
+      "independent_adoption": "distinct domain snapshot retained_unit and per-result/purpose shared domain_adoptions",
+      "claim_allowed": false
+    },
+    {
+      "code": 2,
+      "family": "ASSIGNMENT",
+      "owner": "attendance",
+      "table": "work_calendar_assignment_revisions",
+      "root_column": "assignment_id",
+      "primary_key": [
+        "org_id",
+        "assignment_id",
+        "revision"
+      ],
+      "required_exact_revision_effect_key": [
+        "org_id",
+        "assignment_id",
+        "revision",
+        "command_id",
+        "custody_digest"
+      ],
+      "required_claim_basis_key": null,
+      "source_index_fields": [
+        "employment_id",
+        "calendar_id",
+        "calendar_revision",
+        "from_date",
+        "to_date_exclusive",
+        "state"
+      ],
+      "source_payload_contract": "source19-v1",
+      "custody_digest": "source19 event custody for admissions; exact published source custody record for other kinds, full canonical carrier remains F01",
+      "common_lineage": "retained draft/control/attempt identity, no permanent FK to disposable private attributes",
+      "independent_adoption": "distinct domain snapshot retained_unit and per-result/purpose shared domain_adoptions",
+      "claim_allowed": false
+    },
+    {
+      "code": 3,
+      "family": "COVERAGE",
+      "owner": "attendance",
+      "table": "attendance_coverage_revisions",
+      "root_column": "coverage_id",
+      "primary_key": [
+        "org_id",
+        "coverage_id",
+        "revision"
+      ],
+      "required_exact_revision_effect_key": [
+        "org_id",
+        "coverage_id",
+        "revision",
+        "command_id",
+        "custody_digest"
+      ],
+      "required_claim_basis_key": null,
+      "source_index_fields": [
+        "employee_id",
+        "employment_id",
+        "period_start",
+        "period_end",
+        "outcome"
+      ],
+      "source_payload_contract": "source19-v1",
+      "custody_digest": "source19 event custody for admissions; exact published source custody record for other kinds, full canonical carrier remains F01",
+      "common_lineage": "retained draft/control/attempt identity, no permanent FK to disposable private attributes",
+      "independent_adoption": "distinct domain snapshot retained_unit and per-result/purpose shared domain_adoptions",
+      "claim_allowed": false
+    },
+    {
+      "code": 4,
+      "family": "CLOSE_BASIS",
+      "owner": "attendance",
+      "table": "attendance_native_close_bases",
+      "root_column": "close_basis_id",
+      "primary_key": [
+        "org_id",
+        "close_basis_id",
+        "revision"
+      ],
+      "required_exact_revision_effect_key": [
+        "org_id",
+        "close_basis_id",
+        "revision",
+        "command_id",
+        "custody_digest"
+      ],
+      "required_claim_basis_key": null,
+      "source_index_fields": [
+        "period_start",
+        "period_end",
+        "scope_id",
+        "scope_revision",
+        "operational_close_id",
+        "amendment_set_digest",
+        "period_lock_id"
+      ],
+      "source_payload_contract": "source19-v1",
+      "custody_digest": "source19 event custody for admissions; exact published source custody record for other kinds, full canonical carrier remains F01",
+      "common_lineage": "retained draft/control/attempt identity, no permanent FK to disposable private attributes",
+      "independent_adoption": "distinct domain snapshot retained_unit and per-result/purpose shared domain_adoptions",
+      "claim_allowed": false
+    },
+    {
+      "code": 5,
+      "family": "QUALIFICATION",
+      "owner": "payroll",
+      "table": "payroll_source_qualification_revisions",
+      "root_column": "qualification_id",
+      "primary_key": [
+        "org_id",
+        "qualification_id",
+        "revision"
+      ],
+      "required_exact_revision_effect_key": [
+        "org_id",
+        "qualification_id",
+        "revision",
+        "command_id",
+        "custody_digest"
+      ],
+      "required_claim_basis_key": [
+        "org_id",
+        "qualification_id",
+        "revision",
+        "custody_digest"
+      ],
+      "source_index_fields": [
+        "qualification_kind",
+        "purpose",
+        "admission_revision",
+        "admission_digest",
+        "event_kind"
+      ],
+      "source_payload_contract": "source19-v1",
+      "custody_digest": "source19 event custody for admissions; exact published source custody record for other kinds, full canonical carrier remains F01",
+      "common_lineage": "retained draft/control/attempt identity, no permanent FK to disposable private attributes",
+      "independent_adoption": "distinct domain snapshot retained_unit and per-result/purpose shared domain_adoptions",
+      "claim_allowed": true
+    },
+    {
+      "code": 6,
+      "family": "ELIGIBILITY",
+      "owner": "payroll",
+      "table": "payroll_eligibility_assessment_revisions",
+      "root_column": "assessment_id",
+      "primary_key": [
+        "org_id",
+        "assessment_id",
+        "revision"
+      ],
+      "required_exact_revision_effect_key": [
+        "org_id",
+        "assessment_id",
+        "revision",
+        "command_id",
+        "custody_digest"
+      ],
+      "required_claim_basis_key": [
+        "org_id",
+        "assessment_id",
+        "revision",
+        "custody_digest"
+      ],
+      "source_index_fields": [
+        "employee_id",
+        "employment_id",
+        "period_start",
+        "period_end",
+        "admission_revision",
+        "admission_digest",
+        "event_kind"
+      ],
+      "source_payload_contract": "source19-v1",
+      "custody_digest": "source19 event custody for admissions; exact published source custody record for other kinds, full canonical carrier remains F01",
+      "common_lineage": "retained draft/control/attempt identity, no permanent FK to disposable private attributes",
+      "independent_adoption": "distinct domain snapshot retained_unit and per-result/purpose shared domain_adoptions",
+      "claim_allowed": true
+    },
+    {
+      "code": 7,
+      "family": "TAX_EVIDENCE",
+      "owner": "payroll",
+      "table": "payroll_tax_evidence_revisions",
+      "root_column": "evidence_id",
+      "primary_key": [
+        "org_id",
+        "evidence_id",
+        "revision"
+      ],
+      "required_exact_revision_effect_key": [
+        "org_id",
+        "evidence_id",
+        "revision",
+        "command_id",
+        "custody_digest"
+      ],
+      "required_claim_basis_key": [
+        "org_id",
+        "evidence_id",
+        "revision",
+        "custody_digest"
+      ],
+      "source_index_fields": [
+        "employee_id",
+        "period_start",
+        "period_end",
+        "admission_revision",
+        "admission_digest",
+        "event_kind"
+      ],
+      "source_payload_contract": "source19-v1",
+      "custody_digest": "source19 event custody for admissions; exact published source custody record for other kinds, full canonical carrier remains F01",
+      "common_lineage": "retained draft/control/attempt identity, no permanent FK to disposable private attributes",
+      "independent_adoption": "distinct domain snapshot retained_unit and per-result/purpose shared domain_adoptions",
+      "claim_allowed": true
+    }
+  ],
+  "reciprocal_constraints": [
+    "All sources emitted by command must occur once in that receipt effect set; no UNIQUE(org,command) per source table",
+    "REVISION effect composite FK includes creating command and custody digest",
+    "CLAIM effect references old predecessor exact revision/digest independently of its original creating command, new successor VERIFIED revision created by current command, and immutable head successor linkage",
+    "Deferred source insert/claim/receipt/member triggers validate the complete set; runtime raw paths denied",
+    "Actual source-index scalar projections must equal decoded source19 payload; current subject/purpose/period validity independently resolved"
+  ],
+  "open_prerequisites": [
+    "All seven full source tables/heads and exact non-admission custody carrier",
+    "Historical Employment binding/Docs attestation/account/retention physical FK graph",
+    "Complete finalizer/trigger/ACL signatures and current-time guard carrier",
+    "Autosplit input/batch codec and whole-command lock/byte budget"
+  ]
+}

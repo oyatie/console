@@ -1,0 +1,27 @@
+{
+  "owner": "/root",
+  "base_sha": "b50f9e0aea42952aed4c5ebb4d399abfde915214",
+  "immutable_target": "Materialize new auth_rest nested module and frozen actor map identically in Cargo and Buck",
+  "allowed_paths": [
+    "tools/buck/gen_first_party.py",
+    "backend/app/BUCK",
+    "docs/evidence/console/preparation/2026-09-13-production-tdd"
+  ],
+  "forbidden": "Product/lock/version changes; any storage assertion modification including automatically blocked correction",
+  "probe": "PYTHONDONTWRITEBYTECODE=1 python3 tools/buck/test_gen_first_party.py FirstPartyBuckGeneratorTests.test_auth_storage_module_and_frozen_actor_map_are_materialized -v > /private/tmp/console-prep-test-mapping-probe.log 2>&1",
+  "classification": "One executed Python test assertion: real test module omitted by integration_resource_config; not compile/startup failure",
+  "mechanical_guide": "Extend existing per-itest resource mapping only, regenerate firstparty serially, sameprobeGREEN plus generator suite and generated drift",
+  "pre_mortem": "Cargo succeeds while Buck lacks nested source or oracle bytes",
+  "blast_radius": "Single test target mapped inputs in isolated solewriter root",
+  "detection": "Realpaths resolved from configuredglobs; generated target includes module+fixture",
+  "rollback": "Preserve frozenbase, no destructive reset",
+  "stop_conditions": [
+    "unexpectedfailure",
+    "outofscopegenerateddiff",
+    "independentreviewfinding"
+  ],
+  "remaining_holds": [
+    "storagecandidateexactcascadecorrection",
+    "fullproductionTDDpreparation"
+  ]
+}

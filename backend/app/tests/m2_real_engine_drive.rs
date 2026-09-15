@@ -192,7 +192,11 @@ async fn real_engine_completion_tail_drives_one_succeeded_run_and_one_blocked_dr
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let (definition_id, version) = seed_definition(&rt_pool, org).await;
     let store = PgWorkflowRuntimeStore::new(rt_pool.clone());
-    let payroll_staging = PgPayRunPort::new(rt_pool.clone(), tokio::runtime::Handle::current());
+    let payroll_staging = PgPayRunPort::new(
+        rt_pool.clone(),
+        tokio::runtime::Handle::current(),
+        console_platform_db::durability::DurabilityPolicy::local_development(),
+    );
     let work_order_id = WorkOrderId::new();
 
     // --- Drive the tail through the REAL engine (system drive: no actor/shadow). --
@@ -487,7 +491,11 @@ async fn reconciler_recovers_a_partial_crashed_run_and_is_idempotent(owner_pool:
     seed_partial_run(&rt_pool, org, definition_id, version, &completion_key).await;
 
     let store = PgWorkflowRuntimeStore::new(rt_pool.clone());
-    let payroll_staging = PgPayRunPort::new(rt_pool.clone(), tokio::runtime::Handle::current());
+    let payroll_staging = PgPayRunPort::new(
+        rt_pool.clone(),
+        tokio::runtime::Handle::current(),
+        console_platform_db::durability::DurabilityPolicy::local_development(),
+    );
 
     // --- Precondition: exactly one RUNNING run, no nodes/outbox/draft. -------------
     assert_eq!(

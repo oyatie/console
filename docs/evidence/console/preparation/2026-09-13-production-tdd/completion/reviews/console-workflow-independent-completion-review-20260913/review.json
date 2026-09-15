@@ -1,0 +1,80 @@
+{
+  "reviewer": "/root/fresh29_workflows",
+  "scope": "independent review excludes my native author packet",
+  "base": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "decision": "CHANGES_REQUESTED_FOR_CANDIDATE_TEST_ORACLES_AND_CUSTODY; existing observed security/recovery REDs remain valid narrowly",
+  "execution_independent_rerun": false,
+  "reviewed_logs": {
+    "/private/tmp/console-preparation-cedar-r2.log": "277c8091a7257f78c2ce2fd1b9443edac62224bb03b0c200c22535be4594de46",
+    "/private/tmp/console-preparation-realtime-execution.log": "e1cae553c6ec532296ca42f0745ee0709f32049e4e3474bab7bafcf2d096ab26",
+    "/private/tmp/console-preparation-telemetry-r2.log": "9d9217534f8d4bed7f1c58060180b54b9cb059980e8887f20446e2d9e929d21c",
+    "/private/tmp/console-preparation-recovery-final.log": "27f83b87c40a3ee3d32ff68ebaa44a53d4f16ec0f08ae0654d060fe6a33ecb26",
+    "/private/tmp/console-preparation-browser-execution.log": "9ab40502c7c0d4392bc5e80e597fb31884e96f56b94f2ba7ff64901b71217f00"
+  },
+  "source_hashes": {
+    "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/acceptance.spec.cjs": "de95a8cb9730108b46433f4b003ac0eec0cf1e2b1634faf2f63c049120616e29",
+    "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs": "28ceea9588c524bd9b25db6cc29b95c52dc4c2c3479280d1cc9d9a65778c54c7",
+    "backend/crates/platform/authz/tests/cedar_diagnostic_fail_closed.rs": "914385a944d375c70c6c24e4e5e901bf98c3a20a0b80966e402c1b51b24d2dd6",
+    "backend/crates/platform/realtime/tests/hub.rs": "29d6adf7aea6b2d2727d1035328ed288d598cf1db46fa9ac8ebdd0741698dfb2",
+    "backend/app/src/console_telemetry.rs": "84d10c46eaade3f2ac0fd9808e0fd2f61ad256c00e33c96c7735cdb112db8095",
+    "backend/crates/payroll/adapter-postgres/tests/recovery.rs": "47b206ec5baacf32e9a6cd68dffa7b5b1f1b0fcb4ed7cb4b6f5cef98fcad4430",
+    "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/recovery/recovery_postgres.sh": "1d6a11c69ae75c9f6639d07f84bd0d78214f9e56d7feca5f7a1d2de0cf837a5c",
+    "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/recovery/recovery_control.sh": "2e9a3d82fa86acdd90d90a9c628bf9b6b2bdcb94cd74c394d853e14cafc9d003",
+    "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/recovery/commit_relay.py": "bb90cf1189d5eabdd74e1dfcebec0e83fafc181df59ad9c379549bae1158c1bb"
+  },
+  "findings": [
+    {
+      "id": "B1",
+      "priority": "P2",
+      "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/acceptance.spec.cjs",
+      "line": 126,
+      "problem": "Only named \uc5c5\ubb34 \uc785\ub825 form absence is checked; another target-object write form/control can pass. Account logout may remain valid.",
+      "fix": "Assert no action/form targets the protected readonly object; allow independently authorized unrelated account controls."
+    },
+    {
+      "id": "B2",
+      "priority": "P2",
+      "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/acceptance.spec.cjs",
+      "line": 95,
+      "problem": "409 and pending text do not prove winning1250000 remains durable; stale overwrite plus409 can pass.",
+      "fix": "Use actual current recovery GET and verify1250000 remains the authoritative value after stale request."
+    },
+    {
+      "id": "B3",
+      "priority": "P2",
+      "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/acceptance.spec.cjs",
+      "line": 53,
+      "problem": "Fixture allows querystring but response pathname compares to full f.path including query.",
+      "fix": "Keep canonical target pathname separately and compare it."
+    },
+    {
+      "id": "E1",
+      "priority": "P2",
+      "problem": "security/execution.json source hashes differ from all3 current sources; browser log project hydrated differs from current js-enabled-ssr.",
+      "fix": "Retain old evidence but rerun final sources/project names or explicitly classify earlier evidence with exact custody."
+    },
+    {
+      "id": "R1",
+      "priority": "P2",
+      "path": "backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+      "line": 229,
+      "problem": "A safe immediate non-success/unknown replay while standby paused is unwrapped as mandatory success after resume. Current test only admits blocking replay repair.",
+      "fix": "Explicitly approve blocking-replay requirement or accept typed unknown then reconcile same command after resume; count actual3attempts if needed."
+    },
+    {
+      "id": "R2",
+      "priority": "P2",
+      "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/recovery/recovery_postgres.sh",
+      "line": 152,
+      "problem": "Some owner/SQL awaits remain unbounded and outer supplied test command has no harness wall deadline.",
+      "fix": "Add owned process deadline and cleanup if claiming whole harness bounded; otherwise narrow bound claim to relay/resources."
+    }
+  ],
+  "accepted_evidence": [
+    "Cedar5executed2PASS3FAIL: strict-compiled integer overflow diagnostic plus clean permit controls; field/row persisted-source helper limitations clear.",
+    "Realtime2executed0PASS2FAIL: exact shared production dispatch, same Account/Company split, drain-to-closure and per-Company positive vectors prevent drop-all falsegreen; no DB membership claim.",
+    "Telemetry2executed0PASS2FAIL: actual From conversions reach protected canary output and positive production event; paired equality remains later/unreached. No complete egress/public-user disclosure claim.",
+    "Recovery2executed1PASS1FAIL: actual payroll canonical owner and receipt/effect readback; exact SyncRep backend termination and paused standby visibility witness support premature-success failure. No promoted failover/deployed durability claim.",
+    "Browser9encountered missingfixture before product HTTP/assertions; prerequisite only, not product RED."
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "status": "INDEPENDENTLY_REVIEWED_TEST_CANDIDATE_NOT_USER_APPROVED",
+  "base_sha": "828ce25cfb795e25ec8e97be536a536a2dd55a0a",
+  "owner": "/root",
+  "design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "toolchain": "Rust1.98.1",
+  "remaining_holds": [
+    "Consolidated first-vertical preparation incomplete",
+    "Exact ephemeral Account FK test correction remains blocked pending explicit user approval",
+    "User approval of consolidated test SHA",
+    "No production exposure/payment/legal/capacity authority"
+  ],
+  "source": "backend/crates/platform/request-context/src/lib.rs",
+  "source_sha256": "dd15344be6488b64deb357258610d7421bf0a70f3432b5315238d4167d2017af",
+  "reviewer": "/root/fresh29_security",
+  "review_verdict": "ACCEPT_SOURCE; exact source and logs reviewed; no independent rerun",
+  "counts": {
+    "discovered": 20,
+    "executed": 20,
+    "passed": 16,
+    "failed": 4,
+    "ignored": 0,
+    "filtered": 0
+  },
+  "artifacts": [
+    {
+      "path": "diagnostic-discovery-reviewed.log.gz",
+      "raw_sha256": "b5b97cff0414d1946ce38eafc46fb8ed2e3749a77aa6122dafadab7be165ecf6"
+    },
+    {
+      "path": "diagnostic-execution-reviewed.log.gz",
+      "raw_sha256": "fdc87c2c66aef8d3f0b1caa3616c21700fbbe096916ca3aaddc4fff2769630fd"
+    },
+    {
+      "path": "diagnostic-clippy-reviewed.log.gz",
+      "raw_sha256": "50f7c6fec86e3a770f2a74aa58c17c3d7a7cbb60f3d65928ad86823aafef1714"
+    }
+  ],
+  "discovered_names": [
+    "diagnostic_nondisclosure_tests::branch_resolution_failure_does_not_echo_private_diagnostic",
+    "diagnostic_nondisclosure_tests::fixed_public_failure_classes_keep_actionable_statuses",
+    "diagnostic_nondisclosure_tests::forbidden_access_scope_failure_does_not_echo_private_diagnostic",
+    "diagnostic_nondisclosure_tests::internal_access_scope_failure_does_not_echo_private_diagnostic",
+    "diagnostic_nondisclosure_tests::policy_resolution_failure_does_not_echo_private_diagnostic",
+    "tests::audit_ip_accepts_ingress_resolution_across_multiple_trusted_hops",
+    "tests::audit_ip_ignores_client_prepended_forwarded_value",
+    "tests::audit_ip_uses_direct_peer_when_forwarded_chain_is_insufficient",
+    "tests::audit_ip_uses_direct_peer_when_forwarded_chain_is_invalid",
+    "tests::delegated_group_admin_principal_does_not_gain_executive_queue_triage",
+    "tests::ingress_middleware_reuses_proxy_policy_and_rejects_a_spoofed_suffix",
+    "tests::ingress_resolver_accepts_a_complete_trusted_proxy_suffix",
+    "tests::ingress_resolver_never_uses_raw_xff_without_a_configured_proxy",
+    "tests::ingress_resolver_rejects_an_untrusted_configured_proxy_suffix",
+    "tests::ingress_resolver_rejects_duplicate_forwarded_fields",
+    "tests::ingress_resolver_rejects_empty_forwarded_tokens",
+    "tests::ingress_resolver_rejects_malformed_forwarded_tokens",
+    "tests::ingress_resolver_rejects_xff_from_an_untrusted_transport_peer",
+    "tests::nested_audit_context_scope_restores_outer_then_clears",
+    "tests::trusted_request_metadata_propagates_exactly_to_audit_context"
+  ],
+  "commands": [
+    "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --manifest-path backend/Cargo.toml -p console-platform-request-context --lib -- --list",
+    "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --manifest-path backend/Cargo.toml -p console-platform-request-context --lib",
+    "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo clippy --manifest-path backend/Cargo.toml -p console-platform-request-context --lib --tests -- -D warnings"
+  ],
+  "new_tests": 5,
+  "inherited_tests": 15,
+  "classification": "BEHAVIORAL_RED:4production HTTP formatter body equality assertions fail after status/header pass; all4later nonempty/UTF8/canary checks unreached. Fixed-class positive test passes3controls.",
+  "limits": [
+    "Synthetic diagnostic origin, not actual DB failure",
+    "Not demonstrated cross-tenant exploit",
+    "No log, timing or wholeprogram noninterference proof"
+  ],
+  "premortem": "Same failure class leaks private diagnostics or removes useful public distinctions",
+  "detection": "Paired real response formatter observations plus fixed401/403/503controls",
+  "blast_radius": "104line cfg(test) append; all inherited source bytes preserved",
+  "rollback": "Test-only addition retained as candidate; no implementation admitted",
+  "stop_conditions": [
+    "Semantic revision requires test review",
+    "No private payload may be copied into public class labels",
+    "RED classified as HTTPformatter only"
+  ]
+}

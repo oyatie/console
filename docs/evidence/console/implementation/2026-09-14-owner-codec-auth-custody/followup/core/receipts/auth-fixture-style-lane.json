@@ -1,0 +1,27 @@
+[
+  {
+    "lane": "AUTH-test-fixture-direct-return",
+    "owner": "/root",
+    "worktree": "/private/tmp/console-production-tdd-preparation-20260913",
+    "base_sha": "f1663e38799c2ca63d33614f00746d3a676dfbc3",
+    "allow": [
+      "backend/app/tests/auth_rest.rs"
+    ],
+    "probe": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER='' CARGO_INCREMENTAL=1 CARGO_BUILD_JOBS=4 CARGO_TARGET_DIR=/private/tmp/console-auth-parser-cargo SQLX_OFFLINE=true cargo clippy --locked --manifest-path backend/Cargo.toml -p console-app --lib --test auth_rest -- -D warnings",
+    "target": "Existing real migration fixture returns same AppConfig without redundant let",
+    "guide": "Only remove letconfig+trailingconfig, directly return exact existing from_pairs.expect expression. No input/assertion or production change.",
+    "pre_mortem": "Accidental fixture semantic change",
+    "blast_radius": "One pure return expression in existing test helper",
+    "detection": "Same Clippy RED to GREEN; retained config tests unchanged",
+    "rollback": "Revert bounded teststyle diff",
+    "stop_conditions": [
+      "Assertion/input changes"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Production and Account currentness"
+    ]
+  }
+]

@@ -1,0 +1,98 @@
+{
+  "classification": "RUSTFMT_PARSER_ONLY",
+  "checks": [
+    {
+      "file": "browser-acceptance-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r2-20260914/browser-acceptance-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "browser-auth-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r2-20260914/browser-auth-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "browser-case-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r2-20260914/browser-case-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "browser-runtime-helpers.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r2-20260914/browser-runtime-helpers.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "payroll-source-facts-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r2-20260914/payroll-source-facts-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "two-subject-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r2-20260914/two-subject-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    }
+  ],
+  "rust_owner_compiled": false,
+  "rust_owner_discovered": 0,
+  "rust_owner_executed": 0
+}

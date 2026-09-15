@@ -1,0 +1,23 @@
+{
+  "candidate_sha": "d2cd4c47975afec364d3e2baeba8100db6281d90",
+  "command": [
+    "bash",
+    "tools/lanes/pgtest.sh",
+    "/private/tmp/console-production-tdd-preparation-20260913",
+    "cargo",
+    "test",
+    "--locked",
+    "-p",
+    "console-app",
+    "--test",
+    "console_route_telemetry",
+    "--test",
+    "realtime_ws"
+  ],
+  "SQLX_OFFLINE": "true",
+  "reason": "Use committed SQLx compile metadata; DATABASE_URL remains set by runner for actual SQLx runtime test databases and migrations. Initial compile against empty admin DB failed, original retained.",
+  "exit_code": 0,
+  "elapsed_seconds": 21.93,
+  "log": "http-offline-compile-runtime-db.log",
+  "sha256": "a370b5f39b82da14db7d12675fe7a2170477f12657378b143faad19008ef8c02"
+}

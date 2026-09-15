@@ -1,0 +1,21 @@
+id,setup,required_oracle,status
+R01,each of7 native revisions + exact kind1 member,accept only matching Company/family/root/revision/creating command/custody in both directions,PROPOSED_NOT_EXECUTED
+R02,same UUID exists in wrong family or other Company,reject structural reference; no raw failure key or existence disclosure,PROPOSED_NOT_EXECUTED
+R03,member has changed creating command or custody digest,reject exact FK even when root/revision exists,PROPOSED_NOT_EXECUTED
+R04,active selector omitted or set NULL by caller,generated-column assignment refused; active base values NOTNULL; inactive branches alone skip,PROPOSED_NOT_EXECUTED
+R05,late source after early successful22 manifest check,new source needs effect; new effect cannot fit saturated ordinals; whole mutation aborts,PROPOSED_NOT_EXECUTED
+R06,same command creates several source revisions,"accept complete bounded set; no per-source UNIQUE(org,command)",PROPOSED_NOT_EXECUTED
+R07,PROPOSE1 -> VERIFY2 -> REVOKE3 plus new VERIFY2 successor,allow exact old claim/current new command; historical old command remains original,PROPOSED_NOT_EXECUTED
+R08,PROPOSE1 -> REVOKE2 used as claim predecessor,reject; claim requires REVOKE3 with immutable VERIFY2 predecessor,PROPOSED_NOT_EXECUTED
+R09,VERIFY2 or terminal3 without correct prior event/admission digest,reject self-FK; no ever_verified boolean substitutes for history,PROPOSED_NOT_EXECUTED
+R10,claim head pointer missing/cleared/retargeted after commit,reciprocal FK refuses missing or changed exact linkage,PROPOSED_NOT_EXECUTED
+R11,two concurrent successors target one revoked predecessor,at most one under owner head CAS and22 one-claim key; losing command has no partial effects,PROPOSED_NOT_EXECUTED
+R12,VERIFIED predecessor replaced,SUPERSEDE3 and successor VERIFY2 same command; kind1 successor fields stayNULL,PROPOSED_NOT_EXECUTED
+R13,successor later REVOKE3,historical successor VERIFY2 FK remains satisfied; never revive old predecessor,PROPOSED_NOT_EXECUTED
+R14,head points behind latest event or subject/purpose differs,owner transition/semantic guards must reject; identity FK alone does not prove this,PROPOSED_NOT_EXECUTED
+R15,current source/credential/Cedar becomes invalid before commit,owner final checks refuse; structural historical FK success is insufficient,PROPOSED_NOT_EXECUTED
+R16,lost COMMIT acknowledgement then browser retry,reconcile original command; never mint replacement command until outcome resolved,PROPOSED_NOT_EXECUTED
+R17,native SQL error carries hidden key/row/cast value,typed response/log/trace projection and DB-side logging controls prevent raw diagnostic release,PROPOSED_NOT_EXECUTED
+R18,restore omits source/member/head linkage or current revocations,full graph validation and current-authority reconciliation before readmission,PROPOSED_NOT_EXECUTED
+R19,no JS or draft conflict or field revocation while editing,manual save same owner; preserve only currently permitted intent; accessible recovery per11,PROPOSED_NOT_EXECUTED
+R20,source raw DML/legacy all-null receipt/adoption missing,enrollment must refuse through F02/F03/F04 guards;23 fragment alone does not close,PROPOSED_NOT_EXECUTED

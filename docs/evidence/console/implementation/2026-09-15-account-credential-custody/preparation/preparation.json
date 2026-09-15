@@ -1,0 +1,36 @@
+{
+  "kind": "ACCOUNT_CREDENTIAL_AND_COMPANY_DEACTIVATION_TEST_PREPARATION",
+  "base_sha": "75d14c82c97ebdf21e1e849840a9bd4693e5e2bd",
+  "owner": "/root",
+  "authors_reviewers": [
+    "/root/fast_gate_review",
+    "/root/capture_review",
+    "/root/inventory_repair"
+  ],
+  "verified": {
+    "corrected_terms_case": "1PASS215filtered at75d14c82",
+    "strict_auth_rest_clippy": "PASS at75d14c82",
+    "supported_npm_verify": "PASS at75d14c82",
+    "credential_custody4": "4semanticFAIL212filtered atf476c913"
+  },
+  "approved_test_change": "One existing identity test file: owner-only count observation with same Company/user predicate plus5real-owner tests. Existing behavior preserved; typed Conflict and exact history checks strengthened after independent findings.",
+  "next_test_roster": "6 cases expected; no runtime claimed yet",
+  "implementation_state": "Not started for new credential/Company-deactivation behavior. Prior16path conversion scope is superseded by discovered projection/purge/packaging dependencies and requires exact closure.",
+  "premortem": "Company actions destroy native Account custody, authority outage selects legacy fallback, or false positive tests miss historical row deletion.",
+  "blast_radius": "Current commit changes one test file and immutable evidence only.",
+  "detection": "Actual Business LOGIN, complete pre/post custody, bounded real55P03 fault, exact Conflict and legacy FamilyRevoked assertions.",
+  "rollback": "Preserve frozen V1/V2 and failures; reviewed supersession before implementation. No live data action.",
+  "stop_conditions": [
+    "Unreviewed test/source drift",
+    "Compile/fixture failure presented as semantic RED",
+    "Auth ACL activation before compatible callers",
+    "Unreviewed migration/purge behavior"
+  ],
+  "holds": [
+    "Actual6-case execution and current lane admission",
+    "Auth7 exact operator/profile/projection/purge closure",
+    "Concurrent enrollment/Company-deactivation proof",
+    "Native browser/context/actor46 and rest of Console",
+    "Production/payment/legal/completeHA certification"
+  ]
+}

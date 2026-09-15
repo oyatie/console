@@ -1,0 +1,42 @@
+{
+  "owner": "/root",
+  "base_sha": "bc7bee726e1e72d0e80b66f8a95ce688024bf57e",
+  "test_sha": "bc7bee726e1e72d0e80b66f8a95ce688024bf57e",
+  "allowed_paths": [
+    ".github/workflows/ci.yml",
+    "scripts/check-ci-preflight.mjs",
+    "scripts/check-ci-preflight.test.mjs",
+    "scripts/verify.mjs",
+    "scripts/verify.test.mjs",
+    "docs/evidence/console/verification/2026-09-13-repair-01"
+  ],
+  "mechanical_guide": [
+    "Use existing CI/local PostgreSQL topology and bootstrap identity",
+    "Replace app unit/OpenAPI Buck invocations with exact native Cargo selectors",
+    "Split2 existing PostgreSQL source/feature selections into independent fail-slow steps",
+    "Preserve jobs/matrix/conditions/environment/step IDs; add one dev-auth step only",
+    "Update both exact preflight contracts and all existing mutation fixtures;132->133 steps,396->399 bypass checks",
+    "No test bodies,baseline,features,maps,Buck declarations or generators removed",
+    "Run actual4source/feature selections and exact test discovery, independent review,mandatory fullverify"
+  ],
+  "probe": "fnm exec --using=24.16.0 node --test --test-name-pattern=\"app Cargo runner\" scripts/verify.test.mjs > /private/tmp/console-repair30-checks/app-runner-probe.log 2>&1",
+  "admission": "fanout.py admit exit0; actual expected runner contract mismatch confirmed",
+  "pre_mortem": "Lost feature test executeszero; newstep suppressed after oldfailure; wrong owner/bootstrap credentials; check expectations changed without preservation proof",
+  "blast_radius": "Delivery commands and their enforcement/local mirror; no product behavior or database schema changes",
+  "detection": "Exact4source/feature inventory;actual executedcounts;missingfeature/identity/step/topology mutations;existingtopology/credentialregressions",
+  "rollback": "Reviewed reversal of CI,preflight and mirror as one set; restores known-red Buck baseline without claiming it healthy",
+  "reviewer": "/root/fresh29_operations independent plan; exactcandidate review required",
+  "stop_conditions": [
+    "Changed test membership/ignore/baseline",
+    "Missing dev-auth execution",
+    "Independentreview rejection",
+    "Unrelated generator or dependency expansion"
+  ],
+  "alternatives": "Full Leptos vendoring and Cargo-map expansion both broader. Existing direct-Cargo attribution and topology suffice. Keep unrelated map gaps as HOLD.",
+  "remaining_holds": [
+    "Exact executedtest and independentreview evidence",
+    "Authority validation/adoption",
+    "Complete Account test candidate and explicit approval",
+    "Hosted merge/readback and production/payment/legal authorization"
+  ]
+}

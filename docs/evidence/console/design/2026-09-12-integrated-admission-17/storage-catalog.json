@@ -1,0 +1,1786 @@
+{
+  "status": "CONCEPTUAL_INVENTORY_NOT_MIGRATION_TABLE_COUNT",
+  "records": [
+    {
+      "name": "accounts",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity",
+      "cell": "ACCOUNT",
+      "proposed_key": [
+        "id"
+      ],
+      "column_names": [
+        "id",
+        "created_at"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "account_security",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity security; auth participates",
+      "cell": "ACCOUNT",
+      "proposed_key": [
+        "account_id"
+      ],
+      "column_names": [
+        "account_id",
+        "security_state",
+        "security_generation",
+        "revision",
+        "updated_at"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "company_actors",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "account_id"
+      ],
+      "column_names": [
+        "org_id",
+        "account_id",
+        "admission_receipt_id",
+        "entitlement_ref",
+        "created_at"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "account_terms_acceptances",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity security",
+      "cell": "ACCOUNT",
+      "proposed_key": [
+        "account_id",
+        "terms_kind",
+        "terms_version"
+      ],
+      "column_names": [
+        "account_id",
+        "terms_kind",
+        "terms_version",
+        "content_sha256",
+        "accepted_at",
+        "security_event_id"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "account_security_events",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity security",
+      "cell": "ACCOUNT",
+      "proposed_key": [
+        "id"
+      ],
+      "column_names": [
+        "id",
+        "account_id",
+        "kind",
+        "occurred_at",
+        "actor_account_id",
+        "session_id",
+        "evidence_ref",
+        "payload"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_authority_guards",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity/group authority helper",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id"
+      ],
+      "column_names": [
+        "group_id",
+        "topology_epoch",
+        "identity_epoch"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "company_authority_guards",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity authority helper",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id"
+      ],
+      "column_names": [
+        "org_id",
+        "epoch"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_human_subjects",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id",
+        "human_id"
+      ],
+      "column_names": [
+        "group_id",
+        "human_id",
+        "registry_id",
+        "issuer_subject_ref",
+        "created_at"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_identity_binding_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id",
+        "binding_id",
+        "revision"
+      ],
+      "column_names": [
+        "group_id",
+        "binding_id",
+        "revision",
+        "alias_kind",
+        "account_id",
+        "person_org_id",
+        "person_id",
+        "human_id",
+        "status",
+        "valid_from",
+        "valid_until",
+        "case_ref",
+        "proof_digest",
+        "proposer_account_id",
+        "verifier_account_id",
+        "verified_at"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_identity_binding_heads",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id",
+        "binding_id"
+      ],
+      "column_names": [
+        "group_id",
+        "binding_id",
+        "current_revision",
+        "alias_kind",
+        "account_id",
+        "person_org_id",
+        "person_id"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "tenant_identity_root_receipts",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity supervised provisioning",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id"
+      ],
+      "column_names": [
+        "group_id",
+        "receipt_id",
+        "registry_ref",
+        "policy_ref",
+        "operator_a",
+        "operator_b",
+        "issuer_subject_a",
+        "issuer_subject_b",
+        "reviewer_evidence_ref",
+        "recorded_at"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "policy_role_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity policy owner",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "role_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "role_id",
+        "revision",
+        "display_name",
+        "status",
+        "schema_ref",
+        "digest",
+        "created_by",
+        "created_at"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "policy_capability_clauses",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity policy owner",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "role_id",
+        "role_revision",
+        "clause_id"
+      ],
+      "column_names": [
+        "org_id",
+        "role_id",
+        "role_revision",
+        "clause_id",
+        "action_ref",
+        "resource_kind_ref",
+        "field_group_ref",
+        "condition_ast"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "policy_assignment_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity policy owner",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "assignment_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "assignment_id",
+        "revision",
+        "account_id",
+        "role_id",
+        "role_revision",
+        "scope_id",
+        "scope_revision",
+        "field_narrowing_ref",
+        "valid_from",
+        "valid_until",
+        "purpose_ref",
+        "relationship_refs",
+        "delegation_ceiling_ref",
+        "issuer_account_id",
+        "approval_ref",
+        "state"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "policy_assignment_heads",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity policy owner",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "assignment_id"
+      ],
+      "column_names": [
+        "org_id",
+        "assignment_id",
+        "current_revision"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "policy_scope_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity policy owner; source facts stay domain-owned",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "scope_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "scope_id",
+        "revision",
+        "selector_kind",
+        "selector_ref",
+        "include_descendants",
+        "schema_ref"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "policy_field_group_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity policy metadata owner",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "field_group_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "field_group_id",
+        "revision",
+        "object_schema_ref",
+        "property_ids"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "authorized_query_cursors",
+      "source": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "authorization projection owner",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "cursor_hash"
+      ],
+      "column_names": [
+        "org_id",
+        "cursor_hash",
+        "account_id",
+        "query_digest",
+        "scope_ref",
+        "authority_epoch",
+        "schema_plan_digest",
+        "last_key",
+        "expires_at"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "ont_action_input_schema_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "ontology registry command owner",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "schema_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "schema_id",
+        "revision",
+        "action_type_id",
+        "codec_version",
+        "definition",
+        "definition_digest",
+        "created_by",
+        "created_at"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "ont_action_runtime_bindings",
+      "source": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "ontology registry command owner with compiled domain registration",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "action_type_id"
+      ],
+      "column_names": [
+        "org_id",
+        "action_type_id",
+        "object_type_id",
+        "owner_key",
+        "owner_action",
+        "input_schema_id",
+        "codec_version",
+        "fingerprint_protocol",
+        "draft_requirement",
+        "result_contract",
+        "manifest_digest"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "ont_draft_controls",
+      "source": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "ontology common instance adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "draft_id"
+      ],
+      "column_names": [
+        "org_id",
+        "draft_id",
+        "action_type_id",
+        "object_type_id",
+        "initial_input_schema_ref",
+        "target_binding",
+        "custody_kind",
+        "custody_account_id",
+        "work_item_id",
+        "creator_account_id",
+        "intent_slot",
+        "intent_key",
+        "state",
+        "editing_epoch",
+        "editing_nonce",
+        "assignment_generation",
+        "active_attempt_id",
+        "retention_state",
+        "control_revision",
+        "created_at",
+        "updated_at"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "ont_draft_submission_attempts",
+      "source": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "ontology common draft owner, participating in business owner transaction",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "attempt_id"
+      ],
+      "column_names": [
+        "org_id",
+        "attempt_id",
+        "draft_id",
+        "source_revision_id",
+        "source_revision_version",
+        "source_hash",
+        "input_schema_ref",
+        "original_account_id",
+        "original_assignment_generation",
+        "sealed_editing_epoch",
+        "domain_command_id",
+        "action_type_id",
+        "owner_key",
+        "owner_action",
+        "object_type_id",
+        "target_binding",
+        "codec_version",
+        "normalized_input",
+        "expected_refs",
+        "reason",
+        "gate_ref",
+        "command_fingerprint",
+        "state",
+        "state_revision",
+        "result_refs",
+        "adoption_receipt_ref",
+        "payload_state",
+        "created_at",
+        "completed_at"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "source_family_guards",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "platform/db source guard helper",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "family"
+      ],
+      "column_names": [
+        "org_id",
+        "family",
+        "generation"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "employment_binding_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "canonical Employment adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "binding_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "revision",
+        "payload",
+        "actor_account_id",
+        "recorded_at",
+        "digest",
+        "employee_id",
+        "employment_id",
+        "from_us",
+        "to_us",
+        "state",
+        "binding_id"
+      ],
+      "normalization": [
+        "rename proposed id to binding_id"
+      ],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "employee_contract_wage_corrections",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "base_wage_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "revision",
+        "payload",
+        "actor_account_id",
+        "recorded_at",
+        "digest",
+        "base_wage_id",
+        "predecessor_revision",
+        "amount_won",
+        "wage_kind",
+        "monthly_standard_hours"
+      ],
+      "normalization": [
+        "discard unused proposed generic id"
+      ],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "employee_contract_wage_correction_heads",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "base_wage_id"
+      ],
+      "column_names": [
+        "org_id",
+        "base_wage_id",
+        "current_revision"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "work_calendar_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "attendance adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "calendar_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "revision",
+        "payload",
+        "actor_account_id",
+        "recorded_at",
+        "digest",
+        "calendar_id",
+        "covered_start",
+        "covered_end_exclusive",
+        "zone",
+        "rule_qualification_ref"
+      ],
+      "normalization": [
+        "discard unused proposed generic id"
+      ],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "work_calendar_assignment_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "attendance adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "assignment_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "revision",
+        "payload",
+        "actor_account_id",
+        "recorded_at",
+        "digest",
+        "assignment_id",
+        "employment_id",
+        "calendar_id",
+        "calendar_revision",
+        "from_date",
+        "to_date_exclusive",
+        "state"
+      ],
+      "normalization": [
+        "discard unused proposed generic id"
+      ],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "attendance_coverage_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "attendance adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "coverage_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "revision",
+        "payload",
+        "actor_account_id",
+        "recorded_at",
+        "digest",
+        "coverage_id",
+        "employee_id",
+        "period_start",
+        "period_end",
+        "semantic_basis_digest",
+        "outcome"
+      ],
+      "normalization": [
+        "discard unused proposed generic id"
+      ],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "attendance_native_close_bases",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "attendance adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "close_basis_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "revision",
+        "payload",
+        "actor_account_id",
+        "recorded_at",
+        "digest",
+        "close_basis_id",
+        "operational_close_id",
+        "amendment_revision",
+        "scope_basis_ref",
+        "period_lock_id"
+      ],
+      "normalization": [
+        "discard unused proposed generic id"
+      ],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "docs_evidence_version_attestations",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "Docs adapter + trusted storage verifier",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "attestation_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "revision",
+        "payload",
+        "actor_account_id",
+        "recorded_at",
+        "digest",
+        "copy_id",
+        "provider_id",
+        "bucket_ref",
+        "object_key_ref",
+        "provider_version_id",
+        "bytes_sha256",
+        "byte_count",
+        "content_type",
+        "verification_state",
+        "retention_until",
+        "attestation_id"
+      ],
+      "normalization": [
+        "rename proposed id to attestation_id"
+      ],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_source_qualification_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll source-evidence adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "qualification_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "revision",
+        "payload",
+        "actor_account_id",
+        "recorded_at",
+        "digest",
+        "qualification_id",
+        "event_kind",
+        "admission_revision",
+        "source_refs",
+        "verified_human_ref"
+      ],
+      "normalization": [
+        "discard unused proposed generic id"
+      ],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_source_qualification_heads",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll source-evidence adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "qualification_id"
+      ],
+      "column_names": [
+        "org_id",
+        "qualification_id",
+        "current_revision",
+        "activated_successor_ref"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_eligibility_assessment_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll inputs/source-evidence adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "assessment_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "revision",
+        "payload",
+        "actor_account_id",
+        "recorded_at",
+        "digest",
+        "assessment_id",
+        "event_kind",
+        "admission_revision",
+        "source_refs",
+        "verified_human_ref"
+      ],
+      "normalization": [
+        "discard unused proposed generic id"
+      ],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_eligibility_assessment_heads",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll inputs/source-evidence adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "assessment_id"
+      ],
+      "column_names": [
+        "org_id",
+        "assessment_id",
+        "current_revision",
+        "activated_successor_ref"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_tax_evidence_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll source-evidence adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "evidence_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "revision",
+        "payload",
+        "actor_account_id",
+        "recorded_at",
+        "digest",
+        "evidence_id",
+        "event_kind",
+        "admission_revision",
+        "source_refs",
+        "verified_human_ref"
+      ],
+      "normalization": [
+        "discard unused proposed generic id"
+      ],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_tax_evidence_heads",
+      "source": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll source-evidence adapter",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "evidence_id"
+      ],
+      "column_names": [
+        "org_id",
+        "evidence_id",
+        "current_revision",
+        "activated_successor_ref"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "workflow_work_controls",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "workflow",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "task_id"
+      ],
+      "column_names": [
+        "org_id",
+        "task_id",
+        "revision",
+        "assignment_epoch",
+        "definition_ref",
+        "coverage_ref",
+        "target_ref",
+        "protocol"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "workflow_assignment_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "workflow",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "task_id",
+        "epoch"
+      ],
+      "column_names": [
+        "org_id",
+        "task_id",
+        "epoch",
+        "assignee_account_id",
+        "state",
+        "basis",
+        "validity",
+        "charge_ref",
+        "receipt_ref"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "workflow_transfer_controls",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "workflow",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "plan_id"
+      ],
+      "column_names": [
+        "org_id",
+        "plan_id",
+        "content_revision_ref",
+        "content_digest",
+        "control_epoch",
+        "state",
+        "original_actor",
+        "mandate_ref"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "workflow_transfer_targets",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "workflow",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "plan_id",
+        "task_id"
+      ],
+      "column_names": [
+        "org_id",
+        "plan_id",
+        "task_id",
+        "expected_assignment_epoch",
+        "selection",
+        "responsibility_intent",
+        "interval",
+        "outcome_receipt_ref"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_capacity_profile_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id",
+        "account_id",
+        "revision"
+      ],
+      "column_names": [
+        "group_id",
+        "account_id",
+        "revision",
+        "limit_units",
+        "validity",
+        "governing_receipt"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_availability_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "platform/group with owning source participant",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id",
+        "account_id",
+        "revision"
+      ],
+      "column_names": [
+        "group_id",
+        "account_id",
+        "revision",
+        "intervals",
+        "source_watermarks"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_routing_accounts",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id",
+        "account_id"
+      ],
+      "column_names": [
+        "group_id",
+        "account_id",
+        "revision",
+        "capacity_revision",
+        "availability_revision",
+        "used_units",
+        "fairness_sequence",
+        "integrity"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_work_charges",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id",
+        "target_org_id",
+        "task_id"
+      ],
+      "column_names": [
+        "group_id",
+        "target_org_id",
+        "task_id",
+        "assignment_epoch",
+        "account_id",
+        "units",
+        "state",
+        "membership_incarnation",
+        "assignment_receipt"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_work_charge_events",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id",
+        "event_id"
+      ],
+      "column_names": [
+        "group_id",
+        "event_id",
+        "command_binding",
+        "task_ref",
+        "old_epoch",
+        "new_epoch",
+        "old_account",
+        "new_account",
+        "units_delta",
+        "source_receipt"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_operations",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id",
+        "operation_id"
+      ],
+      "column_names": [
+        "group_id",
+        "operation_id",
+        "manifest_digest",
+        "creator_account_id",
+        "action_ref",
+        "control_epoch",
+        "dispatch_epoch",
+        "state",
+        "session_binding"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_operation_slots",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id",
+        "operation_id",
+        "slot_id"
+      ],
+      "column_names": [
+        "group_id",
+        "operation_id",
+        "slot_id",
+        "org_id",
+        "membership_incarnation",
+        "target_ref",
+        "child_id",
+        "attempt_ref",
+        "command_id",
+        "observation"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "group_operation_command_receipts",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "platform/group",
+      "cell": "GROUP",
+      "proposed_key": [
+        "group_id",
+        "command_id"
+      ],
+      "column_names": [
+        "group_id",
+        "command_id",
+        "actor_account_id",
+        "action_ref",
+        "fingerprint",
+        "result_refs"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "workflow_group_children",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "workflow",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "child_id"
+      ],
+      "column_names": [
+        "org_id",
+        "child_id",
+        "group_id",
+        "operation_id",
+        "slot_id",
+        "attempt_ref",
+        "claim_generation",
+        "claim_owner",
+        "status",
+        "receipt_ref"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "account_context_candidates",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity",
+      "cell": "ACCOUNT",
+      "proposed_key": [
+        "account_id",
+        "source_key",
+        "context_kind",
+        "context_id"
+      ],
+      "column_names": [
+        "account_id",
+        "source_key",
+        "context_kind",
+        "context_id",
+        "source_revision",
+        "incarnation",
+        "state"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "account_context_cursors",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "identity",
+      "cell": "ACCOUNT",
+      "proposed_key": [
+        "account_id",
+        "cursor_hash"
+      ],
+      "column_names": [
+        "account_id",
+        "cursor_hash",
+        "query",
+        "context_generation",
+        "authority_vector",
+        "last_key",
+        "expires_at",
+        "decision_stable_until"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "gov_request_bindings",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "governance",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "request_ref"
+      ],
+      "column_names": [
+        "org_id",
+        "request_ref",
+        "purpose",
+        "owner_action",
+        "target_basis",
+        "evidence_contract",
+        "command_binding",
+        "proposal_digest",
+        "proof_refs",
+        "validity"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "gov_request_controls",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "governance",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "request_ref"
+      ],
+      "column_names": [
+        "org_id",
+        "request_ref",
+        "revision",
+        "state",
+        "current_event_id"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "gov_request_control_events",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "governance",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "event_id"
+      ],
+      "column_names": [
+        "org_id",
+        "event_id",
+        "request_ref",
+        "expected_revision",
+        "effect",
+        "cause_ref",
+        "reason_ref"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_review_cycles",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "cycle_id",
+        "revision"
+      ],
+      "column_names": [
+        "org_id",
+        "cycle_id",
+        "revision",
+        "run_id",
+        "scope_basis",
+        "source_manifest",
+        "derivation"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_review_bases",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "basis_id"
+      ],
+      "column_names": [
+        "org_id",
+        "basis_id",
+        "run_id",
+        "target",
+        "basis_digest",
+        "source_refs",
+        "evidence_contract",
+        "governance_request_ref"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_review_cycle_members",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "cycle_id",
+        "cycle_revision",
+        "obligation_key"
+      ],
+      "column_names": [
+        "org_id",
+        "cycle_id",
+        "cycle_revision",
+        "obligation_key",
+        "basis_id"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_review_completions",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "completion_id"
+      ],
+      "column_names": [
+        "org_id",
+        "completion_id",
+        "cycle_id",
+        "cycle_revision",
+        "decision_refs",
+        "composition_digest",
+        "causal_command"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_period_reservations",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "reservation_id"
+      ],
+      "column_names": [
+        "org_id",
+        "reservation_id",
+        "employee_id",
+        "run_id",
+        "period",
+        "status",
+        "predecessor_ref"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_run_correction_edges",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "predecessor_run_id"
+      ],
+      "column_names": [
+        "org_id",
+        "predecessor_run_id",
+        "successor_run_id",
+        "affected_units",
+        "receipt_ref",
+        "reason_evidence"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_review_publications",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "publication_id"
+      ],
+      "column_names": [
+        "org_id",
+        "publication_id",
+        "subject_ref",
+        "source_ref",
+        "projection_ref",
+        "purpose",
+        "content",
+        "release_proof"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_publication_slots",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "subject_key",
+        "lineage_key",
+        "purpose"
+      ],
+      "column_names": [
+        "org_id",
+        "subject_key",
+        "lineage_key",
+        "purpose",
+        "current_publication_id",
+        "generation"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_publication_controls",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "publication_id"
+      ],
+      "column_names": [
+        "org_id",
+        "publication_id",
+        "revision",
+        "disclosure",
+        "currentness",
+        "successor_id"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_publication_events",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "event_id"
+      ],
+      "column_names": [
+        "org_id",
+        "event_id",
+        "publication_id",
+        "kind",
+        "successor_ref",
+        "source_receipt"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_review_request_controls",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "request_id"
+      ],
+      "column_names": [
+        "org_id",
+        "request_id",
+        "requester_account_id",
+        "subject_ref",
+        "target_ref",
+        "submitted_content_ref",
+        "current_issue_revision",
+        "task_id",
+        "state"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_review_response_records",
+      "source": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "response_id"
+      ],
+      "column_names": [
+        "org_id",
+        "response_id",
+        "request_id",
+        "issue_revision",
+        "issue_dispositions",
+        "content_ref",
+        "corrected_publication_ref",
+        "causal_receipt"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C04; owner-specific constraints inherited from source",
+      "ddl_status": "OPEN_F01_F02"
+    },
+    {
+      "name": "payroll_input_revisions",
+      "source": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/migration-and-proof.txt",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "run_id",
+        "input_revision"
+      ],
+      "column_names": [
+        "org_id",
+        "run_id",
+        "input_revision"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C05,C06",
+      "ddl_status": "OPEN_F01_F02",
+      "note": "Selected logical key. source_slot closed structure/cardinality and payload columns still F01/F02; not final DDL."
+    },
+    {
+      "name": "payroll_input_units",
+      "source": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/migration-and-proof.txt",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "run_id",
+        "input_revision",
+        "employee_id"
+      ],
+      "column_names": [
+        "org_id",
+        "run_id",
+        "input_revision",
+        "employee_id"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C05,C06",
+      "ddl_status": "OPEN_F01_F02",
+      "note": "Selected logical key. source_slot closed structure/cardinality and payload columns still F01/F02; not final DDL."
+    },
+    {
+      "name": "payroll_input_source_refs",
+      "source": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/migration-and-proof.txt",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "run_id",
+        "input_revision",
+        "employee_id",
+        "source_slot"
+      ],
+      "column_names": [
+        "org_id",
+        "run_id",
+        "input_revision",
+        "employee_id",
+        "source_slot"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C05,C06",
+      "ddl_status": "OPEN_F01_F02",
+      "note": "Selected logical key. source_slot closed structure/cardinality and payload columns still F01/F02; not final DDL."
+    },
+    {
+      "name": "payroll_calculation_batches",
+      "source": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/migration-and-proof.txt",
+      "source_commit": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+      "owner": "payroll",
+      "cell": "COMPANY",
+      "proposed_key": [
+        "org_id",
+        "run_id",
+        "calculation_revision"
+      ],
+      "column_names": [
+        "org_id",
+        "run_id",
+        "calculation_revision"
+      ],
+      "normalization": [],
+      "enforcement_family": "C01,C02,C03,C05,C06",
+      "ddl_status": "OPEN_F01_F02",
+      "note": "Selected logical key. source_slot closed structure/cardinality and payload columns still F01/F02; not final DDL."
+    }
+  ],
+  "merged_extensions": [
+    "13/16 governance actor FKs",
+    "13/16 workflow actor FKs",
+    "16 account_security.context_generation extends 13",
+    "16 workflow config reuses company_authority_guards"
+  ],
+  "aliases": {
+    "employee_contract_wage_heads": "employee_contract_wage_correction_heads",
+    "employee_contract_wage_corrections.correction_revision": "employee_contract_wage_corrections.revision",
+    "payroll_runs": "payroll_draft_runs"
+  },
+  "additional_controls": "retention-records.json; separate from 71 prior conceptual records"
+}

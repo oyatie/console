@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_technical_proposal",
+  "recorded_at": "2026-09-12T19:10:20.968843+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "a3e5a0333f20f50a60de326eeddf422c2b6c4ac2",
+  "reviewed_contract_sha": "1c99fafdd6012ec3d043668cd6e2acae4f58b5d6",
+  "predecessor_record": "../2026-09-12-native-payroll-technical-12/record.json",
+  "predecessor_record_sha256": "06d032555c21ddfb0aa63f6940dec4e8eeb1935fb7130cf1cf5ecaca29466779",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "files": [
+    {
+      "path": "account-contract.txt",
+      "bytes": 14652,
+      "sha256": "e1eee7c38884e2d71290973fda97a4770f958899bd4023efa85774c28b9d4011"
+    },
+    {
+      "path": "boundary-api.json",
+      "bytes": 8946,
+      "sha256": "36e39f63920c79be1e951b16db53478d7ddb103e0825d2aef20db032b988eab8"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 1817,
+      "sha256": "e413a99755a341df9c0378c2056be453f1bde08df01fdd5f234f5b0838a930f5"
+    },
+    {
+      "path": "migration-and-proof.txt",
+      "bytes": 8495,
+      "sha256": "bf730839a8c9feb25c44452a82db9d3e0250f8b6da6fcffce7c7933397ea503a"
+    },
+    {
+      "path": "policy-contract.txt",
+      "bytes": 17517,
+      "sha256": "f6a0054d0f6adc220a433f587ca1897e7e9e4b90571fc16459ff298fb5b82692"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 5721,
+      "sha256": "616a7729e4cfd3988c0e41c43d441a9dfe12ff8d37ed1ec72d248530ef56fc96"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 948,
+      "sha256": "7cfbd0e8b42a6a46995931474f425d37e3913ccae06322d323e04b46ca1bc4f6"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 2431,
+      "sha256": "fef226272645e121da1aec6ad1b658cf9e74d8532d8c379cebdac53717f816a0"
+    },
+    {
+      "path": "review.html",
+      "bytes": 3031,
+      "sha256": "1778b14407931f096a0466718188a6c771cc4fcbb690b04b50225f530ea80e42"
+    },
+    {
+      "path": "schema-candidate.json",
+      "bytes": 21837,
+      "sha256": "b90fc33ad97191af147fbae8c87b6833c577359ea3ef259226455ce6e1d28f75"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 1344,
+      "sha256": "03cc9a41f477867dea7b84627424c96e2efd8eb78cd3f38795ae9534acae5ed2"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 12882,
+      "sha256": "bfb2e5108f95d2a445a22eac5949241f202d2c10e8e5353215c3cb011ad53a84"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1835,
+      "sha256": "35da9b4f2fcf2cc63746078e2f8a8be0574f74928f66c9e50b65d4d23b3eed85"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 4065,
+      "sha256": "d2d0d54b45fc6841ee38b4317e3a2cc75471726650bbbb07b13247ff4d4fd562"
+    },
+    {
+      "path": "writer-enrollment.csv",
+      "bytes": 5017,
+      "sha256": "18003250ed6430eaf54cdff4fa968610ef419f1ebeb06467e23a32f5e0a53aa4"
+    }
+  ],
+  "remaining_holds": [
+    "Applied catalog/writer closure, exact DDL/DB grants/pool setup, auth transport compatibility and runtime proof still pending",
+    "W04b-02 common action/schema/draft/attempt/receipt exact owner contracts",
+    "W04b-03 source/evidence/temporal guards and input harness",
+    "BLOCKING W04b-04 Account-only context discovery/navigation/continuation owner; no /me/contexts route specified or admitted by13",
+    "W04b-04 workflow/capacity/Group/PC1/AC1/PR1 SQL/API/ports",
+    "W04b-05 unified migration/harness/resource/workload validation plan",
+    "W05 current authority+final4reviews/explicit design SHA; W06 executable tests/review/explicit test SHA",
+    "Pilot and full Console scope remain separate"
+  ]
+}

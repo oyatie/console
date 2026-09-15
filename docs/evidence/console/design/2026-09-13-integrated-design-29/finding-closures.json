@@ -1,0 +1,45 @@
+{
+  "candidate_sha": "e249e0a537d1246d770904a24326a75a61974418",
+  "prior_review": "../../reviews/2026-09-13-integrated28-adversarial/record.json",
+  "prior_design_sha": "f8618ba9c31f6b5f87211778317c68dbb1ede220",
+  "root_judgment": "Agreed only with confirmed contract gaps after checking original schemas and counterexamples. Withdrawn inevitable draft-head leakage and82GiB impossibility claims were not treated as proven failures.",
+  "closures": [
+    {
+      "id": "AR28-F01",
+      "resolution": "Typed case input, fixed common.create_case_content producer, exact origin/native/revision/custody correlation in one owner transaction",
+      "location": "design-corrections.txt:1-2"
+    },
+    {
+      "id": "AR28-F02",
+      "resolution": "One explicit FieldAddress for patches, projected nodes and errors, with current scalar item and ancestor distinction",
+      "location": "design-corrections.txt:3"
+    },
+    {
+      "id": "AR28-F03",
+      "resolution": "Omit denied saved_at while preserving permitted history and safe opaque cursor order",
+      "location": "design-corrections.txt:4"
+    },
+    {
+      "id": "AR28-D01",
+      "resolution": "Restore optional typed exact-decimal claims/unit binding and exact historical publication field selection",
+      "location": "design-corrections.txt:5"
+    },
+    {
+      "id": "AR28-O01",
+      "resolution": "Proposed primary60=2x20app+20worker/maintenance/operator/reserve, explicit aggregate enforcement",
+      "location": "run-manifest.json"
+    },
+    {
+      "id": "AR29-F01",
+      "resolution": "Purpose-specific persisted binding: REVIEW_DECISION SQL NULL command binding; EXECUTION_GATE closed sealed command/attempt/fingerprint with reciprocal owner validation. Public editing token excluded.",
+      "location": "design-corrections.txt:7"
+    }
+  ],
+  "remaining_execution_obligations": [
+    "Cumulative preparation cost and all declared budget scopes",
+    "Actual hot-resource throughput/fairness and complete-assembly comparison",
+    "Runtime current-authority/source-to-sink/RLS/custody proof",
+    "Provider/issuer/holder/replication fencing and recovery evidence",
+    "Qualified legal/profile/retention authority and separate production permission"
+  ]
+}

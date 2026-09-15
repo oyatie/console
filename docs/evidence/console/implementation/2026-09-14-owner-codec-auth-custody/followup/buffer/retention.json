@@ -1,0 +1,55 @@
+{
+  "classification": "Local reviewed documentation tooling repair; no product runtime change",
+  "integrated_head": "666abb427de929627567ccfc53dec2e694da1d4c",
+  "verification": "Two targeted RED then GREEN;56 existing+new doc regression cases PASS. Complete full fast run remains bound to3f0c4e17; later changes limited to documented tooling/evidence.",
+  "records": [
+    {
+      "source": "/private/tmp/console-documentation-buffer-lane.json",
+      "retained": "console-documentation-buffer-lane.json",
+      "sha256": "50b239c2ec0faadd7c9955afd74800c2c2d3682805557fefea82375a1f5a4a88",
+      "bytes": 1521
+    },
+    {
+      "source": "/private/tmp/console-documentation-buffer-admit.log",
+      "retained": "console-documentation-buffer-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/console-documentation-buffer-red.log",
+      "retained": "console-documentation-buffer-red.log",
+      "sha256": "96bcfb116d2bbe4b9c9b762605dfd3b4a8adf67812076b83b7ad93760ccc3e6e",
+      "bytes": 2529
+    },
+    {
+      "source": "/private/tmp/console-documentation-buffer-probe.log",
+      "retained": "console-documentation-buffer-probe.log",
+      "sha256": "557d3809af59252a0d637e3547e54a05d27b1b582fcab76dd122749cb0b037ad",
+      "bytes": 285
+    },
+    {
+      "source": "/private/tmp/console-documentation-buffer-full.log",
+      "retained": "console-documentation-buffer-full.log",
+      "sha256": "90283010ffaab65596f7fecee557879b0c8e1e48c14e0d9040564b67d289eb3c",
+      "bytes": 4495
+    },
+    {
+      "source": "/private/tmp/console-followup-buffer-independent-review.json",
+      "retained": "console-followup-buffer-independent-review.json",
+      "sha256": "b7c8e7fc10fc035f7ce745cfc083a6f381b36d37d5a4c52c7a620ba641745009",
+      "bytes": 4156
+    },
+    {
+      "source": "git show --format=fuller --binary c619ca0579ac0297380d2f55bb1b18a4d9315c09",
+      "retained": "test-candidate.patch",
+      "sha256": "5da396a1e6cc419b64ff3581b9a5f0d0c7eadcaee9411e41f2b3cce254667574",
+      "bytes": 3035
+    },
+    {
+      "source": "git show --format=fuller --binary 5746830175803f10fbc5867278da84f0a3377728",
+      "retained": "implementation-candidate.patch",
+      "sha256": "3bce7f295ed882e1c9934505ed4bbacaa4b940c70dbf4eac085a56d23ad2d69a",
+      "bytes": 1356
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "base_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "app_source_sha256": "0f02b3aec6f15449015b22a54b70453b66f2a5d17fb7670f3a241cce53b2a7cb",
+  "names": [
+    "durability_composition_tests::required_app_startup_admits_only_the_installed_observer",
+    "durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply",
+    "durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry",
+    "durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay",
+    "durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command",
+    "durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs",
+    "durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events",
+    "durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown"
+  ],
+  "new_names": [
+    "durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay",
+    "durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command",
+    "durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs",
+    "durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events",
+    "durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown"
+  ],
+  "supervised_union": 18,
+  "domain_b_run_steps": 22,
+  "all_run_steps": 156,
+  "three_bypass_mutations": 468,
+  "baseline_changes": {
+    "backend/app/src/lib.rs": [
+      192,
+      197
+    ],
+    "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs": [
+      6,
+      14
+    ],
+    "backend/crates/ontology/rest/src/lib.rs": [
+      19,
+      21
+    ]
+  }
+}

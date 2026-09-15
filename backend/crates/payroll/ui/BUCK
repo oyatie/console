@@ -48,3 +48,22 @@ rust_test(
         "//third-party/rust:wasm-bindgen",
     ],
 )
+
+rust_test(
+    name = "console-payroll-ui-itest-common_action_composer",
+    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/ui", ["tests/common_action_composer.rs"]),
+    crate = "common_action_composer",
+    edition = "2024",
+    crate_root = "backend/crates/payroll/ui/tests/common_action_composer.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/payroll/ui"},
+    labels = ["owner.backend.crates.payroll.ui", "domain.payroll", "test.integration", "resource.none"],
+    features = ["islands", "ssr"],
+    deps = [
+        "//third-party/rust:axum",
+        "//third-party/rust:leptos",
+        "//third-party/rust:serde",
+        "//third-party/rust:wasm-bindgen",
+        ":console-payroll-ui",
+    ],
+)

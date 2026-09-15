@@ -1,0 +1,81 @@
+tags:
+- auth
+operationId: getTermsContent
+summary: Read immutable terms content
+description: >-
+  Public, unauthenticated read of registered retained content by its exact-byte
+  SHA-256 digest. The response preserves the verified UTF-8 bytes, at most 65536 bytes,
+  with Content-Type text/plain; charset=utf-8. Retained reads remain available
+  independently of the current terms authority and passkey or signing configuration.
+  This operation sets no cookies and does not redirect.
+security: []
+parameters:
+- name: sha256
+  in: path
+  required: true
+  description: SHA-256 digest of the exact artifact bytes, encoded as 64 lowercase hexadecimal characters.
+  schema:
+    type: string
+    pattern: '^[0-9a-f]{64}$'
+responses:
+  '200':
+    description: Exact verified UTF-8 bytes of the immutable content.
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          enum: ['public, max-age=31536000, immutable']
+      X-Content-Type-Options:
+        schema:
+          type: string
+          enum: [nosniff]
+    content:
+      text/plain:
+        schema:
+          type: string
+  '404':
+    description: The digest is invalid, or no artifact with this digest is registered while artifact metadata is available.
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          enum: [no-store]
+      Pragma:
+        schema:
+          type: string
+          enum: [no-cache]
+      X-Content-Type-Options:
+        schema:
+          type: string
+          enum: [nosniff]
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorBody'
+        example:
+          error:
+            code: not_found
+            message: Terms artifact not found
+  '503':
+    description: Artifact metadata is unavailable, or the registered artifact is missing or invalid.
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          enum: [no-store]
+      Pragma:
+        schema:
+          type: string
+          enum: [no-cache]
+      X-Content-Type-Options:
+        schema:
+          type: string
+          enum: [nosniff]
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorBody'
+        example:
+          error:
+            code: authority_unavailable
+            message: Terms authority unavailable

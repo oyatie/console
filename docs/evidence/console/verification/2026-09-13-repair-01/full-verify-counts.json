@@ -1,0 +1,915 @@
+{
+  "candidate_sha": "2153226abaa99d2df6d997a9ce38dfd48037f19a",
+  "step_count": 74,
+  "steps": [
+    {
+      "step": "[fast] Release metadata semantic regression  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 8",
+        "\u2139 suites 0",
+        "\u2139 pass 8",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Release metadata documentation link tests  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 54",
+        "\u2139 suites 0",
+        "\u2139 pass 54",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Release metadata documentation manifest gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Release metadata documentation local-link gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Cheap Buck2 generated-face admission  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Foundation gate contract  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Reasoning lens manifest regression  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 12",
+        "\u2139 suites 0",
+        "\u2139 pass 12",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Reasoning lens manifest drift  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] CI preflight contract tests  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 66",
+        "\u2139 suites 1",
+        "\u2139 pass 66",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Buck impact planner regression  (cwd: .)",
+      "reported_count_lines": [
+        "Ran 13 tests in 2.019s"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Console route inventory regression  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 13",
+        "\u2139 suites 0",
+        "\u2139 pass 13",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Console authority-train regression  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 3",
+        "\u2139 suites 0",
+        "\u2139 pass 3",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Console lane-receipt validator regression  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 22",
+        "\u2139 suites 0",
+        "\u2139 pass 22",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Console PR authority bootstrap regression  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 86",
+        "\u2139 suites 0",
+        "\u2139 pass 86",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Executed-tests baseline set regression  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 26",
+        "\u2139 suites 5",
+        "\u2139 pass 26",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Local CI mirror contract  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 16",
+        "\u2139 suites 0",
+        "\u2139 pass 16",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Console truth-ledger validator exact-M regression  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 25",
+        "\u2139 suites 0",
+        "\u2139 pass 25",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Console fanout planner exact-M regression  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 29",
+        "\u2139 suites 0",
+        "\u2139 pass 29",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Buck PostgreSQL environment wrapper regression  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Buck disposable PostgreSQL harness regression  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] CI preflight contract  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Canonical npm lockfile  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Cargo.lock consistency  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Executed-tests ratchet \u2014 a test binary must have a path from a workflow step  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 12",
+        "\u2139 suites 4",
+        "\u2139 pass 12",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] JavaScript test reachability ratchet  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] JavaScript test reachability unit tests  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 2",
+        "\u2139 suites 0",
+        "\u2139 pass 2",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Lane fan-out harness preflight  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Workflow test-runner credential literals  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 6",
+        "\u2139 suites 0",
+        "\u2139 pass 6",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] rustfmt check  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] clippy -D warnings  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Layer-boundary gate  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Audit-coverage gate  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Migration-safety gate  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Tenant-isolation gate  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] PII-no-logs gate  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] RLS-arming gate  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Dev-auth-absence gate  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] IaC tier-discipline gate  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Fabricated-branch gate  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Personal-data-classification gate  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Writer-ownership gate  (cwd: backend)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Buck2 CI-gate mutation suites \u2014 every gate proven to still reject  (cwd: .)",
+      "reported_count_lines": [
+        "[2026-09-13T13:25:00.892-04:00] test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "[2026-09-13T13:25:00.918-04:00] test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "[2026-09-13T13:25:00.944-04:00] test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+        "[2026-09-13T13:25:00.945-04:00] test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "[2026-09-13T13:25:00.946-04:00] test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+        "[2026-09-13T13:25:00.962-04:00] test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s",
+        "[2026-09-13T13:25:00.984-04:00] test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s",
+        "[2026-09-13T13:25:01.308-04:00] test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] PR 473 migration operational contract tests  (cwd: .)",
+      "reported_count_lines": [
+        "Ran 19 tests in 0.005s"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Buck2 platform-authz unit suite  (cwd: .)",
+      "reported_count_lines": [
+        "[2026-09-13T13:25:01.470-04:00] test result: ok. 96 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Cargo console-app unit suite  (cwd: .)",
+      "reported_count_lines": [
+        "test result: ok. 164 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.01s"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Cargo console-app OpenAPI drift suite  (cwd: .)",
+      "reported_count_lines": [
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] ADR governance tests  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 29",
+        "\u2139 suites 1",
+        "\u2139 pass 29",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] ADR governance gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Doc citations \u2014 every code citation must resolve  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Shared text gate unit tests  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 7",
+        "\u2139 suites 0",
+        "\u2139 pass 7",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Gate-input provenance instrument  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Gate-input provenance unit tests  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 13",
+        "\u2139 suites 0",
+        "\u2139 pass 13",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] G004 identity group org people policy foundation gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] G005 workflow approval Work Hub lifecycle gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Workflow runtime spine gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Workflow runtime M2 strangler dark-landing gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Workflow runtime M2 Cedar-guard observe-and-record gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Workflow runtime M2 flag-ON runtime gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Workflow runtime M2 outbox-drainer transactional-idempotency gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] G006 asset equipment dispatch lifecycle gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] G007 collaboration mail calendar poll mobile lifecycle gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] G008 import HR payroll readiness gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] People HR lifecycle maturity gate  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Payroll release-gate contract  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Undeclared imports \u2014 every bare specifier must be declared  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 20",
+        "\u2139 suites 1",
+        "\u2139 pass 20",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Request-body contract \u2014 spec fields must exist on the handler  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 103",
+        "\u2139 suites 10",
+        "\u2139 pass 103",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Governed command-database DARK wiring regression  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 10",
+        "\u2139 suites 0",
+        "\u2139 pass 10",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Render manifests and NetworkPolicy enforcement preflight  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Production hardening contract  (cwd: .)",
+      "reported_count_lines": [],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Production hardening regression tests  (cwd: .)",
+      "reported_count_lines": [
+        "Ran 19 tests in 0.006s",
+        "Ran 16 tests in 9.771s",
+        "\u2139 tests 160",
+        "\u2139 suites 14",
+        "\u2139 pass 160",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Domain crate unit tests  (cwd: .)",
+      "reported_count_lines": [
+        "test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s",
+        "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 43 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 49 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 96 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s",
+        "test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.05s"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Platform contract drift gate  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 6",
+        "\u2139 suites 3",
+        "\u2139 pass 6",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Employee import replay contract  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 2",
+        "\u2139 suites 0",
+        "\u2139 pass 2",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    },
+    {
+      "step": "[fast] Ontology write precondition contract  (cwd: .)",
+      "reported_count_lines": [
+        "\u2139 tests 4",
+        "\u2139 suites 0",
+        "\u2139 pass 4",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "discovery": "No separate exhaustive discovery for this full-gate step; raw output retained. App selections have separate name-level discovery."
+    }
+  ]
+}

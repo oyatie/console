@@ -1,0 +1,91 @@
+{
+  "source": "/private/tmp/console-workflow15-owner-assertions-r4-20260913",
+  "manifest_sha256": "f88e0062f18ef637fab102acc4401c4016b4c94bf8e5c7d35c8eba20d9674a5f",
+  "all_original_members_verified": true,
+  "files": [
+    {
+      "original": "assignment-readback.sql",
+      "retained": "assignment-readback.sql",
+      "original_sha256": "fdecb50669c0c8108fc327a751bcf3b64acef8cdfbdddc5f8dc8f0b2229d199f",
+      "retained_sha256": "fdecb50669c0c8108fc327a751bcf3b64acef8cdfbdddc5f8dc8f0b2229d199f"
+    },
+    {
+      "original": "historical-cell-audit.json",
+      "retained": "historical-cell-audit.json",
+      "original_sha256": "df12e1a9913ac0e4f9df4dae5db2d78b84d2a9fc502531a354ac89b5de23a7af",
+      "retained_sha256": "df12e1a9913ac0e4f9df4dae5db2d78b84d2a9fc502531a354ac89b5de23a7af"
+    },
+    {
+      "original": "ordinary-interface-refinements.md",
+      "retained": "ordinary-interface-refinements.txt",
+      "original_sha256": "04ac62d1464b809675f48af29a21d2e2dbeadb4c90a308341bbba1e981e033e9",
+      "retained_sha256": "04ac62d1464b809675f48af29a21d2e2dbeadb4c90a308341bbba1e981e033e9"
+    },
+    {
+      "original": "packet-contract.md",
+      "retained": "packet-contract.txt",
+      "original_sha256": "94d9b6ee173cf421dc89f82eb79b6d1c937fcf5e730a8fdf5e39a69967937acd",
+      "retained_sha256": "94d9b6ee173cf421dc89f82eb79b6d1c937fcf5e730a8fdf5e39a69967937acd"
+    },
+    {
+      "original": "parent-r1-manifest.json",
+      "retained": "parent-r1-manifest.json",
+      "original_sha256": "7b1c271fda522816633dc91a1fc095daf3436abd78ce813614da9c800eb04454",
+      "retained_sha256": "7b1c271fda522816633dc91a1fc095daf3436abd78ce813614da9c800eb04454"
+    },
+    {
+      "original": "parent-r2-manifest.json",
+      "retained": "parent-r2-manifest.json",
+      "original_sha256": "7e7a231afb3d02967f9ed9da075f591dda3ca8bb56caa759663db63080c2bb0c",
+      "retained_sha256": "7e7a231afb3d02967f9ed9da075f591dda3ca8bb56caa759663db63080c2bb0c"
+    },
+    {
+      "original": "parent-r3-manifest.json",
+      "retained": "parent-r3-manifest.json",
+      "original_sha256": "8a511cfd8c124133a2c0541763cab6feb46ea2da22973ef0123b906edfb2e303",
+      "retained_sha256": "8a511cfd8c124133a2c0541763cab6feb46ea2da22973ef0123b906edfb2e303"
+    },
+    {
+      "original": "publication-readback.sql",
+      "retained": "publication-readback.sql",
+      "original_sha256": "549ba07a895b4e0c7ad229f2e82f3ef010e0f2535cfa89475eda1c89e367d227",
+      "retained_sha256": "549ba07a895b4e0c7ad229f2e82f3ef010e0f2535cfa89475eda1c89e367d227"
+    },
+    {
+      "original": "registration-coverage.json",
+      "retained": "registration-coverage.json",
+      "original_sha256": "c69492d671859509b4fbf9ed3676d419231ebfe7b74d976ff3099b2de5ed7e26",
+      "retained_sha256": "c69492d671859509b4fbf9ed3676d419231ebfe7b74d976ff3099b2de5ed7e26"
+    },
+    {
+      "original": "syntax-execution.json",
+      "retained": "syntax-execution.json",
+      "original_sha256": "69f5965406a3feabfcb2379e46cfb78e1a9f1faef6a1ed1e76d926636b7aaa84",
+      "retained_sha256": "69f5965406a3feabfcb2379e46cfb78e1a9f1faef6a1ed1e76d926636b7aaa84"
+    },
+    {
+      "original": "workflow-fixture.rs",
+      "retained": "workflow-fixture.rs",
+      "original_sha256": "170cc5a8b1759d0db80ec51a59cb1035059ae34f314f33decd590438d2ba557d",
+      "retained_sha256": "170cc5a8b1759d0db80ec51a59cb1035059ae34f314f33decd590438d2ba557d"
+    },
+    {
+      "original": "workflow-obligation-tests.rs",
+      "retained": "workflow-obligation-tests.rs",
+      "original_sha256": "4ed380e07b22340765a8269db4baf473f14985fd7912e8e79f4dfa671c7d1bee",
+      "retained_sha256": "4ed380e07b22340765a8269db4baf473f14985fd7912e8e79f4dfa671c7d1bee"
+    },
+    {
+      "original": "workflow-owner-tests.rs",
+      "retained": "workflow-owner-tests.rs",
+      "original_sha256": "8880e5edc2b61818ebe70e977f5d76e4e028a23f51ab9674a15e4c914e090dce",
+      "retained_sha256": "8880e5edc2b61818ebe70e977f5d76e4e028a23f51ab9674a15e4c914e090dce"
+    },
+    {
+      "original": "workflow-race-projection-tests.rs",
+      "retained": "workflow-race-projection-tests.rs",
+      "original_sha256": "cbfd62612ae4173b5db64a488d882e775f5de9171c673a43fa061747a3829337",
+      "retained_sha256": "cbfd62612ae4173b5db64a488d882e775f5de9171c673a43fa061747a3829337"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "classification": "FROZEN_BROWSER_ACCEPTANCE_SOURCE_AND_EXECUTED_HELPERS",
+  "members": [
+    {
+      "path": "browser-acceptance-producer.rs",
+      "sha256": "e2fce2655679aea3c3aea4e4fdf946d95071d6df407d7cb287b80d334337507d",
+      "bytes": 8749
+    },
+    {
+      "path": "browser-auth-producer.rs",
+      "sha256": "2d4649b8b74d21caa26b87d41c5e7a012659a481e123e1e4d8211e41911a72d4",
+      "bytes": 5898
+    },
+    {
+      "path": "browser-case-producer.rs",
+      "sha256": "2c2f3db7a8968f97ee677ee7833972b8a23dad6e2208e08720361502a1d19123",
+      "bytes": 15489
+    },
+    {
+      "path": "browser-discovery.json",
+      "sha256": "2bb0842ab6cf160d3fcedcdab2fdf8857ddfca3a704a69f6d9b51d5a9d5383c8",
+      "bytes": 10174
+    },
+    {
+      "path": "browser-runtime-helpers.rs",
+      "sha256": "2bc45b6231987d9e5b591561499083da40d4653ca4e1cd5e65ec9127b3b83a74",
+      "bytes": 3095
+    },
+    {
+      "path": "helper-execution.json",
+      "sha256": "d6a83ea58209dfa259d8c09a1826b7c5af01a02c93acc5a88701d5d2d6dadb53",
+      "bytes": 459
+    },
+    {
+      "path": "helper-execution.log",
+      "sha256": "a562b00a1adc2d9c3fee96a5971c6aa131e48799dd55adba8a42da4a568c2cb7",
+      "bytes": 2720
+    },
+    {
+      "path": "helper-smoke/Cargo.lock",
+      "sha256": "c78d62cdb8c2b13731fd0aeeaa77a27b012e7e51a1936080f3d301a34c25e20e",
+      "bytes": 19554
+    },
+    {
+      "path": "helper-smoke/Cargo.toml",
+      "sha256": "5d037726a4b752b540facc51242ab721b7e3ab278b0e25e6d2988f8b48b189e5",
+      "bytes": 330
+    },
+    {
+      "path": "helper-smoke/src/actor-migration.csv",
+      "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+      "bytes": 8170
+    },
+    {
+      "path": "helper-smoke/src/lib.rs",
+      "sha256": "506a604a21ce1fb367b1e905598005ca3f9eadb94c747d892142b6be00ed225d",
+      "bytes": 4400
+    },
+    {
+      "path": "owner-contract.txt",
+      "sha256": "e428b8001bdef314facd4e3fdc48a8f521b5fc51c622c1fc8b4e042ea28c2fee",
+      "bytes": 2973
+    },
+    {
+      "path": "payroll-source-facts-producer.rs",
+      "sha256": "015cc3062f4f6918adda88b6133c82d073d45c7741e0919c097c7fae4333d9b9",
+      "bytes": 6115
+    },
+    {
+      "path": "syntax-execution.json",
+      "sha256": "1e131e41251a564becbe69f1e02f9990499ff3af03d757c569f94dd4af34af6f",
+      "bytes": 2308
+    },
+    {
+      "path": "two-subject-producer.rs",
+      "sha256": "5d6b644fac22909929213f72eca310dfa1e666d572b14071a14a342cd473e71a",
+      "bytes": 7849
+    }
+  ]
+}

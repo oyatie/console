@@ -1,0 +1,181 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "status": "BROWSER_R4_SELECTED_HYDRATION_SOURCE_WITH_REVIEW_CORRECTIONS",
+  "members": [
+    {
+      "path": "browser-acceptance-producer.rs",
+      "sha256": "10482f33d9f89a67fe83a50254aa02556f72d59293b14c2921c201410a49b615",
+      "bytes": 13552
+    },
+    {
+      "path": "browser-auth-producer.rs",
+      "sha256": "2cf499110ec906d167c299ed3ce996906c66dd02bfca7dbc51115df686ce68f1",
+      "bytes": 6065
+    },
+    {
+      "path": "browser-case-producer.rs",
+      "sha256": "1a17e57086bb312364293b5105d596cfe2ddfcd72554d1ff63e6f4d8a01d8c4e",
+      "bytes": 15448
+    },
+    {
+      "path": "browser-discovery.json",
+      "sha256": "7a3c285d0ab980c088e473289983cf8c7818cc61ddcb7459c76f1c1f05f7ab90",
+      "bytes": 2919
+    },
+    {
+      "path": "browser-runtime-helpers.rs",
+      "sha256": "577138ad387f6cb0cd2fc84fddc38374abc37bd0e660e7a02078016a5662c8b7",
+      "bytes": 6715
+    },
+    {
+      "path": "helper-execution.json",
+      "sha256": "25b5c994c4b11dbea692329e807923c4edf5695ef93bb32a84a863820a46a10d",
+      "bytes": 371
+    },
+    {
+      "path": "helper-execution.log",
+      "sha256": "ee5a2883e55324b5e7fab4f7bfa0197bfef2551bc8c04b169758b123a1405c44",
+      "bytes": 3537
+    },
+    {
+      "path": "helper-smoke/Cargo.lock",
+      "sha256": "c78d62cdb8c2b13731fd0aeeaa77a27b012e7e51a1936080f3d301a34c25e20e",
+      "bytes": 19554
+    },
+    {
+      "path": "helper-smoke/Cargo.toml",
+      "sha256": "5bd77739f4e059d725a94b6960c9c439e3bd36b686c26558b8265ac1bfb5c0a4",
+      "bytes": 341
+    },
+    {
+      "path": "helper-smoke/src/actor-migration.csv",
+      "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+      "bytes": 8170
+    },
+    {
+      "path": "helper-smoke/src/lib.rs",
+      "sha256": "f4545bf8bf025d62696ec845f68b44eacd574d580a8385f79621d3606071cc35",
+      "bytes": 7945
+    },
+    {
+      "path": "javascript-execution.json",
+      "sha256": "a7eeb402e7b10f79f00b9a836ad62e1e3653a35b70feac67592d5a6e9cbb78d9",
+      "bytes": 2440
+    },
+    {
+      "path": "oracle-execution.json",
+      "sha256": "3879e6cb8f67af2158d7892fec3bac8bf7fd4b8371aa69e7c3d04a56bb6c3eab",
+      "bytes": 13908
+    },
+    {
+      "path": "oracle-execution.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "owner-contract.txt",
+      "sha256": "81eb7b46f2f2bc3ad677fe952c8085eb2ee0e509d32f31af0efb51cd83e8fe2b",
+      "bytes": 3809
+    },
+    {
+      "path": "payroll-source-facts-producer.rs",
+      "sha256": "015cc3062f4f6918adda88b6133c82d073d45c7741e0919c097c7fae4333d9b9",
+      "bytes": 6115
+    },
+    {
+      "path": "playwright/acceptance.spec.cjs",
+      "sha256": "055be6e0571563511ed9a393fdb5217061b0a5240f22f852dd5f228b2b9783ff",
+      "bytes": 8999
+    },
+    {
+      "path": "playwright/console-browser-final-oracles-20260914.log.gz",
+      "sha256": "e8de1bae24ebd4e1bf4bdaa3b0234cac49076db3d08f4b54c1f247f0810d0cff",
+      "bytes": 3449
+    },
+    {
+      "path": "playwright/console-browser-final-oracles-escalated-20260914.log.gz",
+      "sha256": "00e917bf9a513af50d967511d06b49c9924bcc1e2328500395ea9c80bc4cddb5",
+      "bytes": 507
+    },
+    {
+      "path": "playwright/effective-submissions.cjs",
+      "sha256": "4f0cc37c5777a29f56aeeca1dfdfa06d6331f273cf1b13dcc4348e93c69daa4d",
+      "bytes": 964
+    },
+    {
+      "path": "playwright/final-execution.json",
+      "sha256": "758a8e1c5f664d57ee2f21b3e45431e065aa143a37274819369668d293ce2d19",
+      "bytes": 1957
+    },
+    {
+      "path": "playwright/fixture.cjs",
+      "sha256": "dd153b32e1016d0c76dfc7f62fb72d3ba2e0f71f28bbb6efa5d4576ac34c29b1",
+      "bytes": 3026
+    },
+    {
+      "path": "playwright/historical-r2-execution.json",
+      "sha256": "d135cc0dfadaab26507d302853bb70b9f2e9fc9d487fbbf56d47ce8f80df75fa",
+      "bytes": 1988
+    },
+    {
+      "path": "playwright/historical-r2-fixture-contract.txt",
+      "sha256": "05555bfd7be318e8303e3348b563ec80abb8edd10fc1a29c20468fccf6c0062c",
+      "bytes": 5608
+    },
+    {
+      "path": "playwright/hydration.spec.cjs",
+      "sha256": "6bba04ae4e5ea6516f5f08407b573454891c45081c5d514b39a5632ed123da06",
+      "bytes": 5647
+    },
+    {
+      "path": "playwright/oracle.spec.cjs",
+      "sha256": "55dab811b28b39873755c436f032bac44ed086b5f163bb4849edc9929e3e2098",
+      "bytes": 4374
+    },
+    {
+      "path": "playwright/playwright.config.cjs",
+      "sha256": "c7af0ab8d4f0b29a8f801a1e2a1151196d326abe0c1ff6da0deaf5160bc26515",
+      "bytes": 755
+    },
+    {
+      "path": "playwright/reflow.cjs",
+      "sha256": "41e163c302aeb275ea9c6a8a07bad30425b60ed8edc2693472ac9b560e9f805a",
+      "bytes": 1172
+    },
+    {
+      "path": "playwright/wasm-observer.cjs",
+      "sha256": "b7702906d326c694a568b315a4fba487133a58f0cdbedeca3a0f88a582086a44",
+      "bytes": 1910
+    },
+    {
+      "path": "r1-parent-manifest.json",
+      "sha256": "ca5fc3d248651f8717f598ffcf98ab467d13d373854613c82415a35726734f94",
+      "bytes": 2549
+    },
+    {
+      "path": "r2-parent-manifest.json",
+      "sha256": "e6882f42276bde84aea14873e77dfe911fda45c3dabd250a4e236271461f5c07",
+      "bytes": 2630
+    },
+    {
+      "path": "r3-parent-manifest.json",
+      "sha256": "c2c6e3f8e439b2c4fca00107f573e0aaafb59e42a89a5a3223493cc5030f7b8b",
+      "bytes": 5220
+    },
+    {
+      "path": "syntax-execution.json",
+      "sha256": "a57cff41fd77b92b7b16b6bdd23fdeb3e5dc358fb403e4d6066125c85fffdc8b",
+      "bytes": 2153
+    },
+    {
+      "path": "transport-refinement.json",
+      "sha256": "7d65639fc28258ef0a04621d184e60d603f0677211cb9b6f84d5dc54472f43cf",
+      "bytes": 3261
+    },
+    {
+      "path": "two-subject-producer.rs",
+      "sha256": "5d6b644fac22909929213f72eca310dfa1e666d572b14071a14a342cd473e71a",
+      "bytes": 7849
+    }
+  ]
+}

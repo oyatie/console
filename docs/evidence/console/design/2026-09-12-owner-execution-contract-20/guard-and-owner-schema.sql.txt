@@ -1,0 +1,65 @@
+-- PROPOSED DESIGN TEXT ONLY. NOT A MIGRATION; NOT EXECUTED.
+-- Preconditions: organizations and ont_object_types actual base tables; company_actors13
+-- and confined role provisioning are separately reviewed enrollment dependencies.
+-- Role/table/function ownership fixed by migration owner, not application startup.
+BEGIN;
+CREATE TABLE public.source_family_guards (
+  org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE RESTRICT,
+  family text NOT NULL CHECK (family IN ('POPULATION','EMPLOYMENT','WAGE','ATTENDANCE','CALENDAR','LEAVE','ELIGIBILITY','TAX_EVIDENCE','QUALIFICATION','ARTIFACT')),
+  generation bigint NOT NULL CHECK (generation > 0),
+  PRIMARY KEY (org_id,family)
+);
+CREATE TABLE public.ont_object_owner_bindings (
+  org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE RESTRICT,
+  object_type_id uuid NOT NULL,
+  owner_key text NOT NULL CHECK (owner_key IN ('ontology','attendance','leave','payroll','docs')),
+  storage_mode text NOT NULL CHECK (storage_mode IN ('COMMON_INSTANCE','NATIVE')),
+  protocol text NOT NULL CHECK (protocol='owner20-v1'),
+  manifest_digest bytea NOT NULL CHECK (octet_length(manifest_digest)=32),
+  created_by_account_id uuid NOT NULL,
+  created_at timestamptz NOT NULL,
+  PRIMARY KEY (org_id,object_type_id),
+  UNIQUE (org_id,object_type_id,owner_key),
+  FOREIGN KEY (object_type_id,org_id) REFERENCES public.ont_object_types(id,org_id) ON DELETE RESTRICT,
+  FOREIGN KEY (org_id,created_by_account_id) REFERENCES public.company_actors(org_id,account_id) ON DELETE RESTRICT
+);
+-- The five owner keys are this proposed enrolled roster, not an exhaustive Console taxonomy.
+-- Additional registered owners require reviewed registry/ACL changes; user titles/reasons never do.
+ALTER TABLE public.source_family_guards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.source_family_guards FORCE ROW LEVEL SECURITY;
+CREATE POLICY owner20_source_guard_cell ON public.source_family_guards
+  USING (org_id=NULLIF(current_setting('app.current_org',true),'')::uuid)
+  WITH CHECK (org_id=NULLIF(current_setting('app.current_org',true),'')::uuid);
+ALTER TABLE public.ont_object_owner_bindings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ont_object_owner_bindings FORCE ROW LEVEL SECURITY;
+CREATE POLICY owner20_type_binding_cell ON public.ont_object_owner_bindings
+  USING (org_id=NULLIF(current_setting('app.current_org',true),'')::uuid)
+  WITH CHECK (org_id=NULLIF(current_setting('app.current_org',true),'')::uuid);
+-- Same-creation-tx revokes defeat0031 inherited grants. No cmd/generic writer DML.
+REVOKE ALL ON public.source_family_guards,public.ont_object_owner_bindings
+  FROM PUBLIC,console_rt,console_ontology_cmd,console_ontology_writer,console_leave_cmd,console_platform_force_cmd;
+GRANT SELECT,UPDATE ON public.source_family_guards TO console_owner_commit_writer;
+GRANT SELECT ON public.ont_object_owner_bindings TO console_owner_commit_writer;
+-- Guard bootstrap and immutable binding publication are deployment/registry-owner operations.
+-- No lazy guard INSERT and no user caller can install/change an owner binding.
+CREATE FUNCTION public.owner20_reject_binding_mutation() RETURNS trigger
+LANGUAGE plpgsql SET search_path=pg_catalog AS $$
+BEGIN
+  RAISE EXCEPTION 'immutable object owner binding' USING ERRCODE='55000';
+END;
+$$;
+REVOKE ALL ON FUNCTION public.owner20_reject_binding_mutation() FROM PUBLIC,console_rt,console_ontology_cmd;
+CREATE TRIGGER owner20_binding_immutable BEFORE UPDATE OR DELETE ON public.ont_object_owner_bindings
+  FOR EACH ROW EXECUTE FUNCTION public.owner20_reject_binding_mutation();
+COMMIT;
+-- Required integration additions, deliberately not represented as complete SQL above:
+-- 1.14 ont_action_runtime_bindings exact (org,type,owner) FK to binding UNIQUE.
+-- 2.Generic ont_instances/revisions/links row guards for binding+draft-control/native enrollment.
+--   Generic caller/default type/lifecycle changes cannot remove/retarget a binding. Plain binding
+--   presence alone grants nothing; newly enrolled rows require target/owner finalizer validation.
+-- 3.Current actor/command/receipt rosters, complete owner finalizers/private participants and grants.
+-- 4.Guard lock/increment helpers reuse declared advisory/row order; checked generation exhaustion.
+-- 5.Revoke TRUNCATE/cascade/purge paths over protected rows, including0196 and maintenance aliases.
+-- 6.Migration catalog readback verifies same-company keys, indexes, RLS, role inheritance,
+--   all overloaded function ACLs and that definer owns no tables/schemas or DDL rights.
+-- The two CREATE TABLE statements do not establish these missing integrations.

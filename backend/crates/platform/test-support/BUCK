@@ -21,6 +21,7 @@ rust_library(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:sqlx",
+        "//third-party/rust:url",
         "//third-party/rust:uuid",
     ],
 )

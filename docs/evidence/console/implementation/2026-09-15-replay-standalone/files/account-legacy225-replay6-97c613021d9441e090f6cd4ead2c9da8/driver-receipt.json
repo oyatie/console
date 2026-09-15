@@ -1,0 +1,23 @@
+{
+  "driver_sha256": "24167812218388234cab22320f521b823f7915e73b34aef5c9f2b7bba1e85cb3",
+  "artifacts": {
+    "cleanup.txt": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+    "containers-after.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source-before.json": "22d3b4af57bafd08edbcd836c7adf1779e38288059deca00ab6835c86ba5ade9",
+    "source-after.json": "22d3b4af57bafd08edbcd836c7adf1779e38288059deca00ab6835c86ba5ade9",
+    "probe.log": "fb1f658769454ff29ae02ef92426afc0a912ebe37a70ff5f7c6a8a7bbc069e99",
+    "prebuild-dispatch.txt": "555b64b39b042baf3407017d0276c5d12b5e2358dc78dd48b096ea01e1ec22ff",
+    "cleanup-final-list-error.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "container-name.txt": "5ef13ecc90717583f7d59b4eaafb08a18159344e2af5185b19f110969c8474d6",
+    "probe-exit.txt": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+    "containers-before-cleanup.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cleanup-list-error.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ownership-label.txt": "0a52a66b2868e946964b958105c6bcb4321f5059a286e061a3fd762429e6b509",
+    "postgres-map.json": "06c1726d5a6d6db2d4d9e0d6c31da51ec0b377c5450e310b3d3c02a9cd49cd79"
+  },
+  "prebuild_interception_count": 1,
+  "storage": "owned labeled PostgreSQL container only; 4GiB tmpfs; no durability proof",
+  "source_pre_post": "exactly equal",
+  "probe_exit": 101,
+  "cleanup": "confirmed owned container absent via successful bounded docker ps -a"
+}

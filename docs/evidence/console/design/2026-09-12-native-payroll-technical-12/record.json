@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_technical_proposal",
+  "recorded_at": "2026-09-12T18:34:49.418154+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "2fbeb621e269ed5edef78db5b51dffdbb888724b",
+  "reviewed_contract_sha": "fa3187a0a61cd1cbde5a296a83c426d7dc7946af",
+  "predecessor_record": "../2026-09-12-screen-flow-integration-11/record.json",
+  "predecessor_record_sha256": "40e05e23f32018aba7880e1af4870676da8efacb326c2227fa2cbafc0d69e23c",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "files": [
+    {
+      "path": "entry.txt",
+      "bytes": 1984,
+      "sha256": "5e9e80f9486e2812f640cc084663e6fd790f373bccb7ada52738be939c6ea512"
+    },
+    {
+      "path": "execution-contract.txt",
+      "bytes": 12025,
+      "sha256": "31bb997397930864df193de1021f0e7c480d4eb5e941d86cefcd5bffa3c1b17e"
+    },
+    {
+      "path": "migration-and-proof.txt",
+      "bytes": 10017,
+      "sha256": "eb3a9d21cfe9fa111f47f7f30ddaf410da515aa2902ef4d18c76e156e425b60a"
+    },
+    {
+      "path": "native-contract.txt",
+      "bytes": 18704,
+      "sha256": "cd579d50ca833015cfc69e0e1bc353deae5f3e81300a44c2108c494bfd339049"
+    },
+    {
+      "path": "numeric-oracles.json",
+      "bytes": 3393,
+      "sha256": "13415cdcd923824be7dc375f46e3a189de8cc766fdab274a27933560498c843a"
+    },
+    {
+      "path": "owner-map.csv",
+      "bytes": 2824,
+      "sha256": "95ada325729f46bfb471589f0bb3541e1209c89e8afb60a539d136b71c3e7e85"
+    },
+    {
+      "path": "remaining-work.csv",
+      "bytes": 1506,
+      "sha256": "29e75c4f2b1c116bd33b959bff204e1b032759045a65700afe0f849e6a4158b5"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1152,
+      "sha256": "2808b4522f8fea84334164dbeb96808124483a479746b64d91264fb455b8d1a9"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1838,
+      "sha256": "98e5e14fbc9b17e5e3ee864850e30fa74a8293bcd892407aeb750553d1e256e0"
+    },
+    {
+      "path": "review.html",
+      "bytes": 3526,
+      "sha256": "6bb4cc57d92d6dd72014f339305df7cd00399e0285dc5e98ba4dd723723fe9a9"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 592,
+      "sha256": "aeb8967652ff32ad9f35f8bdadc20cc1f609f81b787b56386b7fc0bfc80292f6"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 8946,
+      "sha256": "c129ebea88214e7f2723cb997b12c66dfafc585b6cee56105cc0360a68c81600"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1996,
+      "sha256": "397044b548131ebdcdf9510431ebfde187a23a9b5eaedb6e472e8cefd5ce7a53"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 5005,
+      "sha256": "90daecaef3dcc8e5048cf17b235f3e9b4138ad2324e65b092cbab097f52e2b42"
+    },
+    {
+      "path": "wire-candidate.json",
+      "bytes": 9883,
+      "sha256": "28e16342cb0e3d05d77006a74a3696196bdda0fb4a08908731c734bed872c862"
+    }
+  ],
+  "remaining_holds": [
+    "W04b-01..05 exact identity/Cedar/source/attempt/workflow/Group/publication DTO/SQL/ACL/lock/migration/harness dependencies in remaining-work.csv",
+    "W05 required current-authority alignment and final integrated4review consensus/explicit design SHA approval",
+    "W06 executable tests reviewed and explicit test SHA approval before valid RED lane admission",
+    "Pilot production/legal/operational proof and full Console scope remain separate"
+  ]
+}

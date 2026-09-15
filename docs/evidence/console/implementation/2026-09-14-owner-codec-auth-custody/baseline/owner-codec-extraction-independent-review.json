@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root/review_completeness",
+  "candidate_sha": "cf315a31e4dde9ac7267b0bcb44ff04bc99a7ce0",
+  "verdict": "APPROVED_TEST_EXTRACTION_WITH_EXPLICIT_BOUNDARY",
+  "manifest_sha256": "7b8cf55b1d85d9635762073ace9aed73636d6847c46516fb087dc8eb14e3f9ab",
+  "verified": {
+    "selected_function_bodies_exact": 6,
+    "native_bodies_preserved_unselected": 7,
+    "golden_files_byte_identical": 10,
+    "frames_header_length_json_verified": 5,
+    "effective_negative_mutations": 3
+  },
+  "owner_fit": "Original source already imports generic owner submission API from console_ontology_application::owner28. Moving those six tests into its in-owner unit module removes unrelated native payroll codec dependency without fabricating an authority capability. Payroll-named fixture values are examples in a generic envelope, not permission to hardcode owner dispatch.",
+  "limits": [
+    "No Rust compile or execution by reviewer; sha2/hex dev-dependency prerequisite must be resolved before interpreting missing owner API RED.",
+    "Six tests demonstrate fixed framing vectors, fingerprint outputs, roundtrip and three malformed input rejections only. They do not establish bounded-memory decoding, all unknown-field handling, arbitrary canonicalization, authenticated context, live authority, DraftStart/Save or native input/calculation owner correctness.",
+    "All seven native tests remain frozen and deferred; no quarantine/deletion claimed.",
+    "Implementation must preserve typed context/capability construction boundaries; deserialized actor/schema references remain untrusted data until independently admitted."
+  ]
+}

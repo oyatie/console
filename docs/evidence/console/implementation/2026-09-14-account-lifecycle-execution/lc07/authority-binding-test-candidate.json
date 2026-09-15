@@ -1,0 +1,54 @@
+{
+  "owner": "/root/finish_browser",
+  "base_sha": "ebea26a790b2ee363e2924ca76c5085e4c4e1ee6",
+  "test_candidate_sha": "c3af787f78838b2249438c2038332c601cf0eb8b",
+  "worktree": "/private/tmp/console-authority-binding-20260914",
+  "allowed_paths": [
+    "backend/crates/platform/request-context/src/lib.rs",
+    "backend/crates/platform/request-context/src/account.rs"
+  ],
+  "forbidden": "All other paths including Cargo/lockfiles/BUCK/generated/migrations/authority; no product implementation in this candidate.",
+  "test_source_sha256": "f22f04ed31d2f9fa31b279f0f0944eb124e7072c6c05db1198a396c46c5183af",
+  "preservation": "account.rs is byte-for-byte approved security-s5 authority-vector-acceptance.append.rs; lib.rs adds cfg(test) module registration only. No type/function stub or alternate checker.",
+  "probe": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-request-context --lib exact_authority_binding_acceptance",
+  "observations": {
+    "first_exit": 101,
+    "clean_committed_tree_repeat_exit": 101,
+    "compiler_diagnostic": "E0432 unresolved imports super::AuthorityBindingSnapshot, super::check_exact_authority_binding at account.rs:7",
+    "source_tests": 3,
+    "runtime_discovered": 0,
+    "runtime_executed": 0,
+    "other_compilation_errors": 0,
+    "log": "/private/tmp/authority-binding-clean-new-api-red.log",
+    "log_sha256": "1d79273d989107e8f86c642d4980594f2cfaad9dfade91e53a3b76c061c08193"
+  },
+  "admission_assessment": "Named command executes on clean exact candidate and fails only because the two new pure owner APIs are absent. Under AGENTS named-RED rule this can support a narrowly reviewed new-API implementation boundary after root/independent approval. It is not a behavioral authorization regression or permission to implement unrelated owner state; compilerRED status must remain explicit. No implementation has started.",
+  "proposed_mechanical_guide": [
+    "Independently review this exact test-only candidate and admit only AuthorityBindingSnapshot plus check_exact_authority_binding.",
+    "Implement ordinary plain snapshot operands with exact Account/session/Group/optionalCompany/membership-incarnation identity and all six generation/revision comparisons; no capability constructors, IO, database reads, grants, clock or role hierarchy.",
+    "Make helper part of the actual non-test owner module rather than hiding implementation under cfg(test); choose visibility/error representation from approved owner contract without exposing capability creation.",
+    "Preserve all3 test bodies; same probe must execute3pass. Then run existing request-context library regressions and normal format/lint checks; report actual counts.",
+    "Future live-loader/current-context provenance remains separate owner-backed tests; equal untrusted snapshots alone never confer authority."
+  ],
+  "premortem": "Helper ignores a dimension, accepts future versions, or test-only code creates false production completion.",
+  "blast_radius": "Pure request-context comparison helper only; no persistent or remote effects.",
+  "detection": "Three exact tests cover equality, both revision directions and each identity mismatch; independent source review confirms normal-build ownership.",
+  "rollback": "Scoped removal/revert of future implementation while retaining accepted tests/evidence.",
+  "stop_conditions": [
+    "New runtime/context/session/database/authorization work",
+    "Weakening tests or granting capabilities from plain operands",
+    "Any compile failure beyond named missing APIs",
+    "Manifest/lockfile/generated change required"
+  ],
+  "review_identities": {
+    "author": "/root/finish_browser",
+    "independent_review": "pending root assignment"
+  },
+  "remaining_holds": [
+    "Independent exact test-candidate review/admission",
+    "Implementation and same-probe GREEN",
+    "Live context authority provenance and policy enforcement",
+    "Production exposure"
+  ],
+  "cargo_lease": "released after clean repeat"
+}

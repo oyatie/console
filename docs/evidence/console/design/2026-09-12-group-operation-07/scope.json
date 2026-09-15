@@ -1,0 +1,19 @@
+{
+  "status": "proposed_pending_independent_review",
+  "target": "B03 bounded durable Group operation with shared/remote staffing requirements",
+  "evidence_base_sha": "37e561482cf5010eb5cfe3f041b3d909ef5dc160",
+  "scenarios": 50,
+  "screen_states": 14,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "whole_design_approved": false,
+  "first_positive_slice": "Explicit human-launched existing payroll draft calculation, one target per selected Company, maximum six; no payment or group approval.",
+  "remaining_gaps": [
+    "Exact SQL/ACL/current-policy/helper migration and runtime proof",
+    "Worker session/fencing/owner deadline performance proof",
+    "B04 work coverage assignment lifecycle, general automatic matching/handover and autonomous workload identity",
+    "B07 remaining full application screen matrix",
+    "B08 monetary publication/disputes"
+  ],
+  "user_steering": "No local staffing prerequisite; HQ is a Site context; cross-Company service responsibility separate from Company ownership; titles are not permission hierarchy."
+}

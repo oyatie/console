@@ -86,6 +86,7 @@ pub struct Harness {
     pub approver: UserId,
     pub runtime_pool: PgPool,
     pub command_pool: PgPool,
+    auth_database: PgPool,
     pub admin_token: String,
     pub executive_token: String,
     public_pem: String,
@@ -93,6 +94,12 @@ pub struct Harness {
 
 impl Harness {
     pub async fn bootstrap(owner_pool: PgPool) -> Self {
+        console_platform_test_support::prepare_account_test_database(&owner_pool).await;
+        let auth_database = console_platform_test_support::login_test_pool(
+            &owner_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let org = OrgId::knl();
         let admin =
             seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "company-conformance").await;
@@ -144,6 +151,7 @@ impl Harness {
             approver,
             runtime_pool,
             command_pool,
+            auth_database,
             admin_token,
             executive_token,
             public_pem,
@@ -178,7 +186,12 @@ impl Harness {
                 .with_command_pool(self.command_pool.clone()),
             PgInstanceStore::new(self.runtime_pool.clone()),
             PgGovernanceStore::new(self.runtime_pool.clone()),
-            verifier,
+            verifier.map(|verifier| {
+                console_platform_auth::SessionVerification::new(
+                    verifier,
+                    self.auth_database.clone(),
+                )
+            }),
         )
     }
 

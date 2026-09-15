@@ -1,0 +1,23 @@
+recovery-fixture run=console-recovery-1626-98af81b8 evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.jX6W4r
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+SELECT 28
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.40s
+     Running tests/recovery.rs (/private/tmp/console-account30-cargo/debug/deps/recovery-ed6f34010a6cea16)
+
+running 1 test
+test staging_success_and_idempotent_restage_wait_for_remote_confirmation ... topology: PG primary plus exact synchronous standby; remote_apply enabled
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+
+
+
+recovery-accounting {"offered_stage_intents":1,"attempts":2,"effects":1,"receipts":0,"premature_created":false,"premature_restage":false}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 5.78s
+
+recovery-fixture evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.jX6W4r exit=0

@@ -20,7 +20,7 @@ use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
     UserId,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{
     AuthorizationResource, Feature, PermissionLevel, Principal, permission_for,
 };
@@ -176,18 +176,21 @@ const ID_MAX: usize = 200;
 #[derive(Debug, Clone)]
 pub struct ObjectState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl ObjectState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
-        Self { pool, jwt_verifier }
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            pool,
+            session_verification,
+        }
     }
 }
 
 pub fn router(state: ObjectState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(
@@ -1382,11 +1385,8 @@ async fn resolve_account(
 /// Passkey = self-owned WebAuthn credential. Visible ONLY to its owner: the row
 /// must exist AND belong to the caller. A passkey owned by anyone else (or a
 /// missing id) is `exists:false` — no cross-user credential-enumeration oracle.
-/// `auth_webauthn_credentials` gained a NOT NULL `org_id` + FORCE RLS in
-/// migrations 0032/0034/0035, so this is defense in depth: `with_org_conn`
-/// already arms `app.current_org` (RLS drops cross-org rows before this query
-/// runs); the explicit `user_id = caller` filter additionally scopes to the
-/// caller's OWN credentials within their org.
+/// The fixed credential-owner projection checks the armed Company and Account
+/// fence in the same statement snapshot and returns only last-used state.
 async fn resolve_passkey(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     caller: Uuid,
@@ -1396,12 +1396,12 @@ async fn resolve_passkey(
         return Ok(None);
     };
     let row = sqlx::query(
-        "SELECT last_used_at FROM auth_webauthn_credentials WHERE id = $1 AND user_id = $2",
+        "SELECT last_used_at FROM public.auth_legacy_self_passkey_state_v1(NULLIF(current_setting('app.current_org',true),'')::uuid,$2,$1)",
     )
     .bind(uuid)
     .bind(caller)
     .fetch_optional(tx.as_mut())
-    .await?;
+    .await.map_err(passkey_projection_error)?;
     let Some(row) = row else { return Ok(None) };
     let last_used_at: Option<OffsetDateTime> = row.try_get("last_used_at")?;
     Ok(Some(ResolvedHead {
@@ -1761,10 +1761,10 @@ async fn count_kind(
             .await?
         }
         "passkey" => {
-            sqlx::query_scalar("SELECT count(*) FROM auth_webauthn_credentials WHERE user_id = $1")
+            sqlx::query_scalar("SELECT public.auth_legacy_self_passkey_count_v1(NULLIF(current_setting('app.current_org',true),'')::uuid,$1)")
                 .bind(caller)
                 .fetch_one(tx.as_mut())
-                .await?
+                .await.map_err(passkey_projection_error)?
         }
         "consent" => {
             sqlx::query_scalar(
@@ -2509,6 +2509,25 @@ impl From<DbError> for ObjectError {
     fn from(value: DbError) -> Self {
         tracing::error!(error = %value, "object-layer database operation failed");
         Self::internal("object-layer request failed")
+    }
+}
+
+fn passkey_projection_error(error: sqlx::Error) -> ObjectError {
+    if matches!(&error, sqlx::Error::Database(db)
+        if db.code().as_deref() == Some("P0001") && db.message() == "auth_legacy.fenced")
+    {
+        ObjectError {
+            status: StatusCode::UNAUTHORIZED,
+            code: "unauthorized",
+            message: "session is no longer valid".to_owned(),
+        }
+    } else {
+        tracing::error!("passkey projection unavailable");
+        ObjectError {
+            status: StatusCode::SERVICE_UNAVAILABLE,
+            code: "unavailable",
+            message: "passkey projection is unavailable".to_owned(),
+        }
     }
 }
 

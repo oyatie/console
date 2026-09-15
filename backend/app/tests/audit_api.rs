@@ -20,8 +20,9 @@ use tower::ServiceExt;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_reads_only_branch_scoped_audits_and_read_access_is_audited(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -58,7 +59,7 @@ async fn admin_reads_only_branch_scoped_audits_and_read_access_is_audited(pool: 
     )
     .await
     .unwrap();
-    let service = build_router(app_state(pool.clone(), public_key_pem).unwrap());
+    let service = build_router(app_state(pool.clone(), public_key_pem).await.unwrap());
 
     let response = service
         .oneshot(
@@ -97,8 +98,9 @@ async fn admin_reads_only_branch_scoped_audits_and_read_access_is_audited(pool: 
     assert_eq!(read_count, 1);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mechanic_role_is_denied_audit_read(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -120,7 +122,7 @@ async fn mechanic_role_is_denied_audit_read(pool: PgPool) {
         vec![branch_id],
     )
     .unwrap();
-    let service = build_router(app_state(pool.clone(), public_key_pem).unwrap());
+    let service = build_router(app_state(pool.clone(), public_key_pem).await.unwrap());
 
     let response = service
         .oneshot(
@@ -144,8 +146,9 @@ async fn mechanic_role_is_denied_audit_read(pool: PgPool) {
     assert_eq!(read_count, 0);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn audit_attestation_requires_org_wide_audit_authority(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -167,7 +170,11 @@ async fn audit_attestation_requires_org_wide_audit_authority(pool: PgPool) {
         vec![branch_id],
     )
     .unwrap();
-    let service = build_router(app_state(pool.clone(), public_key_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), public_key_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let response = service
         .oneshot(
@@ -194,7 +201,11 @@ async fn audit_attestation_requires_org_wide_audit_authority(pool: PgPool) {
         Vec::new(),
     )
     .unwrap();
-    let service = build_router(app_state(pool.clone(), public_key_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), public_key_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let response = service
         .oneshot(
@@ -228,7 +239,7 @@ async fn audit_attestation_requires_org_wide_audit_authority(pool: PgPool) {
         Vec::new(),
     )
     .unwrap();
-    let service = build_router(app_state(pool.clone(), public_key_pem).unwrap());
+    let service = build_router(app_state(pool.clone(), public_key_pem).await.unwrap());
 
     let response = service
         .oneshot(
@@ -249,8 +260,9 @@ async fn audit_attestation_requires_org_wide_audit_authority(pool: PgPool) {
     assert_eq!(json["kind"], "ok");
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn target_id_filter_isolates_one_object_and_trace_id_correlates_across_objects(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -307,7 +319,11 @@ async fn target_id_filter_isolates_one_object_and_trace_id_correlates_across_obj
     .await
     .unwrap();
 
-    let service = build_router(app_state(pool.clone(), public_key_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), public_key_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     // target_id filter returns ONLY that object's events (not the sibling wo-b).
     let response = service
@@ -329,7 +345,7 @@ async fn target_id_filter_isolates_one_object_and_trace_id_correlates_across_obj
 
     // trace_id filter correlates events ACROSS objects (approval-1 + wo-a share
     // the trace; wo-b does not appear).
-    let service = build_router(app_state(pool.clone(), public_key_pem).unwrap());
+    let service = build_router(app_state(pool.clone(), public_key_pem).await.unwrap());
     let response = service
         .oneshot(
             Request::builder()
@@ -367,8 +383,9 @@ async fn target_id_filter_isolates_one_object_and_trace_id_correlates_across_obj
 /// RED (before `audit_read_event` stamps `.with_org`): armed=none ⇒ zero rows,
 /// so the KNL row is invisible (the `assert_eq!(items.len(), 1)` fails).
 /// GREEN: the KNL admin sees its own KNL audit row and NOT the other tenant's.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn super_admin_audit_read_arms_org_and_isolates_cross_org_as_runtime_role(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -422,8 +439,11 @@ async fn super_admin_audit_read_arms_org_and_isolates_cross_org_as_runtime_role(
 
     // Build the router off the `console_rt` pool so FORCE RLS actually applies —
     // an owner/BYPASSRLS pool would mask the unarmed-GUC break.
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, public_key_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, public_key_pem.clone())
+            .await
+            .unwrap(),
+    );
     let response = service
         .oneshot(
             Request::builder()
@@ -569,8 +589,20 @@ fn issue_token(
     })?)
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -579,6 +611,7 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
     ])?;
 
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn seed_branch(

@@ -1,0 +1,36 @@
+{
+  "status": "FROZEN_V2_PRIVATE_IMPORT_ALLOWLIST_AND_CUSTODY_PROPOSAL",
+  "author": "/root/inventory_repair",
+  "integration_writer": "/root",
+  "observed_head": "23fa277133e83916d094f9b2423b48fd5af65ce4",
+  "files": {
+    "PROPOSAL.md": "bca69c16bea84d10d3ad52990c0fdc572696658f8ab01f81bb339a869b863d5f",
+    "allowlist.json": "89d2da2457574969f2c49d83dc880d1415da5faafeae06985b4d214deb99dd98",
+    "allowlist.tsv": "7bb2c4494f6c9f1f12c7bee97516768551fd74308c4bca1839271aad6972799a",
+    "counts.json": "376e5398d6f782c3c4504502831e07b459c436982670daa523aae395273eed66",
+    "selection-checks.json": "74d3547401792f535d66785114375e1dc15e5a0b700038fff0f149bf81f836bb",
+    "provenance-checks.json": "27751997ca9e41ff3f42729baf9c89a679aa0e672659ceb7419abbaa79774a2b",
+    "redaction-receipt.json": "1500b6ad44dfca29d63e18169a2399db3c69faa7fe79c8c60a0ca010e3abbc43",
+    "omitted-packet-members.json": "49ea4bb5cd94e7ded194e84b23c495f74aacf780100bc060f0fc0a4cb7cafc55"
+  },
+  "derivative_payloads": {
+    "sanitized/payroll-59c38d60-runtime-v2/1.log": "95dc3ce5114447b01c1663dfc39e2fae6745e616f87afbe225c4fccee071728e",
+    "sanitized/payroll-59c38d60-runtime-v2/2.log": "12baac092ec60d7a29a238096a72176a9bf1df1b7816201216efeca95084fb5d",
+    "sanitized/payroll-59c38d60-runtime-v2/4.log": "e97749c667fbf86593583bb9b08b038e62c35aa72bed2df66e0b719b0475ac94",
+    "sanitized/payroll-59c38d60-verification/admission-red-preserved/1.log": "29a3e02b1fcb473f7c6f9ca1cdf4c788b235bd1b40d40170d17f10445e58ac0b",
+    "sanitized/payroll-59c38d60-verification/admission-red-preserved/2.log": "f14191d0673bcf91e237a14f97ca751845368aee3c040db49fd77fd25494b8d3",
+    "sanitized/payroll-59c38d60-verification/admission-red-preserved/4.log": "e49c48a264ee9d29ef555e463d197ed64be7c97859dfb511d9be2f4f8fd5c100",
+    "sanitized/payroll-operation8-0a625d32/probe.log": "75c8d0fd824cbffa611ff72e203cd89343ff4e52fef97b8ea22bcbaa8523ec36",
+    "sanitized/payroll-typed-c1301628-red/1.log": "583c4152a33922d8a04e67ccf52cef9c06966fd2492aebf2820249e4f020f7cc",
+    "sanitized/payroll-typed-c1301628-red/2.log": "67f9cef0f108270e918a3a3962afc6e75fd7a9ae354e29c817df9f9fac9d2ad5",
+    "sanitized/payroll-typed-c1301628-red/3.log": "ff4e4c4139a573068e890e868564fb9b5697c2317d8bc5577137602fee9f6541",
+    "sanitized/payroll-typed-c1301628-red/4.log": "9a2bdbf16c65f135b1f37cafcfaa7f09a2afa446c3b5e457f9a6dafeba751483",
+    "sanitized/retained-0a625d32-independent-fast/supervisor/operation/test.log": "9c2c4bf63e3886e78a06f410b03308bdb53db661e1db66d1eaf462e944793ae4"
+  },
+  "selected_files": 218,
+  "selected_bytes": 2027946,
+  "original_files": 206,
+  "sanitized_files": 12,
+  "redaction_replacements": 24,
+  "required_root_additions": "Still-running/final CI and runtime evidence are intentionally not frozen here."
+}

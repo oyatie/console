@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "9c846602511043014a039b77335e762e37032bea",
+  "head_sha": "e809f5d5d3926b73bcaba1be6b6d10a3834d173e",
+  "verdict": "APPROVE formatting-only source",
+  "source_sha256": {
+    "backend/app/tests/auth_rest.rs": "aa20b4d461097608e0b28e7b991059747fc63c6bfcb70faeda8093a0a5ca3312",
+    "backend/app/tests/health_readiness.rs": "ea8dcf388e02887469b8b1e66759d37452982848433be19b6b957ae92a850e45",
+    "backend/crates/attendance/adapter-postgres/tests/concurrency.rs": "8a9e9e971cfb634b36d54c077083bf78e219529583feefc0f425f1cd71cabbc9",
+    "backend/crates/platform/realtime/tests/hub.rs": "292caa83f0f748e7e764833eeafa211e30e399f359db1f66dfcb665a7ca31a72"
+  },
+  "changes": "Four existing test files only; SQL and JSON/assertion values unchanged; layout/trailing commas and module ordering only",
+  "evidence": [
+    "/private/tmp/verify-format-followup-admit.log records all named probes red",
+    "/private/tmp/verify-format-followup-red.log contains exact rustfmt layout diff",
+    "Reviewer independently executed RUSTUP_TOOLCHAIN=1.98.1 cargo fmt --all -- --check in isolated backend: exit0; /private/tmp/format-e809f5d5-independent-green.log"
+  ],
+  "limits": [
+    "Formatting approval does not certify application tests"
+  ]
+}

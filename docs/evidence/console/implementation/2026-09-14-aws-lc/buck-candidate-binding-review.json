@@ -1,0 +1,46 @@
+{
+  "reviewer": "/root/finish_migration",
+  "candidate": "69c86eee174e31dadd1332ab37e5d84e9a22d4a0",
+  "verdict": "ACCEPT exact source and generated mapping scope; native execution remains separate root proof",
+  "review_binding": "Every prior reviewed fixup/generator/generated audit and third-party BUCK SHA256 matches exact committed Git blob.",
+  "files": {
+    "third-party/rust/fixups/aws-lc-rs/fixups.toml": {
+      "git_blob": "23f8e3161c26e6100d614800be045d4f0e790f77",
+      "sha256": "56649a81a9ca0dde0d143bf41be0f423eb85700d23a7357e30ed9a52a49c9d25"
+    },
+    "third-party/rust/fixups/aws-lc-sys/fixups.toml": {
+      "git_blob": "82d513f7fae62b811f5a2dddead139cebcaf5d6e",
+      "sha256": "2da17edee351bbacb60a57dddcee69bd781e57e36984116eda531e9efdd732b2"
+    },
+    "tools/buck/gen_first_party.py": {
+      "git_blob": "ea47dd4b6dacf66a2b7ab0e6b957ac6482860433",
+      "sha256": "af77a550ee784ca9381d641b52b5861813993db682f7bac5aac58358231d8e88"
+    },
+    "third-party/rust/BUCK": {
+      "git_blob": "21091638f079d068d2f86d9bfbdf172ad684f861",
+      "sha256": "922956d3a8f48c59694604a5c4fade9b0c6b525020fa2b93d80708f890b11464"
+    },
+    "backend/crates/platform/audit-chain/BUCK": {
+      "git_blob": "337c5e587846d8d4b18b5d1f745c22d540f99e7e",
+      "sha256": "44d54f559228a658275463219a194f8162ddeafa944e13a705832552124c117b"
+    }
+  },
+  "app_buck": {
+    "path": "backend/app/BUCK",
+    "git_blob": "f6f81d020d77f85d5960a5c6bd7b1332b7c4f381",
+    "sha256": "249fd8f62a55cb1c284990c767f45b4a9f16434801dca87243c28d0bb87f3fde",
+    "added_mapping_occurrences": {
+      "account_custody_lifecycle.rs": 67,
+      "account_custody_startup.rs": 67
+    },
+    "mechanical_proof": "Remove only the two added child path tokens from committed new app/BUCK and result is byte-for-byte parent app/BUCK. No target/dependency/flags/resource/testbehavior edit in this generated file.",
+    "unchanged_child_source_sha256": {
+      "backend/app/tests/auth_rest/account_custody_lifecycle.rs": "80a556fe8752a075ee21dea9b6b4874766408509af4d614e37334a8c129d1cdd",
+      "backend/app/tests/auth_rest/account_custody_startup.rs": "81953bdc593727a81c72b7857738a6cdc11715a5ec492eb203fe28447656fc19"
+    }
+  },
+  "limits": [
+    "Added mapped source availability is not proof those integration targets have run under Buck.",
+    "Reviewer did not run Buck/Cargo/Docker; root native build and separate42Cargo outcomes are not independently reexecuted here."
+  ]
+}

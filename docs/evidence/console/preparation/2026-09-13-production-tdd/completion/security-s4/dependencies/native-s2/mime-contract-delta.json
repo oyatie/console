@@ -1,0 +1,19 @@
+{
+  "classification": "PROPOSED_INTERFACE_AMENDMENT_NOT_ADOPTED_SCHEMA",
+  "base_source_sha256": "3aac115e3792430fbf6b5106d70e30ed2ca7626765051a00a3f2868553e85fc3",
+  "source": "action-types.schema.json",
+  "pointer": "/$defs/UploadRequest/properties/mime_type/enum",
+  "expected": [
+    "application/pdf",
+    "text/csv",
+    "application/json"
+  ],
+  "replacement": [
+    "application/pdf",
+    "text/csv",
+    "application/json",
+    "application/x-ndjson"
+  ],
+  "reason": "Source19 existing exact event/day/member NDJSON packages require honest MIME; same upload size/digest/worker/adoption validation, no parsing bypass.",
+  "approval": "Root authorized drafting this narrow delta; sole integrator consolidates design amendment."
+}

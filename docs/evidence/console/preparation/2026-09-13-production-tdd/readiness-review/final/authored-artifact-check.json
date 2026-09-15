@@ -1,0 +1,27 @@
+{
+  "status": "STRUCTURAL_ARTIFACT_CHECK_ONLY",
+  "base_sha": "0f89f248812cbebd4e9be0997da7ed7812119ab6",
+  "command": "python3 /private/tmp/console-readiness-workflows-research-20260913/render-authored-artifacts.py",
+  "ledger_rows": 23,
+  "tasks": 12,
+  "source_files": 9,
+  "source_refs": 78,
+  "checks": [
+    "JSON parsed",
+    "unique stable IDs",
+    "dependency IDs resolve",
+    "required ledger fields populated",
+    "task and zero-observation counts agree",
+    "exact-SHA source blobs exist",
+    "source line references within bounds"
+  ],
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "usability_sessions": 0,
+  "limits": [
+    "Not a semantic independent review",
+    "Not full leaf coverage",
+    "Not product or browser acceptance",
+    "No production or legal authority"
+  ]
+}

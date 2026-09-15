@@ -1,0 +1,65 @@
+{
+  "kind": "attendance.resolve_coverage",
+  "body": {
+    "kind": "ATTENDANCE_COVERAGE",
+    "employee_id": "d4350801-44d4-54f8-a9a8-fb2867fbe19a",
+    "employment_id": "abc17824-a202-5ffc-b25c-79d53ff52fb4",
+    "period": {
+      "start": "2026-09-01",
+      "end": "2026-09-30"
+    },
+    "source_package_ref": {
+      "artifact_ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "evidence_object_id": "00000000-0000-0000-0000-000000000032",
+        "copy_id": "00000000-0000-0000-0000-000000000033",
+        "attestation_id": "00000000-0000-0000-0000-000000000034",
+        "attestation_revision": "1"
+      },
+      "format": "SOURCE19_NDJSON_V1",
+      "event_count": "3",
+      "event_set_digest": "e6bd9e013bb085fc06f81411a4b2dea45b33c89cac2b1caf0b4359c6ae21b648"
+    },
+    "boundary": {
+      "prior_anchor_ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "attendance_record_id": "00000000-0000-0000-0000-00000000000a"
+      },
+      "opening_state": "OFF_DUTY",
+      "query_from_us": "1788102000000000",
+      "query_to_us": "1790866800000000",
+      "basis_rule_ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "qualification_id": "00000000-0000-0000-0000-000000000004",
+        "revision": "2"
+      }
+    },
+    "outcome": "BLOCKED",
+    "blockers": [
+      {
+        "code": "INCOMPLETE_ATTENDANCE",
+        "family": "ATTENDANCE",
+        "source_refs": [
+          {
+            "kind": "EVENT",
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "attendance_record_id": "00000000-0000-0000-0000-00000000000c"
+          }
+        ]
+      }
+    ],
+    "exception_resolution_refs": [],
+    "coverage_days_ref": {
+      "artifact_ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "evidence_object_id": "00000000-0000-0000-0000-00000000003c",
+        "copy_id": "00000000-0000-0000-0000-00000000003d",
+        "attestation_id": "00000000-0000-0000-0000-00000000003e",
+        "attestation_revision": "1"
+      },
+      "format": "SOURCE19_COVERAGE_DAYS_V1",
+      "day_count": "1",
+      "day_set_digest": "0d353e2cb8f6736e2193a1a5cc106322aa3c949bd328924a009ef893eadbb922"
+    }
+  }
+}

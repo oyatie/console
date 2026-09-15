@@ -1,0 +1,68 @@
+{
+  "kind": "independent-auth-transport-implementation-source-review",
+  "reviewer": "/root/finish_browser",
+  "author": "/root/next_auth_context",
+  "base_sha": "a2aa1ff712d882a639f2be504336223a0486c3a2",
+  "head_sha": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+  "status": "PASS_SOURCE_CORRECTNESS_CONDITIONAL_AUTH_TIMEOUT_TOPOLOGY_PREREQUISITE_NOT_RUNTIME_GREEN",
+  "source_files": [
+    {
+      "path": "backend/app/src/lib.rs",
+      "sha256": "19ff33ff11d79d936872e188198c78c23efbc531e78f14d3322e66222b670742"
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/src/lib.rs",
+      "sha256": "1378b5d8032fdc87b35c7bc1c6387ae397e222591de592e95653d6d9b026001d"
+    }
+  ],
+  "scope": "Exact two-file implementation against frozen parent; no tests edited.",
+  "checks": [
+    {
+      "subject": "Observed target failclosed",
+      "result": "Non-optional String/i64/String/i32 result requires non-null target metadata; fetch_one errors and unequal tuples produce fixed refusal. Builtin functions and catalog are pg_catalog-qualified. No raw URL comparison."
+    },
+    {
+      "subject": "Credential error surface",
+      "result": "Auth connector errors discarded into fixed AUTH_DATABASE_URL AppError::Config; target errors likewise fixed, without driver secret/URL interpolation. This reviews added returned error paths only, not full telemetry information-flow proof."
+    },
+    {
+      "subject": "Pool ownership",
+      "result": "Exactly one private Option<PgPool> in AuthRestState. from_config installs actual authenticated pool using builder; state/router clones share it. Legacy business pool untouched; no second AppState auth field and no URL-only or discarded pool."
+    },
+    {
+      "subject": "Mode behavior",
+      "result": "Admission limited to API plus actual configured business DB plus auth_rest config. Disabled-auth/no-DB/worker retain prior path. new remains synchronous composition and constructors retain signatures with absent auth transport."
+    },
+    {
+      "subject": "Readiness",
+      "result": "Required mode uses configured && ready after existing readiness helper; absent retained pool or unreachable pool fails aggregate503. Nonrequired mode bypasses auth dependency. Same shared pool accessor is immediately consumed. No response schema expansion."
+    },
+    {
+      "subject": "Existing identity/reset constraints",
+      "result": "Uses existing connect_command_pool max2/acquire3s and full after_connect/after_release identity/timeouts checks unchanged. No weaker fallback or broad privileges."
+    },
+    {
+      "subject": "Scope control",
+      "result": "Only two source paths changed; no test, migration, lockfile, generated or policy/grant edits. Added pool budget comment corrects old inaccurate claim."
+    }
+  ],
+  "discovered_prerequisite": {
+    "source": "Root/author report, independently source-inspected connector requirements in previous review; runtime not executed by reviewer.",
+    "issue": "Existing operator topology assigns required serving timeouts to four business/command roles but omits console_auth_rt. Auth pool now correctly uses same mandatory timeout validator, so baseline startup may fail until actual role setup satisfies it.",
+    "required_action": "Preserve real test failure; separately review narrowly extended existing topology writer/readbacks. Do not remove timeout guards to pass tests."
+  },
+  "limits": [
+    "Endpoint/name/OID startup equality is not physical cluster identity, reconnect binding, primary/freshness, restore/serving generation or HA proof.",
+    "No actual request-context Account fencing or statechanging authorization introduced/proved.",
+    "Four tests do not alone cover absent-required-pool branch, every mode/parser/reset regression or deployment concurrency.",
+    "Corrected pool arithmetic is68at stated4API+2worker surge; configured60cannot support that bound plus operator reserve. Requires deployment-capacity resolution before that exposure, not pool-topology scope expansion here.",
+    "This source review has zero Cargo/DB/runtime invocations and no fresh GREEN claim. Root owns probe evidence."
+  ],
+  "blocking_source_findings": [],
+  "remaining_holds": [
+    "Auth-role timeout operator prerequisite and real same4probe GREEN.",
+    "Inherited projection/config/parser/identity/reset regressions as applicable.",
+    "Production topology capacity, physical authority and downstream fence activation separate."
+  ],
+  "review_method": "Direct frozen commit diff/source inspection against exact parent, applying Red Team, Zero Trust, Operability and minimal-change reasoning."
+}

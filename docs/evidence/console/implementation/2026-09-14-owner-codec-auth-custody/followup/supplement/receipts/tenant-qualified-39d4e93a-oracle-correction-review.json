@@ -1,0 +1,12 @@
+{
+  "reviewer": "/root/review_completeness",
+  "supersedes": "/private/tmp/tenant-qualified-39d4e93a-independent-test-review.json",
+  "status": "Prior test approval withdrawn pending corrected immutable candidate",
+  "finding": "accounts is neither global nor owner-only allowlisted; original clean public.accounts fixture expectation is incorrect. Reviewer missed this premise.",
+  "approved_correction": "Use actual existing global object_types in classification and public/private/quoted-case/dot alias fixtures; add public.accounts remains UnclassifiedTable regression",
+  "constraints": [
+    "No allowlist expansion",
+    "Retain original RED and intermediate13/14 attempt",
+    "Re-review corrected test SHA before source acceptance"
+  ]
+}

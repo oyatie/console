@@ -1,0 +1,27 @@
+{
+  "owner": "/root",
+  "base_sha": "2fcfc026f298ae95b5b0f1e44b64f062e835b51f",
+  "immutable_target": "Register only four reviewed additive parser tests in static attribute ratchet",
+  "allowed_paths": [
+    "docs/program/executed-tests-baseline.json",
+    "docs/evidence/console/verification/2026-09-13-repair-01/baseline-entry.json"
+  ],
+  "mechanical_guide": "Existing --update; assert byte-identical except exact25->29 substitution; rerun same named probe",
+  "probe": "fnm exec --using=24.16.0 node scripts/check-executed-tests.mjs > /private/tmp/console-repair30-checks/baseline-probe.log 2>&1",
+  "admission": "fanout.py admit exit0 on clean base; actual gained-attributes failure captured",
+  "pre_mortem": "Generator could relabel missing execution or change unrelated counts",
+  "blast_radius": "One static source-attribute count, no executable test or CI membership changes",
+  "detection": "Exact byte comparison; named dark set and unresolved-link contracts; same probe GREEN",
+  "rollback": "Reviewed reversal of count with any reversal of its four source additions",
+  "stop_conditions": [
+    "Any unrelated baseline byte change",
+    "Any ignored/dark-set/feature change",
+    "Independent review rejection"
+  ],
+  "reviewer": "/root/fresh29_security prospective ACCEPT; exact candidate pending",
+  "remaining_holds": [
+    "Full verify and final review",
+    "Authority local adoption and hosted readback",
+    "Complete Account tests and explicit approval; no Account implementation"
+  ]
+}

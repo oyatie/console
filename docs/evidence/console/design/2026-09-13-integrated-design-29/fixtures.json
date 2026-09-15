@@ -1,0 +1,101 @@
+{
+  "classification": "DESIGN_ORACLES_NOT_EXECUTABLE_TESTS",
+  "fixtures": [
+    {
+      "id": "C01",
+      "name": "contradictory scalar",
+      "history": "two set commands same expected version",
+      "oracle": "at most one success; preserve losing input"
+    },
+    {
+      "id": "C02",
+      "name": "independent properties",
+      "history": "same entity disjoint semantic fields",
+      "oracle": "both survive unless explicit shared predicate"
+    },
+    {
+      "id": "C03",
+      "name": "write skew",
+      "history": "40+40;two +15 operations",
+      "oracle": "every authoritative state sum<=100"
+    },
+    {
+      "id": "C04",
+      "name": "phantom",
+      "history": "insert eligible member after predicate read",
+      "oracle": "one complete membership ordering point"
+    },
+    {
+      "id": "C05",
+      "name": "freeze",
+      "history": "gated September staging versus freeze;October control",
+      "oracle": "new effect ordered through commit;historical replay unchanged"
+    },
+    {
+      "id": "C06",
+      "name": "close snapshot",
+      "history": "leave/exception insertion during close",
+      "oracle": "immutable observed basis;later change marks staleness;new payroll revalidates"
+    },
+    {
+      "id": "C07",
+      "name": "substitution",
+      "history": "assignment versus overlapping approval;AM/PM control",
+      "oracle": "no stale assignment;approval-first replan;assignment-first readiness invalidation+task"
+    },
+    {
+      "id": "C08",
+      "name": "pin retirement",
+      "history": "acquire versus begin retirement",
+      "oracle": "no coexistence absent authorized release;no new acquire after closure"
+    },
+    {
+      "id": "C09",
+      "name": "source revocation",
+      "history": "new effect versus completed revoke",
+      "oracle": "valid at declared commit;historical receipt separate"
+    },
+    {
+      "id": "C10",
+      "name": "gate unknown",
+      "history": "duplicate consume;lost commit ACK",
+      "oracle": "effects<=1;required admitted work eventually1 after recovery;unknown retained"
+    },
+    {
+      "id": "C11",
+      "name": "tenant fields",
+      "history": "A and B differ in private values;field restrictions within A",
+      "oracle": "equal allowed logical observations;no B mutation"
+    },
+    {
+      "id": "C12",
+      "name": "issuer pause",
+      "history": "pause after auth before send;hold;old issuer resume",
+      "oracle": "STOP_PENDING until prevented/resolved;no false stopped guarantee"
+    },
+    {
+      "id": "C13",
+      "name": "restore",
+      "history": "older snapshot;newer revoke/effect/delete",
+      "oracle": "independent current watermark or affected scope isolated"
+    },
+    {
+      "id": "C14",
+      "name": "overload fairness",
+      "history": "hotkey saturation alongside admitted neighbor",
+      "oracle": "bounded memory/retry/backlog and frozen neighbor limits"
+    },
+    {
+      "id": "C15",
+      "name": "formula structure",
+      "history": "range insert/delete+formula graph;offline replay",
+      "oracle": "explicit snapshot/rebase/cycle/overflow;never business merge by LWW"
+    },
+    {
+      "id": "C16",
+      "name": "reopen inputs",
+      "history": "CALCULATED or ATTENDANCE_CLOSED source correction",
+      "oracle": "exact reopen receipt invalidates current pointers;STAGED;no approved/review shortcut"
+    }
+  ]
+}

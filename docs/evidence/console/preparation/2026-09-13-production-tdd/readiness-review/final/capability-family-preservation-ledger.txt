@@ -1,0 +1,333 @@
+# Console capability-family preservation ledger
+
+Authored review evidence at `0f89f248812cbebd4e9be0997da7ed7812119ab6`. This is not product authority, implementation admission, full-suite leaf coverage or acceptance evidence.
+
+The 11 platform families and 12 Console workflow families overlap deliberately. Dependencies name contract relationships; mutually dependent foundation rows are reviewed together, not dispatched as circular implementation lanes.
+
+Every row requires preservation review before implementation. Detailed later-capability design/tests precede that capability’s implementation; actual acceptance and production exposure remain later evidence gates.
+
+## CF-F01 — Data connectivity, integration, transformation and orchestration
+
+**Phase:** LATER_CAPABILITY; internal custody dependency only now. **Owning responsibility:** Existing source-domain application/adapter owners; platform integration boundary.
+
+**Dependencies:** CF-F02, CF-F03, CF-F11, CF-C12.
+
+**Intended acceptance:** An admitted connector/transformation produces typed, attributable source revisions with bounded replay, provenance, error and repair behavior.
+
+**Preserve now:** Keep native business intent distinct from ingested/source facts; immutable source IDs, schema versions, owner receipts and current authorization; custody is not a shipped ingest product.
+
+**Adoption hypothesis:** UNKNOWN. **Invalidation trigger:** Import overwrites native truth; new connector bypasses owner; source key or time semantics incompatible with native schema.
+
+**Source:** `docs/current/PRODUCT.md:23`; `docs/current/PRODUCT.md:27`; `docs/current/ROADMAP.md:52`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7`.
+
+## CF-F02 — Ontology objects, typed properties, links and interfaces
+
+**Phase:** FIRST_SLICE_FOUNDATION; full ontology breadth later. **Owning responsibility:** Existing ontology application/kernel contracts plus canonical domain-owned projections.
+
+**Dependencies:** CF-C01, CF-C02, CF-F11.
+
+**Intended acceptance:** Selected objects and typed commands retain identity, field meaning, relationship integrity, provenance and authorized reusable views; later leaves have their own acceptance.
+
+**Preserve now:** Stable object/type/property/item IDs; schema and revision references; exact units/time; current field/resource policy; one canonical domain writer.
+
+**Adoption hypothesis:** ADDITIVE_CONDITIONAL. **Invalidation trigger:** New type requires reinterpreting existing IDs, replacing property meaning, changing legal Company boundary or bypassing canonical writer.
+
+**Source:** `docs/current/PRODUCT.md:23`; `docs/current/PRODUCT.md:31`; `docs/current/PRODUCT.md:34`; `docs/current/PRODUCT.md:46`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:15`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:19`.
+
+## CF-F03 — Actions, functions, validation, automation and effect receipts
+
+**Phase:** FIRST_SLICE_FOUNDATION; general automation later. **Owning responsibility:** Existing ontology application dispatch with fixed domain participants and owner adapters.
+
+**Dependencies:** CF-F02, CF-F04, CF-F11.
+
+**Intended acceptance:** Each admitted first-slice action validates current inputs/authority, preflights without mutation, commits once and returns only the currently authorized projection of the original outcome/receipt on replay.
+
+**Preserve now:** Closed versioned command semantics, owner dispatch, expected revisions, deterministic encoding, preflight/current policy, effect versus notification distinction.
+
+**Adoption hypothesis:** ADDITIVE_CONDITIONAL. **Invalidation trigger:** New automation executes arbitrary callbacks, changes old sealed command semantics, introduces a second writer or turns receipt replay into a new action.
+
+**Source:** `docs/current/PRODUCT.md:31`; `docs/current/PRODUCT.md:34`; `docs/current/PRODUCT.md:36`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:3`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:4`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:12`.
+
+## CF-F04 — Drafts, change history, snapshots, replay and finalization
+
+**Phase:** FIRST_SLICE_FOUNDATION; broader historical analysis later. **Owning responsibility:** Existing ontology/common draft application owner and owning domain receipt/custody boundaries.
+
+**Dependencies:** CF-F02, CF-F03, CF-C01, CF-C12.
+
+**Intended acceptance:** Save, reopen, restore permitted fields, seal and execute preserve acknowledged input, immutable history and actor/company binding.
+
+**Preserve now:** Stable FieldAddress with parent item IDs; schema/version history; incomplete editor text distinct from typed value; immutable sealed input; restoration appends.
+
+**Adoption hypothesis:** MIGRATION_IF_TRIGGERED. **Invalidation trigger:** Old schema/receipt bytes rewritten, row addressing becomes positional, history needed later was discarded or account/private custody was collapsed into employment.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:4`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:5`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:15`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:19`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:30`.
+
+## CF-F05 — Shared approvals, work assignment, delegation and continuity
+
+**Phase:** FIRST_SLICE_DEPENDENCY; other process families later. **Owning responsibility:** Existing workflow and governance application owners; Group capacity owner; domain decision owner.
+
+**Dependencies:** CF-F03, CF-F04, CF-C01, CF-F11.
+
+**Intended acceptance:** Automatic/manual assignment and temporary/permanent transfer maintain one accountable task owner, capacity and current authority, with supervised no-candidate recovery.
+
+**Preserve now:** Task/definition identity, ownership/assignment epochs, attribution, policy-derived eligibility, bounded capacity/fairness and no actor-intent transplantation.
+
+**Adoption hypothesis:** ADDITIVE_CONDITIONAL. **Invalidation trigger:** New process requires payroll-only task roles, identity storage roots, unbounded candidate search or sharing one task among multiple accountable owners.
+
+**Source:** `docs/current/PRODUCT.md:27`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:11`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:6`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:15`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:18`.
+
+## CF-F06 — Analytics, search, saved explorations, time-series, geospatial and multimodal views
+
+**Phase:** LATER_CAPABILITY; admitted first-slice views only now. **Owning responsibility:** Canonical domain read projections plus existing analytics/application and UI adapters.
+
+**Dependencies:** CF-F02, CF-F04, CF-F11.
+
+**Intended acceptance:** Each later analytical leaf answers declared questions from authorized data with reproducible units, time, lineage and explicit result limits.
+
+**Preserve now:** Policy-aware projection, linked identity, versioned saved criteria, bounded pagination/aggregation and history availability; do not expose hidden population through derived values.
+
+**Adoption hypothesis:** UNKNOWN. **Invalidation trigger:** Analytical scale or semantics require materialization/index changes; saved filters lose historical meaning; aggregates assume access to undisclosed fields.
+
+**Source:** `docs/current/PRODUCT.md:23`; `docs/current/PRODUCT.md:32`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:9`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:12`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:17`.
+
+## CF-F07 — Fusion-like spreadsheets, formulas and enterprise coediting
+
+**Phase:** LATER_CAPABILITY. **Owning responsibility:** Existing ontology object/action contracts consumed by future sheet application/UI owner; owner identity finalized at later admission.
+
+**Dependencies:** CF-F02, CF-F03, CF-F04, CF-F11.
+
+**Intended acceptance:** Declared formula, structural edit, object writeback, concurrent edit and reconnect cases preserve exact values and defined conflicts under the chosen workload.
+
+**Preserve now:** Stable field/cell/item addressing, exact typed values, versioned formulas/schema/structure, owner-bound actions and current policy; preserve a replaceable collaboration seam.
+
+**Adoption hypothesis:** UNKNOWN. **Invalidation trigger:** Formula dependencies, cell identity, structure operations or measured contention cannot be represented without transforming persisted draft/object state.
+
+**Source:** `docs/current/PRODUCT.md:27`; `docs/current/ROADMAP.md:52`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:15`.
+
+## CF-F08 — Collaborative documents, communications and policy-bound object links
+
+**Phase:** LATER_CAPABILITY. **Owning responsibility:** Future communication/document application owners with existing object, policy, workflow and Leptos UI boundaries.
+
+**Dependencies:** CF-F02, CF-F03, CF-C01, CF-F11, CF-C12.
+
+**Intended acceptance:** Later documents and communications preserve authorized links, authorship, audience and delivery state while remaining discoverable beside business work.
+
+**Preserve now:** Independent persistent communication surface; immutable business links, content revisions and authorship; separate audience policy and delivery outcome.
+
+**Adoption hypothesis:** ADDITIVE_CONDITIONAL. **Invalidation trigger:** Communication storage treats Employment as login identity, derives authority from job labels or depends on transient payroll inspection panels.
+
+**Source:** `docs/current/PRODUCT.md:27`; `docs/current/ROADMAP.md:50`; `docs/current/ROADMAP.md:52`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13`.
+
+## CF-F09 — Developer APIs, SDKs, application building and integrations
+
+**Phase:** FIRST_SLICE_ADAPTERS; general developer platform later. **Owning responsibility:** Existing application use cases; REST/UI sibling adapters where selected; contracts/OpenAPI serialized owner.
+
+**Dependencies:** CF-F02, CF-F03, CF-F11.
+
+**Intended acceptance:** First-slice SSR/API adapters call the same authoritative use cases; later public tooling preserves versioned contracts and declared compatibility.
+
+**Preserve now:** Server-derived context and policy; transport-independent owner commands/results; versioned DTOs; no universal REST-layer cleanup prerequisite.
+
+**Adoption hypothesis:** ADDITIVE_CONDITIONAL. **Invalidation trigger:** An SDK depends on internal custody/control DTOs, transport bypasses owner or compatibility requires rewriting persisted intents.
+
+**Source:** `docs/current/PRODUCT.md:46`; `docs/current/ROADMAP.md:19`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:3`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:4`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:17`.
+
+## CF-F10 — AI platform and model development/operations
+
+**Phase:** LATER_CAPABILITY_SEPARATE_REPOSITORY_HOLD. **Owning responsibility:** Separate Intelligence repository; Console-owned fail-closed application seam.
+
+**Dependencies:** CF-F02, CF-F03, CF-F11.
+
+**Intended acceptance:** After stable Intelligence SHA and separate admission, chosen model capabilities use the same Principal, object/action owners and explicit evidence/authority limits.
+
+**Preserve now:** Keep existing bind-only loopback seam; no tenant chat/inference/payroll write or autonomous merge; deterministic business authority remains independent.
+
+**Adoption hypothesis:** UNKNOWN. **Invalidation trigger:** A model integration needs a second writer, tenant inference before admission, non-loopback exposure or cloning without named stable base.
+
+**Source:** `docs/current/PRODUCT.md:25`; `docs/current/PRODUCT.md:56`; `docs/current/ROADMAP.md:33`.
+
+## CF-F11 — Security, governance, platform administration, observability and product delivery
+
+**Phase:** FIRST_SLICE_FOUNDATION_AND_RECOVERY; enterprise breadth later. **Owning responsibility:** Platform auth/authz, Account/Group, DB/runtime and delivery owners; canonical domain control owners.
+
+**Dependencies:** CF-C01, CF-C02, CF-F03.
+
+**Intended acceptance:** Selected policy and control changes are attributable/current; diagnostic, recovery, migration and release evidence accurately describe actual effects and exposure limits.
+
+**Preserve now:** Resource/field/action and policy-administration authority; Company isolation; versioned dependency/contract manifests; protected telemetry and effect histories; software rollback distinct from data restoration.
+
+**Adoption hypothesis:** MIGRATION_IF_TRIGGERED. **Invalidation trigger:** Scope/authority encoding changes, mixed-version reads reinterpret history, telemetry discloses hidden data, deployment requires irreversible conversion or new exposure.
+
+**Source:** `docs/current/PRODUCT.md:17`; `docs/current/PRODUCT.md:32`; `docs/current/PRODUCT.md:37`; `docs/current/PRODUCT.md:52`; `docs/current/ROADMAP.md:15`; `docs/current/DELIVERY.md:7`; `docs/current/DELIVERY.md:25`.
+
+## CF-C01 — Persistent Account and internal/applicant/former-worker/partner identity
+
+**Phase:** FIRST_SLICE_DEPENDENCY; broader experiences later. **Owning responsibility:** Platform Account/auth/context owners; policy-scoped CompanyActor attribution owners.
+
+**Dependencies:** CF-F11.
+
+**Intended acceptance:** Account identity persists independently of Employment; separate security suspension, recovery and session-revocation controls remain effective. Current policy controls login eligibility, contexts, own historical records and actions without job-title role classes.
+
+**Preserve now:** Stable Account and attributed actor IDs, separate employment lifecycle, original Company-bound drafts, temporal grants and policy-derived discovery.
+
+**Adoption hypothesis:** MIGRATION_IF_TRIGGERED. **Invalidation trigger:** Login identity is deleted/recreated on employment change, one Account silently changes legal actor or current context retargets a saved intent.
+
+**Source:** `docs/current/PRODUCT.md:17`; `docs/current/PRODUCT.md:27`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:5`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:10`.
+
+## CF-C02 — Company, Group, OrgUnit, Person, Employment and organization topology
+
+**Phase:** FIRST_SLICE_DEPENDENCY; broader organization work later. **Owning responsibility:** Existing Company/organization/HR canonical owners; separately scoped Group topology owner.
+
+**Dependencies:** CF-C01, CF-F02, CF-F11.
+
+**Intended acceptance:** Company-scoped work and authorized Group observations preserve legal/employment identity, topology and single-writer boundaries.
+
+**Preserve now:** Group tenant versus Company legal/RLS cell; Company-local OrgUnits; immutable historical Employment; N× scoped reads and one-Company writes.
+
+**Adoption hypothesis:** MIGRATION_IF_TRIGGERED. **Invalidation trigger:** Cross-company shared office becomes a shared OrgUnit, Group arms app.current_org, or a later topology change rewrites historical legal ownership.
+
+**Source:** `docs/current/PRODUCT.md:15`; `docs/current/PRODUCT.md:17`; `docs/current/PRODUCT.md:19`; `docs/current/PRODUCT.md:21`; `docs/current/PRODUCT.md:46`.
+
+## CF-C03 — Recruiting and HR employment lifecycle: appointment, promotion, transfer, departure
+
+**Phase:** LATER_CAPABILITY; selected existing facts and continuity dependencies now. **Owning responsibility:** Existing people/HR application and canonical assignment owners with governance decisions.
+
+**Dependencies:** CF-C01, CF-C02, CF-F03, CF-F05.
+
+**Intended acceptance:** Each admitted lifecycle story has real input, distinct authorized decision, canonical employment effect, downstream consequences and correction/history acceptance.
+
+**Preserve now:** Person creation distinct from hr.appoint; exact effective intervals and employment identity; persistent Account; no blanket lifecycle shipping from existing code.
+
+**Adoption hypothesis:** ADDITIVE_CONDITIONAL. **Invalidation trigger:** Later HR change requires retroactive replacement of Person/Employment identity, drops historical payroll links or conflates directory create with appointment approval.
+
+**Source:** `docs/current/PRODUCT.md:10`; `docs/current/PRODUCT.md:11`; `docs/current/PRODUCT.md:27`; `docs/current/PRODUCT.md:33`; `docs/current/ROADMAP.md:52`.
+
+## CF-C04 — Attendance, calendars, coverage and close/source lifecycle
+
+**Phase:** FIRST_SLICE_BOUNDED_SOURCE_DEPENDENCY; full attendance stories later. **Owning responsibility:** Existing attendance/payroll source application and adapter owners.
+
+**Dependencies:** CF-C02, CF-F03, CF-F04, CF-C12.
+
+**Intended acceptance:** Supported native payroll receives exact calendars, assignments, coverage, close facts and source revisions; stale/incomplete sources route accountable repair.
+
+**Preserve now:** Versioned source facts, exact periods, stable Employment links, qualification/provenance and owner-bound close/reopen behavior.
+
+**Adoption hypothesis:** ADDITIVE_CONDITIONAL. **Invalidation trigger:** New attendance story alters prior period/coverage meaning, needs source facts never retained, or bypasses close/freeze semantics.
+
+**Source:** `docs/current/PRODUCT.md:27`; `docs/current/PRODUCT.md:65`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:6`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7`; `docs/current/ROADMAP.md:52`.
+
+## CF-C05 — Labor and jurisdiction-dependent employment workflows
+
+**Phase:** LATER_CAPABILITY_AND_QUALIFIED_AUTHORITY_HOLD. **Owning responsibility:** Relevant existing HR/labor/payroll domain owner; qualified rule authority remains separately identified at later admission.
+
+**Dependencies:** CF-C03, CF-C04, CF-F05, CF-C12.
+
+**Intended acceptance:** Each supported labor story distinguishes verified rule, versioned evidence, assumption and unsupported circumstance, with correction and required authority.
+
+**Preserve now:** Store evidence edition/locator/narrative separately from legal conclusions; preserve exact time/jurisdiction/profile applicability; no guessed statutory rules.
+
+**Adoption hypothesis:** UNKNOWN. **Invalidation trigger:** A required rule lacks authoritative confirmation, source applicability changes or new retention/processing obligations conflict with immutable evidence treatment.
+
+**Source:** `docs/current/PRODUCT.md:27`; `docs/current/PRODUCT.md:37`; `docs/current/PRODUCT.md:53`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:8`; `docs/current/ROADMAP.md:52`.
+
+## CF-C06 — Native nonpayable payroll input, calculation and human review
+
+**Phase:** FIRST_SLICE_VERTICAL; full payroll story inventory later. **Owning responsibility:** Existing payroll application/domain/adapters and current registered source/workflow participants.
+
+**Dependencies:** CF-C01, CF-C02, CF-C04, CF-F03, CF-F04, CF-F05, CF-C12.
+
+**Intended acceptance:** One admitted supported numeric journey reaches an approved nonpayable result with complete source and human coverage; exceptional required cases stay visibly incomplete.
+
+**Preserve now:** Exact monetary units/rounding/profile; immutable source and calculation commitments; current evidence; natural-person independence; no partial hidden-population completion.
+
+**Adoption hypothesis:** ADDITIVE_CONDITIONAL. **Invalidation trigger:** New profile changes old calculation interpretation, requires guessed inputs or drops unsupported selected employees to claim completion.
+
+**Source:** `docs/current/PRODUCT.md:12`; `docs/current/PRODUCT.md:27`; `docs/current/PRODUCT.md:63`; `docs/current/ROADMAP.md:50`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:9`.
+
+## CF-C07 — Own historical publication, inquiries and correction continuity
+
+**Phase:** FIRST_SLICE_VERTICAL. **Owning responsibility:** Existing payroll review/publication owners, common content/custody owner and workflow follow-up participant.
+
+**Dependencies:** CF-C01, CF-C06, CF-F05, CF-C12.
+
+**Intended acceptance:** Current and former workers access permitted immutable NONPAYABLE_REVIEW publication and submit/track issue coverage through an actual corrected publication.
+
+**Preserve now:** Published amounts distinct from current correction status; historical own policy; issue/item identity; pending work distinct from corrected outcome; no future receipt required to request work.
+
+**Adoption hypothesis:** ADDITIVE_CONDITIONAL. **Invalidation trigger:** Later case process repurposes original issue/content IDs, exposes internal task custody or marks corrected without a covering publication.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:10`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:19`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:21`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:5`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:7`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:25`.
+
+## CF-C08 — Native messenger and business conversations
+
+**Phase:** LATER_CAPABILITY. **Owning responsibility:** Future communication application owner using existing Account/object/policy contracts.
+
+**Dependencies:** CF-F08, CF-C01, CF-F11.
+
+**Intended acceptance:** Admitted conversation tasks support authorized participants, object links, message lifecycle and truthful delivery/recovery in a persistent surface.
+
+**Preserve now:** Account-based authorship, policy-bound linked objects/audiences, stable content/message IDs and navigation independent of payroll details.
+
+**Adoption hypothesis:** UNKNOWN. **Invalidation trigger:** Retention, conversation membership or per-message access cannot be represented by chosen shared content/policy contracts.
+
+**Source:** `docs/current/PRODUCT.md:27`; `docs/current/ROADMAP.md:52`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13`.
+
+## CF-C09 — Native mail
+
+**Phase:** LATER_CAPABILITY. **Owning responsibility:** Future mail application/integration owner using existing Account/object/policy contracts.
+
+**Dependencies:** CF-F08, CF-C01, CF-F11.
+
+**Intended acceptance:** Admitted mail tasks preserve correspondence identity, authorized attachments/object links and distinguish queued/sent/failed/unknown delivery.
+
+**Preserve now:** Separate external delivery effects from business receipts, stable correspondence/content references and current attachment/audience policy.
+
+**Adoption hypothesis:** UNKNOWN. **Invalidation trigger:** External provider identity, delivery reconciliation, retention or transport requirements conflict with shared custody assumptions.
+
+**Source:** `docs/current/PRODUCT.md:27`; `docs/current/ROADMAP.md:52`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13`.
+
+## CF-C10 — Native calendar and shared scheduling
+
+**Phase:** LATER_CAPABILITY; payroll work calendars remain CF-C04. **Owning responsibility:** Future calendar application owner using existing Account/object/policy contracts.
+
+**Dependencies:** CF-F08, CF-C01, CF-C02, CF-F05.
+
+**Intended acceptance:** Admitted scheduling tasks express participants, time zones, updates, cancellations and policy-bound relationships without becoming payroll source authority implicitly.
+
+**Preserve now:** Distinguish business attendance calendar facts from communications scheduling; stable event/occurrence identity, effective time and participant policy.
+
+**Adoption hypothesis:** UNKNOWN. **Invalidation trigger:** Recurring-event identity/time semantics or scheduling ownership require reinterpreting persisted attendance/workflow facts.
+
+**Source:** `docs/current/PRODUCT.md:27`; `docs/current/ROADMAP.md:52`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13`.
+
+## CF-C11 — Approved external sharing and applicant/partner experiences
+
+**Phase:** LATER_CAPABILITY; historical former-worker own access remains CF-C07. **Owning responsibility:** Existing Account/authz boundaries and future sharing application owner; each domain retains canonical owner.
+
+**Dependencies:** CF-C01, CF-F02, CF-F03, CF-F11, CF-C12.
+
+**Intended acceptance:** At later admission, an external principal accesses only intended resources/fields/actions for a defined duration with revocation and attribution evidence.
+
+**Preserve now:** No hardcoded external/internal job-title class; persistent Account, exact policy context, revocable links and owned resources; no blanket employee-required model.
+
+**Adoption hypothesis:** UNKNOWN. **Invalidation trigger:** Sharing requires bearer-link authority, new identity federation, retention/disclosure rules or cross-tenant writes outside current contracts.
+
+**Source:** `docs/current/PRODUCT.md:27`; `docs/current/PRODUCT.md:32`; `docs/current/PRODUCT.md:52`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:10`.
+
+## CF-C12 — Internal evidence custody, storage and later 자료실/document management
+
+**Phase:** FIRST_SLICE_INTERNAL_DEPENDENCY; standalone storage/ingest later. **Owning responsibility:** Existing common evidence/custody and domain source owners; later storage application owner identified at its admission.
+
+**Dependencies:** CF-F02, CF-F04, CF-F11.
+
+**Intended acceptance:** First slice retains and retrieves exact required originals under current policy through review/correction/recovery; later file product has its own acceptance.
+
+**Preserve now:** Immutable evidence references, provenance, retention/pins and governed release; no duplicate mutable payload store; no first-slice import/export data-entry substitute.
+
+**Adoption hypothesis:** MIGRATION_IF_TRIGGERED. **Invalidation trigger:** Later storage deduplicates away required originals, changes address/hash meaning, introduces cross-Company payload access or deletes still-needed evidence.
+
+**Source:** `docs/current/PRODUCT.md:27`; `docs/current/PRODUCT.md:50`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:24`.
+
+## Remaining evidence
+
+The complete versioned Foundry leaf inventory, leaf owner registrations, later detailed specifications/tests and actual acceptance evidence remain open. The JSON companion contains gate timing, source links and explicit status for every row. Owning layers are responsibilities, not invented named employees or instructions to create new crates.

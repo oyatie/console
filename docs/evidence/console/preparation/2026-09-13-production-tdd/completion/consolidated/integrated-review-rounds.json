@@ -1,0 +1,70 @@
+{
+  "kind": "ACTUAL_SEQUENTIAL_INTEGRATED_REVIEW_ROUNDS",
+  "historical_reviews": "Design30/BW31 and scoped packet reviews retain their original scope; they are not counted as integrated rounds for this completion amendment.",
+  "rounds": [
+    {
+      "round": 1,
+      "candidate_sha": "363f85fb8cbba6fd05bf9847ae8bf0f4a7567172",
+      "tree": "86de40aa613583ae0d35febaa12abdbc1bacce39",
+      "reviews": [
+        {
+          "path": "../reviews/console-363f85fb-round1-completeness-review.json",
+          "sha256": "d6310a8485e26366ea16258b023fd76865d8834834b061ca5fc7015a22f02890"
+        },
+        {
+          "path": "../reviews/finish-browser-final-integration-363f85f.json",
+          "sha256": "5dfc8a4d89f79ba6543037c79e620ff1996e88382ab20296d077c576d751e31b"
+        },
+        {
+          "path": "../reviews/finish-migration-consolidated-363f85f-review.json",
+          "sha256": "fd402bcb014ab475eee0035edb10b602f41de769d7a2b8c768a32abb19ea67f6"
+        }
+      ],
+      "result": "REVISION_REQUIRED",
+      "finding": "INT-NDJSON-AUTHORITY: proposed MIME extension incorrectly described as approved",
+      "resolution": "Successor handoff explicitly retains proposed schema amendment status; no source/test/contract semantics changed"
+    },
+    {
+      "round": 2,
+      "candidate_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+      "tree": "cc3b3ee7b63c2957861ec17ed7a3a741e3be667b",
+      "reviews": [
+        {
+          "path": "../reviews/finish-migration-integrated-round2-4655c084.json",
+          "sha256": "a1df454ec068558e2df18072b15ed68c99c16044b234734eea879b68e01bbbb4"
+        }
+      ],
+      "result": "ACCEPTED_NO_NEW_TECHNICAL_BLOCKERS",
+      "scope": "Integrated preparation design/test candidate; not implementation or production approval"
+    },
+    {
+      "round": 3,
+      "candidate_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+      "tree": "cc3b3ee7b63c2957861ec17ed7a3a741e3be667b",
+      "reviews": [
+        {
+          "path": "../reviews/finish-browser-integrated-round3-4655c084.json",
+          "sha256": "c3fc60ea88c19bb2a10f12345fd67dfa3ab8a6c7ed69281e52ae99848c838d88"
+        }
+      ],
+      "result": "ACCEPTED_NO_NEW_TECHNICAL_BLOCKERS",
+      "scope": "Integrated preparation design/test candidate; not implementation or production approval"
+    },
+    {
+      "round": 4,
+      "candidate_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+      "tree": "cc3b3ee7b63c2957861ec17ed7a3a741e3be667b",
+      "reviews": [
+        {
+          "path": "../reviews/console-integrated-round4-4655c084-completeness.json",
+          "sha256": "de669c7aa1a0f153e6e9b820c7362c514b969ae6c8fe80af2004a4442456e466"
+        }
+      ],
+      "result": "ACCEPTED_NO_NEW_TECHNICAL_BLOCKERS",
+      "scope": "Integrated preparation design/test candidate; not implementation or production approval"
+    }
+  ],
+  "remaining_rounds": [],
+  "approval": "Final revision-bound design/test approval and exact unapplied FK correction still require trusted user approval",
+  "consensus": "Four actual sequential integrated rounds complete; round1NDJSON wording finding resolved, final candidate has no remaining technical preparation blocker. Explicit trusted-user design/test and exact FK correction approval remains."
+}

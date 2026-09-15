@@ -1,0 +1,8 @@
+{
+  "reviewer": "/root",
+  "verdict": "APPROVED exact inert retention payloads; defer import until active source-snapshotted runs finish",
+  "manifest_sha256": "c160a32bba80714c161cb3f21331173392064729db8da5d0c0fa585332ce5f50",
+  "exact_gzip_roundtrips": 182,
+  "committed_references_verified": 7,
+  "limits": "Runtime interpretation additionally relies on separate independent run reviews; no current npm or fixture77 outcomes claimed."
+}

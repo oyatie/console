@@ -1,0 +1,9 @@
+{
+  "candidate_sha": "69c86eee174e31dadd1332ab37e5d84e9a22d4a0",
+  "platform": "aarch64-apple-darwin",
+  "library_path": "buck-out/v2/art/root/third-party/rust/__aws-lc-sys-0.45-build-script-main-run__/output_artifacts/OUT_DIR/libaws_lc_0_45_0_crypto.a",
+  "library_size": 4530160,
+  "library_sha256": "58752f30c0202319b6da8e1f13af46344920894b7db7838fd5f52d45fe0ff460",
+  "rustc_flags": "--cfg=universal_prefixed\n-lstatic=aws_lc_0_45_0_crypto\n-Lnative=${__BUILDSCRIPT_OUT_DIR__}\n",
+  "limits": "Static AWS-LC library compiled and linked into Buck test executable; all13 compatibility tests passed. Local Darwin only; no production/FIPS certification."
+}

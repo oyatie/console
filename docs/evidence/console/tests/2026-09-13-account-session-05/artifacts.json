@@ -1,0 +1,100 @@
+[
+  {
+    "path": "artifacts/discovery-r1.log.gz",
+    "raw_bytes": 25739,
+    "raw_sha256": "cda6f7fd44a97dd9ec48ca338f8609b113daad44d65abfdb96d9884d70224304",
+    "compressed_bytes": 3499,
+    "compressed_sha256": "8007c458c2c7df880448a9fc0dda97a343743b33f1fc0c77403c07ccbaa97c43"
+  },
+  {
+    "path": "artifacts/execution-r1.log.gz",
+    "raw_bytes": 32870,
+    "raw_sha256": "6c5c18104b0b6d0a9080a7f6d7fb147b38742b196a7fc1a7e6e4b337c1254ab0",
+    "compressed_bytes": 5742,
+    "compressed_sha256": "bae96ee8dd93fe476c14d2e532b90ac98d6b4a5695dac25a7e535782aa7cbaf2"
+  },
+  {
+    "path": "artifacts/clippy-r1.log.gz",
+    "raw_bytes": 21792,
+    "raw_sha256": "cff3a6d93267d9fe3f0af6dc1f066f78bf057718c6b2ad72c1918c44e18dbcea",
+    "compressed_bytes": 2077,
+    "compressed_sha256": "89bb9a173cb2da38132e6441fc392d9eea5cf6744768830cefab31bb3bee3c6a"
+  },
+  {
+    "path": "artifacts/credentials.log.gz",
+    "raw_bytes": 1064,
+    "raw_sha256": "fc604c59c44aa5ef5f3a12e4beafd560757d1070defa7efbc09d4fba2dbb976c",
+    "compressed_bytes": 469,
+    "compressed_sha256": "6cff99e3f674bbb3bf50a3113db78608e9b9fe57a374e5b65331179bbf807507"
+  },
+  {
+    "path": "artifacts/npm-ci.log.gz",
+    "raw_bytes": 139,
+    "raw_sha256": "8315067abaa8adfa0e2934379b32bc515c4511751db4e7fead1b80b6f407b52b",
+    "compressed_bytes": 120,
+    "compressed_sha256": "aa5f042d9ec0d211d827f6eda5e5a10440c686a361c6174aa0dc408042bc7b68"
+  },
+  {
+    "path": "artifacts/credentials-r2.log.gz",
+    "raw_bytes": 233,
+    "raw_sha256": "5d80846b73d3c74cf1c5f164831943a1ccb221797f74bd97c05a64e040192f01",
+    "compressed_bytes": 171,
+    "compressed_sha256": "a4d017a801d8a38780ef252cfde2a3fe454ff3056239736e3cff2c4a5a8a0fcf"
+  },
+  {
+    "path": "artifacts/reachability.log.gz",
+    "raw_bytes": 123,
+    "raw_sha256": "3660e46c58e667a12a790b66bc3c67776e4276ee159eede125348eef27ba0956",
+    "compressed_bytes": 126,
+    "compressed_sha256": "99ff98a50724bfa669b321a7a9961a3ef7f422a3c719b82c09bafb4d34792cce"
+  },
+  {
+    "path": "artifacts/discovery-final.log.gz",
+    "raw_bytes": 4274,
+    "raw_sha256": "7e9a4d2804429d9d89e5ee7d8f7a763c375381d339be67e61d03a72d861d72a6",
+    "compressed_bytes": 1656,
+    "compressed_sha256": "e26d671b8cc12d55d59763d7dd2fa262bf61e1432858b43620b9fc9fdb46467f"
+  },
+  {
+    "path": "artifacts/execution-final.log.gz",
+    "raw_bytes": 32802,
+    "raw_sha256": "2c78a912f28d51155442b87a1208dc83cc5b929e394d08b7de2d6da4b137c260",
+    "compressed_bytes": 5715,
+    "compressed_sha256": "415047228f56b916b3e8e2c22c69f5e72424496945db2108457ff4cc4e67d016"
+  },
+  {
+    "path": "artifacts/clippy-final.log.gz",
+    "raw_bytes": 425,
+    "raw_sha256": "2f71d68d541e5fec140acc619316dcbc8ba77d6afb1dc50d7a75df4b96582a0b",
+    "compressed_bytes": 306,
+    "compressed_sha256": "d9af37cba84bd72630b2c3c8bb946e775eeb43a75903a978cfd1139215d5d939"
+  },
+  {
+    "path": "artifacts/generated-final.log.gz",
+    "raw_bytes": 18653,
+    "raw_sha256": "4234489a598afc060632a86636378e40b35b82c7bc65c7d491dc8dcfe60d5869",
+    "compressed_bytes": 4736,
+    "compressed_sha256": "ae635ac5a99828e2cb5963014334049536cee956f9a10797d4e55e1e8ed5c5bc"
+  },
+  {
+    "path": "artifacts/vm-start.log.gz",
+    "raw_bytes": 5102,
+    "raw_sha256": "4baf7d0c676b893b54bb22f6c85dd5a88db7d3e19f7bf45e084c3093d29d1a55",
+    "compressed_bytes": 1109,
+    "compressed_sha256": "f79e0e8738553e0b8025daee5ef0433c34217f8565c4835ac04b4bf1a8332671"
+  },
+  {
+    "path": "artifacts/container-readback.log.gz",
+    "raw_bytes": 0,
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compressed_bytes": 20,
+    "compressed_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+  },
+  {
+    "path": "artifacts/vm-stop.log.gz",
+    "raw_bytes": 1653,
+    "raw_sha256": "6e2203228e03b28f1061f2d4568b9380ff745e6b3016fe512d36936d9823852e",
+    "compressed_bytes": 440,
+    "compressed_sha256": "627aea20087ccccebcc1e2c582dc1100b876415de07571f5f9cf2cc7a029f81d"
+  }
+]

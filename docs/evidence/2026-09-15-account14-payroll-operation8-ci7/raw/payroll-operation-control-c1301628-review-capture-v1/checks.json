@@ -1,0 +1,86 @@
+{
+  "checks": [
+    {
+      "name": "18 frozen regular artifact hashes/size verified",
+      "pass": true
+    },
+    {
+      "name": "11 exact immutable c130 Git source bindings and current-head readback",
+      "pass": true
+    },
+    {
+      "name": "all original App7 bytes preserved except additive event capture; original saw_unknown unchanged",
+      "pass": true
+    },
+    {
+      "name": "closed source roster7 retained plus exactly1new case",
+      "pass": true
+    },
+    {
+      "name": "new control uses real owner/engine; no fake implementation/outcome or direct business mutation",
+      "pass": true
+    },
+    {
+      "name": "Rust parser/format check",
+      "argv": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2024",
+        "/private/tmp/payroll-operation-control-c1301628-v1-fast/durability_composition_tests.rs"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "private patch mechanical",
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/payroll-operation-control-c1301628-v1-fast/candidate.patch"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "private patch mechanical",
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/payroll-operation-control-c1301628-v1-fast/candidate.patch"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "private patch mechanical",
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--check",
+        "/private/tmp/payroll-operation-control-c1301628-v1-fast/candidate.patch"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "private patch mechanical",
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "/private/tmp/payroll-operation-control-c1301628-v1-fast/candidate.patch"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "applied target and inverse preimage exact",
+      "pass": true
+    },
+    {
+      "name": "shared target unchanged after private checks",
+      "pass": true
+    }
+  ],
+  "scratch": "/private/tmp/payroll-operation-independent-bezsewyi"
+}

@@ -1,0 +1,130 @@
+{
+  "status": "LOCAL_IMPLEMENTED_AND_INDEPENDENTLY_REVIEWED",
+  "source_candidate": "7af6dfd4d3d3e70c274a485e4aabba583ea93a0d",
+  "admission_base": "ebea26a790b2ee363e2924ca76c5085e4c4e1ee6",
+  "owner": "/root",
+  "reviewers": [
+    "/root/review_completeness",
+    "/root/finish_migration"
+  ],
+  "lane": "LC07-account-custody-orchestration",
+  "named_probe": "node --test scripts/account-custody-orchestration.test.mjs",
+  "red": {
+    "discovered": 44,
+    "executed": 44,
+    "passed": 32,
+    "failed": 12,
+    "reason": "Missing finalizer invocation/owner; deeper declaration tests initially blocked. No fake implementations."
+  },
+  "green": {
+    "discovered": 51,
+    "executed": 51,
+    "passed": 51,
+    "failed": 0,
+    "preservation": "All44 original tests retained;4 tmpfs controls+3actual child env cases added with independent review."
+  },
+  "verification": [
+    {
+      "command": "node --test scripts/account-custody-orchestration.test.mjs scripts/lib/dev-account-custody.test.mjs scripts/dev-up-compose.test.mjs scripts/check-production-hardening.test.mjs scripts/check-image-release-workflow.test.mjs",
+      "executed": 221,
+      "passed": 221,
+      "failed": 0,
+      "skipped": 0,
+      "note": "Outer runner count; do not sum nested repeated80custody and19restore controls as disjoint coverage."
+    },
+    {
+      "command": "node --test scripts/account-custody-orchestration.test.mjs scripts/lib/dev-account-custody.test.mjs scripts/dev-up-compose.test.mjs",
+      "executed": 92,
+      "passed": 92,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "node --test scripts/check-production-hardening.test.mjs",
+      "executed": 94,
+      "passed": 94,
+      "failed": 0,
+      "note": "Canonical package command updated by additive suffix; all prior assertions preserved; independently rerun94PASS."
+    },
+    {
+      "command": "node scripts/check-production-hardening.mjs",
+      "checks": 239,
+      "status": "PASS"
+    },
+    {
+      "command": "node scripts/check-js-test-reachability.mjs",
+      "suites": 65,
+      "exact_wired": 65,
+      "dark": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "node scripts/check-test-credentials.mjs",
+      "status": "PASS"
+    },
+    {
+      "command": "node scripts/check-doc-links.mjs && node scripts/console/generate-documentation-manifest.mjs",
+      "documents": 457,
+      "status": "PASS"
+    },
+    {
+      "command": "DOCKER_CONTEXT=colima-console-custody-20260914 node runtime-smoke.mjs REPO FROZEN_BINARY ee91e9aa0f3f8a6ada2094d4e5dbb14b190256a8935b56fab62210b4fff114bc",
+      "executed": 7,
+      "passed": 7,
+      "status": "PASS",
+      "record": "runtime-final/result.json",
+      "scope": "Actual local Compose PostgreSQL18.6/topology/fixed finalizer image and host API readiness with auth routes unconfigured. Not published application image/Kubernetes/production."
+    }
+  ],
+  "runtime_custody": {
+    "build_head": "7a0ce898eadc507b54f1c4a2f4b10fc307e202f6",
+    "source_head": "7af6dfd4d3d3e70c274a485e4aabba583ea93a0d",
+    "backend_diff": "empty",
+    "binary_sha256": "ee91e9aa0f3f8a6ada2094d4e5dbb14b190256a8935b56fab62210b4fff114bc",
+    "shared_cargo_lease": "released before root rebuild; binary copied and hashed before any later Cargo work",
+    "pre_post": "clean HEAD, selected source and private binary matched",
+    "cleanup": "owned containers, volumes, networks and unique labeled operator image verified absent"
+  },
+  "honest_failures": [
+    "First real TLS run refused CA-as-leaf. Fixed end-entity constraint, validated real Rustls connection, added isolated crypto regression.",
+    "Second real build failed because Dockerignore omitted operator artifacts. Exact3payload allowlist added, private ops material remains excluded.",
+    "Earlier7case run lacked exact root-source binary custody and complete resource/readiness oracle; retained as provisional, superseded by final frozen7case run.",
+    "Nested-only Node test wiring was not recognized by CI reachability; direct package paths plus canonical verifier/positive fixture updated. Nothing removed or relaxed."
+  ],
+  "other_completed_dependency": {
+    "authority_binding_source": "d8a6b8fa94d615c2bdddb7eb5b75af6131944295",
+    "integrated": "96cd8f77",
+    "independent_tests_passed": 23,
+    "scope": "Plain11-field exact equality; not verified authority or live-loader provenance."
+  },
+  "parallel_candidate": {
+    "auth_config": "5a599b20e3f34f69098d98130768ab9b859db3c5",
+    "status": "REVIEWED_NOT_YET_IMPORTED",
+    "tests": "7auth+20sibling+12existing config PASS;7independently rerun",
+    "reason": "Mandatory AUTH_DATABASE_URL needs companion actual restricted transport/deployment integration. Config retention alone is not pool isolation."
+  },
+  "remaining_work": [
+    "restricted auth transport + permanent legacy Account fence before activation",
+    "versioned legacy credential custody conversion",
+    "current context and deterministic policy",
+    "generic ontology draft/action owners and Leptos SSR mount",
+    "native nonpayable payroll first vertical",
+    "HR/attendance/labor and native common modules / Foundry breadth"
+  ],
+  "holds": [
+    "production exposure",
+    "published operator image digest/signature and protected Kubernetes prerequisites",
+    "enforcing CNI and actual HA/failover/PITR/egress fencing",
+    "durable receipt replay bug remains; no remote_apply/no-loss completion claim",
+    "legal conclusions and payment execution",
+    "full Console completion"
+  ],
+  "rollback": "Code-only revert on isolated branch; no live deployments or persistent customer data modified. Do not roll back security custody by transferring tables to serving roles.",
+  "stop_conditions": [
+    "identity/TLS/custody mismatch",
+    "source or binary drift",
+    "unverified owned-resource cleanup",
+    "test weakening",
+    "production action without authority"
+  ]
+}

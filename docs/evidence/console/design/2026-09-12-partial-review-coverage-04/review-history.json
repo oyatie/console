@@ -1,0 +1,37 @@
+{
+  "author": "/root",
+  "initial_candidate_sha": "12dba1c4fa17a8c8aa2d8a751d983de47ac7bf45",
+  "reviews": [
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "Common human obligations need typed proposal/basis/submit/decide and last-common completion path.",
+        "REVIEWING correction needs exact owner state, scope, kernel recalculation, proposal/cycle CAS and atomic activation."
+      ],
+      "response": "PC1.11 and PC1.12; C07/C08/C21 strengthened; C33-C35 added."
+    },
+    {
+      "reviewer": "/root/continuity_review",
+      "verdict": "ACCEPT_SCOPED",
+      "scope": "Initial AM1/AI1/AC1 consistency; no product tests or whole design consensus."
+    }
+  ],
+  "author_extra_reconciliation": "PC1.13 distinguishes completed business decisions from pending unexecuted intent after ordinary departure/session expiry; renewed review required.",
+  "whole_design_approved": false,
+  "second_candidate_sha": "6df1e4b5e0333436af3ad0917d4eb97863c7e827",
+  "second_reviews": [
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "verdict": "CHANGES_REQUIRED",
+      "original_findings_resolved": true,
+      "remaining_finding": "Fully covered revised cycle can stall REVIEWING when no new decision is pending.",
+      "response": "PC1.12 activation now invokes same atomic completion predicate; PC1.14 and C38/C39 cover trigger and anti-omission."
+    },
+    {
+      "reviewer": "/root/continuity_review",
+      "verdict": "ACCEPT_SCOPED",
+      "scope": "Authorization/continuity including completed decision survival; no tests."
+    }
+  ]
+}

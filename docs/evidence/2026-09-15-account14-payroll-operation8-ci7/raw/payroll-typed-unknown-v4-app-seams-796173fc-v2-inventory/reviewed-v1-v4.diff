@@ -1,0 +1,36 @@
+--- V1/app-append.rs
++++ V4/app-append.rs
+@@ -423,6 +423,12 @@
+     assert_eq!(history["decisions"].as_array().unwrap().len(), 2);
+     assert_eq!(history["consumptions"].as_array().unwrap().len(), 2);
+     assert!(
++        history["decisions"]
++            .as_array()
++            .unwrap()
++            .contains(&spent["decisions"][0])
++    );
++    assert!(
+         history["consumptions"]
+             .as_array()
+             .unwrap()
+@@ -573,7 +579,8 @@
+     let descriptor = setup(&owner, 3_000).await;
+     for prior_status in ["PENDING", "FAILED"] {
+         let org = OrgId::from_uuid(Uuid::new_v4());
+-        seed_org_rls_off(&owner, *org.as_uuid(), "typed-unknown-workflow").await;
++        let tag = format!("typed-unknown-{}", prior_status.to_lowercase());
++        seed_org_rls_off(&owner, *org.as_uuid(), &tag).await;
+         let state = start(config(&owner, AppRole::Worker, &descriptor, None)).await;
+         let pool = business(&state);
+         let (event, run) = seed_completion(&pool, org).await;
+--- V1/rest-append.rs
++++ V4/rest-append.rs
+@@ -54,7 +54,7 @@
+         .await
+         .expect_err("ordinary operation fails");
+     let response = super::RestError::from_action(error);
+-    assert_eq!(response.status, http::StatusCode::INTERNAL_SERVER_ERROR);
++    assert_eq!(response.status, axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+     assert_eq!(response.code, "internal");
+     assert_eq!(
+         response.message,

@@ -1,0 +1,35 @@
+{
+  "source_tests": [
+    "migration_related_refresh_revocation_invalidates_source_even_when_user_xmin_is_unchanged",
+    "migration_concurrent_distinct_batch_ids_cannot_duplicate_source_partition",
+    "migration_startup_waits_for_actual_migration_ledger_then_rejects_changed_catalog",
+    "migration_actual_process_loss_after_committed_batch_replays_original_receipt",
+    "migration_real_legacy_transports_drain_before_fence_and_stay_denied_after_fresh_primary_activation"
+  ],
+  "source_discovered": 5,
+  "parsers": 5,
+  "owner_compiled": 0,
+  "cargo_discovered": 0,
+  "runtime_executed": 0,
+  "behavioral_red": 0,
+  "review_status": "INDEPENDENT_REVIEW_REQUIRED",
+  "machinery": {
+    "command": [
+      "cargo",
+      "+1.98.1",
+      "test",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "/private/tmp/console-migration-remaining-s4-r2-20260914/machinery/Cargo.toml"
+    ],
+    "discovered": 3,
+    "executed": 3,
+    "passed": 3,
+    "failed": 0,
+    "filtered": 0,
+    "scope": "R2 independently compiled unchanged bounded output source"
+  },
+  "nested_activation_negative_cases": 8,
+  "source_revision": "R4"
+}

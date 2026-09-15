@@ -1,0 +1,20 @@
+id,surface,trigger,expected,status
+M01,legacy,all3nullable source header fields null,accepted storage shape only; cannot authorize an enrolled source command,PROPOSED_NOT_EXECUTED
+M02,shape,one field null or wrongprotocol/count/hashlength,CHECK rejects; no SQLUNKNOWN escape,PROPOSED_NOT_EXECUTED
+M03,scope,foreign Company or missing current_org,guard/RLS refuse without payload text,PROPOSED_NOT_EXECUTED
+M04,actor,LOGIN inserts markedheader/member directly,INVOKER role guard refuses even if inheritedDML accidentally present,PROPOSED_NOT_EXECUTED
+M05,header,member before missingheader or committedoldheader,immediateFK/lookup/xmin refuses; no same UUID authority,PROPOSED_NOT_EXECUTED
+M06,subtransaction,header inserted inside SAVEPOINT or EXCEPTION block,fail closed; caller-chain contract violation,PROPOSED_NOT_EXECUTED
+M07,membership,missingrow/gap/duplicate/wrongcanonicalorder,deferred headercount/order plus PK refuses,PROPOSED_NOT_EXECUTED
+M08,digest,changed custody/successor/root identity,fixed binary digest check refuses,PROPOSED_NOT_EXECUTED
+M09,lateappend,try extra member aftercompleteearlySETCONSTRAINTS,no validfreeordinal; PK/bounds/immutability prevent append,PROPOSED_NOT_EXECUTED
+M10,late-source,append unrepresented source after early fullmanifest check,must fail reciprocal source constraints; explicit unimplemented prerequisite,PROPOSED_NOT_EXECUTED
+M11,modes,constraint alreadyIMMEDIATE atheaderinsert,fails empty set and rolls back; no claimed compatibility with that caller mode,PROPOSED_NOT_EXECUTED
+M12,atomicity,source/adoption/gate/work failure afterprovisionalheader,wholetransactionrollback; no external success from headerexistence,PROPOSED_NOT_EXECUTED
+M13,replay,sameowner reenters replay while provisionalheaderexists,"reject internal protocol reentry, not historical committed success",PROPOSED_NOT_EXECUTED
+M14,complexity,1024effects,"one indexed headerlookup perinsert, oneboundedaggregate perreceipt; no perrowfullscan",PROPOSED_NOT_EXECUTED
+M15,downgrade,source command forges all-null legacy-shapedreceipt,sourceenrollment/provenance guard must reject; not provided by structuralSQL,PROPOSED_NOT_EXECUTED
+M16,restore,logicalrestore/corruptmanifest/disabledtrigger history,offline fullintegrity and authorityreadmission before serving; xmin never permission,PROPOSED_NOT_EXECUTED
+M17,definer,deferredtrigger runs afterouterdefinerreturns,fixed readonlySECURITYDEFINER has requiredSELECT; correctscope stillchecked,PROPOSED_NOT_EXECUTED
+M18,disclosure,receiptcount/hash/root ids reach unauthorized response/log,ownercurrentpolicy projection/refusal; structuralSQL is not IFCproof,PROPOSED_NOT_EXECUTED
+M19,disclosure,native CHECK/NOTNULL/UNIQUE/FK/cast diagnostic contains private row/key/input,raw diagnostic must never reach response/log/trace; reviewed typed projection and DB diagnostic configuration required before enrollment; F04 OPEN,PROPOSED_NOT_EXECUTED

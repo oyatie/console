@@ -1,0 +1,150 @@
+▶ hasLiveCfgTestAttribute — false-dark controls
+  ✔ documents the RED substring defect the durable fix replaces (0.432959ms)
+  ✔ does not treat doc-comment-only #[cfg(test)] as live (0.173459ms)
+  ✔ does not treat line- or block-comment-only #[cfg(test)] as live (0.075917ms)
+  ✔ does not treat string-literal-only #[cfg(test)] as live (0.115042ms)
+  ✔ still detects a real #[cfg(test)] attribute (fails closed on live tests) (0.057ms)
+  ✔ still detects live attribute when a doc comment also mentions it (0.051041ms)
+✔ hasLiveCfgTestAttribute — false-dark controls (1.416584ms)
+▶ unitTestedCrateSrcRoots — inventory + examined-zero
+  ✔ excludes crates whose only hit is a doc comment (0.610667ms)
+  ✔ includes crates with a live #[cfg(test)] under src/ (0.367416ms)
+  ✔ fails closed when examined src inventory is empty (0.191ms)
+✔ unitTestedCrateSrcRoots — inventory + examined-zero (1.304084ms)
+▶ cargoTestKind — cargo metadata lib aliases
+  ✔ maps default lib and explicit rlib/cdylib to cargo test --lib (0.079709ms)
+  ✔ keeps integration tests and drops bins (0.035833ms)
+✔ cargoTestKind — cargo metadata lib aliases (0.161125ms)
+▶ gate wiring
+  ✔ routes definedBinaries through the comment-aware helper, not raw includes (0.276458ms)
+✔ gate wiring (0.301833ms)
+▶ reachable Rust source inventory
+  ✖ follows path and ordinary modules recursively without counting orphan sources (2420.149292ms)
+  ✖ rejects loss of a referenced child test even when an orphan gains a replacement (315.342833ms)
+  ✖ ignores test attributes and module declarations in comments and strings (320.333708ms)
+✖ reachable Rust source inventory (3055.976542ms)
+▶ evaluateBaseline
+  ✔ passes when the measured dark set equals the named set (0.446416ms)
+  ✔ is order-independent across buckets (0.066917ms)
+  ✔ fails a newly dark file that is not named (0.094667ms)
+  ✔ fails substitution even when the count is unchanged (0.057958ms)
+  ✔ fails closed when a named binary starts executing until the baseline is updated (0.073042ms)
+  ✔ rejects a count that disagrees with the named set (0.046375ms)
+  ✔ rejects a baseline that names nothing, rather than falling back to a count (0.046125ms)
+  ✔ ignores unrelated arrays of non-strings (0.046708ms)
+  ✔ does not treat defined feature variants as accepted-dark binaries (0.068083ms)
+  ✔ rejects a malformed deferred bucket rather than ignoring it (0.0795ms)
+  ▶ the derived count is mandatory
+    ✔ rejects a missing dark_baseline (0.487875ms)
+    ✔ rejects a non-numeric dark_baseline (0.098208ms)
+  ✔ the derived count is mandatory (0.72325ms)
+✔ evaluateBaseline (2.348125ms)
+▶ countDeclaredTestAttributes
+  ✔ is explicitly cfg- and ignore-unaware static source evidence (0.146792ms)
+✔ countDeclaredTestAttributes (0.191958ms)
+▶ evaluateTestAttributeBaseline
+  ✔ passes only an exact static-attribute baseline (0.449875ms)
+  ✔ fails closed on a gain until --update locks it (0.066708ms)
+  ✔ fails closed on a newly reachable source until --update locks it (0.04575ms)
+✔ evaluateTestAttributeBaseline (0.617917ms)
+▶ workflow executable command extraction
+  ✔ admits a direct assignment-prefixed cargo test (0.781042ms)
+  ✔ does not truncate a run block at an empty line (0.211292ms)
+  ✔ scans every block-scalar indicator, not only run: | (0.172375ms)
+  ✔ extracts steps when the steps key carries a YAML comment (0.056959ms)
+  ✔ preserves commands after a here-document redirection (0.078625ms)
+  ✔ does not mistake echo text for an executable cargo test (0.045667ms)
+  ✔ drops literal-false and continue-on-error steps (0.08975ms)
+  ✔ stops at an unconditional exit before command-shaped text (0.043667ms)
+  ✔ marks shell masks and disabled errexit as non-gating control flow (0.14875ms)
+✔ workflow executable command extraction (1.734584ms)
+ℹ tests 40
+ℹ suites 10
+ℹ pass 37
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3103.7215
+
+✖ failing tests:
+
+test at scripts/check-executed-tests.test.mjs:238:3
+✖ follows path and ordinary modules recursively without counting orphan sources (2420.149292ms)
+  AssertionError [ERR_ASSERTION]: 
+  1 reachable test source(s) lost declared test attributes:
+    backend/app/tests/auth_rest.rs: 7 -> 1 (-6)
+  
+  If each removal is intentional because its subject is gone too, say so in the commit message and run 'node scripts/check-executed-tests.mjs --update'.
+  
+  
+  1 !== 7
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-test-source-inventory-20260915/scripts/check-executed-tests.test.mjs:251:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at node:internal/test_runner/test:1887:71
+      at node:internal/per_context/primordials:504:82
+      at new Promise (<anonymous>)
+      at new SafePromise (node:internal/per_context/primordials:478:3)
+      at node:internal/per_context/primordials:504:9
+      at Array.map (<anonymous>) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 7,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/check-executed-tests.test.mjs:255:3
+✖ rejects loss of a referenced child test even when an orphan gains a replacement (315.342833ms)
+  AssertionError [ERR_ASSERTION]: 
+  1 reachable test source(s) lost declared test attributes:
+    backend/app/tests/auth_rest.rs: 2 -> 1 (-1)
+  
+  If each removal is intentional because its subject is gone too, say so in the commit message and run 'node scripts/check-executed-tests.mjs --update'.
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-test-source-inventory-20260915/scripts/check-executed-tests.test.mjs:262:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/check-executed-tests.test.mjs:272:3
+✖ ignores test attributes and module declarations in comments and strings (320.333708ms)
+  AssertionError [ERR_ASSERTION]: 
+  1 reachable test source(s) gained declared test attributes. Run --update to lock the gain in before merge.
+  
+  
+  3 !== 1
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-test-source-inventory-20260915/scripts/check-executed-tests.test.mjs:295:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,9 @@
+{
+  "status": "UNAPPLIED_PENDING_EXPLICIT_TRUSTED_USER_APPROVAL",
+  "source": "backend/app/tests/auth_rest/account_storage.rs",
+  "source_sha256": "6f847ee8a957809a5b7b1a8ca7a62cc0649a94acc4fa1527cd22a55d674289e5",
+  "proposed_source_sha256": "5aaad30f462ee34f0c1cefdec7ccb9a467cce036c3890b83aed353b912629add",
+  "patch": "ephemeral-fk-correction.proposed.patch.txt",
+  "automatic_review_receipt": "../../storage-test-correction-receipt.json",
+  "scope": "Exact existing ephemeral DELETE CASCADE edge only; mandatory presence/validated tuple; all existing update and retained-custody assertions preserved"
+}

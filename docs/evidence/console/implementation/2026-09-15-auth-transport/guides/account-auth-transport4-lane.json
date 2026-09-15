@@ -1,0 +1,39 @@
+[
+  {
+    "lane": "FP04-auth-transport-readiness",
+    "base_sha": "a2aa1ff712d882a639f2be504336223a0486c3a2",
+    "owner": "/root",
+    "allow": [
+      "backend/app/src/lib.rs",
+      "backend/crates/platform/auth-rest/src/lib.rs"
+    ],
+    "probe": "env -u BUCK_ISOLATION_DIR DOCKER_CONTEXT=colima-console-custody-20260914 python3 /private/tmp/account-auth-transport4-probe.py",
+    "target": "Real required auth credential startup, same observed database admission, retained restricted auth pool and same-state readiness outage/recovery",
+    "guide": [
+      "/private/tmp/account-auth-pool-mechanical-guide.json",
+      "/private/tmp/account-auth-pool-retention-refinement.json"
+    ],
+    "test_sha256": "ea61a10fbce81689afdbf5b3e5bf3b77ccb5e5d2e278a41ca52b28c2d00078bf",
+    "pre_mortem": "Ignored/wrong auth pool permits wrong absence verdict; business-pool replacement breaks legacy RLS; stale readiness routes to broken auth",
+    "blast_radius": "API startup plus aggregate readyz; no schema,grants,credential conversion,Account activation or production",
+    "detection": "Exact four tests, healthy startup and positive credentials before isolated negatives; restore same router; retained projection37 and config/readiness controls",
+    "rollback": "Revert local two-file source commit, restart app; no data mutation introduced",
+    "stop_conditions": [
+      "Prerequisite schema/finalizer failure",
+      "Infrastructure failure rather than intended RED",
+      "Test weakening",
+      "Unverified fixture cleanup",
+      "New privilege or migration required"
+    ],
+    "reviewers": [
+      "/root/owner_privilege_review",
+      "/root/finish_browser"
+    ],
+    "holds": [
+      "Full request fencing and Account sessions",
+      "Physical cluster/HA/restore binding",
+      "Production and legal/payment exposure"
+    ],
+    "shared_resources": "Root exclusive disposable Docker cluster and Cargo target /private/tmp/console-account30-cargo; native agents read only; root generated/evidence writer"
+  }
+]

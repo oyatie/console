@@ -1,0 +1,11 @@
+Scoped design revision: B01/B09 actor identity and attribution; B02 approval roles; B05 approved-draft supersession.
+Writer: Codex /root only. Source base 05200e43af13b527ce031b04369e05852862f1d6. Evidence parent 04ec346bf1f565176c7883b49459a81b636f7f64, clean isolated worktree /private/tmp/console-design-review-20260912.
+Immutable review target will be the explicit local Git SHA supplied to each reviewer. No implementers or implementation lane; read-only independent reviewers only.
+Mechanical guide: trace existing invariant/owner/FK/guard -> choose coherent extension -> specify inputs, states, authorization, receipt and recovery -> source-checked independent review -> preserve prior snapshots and record exact proposed contracts.
+Selected lenses: Systems Thinking, Essentialism, Red Team, Zero-trust, Operability, Blast-radius.
+Pre-mortem: duplicate login identities bypass SoD; membership mistaken for privilege; safe auth succeeds but composite FK fails; stale identity proofs survive revocation; generic gate silently decides payroll; successor competes with payment or duplicates current payroll.
+Detection: explicit positive attributed-write and negative same-human oracles; locked race outcomes; immutable receipt/source trace; independent reviewers distinguish design closure from implemented proof.
+Blast radius: additive design evidence only. No current authority, schema, code, tests, lockfiles, generated API or production state changed. Proposed future FK transition spans identity/governance/receipt owners and is not a one-file fix.
+Rollback now: superseding evidence, never overwrite frozen snapshots. Future rollout: expanded tables/readers first, capability fenced, no unsafe old-reader rollback after new cross-company writes.
+Current additions: uniform Account/resource policy; customer-defined permission bundles, no seeded job titles; resource/field confidentiality and partial-visibility completion gap.
+Stop: scoped reviewed contracts and remaining gaps recorded; do not claim all nine gaps or whole design closed. Explicit full design SHA approval still precedes executable product tests.

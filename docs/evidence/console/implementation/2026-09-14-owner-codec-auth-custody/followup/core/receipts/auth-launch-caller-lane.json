@@ -1,0 +1,41 @@
+[
+  {
+    "lane": "AC05-auth-launch-caller-alignment",
+    "owner": "/root",
+    "worktree": "/private/tmp/console-production-tdd-preparation-20260913",
+    "base_sha": "0413e1d5a81a83ee8d6320dc2c4c083c74dce3b5",
+    "allow": [
+      "scripts/dev-up.mjs",
+      "ops/compose.yml",
+      ".github/workflows/ci.yml",
+      ".github/workflows/image-release.yml",
+      "package.json",
+      "ops/README.md",
+      "backend/.env.example",
+      "docs/documentation-manifest.seed.json",
+      "docs/documentation-index.json"
+    ],
+    "probe": "DOCKER_CONTEXT=colima-console-custody-20260914 node --test scripts/auth-launch-callers.test.mjs",
+    "target": "All four local launch configuration paths provide same canonical auth credential to existing topology and API transport only",
+    "guide": "Extend existing URLhelper with encoding and host/port parameters; reuse for owner/runtime; provide canonicalAuthpassword andcontainerURL to fourComposeenvproducers; APIonlyhostURL and sanitize inheritedauthenv. Explicit mandatoryComposeURL andrawpassword only topology. CI/release once-generated maskedhexcredential sameprovision/boot/replay. Add newtest to production-hardening reachability; align setup examples. No topology/grant/role or runtimepool changes.",
+    "pre_mortem": "Wrong endpoint, missing provisioning password, credential reassignment or accidental worker exposure",
+    "blast_radius": "Local source configuration, examples and testgate registration only; no workflow execution or deployment",
+    "detection": "Reviewed14 test sameRED to GREEN includingactualCompose config; old51anddevCompose regressions; JSreachability; independent review",
+    "rollback": "Revert configuration and API requirement together; retain evidence; no live resources touched",
+    "stop_conditions": [
+      "Role/grant changes",
+      "Test weakening",
+      "Secrets in logs",
+      "Production launch"
+    ],
+    "reviewers": [
+      "/root/finish_migration",
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Actual authpool/binding",
+      "Owner UPDATE approval",
+      "Production/HA"
+    ]
+  }
+]

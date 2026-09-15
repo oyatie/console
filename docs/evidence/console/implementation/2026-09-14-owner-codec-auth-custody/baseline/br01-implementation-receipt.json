@@ -1,0 +1,34 @@
+{
+  "lane": "BR01",
+  "owner": "/root/finish_browser",
+  "base_sha": "3f3216d2cdc3bd23b2c11c3d7d285d89a4c1d05a",
+  "candidate_sha": "3923f041b3ba9da87337046451f61774bf5545c0",
+  "source_sha256": "08a49e692b20ba6c02c5d8dd1b02ca452fbc09dbb1a59bd8976a5ef0fa8b248a",
+  "probe": "python3 tools/buck/test_gen_first_party.py OwnerResourcesTests AccountResourcesTests",
+  "probe_result": {
+    "discovered": 6,
+    "executed": 6,
+    "passed": 6
+  },
+  "full_suite_initial": {
+    "discovered": 41,
+    "executed": 41,
+    "passed": 40,
+    "failed": 1,
+    "reason": "Generated files intentionally not updated in source-only candidate",
+    "log": "/private/tmp/br01-full-generator-suite.log"
+  },
+  "full_suite_generated_scratch": {
+    "discovered": 41,
+    "executed": 41,
+    "passed": 41,
+    "scratch": "/private/tmp/console-br01-full-suite-20260914",
+    "log": "/private/tmp/br01-full-generator-suite-generated-baseline.log"
+  },
+  "holds": [
+    "Root-owned serialized generation and integrated full-suite run",
+    "Real Buck execution",
+    "Independent source review pending"
+  ],
+  "changes": "Nine RESOURCE_CONFIG lines only; no tests, Cargo, CI, lockfile, migration, or owner-root generated files changed."
+}

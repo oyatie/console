@@ -1,0 +1,23 @@
+recovery-fixture run=console-recovery-1813-2d8a4f27 evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.OKHlFt
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+SELECT 28
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.42s
+     Running tests/recovery.rs (/private/tmp/console-account30-cargo/debug/deps/recovery-ed6f34010a6cea16)
+
+running 1 test
+test required_remote_unknown_is_bounded_and_never_local_fallback ... topology: PG primary plus exact synchronous standby; remote_apply enabled
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+
+
+
+recovery-accounting {"effects":1,"receipts":1,"descriptor_negatives":7,"deadline_unknown":1,"inflight_epoch_unknown":1,"stable_reconnect_replay":1,"observer_denial":1,"known_rollback_reused":1}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 6.70s
+
+recovery-fixture evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.OKHlFt exit=0

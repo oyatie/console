@@ -1,0 +1,30 @@
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `console-app` (bin "console-app") generated 1 warning
+warning: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.66s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/auth_rest.rs (/private/tmp/console-account30-cargo/debug/deps/auth_rest-22aed68b00ab94a9)
+
+running 15 tests
+test account_custody_startup::current_profile_admission::api_historical_projection_requires_upgrade_then_starts ... ok
+test account_custody_startup::current_profile_admission::api_projection_and_guard_drift_readiness_recovers ... ok
+test account_custody_startup::current_profile_admission::worker_historical_projection_requires_upgrade_then_starts ... ok
+test account_custody_startup::current_profile_admission::worker_projection_and_guard_drift_readiness_recovers ... ok
+test account_custody_startup::custody_api_readyz_detects_column_grant_drift ... ok
+test account_custody_startup::custody_api_readyz_detects_owner_drift ... ok
+test account_custody_startup::custody_api_startup_refuses_partial_catalog ... ok
+test account_custody_startup::custody_api_startup_requires_actual_finalization ... ok
+test account_custody_startup::custody_configured_database_failure_does_not_become_no_database_mode ... ok
+test account_custody_startup::custody_genuine_no_database_configuration_keeps_existing_behavior ... ok
+test account_custody_startup::custody_readyz_ignores_session_temporary_pg_class_forgery ... ok
+test account_custody_startup::custody_worker_readyz_detects_column_grant_drift ... ok
+test account_custody_startup::custody_worker_readyz_detects_owner_drift ... ok
+test account_custody_startup::custody_worker_startup_refuses_partial_catalog ... ok
+test account_custody_startup::custody_worker_startup_requires_actual_finalization ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 201 filtered out; finished in 48.00s
+

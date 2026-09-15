@@ -1,0 +1,86 @@
+[
+  {
+    "package": "camino",
+    "version": "1.2.5",
+    "crate_sha256": "bb1307f12aa967b5a58416e87b3653360e0fd614a016b6e970db08fecbb1b80d",
+    "build_rs_sha256": "5bc29910c9644c320a7cceed121474915f7e832f484f1bf694dec80a45182aa0",
+    "fixup_sha256": "98f1be8b78170e710e8462db894e70163ae1e280dc8cdcce0ea691e0b1cecdfe"
+  },
+  {
+    "package": "leptos",
+    "version": "0.9.0-beta",
+    "crate_sha256": "63af1dcd8afc654381c7468ddc1c009168bf622259682ce4ad0236783fb281cd",
+    "build_rs_sha256": "e0b133d4916ff11b392243fc5943faff7b261437390a3b032e0921b3ae2141ed",
+    "fixup_sha256": "98f1be8b78170e710e8462db894e70163ae1e280dc8cdcce0ea691e0b1cecdfe"
+  },
+  {
+    "package": "leptos_macro",
+    "version": "0.9.0-beta",
+    "crate_sha256": "b1d1285578a015f4792443afc5f6573a6dd1e1ced4ce8b49892a519fcf3035b9",
+    "build_rs_sha256": "c130eebe06d5ecf9f509b4a86c9e3e486a31313f77e48af6b6fec7b3cbe3ab93",
+    "fixup_sha256": "98f1be8b78170e710e8462db894e70163ae1e280dc8cdcce0ea691e0b1cecdfe"
+  },
+  {
+    "package": "reactive_graph",
+    "version": "0.3.0-beta2",
+    "crate_sha256": "5404bbb25779839c1cc2bec81924499228a8481a2ad536b84d51ce66bf44a631",
+    "build_rs_sha256": "c130eebe06d5ecf9f509b4a86c9e3e486a31313f77e48af6b6fec7b3cbe3ab93",
+    "fixup_sha256": "98f1be8b78170e710e8462db894e70163ae1e280dc8cdcce0ea691e0b1cecdfe"
+  },
+  {
+    "package": "server_fn",
+    "version": "0.9.0-beta",
+    "crate_sha256": "548108d4179fc18c2517a6071fe52d24192d2e47dee1ab2d30fbb248f7329837",
+    "build_rs_sha256": "c130eebe06d5ecf9f509b4a86c9e3e486a31313f77e48af6b6fec7b3cbe3ab93",
+    "fixup_sha256": "98f1be8b78170e710e8462db894e70163ae1e280dc8cdcce0ea691e0b1cecdfe"
+  },
+  {
+    "package": "server_fn_macro",
+    "version": "0.9.0-beta",
+    "crate_sha256": "10bf6f59e8617cf89212ab362f14e4c25dd028f86ef0a22573ad05d3ebc8a2e4",
+    "build_rs_sha256": "c130eebe06d5ecf9f509b4a86c9e3e486a31313f77e48af6b6fec7b3cbe3ab93",
+    "fixup_sha256": "98f1be8b78170e710e8462db894e70163ae1e280dc8cdcce0ea691e0b1cecdfe"
+  },
+  {
+    "package": "tachys",
+    "version": "0.3.0-beta2",
+    "crate_sha256": "1852e854e3c4191246165ab178c363b8e7bcab40796d7978bfa2cbee20b5b851",
+    "build_rs_sha256": "c130eebe06d5ecf9f509b4a86c9e3e486a31313f77e48af6b6fec7b3cbe3ab93",
+    "fixup_sha256": "98f1be8b78170e710e8462db894e70163ae1e280dc8cdcce0ea691e0b1cecdfe"
+  },
+  {
+    "package": "proc-macro2-diagnostics",
+    "version": "0.10.1",
+    "crate_sha256": "af066a9c399a26e020ada66a034357a868728e72cd426f3adcd35f80d88d88c8",
+    "build_rs_sha256": "66fcc487972086f42011c84a1949861799dc7cfde1e56201d22cf8e71b59b8b1",
+    "fixup_sha256": "98f1be8b78170e710e8462db894e70163ae1e280dc8cdcce0ea691e0b1cecdfe"
+  },
+  {
+    "package": "slotmap",
+    "version": "1.1.1",
+    "crate_sha256": "bdd58c3c93c3d278ca835519292445cb4b0d4dc59ccfdf7ceadaab3f8aeb4038",
+    "build_rs_sha256": "fa4b3bd978b8f9c9a619b6fd61b4471a9b0a386335dd3b1fc8997daa8a16c4ff",
+    "fixup_sha256": "98f1be8b78170e710e8462db894e70163ae1e280dc8cdcce0ea691e0b1cecdfe"
+  },
+  {
+    "package": "prettyplease",
+    "version": "0.2.37",
+    "crate_sha256": "479ca8adacdd7ce8f1fb39ce9ecccbfe93a3f1344b3d0d97f20bc0196208f62b",
+    "build_rs_sha256": "79a5b2d260aa97aeac7105fbfa00774982f825cd708c100ea96d01c39974bb88",
+    "fixup_sha256": "98f1be8b78170e710e8462db894e70163ae1e280dc8cdcce0ea691e0b1cecdfe"
+  },
+  {
+    "package": "wasm-bindgen",
+    "version": "0.2.123",
+    "crate_sha256": "a254a4b10c19a76f09a27640e7ffbf9bc30bf67e16a3bf28aaefa4920fe81563",
+    "build_rs_sha256": "33c90a6eb1745c53f9047e0ecde135b249b0ea3d9e1a2a40c9610a33f225e6c9",
+    "fixup_sha256": "98f1be8b78170e710e8462db894e70163ae1e280dc8cdcce0ea691e0b1cecdfe"
+  },
+  {
+    "package": "wasm-bindgen-shared",
+    "version": "0.2.123",
+    "crate_sha256": "7acbf7616c27b194bbb550bf77ed0c2c3e5b7fd1260a93082b95fb7f47959b92",
+    "build_rs_sha256": "cc562769f4d55da465e081bb3187502bab20beb4704f22cc7d07be5ba4b765ae",
+    "fixup_sha256": "0a135532ddd0db0130550c3dcd92f3e45138c45d19199511d6e5a5303934ee48"
+  }
+]

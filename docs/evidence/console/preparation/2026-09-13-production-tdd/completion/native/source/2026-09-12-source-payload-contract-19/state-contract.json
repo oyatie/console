@@ -1,0 +1,63 @@
+{
+  "status": "PROPOSED_SOURCE_OWNER_STATE_CONTRACT",
+  "source_families": [
+    "QUALIFICATION",
+    "ELIGIBILITY",
+    "TAX_EVIDENCE"
+  ],
+  "revision_semantics": "PROPOSE new root revision1 stores AdmissionPayload. Later events reference original admission digest; source refs for executable use target exact VERIFIED event revision, whose owner resolves the immutable original payload. No version1 invented for existing event/audit/close rows.",
+  "events": [
+    {
+      "kind": "PROPOSE",
+      "from": "ABSENT",
+      "to": "PROPOSED",
+      "body_schema": "AdmissionPayload",
+      "body_rule": "family matches root; supersedes_ref required-nullable exact same-family predecessor previously verified head; missing required core facts remains common draft; incomplete eligibility may propose BLOCKED with explicit null facts.",
+      "admission_digest": "H(console.source19.admission,{org_id,root_id,admission_revision:\"1\",body})"
+    },
+    {
+      "kind": "VERIFY",
+      "from": "PROPOSED",
+      "to": "VERIFIED",
+      "body_schema": "VerifyPayload",
+      "body_rule": "admission_ref targets this root PROPOSE revision1; digest exact; expected head1; current actor/independent human/current bounded source trust validated; eligibility must SUPPORTED. Credential authenticity requires null reviewer_credential_ref plus trusted issuer operator; other verification requires current matching credential."
+    },
+    {
+      "kind": "REVOKE",
+      "from": "PROPOSED|VERIFIED",
+      "to": "REVOKED",
+      "body_schema": "RevokePayload",
+      "body_rule": "exact current head+CAS; top-level nonblank reason required; evidence refs current/custodied; terminal source never revived."
+    },
+    {
+      "kind": "SUPERSEDE",
+      "from": "VERIFIED",
+      "to": "SUPERSEDED",
+      "body_schema": {
+        "predecessor_head_ref": "AdmissionRef",
+        "successor_verified_ref": "AdmissionRef"
+      },
+      "body_rule": "Internal owner event only, atomic with successor VERIFY; same family/subject/purpose lineage; no separate client endpoint; event retains original admission digest."
+    }
+  ],
+  "common_event_fields": [
+    "org_id",
+    "root_id",
+    "revision",
+    "event_kind",
+    "admission_digest",
+    "actor_account_id",
+    "command_id",
+    "recorded_at_us",
+    "body"
+  ],
+  "successor_activation": "15 EA1.6 authoritative. Lock all declared source families/sorted heads, CAS named predecessor head and initially empty activated_successor_ref. VERIFIED predecessor appends SUPERSEDE; previously verified REVOKED predecessor retains REVOKED head and only claims successor linkage. PROPOSE-only predecessor cannot serve as verified replacement; revoke unwanted proposal and create corrected admission with supersedes=null. Revoking successor never resurrects old source.",
+  "replay": "Same immutable command+payload returns original receipt under current disclosure; not source re-execution. New effects require current trust, scope/field and source guards.",
+  "reason": "CCF1 top-level reason kept verbatim; mandatory nonblank on revoke/correction, no duplicate body reason or reason-derived action/authority.",
+  "common_workflow": "Source verification uses existing registered Action/draft/governance gate/work/receipt path. A gate approval is permission for exact verification, never a source VERIFY event itself. Source owner writes state once; no separate source approval engine.",
+  "not_implemented": [
+    "Exact SQL event/head constraints and guarded owner signatures",
+    "Complete row/actor/retention/source package adoption and alias closure",
+    "Real issuer/legal/normalizer qualifications and production operation"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:console:candidate:editor-control-envelope:s3",
+  "title": "Candidate transport envelope for existing draft.save",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "save",
+    "current_controls"
+  ],
+  "properties": {
+    "save": {
+      "$ref": "action-types.schema.json#/$defs/DraftSave"
+    },
+    "current_controls": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "address",
+          "handle"
+        ],
+        "properties": {
+          "address": {
+            "$ref": "action-types.schema.json#/$defs/FieldAddress"
+          },
+          "handle": {
+            "$ref": "action-types.schema.json#/$defs/ControlHandle"
+          }
+        }
+      }
+    }
+  }
+}

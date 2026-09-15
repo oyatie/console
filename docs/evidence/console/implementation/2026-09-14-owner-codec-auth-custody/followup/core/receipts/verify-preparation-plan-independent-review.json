@@ -1,0 +1,16 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVE exact one-line PLAN classification change",
+  "base_sha": "2cf397f1115ba3ef3fd455bdcf66807a9bdf09f9",
+  "file": "scripts/verify.mjs",
+  "sha256": "d119e5366081e7d4169b3589034a1dfa431a39c20900b1b2424a03754bfe9a33",
+  "change": "Classify existing Preparation wiring and recovery fixture regressions CI step as fast; no override or exemption",
+  "evidence": {
+    "/private/tmp/verify-preparation-mirror-red.log": "1 executed,1 failed on exact missing classification",
+    "/private/tmp/verify-preparation-mirror-green.log": "same probe1 executed,1 passed"
+  },
+  "scope": "Pure Python preparation/recovery unit regressions and Node recovery invocation tests; no Docker/product acceptance",
+  "limits": [
+    "Full verifier and actual fast tier not claimed completed by this receipt"
+  ]
+}

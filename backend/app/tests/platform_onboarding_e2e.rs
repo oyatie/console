@@ -48,8 +48,9 @@ fn gen_keys() -> Keys {
     }
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn platform_onboards_tenant_and_rls_isolates(super_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&super_pool).await;
     let keys = gen_keys();
 
     // Seed KNL (tenant #1) + a KNL admin as the OWNER (bypasses RLS for setup).
@@ -59,7 +60,7 @@ async fn platform_onboards_tenant_and_rls_isolates(super_pool: PgPool) {
 
     // The app pool connects as the non-owner runtime role, so RLS is enforced.
     let runtime_pool = console_rt_pool(&super_pool).await;
-    let service = build_router(app_state(runtime_pool.clone(), keys.public_pem.clone()));
+    let service = build_router(app_state(runtime_pool.clone(), keys.public_pem.clone()).await);
 
     // --- (1) PLATFORM token onboards a NEW tenant "acme" -----------------------
     // Seed the platform admin user (homed in the sentinel org) so the onboarding
@@ -323,8 +324,17 @@ async fn seed_platform_admin(pool: &PgPool, admin_id: UserId) {
     .unwrap();
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+async fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -332,7 +342,9 @@ fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])
     .unwrap();
-    AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
+    AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
+        .unwrap()
 }
 
 fn issue_token(

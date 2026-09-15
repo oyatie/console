@@ -1,0 +1,13 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVED_EXACT_TEST_COMMAND_EXTENSION",
+  "head_sha": "7a0ce898eadc507b54f1c4a2f4b10fc307e202f6",
+  "sha256": {
+    "package.json": "a64590492337af1880c0298dcb2b8a9ec2d5a5b5b0d7f77eadb590428cee8e86",
+    "scripts/check-production-hardening.mjs": "4d82bbd602d2d9f94495f1c29e83624bdfeefb43dea6ddebcaab8872253d688e",
+    "scripts/check-production-hardening.test.mjs": "1671b6631d37b5fcf08dbf8e28820bee47605a15a786b19daba1c903e1cc13f5"
+  },
+  "finding": "Expected canonical production-hardening command and positive fixture append same two LC07 test paths already in package.json; all preceding commands and assertions preserved.",
+  "independent_log": "/private/tmp/lc07-command-wiring-independent.log",
+  "scope": "Test reachability wiring only. Runtime machinery successor remains separately under review."
+}

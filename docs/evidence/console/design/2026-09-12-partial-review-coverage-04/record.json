@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "class": "evidence",
+  "status": "frozen_scoped_design_candidate",
+  "recorded_at": "2026-09-12T08:15:48.119170+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "d21603a1890d910cee3a851188f397c3f331fe2e",
+  "reviewed_contract_sha": "208c2b9893c4dc2cb7b11d71509d18547ee67741",
+  "predecessor_record": "../2026-09-12-actor-approval-contract-03/record.json",
+  "predecessor_record_sha256": "8c721dd3abd9c98c37cef536e8cdf9590bc710870817c2af7128db258b10cb8e",
+  "whole_design_approved": false,
+  "files": [
+    {
+      "path": "acceptance-plan.csv",
+      "bytes": 7946,
+      "sha256": "9d7af5657ae9f6ed63dbea8a9f0cb1c9b0c46119b3af33a7954ac9da7b1b695c"
+    },
+    {
+      "path": "coverage-contract.txt",
+      "bytes": 35470,
+      "sha256": "cbd2bee32916648e3ba43a38536f0d517d3cf73d2f08ff89389c2da1236cfb60"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 1957,
+      "sha256": "5b29e70ffba1afa9c4af9565fd5971b120f0da21f69fd450f25abef835030dcb"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1632,
+      "sha256": "7351cd01844c6e41c111d0edd7bc9dda7d3e86295d7838ff2a6c4f676d5ff908"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1346,
+      "sha256": "193384646ae2b9da51ec637779c1129fcfa745b3c6b125ee64848e687e0895b0"
+    },
+    {
+      "path": "review.html",
+      "bytes": 9244,
+      "sha256": "899b65f664fae6ded6a95512321334edc980512a8cb96483c90ef7749e7b27aa"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 941,
+      "sha256": "7913248a36fbd794bd675ad2a6c7f3116b5f0f5f625695df17d5a8e3601daf04"
+    },
+    {
+      "path": "screen-states.csv",
+      "bytes": 2859,
+      "sha256": "e71e45d9c3fb886b756e382344d93886c688841c77157f641b8c22cc348674ef"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 1627,
+      "sha256": "61ed3159ef5a96dd2da26205fbf92393018540715434de99b79dc9d3dc1956c1"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 2660,
+      "sha256": "2519f22f86b19b127bfc4d02318145f10efc530d79462274a93d4758f0a9f3fd"
+    }
+  ],
+  "remaining_holds": [
+    "B03 durable Group execution",
+    "B04 general automatic assignment and actor takeover",
+    "B06 server input drafts",
+    "B07 remaining whole-application screen matrix",
+    "B08 monetary publication/disputes",
+    "Whole-design consensus and explicit design/test SHA approval",
+    "Runtime/migration/performance proof",
+    "Current-authority amendment; payment/legal/production authority",
+    "Existing repository doc-link failures; not merge-ready"
+  ]
+}

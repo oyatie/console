@@ -1,0 +1,19 @@
+{
+  "kind": "payroll.close_attendance",
+  "body": {
+    "expected": {
+      "run_id": "824563b2-d18b-501c-8f17-875db7c57313",
+      "run_revision": "1",
+      "input_revision": "3",
+      "calculation_revision": null,
+      "close_basis": null,
+      "review_cycle_id": null
+    },
+    "close_basis": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "close_basis_id": "7c776126-80c0-597c-b6f6-4f1e004b6fff",
+      "revision": "1"
+    },
+    "attest": true
+  }
+}

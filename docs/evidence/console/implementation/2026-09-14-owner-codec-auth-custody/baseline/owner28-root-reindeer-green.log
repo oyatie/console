@@ -1,0 +1,3 @@
+buckify.sh: local patch boundary verified
+buckify.sh: renamed duplicate sqlx-0.8 alias -> sqlx-0_8 (public)
+buckify.sh: third-party/rust/BUCK regenerated

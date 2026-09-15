@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_technical_proposal",
+  "recorded_at": "2026-09-12T21:52:24.216435+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "6cec05629a645f32de0efd5bb9875fb8415e04c9",
+  "reviewed_contract_sha": "aa2b2a52c2627f2e10a04e666d9d43aa9ecedef7",
+  "predecessor_record": "../2026-09-12-source-temporal-technical-15/record.json",
+  "predecessor_record_sha256": "39a6afc11bd7ec901a7be62986230ae34fa34f1a64e1e14062352c8c0bd3f1b7",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "files": [
+    {
+      "path": "action-inputs.json",
+      "bytes": 5273,
+      "sha256": "ac215c0eeaaaa20f4f443d6a1937cd48dff2812e9ea730e3b35f418444cf0ab9"
+    },
+    {
+      "path": "common-action-principle.txt",
+      "bytes": 3336,
+      "sha256": "95fa01089c78cf67d13d2b027533ffedd658b07f5cbdfe075c82e67cd56b43d3"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 1906,
+      "sha256": "910ee713f0568e8c712b7fe857a96c10f30ab8bcd9d2e8b9ab9ab5a942475107"
+    },
+    {
+      "path": "group-and-navigation.txt",
+      "bytes": 12997,
+      "sha256": "1e881e73650e65df99c12b539db9f9bfc4944023c6374a7836a97cce71236c8b"
+    },
+    {
+      "path": "group-command-witnesses.json",
+      "bytes": 6422,
+      "sha256": "8e387f032bcf22d2f79edb6df78c3eaebf74dc130faa76bb879ff5098a917624"
+    },
+    {
+      "path": "participating-ports.json",
+      "bytes": 4608,
+      "sha256": "81a00add9639e6804e086fa271c297e0e1b460cf9737b0b91bade063a31a8cf6"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 9960,
+      "sha256": "631442ed099e2940b3cb5bec518668e2a25fcf027d0d9bcd573742867f57a41f"
+    },
+    {
+      "path": "review-and-publication.txt",
+      "bytes": 13067,
+      "sha256": "7a05edb7b8ea62a8707fa4e65b346ba0d8e0ce08e7117e02d1eb55c0f0d8629c"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1081,
+      "sha256": "302ea859ff1de7c282141740e0020dfe91c56d60814e77a4ce286266fe92c2b8"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1872,
+      "sha256": "b77055a4cf6d31556c570c9ef393e669421cdf212efc1300c7a5a926447dce12"
+    },
+    {
+      "path": "review.html",
+      "bytes": 2783,
+      "sha256": "ba1917bc27d7f8839a512494df35b3a0bbd2915a5736549461fb492555b2bdce"
+    },
+    {
+      "path": "schema-candidate.json",
+      "bytes": 32146,
+      "sha256": "cfbf02b629e719cc884e668e1e7755abee10cac35f1e182975bbf0a873a77813"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 1152,
+      "sha256": "bf17ae66c7afd2b0b6d8748fe52b5beb233245a778e089bbf323d670785c0b40"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 11239,
+      "sha256": "c1a37ef8faf6d656bda53fded5332a0bc00b7afa6455bb39b63ed4790b4d75e9"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 2010,
+      "sha256": "51d17c704a51cd099950de5b50ce95836c2f703038c2ebfa7dd008084474c685"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 5490,
+      "sha256": "b8ffdd40b757fc6d0fa9c9c40fbf332e12018dd5c25184cfb610b65fe699061f"
+    },
+    {
+      "path": "work-and-capacity.txt",
+      "bytes": 10090,
+      "sha256": "0131548013bd6bb98baee6fbaa48ecc167961957aef0f9d4af0a01562e236ffd"
+    }
+  ],
+  "remaining_holds": [
+    "W04b-05 consolidated physical DDL/ACL/migration/adoption/retention/recovery/workload/harness candidate",
+    "W05 current-authority scope alignment and four final integrated independent reviews plus explicit design SHA approval",
+    "W06 executable tests / independent review / explicit test SHA approval / actual RED implementation admission",
+    "Actual source/issuer/identity/operational provisioning evidence; production/legal/payment/full-suite delivery remain separate"
+  ]
+}

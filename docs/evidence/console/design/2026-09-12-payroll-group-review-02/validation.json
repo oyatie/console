@@ -1,0 +1,36 @@
+{
+  "candidate_sha": "e32464893ed8b91ca411311c2607a06adcc7ea22",
+  "class": "evidence_validation_not_product_test",
+  "checks": {
+    "predecessor_payloads_hash_verified": 14,
+    "research_payloads_hash_verified": 119,
+    "source_git_blobs_verified": 19,
+    "active_authorities_unchanged": 3,
+    "reader_local_links_resolved": 9,
+    "non_executable_oracle_rows": 28,
+    "gap_groups": 15,
+    "open_design_groups": 9,
+    "independent_reviewers": 4,
+    "findings": 19
+  },
+  "exact_scoped_diff_command": "git diff --check 6eda7d7cecc982ef500206d836d23051da19f0b2 HEAD -- docs/evidence/console/design/2026-09-12-payroll-group-review-02",
+  "scoped_diff_exit": 0,
+  "product_tests_authored": 0,
+  "product_tests_executed": 0,
+  "approved_design_sha": null,
+  "approved_test_sha": null,
+  "documentation_gate": {
+    "candidate_sha": "c2d5dd43df11af789e3a3a413a4aaf8b48221605",
+    "command": "node scripts/check-doc-links.mjs",
+    "exit_code": 1,
+    "findings": 4,
+    "output": "doc-link-check.txt"
+  },
+  "full_base_diff": {
+    "candidate_sha": "c2d5dd43df11af789e3a3a413a4aaf8b48221605",
+    "exit_code": 2,
+    "findings": 88,
+    "output": "full-diff-check.txt"
+  },
+  "not_run": "Product/DB/UI/performance tests and full release gates: this is unapproved design evidence, not implementation or merge acceptance."
+}

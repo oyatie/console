@@ -1,0 +1,14 @@
+{
+  "fixed_documents": 7,
+  "registered_inputs": 55,
+  "reachable_definition_count": 181,
+  "reachable_missing": [],
+  "all_reference_occurrences": 1493,
+  "unique_references": 287,
+  "unreachable_missing_documents": [
+    [
+      "2026-09-12-owner-execution-contract-20/input-reference.schema.json",
+      "/$defs/InputSchemaRef20"
+    ]
+  ]
+}

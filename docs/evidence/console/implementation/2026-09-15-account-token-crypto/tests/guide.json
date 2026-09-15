@@ -1,0 +1,107 @@
+{
+  "kind": "PRIVATE_ADDITIVE_ACCOUNT_CRYPTO_ACCEPTANCE_CANDIDATE_V3",
+  "author": "/root/inventory_repair",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "writer": "/root",
+  "immutable_target": "Root-frozen Account crypto API v3: separate ES256 access/CSRF claims; Current/Expired cryptographic access outcome; strict closed raw grammar/issuer/audience/kind/time; family-bound issuance; safe error/Debug. No live identity/session/DB/HTTP proof.",
+  "api_sha256": "8727208acdfee7e100994f7f12870655423842ff619c5503774bc1b767317ac3",
+  "api_review": "/private/tmp/account-token-crypto-api-v3-f96eddd3-independent-review-capture.json",
+  "api_review_sha256": "b564a0c921e23da674fe276249892d99864114e30627a8adf46845ff9d338e40",
+  "allowed_paths": [
+    "backend/crates/platform/auth/tests/jwt_es256.rs"
+  ],
+  "packaging": "Append named account_crypto module to already registered jwt_es256.rs; reuse existing es256_material; preserve every original source byte as exact prefix. No dependencies/Cargo/BUCK/lockfile modifications. One ordinary test fixture and grouped hostile-input tables; no production stubs.",
+  "test_roster": [
+    "account_crypto::access_round_trip_is_closed_company_free_and_bound_to_primary_metadata",
+    "account_crypto::csrf_round_trip_is_closed_and_has_no_access_or_assurance_projection",
+    "account_crypto::access_issuance_respects_configured_fifteen_minute_and_family_ceilings",
+    "account_crypto::csrf_issuance_respects_five_minute_and_family_ceilings",
+    "account_crypto::issuance_rejects_zero_ttl_expired_ceiling_invalid_identity_and_generation",
+    "account_crypto::empty_configured_issuer_never_enables_account_or_csrf_tokens",
+    "account_crypto::lifetime_arithmetic_near_representable_time_limit_does_not_overflow",
+    "account_crypto::account_csrf_and_legacy_parsers_are_separate_in_both_directions",
+    "account_crypto::both_protocols_require_exact_issuer_audience_and_kind",
+    "account_crypto::both_protocols_reject_missing_extra_and_raw_duplicate_claims",
+    "account_crypto::identity_generation_and_assurance_claims_have_closed_canonical_values",
+    "account_crypto::time_validation_has_no_grace_and_enforces_signed_lifetime_and_primary_age",
+    "account_crypto::expired_access_preserves_verified_claims_without_skipping_other_validation",
+    "account_crypto::wrong_keys_hmac_payload_tampering_and_malformed_tokens_are_refused",
+    "account_crypto::signed_token_debug_and_invalid_claim_errors_do_not_echo_secrets"
+  ],
+  "static_selected_count": 15,
+  "static_existing_binary_count": 14,
+  "static_total_binary_count": 29,
+  "runtime_status": {
+    "author_compile_runs": 0,
+    "author_runtime_tests_executed": 0,
+    "discovered_runtime_count": "not run",
+    "blocked": "Current base lacks AccountAccessTokenInput,AccountCsrfTokenInput,AccountAccessClaims,AccountAccessVerification,AccountAssurance,SignedAccountToken and four new owner methods. Initial additive target cannot compile; all new runtime assertions are unreached. These tests must not replace current-interface protocol3 behavioral RED."
+  },
+  "commands": {
+    "existing_baseline": "cargo test -p console-platform-auth --test jwt_es256 --test jwt_verifier -- --test-threads=1",
+    "compile_owner_prerequisite": "cargo test -p console-platform-auth --test jwt_es256 --no-run",
+    "selected_after_owner_exists": "cargo test -p console-platform-auth --test jwt_es256 account_crypto:: -- --test-threads=1",
+    "focused_regression": "cargo test -p console-platform-auth --test jwt_es256 --test jwt_verifier -- --test-threads=1",
+    "cwd": "repository/backend",
+    "database": "none; ordinary #[test], no SQLx/network/runtime server. Root owns Cargo; no test fake APIs or stubs."
+  },
+  "independent_oracles": [
+    "Every hostile claim family starts from issuer-created positive and independently verifies ES256/issuer/audience with jsonwebtoken, then verifies an unchanged same-signer reconstruction before mutation. No wrong-key/shape false negative is accepted as proof.",
+    "Independent wire keyset, fixed audience/kind, canonical decimal generation, UUIDs, primary metadata, maximum lifetime and fresh jti are checked. Positive access outcomes are explicitly Current; expired outcomes are independently matched later.",
+    "Raw duplicate required Account/CSRF fields are emitted by custom serde SerializeMap directly into jsonwebtoken::encode. Each raw serialized body asserts two member occurrences before signing, without Value parse collapse. Legacy duplicate/marker compatibility is a separately owned Fast candidate and excluded here.",
+    "Current/Expired validation does not have a DB. Valid expired access retains exact Account/family/generation/expiry for future authority checks; wrong signature/issuer/audience/kind/UUID/generation/causal times remains fixed InvalidToken even when expired. CSRF expiry is fixed ExpiredSignature.",
+    "Time uses one trusted fixture clock per fixture. Verifier receives explicit trusted now; expiry boundary advances that argument rather than sleeping. Independent decoder disables library wall-clock expiry/nbf solely for signed wire inspection, while implementation must enforce all actual limits itself.",
+    "No zero/negative configured access TTL or family ceiling. Access is bounded by configured TTL/15minutes/family; proof by5minutes/family. Near9999-12-31 valid8second ceiling with i64MAX configured duration detects overflow-before-clamp. Empty configured issuer must fail safe.",
+    "Token/claims/access-outcome Debug cannot reveal encoded segments or Account/family/issuer values. Invalid-input errors must be fixed InvalidToken and neither Debug nor Display may echo signed token segments, hostile known claim VALUE or hostile unknown FIELD NAME. Unknown-field-name canary covers both protocols without the former CSRF unknown-value vacuity. Ephemeral keys/tokens stay memory-only and out of messages."
+  ],
+  "mechanical_guide": [
+    "Root/Capture independently review exact API/fixture/oracle source and missing-owner classification; freeze immutable test source. Do not insert unreviewed stubs merely to move compilation forward.",
+    "Root verifies existing auth baseline on clean source and records initial missing-new-owner compile failure with0executed. Admission must name the exact compiler boundary if such prerequisite lane is allowed by current DELIVERY; missing binary/non-executable probe is not success. No implementer is spawned outside fanout.py admit/run.",
+    "Implementation owner adds only nested typed Account crypto support behind current JwtIssuer/JwtVerifier key/config ownership, plus required export wiring; root serializes shared files. Decode directly into closed typed structures, preserve raw duplicate refusal, then apply server-time classification. No whole-payload Value conversion before validation.",
+    "Fixed unit errors discard hostile serde/JWT diagnostics; access expiry returns typed Expired only after all other checks. Parsed claims remain plain data and create no Principal/session/DB authority.",
+    "After actual API exists, run unchanged selected module and existing ES256/verifier binaries. Record selected/total discovered/executed counts and all earlier blocked assertions actually reached. Independent source/runtime review before closure; never infer live session/primary proof from this pure crypto result."
+  ],
+  "pre_mortem": "An expired token bypasses signature/kind/generation grammar and triggers fallback; private proof parses as access/legacy; library wall clock/leeway defeats explicit now; Value conversion collapses duplicates; time overflow or Debug surfaces leak credential material.",
+  "blast_radius": "Existing auth crypto owners and one registered acceptance binary only; no Account rows/session state, database grants or HTTP endpoints.",
+  "detection": "Same-signer controls, both protocol parsers, exact closed field sets, raw duplicate calibration, expiry-only classification negatives, fixed errors and redacted Debug, real0-executed compiler boundary followed by full selected runtime.",
+  "rollback": "Reviewed source-only forward rollback preserving adopted protocol3 hardening and prior failed/compiler evidence; no database/key/session rollback.",
+  "stop_conditions": [
+    "Unfrozen/mismatched API",
+    "Unrelated source or dependency edits",
+    "Existing prefix/legacy tests changed",
+    "Unapproved stub",
+    "Compiler failures misreported as runtime assertions",
+    "Raw secrets emitted",
+    "Any review/test failure"
+  ],
+  "review_identities": {
+    "author": "/root/inventory_repair",
+    "api_independent": "/root/capture_review",
+    "tests_independent": "pending /root/capture_review"
+  },
+  "remaining_holds": [
+    "Initial compilation and runtime none by author",
+    "Actual WebAuthn proof and authoritative Account/family/state/generation/absolute lifetime re-read",
+    "HTTP/cookie/nonce/CSRF binding, same-origin and duplicate-cookie handling",
+    "Root-owned auth custody and legacy writer transition",
+    "Production activation, key-rotation/cutover/drain and legal content authority"
+  ],
+  "superseded_private_drafts": [
+    "/private/tmp/account-token-crypto-api-f96eddd3.json",
+    "/private/tmp/account-token-crypto-api-v2-f96eddd3.json",
+    "/private/tmp/account-token-crypto-acceptance-candidate-f96eddd3/account_crypto_module.rs"
+  ],
+  "author_validation": {
+    "rustfmt": "PASS private module",
+    "existing_source_prefix_sha256": "3c91384d6f602f7ad6828d0579007644fd56451a6def89836959c9da063a292d",
+    "source_edits": false,
+    "static_selected": 15,
+    "no_cargo": true,
+    "git_apply_check": "PASS expected after freeze"
+  },
+  "supersedes": {
+    "root": "/private/tmp/account-token-crypto-acceptance-v2-candidate-f96eddd3",
+    "manifest_sha256": "6de28e55b4a71ca90a8d88b06fe72b8323cbf33abda9e614e03095f86ba98097",
+    "reason": "Root/Capture requested removal of redundant legacy duplicate/marker test (Fast owns those cases); strengthen no-echo oracle with hostile unknown FIELD NAME for both protocols. API unchanged."
+  }
+}

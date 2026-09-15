@@ -1,0 +1,47 @@
+{
+  "status": "PROPOSED_NATIVE_MANIFEST_BOUNDARY_PENDING_REVIEW",
+  "f01_status": "PARTIAL: native header/unit/source-slot/outcome and wage-body shapes specified; transitive source-owner payload contracts remain OPEN",
+  "f02_status": "PARTIAL:7 native relations plus existing key extensions specified; complete SQL helper/trigger/ACL, lifecycle matrix and source target DDL remain OPEN",
+  "native_records": 7,
+  "added_since17": "payroll_calculation_units (one outcome per batch employee, no random entity UUID)",
+  "inherited_corrections": [
+    "17 all-input-BLOCKED calculation assertion superseded: input-only until valid close",
+    "Calculation version explicitly i32-compatible bounded decimal, not unreviewed i64 widening",
+    "Profile/scope refs map exact registered common instance revisions in native18-v1"
+  ],
+  "remaining": [
+    {
+      "id": "F01",
+      "next_outputs": [
+        "Exact calendar/coverage/close/source qualification/credential/eligibility/tax payload schemas and bounded dependency closure",
+        "Exact workflow assignment/adoption/common registry nested contracts",
+        "Source error/repair presentation mapping and complete retained source bytes"
+      ]
+    },
+    {
+      "id": "F02",
+      "next_outputs": [
+        "Complete executable-shape SQL trigger/helper bodies and per-caller lock/ACL contracts;17C01-C26 remain global register",
+        "Account/source native referenced tables and complete lifecycle/current-head matrix",
+        "All referenced FK indexes and actual source/alias query census"
+      ]
+    },
+    {
+      "id": "F03-F08",
+      "next_outputs": [
+        "17 unchanged pin/adoption/provider issuance/custody/identity recovery/migration/harness deployment closures"
+      ]
+    }
+  ],
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "later_gates": [
+    "Final authority-aligned integrated design review4 rounds and exact design SHA approval",
+    "Executable tests independent review and exact test SHA approval",
+    "Implementation via actual named RED probe admission; runtime/migration/restore/load proof",
+    "Separate release/exposure/legal/payment authority"
+  ]
+}

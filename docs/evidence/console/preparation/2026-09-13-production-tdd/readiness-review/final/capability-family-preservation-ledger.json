@@ -1,0 +1,658 @@
+{
+  "schema_version": "console-capability-family-preservation-review-v1",
+  "status": "AUTHORED_REVIEW_ARTIFACT_NOT_PRODUCT_AUTHORITY",
+  "base_sha": "0f89f248812cbebd4e9be0997da7ed7812119ab6",
+  "approved_integrated_design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "author_identity": "/root/fresh29_workflows",
+  "writer_scope": "scratch only; /root is repository sole writer",
+  "recorded_date": "2026-09-13",
+  "purpose": "Make broader commitments and first-slice preservation obligations reviewable without admitting later implementation.",
+  "scope_notes": [
+    "Foundry family rows and Console workflow rows overlap deliberately: they describe platform capability and consuming product workflow, not additive feature counts.",
+    "This is a capability-family ledger, not a complete Foundry leaf inventory or parity claim.",
+    "Owning layers identify accountable responsibility, not fabricated employee assignments or authorization to create new crates.",
+    "Preservation classifications are design hypotheses requiring review, not migration-free guarantees.",
+    "Current source authority and approved design take precedence; source/runtime availability is not implementation admission.",
+    "No existing reader, test, migration or historical evidence may be removed to satisfy this ledger.",
+    "Dependencies are contract relationships, not an executable dispatch graph. Mutually dependent foundation rows are reviewed together; a cycle does not authorize circular implementation prerequisites or agent fan-out."
+  ],
+  "gate_definitions": {
+    "BEFORE_IMPLEMENTATION": "Review first-slice preservation constraints and scoped dependencies; approve exact tests and real boundary RED under DELIVERY; no requirement to build later capabilities.",
+    "BEFORE_SLICE_ACCEPTANCE": "Execute admitted native first-slice scenarios and observed usability protocol; broader capability evidence stays pending.",
+    "BEFORE_LATER_CAPABILITY_IMPLEMENTATION": "Close that capability's exact specification, owner, policy, migration/operational assumptions, tests and independent review/admission.",
+    "BEFORE_PRODUCTION_EXPOSURE": "Complete relevant runtime/operational/user evidence and obtain separate exposure, provider and legal authority where applicable."
+  },
+  "whole_suite_inventory_status": "FAMILY_LEDGER_AUTHORED; VERSIONED_LEAF_INVENTORY_AND_ACCEPTANCE_STILL_OPEN",
+  "capabilities": [
+    {
+      "id": "CF-F01",
+      "family": "Data connectivity, integration, transformation and orchestration",
+      "phase": "LATER_CAPABILITY; internal custody dependency only now",
+      "accountable_owning_layer": "Existing source-domain application/adapter owners; platform integration boundary",
+      "dependencies": [
+        "CF-F02",
+        "CF-F03",
+        "CF-F11",
+        "CF-C12"
+      ],
+      "intended_acceptance_outcome": "An admitted connector/transformation produces typed, attributable source revisions with bounded replay, provenance, error and repair behavior.",
+      "preservation_obligation": "Keep native business intent distinct from ingested/source facts; immutable source IDs, schema versions, owner receipts and current authorization; custody is not a shipped ingest product.",
+      "later_adoption_classification": "UNKNOWN",
+      "invalidation_trigger": "Import overwrites native truth; new connector bypasses owner; source key or time semantics incompatible with native schema.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:23",
+        "docs/current/PRODUCT.md:27",
+        "docs/current/ROADMAP.md:52",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_LATER_CAPABILITY_ACCEPTANCE",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-F02",
+      "family": "Ontology objects, typed properties, links and interfaces",
+      "phase": "FIRST_SLICE_FOUNDATION; full ontology breadth later",
+      "accountable_owning_layer": "Existing ontology application/kernel contracts plus canonical domain-owned projections",
+      "dependencies": [
+        "CF-C01",
+        "CF-C02",
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "Selected objects and typed commands retain identity, field meaning, relationship integrity, provenance and authorized reusable views; later leaves have their own acceptance.",
+      "preservation_obligation": "Stable object/type/property/item IDs; schema and revision references; exact units/time; current field/resource policy; one canonical domain writer.",
+      "later_adoption_classification": "ADDITIVE_CONDITIONAL",
+      "invalidation_trigger": "New type requires reinterpreting existing IDs, replacing property meaning, changing legal Company boundary or bypassing canonical writer.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:23",
+        "docs/current/PRODUCT.md:31",
+        "docs/current/PRODUCT.md:34",
+        "docs/current/PRODUCT.md:46",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:15",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:19"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-F03",
+      "family": "Actions, functions, validation, automation and effect receipts",
+      "phase": "FIRST_SLICE_FOUNDATION; general automation later",
+      "accountable_owning_layer": "Existing ontology application dispatch with fixed domain participants and owner adapters",
+      "dependencies": [
+        "CF-F02",
+        "CF-F04",
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "Each admitted first-slice action validates current inputs/authority, preflights without mutation, commits once and returns only the currently authorized projection of the original outcome/receipt on replay.",
+      "preservation_obligation": "Closed versioned command semantics, owner dispatch, expected revisions, deterministic encoding, preflight/current policy, effect versus notification distinction.",
+      "later_adoption_classification": "ADDITIVE_CONDITIONAL",
+      "invalidation_trigger": "New automation executes arbitrary callbacks, changes old sealed command semantics, introduces a second writer or turns receipt replay into a new action.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:31",
+        "docs/current/PRODUCT.md:34",
+        "docs/current/PRODUCT.md:36",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:3",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:4",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:12"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-F04",
+      "family": "Drafts, change history, snapshots, replay and finalization",
+      "phase": "FIRST_SLICE_FOUNDATION; broader historical analysis later",
+      "accountable_owning_layer": "Existing ontology/common draft application owner and owning domain receipt/custody boundaries",
+      "dependencies": [
+        "CF-F02",
+        "CF-F03",
+        "CF-C01",
+        "CF-C12"
+      ],
+      "intended_acceptance_outcome": "Save, reopen, restore permitted fields, seal and execute preserve acknowledged input, immutable history and actor/company binding.",
+      "preservation_obligation": "Stable FieldAddress with parent item IDs; schema/version history; incomplete editor text distinct from typed value; immutable sealed input; restoration appends.",
+      "later_adoption_classification": "MIGRATION_IF_TRIGGERED",
+      "invalidation_trigger": "Old schema/receipt bytes rewritten, row addressing becomes positional, history needed later was discarded or account/private custody was collapsed into employment.",
+      "authority_and_design_refs": [
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:4",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:5",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:15",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:19",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:30"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-F05",
+      "family": "Shared approvals, work assignment, delegation and continuity",
+      "phase": "FIRST_SLICE_DEPENDENCY; other process families later",
+      "accountable_owning_layer": "Existing workflow and governance application owners; Group capacity owner; domain decision owner",
+      "dependencies": [
+        "CF-F03",
+        "CF-F04",
+        "CF-C01",
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "Automatic/manual assignment and temporary/permanent transfer maintain one accountable task owner, capacity and current authority, with supervised no-candidate recovery.",
+      "preservation_obligation": "Task/definition identity, ownership/assignment epochs, attribution, policy-derived eligibility, bounded capacity/fairness and no actor-intent transplantation.",
+      "later_adoption_classification": "ADDITIVE_CONDITIONAL",
+      "invalidation_trigger": "New process requires payroll-only task roles, identity storage roots, unbounded candidate search or sharing one task among multiple accountable owners.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:27",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:11",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:6",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:15",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:18"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-F06",
+      "family": "Analytics, search, saved explorations, time-series, geospatial and multimodal views",
+      "phase": "LATER_CAPABILITY; admitted first-slice views only now",
+      "accountable_owning_layer": "Canonical domain read projections plus existing analytics/application and UI adapters",
+      "dependencies": [
+        "CF-F02",
+        "CF-F04",
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "Each later analytical leaf answers declared questions from authorized data with reproducible units, time, lineage and explicit result limits.",
+      "preservation_obligation": "Policy-aware projection, linked identity, versioned saved criteria, bounded pagination/aggregation and history availability; do not expose hidden population through derived values.",
+      "later_adoption_classification": "UNKNOWN",
+      "invalidation_trigger": "Analytical scale or semantics require materialization/index changes; saved filters lose historical meaning; aggregates assume access to undisclosed fields.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:23",
+        "docs/current/PRODUCT.md:32",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:9",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:12",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:17"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_LATER_CAPABILITY_ACCEPTANCE",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-F07",
+      "family": "Fusion-like spreadsheets, formulas and enterprise coediting",
+      "phase": "LATER_CAPABILITY",
+      "accountable_owning_layer": "Existing ontology object/action contracts consumed by future sheet application/UI owner; owner identity finalized at later admission",
+      "dependencies": [
+        "CF-F02",
+        "CF-F03",
+        "CF-F04",
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "Declared formula, structural edit, object writeback, concurrent edit and reconnect cases preserve exact values and defined conflicts under the chosen workload.",
+      "preservation_obligation": "Stable field/cell/item addressing, exact typed values, versioned formulas/schema/structure, owner-bound actions and current policy; preserve a replaceable collaboration seam.",
+      "later_adoption_classification": "UNKNOWN",
+      "invalidation_trigger": "Formula dependencies, cell identity, structure operations or measured contention cannot be represented without transforming persisted draft/object state.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:27",
+        "docs/current/ROADMAP.md:52",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:15"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_LATER_CAPABILITY_ACCEPTANCE",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-F08",
+      "family": "Collaborative documents, communications and policy-bound object links",
+      "phase": "LATER_CAPABILITY",
+      "accountable_owning_layer": "Future communication/document application owners with existing object, policy, workflow and Leptos UI boundaries",
+      "dependencies": [
+        "CF-F02",
+        "CF-F03",
+        "CF-C01",
+        "CF-F11",
+        "CF-C12"
+      ],
+      "intended_acceptance_outcome": "Later documents and communications preserve authorized links, authorship, audience and delivery state while remaining discoverable beside business work.",
+      "preservation_obligation": "Independent persistent communication surface; immutable business links, content revisions and authorship; separate audience policy and delivery outcome.",
+      "later_adoption_classification": "ADDITIVE_CONDITIONAL",
+      "invalidation_trigger": "Communication storage treats Employment as login identity, derives authority from job labels or depends on transient payroll inspection panels.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:27",
+        "docs/current/ROADMAP.md:50",
+        "docs/current/ROADMAP.md:52",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_LATER_CAPABILITY_ACCEPTANCE",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-F09",
+      "family": "Developer APIs, SDKs, application building and integrations",
+      "phase": "FIRST_SLICE_ADAPTERS; general developer platform later",
+      "accountable_owning_layer": "Existing application use cases; REST/UI sibling adapters where selected; contracts/OpenAPI serialized owner",
+      "dependencies": [
+        "CF-F02",
+        "CF-F03",
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "First-slice SSR/API adapters call the same authoritative use cases; later public tooling preserves versioned contracts and declared compatibility.",
+      "preservation_obligation": "Server-derived context and policy; transport-independent owner commands/results; versioned DTOs; no universal REST-layer cleanup prerequisite.",
+      "later_adoption_classification": "ADDITIVE_CONDITIONAL",
+      "invalidation_trigger": "An SDK depends on internal custody/control DTOs, transport bypasses owner or compatibility requires rewriting persisted intents.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:46",
+        "docs/current/ROADMAP.md:19",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:3",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:4",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:17"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-F10",
+      "family": "AI platform and model development/operations",
+      "phase": "LATER_CAPABILITY_SEPARATE_REPOSITORY_HOLD",
+      "accountable_owning_layer": "Separate Intelligence repository; Console-owned fail-closed application seam",
+      "dependencies": [
+        "CF-F02",
+        "CF-F03",
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "After stable Intelligence SHA and separate admission, chosen model capabilities use the same Principal, object/action owners and explicit evidence/authority limits.",
+      "preservation_obligation": "Keep existing bind-only loopback seam; no tenant chat/inference/payroll write or autonomous merge; deterministic business authority remains independent.",
+      "later_adoption_classification": "UNKNOWN",
+      "invalidation_trigger": "A model integration needs a second writer, tenant inference before admission, non-loopback exposure or cloning without named stable base.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:25",
+        "docs/current/PRODUCT.md:56",
+        "docs/current/ROADMAP.md:33"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_LATER_CAPABILITY_ACCEPTANCE",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-F11",
+      "family": "Security, governance, platform administration, observability and product delivery",
+      "phase": "FIRST_SLICE_FOUNDATION_AND_RECOVERY; enterprise breadth later",
+      "accountable_owning_layer": "Platform auth/authz, Account/Group, DB/runtime and delivery owners; canonical domain control owners",
+      "dependencies": [
+        "CF-C01",
+        "CF-C02",
+        "CF-F03"
+      ],
+      "intended_acceptance_outcome": "Selected policy and control changes are attributable/current; diagnostic, recovery, migration and release evidence accurately describe actual effects and exposure limits.",
+      "preservation_obligation": "Resource/field/action and policy-administration authority; Company isolation; versioned dependency/contract manifests; protected telemetry and effect histories; software rollback distinct from data restoration.",
+      "later_adoption_classification": "MIGRATION_IF_TRIGGERED",
+      "invalidation_trigger": "Scope/authority encoding changes, mixed-version reads reinterpret history, telemetry discloses hidden data, deployment requires irreversible conversion or new exposure.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:17",
+        "docs/current/PRODUCT.md:32",
+        "docs/current/PRODUCT.md:37",
+        "docs/current/PRODUCT.md:52",
+        "docs/current/ROADMAP.md:15",
+        "docs/current/DELIVERY.md:7",
+        "docs/current/DELIVERY.md:25"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C01",
+      "family": "Persistent Account and internal/applicant/former-worker/partner identity",
+      "phase": "FIRST_SLICE_DEPENDENCY; broader experiences later",
+      "accountable_owning_layer": "Platform Account/auth/context owners; policy-scoped CompanyActor attribution owners",
+      "dependencies": [
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "Account identity persists independently of Employment; separate security suspension, recovery and session-revocation controls remain effective. Current policy controls login eligibility, contexts, own historical records and actions without job-title role classes.",
+      "preservation_obligation": "Stable Account and attributed actor IDs, separate employment lifecycle, original Company-bound drafts, temporal grants and policy-derived discovery.",
+      "later_adoption_classification": "MIGRATION_IF_TRIGGERED",
+      "invalidation_trigger": "Login identity is deleted/recreated on employment change, one Account silently changes legal actor or current context retargets a saved intent.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:17",
+        "docs/current/PRODUCT.md:27",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:5",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:10"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C02",
+      "family": "Company, Group, OrgUnit, Person, Employment and organization topology",
+      "phase": "FIRST_SLICE_DEPENDENCY; broader organization work later",
+      "accountable_owning_layer": "Existing Company/organization/HR canonical owners; separately scoped Group topology owner",
+      "dependencies": [
+        "CF-C01",
+        "CF-F02",
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "Company-scoped work and authorized Group observations preserve legal/employment identity, topology and single-writer boundaries.",
+      "preservation_obligation": "Group tenant versus Company legal/RLS cell; Company-local OrgUnits; immutable historical Employment; N× scoped reads and one-Company writes.",
+      "later_adoption_classification": "MIGRATION_IF_TRIGGERED",
+      "invalidation_trigger": "Cross-company shared office becomes a shared OrgUnit, Group arms app.current_org, or a later topology change rewrites historical legal ownership.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:15",
+        "docs/current/PRODUCT.md:17",
+        "docs/current/PRODUCT.md:19",
+        "docs/current/PRODUCT.md:21",
+        "docs/current/PRODUCT.md:46"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C03",
+      "family": "Recruiting and HR employment lifecycle: appointment, promotion, transfer, departure",
+      "phase": "LATER_CAPABILITY; selected existing facts and continuity dependencies now",
+      "accountable_owning_layer": "Existing people/HR application and canonical assignment owners with governance decisions",
+      "dependencies": [
+        "CF-C01",
+        "CF-C02",
+        "CF-F03",
+        "CF-F05"
+      ],
+      "intended_acceptance_outcome": "Each admitted lifecycle story has real input, distinct authorized decision, canonical employment effect, downstream consequences and correction/history acceptance.",
+      "preservation_obligation": "Person creation distinct from hr.appoint; exact effective intervals and employment identity; persistent Account; no blanket lifecycle shipping from existing code.",
+      "later_adoption_classification": "ADDITIVE_CONDITIONAL",
+      "invalidation_trigger": "Later HR change requires retroactive replacement of Person/Employment identity, drops historical payroll links or conflates directory create with appointment approval.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:10",
+        "docs/current/PRODUCT.md:11",
+        "docs/current/PRODUCT.md:27",
+        "docs/current/PRODUCT.md:33",
+        "docs/current/ROADMAP.md:52"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_LATER_CAPABILITY_ACCEPTANCE",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C04",
+      "family": "Attendance, calendars, coverage and close/source lifecycle",
+      "phase": "FIRST_SLICE_BOUNDED_SOURCE_DEPENDENCY; full attendance stories later",
+      "accountable_owning_layer": "Existing attendance/payroll source application and adapter owners",
+      "dependencies": [
+        "CF-C02",
+        "CF-F03",
+        "CF-F04",
+        "CF-C12"
+      ],
+      "intended_acceptance_outcome": "Supported native payroll receives exact calendars, assignments, coverage, close facts and source revisions; stale/incomplete sources route accountable repair.",
+      "preservation_obligation": "Versioned source facts, exact periods, stable Employment links, qualification/provenance and owner-bound close/reopen behavior.",
+      "later_adoption_classification": "ADDITIVE_CONDITIONAL",
+      "invalidation_trigger": "New attendance story alters prior period/coverage meaning, needs source facts never retained, or bypasses close/freeze semantics.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:27",
+        "docs/current/PRODUCT.md:65",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:6",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7",
+        "docs/current/ROADMAP.md:52"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C05",
+      "family": "Labor and jurisdiction-dependent employment workflows",
+      "phase": "LATER_CAPABILITY_AND_QUALIFIED_AUTHORITY_HOLD",
+      "accountable_owning_layer": "Relevant existing HR/labor/payroll domain owner; qualified rule authority remains separately identified at later admission",
+      "dependencies": [
+        "CF-C03",
+        "CF-C04",
+        "CF-F05",
+        "CF-C12"
+      ],
+      "intended_acceptance_outcome": "Each supported labor story distinguishes verified rule, versioned evidence, assumption and unsupported circumstance, with correction and required authority.",
+      "preservation_obligation": "Store evidence edition/locator/narrative separately from legal conclusions; preserve exact time/jurisdiction/profile applicability; no guessed statutory rules.",
+      "later_adoption_classification": "UNKNOWN",
+      "invalidation_trigger": "A required rule lacks authoritative confirmation, source applicability changes or new retention/processing obligations conflict with immutable evidence treatment.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:27",
+        "docs/current/PRODUCT.md:37",
+        "docs/current/PRODUCT.md:53",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:8",
+        "docs/current/ROADMAP.md:52"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_LATER_CAPABILITY_ACCEPTANCE",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C06",
+      "family": "Native nonpayable payroll input, calculation and human review",
+      "phase": "FIRST_SLICE_VERTICAL; full payroll story inventory later",
+      "accountable_owning_layer": "Existing payroll application/domain/adapters and current registered source/workflow participants",
+      "dependencies": [
+        "CF-C01",
+        "CF-C02",
+        "CF-C04",
+        "CF-F03",
+        "CF-F04",
+        "CF-F05",
+        "CF-C12"
+      ],
+      "intended_acceptance_outcome": "One admitted supported numeric journey reaches an approved nonpayable result with complete source and human coverage; exceptional required cases stay visibly incomplete.",
+      "preservation_obligation": "Exact monetary units/rounding/profile; immutable source and calculation commitments; current evidence; natural-person independence; no partial hidden-population completion.",
+      "later_adoption_classification": "ADDITIVE_CONDITIONAL",
+      "invalidation_trigger": "New profile changes old calculation interpretation, requires guessed inputs or drops unsupported selected employees to claim completion.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:12",
+        "docs/current/PRODUCT.md:27",
+        "docs/current/PRODUCT.md:63",
+        "docs/current/ROADMAP.md:50",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:9"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C07",
+      "family": "Own historical publication, inquiries and correction continuity",
+      "phase": "FIRST_SLICE_VERTICAL",
+      "accountable_owning_layer": "Existing payroll review/publication owners, common content/custody owner and workflow follow-up participant",
+      "dependencies": [
+        "CF-C01",
+        "CF-C06",
+        "CF-F05",
+        "CF-C12"
+      ],
+      "intended_acceptance_outcome": "Current and former workers access permitted immutable NONPAYABLE_REVIEW publication and submit/track issue coverage through an actual corrected publication.",
+      "preservation_obligation": "Published amounts distinct from current correction status; historical own policy; issue/item identity; pending work distinct from corrected outcome; no future receipt required to request work.",
+      "later_adoption_classification": "ADDITIVE_CONDITIONAL",
+      "invalidation_trigger": "Later case process repurposes original issue/content IDs, exposes internal task custody or marks corrected without a covering publication.",
+      "authority_and_design_refs": [
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:10",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:19",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:21",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:5",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:7",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:25"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C08",
+      "family": "Native messenger and business conversations",
+      "phase": "LATER_CAPABILITY",
+      "accountable_owning_layer": "Future communication application owner using existing Account/object/policy contracts",
+      "dependencies": [
+        "CF-F08",
+        "CF-C01",
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "Admitted conversation tasks support authorized participants, object links, message lifecycle and truthful delivery/recovery in a persistent surface.",
+      "preservation_obligation": "Account-based authorship, policy-bound linked objects/audiences, stable content/message IDs and navigation independent of payroll details.",
+      "later_adoption_classification": "UNKNOWN",
+      "invalidation_trigger": "Retention, conversation membership or per-message access cannot be represented by chosen shared content/policy contracts.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:27",
+        "docs/current/ROADMAP.md:52",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_LATER_CAPABILITY_ACCEPTANCE",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C09",
+      "family": "Native mail",
+      "phase": "LATER_CAPABILITY",
+      "accountable_owning_layer": "Future mail application/integration owner using existing Account/object/policy contracts",
+      "dependencies": [
+        "CF-F08",
+        "CF-C01",
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "Admitted mail tasks preserve correspondence identity, authorized attachments/object links and distinguish queued/sent/failed/unknown delivery.",
+      "preservation_obligation": "Separate external delivery effects from business receipts, stable correspondence/content references and current attachment/audience policy.",
+      "later_adoption_classification": "UNKNOWN",
+      "invalidation_trigger": "External provider identity, delivery reconciliation, retention or transport requirements conflict with shared custody assumptions.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:27",
+        "docs/current/ROADMAP.md:52",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_LATER_CAPABILITY_ACCEPTANCE",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C10",
+      "family": "Native calendar and shared scheduling",
+      "phase": "LATER_CAPABILITY; payroll work calendars remain CF-C04",
+      "accountable_owning_layer": "Future calendar application owner using existing Account/object/policy contracts",
+      "dependencies": [
+        "CF-F08",
+        "CF-C01",
+        "CF-C02",
+        "CF-F05"
+      ],
+      "intended_acceptance_outcome": "Admitted scheduling tasks express participants, time zones, updates, cancellations and policy-bound relationships without becoming payroll source authority implicitly.",
+      "preservation_obligation": "Distinguish business attendance calendar facts from communications scheduling; stable event/occurrence identity, effective time and participant policy.",
+      "later_adoption_classification": "UNKNOWN",
+      "invalidation_trigger": "Recurring-event identity/time semantics or scheduling ownership require reinterpreting persisted attendance/workflow facts.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:27",
+        "docs/current/ROADMAP.md:52",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:13"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_LATER_CAPABILITY_ACCEPTANCE",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C11",
+      "family": "Approved external sharing and applicant/partner experiences",
+      "phase": "LATER_CAPABILITY; historical former-worker own access remains CF-C07",
+      "accountable_owning_layer": "Existing Account/authz boundaries and future sharing application owner; each domain retains canonical owner",
+      "dependencies": [
+        "CF-C01",
+        "CF-F02",
+        "CF-F03",
+        "CF-F11",
+        "CF-C12"
+      ],
+      "intended_acceptance_outcome": "At later admission, an external principal accesses only intended resources/fields/actions for a defined duration with revocation and attribution evidence.",
+      "preservation_obligation": "No hardcoded external/internal job-title class; persistent Account, exact policy context, revocable links and owned resources; no blanket employee-required model.",
+      "later_adoption_classification": "UNKNOWN",
+      "invalidation_trigger": "Sharing requires bearer-link authority, new identity federation, retention/disclosure rules or cross-tenant writes outside current contracts.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:27",
+        "docs/current/PRODUCT.md:32",
+        "docs/current/PRODUCT.md:52",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:10"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_LATER_CAPABILITY_ACCEPTANCE",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    },
+    {
+      "id": "CF-C12",
+      "family": "Internal evidence custody, storage and later 자료실/document management",
+      "phase": "FIRST_SLICE_INTERNAL_DEPENDENCY; standalone storage/ingest later",
+      "accountable_owning_layer": "Existing common evidence/custody and domain source owners; later storage application owner identified at its admission",
+      "dependencies": [
+        "CF-F02",
+        "CF-F04",
+        "CF-F11"
+      ],
+      "intended_acceptance_outcome": "First slice retains and retrieves exact required originals under current policy through review/correction/recovery; later file product has its own acceptance.",
+      "preservation_obligation": "Immutable evidence references, provenance, retention/pins and governed release; no duplicate mutable payload store; no first-slice import/export data-entry substitute.",
+      "later_adoption_classification": "MIGRATION_IF_TRIGGERED",
+      "invalidation_trigger": "Later storage deduplicates away required originals, changes address/hash meaning, introduces cross-Company payload access or deletes still-needed evidence.",
+      "authority_and_design_refs": [
+        "docs/current/PRODUCT.md:27",
+        "docs/current/PRODUCT.md:50",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7",
+        "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:24"
+      ],
+      "preservation_review_gate": "BEFORE_IMPLEMENTATION",
+      "execution_gate": "BEFORE_SLICE_ACCEPTANCE for admitted subset; later capability acceptance for remaining breadth",
+      "production_gate": "BEFORE_PRODUCTION_EXPOSURE of the capability; separate authority required",
+      "evidence_status": "AUTHORED_FAMILY_PRESERVATION_PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE_EVIDENCE",
+      "leaf_owner_status": "Owning responsibility identified; exact leaf registration and owner assigned during that capability's design/admission"
+    }
+  ]
+}

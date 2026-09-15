@@ -1,0 +1,38 @@
+{
+  "rounds": [
+    {
+      "candidate_sha": "c67be1f05cc6d30377079a969d13452fd1890b5c",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "UX-B01: missing state-specific recovery actions",
+        "UX-B02: missing PC1 cycle lifecycle and selective revision",
+        "UX-C01: own successful read loses request entry"
+      ]
+    },
+    {
+      "candidate_sha": "c9f7ac26f74e5a8e27374510ca1fe91520fc6a66",
+      "continuity_verdict": "ACCEPT_SCOPED",
+      "payroll_verdict": "CHANGES_REQUIRED",
+      "resolved": [
+        "UX-B01",
+        "UX-C01",
+        "UX-B02 substantive cycle protocol"
+      ],
+      "remaining": [
+        "J03 incorrectly prepares business inputs after review cycle opens"
+      ]
+    },
+    {
+      "candidate_sha": "aee9ceb3168c59cc25486cceeedf2219e82e223d",
+      "verdict": "ACCEPT_SCOPED",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "resolved": [
+        "J03 starts with prepared/calculated unchanged inputs and scoped proposal submission"
+      ]
+    }
+  ],
+  "whole_design_approval": false
+}

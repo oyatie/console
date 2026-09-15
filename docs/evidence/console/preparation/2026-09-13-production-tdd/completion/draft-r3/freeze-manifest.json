@@ -1,0 +1,51 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "supersedes": "798b1b62489cb99dc424f3557f80f11dc2fc011de235a2298f705d1f9988999d",
+  "files": [
+    {
+      "path": "checker-execution.log",
+      "bytes": 3145,
+      "sha256": "1f83dc0cdc71e0b3b904be0b019f9b5056eefa6d49fe4a976c62e9909e6ac0a8"
+    },
+    {
+      "path": "draft-owner-acceptance.rs",
+      "bytes": 26711,
+      "sha256": "873786ca013ec5af21927e849d5f7209ffce82a06b938993dc0b5f9fefc21f42"
+    },
+    {
+      "path": "execution.json",
+      "bytes": 375,
+      "sha256": "578ed03cacbaf68d3da6466295c73c5293deef942901b5aac5ee1a1561fa55ab"
+    },
+    {
+      "path": "history_oracle.py",
+      "bytes": 5205,
+      "sha256": "bb3094287e2344eeab74cd30d6f1fd01f98d681d3dbaa9616f1eee227fb5182f"
+    },
+    {
+      "path": "lifecycle-producer.rs",
+      "bytes": 5232,
+      "sha256": "03e342a9b5bc4806ab37ef8f623af8a50f41e5d1c6fd9bb5c7d71c355069b632"
+    },
+    {
+      "path": "owner-read-contract.txt",
+      "bytes": 6148,
+      "sha256": "980c22d5a58d68473b620e8d784d9e6d81679a5849275df1fef0eb60ac02b042"
+    },
+    {
+      "path": "parent-manifest.json",
+      "bytes": 1435,
+      "sha256": "798b1b62489cb99dc424f3557f80f11dc2fc011de235a2298f705d1f9988999d"
+    },
+    {
+      "path": "r1-parent-manifest.json",
+      "bytes": 1193,
+      "sha256": "446d0eae75ffad2c4b18e77c68263854c6a1909a53b455a9165afd08bcaf8fa6"
+    },
+    {
+      "path": "test_history_oracle.py",
+      "bytes": 6998,
+      "sha256": "2d217c7fa20e49decf5182b56a41c2aa63a68b5102108ae76c0322c589ba1848"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "kind": "payroll.review.replace_projection",
+  "body": {
+    "predecessor": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "publication_id": "89b9a583-0e61-51d5-8541-c82cccf62812",
+      "slot_id": "95630fd5-4889-58ad-b14c-05729885fd1b",
+      "slot_generation": "1"
+    },
+    "projection": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+      "instance_id": "ec796328-4e80-5003-8a5c-977449490de3",
+      "revision_id": "a1f866da-4ae9-5b04-92e4-6bdba70e3040",
+      "version": "1",
+      "row_hash": "6a76d7778fdea67eb020e875192c41efd85d913448ab73ebe6942727e7320923"
+    },
+    "reason": "검토 근거를 확인했습니다."
+  }
+}

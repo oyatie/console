@@ -1,0 +1,18 @@
+--- a/backend/app/tests/account_migration.rs
++++ b/backend/app/tests/account_migration.rs
+@@ -454,9 +454,15 @@
+     }
+     // Existing legacy store must not remint from a preserved revoked family.
+     // This is not the missing global Account cutover/fresh-session owner.
++    let auth_pool = console_platform_test_support::login_test_pool(
++        &pool,
++        console_platform_test_support::TestDatabaseLogin::Auth,
++    )
++    .await;
+     let result = RefreshTokenStore
+         .rotate(
+             &pool,
++            &auth_pool,
+             &fixture.revoked_token,
+             OffsetDateTime::now_utc(),
+             Duration::hours(2),

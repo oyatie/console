@@ -32,6 +32,7 @@ export const NIGHTLY_DEV_UP_STEPS = Object.freeze([
   { name: "Install Rust toolchain (pinned via rust-toolchain.toml)", uses: true },
   { name: "Set up Node.js", uses: true },
   { name: "PostgreSQL topology integration regression", run: "ops/postgres-topology.integration.test.sh" },
+  { name: "Restricted auth topology integration regression", run: "python3 ops/postgres-auth-topology.integration.test.py ops/postgres-reconcile-topology.sh" },
   {
     name: "dev-up bootstrap (compose deps + migrate + backend readyz)",
     run: "node scripts/dev-up.mjs bootstrap",

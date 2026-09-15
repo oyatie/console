@@ -1,0 +1,54 @@
+{
+  "source_manifest_sha256": "ce522b7397419d422eb57fe0b366b37c55c491ee7fee734064957625b359057a",
+  "verified_original_members": 7,
+  "mapping": [
+    {
+      "original": "account-enrollment-producer.rs",
+      "retained": "account-enrollment-producer.rs",
+      "original_sha256": "dac836422505ef57b75ddaf1134555716ce0179d56ff4d54a31e42489f8df500",
+      "retained_sha256": "dac836422505ef57b75ddaf1134555716ce0179d56ff4d54a31e42489f8df500"
+    },
+    {
+      "original": "bootstrap-contract.md",
+      "retained": "bootstrap-contract.txt",
+      "original_sha256": "7f751987aefd4b26b8a174566206f052ae6eaec9fa34864f1c079ddcd87a62f8",
+      "retained_sha256": "7f751987aefd4b26b8a174566206f052ae6eaec9fa34864f1c079ddcd87a62f8"
+    },
+    {
+      "original": "dependencies/operator-custody-producer.rs",
+      "retained": "dependencies/operator-custody-producer.rs",
+      "original_sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03",
+      "retained_sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03"
+    },
+    {
+      "original": "deployment-root-producer.rs",
+      "retained": "deployment-root-producer.rs",
+      "original_sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3",
+      "retained_sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3"
+    },
+    {
+      "original": "ordinary-issuer-bootstrap.rs",
+      "retained": "ordinary-issuer-bootstrap.rs",
+      "original_sha256": "bccc71e411213ebcb3f65126c4dcc8cd97b50b9ec39dc968cbaac14952b5b642",
+      "retained_sha256": "bccc71e411213ebcb3f65126c4dcc8cd97b50b9ec39dc968cbaac14952b5b642"
+    },
+    {
+      "original": "publish-then-root-producer.rs",
+      "retained": "publish-then-root-producer.rs",
+      "original_sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027",
+      "retained_sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027"
+    },
+    {
+      "original": "syntax-execution.json",
+      "retained": "syntax-execution.json",
+      "original_sha256": "0facbeaabaf1331ca7628037c81ff5edf9370a76c466c91586eb9e85d3ab02a8",
+      "retained_sha256": "0facbeaabaf1331ca7628037c81ff5edf9370a76c466c91586eb9e85d3ab02a8"
+    },
+    {
+      "original": "freeze-manifest.json",
+      "retained": "freeze-manifest.json",
+      "original_sha256": "ce522b7397419d422eb57fe0b366b37c55c491ee7fee734064957625b359057a",
+      "retained_sha256": "ce522b7397419d422eb57fe0b366b37c55c491ee7fee734064957625b359057a"
+    }
+  ]
+}

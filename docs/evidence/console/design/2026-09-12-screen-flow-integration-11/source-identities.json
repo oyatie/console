@@ -1,0 +1,88 @@
+{
+  "sources": [
+    {
+      "path": "README.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "8a50185d68f400007c39ef3f31fe752a50847aed",
+      "sha256": "1122d61fbf4f0f6df3fa2ce412ca127ea02b730c68edba90795c9f31ad30ea43"
+    },
+    {
+      "path": "docs/current/PRODUCT.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "6a3992e258d7eecf4d2cd11422ee01d521a01017",
+      "sha256": "d9740519950695c0b09bcd173b3a8bac2ff52f41f16eee9cb6984f3ca67e3979"
+    },
+    {
+      "path": "docs/current/ROADMAP.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "a9167cee191dd79304086027b05523b675f7fbbe",
+      "sha256": "eccba4cb8f0ea3a684ab125967eddc20c98be5807f24b6905e4bad8599adcc57"
+    },
+    {
+      "path": "docs/current/DELIVERY.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4"
+    },
+    {
+      "path": "backend/crates/payroll/ui/src/lib.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "1b91e2011178a7db4427295168f7e38568b93f4e",
+      "sha256": "b981c8d186c8b6ce366f154bad57896ead19437ff585544a018fd629e458e78c"
+    },
+    {
+      "path": "backend/crates/payroll/ui/src/island_script.js",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "e753d070375e8193bc54f5186a4e1f109e48ebc9",
+      "sha256": "ceb71195c4a8aad1f390f5798aa7163f8e976c49b6fc8414458f265b31e9293d"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/screen-contracts.json",
+      "commit": "fb8172bc92c4606fd1acdda38fc475899324179a",
+      "git_blob": "277b4456278d355f5f1b99fd7e172c1e34a8f455",
+      "sha256": "82124154bd4363751b99d59e760ec60d349030b386bd11dff9daca30ba3349b6"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/draft-contract.txt",
+      "commit": "fb8172bc92c4606fd1acdda38fc475899324179a",
+      "git_blob": "a752a191ae552bc283f541466300b92699112595",
+      "sha256": "24b4d0ba93484f5cc65e362c70fdc7f25db653a4039d4e57ae25baeb791b7bc1"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/screen-states.csv",
+      "commit": "fb8172bc92c4606fd1acdda38fc475899324179a",
+      "git_blob": "7ea160c437234562fbbd35519a06b82b4b8deab3",
+      "sha256": "e71e45d9c3fb886b756e382344d93886c688841c77157f641b8c22cc348674ef"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/group-contract.txt",
+      "commit": "fb8172bc92c4606fd1acdda38fc475899324179a",
+      "git_blob": "17cf3fc61958898f579b5b3d6badd2ad52aed7e4",
+      "sha256": "309a96f5f5cc2ed331a83399d8acb70f9ca88727e3c466340c0484101b56c605"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/assignment-contract.txt",
+      "commit": "fb8172bc92c4606fd1acdda38fc475899324179a",
+      "git_blob": "48326384b790e580180878e2ed7970cefece6933",
+      "sha256": "79e9bc3e344e2736aab88ad3a1c533e147d6679e5d3827e2ae2497dd84776637"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/own-result-contract.txt",
+      "commit": "fb8172bc92c4606fd1acdda38fc475899324179a",
+      "git_blob": "a0705dd59ebd079967ac2e65123408c6cf4409b4",
+      "sha256": "d5322773ce16b459234ed823eae1cadce1be5d7bc0f44e53a5f200119dd088b2"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/handover-triggers.txt",
+      "commit": "fb8172bc92c4606fd1acdda38fc475899324179a",
+      "git_blob": "3f74430c328e0b914125816c9547ba6ab31c92b3",
+      "sha256": "7cceee99c6067f5cc1a1e95aa93949e7d0ceca4b5a268af507ce410b2fa14e77"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/coverage-contract.txt",
+      "commit": "fb8172bc92c4606fd1acdda38fc475899324179a",
+      "git_blob": "67bd1039234982cd520b510c6a427f8e04c62fed",
+      "sha256": "cbd2bee32916648e3ba43a38536f0d517d3cf73d2f08ff89389c2da1236cfb60"
+    }
+  ]
+}

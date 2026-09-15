@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/finish_browser",
+  "decision": "approved-source-only",
+  "candidate": "/private/tmp/account-custody-regression-driver.sh",
+  "sha256": "ce4dc9671c85147ac75439f46ab81fa45eba62cc99cfd6af04c51ed95b423a4b",
+  "parent_sha256": "d60c6e7ae9bd68d6ff6a1e34904ebcc88394deb3983659502133d6370ea4530d",
+  "delta": [
+    "Unique ownership label prefix only",
+    "Snapshot additionally binds lifecycle/startup sources",
+    "Exact auth_rest test filter account_custody_"
+  ],
+  "checks": [
+    "Independently inspected complete diff against frozen approved parent",
+    "bash -n passed",
+    "Container ownership injection and cleanup both use FENCE_LABEL; no old prefix dependency",
+    "Actual cargo argv, bounded cleanup, source before/after and pinned image unchanged"
+  ],
+  "execution": "No Docker/Cargo run by independent reviewer; discovery/count remains execution evidence"
+}

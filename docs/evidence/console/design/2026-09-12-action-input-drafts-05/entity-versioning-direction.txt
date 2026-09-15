@@ -1,0 +1,38 @@
+Draft change tracking — user clarification and revised design direction
+
+Status: proposed correction, not independently reviewed or implementation authority.
+Writer: /root. Product source inspected: 05200e43af13b527ce031b04369e05852862f1d6.
+Candidate being revised: aa83a20ee2d2fe7cc35e19abdecd086be74d338d.
+
+User clarification, verbatim:
+"what i meant was 'find a way where we can make sure that changes to a draft can be efficiently tracked."
+"draft itself could be an entity (when its completed, it becomes an entity anyways) and just utilize foundry engine to do the version control"
+
+Decision direction
+Treat drafts as first-class governed objects from creation. Reuse and extend the common object revision owner for change tracking; do not select a separate Git, Dolt or draft-specific history service by default. Earlier storage comparisons are alternatives, not an adopted architecture. The initial FD1 ownership/storage choice and 20-revision history cap are superseded; the candidate contract and scenarios now incorporate entity-revision-contract.txt. Existing FD1 privacy, single business writer, acknowledgement, cancellation and no-effect replay requirements remain requirements.
+
+Two identity cases
+1. A new request/document can retain its object identity from draft through submission where its domain owns that lifecycle. Submission pins an exact revision. Changing visibility must not automatically publish private pre-submission history.
+2. An edit to an existing effective contract/payroll object is a linked proposed-change object. Saving its revisions must not advance the effective business object's head. Its owning Action applies an approved exact proposal revision and records the resulting object/revision links. A request can produce multiple domain objects; do not require every draft to morph into one result object or change type.
+Both cases use the common engine's identity, typed references, revisions and policy projection. They are domain semantics, not two competing version stores. Projected domain objects retain their existing single writer; shared revision support must not create generic writes to their tables.
+
+Source facts
+backend/crates/ontology/adapter-postgres/src/instances.rs:
+- CreateInstance and StageRevision carry schema-bound attributes; RevisionSummary includes version, attributes, actor, action and hash linkage (lines 48-101).
+- create_instance creates revision v1 in draft (lines 187-225).
+- stage_revision stores a new revision and copies attributes to audit snapshots (lines 228-259).
+- get_current/get_as_of/history exist (lines 364, 377, 414).
+- stage_revision_in_tx serializes via row locks, validates attributes, closes effective intervals and appends full attributes (lines 871-978). Its shown input has no expected edit revision. Row serialization alone does not reject a stale editor's payload; upstream guards must be traced before making a whole-system claim.
+These observations support reuse, not a claim that the current engine already satisfies draft requirements. No product tests were executed for this clarification.
+
+Required common-engine behavior
+- Accepted logical autosaves append attributable revisions atomically with head CAS and retry receipt; coalesce pending edits and suppress value-identical revisions. Changes reach the server as typed field patches. Omitted/restricted fields are preserved; explicit clears differ from omission.
+- Start with the existing full revision representation if correctness and measured cost fit. Diff can be derived from authorized revisions. Introduce deltas/checkpoints only if measured write/storage cost warrants changing the common engine. No per-keystroke history requirement or LLM interpretation.
+- Edit sequence/time is distinct from business effective time. Autosaving an intended future-effective change does not repeatedly advance business valid_from. Preserve existing effective-dated invariants rather than repurposing them silently.
+- Draft schemas admit typed incomplete input without weakening published domain validation. Normalization/validation is mandatory before submission or business execution.
+- Current Cedar governs discovery, current and historical fields, diff, restore and Actions. Authorization to see a submitted object does not automatically authorize all draft versions. Audit payload copies require explicit minimization/disclosure/retention design.
+- Restore creates a new draft revision through current authorization and CAS. It never replays business Actions, copies approval authority or restores revoked access. Submission binds the exact input revision and current owning Action rules.
+- Retained revision reads must survive compaction; a hot-window limit is not silent history deletion. Retention, pinned submissions, schema evolution, linked evidence availability and purge/hash-chain consistency need explicit common-engine contracts.
+
+Next bounded design work
+Trace the common revision writer and its callers, policy projections and domain transaction participation. Reconcile FD1 and its non-executable scenarios around this reuse, then independently review the exact revised candidate. No new storage engine, implementation lane, approved design SHA or executable test SHA is introduced by this note.

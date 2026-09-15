@@ -1,0 +1,29 @@
+Native payroll input bridge — concrete design proposal, not implemented schema
+
+입력 의미를 먼저 고정한다. 기존 payroll.create_run, wage writer, run calculation kernel, receipt를 재사용한다. UI가 import 테이블에 fake rows를 쓰는 우회 경로는 금지한다.
+
+제안 PayrollInputRevision (최종 SQL 이름/DDL은 테스트 후보에서 확정):
+  Company + draft_run_id + monotonically increasing input_revision
+  effective pay period (명시적 inclusive Date adapter) + pay_date
+  selected Employment/employee mapping + membership snapshot
+  per-line typed source refs: contract_wage id/revision, confirmed attendance/close id/revision,
+    approved earning adjustment refs, verified tax-source ref/version, insurance applicability refs
+  source mode/provenance: native facts or imported evidence, retaining original identity and hashes
+  normalized integer-won calculation inputs + units + calculation-rule version + blockers
+  author, prepared_at, canonical command receipt, manifest digest
+
+금액의 입력 출처를 enum 하나로 신뢰하지 않는다. 서버가 참조 객체의 현재 권한·효력·수정 상태·검증 authority를 확인한 뒤 normalized input을 만든다. 사용자가 raw gross/tax를 적는 경우에도 원 금액 사실과 근거의 owning action을 거친다. 임의 'verified:true'로 공식 세액을 만드는 기능은 없다.
+
+새 동작은 기존 payroll owner에 prepare_inputs/replace_inputs 의미를 추가하는 것이다. 기존 import materialization은 현재 기간과 원천 조건을 유지하는 adapter이고, native resolver는 계약/확정 근태 등 원 소유자의 참조를 읽는다. 둘은 같은 typed LineCalculationInput 및 blocker를 생성한다. 기존 roster/calculation tables의 writer는 그대로 하나다. 범용 데이터 ingestion 엔진이나 새 payroll 서비스는 이 연결만을 위해 만들지 않는다.
+
+수정은 기존 revision 덮어쓰기가 아닌 새 revision. 마감·계산·상신은 input revision/digest를 가리킨다. 변경 시 과거 계산·승인 이력을 남기고 새 준비/마감/계산/상신으로 이어진다. 현재의 REJECTED→CALCULATED withdraw에 재계산 효과가 있다고 가정하지 않는다. 'reopen_inputs'의 허용 상태, 현재 승인 무효화, 계정/자연인 권한과 기간 lock 의미는 같은 설계/테스트 후보에서 함께 명시해야 한다.
+
+최소 동작 범위: 완전한 월급제의 알려진 계약/확정 근태/검증된 세액 근거로 기존 kernel을 호출하는 연결을 우선 증명한다. 시급제·월중 변경·일할·가산·주휴·퇴직 계산은 명시적 capability와 미지원 이유로 남기며, native input 연결 성공을 전체 급여 완료로 선언하지 않는다. 검증되지 않은 법률·세액 데이터는 차단하고 후보를 법적 지급 가능으로 바꾸지 않는다.
+
+첫 확장 순서:
+1. 실제 schema/owner 기준의 source reference와 immutable input manifest 계약.
+2. 독립 fixture: native 입력 변경이 실제 kernel 입력/결과를 바꾸고 import 없이 연결됨을 증명.
+3. current routes/canonical actions 양쪽에 동일 권한·revision·SoD 적용, 기존 wire compatibility 보존.
+4. UI 입력/정정/마감/계산/상신과 group child operation 연결.
+
+제약: 현행 권한 gate와 원천 생산 경로의 전체 fixture가 아직 정식 design/test SHA로 승인되지 않았다. 이 문서는 단순 포인터가 아닌 데이터/행동 제안이며, 실제 DDL을 승인한 것처럼 사용하지 않는다.

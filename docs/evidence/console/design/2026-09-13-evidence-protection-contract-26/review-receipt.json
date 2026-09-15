@@ -1,0 +1,44 @@
+{
+  "recorded_at": "2026-09-13T06:36:26.369446+00:00",
+  "status": "SCOPED_EVIDENCE_INVENTORY_AND_LIFECYCLE_CONTRACT_ACCEPTANCE_ONLY",
+  "reviewed_candidate_sha": "b2cc299fdd8253675cb397f08c2e289e7e4d09df",
+  "reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "candidate_sha": "b2cc299fdd8253675cb397f08c2e289e7e4d09df",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Full15file review retained and final4file correction independently inspected. TAX_TABLE direction and next-boundary evidence now match source19. Four output modes, protected closure/reservation lifetimes and honest provider/pilot limits accepted within contract scope.",
+      "independently_verified_static_sha": "b2cc299fdd8253675cb397f08c2e289e7e4d09df",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "candidate_sha": "b2cc299fdd8253675cb397f08c2e289e7e4d09df",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Full15file review retained and final4file correction inspected. Both semantic findings resolved: source qualification excludes employee assessment; calendar overlap retains next boundary plan without third earning-day contribution. Format/storage/owner SQL/ACL/protection/F04/F07 and workload remain OPEN.",
+      "independently_verified_static_sha": "b2cc299fdd8253675cb397f08c2e289e7e4d09df",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "counts_as_final_integrated_round": false,
+  "remaining_holds": [
+    "F01/F03 actual governed unit/purpose/obligation/inventory/reservation DTOs, storage and exhaustive protection membership guards",
+    "F01/F02 fixed preparation/seal/final owner participant signatures, native caller/source semantics and complete ACL/trigger/alias closure",
+    "F03/F06 provider issuance fencing/drain, independent journal conformance and recovery admission",
+    "F05 migrations/enrollment/backfill/rollback and F08 exact runtime/load/SQL/Verus harness evidence",
+    "W01-W04/F01-F08 integration and current-authority scope alignment, four integrated design reviews and explicit exact design approval",
+    "Executable test/proof candidate review and explicit test approval, actual RED implementation admission; separate production/payment/legal authority",
+    "No SQL/catalog/runtime/load/Verus execution; scoped review is not final integrated acceptance"
+  ]
+}

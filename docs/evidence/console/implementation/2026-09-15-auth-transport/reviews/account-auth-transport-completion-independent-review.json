@@ -1,0 +1,200 @@
+{
+  "kind": "independent-auth-transport-completion-evidence-review",
+  "reviewer": "/root/finish_browser",
+  "head_sha": "c76ebaf6cc4418e5d9be0ed3b0aa3ab52b244163",
+  "implementation_sha": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+  "status": "PASS_EXACT_FOUR_TEST_TRANSPORT_BOUNDARY_WITH_PREREQUISITE_CORRECTION_NOT_WHOLE_CONSOLE_READINESS",
+  "runs": [
+    {
+      "path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb",
+      "head": "a2aa1ff712d882a639f2be504336223a0486c3a2",
+      "driver_receipt_sha256": "9273d12c91ac31a8eb6c9c44bda2167812675d23631fda6d76136bcfd355fe56",
+      "probe_sha256": "085fe6863c79a526d4a8e466e4a6fc1b1bcd6e32bdd7cdb1e1ad6cdacfff6d62",
+      "selected": [
+        [
+          "account_fence_transport::account_fence_transport_other_database_cannot_silently_report_absence",
+          "FAILED"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage",
+          "FAILED"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_same_database_real_startup_control",
+          "ok"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_startup_consumes_configured_auth_credential",
+          "FAILED"
+        ]
+      ],
+      "discovered_executed": 4,
+      "passed": 1,
+      "failed": 3,
+      "ignored": 0,
+      "filtered": 144,
+      "probe_exit": 1,
+      "artifact_hashes_verified": 13,
+      "source_hashes_git_verified": 20,
+      "source_before_after_exact_clean": true,
+      "owned_container_absence_readback": true
+    },
+    {
+      "path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6",
+      "head": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+      "driver_receipt_sha256": "daae6b7f21a195dc5ab937bb7c8745fbd11bb219f64b585262f41ec177b00e1b",
+      "probe_sha256": "ca2fcc0fcac92ce329cc5f7a83dd21f7fdec791cb0b3f9abd10c1f14b16eee04",
+      "selected": [
+        [
+          "account_fence_transport::account_fence_transport_other_database_cannot_silently_report_absence",
+          "FAILED"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage",
+          "FAILED"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_same_database_real_startup_control",
+          "FAILED"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_startup_consumes_configured_auth_credential",
+          "FAILED"
+        ]
+      ],
+      "discovered_executed": 4,
+      "passed": 0,
+      "failed": 4,
+      "ignored": 0,
+      "filtered": 144,
+      "probe_exit": 1,
+      "artifact_hashes_verified": 13,
+      "source_hashes_git_verified": 20,
+      "source_before_after_exact_clean": true,
+      "owned_container_absence_readback": true
+    },
+    {
+      "path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1",
+      "head": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+      "driver_receipt_sha256": "15dd4c8821684927ea97082cb760daacf72873d5dc7b2a376b991f9eafc1e3e3",
+      "probe_sha256": "8b626c748bb2ece6f25195c6869e2da5a9853d7b27c91239625f935d69676224",
+      "selected": [
+        [
+          "account_fence_transport::account_fence_transport_other_database_cannot_silently_report_absence",
+          "FAILED"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage",
+          "FAILED"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_same_database_real_startup_control",
+          "FAILED"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_startup_consumes_configured_auth_credential",
+          "FAILED"
+        ]
+      ],
+      "discovered_executed": 4,
+      "passed": 0,
+      "failed": 4,
+      "ignored": 0,
+      "filtered": 144,
+      "probe_exit": 1,
+      "artifact_hashes_verified": 13,
+      "source_hashes_git_verified": 20,
+      "source_before_after_exact_clean": true,
+      "owned_container_absence_readback": true
+    },
+    {
+      "path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc",
+      "head": "c76ebaf6cc4418e5d9be0ed3b0aa3ab52b244163",
+      "driver_receipt_sha256": "0d805eaf598ae0dcb6ab72643b5c49b5c7f48fb53bc8bc1aeb6e2dec1b7b1b93",
+      "probe_sha256": "82c255601e747d0c6ca9e49c55e3358163142e36347196f6f9a0f1c0fdc541d9",
+      "selected": [
+        [
+          "account_fence_transport::account_fence_transport_other_database_cannot_silently_report_absence",
+          "ok"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage",
+          "ok"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_same_database_real_startup_control",
+          "ok"
+        ],
+        [
+          "account_fence_transport::account_fence_transport_startup_consumes_configured_auth_credential",
+          "ok"
+        ]
+      ],
+      "discovered_executed": 4,
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 144,
+      "probe_exit": 0,
+      "artifact_hashes_verified": 13,
+      "source_hashes_git_verified": 20,
+      "source_before_after_exact_clean": true,
+      "owned_container_absence_readback": true
+    }
+  ],
+  "classifications": [
+    {
+      "run": "0cc9825026c94c13ab6526515df44beb",
+      "classification": "Meaningful behavioral RED: same-target startup positive passes. Other3 fail at AUTH_DATABASE_BINDING, AUTH_POOL_RETAINED and AUTH_POOL_CREDENTIAL respectively after actual prerequisites/positive controls. Deeper outage assertion blocked behind retention failure at this point."
+    },
+    {
+      "run": "6c4ae664ba7c412d92da886c906504c6",
+      "classification": "Firstimplementation prerequisite regression: all4 execute but fail at valid configured startup before intended deeper negative assertions. Fixed generic error does not expose actual failing timeout values; do not call this4behavioral RED."
+    },
+    {
+      "run": "cb33f92d42a9408b962fc950915a62b1",
+      "classification": "Separate ops lane admission repeats same clean1bb valid-startup prerequisite0PASS4FAIL. Same failure classification; not independent proof of timeout values."
+    },
+    {
+      "run": "438f4e979e6d46b598f52f8969fe2cdc",
+      "classification": "Controlled ops-only correction to reviewed timeout provisioning/readbacks yields all4GREEN with tests and two-file implementation unchanged. Supports causal diagnosis of operator provisioning mismatch; no raw pre-correction timeout value observation claimed."
+    }
+  ],
+  "source_transition": {
+    "parent_verified": true,
+    "ops_commit_exact_candidate_bytes": true,
+    "implementation_files_unchanged_at_corrected_head": true,
+    "tests_unchanged_between_implementation_and_corrected_head": true,
+    "scope": "Only ops/postgres-reconcile-topology.sh differs from1bb to c76."
+  },
+  "evidence_machinery": {
+    "driver_sha256": "612b5907632d090023dfa5320c59fbbbcb2709579f0d05f6c409e5c47805beb2",
+    "checks": "Each run13payload hashes independently rechecked,20source hashes independently matched exact Git blobs, before/after snapshot bytes equal, clean status, expected4selected names and actual counts, exit and successful cleanup artifacts inspected.",
+    "command": "python3 /private/tmp/account-auth-transport4-probe.py (probe invokes exact reviewed driver, which runs cargo_needs_postgres --map owned map --only app-auth-rest-pg --num-threads1; actual cargo filter account_fence_transport_ and --test-threads=1).",
+    "limits": "Review consumes preserved execution evidence; reviewer did not rerun Docker/DB/Cargo. tmpfs container is not durability evidence; captured-source scope is20files plus clean Git head, not immutable operating-system provenance."
+  },
+  "proved_at_boundary": [
+    "Real configured auth credential consumed; direct wrongpassword control plus startup refusal.",
+    "Separate valid database configuration refused rather than silently reading absent fence.",
+    "Same observed target real startup succeeds.",
+    "Retained auth transport is operationally required: auth-only NOLOGIN/session termination produces503 with other serving transports/custody healthy; exact role restoration and same-state200recovery."
+  ],
+  "not_proved": [
+    "Physical cluster identity, reconnect target authority, primary/freshness, serving generation, HA or durable failover.",
+    "Actual Account request-context/prewrite fence enforcement and tenant/field authorization.",
+    "Whole148auth tests:144were filtered each invocation.",
+    "All mode/missingrequiredpool/parser/reset regressions; any later authored tests need separate evidence.",
+    "Configured60connection production capacity under68connection stated surge, production rollout or wholeConsole implementationreadiness.",
+    "Prior failedruns do not reveal exact timeout GUC values; attribution comes from source inspection and controlled correction."
+  ],
+  "independent_source_receipts": [
+    "/private/tmp/account-auth-transport-design-independent-review.json",
+    "/private/tmp/account-auth-transport-implementation-independent-review.json",
+    "/private/tmp/account-auth-timeout-topology-independent-review.json"
+  ],
+  "blocking_findings_for_exact_transport_completion": [],
+  "remaining_holds": [
+    "Downstream authorization/fence activation and expanded regression evidence remain separate.",
+    "Production topology/authority/capacity/operations admission remains separate."
+  ]
+}

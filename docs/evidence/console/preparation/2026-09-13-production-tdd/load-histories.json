@@ -1,0 +1,280 @@
+[
+  {
+    "hot": false,
+    "task_cap": 4,
+    "pool_cap": 2,
+    "generator_queue_count": 0,
+    "generator_queue_bytes": 0,
+    "maximum_tasks": 4,
+    "drained": true,
+    "sqlx_waiter_conservative_cap": 4,
+    "max_scheduler_lag_us": 100000,
+    "max_intent_age_us": 3000000,
+    "max_history_bytes": 16384,
+    "release_us": 0,
+    "hot_witness": false,
+    "neighbor_witness": false,
+    "saturation_witness": false,
+    "rows": [
+      {
+        "id": 0,
+        "branch": "e0e9edee-349f-4ddc-a491-25220d8cf7e2",
+        "month": "2025-01",
+        "intended_us": 0,
+        "admitted_us": 2382,
+        "invoked_us": 2421,
+        "completed_us": 14734,
+        "outcome": "Committed(86d31c7a-ed7d-4d68-a4a4-b461b9c6b5ec)"
+      },
+      {
+        "id": 1,
+        "branch": "c176b64d-2feb-4ecc-9e60-8fba2e0906da",
+        "month": "2025-02",
+        "intended_us": 100000,
+        "admitted_us": 102225,
+        "invoked_us": 102265,
+        "completed_us": 117394,
+        "outcome": "Committed(48957f6e-1778-4968-82a7-f519b5252af1)"
+      },
+      {
+        "id": 2,
+        "branch": "9fdfa6be-c025-460b-ab23-babbae923ff2",
+        "month": "2025-03",
+        "intended_us": 400000,
+        "admitted_us": 402689,
+        "invoked_us": 402739,
+        "completed_us": 411489,
+        "outcome": "Committed(5b927ede-92ed-4090-a685-884629cdf198)"
+      },
+      {
+        "id": 3,
+        "branch": "b2cc348e-9bde-4ac4-bf4a-065c7cb93f3a",
+        "month": "2025-04",
+        "intended_us": 500000,
+        "admitted_us": 501834,
+        "invoked_us": 501890,
+        "completed_us": 510441,
+        "outcome": "Committed(053854ab-74d1-44f0-93cd-10820a74dd7e)"
+      },
+      {
+        "id": 4,
+        "branch": "a8cf68d1-2200-41a4-8763-c935fe5b5605",
+        "month": "2025-05",
+        "intended_us": 600000,
+        "admitted_us": 601837,
+        "invoked_us": 601906,
+        "completed_us": 610445,
+        "outcome": "Committed(77e00bb3-75b7-4e1e-8cf7-903c6ce0136a)"
+      },
+      {
+        "id": 5,
+        "branch": "5c61825b-23e4-45a3-9732-c2a4ad7fb21e",
+        "month": "2025-06",
+        "intended_us": 600000,
+        "admitted_us": 601871,
+        "invoked_us": 602050,
+        "completed_us": 610472,
+        "outcome": "Committed(778032da-2c21-40f7-9e2b-ef41027cd47c)"
+      },
+      {
+        "id": 6,
+        "branch": "bed08696-d4d2-4abc-abde-aad6cda4ac49",
+        "month": "2025-07",
+        "intended_us": 600000,
+        "admitted_us": 601875,
+        "invoked_us": 602084,
+        "completed_us": 617105,
+        "outcome": "Committed(cccfcdfb-bf5d-4f95-8da6-50a827cea654)"
+      },
+      {
+        "id": 7,
+        "branch": "76ac8b15-5853-4b13-ac1e-3ed10213e5cf",
+        "month": "2025-08",
+        "intended_us": 600000,
+        "admitted_us": 601889,
+        "invoked_us": 602099,
+        "completed_us": 617276,
+        "outcome": "Committed(398043f3-9ceb-420c-ad1f-55b37a45890d)"
+      },
+      {
+        "id": 8,
+        "branch": "d71fbedc-68ab-4c5e-a5a6-80ba6209fc9b",
+        "month": "2025-09",
+        "intended_us": 1500000,
+        "admitted_us": 1501923,
+        "invoked_us": 1501975,
+        "completed_us": 1511174,
+        "outcome": "Committed(2771f18e-f727-4467-84fb-5e544fac1ead)"
+      },
+      {
+        "id": 9,
+        "branch": "8eae9623-0b80-4a5a-87ac-af1cb524401d",
+        "month": "2025-10",
+        "intended_us": 1600000,
+        "admitted_us": 1601904,
+        "invoked_us": 1601953,
+        "completed_us": 1610797,
+        "outcome": "Committed(0df1452d-c367-4256-b9c8-ccc947afd900)"
+      },
+      {
+        "id": 10,
+        "branch": "f4a036ec-5ee6-418e-a861-3768e6d30a61",
+        "month": "2025-11",
+        "intended_us": 1700000,
+        "admitted_us": 1702409,
+        "invoked_us": 1702452,
+        "completed_us": 1712202,
+        "outcome": "Committed(87c4544f-08e7-4594-965b-04abe586ff0b)"
+      },
+      {
+        "id": 11,
+        "branch": "10163fd1-beac-4b06-b2b6-6e9c7af0d17d",
+        "month": "2025-12",
+        "intended_us": 1800000,
+        "admitted_us": 1801160,
+        "invoked_us": 1801202,
+        "completed_us": 1808621,
+        "outcome": "Committed(c1545520-62a1-4ea0-befe-90dbebc0ba2a)"
+      }
+    ]
+  },
+  {
+    "hot": true,
+    "task_cap": 4,
+    "pool_cap": 2,
+    "generator_queue_count": 0,
+    "generator_queue_bytes": 0,
+    "maximum_tasks": 4,
+    "drained": true,
+    "sqlx_waiter_conservative_cap": 4,
+    "max_scheduler_lag_us": 100000,
+    "max_intent_age_us": 3000000,
+    "max_history_bytes": 16384,
+    "release_us": 1002749,
+    "hot_witness": true,
+    "neighbor_witness": true,
+    "saturation_witness": true,
+    "rows": [
+      {
+        "id": 0,
+        "branch": "a46575e8-7178-412e-971d-9d85b92cb518",
+        "month": "2026-07",
+        "intended_us": 0,
+        "admitted_us": 200,
+        "invoked_us": 280,
+        "completed_us": 1009933,
+        "outcome": "Committed(0e917533-6495-4557-8a56-aff2ebd4b8e8)"
+      },
+      {
+        "id": 1,
+        "branch": "64636462-93b2-4e3a-a049-0e925d144427",
+        "month": "2025-02",
+        "intended_us": 100000,
+        "admitted_us": 101436,
+        "invoked_us": 101458,
+        "completed_us": 112690,
+        "outcome": "Committed(1ebf1902-ece8-4256-a3b4-ff52d3d94422)"
+      },
+      {
+        "id": 2,
+        "branch": "eb6fbbc4-5290-4f49-ad84-3171e972a459",
+        "month": "2026-07",
+        "intended_us": 400000,
+        "admitted_us": 400728,
+        "invoked_us": 400737,
+        "completed_us": 1012827,
+        "outcome": "Committed(2897f975-7ed4-4a3b-990c-954c8ac728d5)"
+      },
+      {
+        "id": 3,
+        "branch": "1b40662e-9cdd-4a75-b54e-30c6f4a9feb6",
+        "month": "2025-04",
+        "intended_us": 500000,
+        "admitted_us": 501487,
+        "invoked_us": 501509,
+        "completed_us": 1014110,
+        "outcome": "Committed(75c969c6-7def-436a-ae67-cd6c94e545c7)"
+      },
+      {
+        "id": 4,
+        "branch": "e1cb2888-5676-4e94-955c-c67726f5ad1d",
+        "month": "2026-07",
+        "intended_us": 600000,
+        "admitted_us": 601713,
+        "invoked_us": 601742,
+        "completed_us": 1016613,
+        "outcome": "Committed(a08966b2-adff-4e4a-ab7a-864f26cffc8a)"
+      },
+      {
+        "id": 5,
+        "branch": "2f555fd9-eb19-425d-8fc3-ff3a0d24b623",
+        "month": "2026-07",
+        "intended_us": 600000,
+        "admitted_us": null,
+        "invoked_us": null,
+        "completed_us": 601735,
+        "outcome": "ClientRejected"
+      },
+      {
+        "id": 6,
+        "branch": "cd50591b-a863-471e-9b84-b9d1c2369614",
+        "month": "2026-07",
+        "intended_us": 600000,
+        "admitted_us": null,
+        "invoked_us": null,
+        "completed_us": 601736,
+        "outcome": "ClientRejected"
+      },
+      {
+        "id": 7,
+        "branch": "faa4bf38-0cc4-4779-a09d-5a3887331909",
+        "month": "2026-07",
+        "intended_us": 600000,
+        "admitted_us": null,
+        "invoked_us": null,
+        "completed_us": 601736,
+        "outcome": "ClientRejected"
+      },
+      {
+        "id": 8,
+        "branch": "44f432bf-6022-4383-bd09-4a97dbf68529",
+        "month": "2025-09",
+        "intended_us": 1500000,
+        "admitted_us": 1502042,
+        "invoked_us": 1502091,
+        "completed_us": 1510113,
+        "outcome": "Committed(1e370865-f4ee-47bf-951d-6bbda5966d2d)"
+      },
+      {
+        "id": 9,
+        "branch": "adb8e26b-4bdb-47e2-88c1-8f8250598116",
+        "month": "2025-10",
+        "intended_us": 1600000,
+        "admitted_us": 1601752,
+        "invoked_us": 1601796,
+        "completed_us": 1611111,
+        "outcome": "Committed(10a46fb2-e2db-4a1d-8734-f7db5846dbf1)"
+      },
+      {
+        "id": 10,
+        "branch": "ab313ee9-eef3-4578-9aa8-57efb0e1463c",
+        "month": "2025-11",
+        "intended_us": 1700000,
+        "admitted_us": 1701841,
+        "invoked_us": 1701883,
+        "completed_us": 1709966,
+        "outcome": "Committed(4f0e4292-0673-45c4-bd54-7b913c9392ec)"
+      },
+      {
+        "id": 11,
+        "branch": "981a5e6d-e995-43bd-ad02-4f91be7bfed8",
+        "month": "2025-12",
+        "intended_us": 1800000,
+        "admitted_us": 1801130,
+        "invoked_us": 1801168,
+        "completed_us": 1808098,
+        "outcome": "Committed(5ca2f096-5d40-4744-8fed-7a568d2ca5ca)"
+      }
+    ]
+  }
+]

@@ -1,0 +1,631 @@
+{
+  "kind": "explicit_completed_runtime_and_reviewed_provenance_allowlist",
+  "reviewer": "/root/capture_review",
+  "head": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef",
+  "scope": "Only these exact regular files at matching hashes may be copied into evidence for completed replay6, standalone3, their separate compiler prerequisite and reviewed capture/candidate provenance. No recursive directories or implicit glob admission.",
+  "entries": [
+    {
+      "path": "/private/tmp/account-auth-refresh6-driver.sh",
+      "sha256": "0855a1ad6861ece2b9c16f5464ebf1878f10dfa1f49634cd0fb07a33f3403711",
+      "bytes": 8523,
+      "kind": "reviewed_standalone_adapter_provenance"
+    },
+    {
+      "path": "/private/tmp/account-auth-refresh6-probe.py",
+      "sha256": "72525e112bec3a8016ead01bd2088d4d2234f7e74dc95763e2b6de1d6628147f",
+      "bytes": 389,
+      "kind": "reviewed_standalone_adapter_provenance"
+    },
+    {
+      "path": "/private/tmp/account-auth-transport4-driver.sh",
+      "sha256": "612b5907632d090023dfa5320c59fbbbcb2709579f0d05f6c409e5c47805beb2",
+      "bytes": 8454,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-auth-transport4-probe.py",
+      "sha256": "b207a90053d3b227345df8a7e7d9d7569744b8baa1e877600d9c5bd1f02f4875",
+      "bytes": 393,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "bytes": 69,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/container-name.txt",
+      "sha256": "1506200a610e17890723204a7b798f20df04510c1346a57e9a5596f56b222338",
+      "bytes": 38,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/driver-receipt.json",
+      "sha256": "b7f5cd889babf2b6b78f7587f04338ea02eb8407d9965d4e73640278b7ce7cb5",
+      "bytes": 1609,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/ownership-label.txt",
+      "sha256": "091174afc7e38017aa6552daa18a49ff3cbd6d6b18204a0a22fa22d24711ff32",
+      "bytes": 59,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/postgres-map.json",
+      "sha256": "c2530ddbf3b7288b109b824dcc6d61a5a8395f0bcbb0bc294fb61b88c28df918",
+      "bytes": 184239,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/prebuild-dispatch.txt",
+      "sha256": "555b64b39b042baf3407017d0276c5d12b5e2358dc78dd48b096ea01e1ec22ff",
+      "bytes": 73,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/probe.log",
+      "sha256": "4000fe94fb8932bccb86ac8ace26a35462166771a95ba7229ba7fbfc75e99bfa",
+      "bytes": 28592,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/source-after.json",
+      "sha256": "64f2143e53e112977abd0ccfc1087670c35ff84583d73519aa1f6415a554e337",
+      "bytes": 2567,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa/source-before.json",
+      "sha256": "64f2143e53e112977abd0ccfc1087670c35ff84583d73519aa1f6415a554e337",
+      "bytes": 2567,
+      "kind": "historical_capture_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-candidate.rs",
+      "sha256": "67e53107cd3a928787200e99caa48f128465a6f6974b190383fb2a0a6d0c6de7",
+      "bytes": 23634,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-completion-review.json",
+      "sha256": "33bc5e21f8f939b44423200acc92455e3150763773e5d244a49b45ef4d02bc4d",
+      "bytes": 5233,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-design.json",
+      "sha256": "0593201a9dface635764446e9936a3781a214f4a5f4e31e8e57923a72f9b3dcf",
+      "bytes": 14628,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-driver-independent-review.json",
+      "sha256": "ae4a26ff6b164dc47e32dae671c9e1398aea4e680698c9a3844565b1c4132f6d",
+      "bytes": 6036,
+      "kind": "prior_independent_review"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-driver.sh",
+      "sha256": "e716b6ae2a8a8f060eca4464c81144546341c8127736f83dd4713b32856fdcc0",
+      "bytes": 8726,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-helper.rs",
+      "sha256": "1946f5a606b8eca5043c0054ebb5d0d8f4a61efe4183671fd01a52d1d9197446",
+      "bytes": 7357,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-independent-review.json",
+      "sha256": "9a1d1fb27573af1c3a9d3a1357f7635b36f36bc14bd8422a7138f7f7cff55b55",
+      "bytes": 13436,
+      "kind": "prior_independent_review"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-probe.py",
+      "sha256": "defd5576f40a74eefb256ea5b3227d00a0474be160a4f92be3fd69200a1102b4",
+      "bytes": 397,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture-query.sql",
+      "sha256": "c2aab8c8942525f4d4013dd7f7701130cb23a4c0ebd09ffd68b880f6d72498f2",
+      "bytes": 2685,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-capture.patch",
+      "sha256": "51735ca2de7663ba2f941a69341287c41bbec09e383c08e704d9c74c6d079ba1",
+      "bytes": 8327,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-captured-output-20260915/_sqlx_test_DajtA0KV6TbLO5Sby_VaYlLRoHs25jDXZB3P6OHrqXe4ZlbvpOnQ.json",
+      "sha256": "bc0c8a562d54866f892706a0a0b6a6723d8874922f58635f3db6f78685889ce4",
+      "bytes": 79424,
+      "kind": "TEST_ONLY_credential_fixture_never_inline"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay-candidate.rs",
+      "sha256": "5eebbc6348ea29170e4280e910aeaac565c0b7529e6f0c2b2d730e8cef4c4579",
+      "bytes": 23067,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay-controls-auth-candidate.rs",
+      "sha256": "c18f069bcf3c65d88f35869a69ac12e7f80d3afcc9d477b70c21a50387ee2d52",
+      "bytes": 28286,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay-controls-auth.patch",
+      "sha256": "66a8cf1818e9a8f64fee6f55ad31e446a3c202a617ecae4f11ef5db38df39945",
+      "bytes": 652,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay-controls-candidate.rs",
+      "sha256": "90e153ff8604c99dedf2172755d5d24f556971b6ce34768aeaea0b5d2d58ca13",
+      "bytes": 28097,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay-controls-design.json",
+      "sha256": "2a9a7efa37b55f161404b4033cda90b102a5e2082f256ff5009030d6af2a2b64",
+      "bytes": 8015,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay-controls.patch",
+      "sha256": "8fab9234d4563fdfac713d66d1180009fac4e5c8a283535800c62e77ff86df37",
+      "bytes": 21124,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay-design.json",
+      "sha256": "5485158184e44a6524e89e9364b5b9a48e2a51ce29c9cf50072d841209a4f115",
+      "bytes": 7886,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay-independent-review.json",
+      "sha256": "175862faf17f847063405068c64e2968f382388927368fb493fa0cfd1d1fde42",
+      "bytes": 9437,
+      "kind": "prior_independent_review"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay.patch",
+      "sha256": "1e2d23bb48401019e154506f2c5585a1291953c0df465bef9d03585937f82b37",
+      "bytes": 17047,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "bytes": 69,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/container-name.txt",
+      "sha256": "54c67b511bc364dd04c183ee4071e44ffe65fe22f8a2573ba63993fc8a3e6742",
+      "bytes": 38,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/driver-receipt.json",
+      "sha256": "95ff0347ee4c8011d7e9e8a9a648d9def650a718c5e2f23dcebaca4359cdc061",
+      "bytes": 1609,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/ownership-label.txt",
+      "sha256": "db432d6b41ada6a041e613d04e994ba2567d4c4a1333266f8bd2c589afb935bb",
+      "bytes": 59,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/postgres-map.json",
+      "sha256": "06c1726d5a6d6db2d4d9e0d6c31da51ec0b377c5450e310b3d3c02a9cd49cd79",
+      "bytes": 184118,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/prebuild-dispatch.txt",
+      "sha256": "555b64b39b042baf3407017d0276c5d12b5e2358dc78dd48b096ea01e1ec22ff",
+      "bytes": 73,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/probe.log",
+      "sha256": "18db41f8c35dd02c60098e11ec94058f4daff0f87c7bd216ed7888038445fbe8",
+      "bytes": 6533,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/source-after.json",
+      "sha256": "6cb44b67e0c9d1d3f1f0b68982d433a131bfcb28eaffb54b3d78f5fc78fd0a63",
+      "bytes": 2708,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/source-before.json",
+      "sha256": "6cb44b67e0c9d1d3f1f0b68982d433a131bfcb28eaffb54b3d78f5fc78fd0a63",
+      "bytes": 2708,
+      "kind": "replay6_runtime"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "bytes": 69,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/container-name.txt",
+      "sha256": "5ef13ecc90717583f7d59b4eaafb08a18159344e2af5185b19f110969c8474d6",
+      "bytes": 38,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/driver-receipt.json",
+      "sha256": "dd0b57bc96de68d07a51d69aeb65972f916ca83c42f8a30d71e3c8583e146cc8",
+      "bytes": 1611,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/ownership-label.txt",
+      "sha256": "0a52a66b2868e946964b958105c6bcb4321f5059a286e061a3fd762429e6b509",
+      "bytes": 59,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/postgres-map.json",
+      "sha256": "06c1726d5a6d6db2d4d9e0d6c31da51ec0b377c5450e310b3d3c02a9cd49cd79",
+      "bytes": 184118,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/prebuild-dispatch.txt",
+      "sha256": "555b64b39b042baf3407017d0276c5d12b5e2358dc78dd48b096ea01e1ec22ff",
+      "bytes": 73,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/probe-exit.txt",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "bytes": 4,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/probe.log",
+      "sha256": "fb1f658769454ff29ae02ef92426afc0a912ebe37a70ff5f7c6a8a7bbc069e99",
+      "bytes": 4227,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/source-after.json",
+      "sha256": "22d3b4af57bafd08edbcd836c7adf1779e38288059deca00ab6835c86ba5ade9",
+      "bytes": 2708,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8/source-before.json",
+      "sha256": "22d3b4af57bafd08edbcd836c7adf1779e38288059deca00ab6835c86ba5ade9",
+      "bytes": 2708,
+      "kind": "compiler_prerequisite_zero_tests"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-completion-review.json",
+      "sha256": "e5945e2146c0e1f0e0783497a3eeb7a239ba10c6ecb3eb7410613e63c872486b",
+      "bytes": 5411,
+      "kind": "current_independent_runtime_review"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-driver.patch",
+      "sha256": "45fa995e4a3ea24a348b6aefb2215d50fea2eeb713895737eff1040ab11171c6",
+      "bytes": 4090,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-driver.sh",
+      "sha256": "24167812218388234cab22320f521b823f7915e73b34aef5c9f2b7bba1e85cb3",
+      "bytes": 8586,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-independent-review.json",
+      "sha256": "66c9ae8632f478115b65bf92993446f4349c4543d870a9c97e063d3c2e6d1596",
+      "bytes": 11950,
+      "kind": "prior_independent_review"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-preparation.json",
+      "sha256": "77f3c69bebc6e458cee3aee02c8ff680c349a0b6c8f468bcc456405e99b2a172",
+      "bytes": 7392,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-probe.py",
+      "sha256": "16555d70fb2d5b268162035b00c3126675bedc7f49fcc8a9453af8a805804540",
+      "bytes": 397,
+      "kind": "reviewed_candidate_or_provenance"
+    },
+    {
+      "path": "/private/tmp/account-legacy225-replay6-runtime-receipt.json",
+      "sha256": "bc937c3c468863f7d5ad7f3ff352bdf300e362b9e38d913431b43c897add7bf5",
+      "bytes": 1136,
+      "kind": "root_runtime_summary"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-completion-review.json",
+      "sha256": "d5a74555bf0f714be7f26b6c3ba861bc706a334749c898f9572b515919556aa0",
+      "bytes": 4992,
+      "kind": "current_independent_runtime_review"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-runtime-receipt.json",
+      "sha256": "d7622ecf449b530c7191b8bd27e46ae2bf6cb2a6f283658d0a00101a07e75925",
+      "bytes": 1157,
+      "kind": "root_runtime_summary"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "bytes": 69,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/container-name.txt",
+      "sha256": "7ffd32fb97de7fac190fab4f0cefd5a938edb218ee5c8b07c86bc50cfd1578e9",
+      "bytes": 38,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/driver-receipt.json",
+      "sha256": "e6b3cda2e543db3d5584846146fee978c053429e227a795079754063b00e1de3",
+      "bytes": 1609,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/ownership-label.txt",
+      "sha256": "55dc79450a6242922aaa15169e5c8af0d08750fc00b27fdc9c37ad3b8a67914c",
+      "bytes": 61,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/postgres-map.json",
+      "sha256": "13d5e9d2e5e64c2857c0273ef5d9b5247bca9e8460a33b71983f22717f47d6e5",
+      "bytes": 184159,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/prebuild-dispatch.txt",
+      "sha256": "6d4960215ab1165e6634435eeb2552e0437945cd730a1a82dc1e947b94500dd4",
+      "bytes": 134,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/probe.log",
+      "sha256": "e5973ec03275bcb1e488c7dec273ca6159b2f160b4a3f456e6222fa3201d5670",
+      "bytes": 10095,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/source-after.json",
+      "sha256": "e239e024d617879ccbe809868793b4c3556208f76138bd757569502b0d6e5f4c",
+      "bytes": 4341,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/source-before.json",
+      "sha256": "e239e024d617879ccbe809868793b4c3556208f76138bd757569502b0d6e5f4c",
+      "bytes": 4341,
+      "kind": "standalone3_runtime"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-driver-candidate.json",
+      "sha256": "fb0cb8b5c75bbd050aeda1801718c8db08342fabb44e839ec354101e40d58bb1",
+      "bytes": 13060,
+      "kind": "reviewed_standalone_candidate_metadata"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-driver-independent-review.json",
+      "sha256": "67be7521c41ba90e32ac90373a9124af3b5c1ffe526ecf280e9863b16cb4c059",
+      "bytes": 1360,
+      "kind": "prior_independent_review"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-driver.patch",
+      "sha256": "f9496e2700ebdec4648a1b38aa222aa94d7d167e98ad8ca8df6068d5986b15ca",
+      "bytes": 6523,
+      "kind": "reviewed_standalone_adapter_provenance"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-driver.sh",
+      "sha256": "fd686b9907d10663f101828763b1749efa1dd61695da675f1a6fef220170b224",
+      "bytes": 10772,
+      "kind": "reviewed_standalone_adapter_provenance"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-partition-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "reviewed_standalone_adapter_provenance"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-partition-output.jsonl",
+      "sha256": "6b8a0552be703733427a44f6210e2070a5d249ca23e5dde2e8207009b4602911",
+      "bytes": 798,
+      "kind": "reviewed_standalone_adapter_provenance"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-probe.py",
+      "sha256": "a3c43ef11b04271567409db89e796e95a778dc06c7249d34c8b5c50290e373e5",
+      "bytes": 401,
+      "kind": "reviewed_standalone_adapter_provenance"
+    },
+    {
+      "path": "/private/tmp/account-standalone-auth3-v2-validation-map.json",
+      "sha256": "13d5e9d2e5e64c2857c0273ef5d9b5247bca9e8460a33b71983f22717f47d6e5",
+      "bytes": 184159,
+      "kind": "reviewed_standalone_adapter_provenance"
+    }
+  ],
+  "git_blob_bindings": [
+    {
+      "commit": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef",
+      "path": "backend/app/tests/account_migration.rs",
+      "sha256": "84475ea347514e617a0ba5a0d7a2bdd11521e6c4d098b2e6d3b59fe1c88d629d"
+    },
+    {
+      "commit": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef",
+      "path": "backend/app/tests/fixtures/account-legacy225-owner-output-v1.json",
+      "sha256": "bc0c8a562d54866f892706a0a0b6a6723d8874922f58635f3db6f78685889ce4"
+    }
+  ],
+  "exclusions": [
+    "Full151 run and every still-running/incomplete run",
+    "Unreviewed standalone v1 adapter",
+    "Arbitrary /private/tmp or root directory copies",
+    "Sensitive fixture content inline or in log summaries"
+  ],
+  "evidence_counts": {
+    "replay6": {
+      "executed": 6,
+      "passed": 4,
+      "failed": 2,
+      "ignored": 0,
+      "filtered": 0
+    },
+    "standalone3": {
+      "executed": 11,
+      "passed": 8,
+      "failed": 3,
+      "ignored": 0,
+      "filtered": 0
+    },
+    "separate_compiler_prerequisite": {
+      "executed": 0,
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0
+    }
+  }
+}

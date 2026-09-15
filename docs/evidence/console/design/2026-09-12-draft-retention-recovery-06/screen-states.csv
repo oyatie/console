@@ -1,0 +1,14 @@
+audience_context,state,trigger,render,next
+일반 사용자,discarded/expired,초안 작성 종료,허용된 없음/만료 안내; 제출 업무 철회 아님,새 초안 시작/제출 결과 조회
+보존 담당자,eligible,정책 기준 충족,대상·정책·보존 사유·범위 허용정보,자동 queue/수동 동일 경로
+보존 담당자,prepared,격리·manifest 생성,삭제 준비; 아직 삭제 사실 아님,외부 기록 재시도/무효과 취소
+보존 담당자,journal unavailable,외부 durable receipt 없음,삭제 대기; 입력 payload 로그 없음,동일 job reconcile
+보존 담당자,partial removal,일부 batch commit,운영 DB 제거 진행량; 일반 이력 미제공,동일 범위 계속/진단
+보존 담당자,held,hold/policy가 추가 deletion 차단,허용된 보존 사유; 이미 제거한 범위 별도,hold owner 검토/수동 조사
+보존 담당자,live removed,live batches/projections 제거 완료,운영 DB 제거; 외부 기록과 사본 상태 별도,archive inventory 확인
+보존 담당자,copies pending,backup/object versions 잔존,백업 등 사본 만료/확인 대기,provider 점검/허용 cleanup
+업무 사용자,submitted evidence retained,draft history 폐기; adopted snapshot 존재,제출 당시 입력 조회; 개인 중간 이력 없음,업무 결과/정정
+복구 운영자,isolated,backup 복원 시작,서비스 비활성·current journal/authority 확인,재적용·검증
+복구 운영자,unknown scope,INTENT-only/legacy mapping 불명,해당 범위 사용 불가; 무효과 단정 안함,원 transaction 증거 조사
+복구 운영자,admission ready,watermark/권한/owner/새generation 검증,복구 검증 범위·남은 격리 대상,권한 있는 운영 admission
+보존 담당자,cancel pending,local cancel fence 확정; 외부 취소 결과 미확인,삭제 실행 불가·취소 확인 중; 입력 자동 재개 없음,동일 취소 조회/재시도

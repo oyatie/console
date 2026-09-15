@@ -433,3 +433,24 @@ mod tests {
         assert_eq!(ctx["c"], 3);
     }
 }
+
+// Test-first generic owner submission framing, separate from native payroll codecs.
+#[cfg(test)]
+mod owner28_codec_tests;
+
+/// Plain normalized submission framing; does not admit business authority.
+pub mod owner28;
+
+// Pure draft patch acceptance; internal values do not confer current authority.
+#[cfg(test)]
+mod draft_patch_snapshot_tests;
+
+/// Pure draft editing over plain owner-supplied facts; no authority or persistence.
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "Pure draft owner awaits its separately admitted integration caller"
+    )
+)]
+pub(crate) mod draft;

@@ -46,8 +46,9 @@ struct JsonResponse {
 // The inbox surfaces only the caller's own assigned work orders. A WO assigned
 // to another user in the same org must never appear.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn action_inbox_returns_only_my_assigned_work_orders(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool, OrgId::knl(), "리전", "지사").await;
 
@@ -70,8 +71,11 @@ async fn action_inbox_returns_only_my_assigned_work_orders(pool: PgPool) {
     let _bob_wo =
         seed_assigned_work_order(&pool, OrgId::knl(), branch, equipment, bob, "20260701-102").await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let resp = get(
         service,
@@ -94,8 +98,9 @@ async fn action_inbox_returns_only_my_assigned_work_orders(pool: PgPool) {
     assert_eq!(resp.json["total"], 1);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn action_inbox_work_orders_are_fail_closed_to_the_token_branch_scope(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let allowed_branch = seed_branch(&pool, OrgId::knl(), "허용 리전", "허용 지사").await;
     let other_branch = seed_branch(&pool, OrgId::knl(), "제외 리전", "제외 지사").await;
@@ -123,8 +128,11 @@ async fn action_inbox_work_orders_are_fail_closed_to_the_token_branch_scope(pool
     )
     .await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let response = get(
         service,
         PATH,
@@ -146,8 +154,9 @@ async fn action_inbox_work_orders_are_fail_closed_to_the_token_branch_scope(pool
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn action_inbox_keyset_pages_past_the_old_two_hundred_item_cap(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool, OrgId::knl(), "페이지 리전", "페이지 지사").await;
     let alice = UserId::new();
@@ -165,8 +174,11 @@ async fn action_inbox_keyset_pages_past_the_old_two_hundred_item_cap(pool: PgPoo
         .await;
     }
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, OrgId::knl(), alice, "MEMBER", branch);
     let first = get(service.clone(), &format!("{PATH}?limit=200"), &token).await;
     assert_eq!(first.status, StatusCode::OK, "{:?}", first.json);
@@ -201,8 +213,9 @@ async fn action_inbox_keyset_pages_past_the_old_two_hundred_item_cap(pool: PgPoo
 // The aggregate is org-scoped: a WO assigned to alice's user id but in ANOTHER
 // org is invisible to her KNL-scoped token (RLS confines the raw query).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn action_inbox_is_org_scoped(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
 
     // Alice belongs to KNL (her real org / token org).
@@ -225,8 +238,11 @@ async fn action_inbox_is_org_scoped(pool: PgPool) {
     )
     .await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     // Alice authenticates against KNL, where she has no assigned work.
     let resp = get(
@@ -245,8 +261,9 @@ async fn action_inbox_is_org_scoped(pool: PgPool) {
     assert_eq!(resp.json["total"], 0);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn immutable_keyset_traverses_mixed_sources_despite_due_mutation(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool, OrgId::knl(), "혼합 리전", "혼합 지사").await;
     let alice = UserId::new();
@@ -281,8 +298,11 @@ async fn immutable_keyset_traverses_mixed_sources_despite_due_mutation(pool: PgP
     let dispatch =
         seed_dispatch_offer(&pool, OrgId::knl(), branch, dispatch_work, bob, alice, base).await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, OrgId::knl(), alice, "MEMBER", branch);
     let first = get(service.clone(), &format!("{PATH}?limit=2"), &token).await;
     assert_eq!(first.status, StatusCode::OK, "{:?}", first.json);
@@ -370,8 +390,9 @@ async fn immutable_keyset_traverses_mixed_sources_despite_due_mutation(pool: PgP
     assert!(!ids.contains(&format!("work:{post_snapshot}")));
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn live_dispatch_expiry_can_disappear_between_pages(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool, OrgId::knl(), "라이브 리전", "라이브 지사").await;
     let alice = UserId::new();
@@ -408,8 +429,11 @@ async fn live_dispatch_expiry_can_disappear_between_pages(pool: PgPool) {
         OffsetDateTime::now_utc() - Duration::minutes(1),
     )
     .await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, OrgId::knl(), alice, "MEMBER", branch);
     let first = get(service.clone(), &format!("{PATH}?limit=1"), &token).await;
     assert_eq!(first.status, StatusCode::OK, "{:?}", first.json);
@@ -433,8 +457,9 @@ async fn live_dispatch_expiry_can_disappear_between_pages(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn later_source_failure_returns_no_partial_queue(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool, OrgId::knl(), "실패 리전", "실패 지사").await;
     let alice = UserId::new();
@@ -443,8 +468,11 @@ async fn later_source_failure_returns_no_partial_queue(pool: PgPool) {
         .execute(&pool)
         .await
         .unwrap();
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let resp = get(
         service,
         PATH,
@@ -463,14 +491,18 @@ async fn later_source_failure_returns_no_partial_queue(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn rejects_forged_and_future_cursors(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool, OrgId::knl(), "커서 리전", "커서 지사").await;
     let alice = UserId::new();
     seed_user(&pool, OrgId::knl(), alice, "MEMBER", branch).await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, OrgId::knl(), alice, "MEMBER", branch);
     let forged = get(
         service.clone(),
@@ -493,8 +525,9 @@ async fn rejects_forged_and_future_cursors(pool: PgPool) {
     assert_eq!(future_resp.status, StatusCode::UNPROCESSABLE_ENTITY);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn action_inbox_payroll_source_enforces_sod_and_org_wide_manage(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool, OrgId::knl(), "급여 리전", "급여 지사").await;
     let submitter = UserId::new();
@@ -523,8 +556,11 @@ async fn action_inbox_payroll_source_enforces_sod_and_org_wide_manage(pool: PgPo
     )
     .await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let submitter_resp = get(
         service.clone(),
@@ -635,8 +671,9 @@ async fn action_inbox_payroll_source_enforces_sod_and_org_wide_manage(pool: PgPo
     assert_eq!(admin_resp.json["total"], 0);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn action_inbox_governance_source_enforces_requester_sod(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool, OrgId::knl(), "결재 리전", "결재 지사").await;
     let requester = UserId::new();
@@ -690,8 +727,11 @@ async fn action_inbox_governance_source_enforces_requester_sod(pool: PgPool) {
         format!("governance:{}", payroll.id),
     ];
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let requester_resp = get(
         service.clone(),
@@ -1354,8 +1394,20 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -1363,4 +1415,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

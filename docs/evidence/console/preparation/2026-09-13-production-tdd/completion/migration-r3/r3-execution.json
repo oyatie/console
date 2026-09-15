@@ -1,0 +1,10 @@
+{
+  "source_tests": 7,
+  "parsers": 4,
+  "owner_compile": 0,
+  "owner_runtime": 0,
+  "actual_shared_machinery_compile": 0,
+  "actual_shared_machinery_run_exit": 0,
+  "actual_shared_machinery_checks": 7,
+  "compiled_catalog_source": "migration-catalog-producer.rs"
+}

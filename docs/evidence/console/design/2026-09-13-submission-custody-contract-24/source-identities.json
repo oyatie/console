@@ -1,0 +1,100 @@
+{
+  "sources": [
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/PRODUCT.md",
+      "git_blob": "6a3992e258d7eecf4d2cd11422ee01d521a01017",
+      "sha256": "d9740519950695c0b09bcd173b3a8bac2ff52f41f16eee9cb6984f3ca67e3979"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/DELIVERY.md",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0031_runtime_role_and_immutable_org.sql",
+      "git_blob": "14d8ed330de4d779067de50e158dbc15b293605f",
+      "sha256": "f2b9537ef1c063f55fcbfe7519a4769690bfd3f613eb8704c6cd36dbda062329"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/account-contract.txt",
+      "git_blob": "09e0dca1ec52aff72bbea91e3af23e1af8bc342b",
+      "sha256": "e1eee7c38884e2d71290973fda97a4770f958899bd4023efa85774c28b9d4011"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "git_blob": "bee4da9b1e5aac4b9e2907dd1706787b95e8a9ca",
+      "sha256": "b90fc33ad97191af147fbae8c87b6833c577359ea3ef259226455ce6e1d28f75"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "git_blob": "5ca655e24b73882cbb14943af37697fa46373150",
+      "sha256": "531b300818f5328de6b47b3e1ab04761784f5c087824c36f984fef3d3ed9d928"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/encoding-contract.txt",
+      "git_blob": "097b837bb42ce916d9e15777eadf5b5125a15d3d",
+      "sha256": "02e5afb1a706892e571eb39f954e14c4c232feb2a4f69da9ddf147f2a278fefe"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/retention-records.json",
+      "git_blob": "fe4a6b0781766f15f2d15d68578f0260b891c5e9",
+      "sha256": "e98cf009c8dc8622436b3e23ad9288dd3d1dc9f41927985c3607cd7647131d81"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/encoding-and-packages.txt",
+      "git_blob": "c5a92c31d4245575861ff01ac09f4c0064140350",
+      "sha256": "6e2a33d756a8b19d5d370d7513bf8d32531ec23ccde35a7ba3821c28e979255f"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/source-types.schema.json",
+      "git_blob": "6e3cc7ce9dfe00d5c43d56a6be863ff6104d0dc4",
+      "sha256": "6d52b788855826e553a9e4a8e31c3e777fa80a878d03debbb1ceb2d84de7a71e"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/input-reference.schema.json",
+      "git_blob": "7e1e4ab1215fec1d0211a9a431b3cc96a95019c7",
+      "sha256": "056cec98ab410113e361db65bc12596e4552b372a9445d3ba46c9d5f6159c126"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/payload-and-adoption.txt",
+      "git_blob": "9a4b2330a71757a2a75da3d00582886b313e605e",
+      "sha256": "14cacc3a7de2e4f3a4fd46a287c22844e9f4c5f75f83edb6cfa694c9d89adbfa"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/execution-contract.txt",
+      "git_blob": "53bd4d767eb554804008bac84e90bc49b59da727",
+      "sha256": "d71b303bfecc59534e11cfc5850f9e383791c560913cab756ba8a380f5ba6ea0"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/persistence-contract.txt",
+      "git_blob": "400b4ed48226580890fb2bca6681a65091366b46",
+      "sha256": "4c3907f6335dd21d9d94a43549e9fff50a0be79191aea311a14d9404e2089cc9"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/effect-manifest.sql.txt",
+      "git_blob": "995676aea6c02ca639ae75ecb591dc52633a7569",
+      "sha256": "5a666884fcedb30627e6210e5591acd313b058650580de8d91c09268bc666603"
+    },
+    {
+      "commit": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/contract.txt",
+      "git_blob": "8e6440cfd3eb1fb6fb64b8513795b7eba2ead911",
+      "sha256": "228d38e3dd1cb10cc26dbc1f7ff9e1a8f2b91a389624da166dbf80efd71ae0b2"
+    }
+  ]
+}

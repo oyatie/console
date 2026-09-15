@@ -1,0 +1,38 @@
+{
+  "owner": "/root",
+  "base_sha": "db2bd358000d049251a7d4cddab4b8f8063f9ae5",
+  "approved_design_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "inherited_approved_test_sha": "3305cd3fdce03a04d4b5d354617dd911d9da49ca",
+  "immutable_target": "B04/B05/B12 bounded terms revision freshness, current artifact outage isolation and recovery test candidates",
+  "allowed_paths": [
+    "backend/app/tests/auth_rest.rs",
+    "docs/evidence/console/tests/2026-09-13-account-terms-06",
+    "docs/evidence/console/approvals/2026-09-13-session05"
+  ],
+  "forbidden": "Product source, schema, grants, migrations, lockfiles, generated files, CI, current authority and main index",
+  "mechanical_guide": [
+    "Root sole writer; independent reviewers read-only",
+    "Append tests using real configured router/migrations and existing signer/crypto fixtures; no original50 test/helper edits",
+    "Fixture-only head/receipt data models sequential admitted release state; no publisher authorization/CAS/concurrency proof",
+    "Reuse exact registered TEST_ONLY artifacts. Unsupported head represents replica missing current release, with retained old bytes still present",
+    "Restart real router with same signing key after owned file loss/restoration; no permission or key failures masquerading as artifact outage"
+  ],
+  "pre_mortem": "Stale digest rejection hides missing revision validation; artifact outage wrongly logs everyone out; historical consent overwritten or fabricated; valid retry accidentally consumed; signer changes mask outage",
+  "blast_radius": "Isolated tests/evidence and fixture-owned files/disposable test DB only",
+  "detection": "Same-digest distinct receipt, snapshots, actual artifact byte reads, same signing key, valid restore/retry, independent review",
+  "rollback": "Frozen ancestry/evidence retained; own runtime stopped after execution; no shared Git reset",
+  "stop_conditions": [
+    "Material contract ambiguity",
+    "Product implementation or privilege changes required",
+    "Unclassified runtime failure",
+    "Independent blocking finding"
+  ],
+  "remaining_holds": [
+    "New test SHA approval",
+    "Full publisher/CAS/ABA/race proof",
+    "Remaining BW31 coverage",
+    "12 existing buildscript fixups",
+    "Implementation admission",
+    "Production/legal authority"
+  ]
+}

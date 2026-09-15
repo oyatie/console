@@ -1,0 +1,363 @@
+{
+  "scope": "Explicit bounded supplement; not whole security acceptance complete",
+  "source_discovered_test_functions": 25,
+  "compiled": 0,
+  "cargo_discovered": 0,
+  "executed": 0,
+  "behavioral_red": 0,
+  "cases": [
+    {
+      "case_ids": [
+        "CTX-01"
+      ],
+      "authored": [
+        {
+          "function": "ctx_maximum_populated_page_one_is_complete_projected_and_read_only",
+          "source": "context-discovery-acceptance.rs",
+          "line": 25
+        }
+      ],
+      "remaining_source": [
+        "Overbudget33Group/257Company case and known undiscoverable direct-target404; exact closure across all source families beyond directly assigned fixture policies."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "CTX-02"
+      ],
+      "authored": [
+        {
+          "function": "ctx_revocation_and_denied_to_allowed_invalidate_whole_scan_cursor",
+          "source": "context-discovery-acceptance.rs",
+          "line": 38
+        },
+        {
+          "function": "ctx_foreign_query_and_future_cursor_binding_refuse_uniformly",
+          "source": "context-discovery-acceptance.rs",
+          "line": 104
+        },
+        {
+          "function": "ctx_empty_is_success_and_unavailable_is_not_empty",
+          "source": "context-discovery-acceptance.rs",
+          "line": 141
+        },
+        {
+          "function": "ctx_cursor_has_five_minute_lifetime_and_expires_at_real_authoritative_time",
+          "source": "context-discovery-acceptance.rs",
+          "line": 183
+        },
+        {
+          "function": "ctx_future_allow_outside_page_one_invalidates_cursor_without_epoch_change",
+          "source": "context-discovery-acceptance.rs",
+          "line": 213
+        }
+      ],
+      "remaining_source": [
+        "Actual Group membership detach/reattach incarnation transition; topology/source-generation atomicity lock-race witness; unexpected-future entire authority-vector members beyond Account context_generation."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "CTX-03"
+      ],
+      "authored": [],
+      "remaining_source": [
+        "Actual two-replica startup same/different key fingerprints; drain/revoke/all-key replacement/restart; old access+refresh+CSRF refusal; actual fresh primary login and historical identity/consent preservation."
+      ],
+      "status": "TEST_OR_FIXTURE_SOURCE_STILL_MISSING"
+    },
+    {
+      "case_ids": [
+        "SEC-CONTEXT-01"
+      ],
+      "authored": [
+        {
+          "function": "current_active_company_never_uses_other_switchable_company_and_old_context_expires",
+          "source": "current-context-projection-acceptance.rs",
+          "line": 12
+        },
+        {
+          "function": "context_result_revocation_refuses_existing_opaque_context_but_fresh_unrevoked_read_succeeds",
+          "source": "current-context-projection-acceptance.rs",
+          "line": 145
+        }
+      ],
+      "remaining_source": [
+        "Y authorized A but not B explicit grant positive; independently stale/future security/context/topology/policy/serving/member/session/account-incarnation binding probes; cursor/control/live invalidation after actual switch."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "SEC-PROJECTION-01"
+      ],
+      "authored": [
+        {
+          "function": "hidden_company_label_changes_do_not_change_allowed_context_projection",
+          "source": "current-context-projection-acceptance.rs",
+          "line": 84
+        }
+      ],
+      "remaining_source": [
+        "Native run result fixture and real hidden salary/workflow mutation; alias matrix list/detail/history/search/graph/link/count/conflict/preflight/replay; logical HTTP+SSR+live+cache+events+egress observation collector and authorized hidden-world positive. Navigation-only paired world is authored, not full sink closure."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "SEC-PROJECTION-02"
+      ],
+      "authored": [],
+      "remaining_source": [
+        "Actual immutable native AttemptRef replay after current field/resource grant revocation; one-effect readback, unchanged original receipt, currently projected/refused replay, unrevoked replay positive. Existing context revocation read is NOT command replay."
+      ],
+      "status": "TEST_OR_FIXTURE_SOURCE_STILL_MISSING"
+    },
+    {
+      "case_ids": [
+        "SEC-PROJECTION-03"
+      ],
+      "authored": [],
+      "remaining_source": [
+        "Actual15minute typed CONTROL_REFERENCE renderer/binder producer, complete Account/session/context/scope/action/field/schema/expiry/raw-ref mutation matrix, preserved permissible input and fresh render positive."
+      ],
+      "status": "TEST_OR_FIXTURE_SOURCE_STILL_MISSING"
+    },
+    {
+      "case_ids": [
+        "PUB-01"
+      ],
+      "authored": [
+        {
+          "function": "pub_untrusted_copy_and_wrong_signature_have_no_custody_authority",
+          "source": "terms-publication-acceptance.rs",
+          "line": 137
+        },
+        {
+          "function": "pub_production_rejects_test_roots_and_missing_qualified_content",
+          "source": "terms-publication-acceptance.rs",
+          "line": 178
+        }
+      ],
+      "remaining_source": [
+        "Same approval JSON submitted over public HTTP must fail with unchanged head; unknown operator authentication, absent approval file, and challenge replay/expiry mutation cases."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "PUB-02"
+      ],
+      "authored": [
+        {
+          "function": "pub_authenticated_custody_genesis_and_same_digest_republication",
+          "source": "terms-publication-acceptance.rs",
+          "line": 65
+        },
+        {
+          "function": "pub_expected_seven_concurrent_publishers_append_exactly_one_receipt",
+          "source": "terms-publication-acceptance.rs",
+          "line": 94
+        },
+        {
+          "function": "pub_actual_a_b_a_publications_do_not_revive_old_registration",
+          "source": "terms-publication-acceptance.rs",
+          "line": 463
+        }
+      ],
+      "remaining_source": [
+        "Actual maximum-bigint head fixture through approved recovery/publication custody, then overflow refusal; cannot fake maximum head via SQL."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "PUB-03"
+      ],
+      "authored": [
+        {
+          "function": "pub_real_database_failure_rolls_back_receipt_and_head",
+          "source": "terms-publication-acceptance.rs",
+          "line": 267
+        }
+      ],
+      "remaining_source": [],
+      "status": "AUTHORED_OWNER_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_ids": [
+        "PUB-04"
+      ],
+      "authored": [
+        {
+          "function": "pub_closed_manifest_validation_and_content_integrity",
+          "source": "terms-publication-acceptance.rs",
+          "line": 210
+        },
+        {
+          "function": "pub_symlink_escape_and_oversized_or_non_utf8_content_refuse_before_effect",
+          "source": "terms-publication-acceptance.rs",
+          "line": 431
+        }
+      ],
+      "remaining_source": [
+        "16KiB exact wrapper boundary and UTF8 title/locale byte boundaries; valid8distinct registered required kinds; alias/remote resolution independent refusal."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "PUB-05"
+      ],
+      "authored": [
+        {
+          "function": "pub_registration_holds_share_through_commit_and_publisher_only_waits_on_head",
+          "source": "terms-publication-acceptance.rs",
+          "line": 333
+        }
+      ],
+      "remaining_source": [
+        "Publisher-wins concurrent finish interleaving with PostgreSQL witness (sequential ABA stale finish exists); exact security-event evidence tuple readback beyond kind/account."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "PUB-06"
+      ],
+      "authored": [
+        {
+          "function": "pub_security_definer_entrypoint_denies_real_runtime_logins",
+          "source": "terms-publication-acceptance.rs",
+          "line": 283
+        }
+      ],
+      "remaining_source": [
+        "Closure over any additional callable publisher/helper alias discovered in actual production catalog; dedicated publisher-role direct SQL custody forgery probe after final internal verification-binding signature is approved. Existing direct-DML tests remain separate."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "PUB-07"
+      ],
+      "authored": [],
+      "remaining_source": [
+        "Old local artifact configuration plus newer actual published head: enrollment503, established reads/refresh/logout/login eligible, exact historical consent preservation."
+      ],
+      "status": "TEST_OR_FIXTURE_SOURCE_STILL_MISSING"
+    },
+    {
+      "case_ids": [
+        "MIG-01"
+      ],
+      "authored": [],
+      "remaining_source": [
+        "M0 exact live-catalog function-body/ACL/default/column-grant/role membership/actor46+discovered writer closure and credential-holder binary/schema/manifest inventory."
+      ],
+      "status": "TEST_OR_FIXTURE_SOURCE_STILL_MISSING"
+    },
+    {
+      "case_ids": [
+        "MIG-02"
+      ],
+      "authored": [
+        {
+          "function": "m1_real_cutover_preserves_active_revoked_and_unresolved_legacy_material",
+          "source": "migration-transition-acceptance.rs",
+          "line": 82
+        }
+      ],
+      "remaining_source": [
+        "Two real Groups and explicit legacy subject/role epochs; real device handoff and pre-revoked passkey fixture; concurrent old JWT/body+cookie refresh/OTP/passkey/streams attempts at witnessed durable fence; actual Account fresh primary/recovery->ACTIVE permanent old-token refusal. Retained old225 helper proves two actual passkeys and token/audit material, not complete M1."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "MIG-03"
+      ],
+      "authored": [
+        {
+          "function": "m5_more_than_500_sources_form_exact_restartable_partition",
+          "source": "migration-transition-acceptance.rs",
+          "line": 176
+        },
+        {
+          "function": "m5_byte_budget_is_independent_of_row_limit",
+          "source": "migration-transition-acceptance.rs",
+          "line": 266
+        },
+        {
+          "function": "m5_source_version_change_cannot_silently_map_stale_input",
+          "source": "migration-transition-acceptance.rs",
+          "line": 313
+        },
+        {
+          "function": "m5_worker_backend_interruption_before_commit_has_no_partial_mapping",
+          "source": "migration-transition-acceptance.rs",
+          "line": 411
+        }
+      ],
+      "remaining_source": [
+        "Exact source dependency-version closure across related credential rows beyond users.xmin; byte-budget complete final partition (first bounded batch currently asserted); actual abrupt after-commit worker process loss rather than caller-discarded committed response; different-ID concurrent batch partition; exact target IDs/bytes per mapping beyond source/version partition."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "MIG-04"
+      ],
+      "authored": [],
+      "remaining_source": [
+        "Actual source/definition/draft/gate/work/projection/codec enrollment dormant-until-complete matrix; independent identity positive."
+      ],
+      "status": "TEST_OR_FIXTURE_SOURCE_STILL_MISSING"
+    },
+    {
+      "case_ids": [
+        "MIG-05"
+      ],
+      "authored": [
+        {
+          "function": "m6_actual_startup_requires_exact_manifest_and_independent_current_generation",
+          "source": "migration-transition-acceptance.rs",
+          "line": 366
+        }
+      ],
+      "remaining_source": [
+        "Actually launch old and candidate binaries simultaneously; observe old-write refusal/declared compatibility; independently mutate serving_generation (recovery_generation authored); concurrent startup migration lock witness; actual catalog DDL/alias/policy revision mutations beyond untrusted descriptor mismatch."
+      ],
+      "status": "PARTIAL_AUTHORED_SOURCE_REMAINING"
+    },
+    {
+      "case_ids": [
+        "MIG-06"
+      ],
+      "authored": [],
+      "remaining_source": [
+        "Actual rollback pre/post-new-write preserving fence/revocations/receipts/UNKNOWN/protection/source refs; compatible reader paused effects; old queue replay no duplicate; stale snapshot lacking later timeline cannot readmit."
+      ],
+      "status": "TEST_OR_FIXTURE_SOURCE_STILL_MISSING"
+    },
+    {
+      "case_ids": [
+        "SEC-EVENT-01",
+        "SEC-EVENT-03",
+        "SEC-EGRESS-01",
+        "SEC-EGRESS-02",
+        "VERUS-01",
+        "VERUS-02",
+        "VERUS-03",
+        "VERUS-04"
+      ],
+      "authored": [],
+      "remaining_source": [
+        "Original detailed test-design bodies and source-bound proof/sink-adapter matrix remain pre-acceptance work. This packet does not replace them with a missing-production-only label."
+      ],
+      "status": "TEST_OR_FIXTURE_SOURCE_STILL_MISSING"
+    }
+  ]
+}

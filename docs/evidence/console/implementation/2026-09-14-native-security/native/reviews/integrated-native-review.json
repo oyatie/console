@@ -1,0 +1,41 @@
+{
+  "reviewer": "/root/finish_browser",
+  "candidate_sha": "d2cd4c47975afec364d3e2baeba8100db6281d90",
+  "candidate_tree": "a69954e876aedd387a6520360b91ed6bbf0546b7",
+  "base_sha": "5dd6708ee08c293a2bfdc8d2f9fb28e5c9f06ced",
+  "disposition": "ACCEPT_BOUNDED_INTEGRATED_NATIVE_SOURCE_AND_VERIFICATION",
+  "lenses": [
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth",
+    "Systems Thinking"
+  ],
+  "findings": [],
+  "checks": [
+    "All4changed production blobs equal their exact peer-reviewed source commits19a94c2f/7d9f7f46/2b6380da. Every other tracked file unchanged from5dd including tests/FK/manifests/tooling; telemetry embedded test suffix also byte-identical.",
+    "Cedar guards diagnostics before Allow in both runtime and authoring evaluators. Shared row/field/command explanation callers receive effective Deny while authorized diagnostic evidence survives; no new generic HTTP diagnostic sink. Legacy/shadow deployment modes remain unchanged.",
+    "Realtime message and ACK handlers retain source Company through shared guarded target selection before queue admission; immutable connection principal and fresh reconnect identity preserve Company binding. Own authored realtime change relies on finish_migration independent source+execution acceptance, not self-approval.",
+    "Telemetry removes only raw diagnostic tracing fields while retaining stable positive events and public error DTO. Combined with prior formatter it does not erase authorized Cedar explanation or redirect errors into new sinks.",
+    "Explicit user override authorizes native subagents without fanout.py for these3lanes; meaningful RED/GREEN, immutable tests, isolated writers and peer reviews retained. Earlier formatter fanout history remains historical and is not claimed absent.",
+    "No merge/production/whole-vertical/global-information-flow verdict. Source-contextless notifications, dynamic revocation, broad logging/exporter/span paths and full native30 owners remain separate obligations."
+  ],
+  "peer_receipts": {
+    "cedar-independent-review.json": "38f4d5157b925e2a844b12a8276645966cd7c33e7fe63279c6e5b3241a46b64c",
+    "realtime-independent-review.json": "49509cb0509483dee18eb66955e20b10cecbe82441629b1be38b86437bebdd06",
+    "telemetry-independent-review.json": "33ccdfae0c9ce9956f61696f639c27e59c226ab0947725a5f1d3a276cbf41c53"
+  },
+  "runtime_status": "All4named probes PASS29executed (20context+5Cedar+2realtime+2telemetry),0ignored, retained filters3/164. PinnedPG18.6 realtime bridge5PASS. HTTP2PASS via committed SQLx compile metadata with actual runtime DATABASE_URL/migrations. Initial empty-admin-DB compilation failure retained, prerequisite resolved without source/test changes. Runtime evidence SHA/hash verified.",
+  "remaining_holds": [
+    "Exact FK correction remains unapplied after automatic-review rejection.",
+    "No hosted integration/release/production or broad acceptance claims."
+  ],
+  "independence": "Reviewer writes only scratch receipt. Root owns untracked implementation evidence packaging; reviewed source commit immutable. No duplicate compile or DB runs by reviewer.",
+  "integrated_runtime_evidence": {
+    "named-probes.json": "78c807a671cf2eb04195ad73e02b4806507001c42927614744e47414c102797a",
+    "db-target-results.json": "68dfc03f009debe72f46f9ea6c4eb6ab52c9ee715f67304e466934f90fcd0b4d",
+    "db-runner-execution.json": "3c60d07d54321524cd491eeda40aeff0ae11e739873de2c3e9038f4ddbcaaa0a",
+    "http-offline-compile-runtime-db.json": "244a41f09fab4b78f8c9551c3944011d54365503cca744411c8f28cce78551d0"
+  },
+  "new_runtime_test_executions_by_reviewer": 0
+}

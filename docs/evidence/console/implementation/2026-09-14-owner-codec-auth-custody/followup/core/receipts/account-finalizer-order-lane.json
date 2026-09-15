@@ -1,0 +1,34 @@
+[
+  {
+    "lane": "LC08-locked-finalizer-catalog-observation",
+    "owner": "/root",
+    "worktree": "/private/tmp/console-production-tdd-preparation-20260913",
+    "base_sha": "e1f184fa19bd9a34569ef8bf1bc760e1f0144a50",
+    "allow": [
+      "ops/generate-account-custody.py",
+      "ops/postgres-finalize-account-custody.sql"
+    ],
+    "probe": "DOCKER_CONTEXT=colima-console-custody-20260914 python3 /private/tmp/account-finalizer-order-probe.py",
+    "target": "Concurrent finalizers reach authoritative catalog verdict only after acquiring the six fixed relation locks",
+    "guide": "Replace initial full catalog verdict with fixed-name existence/ordinary-relation checks; preserve operator identity, timeouts, exact lock set and all under-lock catalog/profile/function validations and mutation code. Root alone regenerates SQL. No owner UPDATE or other grant changes.",
+    "pre_mortem": "Catalog helper observations before lock mix with older ownership rows across concurrent commit, falsely refusing valid finalizer",
+    "blast_radius": "Local operator finalizer ordering only; no runtime serving authorization or ACL profile changes",
+    "detection": "Same concurrent finalizer probe RED to GREEN plus retained22lifecycle11startup3storage diagnostics",
+    "rollback": "Revert generator and generated SQL together; numbered migrations unchanged",
+    "stop_conditions": [
+      "Any privilege expansion",
+      "Lost locked validation",
+      "Test weakening",
+      "Changed timeout or lock set"
+    ],
+    "reviewers": [
+      "/root/review_completeness",
+      "/root/finish_browser"
+    ],
+    "holds": [
+      "Owner UPDATE(id) approval",
+      "Account storage lifecycle prerequisites",
+      "Production/HA"
+    ]
+  }
+]

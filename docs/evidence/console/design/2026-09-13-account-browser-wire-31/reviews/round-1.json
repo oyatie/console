@@ -1,0 +1,37 @@
+{
+  "round": 1,
+  "candidate_sha": "614793dea32c42aabcd0718fc45da7999b38bbf0",
+  "record_kind": "Root transcription of independent review conclusions, not product proof",
+  "reviews": [
+    {
+      "reviewer": "/root/fresh29_operations",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "P1 Undefined approved_release_ref type/custody/authority",
+        "P1 No durable acceptance to exact publication tuple binding in closed schemas",
+        "P2 Historical artifact retention and bounded ceremony cleanup unspecified",
+        "P2 Single-key rollover/drain/rollback not executable deployment invariant"
+      ]
+    },
+    {
+      "reviewer": "/root/fresh29_security",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "P2 ACTIVE login can bypass unknown historical consent",
+        "P2 Head receipt FK fails to specify exact same revision/digest and predecessor",
+        "P2 CSRF header/body proof omitted from explicit observability suppression"
+      ]
+    },
+    {
+      "reviewer": "/root/fresh29_workflows",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "P1 Pinned discoverable login mediation field rejected by schema",
+        "P1 Existing enrollment does not request resident credentials required for discoverable recovery",
+        "P2 Recovery me may belong to another Account",
+        "P2 UUID definition accepts canonical-forbidden nil"
+      ]
+    }
+  ],
+  "root_disposition": "All concrete findings accepted; fixes in next candidate require independent verification, no claimed closure before review. Supplemental resident implementation advice is not counted as a review round."
+}

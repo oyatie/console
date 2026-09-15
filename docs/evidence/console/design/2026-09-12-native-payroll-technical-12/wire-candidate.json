@@ -1,0 +1,189 @@
+{
+  "status": "Proposed NP1 payroll subset; not generated OpenAPI or complete executable DTO specification",
+  "common_envelope": {
+    "protocol_version": "NP1",
+    "command_id": "UUID, required for execute; same across transport retry",
+    "expected": "Typed expectedRefs object below; required per operation, null only for genuinely absent head",
+    "draft_attempt_ref": "Optional only when server-derived action definition permits no FD1 custody; otherwise exact required saved/sealed attempt",
+    "gate_request_ref": "Optional reference; server current policy determines required gate; not an approval boolean",
+    "body": "Per-command typed payload below; reject unknown properties on NP1 command structs",
+    "authority": "Account/session/CompanyActor and policy facts are server supplied; no client authority fields"
+  },
+  "commands": [
+    {
+      "id": "CREATE_RUN",
+      "action_key": "payroll.create_run",
+      "method": "POST",
+      "route": "/api/v1/payroll/runs",
+      "payload": "{correlation_run_id: UUID, period_start: Date, period_end: Date, pay_date: Date, profile_ref: VersionRef, scope_basis_ref:VersionRef}",
+      "expected": "{run: null}",
+      "result": "{draft_run_id: UUID, run_revision: Revision}",
+      "compatibility": "new native REST route; existing canonical action extension; separate legacy staging"
+    },
+    {
+      "id": "SAVE_WAGE",
+      "action_key": "payroll.create_contract_wage",
+      "method": "POST",
+      "route": "/api/v1/payroll/employees/{employee_id}/contract-wages",
+      "payload": "{effective_from: Date, wage_kind: MONTHLY|HOURLY, amount_won: PositiveWon, monthly_standard_hours:1..400, source_note:Text<=500, evidence_refs:VersionRef[]}",
+      "expected": "{subject_source_generation: Revision}",
+      "result": "{base_wage_id: UUID, correction_revision:\"0\"}",
+      "compatibility": "existing route adapted on enrolled scope; HOURLY storage allowed but NP1 calculation blocks"
+    },
+    {
+      "id": "CORRECT_WAGE",
+      "action_key": "payroll.correct_contract_wage",
+      "method": "POST",
+      "route": "/api/v1/payroll/contract-wages/{base_wage_id}/corrections",
+      "payload": "{amount_won: PositiveWon, wage_kind:MONTHLY|HOURLY, monthly_standard_hours:1..400, source_note:Text<=500, reason:NonBlankText, evidence_refs:VersionRef[]}",
+      "expected": "{wage_correction: RevisionOrZero, subject_source_generation:Revision}",
+      "result": "{base_wage_id: UUID, correction_revision:Revision}",
+      "compatibility": "proposed; base employee/Company/effective date immutable"
+    },
+    {
+      "id": "ADMIT_TAX",
+      "action_key": "payroll.admit_tax_evidence",
+      "method": "POST",
+      "route": "/api/v1/payroll/tax-evidence",
+      "payload": "{source_qualification_ref:VersionRef, artifact_ref:ArtifactRef, table_version:NonBlankText, row_locator:TypedLocator, income_band:IntegerBand, selection:TaxSelection, employment_ref:VersionRef, period:InclusivePeriod, pay_date:Date, income_tax_won:NonnegativeWon, local_tax_won:NonnegativeWon}",
+      "expected": "{source_qualification:Revision}",
+      "result": "{evidence_id:UUID, evidence_revision:Revision, digest:Sha256}",
+      "compatibility": "proposed; nested source types/owner registration W04b explicitly unresolved"
+    },
+    {
+      "id": "VERIFY_SOURCE",
+      "action_key": "payroll.verify_tax_evidence",
+      "method": "POST",
+      "route": "/api/v1/payroll/tax-evidence/{evidence_id}/verification",
+      "payload": "{admission_ref:VersionRef, admission_digest:Sha256, attestation:true}",
+      "expected": "{evidence_head:Revision, source_qualification:Revision}",
+      "result": "{verification_ref:VersionRef}",
+      "compatibility": "proposed; independent verified human and actual qualified source required"
+    },
+    {
+      "id": "REVOKE_SOURCE",
+      "action_key": "payroll.revoke_tax_evidence",
+      "method": "POST",
+      "route": "/api/v1/payroll/tax-evidence/{evidence_id}/revocations",
+      "payload": "{verification_ref:VersionRef, reason:NonBlankText}",
+      "expected": "{evidence_head:Revision}",
+      "result": "{revocation_ref:VersionRef}",
+      "compatibility": "proposed; append revocation, no past calculation mutation"
+    },
+    {
+      "id": "PREPARE_INPUT",
+      "action_key": "payroll.prepare_inputs",
+      "method": "POST",
+      "route": "/api/v1/payroll/runs/{draft_run_id}/prepare-inputs",
+      "payload": "{scope_basis_ref:VersionRef, expected_membership_revision:Revision, profile_ref:VersionRef, source_refs:VersionRef[], evidence_refs:VersionRef[]}",
+      "expected": "{run:Revision, input:Revision|null}",
+      "result": "{input_revision:Revision, manifest_digest:Sha256, readiness:AuthorizedPopulationSlotOutcomes}",
+      "compatibility": "proposed; server derives full required population from versioned scope and effective facts including hidden/blocked employees; preview employee refs are witnesses only; full scope reservation/overlap rules PC1 apply"
+    },
+    {
+      "id": "REOPEN_INPUTS",
+      "action_key": "payroll.reopen_inputs",
+      "method": "POST",
+      "route": "/api/v1/payroll/runs/{draft_run_id}/reopen-inputs",
+      "payload": "{reason:NonBlankText}",
+      "expected": "{run:Revision,input:Revision,calculation:Revision|null}",
+      "result": "{run_revision:Revision, preparation_state:STAGED}",
+      "compatibility": "proposed; forbids REVIEWING/APPROVED/external effects"
+    },
+    {
+      "id": "CLOSE_ATTENDANCE",
+      "action_key": "payroll.close_attendance",
+      "method": "POST",
+      "route": "/api/v1/payroll/runs/{draft_run_id}/close-attendance",
+      "payload": "{attest:true, attendance_close_basis_ref:VersionRef}",
+      "expected": "{run:Revision,input:Revision}",
+      "result": "{close_ref:VersionRef,run_revision:Revision}",
+      "compatibility": "existing route upgraded for enrolled targets"
+    },
+    {
+      "id": "CALCULATE",
+      "action_key": "payroll.calculate_run",
+      "method": "POST",
+      "route": "/api/v1/payroll/runs/{draft_run_id}/calculate",
+      "payload": "{}",
+      "expected": "{run:Revision,input:Revision,close:Revision}",
+      "result": "{calculation_revision:Revision,run_revision:Revision,outcome:COMPLETE|PARTIAL|BLOCKED,payable:false}",
+      "compatibility": "existing route upgraded; completed all-blocked batch still receipt, not transport failure"
+    }
+  ],
+  "preflight": {
+    "method": "POST",
+    "route": "/api/v1/payroll/commands/preflight",
+    "body": "same command envelope + action_key + typed target; server registry verifies action/target",
+    "effect": "read-only exact shared guards, no command reservation"
+  },
+  "common_action": {
+    "preflight": "/api/v1/ontology/actions/{action_key}/preflight",
+    "execute": "/api/v1/ontology/actions/{action_key}/execute",
+    "mapping": "Existing outer ActionRequest object_type_id, command_id, reason, four_eyes_request_ref and params retained. params contains NP1 envelope/body; duplicate outer/inner command/reason/gate values must match or422. Route/registered object type determine owner/action and typed target. Existing instance expected_revision is not a run revision; NP1 expectedRefs remain explicit. Object/action registration and exact typed nested source structs W04b."
+  },
+  "reads": [
+    {
+      "method": "GET",
+      "route": "/api/v1/payroll/runs/{draft_run_id}/input-revisions/{input_revision}",
+      "result": "authorized immutable manifest projection; mandatory hidden field omission cannot masquerade as complete input"
+    },
+    {
+      "method": "GET",
+      "route": "/api/v1/payroll/commands/{command_id}",
+      "result": "current-authorized immutable receipt or pending outcome; no new execution"
+    }
+  ],
+  "errors": [
+    {
+      "http": 401,
+      "code": "unauthenticated",
+      "effect": "none"
+    },
+    {
+      "http": 404,
+      "code": "not_found",
+      "effect": "none or withheld committed result; uniform undiscoverable resource/receipt"
+    },
+    {
+      "http": 403,
+      "code": "forbidden",
+      "effect": "none; only if existing target/action discovery permits this distinction"
+    },
+    {
+      "http": 428,
+      "code": "precondition_required",
+      "effect": "none; known enrolled target missing version/attempt witness"
+    },
+    {
+      "http": 409,
+      "code": "stale_revision|stale_source|command_conflict|incompatible_review_protocol",
+      "effect": "none for new rejected attempt; preserve historical successes"
+    },
+    {
+      "http": 422,
+      "code": "invalid_typed_input|unsupported_profile",
+      "effect": "none; per-unit business blockers may instead persist in successful prepare/calculate result"
+    },
+    {
+      "http": 503,
+      "code": "authority_unavailable|retryable_no_effect",
+      "effect": "no new effect only with established rollback"
+    },
+    {
+      "http": 504,
+      "code": "outcome_unknown",
+      "effect": "unknown, reconcile same command; never auto new key"
+    }
+  ],
+  "success": "200/201 with receipt after commit; HTTP202 only for a durably registered pending command; no optimistic success from a correlation ID",
+  "remaining_types": [
+    "ArtifactRef custody/ACL owner",
+    "TypedLocator and TaxSelection schema keyed by approved source definition",
+    "AI1 Account/CompanyActor IDs and epochs",
+    "FD1 attempt binding and receipt projection",
+    "source scope generation keys and action object registration",
+    "Versioned scope-basis/membership/reservation and PopulationSlot resolution physical schema"
+  ],
+  "population_contract": "PopulationSlot is employee identity plus Resolved(exactEmploymentRef) or Blocked(code,candidateRefs/absenceProof). Only eligible Resolved slots produce CalculationUnit; a required Blocked slot prevents completion. Current disclosure filters refs and counts. Scope selection is owner-derived and versioned, never a filtered client list."
+}

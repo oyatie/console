@@ -1,0 +1,316 @@
+{
+  "status": "PROPOSED_CLOSED_SOURCE_TYPES_NOT_GENERATED_OPENAPI",
+  "scalars": {
+    "UUID": "Canonical nonnil lower-case UUID string",
+    "PositiveRevision": "Canonical positive i64 decimal string",
+    "RevisionOrZero": "Canonical nonnegative i64 decimal string",
+    "Won": "Checked i64 decimal strings; no floats/exponents/leading plus or zeros",
+    "Date": "Real ISO YYYY-MM-DD",
+    "UnixMicroseconds": "Canonical signed i64 decimal string; actual valid dates/profile bounds checked",
+    "Sha256": "64lowercasehex, current evidence-disclosure permission required if returned to a reviewer; never generic payroll DTO",
+    "Text": "UTF8 bounded Unicode scalar count and total byte budget; reject decodedNUL/unpaired surrogate; no semantic inference"
+  },
+  "definitions": {
+    "ArtifactRef": {
+      "org_id": "UUID",
+      "evidence_object_id": "UUID",
+      "copy_id": "UUID",
+      "attestation_id": "UUID",
+      "attestation_revision": "PositiveRevision"
+    },
+    "SourceQualificationRef": {
+      "org_id": "UUID",
+      "qualification_id": "UUID",
+      "revision": "PositiveRevision"
+    },
+    "RuleBundleRef": {
+      "bundle_id": "RegisteredAsciiId",
+      "kernel_build_sha256": "Sha256",
+      "citation_set_sha256": "Sha256"
+    },
+    "ProfileRef": {
+      "org_id": "UUID",
+      "profile_id": "UUID",
+      "revision": "PositiveRevision",
+      "rule_bundle": "RuleBundleRef"
+    },
+    "ScopeBasisRef": {
+      "org_id": "UUID",
+      "scope_id": "UUID",
+      "revision": "PositiveRevision"
+    },
+    "EligibilityRef": {
+      "org_id": "UUID",
+      "assessment_id": "UUID",
+      "revision": "PositiveRevision"
+    },
+    "TaxEvidenceRef": {
+      "org_id": "UUID",
+      "evidence_id": "UUID",
+      "revision": "PositiveRevision"
+    },
+    "WageFactRef": {
+      "org_id": "UUID",
+      "base_wage_id": "UUID",
+      "correction_revision": "RevisionOrZero"
+    },
+    "AttendanceCoverageRef": {
+      "org_id": "UUID",
+      "coverage_id": "UUID",
+      "revision": "PositiveRevision"
+    },
+    "AttendanceCloseBasisRef": {
+      "org_id": "UUID",
+      "close_basis_id": "UUID",
+      "revision": "PositiveRevision"
+    },
+    "IncomeBand": {
+      "lower_inclusive_won": "NonnegativeWon",
+      "upper_exclusive_won": "PositiveWon|null"
+    },
+    "InclusivePeriod": {
+      "start": "Date",
+      "end": "Date"
+    },
+    "GuardWitness": {
+      "family": "SourceFamily",
+      "generation": "PositiveRevision"
+    },
+    "EmploymentSegmentRef": {
+      "revision_id": "UUID",
+      "revision": "PositiveRevision",
+      "from_us": "UnixMicroseconds",
+      "to_us": "UnixMicroseconds"
+    },
+    "EmploymentCoverage": {
+      "org_id": "UUID",
+      "employee_id": "UUID",
+      "employment_id": "UUID",
+      "binding_id": "UUID",
+      "binding_revision": "PositiveRevision",
+      "earning_start_us": "UnixMicroseconds",
+      "earning_end_us": "UnixMicroseconds",
+      "segments": "EmploymentSegmentRef[1..128]"
+    },
+    "TaxSelection": {
+      "taxable_monthly_won": "NonnegativeWon",
+      "dependent_count_including_self": "IntegerString1..99",
+      "eligible_child_count": "IntegerString0..99",
+      "withholding_option": "P80|P100|P120",
+      "selection_fact_refs": "ArtifactRef[1..32]",
+      "income_definition_ref": "SourceQualificationRef"
+    },
+    "TaxLocator": {
+      "tagged_union": {
+        "PDF_TABLE_CELL": {
+          "page": "IntegerString1..10000",
+          "table": "IntegerString1..10000",
+          "row": "IntegerString1..100000",
+          "column": "IntegerString1..256",
+          "locator_schema_ref": "SourceQualificationRef"
+        },
+        "CSV_RECORD": {
+          "record_ordinal": "IntegerString1..1000000",
+          "column_name": "RegisteredAsciiId",
+          "locator_schema_ref": "SourceQualificationRef"
+        }
+      }
+    },
+    "TaxLocatedAmounts": {
+      "income_tax_won": "NonnegativeWon",
+      "local_tax_won": "NonnegativeWon",
+      "income_locator": "TaxLocator",
+      "local_locator": "TaxLocator",
+      "rule_note_locators": "TaxLocator[0..32]"
+    },
+    "ExpectedSourceWitnesses": {
+      "witnesses": "GuardWitness[0..10]"
+    },
+    "IssuerTrustProfileRef": {
+      "profile_id": "RegisteredAsciiId",
+      "revision": "PositiveRevision",
+      "content_sha256": "Sha256"
+    },
+    "ProfessionalCredentialRef": {
+      "org_id": "UUID",
+      "qualification_id": "UUID",
+      "revision": "PositiveRevision"
+    },
+    "ReviewerCredentialPayload": {
+      "kind": "REVIEWER_CREDENTIAL",
+      "subject_person_id": "UUID",
+      "issuer_id": "RegisteredAsciiId",
+      "issuer_credential_id": "Text1..200",
+      "profession_id": "RegisteredAsciiId",
+      "jurisdiction_id": "RegisteredAsciiId",
+      "purpose_ids": "RegisteredAsciiId[1..32]",
+      "scope_basis_ref": "ScopeBasisRef",
+      "valid_from_us": "UnixMicroseconds",
+      "valid_to_us": "UnixMicroseconds",
+      "issuer_trust_profile_ref": "IssuerTrustProfileRef",
+      "verification_method": "SIGNED_ISSUER_RESPONSE|INDEPENDENT_ISSUER_CHECK",
+      "issuer_evidence_refs": "ArtifactRef[1..32]"
+    }
+  },
+  "commands": [
+    {
+      "id": "CREATE_RUN",
+      "action": "payroll.create_run",
+      "body": {
+        "correlation_run_id": "UUID",
+        "period": "InclusivePeriod",
+        "pay_date": "Date",
+        "profile_ref": "ProfileRef",
+        "scope_basis_ref": "ScopeBasisRef"
+      },
+      "expected": {
+        "run": "null"
+      },
+      "reason": "CCF1 top-level nullable; NonBlankText1..2000 required on CORRECT_WAGE/REVOKE_SOURCE/REOPEN_INPUTS; no duplicate body reason"
+    },
+    {
+      "id": "SAVE_WAGE",
+      "action": "payroll.create_contract_wage",
+      "body": {
+        "employee_id": "UUID",
+        "effective_from": "Date",
+        "wage_kind": "MONTHLY|HOURLY",
+        "amount_won": "PositiveWon",
+        "monthly_standard_hours": "IntegerString1..400",
+        "source_note": "Text0..500",
+        "evidence_refs": "ArtifactRef[0..32]"
+      },
+      "expected": {
+        "subject_source_generation": "PositiveRevision"
+      },
+      "reason": "CCF1 top-level nullable; NonBlankText1..2000 required on CORRECT_WAGE/REVOKE_SOURCE/REOPEN_INPUTS; no duplicate body reason"
+    },
+    {
+      "id": "CORRECT_WAGE",
+      "action": "payroll.correct_contract_wage",
+      "body": {
+        "base_wage_id": "UUID",
+        "amount_won": "PositiveWon",
+        "wage_kind": "MONTHLY|HOURLY",
+        "monthly_standard_hours": "IntegerString1..400",
+        "source_note": "Text0..500",
+        "evidence_refs": "ArtifactRef[0..32]"
+      },
+      "expected": {
+        "wage_correction": "RevisionOrZero",
+        "subject_source_generation": "PositiveRevision"
+      },
+      "reason": "CCF1 top-level nullable; NonBlankText1..2000 required on CORRECT_WAGE/REVOKE_SOURCE/REOPEN_INPUTS; no duplicate body reason"
+    },
+    {
+      "id": "ADMIT_TAX",
+      "action": "payroll.admit_tax_evidence",
+      "body": {
+        "source_qualification_ref": "SourceQualificationRef",
+        "artifact_ref": "ArtifactRef",
+        "table_edition": "RegisteredAsciiId",
+        "assessment_ref": "EligibilityRef",
+        "employment_coverage": "EmploymentCoverage",
+        "period": "InclusivePeriod",
+        "pay_date": "Date",
+        "income_band": "IncomeBand",
+        "selection": "TaxSelection",
+        "amounts": "TaxLocatedAmounts",
+        "supersedes_ref": "TaxEvidenceRef|null"
+      },
+      "expected": {
+        "source_qualification": "PositiveRevision",
+        "assessment": "PositiveRevision"
+      },
+      "reason": "CCF1 top-level nullable; NonBlankText1..2000 required on CORRECT_WAGE/REVOKE_SOURCE/REOPEN_INPUTS; no duplicate body reason"
+    },
+    {
+      "id": "VERIFY_SOURCE",
+      "action": "payroll.verify_tax_evidence",
+      "body": {
+        "admission_ref": "TaxEvidenceRef",
+        "admission_digest": "Sha256",
+        "attestation": "true"
+      },
+      "expected": {
+        "evidence_head": "PositiveRevision",
+        "source_qualification": "PositiveRevision",
+        "assessment": "PositiveRevision"
+      },
+      "reason": "CCF1 top-level nullable; NonBlankText1..2000 required on CORRECT_WAGE/REVOKE_SOURCE/REOPEN_INPUTS; no duplicate body reason"
+    },
+    {
+      "id": "REVOKE_SOURCE",
+      "action": "payroll.revoke_tax_evidence",
+      "body": {
+        "verification_ref": "TaxEvidenceRef"
+      },
+      "expected": {
+        "evidence_head": "PositiveRevision"
+      },
+      "reason": "CCF1 top-level nullable; NonBlankText1..2000 required on CORRECT_WAGE/REVOKE_SOURCE/REOPEN_INPUTS; no duplicate body reason"
+    },
+    {
+      "id": "PREPARE_INPUT",
+      "action": "payroll.prepare_inputs",
+      "body": {
+        "scope_basis_ref": "ScopeBasisRef",
+        "expected_membership_revision": "PositiveRevision",
+        "profile_ref": "ProfileRef",
+        "source_expectations": "ExpectedSourceWitnesses"
+      },
+      "expected": {
+        "run": "PositiveRevision",
+        "input": "PositiveRevision|null"
+      },
+      "reason": "CCF1 top-level nullable; NonBlankText1..2000 required on CORRECT_WAGE/REVOKE_SOURCE/REOPEN_INPUTS; no duplicate body reason"
+    },
+    {
+      "id": "REOPEN_INPUTS",
+      "action": "payroll.reopen_inputs",
+      "body": {},
+      "expected": {
+        "run": "PositiveRevision",
+        "input": "PositiveRevision",
+        "calculation": "PositiveRevision|null"
+      },
+      "reason": "CCF1 top-level nullable; NonBlankText1..2000 required on CORRECT_WAGE/REVOKE_SOURCE/REOPEN_INPUTS; no duplicate body reason"
+    },
+    {
+      "id": "CLOSE_ATTENDANCE",
+      "action": "payroll.close_attendance",
+      "body": {
+        "attest": "true",
+        "attendance_close_basis_ref": "AttendanceCloseBasisRef"
+      },
+      "expected": {
+        "run": "PositiveRevision",
+        "input": "PositiveRevision"
+      },
+      "reason": "CCF1 top-level nullable; NonBlankText1..2000 required on CORRECT_WAGE/REVOKE_SOURCE/REOPEN_INPUTS; no duplicate body reason"
+    },
+    {
+      "id": "CALCULATE",
+      "action": "payroll.calculate_run",
+      "body": {},
+      "expected": {
+        "run": "PositiveRevision",
+        "input": "PositiveRevision",
+        "close": "PositiveRevision"
+      },
+      "reason": "CCF1 top-level nullable; NonBlankText1..2000 required on CORRECT_WAGE/REVOKE_SOURCE/REOPEN_INPUTS; no duplicate body reason"
+    }
+  ],
+  "normalization": "CCF1 schema/operator version source15-v1. Path subject/target must equal body when duplicated. Complete Company/type/subject/period/assessment/qualification correlation rechecked by owners; shape alone is not authority. Previous subject_source_generation wire name now denotes captured Company WAGE family generation in this codec; it is a staleness witness, not an employee-row version. Relevant predecessor/source equality must be re-resolved before mutation.",
+  "preparation": "Source expectations are optional staleness witnesses; authoritative population and source selection always server-derived. Empty source witness list never skips source guards or eligibility checks.",
+  "create_identity": "For a draft seal allocate final target before hashing and persist in attempt. For allowed direct create, allocate only after authoritative Company command/provenance absence under fence; store target in immutable receipt; retry reconstructs fingerprint using that original allocated target, never a new UUID. Client-provided target is selector only and cannot override owner allocation. Native run correlation UUID remains distinct.",
+  "bounds": "Wire/normalized command64KiB/depth8; ref list max32 except explicitly bounded segment list128; source reader streams one employee event buffer, not2000times4096events in memory. Large manifests are owner rows+refs. All selected required people retained; hidden/over-limit data blocks rather than truncates.",
+  "cross_checks": [
+    "Every Company in refs matches target unless an explicit Docs share/admission already minted target-Company refs",
+    "One Employment identity with full eligible segmented month coverage; no account workforce prerequisite",
+    "Selection/period/pay_date and taxable basis exactly match verified assessment",
+    "Qualification kind/date/edition and locator schema/units/notes match exact artifact attestation",
+    "Any JSON extra/duplicate key or unsupported source value rejects before new effect; historical receipt reconciliation precedes new validity checks"
+  ],
+  "credential_rules": "EA1.7 governs nonrecursive issuer bootstrap, purpose matching, current revoked/expired trust and AI1 distinct humans. Registered identifiers come only from pinned issuer profile, not arbitrary tenant labels. ProfessionalCredentialRef must target REVIEWER_CREDENTIAL; shape alone is insufficient. valid_to > valid_from; finite validity. All issuer, subject and scope correlations checked server-side."
+}

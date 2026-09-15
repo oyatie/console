@@ -1,0 +1,120 @@
+{
+  "primary_verdict": "APPROVE_EXACT_V4_EXECUTABLE_BASELINE_TEST_SOURCE_FOR_ROOT_COMPILE_AND_RUNTIME_CLASSIFICATION",
+  "compatibility_verdict": "APPROVE_EXACT_NARROW_SEMANTIC_TEST_AMENDMENTS_ONLY_WITH_SEPARATELY_REVIEWED_TYPED_INTERFACE__NOT_BASELINE_EXECUTABLE",
+  "reviewer": "/root/fast_gate_review",
+  "author": "/root/capture_review",
+  "sole_integration_runtime_contract_and_final_acceptance_writer": "/root",
+  "source_base_sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+  "verified_current_source_head": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "candidate": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture",
+  "manifest_sha256": "e14dfe66a20403ef23bba7136403000b950edfbac4f90e1b31f9cdec5ef670b0",
+  "primary_patch_sha256": "8e54f40d01161cde6d826a14d453be7dbdab8d8ae7f72fc5e1d846494a1dc081",
+  "compatibility_patch_sha256": "5f824ceec87f4d1bad7ec264041c3fd502a37f09a2abb153c7c60a6c9d54f72a",
+  "design_sha256": "1ca5c188e600c036ba6309e29498cbc9aa58db5ae6956bcc80c7b72575ca2cbd",
+  "run_primary_sha256": "d773f21f08cbd7b130956967b580585fb7a8946a5501a50413b94091eb8d7619",
+  "approved_design_inputs": {
+    "/private/tmp/payroll-typed-unknown-boundaries-f0431013-v1-inventory/DESIGN.md": "d6c05ffb1e0799fdee64951c144a403dd3186d012b9d4ea903b583fa1ec08f47",
+    "/private/tmp/payroll-typed-unknown-approval-clarification-2931be9e-v1-inventory/CLARIFICATION.md": "b31d650202143ad360d2d0924549b564da112959378396baa157fedf03a1ec4a",
+    "/private/tmp/payroll-typed-unknown-boundaries-f0431013-v1-review-capture/review.json": "53702abbd8ad527896ef4278b3618fb5ac831f529394b5c8967c324f8024b912"
+  },
+  "mechanical": {
+    "path": "/private/tmp/payroll-typed-unknown-v4-independent-fast/mechanical.json",
+    "sha256": "f9e66ef3ecc7d7dddcde39483d6810ad5f5b04f0020e499cebf3e12186bd4739",
+    "checks": "32manifest files,31bound source preimages,4base targets,append-only proof,distinct valid workflow slugs,6private apply/inverse commands,5Rust parses,1shell syntax check. No compiler/runtime execution."
+  },
+  "findings": [],
+  "prior_findings_resolved": [
+    {
+      "id": "typed-v1-http-dependency",
+      "finder": "/root/capture_review",
+      "fact": "ontology-rest has no direct http dependency; new controls used http::StatusCode. V2+ uses existing axum::http::StatusCode in both primary negative and future positive."
+    },
+    {
+      "id": "typed-v1-v3-workflow-duplicate-slug",
+      "finder": "/root/fast_gate_review",
+      "fact": "seed_org_rls_off derives UNIQUE organizations.slug from tag, so reused typed-unknown-workflow with distinct org IDs deterministically23505 on FAILED iteration. V4 derives tag from prior_status: org-typed-unknown-pending and org-typed-unknown-failed are distinct/schema-valid. Runtime PENDING RED previously would hide this later fixture failure."
+    },
+    {
+      "id": "approval-original-decision-retention",
+      "finder": "/root/fast_gate_review",
+      "fact": "V3+ adds original decision full-row containment beside original consumption containment. Both history counts2 and repeated history equality remain."
+    }
+  ],
+  "primary_scope": {
+    "files": [
+      "backend/app/src/durability_composition_tests.rs",
+      "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs"
+    ],
+    "added_source_tests": 5,
+    "new_sqlx_app_tests": 4,
+    "app_source_total": 7,
+    "ordinary_tokio_negative_control_added": 1,
+    "original_tests_and_helpers": "Both existing files are byte-identical prefixes. Primary recovery and wrapper files remain unchanged. No future classifier method or PayrollStageError/Future reference appears in primary."
+  },
+  "primary_cases": [
+    {
+      "name": "required_api_completion_unknown_reconciles_same_command_after_replay",
+      "oracle": "Actual AppState/auth/router/governance publication. Pause native replay and observe console_rt SyncRep with exact payroll-draft and canonical-receipt relation locks plus PID/backend_start. Require bounded503/code/fixed envelope while native waiter persists and canonical snapshot empty. Resume, wait original backend close, preserve committed receipt/draft, same business command repairs1audit, repeated response/rows stable, primary/standby equal.",
+      "baseline_expectation": "Current owner already returns typed DurabilityUnknown but generic dispatcher erases it into500.503 assertion is plausible semanticRED only after positive native waiter. Later reconciliation assertions remain unreached onRED."
+    },
+    {
+      "name": "required_api_receipt_absent_unknown_renews_approval_with_same_command",
+      "oracle": "Real distinct author/approver governance flow. After startup revoke actual observer EXECUTE, prove effective denial, execute route and restore exact observer identity. Require503 and no canonical receipt/draft/audit,1spent decision/consumption, same spent reference403gate_denied. Renew via existing governance APIs, alter only top-level approval witness, keep command/business input, require1effect/receipt/audit and2decisions/consumptions including original rows. Replay and standby exact.",
+      "baseline_expectation": "Current500 versus required503 after actual owner admission denial. Approval-history/no-effect/renewal assertions after503 remain unreached until implementation; execution must classify actual first failure."
+    },
+    {
+      "name": "required_api_confirmed_owner_audit_failure_replays_and_repairs",
+      "oracle": "Real audit INSERT privilege revocation after startup with effective-denial check and exact ACL restoration. Require ordinary500/internal following remotely visible committed owner receipt/draft and no audit. Same-command replay repairs1audit without receipt/draft change; repeated replay and standby exact.",
+      "baseline_expectation": "Expected surrounding positive control; must not become an UNKNOWN semantic lane merely because a fixture fails."
+    },
+    {
+      "name": "required_workflow_typed_unknown_preserves_pending_and_failed_events",
+      "oracle": "Actual engine-emitted event and real AppState workflow spawn for separatePENDING/FAILED input histories. Pause replay and explicitly clear fixture native-sync policy to isolate real post-COMMIT confirmation. Observe native confirmation backend, local draft but unchanged full event/noACK/noaudit/no canonical receipt. Wait backend completion then actual structured outcome=unknown with exactevent/run/source. Close original state, recover and freshspawn, same draft/run/node/event identity, exactly1attempt increment/ACK/audit, standby equality.",
+      "baseline_expectation": "Current generic staging log lacks structured outcome. FirstPENDING log assertion should be semanticRED after real native confirmation; FAILED iteration is unreached until first succeeds. Global tracing subscriber assumes one exact test in fresh process, as required runner does."
+    },
+    {
+      "name": "diagnostic_unknown_prefix_does_not_classify_an_operation_error",
+      "oracle": "Real generic dispatcher and RestError receive ordinary CanonicalPortError whose Display begins database durability UNKNOWN. Must remain500/internal with ordinary message; rejects display-prefix classification.",
+      "baseline_expectation": "Expected current positive control; uses existing interfaces only."
+    }
+  ],
+  "compatibility_scope": [
+    "One future typed positive fake-port test overrides is_completion_unknown=true and varies unrelated private display. Exact503/fixed message must remain stable with diagnostics absent. Applies on top of primary REST source only after interface exists.",
+    "Exactly2recovery semantic amendments replace old KernelError::Internal plus UNKNOWN-string-prefix checks with exact PayrollStageError::CompletionUnknown. These are intentional reviewed boundary-type changes, preserving every capacity/waiter/native/identity/row/timeout/PoolClosed assertion and original9test roster. They cannot be described as byte-unchanged original tests.",
+    "LockAfterGate changes only imported PortFuture to PayrollStageFuture and stage return signature; existing real period-lock INSERT, error conversion and delegation remain. Narrow From<KernelError> on proposed PayrollStageError must support existing? conversion.",
+    "No global ErrorKind/new response field/new endpoint/schema or dependency introduced. Proposed defaultfalse canonical classifier preserves other8existing impls; stage future remains consumer-owned and other workflow futures unchanged. Actual compiler proof and product mappings are root-owned."
+  ],
+  "run_and_admission": "Root must execute all5 listed primary commands individually because run-primary.sh is fail-fast. Every App case requires distinct fresh recovery supervisor; no aggregate early failure proves later cases. Root preserves original3 App controls and baseline ordinary rejection tests. Record actual names/counts/first failures; missing symbols,23505,unrelated privilege faults/timeout/observer absence are prerequisites, not productRED. Admit actual individual semanticRED through fanout only after review; same command mustGREEN. The new App7closed roster/CI/baselines and public contract changes are root serialized.",
+  "remaining_holds": [
+    "Actual compiler discovery and runtime results for all4newSQLx+1negative case and originalApp3 preservation. Static7 does not mean7executed.",
+    "Ordinary staging Operation error must remain non-UNKNOWN while event remains unchanged; no dedicated log-negative acceptance control yet. Existing period-lock behavior alone does not prove classification.",
+    "Separately reviewed typed interface implementation and actual compatibility compilation/positive control, preserved recovery9+period-lock tests.",
+    "Exact root-selected public503/error wording and documented outer408/disconnect/lost-reply same-command guidance; these do not prove rollback and are outside primary execution coverage.",
+    "Correct existing projected200 OpenAPI mutation-plus-audit atomicity claim through normal root-owned source/generated contract process. Owner+receipt and later audit are separate transactions.",
+    "Root closedApp7/CIcommand enrollment, exact-head checks, and same-probeGREEN. No wholeConsole/fullverify/production/payment/legal acceptance."
+  ],
+  "pre_mortem": "A prerequisite compile/slug error is counted as semanticRED; a spent approval changes canonical identity; audit500 relabelledUNKNOWN; staging Operation classified by Display; second loop never reached; caller timeout mistaken for rollback.",
+  "blast_radius": "Private two-file primary acceptance plus isolated three-file future compatibility; no product/runtime/generated/authority edits by reviewer.",
+  "detection": "Source-bound real owner/router/governance/drainer phase witnesses, exact native backend/privilege checks, immutable histories, negative-prefix and future-positive typed controls, actual per-case execution classification.",
+  "rollback": "KeepV1-V4 immutable. Root imports only exact primary patch after preimage check; compatibility waits for its reviewed interface. Rejection preserves all prior evidence; no transaction/effect rollback claim.",
+  "stop_conditions": [
+    "Source or artifact drift",
+    "Unexpected compile/fixture/firstfailure",
+    "Weakening preserved acceptance",
+    "Unreviewed broad interface/contract/schema change",
+    "Nonsemantic or missing/green admission probe"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "reviewer_cargo_invocations": 0,
+  "reviewer_database_commands": 0,
+  "reviewer_runtime_executed": 0,
+  "reviewer_repository_writes": 0
+}

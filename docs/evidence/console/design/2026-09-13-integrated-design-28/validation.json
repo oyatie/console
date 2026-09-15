@@ -1,0 +1,42 @@
+{
+  "candidate_sha": "f8618ba9c31f6b5f87211778317c68dbb1ede220",
+  "commands": [
+    {
+      "invocation": "python3 docs/evidence/console/design/2026-09-13-integrated-design-28/verify-packet.py",
+      "exit_code": 0,
+      "output": {
+        "status": "STATIC_PACKET_PASS",
+        "counts": {
+          "json_documents": 10,
+          "schema_references": 945,
+          "source_blobs": 218,
+          "owner_bindings": 55,
+          "ui_bindings": 33,
+          "fixtures": 16
+        },
+        "schema_instance_validation": false,
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "sql_executed": false,
+        "load_experiments_executed": 0,
+        "verus_proofs_executed": 0
+      }
+    },
+    {
+      "invocation": "git diff --check 6c8cbd4e182665217fb8c4e120e7f72df72e82b2 f8618ba9c31f6b5f87211778317c68dbb1ede220 -- docs/evidence/console/design/2026-09-13-integrated-design-28",
+      "exit_code": 0
+    },
+    {
+      "invocation": "git ls-tree -rz <candidate> -- <directory>; git cat-file blob <oid>; exact compare",
+      "regular_blobs_verified": 30
+    }
+  ],
+  "python": "Python 3.14.7",
+  "schema_instance_validation": false,
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "load_experiments_executed": 0,
+  "verus_proofs_executed": 0,
+  "limitation": "Static reference/custody/whitespace checks and independent design review only. No runtime/SQL/codec/schema-instance/capacity/proof execution. Proposed authority text is not active authority."
+}

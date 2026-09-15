@@ -1,0 +1,11 @@
+[
+  {
+    "lane": "recovery-test-local-cfg-v2",
+    "probe": "python3 /private/tmp/recovery-test-local-cfg-v2/probe.py",
+    "allow": [
+      "backend/app/src/durability_composition_tests.rs",
+      "scripts/lib/recovery-test-invocations.mjs"
+    ],
+    "prompt": "Prepend #[cfg(test)] immediately before each async fn, before existing sqlx::test attributes where present. Preserve all other bytes. Existing roster checker blanks only exact outer cfg(test) after comment/string stripping before retaining all cfg_attr/ignore/other-cfg and topology/name/count checks."
+  }
+]

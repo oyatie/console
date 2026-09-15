@@ -1,0 +1,13 @@
+{
+  "user_instruction": "다음",
+  "context": "Direct response to request for approval of linked Account custody lifecycle refinement.",
+  "approved_design_sha256": "a3cdb0b70d52ac70a0a8f016e6b098ed5680eed2119fe4855a823caf50a4d230",
+  "design_commit": "eb5657332ce497fd4ef2746f1c629fe4e357de9f",
+  "scope": "Proceed with reviewed local design, additive tests and implementation. Retain independent review and meaningful boundary RED; do not request routine permission repeatedly. Existing user instruction authorizes native subagents without fanout.py.",
+  "not_authorized": [
+    "Production exposure, actual administrator credential provisioning, publishing images or changes to external audiences",
+    "Weakening or deleting existing assertions beyond previously approved exact FK correction",
+    "Account enrollment, credential backfill, legacy fence activation or later privileged DDL"
+  ],
+  "writer": "/root"
+}

@@ -1,0 +1,568 @@
+{
+  "classification": "HONEST_SIX_DIMENSION_SOURCE_CENSUS",
+  "registration_count": 15,
+  "source_test_methods": 18,
+  "entries": [
+    {
+      "key": "governance.execution_gate.request",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "gate_request_binds_actual_sealed_calculation_without_effect"
+          ]
+        },
+        "negative": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "gate_request_binds_actual_sealed_calculation_without_effect"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "governance.execution_gate.decide",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "gate_decide_requires_independence_and_never_executes_business"
+          ]
+        },
+        "negative": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "gate_decide_requires_independence_and_never_executes_business"
+          ]
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "gate_decide_requires_independence_and_never_executes_business"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.release",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "publication_release_preserves_exact_source_and_is_nonpayable"
+          ]
+        },
+        "negative": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "publication_release_preserves_exact_source_and_is_nonpayable"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "publication_replay_after_current_grant_revocation_is_not_disclosed"
+          ]
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.replace_projection",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "publication_replace_preserves_history_and_rejects_stale_slot"
+          ]
+        },
+        "negative": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "publication_replace_preserves_history_and_rejects_stale_slot"
+          ]
+        },
+        "race": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "publication_concurrent_same_predecessor_has_one_exact_successor"
+          ]
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "publication_replace_preserves_history_and_rejects_stale_slot"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.request",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "case_request_retains_real_content_and_actual_accountable_task"
+          ]
+        },
+        "negative": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "case_request_retains_real_content_and_actual_accountable_task"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.request_append",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "case_append_preserves_prior_items_and_refuses_stale_revision"
+          ]
+        },
+        "negative": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "case_append_preserves_prior_items_and_refuses_stale_revision"
+          ]
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.request_withdraw",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "case_withdraw_retains_immutable_content_and_replays_once"
+          ]
+        },
+        "negative": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "case_withdraw_retains_immutable_content_and_replays_once"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.respond",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "case_respond_requires_complete_items_then_resolves_with_real_receipt"
+          ]
+        },
+        "negative": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "case_respond_requires_complete_items_then_resolves_with_real_receipt"
+          ]
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "case_respond_requires_complete_items_then_resolves_with_real_receipt"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "work.transfer.submit",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "transfer_submit_retains_task_and_selection_without_assigning"
+          ]
+        },
+        "negative": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "transfer_submit_retains_task_and_selection_without_assigning"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "work.transfer.execute",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "transfer_execute_changes_one_assignment_and_charge_once"
+          ]
+        },
+        "negative": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "transfer_stop_fences_later_execution_and_keeps_assignment"
+          ]
+        },
+        "race": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "transfer_stop_races_effect_preserving_one_truthful_assignment"
+          ]
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "transfer_execute_changes_one_assignment_and_charge_once"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "work.transfer.stop",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "transfer_stop_fences_later_execution_and_keeps_assignment"
+          ]
+        },
+        "negative": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "race": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "transfer_stop_races_effect_preserving_one_truthful_assignment"
+          ]
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "transfer_stop_fences_later_execution_and_keeps_assignment"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "group.operation.create",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "group_create_freezes_six_actual_companies_without_calculation"
+          ]
+        },
+        "negative": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "group.operation.activate",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "group_activate_requires_all_prepared_original_attempts"
+          ]
+        },
+        "negative": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "group_activate_requires_all_prepared_original_attempts"
+          ]
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "group_activate_requires_all_prepared_original_attempts"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "group.operation.resume",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "group_resume_preserves_manifest_and_original_pending_commands"
+          ]
+        },
+        "negative": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "group_resume_preserves_manifest_and_original_pending_commands"
+          ]
+        },
+        "recovery": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "group_resume_preserves_manifest_and_original_pending_commands"
+          ]
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    },
+    {
+      "key": "group.operation.stop",
+      "dimensions": {
+        "positive": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "group_stop_blocks_prepared_child_without_cross_company_effect"
+          ]
+        },
+        "negative": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "group_stop_blocks_prepared_child_without_cross_company_effect"
+          ]
+        },
+        "race": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "replay": {
+          "status": "AUTHORED_BOUNDED_SOURCE",
+          "functions": [
+            "group_stop_blocks_prepared_child_without_cross_company_effect"
+          ]
+        },
+        "recovery": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        },
+        "projection": {
+          "status": "SOURCE_NOT_AUTHORED",
+          "functions": []
+        }
+      },
+      "overall": "PARTIAL_SIX_DIMENSION_SOURCE",
+      "compiled": 0,
+      "executed": 0
+    }
+  ],
+  "remaining": "Unfilled dimension cells require concrete source before full matrix acceptance; runtime owners/fixture dependency separate"
+}

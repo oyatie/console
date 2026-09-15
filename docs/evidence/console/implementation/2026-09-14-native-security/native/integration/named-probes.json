@@ -1,0 +1,82 @@
+[
+  {
+    "boundary": "context",
+    "candidate_sha": "d2cd4c47975afec364d3e2baeba8100db6281d90",
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-request-context --lib",
+    "exit_code": 0,
+    "parsed_results": [
+      [
+        "ok",
+        "20",
+        "0",
+        "0",
+        "0",
+        "0"
+      ]
+    ],
+    "expected_executed": 20,
+    "verified": true,
+    "log": "context.log",
+    "sha256": "0ec5c33cb6b77649b829a49372306daa5d6a95cb4fa585b2765eacf0fa01b863"
+  },
+  {
+    "boundary": "cedar",
+    "candidate_sha": "d2cd4c47975afec364d3e2baeba8100db6281d90",
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-authz --test cedar_diagnostic_fail_closed",
+    "exit_code": 0,
+    "parsed_results": [
+      [
+        "ok",
+        "5",
+        "0",
+        "0",
+        "0",
+        "0"
+      ]
+    ],
+    "expected_executed": 5,
+    "verified": true,
+    "log": "cedar.log",
+    "sha256": "9d8042aef205ce4ad6a2c9be98a8d312fa28bbfecffcef540de2e71c28a4eb05"
+  },
+  {
+    "boundary": "realtime",
+    "candidate_sha": "d2cd4c47975afec364d3e2baeba8100db6281d90",
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-realtime --test hub same_account_",
+    "exit_code": 0,
+    "parsed_results": [
+      [
+        "ok",
+        "2",
+        "0",
+        "0",
+        "0",
+        "3"
+      ]
+    ],
+    "expected_executed": 2,
+    "verified": true,
+    "log": "realtime.log",
+    "sha256": "cd5091cecdcfb3b9a87d5dd71ec111f02c9ddbc56b4bfff18c990f287d2793be"
+  },
+  {
+    "boundary": "telemetry",
+    "candidate_sha": "d2cd4c47975afec364d3e2baeba8100db6281d90",
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib security_diagnostic_sink_tests",
+    "exit_code": 0,
+    "parsed_results": [
+      [
+        "ok",
+        "2",
+        "0",
+        "0",
+        "0",
+        "164"
+      ]
+    ],
+    "expected_executed": 2,
+    "verified": true,
+    "log": "telemetry.log",
+    "sha256": "57500e63296adb5afa8060ea3fd0c725d0ba78d1fd5e75cfffffcdf884ce8617"
+  }
+]

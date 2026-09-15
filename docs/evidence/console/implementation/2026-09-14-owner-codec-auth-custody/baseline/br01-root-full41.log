@@ -1,0 +1,14 @@
+/private/tmp/console-production-tdd-preparation-20260913/tools/buck/gen_first_party.py:1743: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/account-generator-5n81jq38/backend/app/tests/auth_rest.rs' mode='r' encoding='utf-8'>
+  contents = open(test_path, encoding="utf-8", errors="ignore").read()
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/console-production-tdd-preparation-20260913/tools/buck/gen_first_party.py:1743: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/account-generator-18pbq9_l/backend/app/tests/auth_rest.rs' mode='r' encoding='utf-8'>
+  contents = open(test_path, encoding="utf-8", errors="ignore").read()
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/console-production-tdd-preparation-20260913/tools/buck/gen_first_party.py:1743: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/account-generator-fycopqin/backend/app/tests/auth_rest.rs' mode='r' encoding='utf-8'>
+  contents = open(test_path, encoding="utf-8", errors="ignore").read()
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+.......................................
+----------------------------------------------------------------------
+Ran 41 tests in 1.014s
+
+OK

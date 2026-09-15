@@ -1,0 +1,34 @@
+{
+  "recorded_at": "2026-09-13T04:03:01.580952+00:00",
+  "candidate_sha": "9386af20a7fbd3c17f0608fc12e115668dc67136",
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/verify-packet.py --commit 9386af20a7fbd3c17f0608fc12e115668dc67136",
+      "result": "PASS",
+      "output": {
+        "candidate_sha": "9386af20a7fbd3c17f0608fc12e115668dc67136",
+        "core_files": 10,
+        "source_blobs": 19,
+        "sql_tables": 1,
+        "sql_functions": 4,
+        "sql_triggers": 4,
+        "framing_witnesses": 3,
+        "ordinal_cardinalities_checked": 1024,
+        "nonexecuted_cases": 19,
+        "closure_items": 8,
+        "reader_links": 5,
+        "validation_scope": "Static custody/token census/framing/saturation arithmetic only; not SQL parsing/typecheck/runtime or Verus proof",
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "sql_executed": false,
+        "verus_proofs_executed": 0,
+        "implementation_authorized": false
+      }
+    },
+    {
+      "command": "git diff --check 4c1640867e26af4ebacb19634641beda262ed50f 9386af20a7fbd3c17f0608fc12e115668dc67136",
+      "result": "PASS"
+    }
+  ],
+  "limits": "Static custody/token census/framing/saturation arithmetic only. No SQL parse/typecheck/runtime, product test or Verus proof.19 cases are proposed and not executed."
+}

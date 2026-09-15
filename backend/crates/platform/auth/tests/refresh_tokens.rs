@@ -2,26 +2,16 @@
 
 use console_kernel_core::OrgId;
 use console_platform_auth::{RefreshTokenStore, RefreshTokenUseError};
-use sqlx::postgres::PgPoolOptions;
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
 
-/// A pool that runs as the low-privilege `console_rt` role, so FORCE RLS on
-/// `audit_events` actually applies (an owner/BYPASSRLS pool would mask a
-/// missing-org-stamp break).
-async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
-    let options = owner_pool.connect_options().as_ref().clone();
-    PgPoolOptions::new()
-        .max_connections(4)
-        .after_connect(|conn, _meta| {
-            Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(conn).await?;
-                Ok(())
-            })
-        })
-        .connect_with(options)
-        .await
-        .unwrap()
+// Transport comparison for existing, unmigrated legacy subjects. Account-wide
+// security audit and ACCOUNT_V1 semantics require their separate acceptance tests.
+async fn auth_role_pool(owner_pool: &PgPool) -> PgPool {
+    login_test_pool(owner_pool, TestDatabaseLogin::Auth).await
 }
 
 /// Regression for the task #26 deferred site: `insert_audit_in_tx` inserted the
@@ -32,24 +22,27 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
 ///
 /// RED (before the fix): the `auth.refresh` row lands with NULL org, so the
 /// KNL-armed read below returns 0. GREEN: the row carries KNL and is visible.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
     let user_id = seed_user(&pool).await;
-    let rt = runtime_role_pool(&pool).await;
+    let auth = auth_role_pool(&pool).await;
+    let rt = login_test_pool(&pool, TestDatabaseLogin::Business).await;
     let store = RefreshTokenStore;
     let now = OffsetDateTime::now_utc();
     let ttl = Duration::days(30);
     let absolute_ttl = Duration::days(30);
 
-    // Run the whole flow as `console_rt`; `issue_family`/`rotate` arm the org GUC
-    // themselves, so they pass RLS just like production.
+    // Credential effects use the real auth login; Company audit observation below
+    // remains on the distinct business login for this unmigrated legacy subject.
     let first = store
-        .issue_family(&rt, user_id, OrgId::knl(), now, ttl)
+        .issue_family(&auth, &auth, user_id, OrgId::knl(), now, ttl)
         .await
         .unwrap();
     store
         .rotate(
-            &rt,
+            &auth,
+            &auth,
             first.token.as_str(),
             now + Duration::minutes(1),
             ttl,
@@ -89,9 +82,11 @@ async fn seed_user(pool: &PgPool) -> uuid::Uuid {
     .unwrap()
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn refresh_token_reuse_revokes_the_whole_family(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
     let user_id = seed_user(&pool).await;
+    let auth = auth_role_pool(&pool).await;
     let store = RefreshTokenStore;
     let now = OffsetDateTime::now_utc();
     let ttl = Duration::days(30);
@@ -99,12 +94,13 @@ async fn refresh_token_reuse_revokes_the_whole_family(pool: PgPool) {
     let absolute_ttl = Duration::days(30);
 
     let first = store
-        .issue_family(&pool, user_id, OrgId::knl(), now, ttl)
+        .issue_family(&auth, &auth, user_id, OrgId::knl(), now, ttl)
         .await
         .unwrap();
     let second = store
         .rotate(
-            &pool,
+            &auth,
+            &auth,
             first.token.as_str(),
             now + Duration::minutes(1),
             ttl,
@@ -115,7 +111,8 @@ async fn refresh_token_reuse_revokes_the_whole_family(pool: PgPool) {
 
     let reuse = store
         .rotate(
-            &pool,
+            &auth,
+            &auth,
             first.token.as_str(),
             now + Duration::minutes(2),
             ttl,
@@ -127,7 +124,8 @@ async fn refresh_token_reuse_revokes_the_whole_family(pool: PgPool) {
 
     let after_reuse = store
         .rotate(
-            &pool,
+            &auth,
+            &auth,
             second.token.as_str(),
             now + Duration::minutes(3),
             ttl,
@@ -172,9 +170,11 @@ async fn refresh_token_reuse_revokes_the_whole_family(pool: PgPool) {
 /// and revokes the family, even when the presented token is otherwise valid,
 /// unused, and not individually expired. This is the NIST AAL2 absolute
 /// session-lifetime cap.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn rotation_past_family_absolute_ttl_revokes_the_family(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
     let user_id = seed_user(&pool).await;
+    let auth = auth_role_pool(&pool).await;
     let store = RefreshTokenStore;
     let now = OffsetDateTime::now_utc();
     // Per-token TTL is generous so the rejection can ONLY come from the absolute
@@ -183,14 +183,15 @@ async fn rotation_past_family_absolute_ttl_revokes_the_family(pool: PgPool) {
     let absolute_ttl = Duration::hours(24);
 
     let first = store
-        .issue_family(&pool, user_id, OrgId::knl(), now, ttl)
+        .issue_family(&auth, &auth, user_id, OrgId::knl(), now, ttl)
         .await
         .unwrap();
 
     // A rotation comfortably within the cap still succeeds.
     let second = store
         .rotate(
-            &pool,
+            &auth,
+            &auth,
             first.token.as_str(),
             now + Duration::hours(1),
             ttl,
@@ -202,7 +203,8 @@ async fn rotation_past_family_absolute_ttl_revokes_the_family(pool: PgPool) {
     // One second past the absolute ceiling: rejected as FamilyRevoked.
     let expired = store
         .rotate(
-            &pool,
+            &auth,
+            &auth,
             second.token.as_str(),
             now + absolute_ttl + Duration::seconds(1),
             ttl,

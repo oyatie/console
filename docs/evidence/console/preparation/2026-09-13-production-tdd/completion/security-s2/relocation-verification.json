@@ -1,0 +1,102 @@
+{
+  "source_manifest_sha256": "54738bdf0b20ff040b20a1cf773073b1b5f9dd6c5c1672416b0fd00430a6f5e8",
+  "verified_original_members": 15,
+  "mapping": [
+    {
+      "original": "context-discovery-acceptance.rs",
+      "retained": "context-discovery-acceptance.rs",
+      "original_sha256": "019155a1ab540e22dcb49e61765a101aa584121e993c80b519388154bb9ae37a",
+      "retained_sha256": "019155a1ab540e22dcb49e61765a101aa584121e993c80b519388154bb9ae37a"
+    },
+    {
+      "original": "context-owner-fixture.rs",
+      "retained": "context-owner-fixture.rs",
+      "original_sha256": "fa4ae4d0c96c97d011d3628798aad837bdceafb04f845739f623c1cc364db255",
+      "retained_sha256": "fa4ae4d0c96c97d011d3628798aad837bdceafb04f845739f623c1cc364db255"
+    },
+    {
+      "original": "current-context-projection-acceptance.rs",
+      "retained": "current-context-projection-acceptance.rs",
+      "original_sha256": "14919ce92fad09108a197477e29dbbd19a88ccf32682e56cadc584a54179b00f",
+      "retained_sha256": "14919ce92fad09108a197477e29dbbd19a88ccf32682e56cadc584a54179b00f"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/account-enrollment-producer.rs",
+      "retained": "dependencies/bootstrap-b5/account-enrollment-producer.rs",
+      "original_sha256": "dac836422505ef57b75ddaf1134555716ce0179d56ff4d54a31e42489f8df500",
+      "retained_sha256": "dac836422505ef57b75ddaf1134555716ce0179d56ff4d54a31e42489f8df500"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/bootstrap-contract.md",
+      "retained": "dependencies/bootstrap-b5/bootstrap-contract.txt",
+      "original_sha256": "7f751987aefd4b26b8a174566206f052ae6eaec9fa34864f1c079ddcd87a62f8",
+      "retained_sha256": "7f751987aefd4b26b8a174566206f052ae6eaec9fa34864f1c079ddcd87a62f8"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/deployment-root-producer.rs",
+      "retained": "dependencies/bootstrap-b5/deployment-root-producer.rs",
+      "original_sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3",
+      "retained_sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/freeze-manifest.json",
+      "retained": "dependencies/bootstrap-b5/freeze-manifest.json",
+      "original_sha256": "ce522b7397419d422eb57fe0b366b37c55c491ee7fee734064957625b359057a",
+      "retained_sha256": "ce522b7397419d422eb57fe0b366b37c55c491ee7fee734064957625b359057a"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/ordinary-issuer-bootstrap.rs",
+      "retained": "dependencies/bootstrap-b5/ordinary-issuer-bootstrap.rs",
+      "original_sha256": "bccc71e411213ebcb3f65126c4dcc8cd97b50b9ec39dc968cbaac14952b5b642",
+      "retained_sha256": "bccc71e411213ebcb3f65126c4dcc8cd97b50b9ec39dc968cbaac14952b5b642"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/publish-then-root-producer.rs",
+      "retained": "dependencies/bootstrap-b5/publish-then-root-producer.rs",
+      "original_sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027",
+      "retained_sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027"
+    },
+    {
+      "original": "migration-transition-acceptance.rs",
+      "retained": "migration-transition-acceptance.rs",
+      "original_sha256": "db7b19e3d1a50a58588443ffd275b486745f85411ac0d2a11efadb99bc68cd74",
+      "retained_sha256": "db7b19e3d1a50a58588443ffd275b486745f85411ac0d2a11efadb99bc68cd74"
+    },
+    {
+      "original": "operator-custody-producer.rs",
+      "retained": "operator-custody-producer.rs",
+      "original_sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03",
+      "retained_sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03"
+    },
+    {
+      "original": "owner-interface-contract.md",
+      "retained": "owner-interface-contract.txt",
+      "original_sha256": "8fc558a8141930bb54b3fc3981e2c5b936135378e146b3eabf4392e7e87de14f",
+      "retained_sha256": "8fc558a8141930bb54b3fc3981e2c5b936135378e146b3eabf4392e7e87de14f"
+    },
+    {
+      "original": "source-gap-census.json",
+      "retained": "source-gap-census.json",
+      "original_sha256": "ff02fb81423c9027338cacb9fcac99e6293d313f6caedebb0db81cc48fa5a8e7",
+      "retained_sha256": "ff02fb81423c9027338cacb9fcac99e6293d313f6caedebb0db81cc48fa5a8e7"
+    },
+    {
+      "original": "syntax-execution.json",
+      "retained": "syntax-execution.json",
+      "original_sha256": "11cf9b864a52aca6ad12a2392cc09d4717c973ebc1f0f77538553b2f8b9d5162",
+      "retained_sha256": "11cf9b864a52aca6ad12a2392cc09d4717c973ebc1f0f77538553b2f8b9d5162"
+    },
+    {
+      "original": "terms-publication-acceptance.rs",
+      "retained": "terms-publication-acceptance.rs",
+      "original_sha256": "cd74459c37d330e8defd3064296c191b4d3e22b757a93edf19dad6f6b0b07b99",
+      "retained_sha256": "cd74459c37d330e8defd3064296c191b4d3e22b757a93edf19dad6f6b0b07b99"
+    },
+    {
+      "original": "freeze-manifest.json",
+      "retained": "freeze-manifest.json",
+      "original_sha256": "54738bdf0b20ff040b20a1cf773073b1b5f9dd6c5c1672416b0fd00430a6f5e8",
+      "retained_sha256": "54738bdf0b20ff040b20a1cf773073b1b5f9dd6c5c1672416b0fd00430a6f5e8"
+    }
+  ]
+}

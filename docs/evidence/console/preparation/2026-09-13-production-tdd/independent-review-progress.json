@@ -1,0 +1,31 @@
+{
+  "build_sha": "b9454dabb5a9e9f5eaba1dada24ef9205cbfd507",
+  "build_reviewers": [
+    {
+      "id": "/root/fresh29_operations",
+      "verdict": "ACCEPT_SOURCE_AND_EVIDENCE_NATIVE",
+      "disclosure": "Previously recommended run and GIT_DIR choices; independently checked implementation and logs"
+    },
+    {
+      "id": "/root/fresh29_workflows",
+      "verdict": "ACCEPT_SOURCE_AND_EVIDENCE_NATIVE",
+      "disclosure": "Did not author fixup recommendations"
+    }
+  ],
+  "build_limits": [
+    "No WASM runtime execution",
+    "Prelude does not currently translate Emscripten rustc-link-arg; no Emscripten parity claim"
+  ],
+  "proof_reviewer": {
+    "id": "/root/fresh29_workflows",
+    "verdict": "ACCEPT_BOUNDED_SOURCE_EXTRACTION_PROOF_AND_DRIFT_GUARD",
+    "independently_reran": "positive4verified0errors; knownfalse3verified1failedassertion; mutant3verified1failedfunction2postconditions; sourcebinding7tests7pass",
+    "file_hashes": {
+      "source-binding.test.py": "a2304d2df878d7afbf560e0ef8f0ebc621d173af6615d0b1382e834fd34b7aae",
+      "verus-source-binding.json": "2b629a4928acb02218915bcc22bdace9aff03c2177784adbb7e72dd3d7140f57",
+      "owner-test-inventory.json": "128739bec8396bbfc910d4a163711d4e0dcee2926cf44f90728e4bf3ad8d8b70"
+    },
+    "limits": "No caller-selection, freshness-authenticity or end-to-end information flow proof"
+  },
+  "storage_candidate": "NOT_APPROVED: exact ephemeral-FK correction blocked by automatic review pending explicit user approval; additional handoff storage positive candidate pending review"
+}

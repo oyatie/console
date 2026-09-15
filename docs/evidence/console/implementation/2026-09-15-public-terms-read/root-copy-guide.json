@@ -1,0 +1,23 @@
+{
+  "kind": "ROOT_ONLY_FINITE_RETENTION_COPY_GUIDE",
+  "candidate_root": "/private/tmp/terms-public-read-retention-00071325",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-public-terms-read",
+  "required_source_head": "0007132535578f7abdafeb5192cd07c38376f06d",
+  "manifest": "/private/tmp/terms-public-read-retention-00071325/retention-allowlist.json",
+  "manifest_sha256": "c76c38ad600cd32175459e8ccfaea72488ba27c3783987fba46e4cacb4f3c3a6",
+  "copy_records": 181,
+  "steps": [
+    "Independently review the exact manifest hash, finite origins and classifications; original receipts remain immutable.",
+    "Verify every candidate archive is a regular file and matches archive SHA/size; gzip-decompress and match original SHA/size. Recheck explicit origin pins or immutable Git blob bindings as needed.",
+    "Root alone creates the new destination directory. For each manifest record, copy only archive_candidate to archive_destination; refuse an existing unequal destination instead of overwriting history.",
+    "Copy this root-copy-guide.json and retention-allowlist.json after source-to-destination verification, retaining any independent review receipt separately.",
+    "Read back every destination archive and compare hashes/decompressed bytes to manifest. Do not import preparer scripts or unlisted temporary neighbors.",
+    "Root supplements full206/security2 completion and npm/gates in a separate finite record set after their review; do not mutate this frozen candidate."
+  ],
+  "no_execution": "Imported payloads are inert .gz evidence. This guide does not execute scripts, Cargo, Docker, SQL or migrations.",
+  "remaining_holds": [
+    "Independent review and exact root serial import/readback",
+    "Separate full206 runtime and npm/gate retention by root",
+    "Broader Account lifecycle and production/publication/legal authority"
+  ]
+}

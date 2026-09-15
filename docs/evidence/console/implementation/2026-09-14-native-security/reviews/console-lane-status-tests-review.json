@@ -1,0 +1,35 @@
+{
+  "reviewer": "/root/finish_migration",
+  "candidate_sha": "0863a6175fb2d010f5894af52c72e3c85fed297c",
+  "scope": "Independent review of tools/lanes/test_status_custody.py and proposed narrow changed-path parser repair; no product or FK approval",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Systems Thinking"
+  ],
+  "disposition": "ACCEPT_TEST_CANDIDATE_FOR_DEDICATED_TOOLING_LANE",
+  "findings": [],
+  "test_source_sha256": "3a9b52b55adcf9119c4565032ffc4398b2dbcecea7c3c1cbb7fd268bd1024c1f",
+  "independent_execution": {
+    "command": "python3 -B tools/lanes/test_status_custody.py",
+    "exit_code": 1,
+    "discovered": 8,
+    "executed": 8,
+    "passed": 1,
+    "behavioral_failures": 7,
+    "skipped": 0
+  },
+  "evidence": [
+    "Real disposable Git repositories with real commits/status/mv/unlink; no mocked production parser or subprocess outputs. Local hooks and commit signing disabled only for fixtures.",
+    "Expected path identities independently derive from fixture names; allowlist assertion tests renamed outside source cannot be hidden by allowed destination.",
+    "First unstaged mutation and deletion reproduce backend->ackend corruption; mixed nested untracked demonstrates missing file enumeration; quoted Unicode/newline/space tests demonstrate line-oriented parsing unsound.",
+    "Real nonrepository failure currently accepted as clean, validating fail-closed requirement at actual boundary.",
+    "Only new regression file changed against declared predecessor; candidate remains clean."
+  ],
+  "planned_fix_assessment": "git status --porcelain=v1 -z --untracked-files=all via check_output is correct stable machine interface; retain both destination and following source for R/C records, preserve bytes with os.fsdecode and propagate command failure. _git only existing caller is _changed, so removal after replacement is scoped. Do not strip/splitlines/parse display arrows or weaken tests.",
+  "limits": [
+    "Eight cases bound these custody regressions, not all Git modes or full lane admission. NUL framing raw non-UTF8 paths and copy-status records not independently exercised by this fixture roster; parser review must check correct framing and os.fsdecode explicitly.",
+    "Existing admission and other tooling tests must remain passing; same new probe must become8PASS before this tooling lane succeeds.",
+    "No authorization to modify product contracts or the unapplied FK assertion exception."
+  ]
+}

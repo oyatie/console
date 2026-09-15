@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "cargo",
+    "+1.98.1",
+    "test",
+    "--locked",
+    "--offline",
+    "--manifest-path",
+    "/private/tmp/console-browser-owner-producer-r4-20260914/helper-smoke/Cargo.toml"
+  ],
+  "exit_code": 0,
+  "compiled": true,
+  "discovered": 15,
+  "executed": 15,
+  "passed": 15,
+  "failed": 0,
+  "ignored": 0,
+  "filtered": 0,
+  "application_executed": 0
+}

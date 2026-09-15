@@ -1,0 +1,91 @@
+{
+  "owner": "/root/finish_browser",
+  "base_sha": "5dd6708ee08c293a2bfdc8d2f9fb28e5c9f06ced",
+  "design_test_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "status": "IMPLEMENTATION_CANDIDATE_READY_FOR_INDEPENDENT_REVIEW",
+  "launch_authority": "Explicit user override permits native tools and subagents without fanout.py; no broader authority changed.",
+  "allowed_path": "backend/crates/platform/realtime/src/lib.rs",
+  "changed_paths": [
+    "backend/crates/platform/realtime/src/lib.rs"
+  ],
+  "source_sha256": "a3408b1a04027b5505b309e7a3f1594fc17f81fef209f755a3505dd7896fdfc6",
+  "patch_sha256": "2c340128a55319925bb80e2f3d25f8a05514bf6e78a78c4106815e904ba2b007",
+  "lenses": [
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "change": "Match event Company to connection active Company before membership candidate collection and final target selection for shared message and ACK dispatch.",
+  "premortem": "Message fix misses ACK path, or unauthorized queued event creates leak or lagging-consumer disconnect.",
+  "trace": "Both PostgreSQL message and ACK handlers retain payload org through Company RLS reread then dispatch_event. Its common target selector runs before Live/Replaying queue admission. Connection principal is set once at fresh UUID insertion and never mutated, so selected connection cannot change Company between target selection and queue lock. Replay uses immutable principal Company for source reads.",
+  "rollback": "Revert these two source additions; no data effects or migration.",
+  "stop_conditions": [
+    "Material interface requirement",
+    "Unclassified failure",
+    "Changed test bytes",
+    "Unexpected file scope drift"
+  ],
+  "verification": {
+    "red": {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-realtime --test hub same_account_",
+      "executed": 2,
+      "pass": 0,
+      "fail": 2,
+      "filtered": 3,
+      "exit": 101,
+      "reason": "Both exact recipient sequences include other Company event for same Account."
+    },
+    "green": {
+      "same_command_as_red": true,
+      "executed": 2,
+      "pass": 2,
+      "fail": 0,
+      "filtered": 3,
+      "exit": 0
+    },
+    "non_db": {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-realtime --lib --test hub --test notify_payload",
+      "executed": 9,
+      "pass": 9,
+      "fail": 0,
+      "filtered": 0,
+      "ignored": 0,
+      "exit": 0
+    },
+    "fmt": {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 rustfmt --edition 2024 --check backend/crates/platform/realtime/src/lib.rs",
+      "exit": 0
+    },
+    "diff_check": {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    "clippy": {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo clippy --locked --manifest-path backend/Cargo.toml -p console-platform-realtime --lib --test hub --test notify_payload -- -D warnings",
+      "exit": 0
+    }
+  },
+  "environment": {
+    "RUSTC_WRAPPER": "",
+    "CARGO_INCREMENTAL": "1",
+    "CARGO_TARGET_DIR": "/private/tmp/console-account30-cargo"
+  },
+  "limits": [
+    "No product tests altered.",
+    "No DB bridge/replay integration executions in this bounded lane.",
+    "Existing source-contextless notification dispatch unchanged; cannot infer source Company from recipient or claim it enrolled for protected events.",
+    "Company matching is intra-tenant routing protection, not a global tenant isolation proof.",
+    "Current-policy revocation/emission enrollment and other production protections remain separate contracts.",
+    "No commit, merge, release or exposure."
+  ],
+  "evidence_files": {
+    "candidate.patch": "2c340128a55319925bb80e2f3d25f8a05514bf6e78a78c4106815e904ba2b007",
+    "clippy.log": "fb558fd4555922a1b3a247e14763239439b4033698c9c87966247da4713b5537",
+    "dispatch-contract.json": "4eb1b5be7dfd9a90b47a7b234b479a5f4f65b81779eec7e73ac46a87023d299f",
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "green.log": "aa1873a22d78dedda54b64a25de2443282c764e014aa746935f3865c64039ac8",
+    "non-db.log": "f56bd552214680eac6f884ee6293c99d20fea502d54d9dad6fa38564e2efba45",
+    "red.log": "bb9250cf56c2fa34306c6b052b86084594deb84106c5a7a83d5981b058b7918a"
+  }
+}

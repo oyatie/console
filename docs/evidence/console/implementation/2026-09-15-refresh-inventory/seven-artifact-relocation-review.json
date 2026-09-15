@@ -1,0 +1,178 @@
+{
+  "kind": "reviewed-seven-payload-evidence-archive-relocation-candidate",
+  "reviewer_and_preparer": "/root/inventory_repair",
+  "root": "/private/tmp/console-production-tdd-preparation-20260913",
+  "base_sha": "91ba2ec0ad929e377a08566892eb8849c3cc8e34",
+  "status": "APPROVE_EXACT_EVIDENCE_PACKAGING_FOR_ROOT_REVIEW_NOT_INSTALLED",
+  "findings": [],
+  "basis": [
+    "Exactly4 dark suite paths and3 ADR error paths derived from preserved failed npm verify log. All7 are historical imported payloads under docs/evidence; existing receipts match every original SHA256.",
+    "Active test suites/checkers remain under scripts. No production source, checker, test, baseline or execution-surface change is proposed.",
+    "Existing JavaScript gate discovers tracked names ending.test.mjs; existing ADR text scan skips binary files. Genuine gzip storage correctly represents these historical payloads as archives without adding gate exemptions.",
+    "Preserve historical import manifests byte-for-byte. Add a separate relocation receipt binding original path/immutable Git blob/hash to archive path/hash and decompressed original hash."
+  ],
+  "log": {
+    "path": "/private/tmp/account-refresh-replay-verify-fast-20260915.log",
+    "sha256": "a6cff27896f4ab9ca17949a7f40e8937d0b09b5a76ab49664d792503fa4f4ea0",
+    "failed_mirror_steps": 3,
+    "js_discovered_suites": 70,
+    "js_wired_exact": 66,
+    "extra_evidence_copies": 4,
+    "js_unit_tests_executed": 2,
+    "js_unit_tests_failed": 2,
+    "adr_violations": 14,
+    "adr_evidence_files": 3,
+    "adr_unit_tests_executed": 33,
+    "adr_unit_tests_passed": 33
+  },
+  "gzip_format": {
+    "implementation": "Python gzip.GzipFile(filename=\"\", mode=\"wb\", compresslevel=9, mtime=0)",
+    "mtime": 0,
+    "filename_header": "omitted",
+    "zlib_version": "1.2.12",
+    "determinism": "Two independent compressions of each same input produced identical bytes; copy the exact supplied candidate if using another compressor version."
+  },
+  "records": [
+    {
+      "original_path": "docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-adr-logscope-source-candidate.mjs",
+      "original_git_selector": "91ba2ec0ad929e377a08566892eb8849c3cc8e34:docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-adr-logscope-source-candidate.mjs",
+      "original_git_blob": "2cf5692efecb3266f35465e22c4d392caa828a22",
+      "original_sha256": "4cb253e8a437a3ae57cda97f0a0138e78fec0cfb8ea67390f771462e8b7c5702",
+      "original_bytes": 20186,
+      "archive_candidate": "/private/tmp/account-evidence-archive-packaging-20260915/01-account-adr-logscope-source-candidate.mjs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-adr-logscope-source-candidate.mjs.gz",
+      "archive_sha256": "2fb211cab8380f23022fe10064c57f70efa8ff53d12dbb9329ba71f6a56d1eba",
+      "archive_bytes": 5468,
+      "decompressed_sha256": "4cb253e8a437a3ae57cda97f0a0138e78fec0cfb8ea67390f771462e8b7c5702",
+      "byte_exact_decompression_verified": true,
+      "historical_private_source": "/private/tmp/account-adr-logscope-source-candidate.mjs"
+    },
+    {
+      "original_path": "docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-adr-logscope-test-candidate.mjs",
+      "original_git_selector": "91ba2ec0ad929e377a08566892eb8849c3cc8e34:docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-adr-logscope-test-candidate.mjs",
+      "original_git_blob": "5fd2aa715ecb2604cf9695110084d55f8bad9bb3",
+      "original_sha256": "33ab4e00ea6f2cff42dce640d38060adb31f80c60bb26da7a51f1a359bbb3b7a",
+      "original_bytes": 17578,
+      "archive_candidate": "/private/tmp/account-evidence-archive-packaging-20260915/02-account-adr-logscope-test-candidate.mjs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-adr-logscope-test-candidate.mjs.gz",
+      "archive_sha256": "1710ad22b2b2170ae5a407439dfbcf994c915dc147c6e4baa439f981b47f31a6",
+      "archive_bytes": 3495,
+      "decompressed_sha256": "33ab4e00ea6f2cff42dce640d38060adb31f80c60bb26da7a51f1a359bbb3b7a",
+      "byte_exact_decompression_verified": true,
+      "historical_private_source": "/private/tmp/account-adr-logscope-test-candidate.mjs"
+    },
+    {
+      "original_path": "docs/evidence/console/implementation/2026-09-15-auth-transport/reviews/account-auth-fast-gate-diagnosis.json",
+      "original_git_selector": "91ba2ec0ad929e377a08566892eb8849c3cc8e34:docs/evidence/console/implementation/2026-09-15-auth-transport/reviews/account-auth-fast-gate-diagnosis.json",
+      "original_git_blob": "b9e9174bc5a909ec5cab4071807e3cded848a0e3",
+      "original_sha256": "cd2fcbca700db8d25b0cb4d2ea3a3ce1ab94e3304885bf4692f2437c894b0b61",
+      "original_bytes": 12482,
+      "archive_candidate": "/private/tmp/account-evidence-archive-packaging-20260915/03-account-auth-fast-gate-diagnosis.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/reviews/account-auth-fast-gate-diagnosis.json.gz",
+      "archive_sha256": "f78018677a1b85cd007e2789ea5c838343462938deee606bc81a836e0106ec42",
+      "archive_bytes": 4784,
+      "decompressed_sha256": "cd2fcbca700db8d25b0cb4d2ea3a3ce1ab94e3304885bf4692f2437c894b0b61",
+      "byte_exact_decompression_verified": true,
+      "historical_private_source": "/private/tmp/account-auth-fast-gate-diagnosis.json"
+    },
+    {
+      "original_path": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/40b1bfa6b705ee1f018e37922978583dc3e7536d/scripts/check-executed-tests.test.mjs",
+      "original_git_selector": "91ba2ec0ad929e377a08566892eb8849c3cc8e34:docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/40b1bfa6b705ee1f018e37922978583dc3e7536d/scripts/check-executed-tests.test.mjs",
+      "original_git_blob": "c3c82cdce9fa2a4b9d14874550e466cb41de2749",
+      "original_sha256": "fd470ae366e598a9ee4e10ac21799b8a3936d13e468bcca530ebebbe753b67e1",
+      "original_bytes": 12267,
+      "archive_candidate": "/private/tmp/account-evidence-archive-packaging-20260915/04-check-executed-tests.test.mjs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/40b1bfa6b705ee1f018e37922978583dc3e7536d/scripts/check-executed-tests.test.mjs.gz",
+      "archive_sha256": "729f1da04fbedf3bdc90ddd3428bab751d42c38cf991c500795cdd266a7624c8",
+      "archive_bytes": 3733,
+      "decompressed_sha256": "fd470ae366e598a9ee4e10ac21799b8a3936d13e468bcca530ebebbe753b67e1",
+      "byte_exact_decompression_verified": true,
+      "original_source_selector": "40b1bfa6b705ee1f018e37922978583dc3e7536d:scripts/check-executed-tests.test.mjs"
+    },
+    {
+      "original_path": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/40b1bfa6b705ee1f018e37922978583dc3e7536d/scripts/lib/executed-tests-baseline.test.mjs",
+      "original_git_selector": "91ba2ec0ad929e377a08566892eb8849c3cc8e34:docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/40b1bfa6b705ee1f018e37922978583dc3e7536d/scripts/lib/executed-tests-baseline.test.mjs",
+      "original_git_blob": "0196b080588fd54a623fa567e0d420390d6aedf2",
+      "original_sha256": "946942a90c398a55dad7932e6ac05220714fbea146dc3baa58ba0ce1714cd123",
+      "original_bytes": 10119,
+      "archive_candidate": "/private/tmp/account-evidence-archive-packaging-20260915/05-executed-tests-baseline.test.mjs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/40b1bfa6b705ee1f018e37922978583dc3e7536d/scripts/lib/executed-tests-baseline.test.mjs.gz",
+      "archive_sha256": "19b9c609ae059e4146826481641ed3da19aada1b95d908f5b6c863d792a6c836",
+      "archive_bytes": 2788,
+      "decompressed_sha256": "946942a90c398a55dad7932e6ac05220714fbea146dc3baa58ba0ce1714cd123",
+      "byte_exact_decompression_verified": true,
+      "original_source_selector": "40b1bfa6b705ee1f018e37922978583dc3e7536d:scripts/lib/executed-tests-baseline.test.mjs"
+    },
+    {
+      "original_path": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3/scripts/check-executed-tests.test.mjs",
+      "original_git_selector": "91ba2ec0ad929e377a08566892eb8849c3cc8e34:docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3/scripts/check-executed-tests.test.mjs",
+      "original_git_blob": "c3c82cdce9fa2a4b9d14874550e466cb41de2749",
+      "original_sha256": "fd470ae366e598a9ee4e10ac21799b8a3936d13e468bcca530ebebbe753b67e1",
+      "original_bytes": 12267,
+      "archive_candidate": "/private/tmp/account-evidence-archive-packaging-20260915/06-check-executed-tests.test.mjs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3/scripts/check-executed-tests.test.mjs.gz",
+      "archive_sha256": "729f1da04fbedf3bdc90ddd3428bab751d42c38cf991c500795cdd266a7624c8",
+      "archive_bytes": 3733,
+      "decompressed_sha256": "fd470ae366e598a9ee4e10ac21799b8a3936d13e468bcca530ebebbe753b67e1",
+      "byte_exact_decompression_verified": true,
+      "original_source_selector": "8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3:scripts/check-executed-tests.test.mjs"
+    },
+    {
+      "original_path": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3/scripts/lib/executed-tests-baseline.test.mjs",
+      "original_git_selector": "91ba2ec0ad929e377a08566892eb8849c3cc8e34:docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3/scripts/lib/executed-tests-baseline.test.mjs",
+      "original_git_blob": "0196b080588fd54a623fa567e0d420390d6aedf2",
+      "original_sha256": "946942a90c398a55dad7932e6ac05220714fbea146dc3baa58ba0ce1714cd123",
+      "original_bytes": 10119,
+      "archive_candidate": "/private/tmp/account-evidence-archive-packaging-20260915/07-executed-tests-baseline.test.mjs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3/scripts/lib/executed-tests-baseline.test.mjs.gz",
+      "archive_sha256": "19b9c609ae059e4146826481641ed3da19aada1b95d908f5b6c863d792a6c836",
+      "archive_bytes": 2788,
+      "decompressed_sha256": "946942a90c398a55dad7932e6ac05220714fbea146dc3baa58ba0ce1714cd123",
+      "byte_exact_decompression_verified": true,
+      "original_source_selector": "8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3:scripts/lib/executed-tests-baseline.test.mjs"
+    }
+  ],
+  "must_preserve_sha256": {
+    "scripts/check-js-test-reachability.mjs": "26c05f047133f66872a2170423c19df42c3e12b054890dff68e49906c2e2242c",
+    "scripts/check-js-test-reachability.test.mjs": "343f6a644a59b78cf7ecc9f1e4a76d3f2e3ce97c985ac5b4a69f0b1441c11309",
+    "scripts/check-adrs.mjs": "4cb253e8a437a3ae57cda97f0a0138e78fec0cfb8ea67390f771462e8b7c5702",
+    "scripts/check-adrs.test.mjs": "33ab4e00ea6f2cff42dce640d38060adb31f80c60bb26da7a51f1a359bbb3b7a",
+    "scripts/check-executed-tests.test.mjs": "fd470ae366e598a9ee4e10ac21799b8a3936d13e468bcca530ebebbe753b67e1",
+    "scripts/lib/executed-tests-baseline.test.mjs": "946942a90c398a55dad7932e6ac05220714fbea146dc3baa58ba0ce1714cd123",
+    "docs/program/js-test-reachability-baseline.json": "035f38ab19aff9acf7e29a669c77e28e209041cec05478448d85792c43c125ec",
+    "package.json": "03f8bbb467bdf64b81d5b23a0b75a4c12e4a4b29a6189ad131bc3b78542c0b67",
+    "docs/evidence/console/implementation/2026-09-15-auth-transport/retention-manifest.json": "cedc71e32540b4610545c1d5571b682ef8afc51c3b20817346dc820116a9ed19",
+    "docs/evidence/console/implementation/2026-09-15-auth-transport/retention-import-receipt.json": "09ae6bed0be1538dca700bc5cda85d9f6068e6e3c62808b9bf83024648bfefbd",
+    "docs/evidence/console/implementation/2026-09-15-refresh-inventory/retention-allowlist.json": "4e1d621048b5cbd260d4ab340b8661783369dd01746428de1d3826fcff8905d3",
+    "docs/evidence/console/implementation/2026-09-15-refresh-inventory/retention-import-receipt.json": "10043226b09d60648727b031b4a06405c37a169de0bbc7baa9281bd05b4e5d4e"
+  },
+  "root_install_contract": [
+    "Recheck source preimage and supplied archive hashes.",
+    "Copy only these7 archives to exact destinations, verify decompression equals each original byte, then remove only the7 corresponding uncompressed evidence copies.",
+    "Record the7 relocations and both hashes in a new evidence receipt; do not edit historical manifests to imply the archived destinations were original imports.",
+    "Review scoped diff; unchanged scripts/tests/baseline/package/authority records must remain byte-identical.",
+    "Run unchanged JavaScript reachability gate, its2 existing tests, and ADR gate; retain exact outcomes. No new tests are needed for byte-preserving packaging."
+  ],
+  "verification_commands": [
+    "node scripts/check-js-test-reachability.mjs",
+    "node --test scripts/check-js-test-reachability.test.mjs",
+    "node scripts/check-adrs.mjs"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Blast-radius / cell-based"
+  ],
+  "pre_mortem": "Archiving live code or silently rewriting historical custody records would weaken controls. Exact7 imported-evidence preimages, unchanged active surfaces and explicit hash relocation prevent that.",
+  "rollback": "Decompress exact7 archives back to original paths and verify original SHA256s; retain relocation history.",
+  "holds": [
+    "Root independent review, repository installation/relocation receipt and unchanged-gate verification pending",
+    "No full verify or production success is claimed"
+  ],
+  "reviewer_execution": {
+    "gate_tests_executed": 0,
+    "cargo_docker_db_commands": 0,
+    "repository_edits": 0,
+    "private_gzip_round_trips": 7
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "owner": "/root",
+  "base_sha": "a0ec77c04b5da572c7974c82601f29660977809d",
+  "inherited_approved_design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "immutable_target": "Browser registration terms,nonce/session/CSRF wire and Account-only me/contexts codecs; evidence candidate only",
+  "allowed_paths": [
+    "docs/evidence/console/design/2026-09-13-account-browser-wire-31"
+  ],
+  "forbidden": "Product code,migrations,lockfiles,generated OpenAPI/CI,current authority and main staged tree",
+  "mechanical_guide": [
+    "One writer /root; read-only independent reviewers",
+    "Use approved AS1/GN16 invariants and existing crypto/native owners",
+    "Closed machine-readable schemas and exact release-artifact fixtures; no new registry service or Company-owned terms",
+    "Separate mechanical document verification from executable product acceptance",
+    "Four independently recorded design-review rounds before revision-bound owner approval; no test/implementation admission"
+  ],
+  "pre_mortem": "Transport ambiguity enables login CSRF or cross-parser confusion; terms rollout invents consent; empty contexts hides authority outage; replay creates duplicate Accounts; overbuilding blocks first Company-free path",
+  "blast_radius": "Isolated design evidence only; no product/runtime/main-index mutation",
+  "detection": "Adversarial security,operations and workflow review; exact schema/fixture/hash checks; negative contract vectors; explicit rollout/failure states",
+  "rollback": "Preserve all frozen proposals/reviews; no destructive Git; activation remains blocked absent tests/approval",
+  "stop_conditions": [
+    "Unresolved material boundary",
+    "Independent blocking finding",
+    "Unqualified legal content or production approval claim"
+  ],
+  "reviewers": [
+    "/root/fresh29_security",
+    "/root/fresh29_operations",
+    "/root/fresh29_workflows"
+  ],
+  "remaining_holds": [
+    "This refinement approval",
+    "Complete executable Account tests and test-SHA approval",
+    "Account implementation/admission/activation",
+    "Production/legal and actual legal content approval"
+  ]
+}

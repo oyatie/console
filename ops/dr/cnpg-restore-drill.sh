@@ -9,7 +9,7 @@ Drills the PRODUCTION CloudNativePG -> Barman Cloud -> OCI recovery path. Spins 
 throwaway namespace, copies the OCI credentials and a read-only recovery
 ObjectStore into it, bootstraps a fresh Cluster from the console-backups object store
 via bootstrap.recovery (CNPG 1.29 + Barman Cloud Plugin 0.13), verifies the
-database promotes out of recovery and the schema/row counts are present, then
+database promotes and its table contents match an independent reference, then
 deletes the namespace. The live console-db cluster and console-backups ObjectStore are
 never modified.
 
@@ -24,6 +24,8 @@ Options:
                          (default: read from the live cluster, fallback
                           ghcr.io/cloudnative-pg/postgresql:18.4)
   --storage-size SIZE    Recovery PVC size (default: read from live cluster, else 5Gi)
+  --expected-manifest FILE Independently retained recovery-manifest.py capture output.
+                         Required; never capture the recovered target as its own oracle.
   --target-time VALUE    PITR target, 'YYYY-MM-DD HH:MM:SS+00'. Omit = latest WAL.
   --timeout-seconds N    Max wait for the recovery cluster to be Ready (default 1200)
   --keep-scratch         Do not delete the scratch namespace on exit
@@ -32,7 +34,7 @@ Options:
 Environment overrides:
   SCRATCH_NAMESPACE, SOURCE_NAMESPACE, SOURCE_CLUSTER, OBJECT_STORE,
   CREDS_SECRET, DATABASE, PG_IMAGE, STORAGE_SIZE, TARGET_TIME,
-  TIMEOUT_SECONDS, KEEP_SCRATCH
+  TIMEOUT_SECONDS, KEEP_SCRATCH, EXPECTED_MANIFEST
 USAGE
 }
 
@@ -49,6 +51,8 @@ storage_size="${STORAGE_SIZE:-}"
 target_time="${TARGET_TIME:-}"
 timeout_seconds="${TIMEOUT_SECONDS:-1200}"
 keep_scratch="${KEEP_SCRATCH:-0}"
+expected_manifest="${EXPECTED_MANIFEST:-}"
+verification_manifest=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -60,6 +64,7 @@ while [[ $# -gt 0 ]]; do
     --database)         database="$2"; shift 2 ;;
     --pg-image)         pg_image="$2"; shift 2 ;;
     --storage-size)     storage_size="$2"; shift 2 ;;
+    --expected-manifest) expected_manifest="$2"; shift 2 ;;
     --target-time)      target_time="$2"; shift 2 ;;
     --timeout-seconds)  timeout_seconds="$2"; shift 2 ;;
     --keep-scratch)     keep_scratch="1"; shift ;;
@@ -96,6 +101,7 @@ namespace_created=0
 
 cleanup() {
   local exit_code=$?
+  [[ -z "${verification_manifest}" ]] || rm -f -- "${verification_manifest}"
   if [[ "${keep_scratch}" == "1" ]]; then
     echo "scratch_teardown=skipped namespace=${scratch_namespace}"
   elif [[ "${namespace_created}" == "1" ]]; then
@@ -111,6 +117,19 @@ cleanup() {
   exit "${exit_code}"
 }
 trap cleanup EXIT
+
+# Freeze the independently supplied reference before provisioning any resource.
+# It is not derived from the database being restored or compared to that result.
+require_cmd python3
+[[ -n "${expected_manifest}" && -f "${expected_manifest}" ]] || {
+  echo 'recovery_verification=missing_reference' >&2; exit 64;
+}
+umask 077
+verification_manifest="$(mktemp)"
+cat -- "${expected_manifest}" > "${verification_manifest}"
+python3 "${script_dir}/recovery-manifest.py" check \
+  --expected "${verification_manifest}" --database "${database}" --target-time "${target_time}"
+
 
 # --- preflight: the live cluster and object store must exist -----------------
 if ! kubectl get cluster.postgresql.cnpg.io "${source_cluster}" -n "${source_namespace}" >/dev/null 2>&1; then
@@ -282,39 +301,17 @@ if [[ -z "${primary_pod}" ]]; then
 fi
 echo "primary_pod=${primary_pod}"
 
-psql_recovery() {
-  kubectl exec -n "${scratch_namespace}" "${primary_pod}" -c postgres -- \
-    psql -U postgres -d "${database}" -v ON_ERROR_STOP=1 -tAc "$1"
+# One read-only repeatable-read snapshot covers identity, all regular tables,
+# column metadata and sorted per-row hashes. No estimated statistics or raw rows
+# appear in the drill log. Failure at SQL generation, transport, or comparison
+# aborts the pipeline; a healthy promoted instance alone cannot complete a drill.
+[[ -n "${verification_manifest}" && -f "${verification_manifest}" ]] || {
+  echo 'recovery_verification=missing_reference' >&2; exit 64;
 }
-
-in_recovery="$(psql_recovery 'SELECT pg_is_in_recovery();' | tr -d '[:space:]')"
-if [[ "${in_recovery}" != "f" ]]; then
-  echo "verify_in_recovery=failed value=${in_recovery}" >&2
-  exit 1
-fi
-echo "verify_in_recovery=false"
-
-user_table_count="$(psql_recovery 'SELECT count(*) FROM pg_stat_user_tables;' | tr -d '[:space:]')"
-if ! [[ "${user_table_count}" =~ ^[0-9]+$ ]] || (( user_table_count < 1 )); then
-  echo "verify_row_counts=failed user_tables=${user_table_count}" >&2
-  exit 1
-fi
-echo "verify_row_counts=ok user_tables=${user_table_count}"
-
-# Echo a per-table live-tuple snapshot for the drill log.
-echo "--- recovered row counts (schema.table : est_live_tuples) ---"
-psql_recovery "SELECT format('%I.%I', schemaname, relname) || ' : ' || n_live_tup
-                 FROM pg_stat_user_tables ORDER BY 1;" || true
-echo "------------------------------------------------------------"
-
-if [[ -n "${target_time}" ]]; then
-  # The recovery stopped at the requested target; the latest committed
-  # transaction timestamp must not exceed it. CNPG records the target in the
-  # cluster status; here we assert recovery completed before "now" relative to
-  # the target by confirming the cluster is promoted and the target time parsed.
-  last_commit="$(psql_recovery "SELECT COALESCE(pg_last_committed_xact()::text, 'n/a');" 2>/dev/null | tr -d '[:space:]' || echo 'n/a')"
-  echo "pitr_last_committed_xact=${last_commit}"
-  echo "verify_pitr_target=ok target_time=${target_time}"
-fi
+python3 "${script_dir}/recovery-manifest.py" sql |
+  kubectl exec -i -n "${scratch_namespace}" "${primary_pod}" -c postgres -- \
+    psql -XqAt -U postgres -d "${database}" -v ON_ERROR_STOP=1 |
+  python3 "${script_dir}/recovery-manifest.py" verify \
+    --expected "${verification_manifest}" --database "${database}" --target-time "${target_time}"
 
 echo "cnpg_restore_drill_complete=ok"

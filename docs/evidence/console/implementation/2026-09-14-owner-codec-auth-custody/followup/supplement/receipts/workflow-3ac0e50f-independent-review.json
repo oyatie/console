@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "e809f5d5d3926b73bcaba1be6b6d10a3834d173e",
+  "head_sha": "3ac0e50f837fa54e0d5efdd93509dbeca90e66e1",
+  "source_sha256": {
+    "scripts/check-ci-preflight.mjs": "6fb173e11209f3dd77582d35351d75f995faeb45a7e7defdcab886d70843a7fa",
+    "tools/ci/check-nightly-workflow.mjs": "9d8a008ab92837f71e5bc422f4b3ae994139154a822e0cf0cf04bc9114107d09"
+  },
+  "verdict": "APPROVE exact two registry corrections",
+  "evidence": [
+    "Actual elevated preflight gate PASS; initial sandbox git write-tree prerequisite error retained separately",
+    "Existing preflight/nightly tests80executed80PASS",
+    "Reviewed real-checker control program and log8executed8PASS: canonical CI/nightly positives; omitted binding, reused password, earlyexit, omitted/neutered/softfailed nightly proof rejected",
+    "Independently parsed CI workflow at reviewed2cf397f1 and candidate: exact raw boot runSHA256 both7c888a6ab990646df7d0c3a1ebdc1a1b0bb6771d2473ef5cfd2d1f72a5fcb6bc"
+  ],
+  "limits": [
+    "No actual GitHub Actions run or database authentication proof",
+    "Predicates/workflows/tests unchanged; required nightly step added, none removed"
+  ]
+}

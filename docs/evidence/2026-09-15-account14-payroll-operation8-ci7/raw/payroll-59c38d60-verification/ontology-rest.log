@@ -1,0 +1,23 @@
+   Compiling console-ontology-canonical-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/canonical-domain)
+   Compiling console-workflow-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/workflow/domain)
+   Compiling console-ontology-canonical-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/canonical-adapter-postgres)
+   Compiling console-payroll-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/adapter-postgres)
+   Compiling console-ontology-rest v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/rest)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.11s
+     Running unittests src/lib.rs (/private/tmp/console-account30-cargo/debug/deps/console_ontology_rest-20542a374321a374)
+
+running 11 tests
+test projected_dispatch_derivation::a_canonical_target_requires_the_idempotency_key ... ok
+test projected_dispatch_derivation::a_canonical_target_routes_through_the_derivation ... ok
+test projected_dispatch_derivation::a_payload_that_decodes_as_a_different_target_is_refused ... ok
+test projected_dispatch_derivation::a_payload_whose_subject_differs_from_target_id_is_refused ... ok
+test projected_dispatch_derivation::a_roster_target_with_no_port_fails_closed ... ok
+test projected_dispatch_derivation::a_subject_bearing_payload_without_target_id_is_refused ... ok
+test projected_dispatch_derivation::an_unknown_target_still_fails_closed ... ok
+test projected_dispatch_derivation::diagnostic_unknown_prefix_does_not_classify_an_operation_error ... ok
+test projected_dispatch_derivation::digest_conflict_from_port_surfaces_as_conflict_not_internal ... ok
+test projected_dispatch_derivation::every_dispatch_target_in_the_contract_resolves_to_a_port ... ok
+test projected_dispatch_derivation::typed_completion_unknown_ignores_changing_private_display ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+

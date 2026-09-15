@@ -1,0 +1,35 @@
+{
+  "recorded_at": "2026-09-12T21:03:52.867600+00:00",
+  "reviewed_candidate_sha": "c7dca44f03522fa0aae976d2f57c72a6ff3449a8",
+  "status": "SCOPED_TECHNICAL_ACCEPTANCE_ONLY",
+  "reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "verdict": "SCOPED_ACCEPT",
+      "candidate_sha": "c7dca44f03522fa0aae976d2f57c72a6ff3449a8",
+      "conclusion": "Typed fingerprint-bound predecessor; active correction independent of old source validity; revoked recovery keeps terminal history and claims one successor; professional authority has explicit independent issuer bootstrap and current revocation. No remaining material scoped finding.",
+      "product_tests_executed": 0
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "verdict": "SCOPED_ACCEPT",
+      "candidate_sha": "c7dca44f03522fa0aae976d2f57c72a6ff3449a8",
+      "conclusion": "Both remaining supersession input/recovery findings closed. No remaining scoped blocker; credential root contract coherent with source-supply/ACL HOLD.",
+      "product_tests_executed": 0
+    }
+  ],
+  "review_mode": "Read-only independent reviewers; /root sole writer; exact candidate Git blobs",
+  "w04_complete": false,
+  "whole_design_consensus": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "counts_as_final_integrated_round": false,
+  "remaining_holds": [
+    "W04b-04 workflow/capacity/Group/PC1/AC1/PR1 physical ports and Account navigation",
+    "W04b-05 consolidated DDL/ACL/migration/retention/adoption/recovery/harness/workload proposal",
+    "W05 authority alignment plus four final integrated design reviews and explicit design SHA approval",
+    "W06 executable tests / independent review / explicit test SHA approval / RED admission",
+    "Qualified production source-supply and legal/payment/production authority remain separate"
+  ]
+}

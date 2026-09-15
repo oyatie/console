@@ -1,0 +1,41 @@
+{
+  "source_sha": "cf70b20d59720ff9268b308f506c63f1546c5c2b",
+  "status": "ACCEPT_SOURCE; FINAL_COMMITTED_CANDIDATE_CHECKS_PASS",
+  "owner": "/root",
+  "reviewer": "/root/fresh29_operations",
+  "review_disclosure": "reviewer recommended shared discovery approach; root authored code",
+  "immutable_target": "Cargo/Buck source parity for nested Account test and frozen fixture; unchanged from entry",
+  "final_changed_paths": [
+    "tools/buck/gen_first_party.py",
+    "tools/buck/test_gen_first_party.py",
+    "backend/app/BUCK"
+  ],
+  "scope_update": "Original per-itest mapping uncovered pre-existing recursive marker-based target discovery. Read-only census and review recommended shared nativeCargo-root discovery before source changes. Extended responsible generator and added regression cases; initial entry remains historical and is not relabeled as having declared this wider mechanical change. Added generator test changes remain root-authored preparation tests, not weakening or product implementation.",
+  "input_blast_radius": "Existing shared-helper convention makes nested source an input to other app tests; only auth_rest imports/executes it. No new standalone nested target.",
+  "results": {
+    "generator_tests": {
+      "discovered": 35,
+      "executed": 35,
+      "passed": 35
+    },
+    "exact_prior_test_targets_preserved": 377,
+    "same_named_probe": "PASS",
+    "first_party_immutable_preflight": "PASS",
+    "reindeer": "DEFERRED in cheap check; source identical to earlier fullPASS atb9454dab"
+  },
+  "source_sha256": {
+    "tools/buck/gen_first_party.py": "ab2f280ca5e4e83b764742ed5c93096d37bcefb4bd7fb720ccb215ba0751fa23",
+    "tools/buck/test_gen_first_party.py": "47f4541a5ec208db28e49d1131d38402db9c61d72e3222bd3022626ba5a1b29b",
+    "backend/app/BUCK": "2759f2a4c7fa8e99e50ac14215ebeeef8cfc688b5677a8decd231933438d3fe4"
+  },
+  "known_exploratory_failures": [
+    "Original fullsuite failed on absent nested resource metadata",
+    "After correction, precommit suite failed its gitdiff generated-baseline check; retained earlierlog is not finalPASS",
+    "Sandbox preflight could not acquire Buckdaemon lifecyclelock; retried with authorized sandbox escalation and passed"
+  ],
+  "holds": [
+    "Storage candidate correction still requires explicituser approval due automaticreview",
+    "Consolidated productTDDpreparation not complete",
+    "No production exposure/replication/capacity claim"
+  ]
+}

@@ -1,0 +1,2 @@
+psql:/experiment/check-custody.sql:16: ERROR:  custody privilege console_rt accounts
+CONTEXT:  PL/pgSQL function inline_code_block line 13 at RAISE

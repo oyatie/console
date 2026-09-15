@@ -1,0 +1,335 @@
+[
+  {
+    "id": "NAV_SCOPE",
+    "owner": "navigation",
+    "label": "권한 있는 범위/기간 적용",
+    "result_surface": "V02",
+    "receipt_or_guard": "현재 scope resolver; 저장된 intent 대상 불변",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current resource/action discovery and disclosure allow the destination; navigation/read creates no business effect"
+  },
+  {
+    "id": "NAV_INPUTS",
+    "owner": "navigation",
+    "label": "관련 입력·근거 열기",
+    "result_surface": "V04",
+    "receipt_or_guard": "대상/필드 현재 공개 권한",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current resource/action discovery and disclosure allow the destination; navigation/read creates no business effect"
+  },
+  {
+    "id": "NAV_WAGE",
+    "owner": "navigation",
+    "label": "원 계약급여 입력 열기",
+    "result_surface": "V05",
+    "receipt_or_guard": "정확 Company/Employment/ref 및 복귀 context",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current resource/action discovery and disclosure allow the destination; navigation/read creates no business effect"
+  },
+  {
+    "id": "DRAFT_SAVE",
+    "owner": "common draft owner FD1",
+    "label": "입력 저장",
+    "result_surface": "same",
+    "receipt_or_guard": "CAS save receipt; 업무 효과 없음",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current editable custody/epoch and property rights; incomplete typed values may save under FD1 edit schema"
+  },
+  {
+    "id": "DRAFT_RESTORE",
+    "owner": "common revision/draft owner FD1",
+    "label": "허용 과거 입력 복원",
+    "result_surface": "origin form",
+    "receipt_or_guard": "새 revision receipt; 업무 효과 없음",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current editable draft/custody, allowed retained schema/fields and no unreconciled local edits; exact preview/expected revision"
+  },
+  {
+    "id": "VERIFY_SOURCE",
+    "owner": "source verification owning action P03/W04",
+    "label": "근거 검증 절차 실행",
+    "result_surface": "V04",
+    "receipt_or_guard": "실제 검증 case/evidence와 현재 권한; verified boolean 직접 입력 금지",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current qualified owner verification case and source evidence, required procedure complete; never client verified checkbox"
+  },
+  {
+    "id": "CREATE_RUN",
+    "owner": "payroll owner",
+    "label": "급여 작업 생성",
+    "result_surface": "V04",
+    "receipt_or_guard": "실제 draft_run_id receipt; correlation ID와 구분",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Explicit one-Company new intent with required typed period/source scope; no unresolved earlier create"
+  },
+  {
+    "id": "SAVE_WAGE",
+    "owner": "contract wage owner P01/G01/W04",
+    "label": "계약급여 생성/정정",
+    "result_surface": "V04",
+    "receipt_or_guard": "effective wage fact revision receipt; run 재준비 별도",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Permitted contract-wage fields and supported create/correction lifecycle; valid typed date/amount; no unresolved same intent"
+  },
+  {
+    "id": "PREPARE_INPUT",
+    "owner": "payroll input owner P02",
+    "label": "대상/입력 고정·재준비",
+    "result_surface": "V06",
+    "receipt_or_guard": "정확 roster/source/input revision; 숨긴 대상 제외로 전체 주장 금지",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current mutable target run/PC1 unit and all input ownership/verification conditions for exact chosen scope"
+  },
+  {
+    "id": "CLOSE_ATTENDANCE",
+    "owner": "payroll close owner",
+    "label": "근태 마감",
+    "result_surface": "V07",
+    "receipt_or_guard": "close receipt; 법률 적합성/휴가 결정 보장 아님",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current prepared nonempty roster, close prerequisites satisfied, explicit attest; not current-source-invalid or read-only"
+  },
+  {
+    "id": "CALCULATE",
+    "owner": "payroll calculation owner",
+    "label": "비지급 초안 계산",
+    "result_surface": "V07",
+    "receipt_or_guard": "persisted calculation/version receipt; payable=false",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current non-superseded run with exact closed/eligible inputs and supported calculation profile; no unresolved prior calculation attempt"
+  },
+  {
+    "id": "SUBMIT_REVIEW",
+    "owner": "payroll review owner PC1",
+    "label": "정확 범위 검토 요청",
+    "result_surface": "V08",
+    "receipt_or_guard": "PC1 Unit/Common proposal submission receipt, exact S/basis; does not open cycle or approve money",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current REVIEWING cycle and DRAFT Unit or Common proposal; exact permitted mandatory evidence/attestation and submission authority; not a CALCULATED run without opened cycle"
+  },
+  {
+    "id": "DECIDE_REVIEW",
+    "owner": "payroll review owner PC1/AC1",
+    "label": "급여안/검토 단위 결정",
+    "result_surface": "V08",
+    "receipt_or_guard": "S/D current proof; exact decision/coverage receipt",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Exact current submitted proposal, all mandatory decision evidence visible, current independent human and optional exact gate ready; no competing unknown decision"
+  },
+  {
+    "id": "REQUEST_GATE",
+    "owner": "governance owner",
+    "label": "추가 실행허가 요청",
+    "result_surface": "S01",
+    "receipt_or_guard": "D의 exact command gate request; 급여 상태 불변",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Exact D decision intent requires configured additional gate and all required request evidence; not automatically for every review"
+  },
+  {
+    "id": "DECIDE_GATE",
+    "owner": "governance owner",
+    "label": "추가 실행허가 허용/거절",
+    "result_surface": "S01",
+    "receipt_or_guard": "gate receipt; D의 이후 명시 실행 필요",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current pending gate with exact request binding and mandatory evidence/independence; expiry/revocation denies"
+  },
+  {
+    "id": "CANCEL_PENDING",
+    "owner": "participating intent/payroll owner",
+    "label": "현재 미실행 의도 취소",
+    "result_surface": "origin",
+    "receipt_or_guard": "공유 fence로 no-effect 확정; 성공 효과는 취소하지 않음",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Owner can prove no-effect cancellation under relevant current attempt/parent fence; forbidden as speculative unknown undo"
+  },
+  {
+    "id": "CORRECT_APPROVED",
+    "owner": "payroll owner AC1",
+    "label": "승인 초안 정정 시작",
+    "result_surface": "V04",
+    "receipt_or_guard": "predecessor/successor receipt; 새 준비/계산/검토",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "APPROVED nonpayable run and AC1 no-disbursement/no-issued supersession eligibility; new source need not validate old revoked source to start correction"
+  },
+  {
+    "id": "LAUNCH_GROUP_CALC",
+    "owner": "Group control plus Company owners GO1",
+    "label": "선택 법인 계산 실행",
+    "result_surface": "V09",
+    "receipt_or_guard": "exact selected child manifests; Group ACTIVE와 각 결과 구분",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "GO1 exact selected complete ready manifest and current launch rights; max6Company onecalculate target each; no old unknown launch"
+  },
+  {
+    "id": "RESUME_GROUP",
+    "owner": "Group control GO1",
+    "label": "원 actor의 같은 pending 의도 재개",
+    "result_surface": "V09",
+    "receipt_or_guard": "현재 세션/권한과 새 dispatch generation; 다른 actor는 successor",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "GO1 same original Account explicit current session renewal for eligible unchanged pending intent; old terminal rejection not revived"
+  },
+  {
+    "id": "STOP_GROUP",
+    "owner": "Group control GO1",
+    "label": "전사 계산 새 실행 중지",
+    "result_surface": "V09",
+    "receipt_or_guard": "STOPPED receipt; 완료/unknown 보존",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current GO1 control permission on fixed scope; stop affects future dispatch only and can coexist with unknown child outcome"
+  },
+  {
+    "id": "OPEN_RELEASE",
+    "owner": "navigation",
+    "label": "본인 검토본 공개 입력",
+    "result_surface": "S02",
+    "receipt_or_guard": "PR1 exact reviewed source/subject selection",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current resource/action discovery and disclosure allow the destination; navigation/read creates no business effect"
+  },
+  {
+    "id": "RELEASE_REVIEW",
+    "owner": "payroll publication owner PR1",
+    "label": "본인 비지급 검토본 공개",
+    "result_surface": "S02",
+    "receipt_or_guard": "immutable publication refs/receipt; 지급/발행 아님",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "PR1 approved current nonpayable source and exact subject/projection disclosure rights; no unresolved prior release"
+  },
+  {
+    "id": "REPLACE_PROJECTION",
+    "owner": "payroll publication owner PR1",
+    "label": "표시 내용만 정정",
+    "result_surface": "S02",
+    "receipt_or_guard": "same-source/subject current-slot successor receipt; 금액 사실 수정 금지",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "PR1 exact current predecessor slot with same approved source/subject and projection-only replacement authority"
+  },
+  {
+    "id": "OPEN_OWN_REQUEST",
+    "owner": "navigation",
+    "label": "본인 확인·정정 요청 입력",
+    "result_surface": "S03",
+    "receipt_or_guard": "own publication or authorized Employment/period; hidden run 불필요",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current resource/action discovery and disclosure allow the destination; navigation/read creates no business effect"
+  },
+  {
+    "id": "SUBMIT_OWN_REQUEST",
+    "owner": "payroll case owner PR1",
+    "label": "본인 요청 접수",
+    "result_surface": "S03",
+    "receipt_or_guard": "case receipt + actual task/exception; draft 공개 동의된 입력만",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current own historical entitlement and valid explicit submitted input; no handler not a blocker; requires explicit still-unsubmitted FD1 draft; a successful existing case is not resubmitted from its read view"
+  },
+  {
+    "id": "RESPOND_CASE",
+    "owner": "payroll case owner PR1",
+    "label": "항목별 답변/정정 연결",
+    "result_surface": "S04",
+    "receipt_or_guard": "최신 content revision과 exact item coverage; 실제 공개 전 corrected 완료 금지",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current assigned handler, required case/evidence/item coverage and PR1 response outcome prerequisites; completed corrected result already published if resolving corrected"
+  },
+  {
+    "id": "OWN_CASE_UPDATE",
+    "owner": "payroll case owner PR1",
+    "label": "추가 근거·철회·후속 요청",
+    "result_surface": "S03",
+    "receipt_or_guard": "현재 상태별 허용 전이; 원 내용/결정 보존",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "PR1 current own case state permits append/withdraw; closed case permits linked new follow-up rather than modifying old decision"
+  },
+  {
+    "id": "HANDOVER_PLAN",
+    "owner": "workflow owner WA1/WA2",
+    "label": "업무 인계 요청/지시·확정",
+    "result_surface": "S05",
+    "receipt_or_guard": "plan request 또는 actual transfer receipt 구분; 현재 권한별 실행",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Own-request or instruction/transfer permission resolves actual outcome; direct transfer only with WA1/WA2 feasibility/plan/task fences"
+  },
+  {
+    "id": "STOP_HANDOVER",
+    "owner": "workflow owner WA2",
+    "label": "인계 계획 남은 실행 중지",
+    "result_surface": "S05",
+    "receipt_or_guard": "Company plan STOPPED; 완료한 task transfer 보존",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current WA2 Company plan cancel right; STOPPED receipt cannot reverse committed transfers; pending unknown task outcomes remain"
+  },
+  {
+    "id": "RESULT_RECONCILE",
+    "owner": "exact original effect owner",
+    "label": "원 명령 결과 확인",
+    "result_surface": "same",
+    "receipt_or_guard": "현재 공개권한 + same command/attempt receipt; 새ID 실행 금지",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current disclosure to exact existing command/attempt/receipt; no hidden target revelation or new effect"
+  },
+  {
+    "id": "REFRESH",
+    "owner": "authorized read owner",
+    "label": "현재 정보 다시 조회",
+    "result_surface": "same",
+    "receipt_or_guard": "현재권한 DTO; business mutation 없음",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current resource/action discovery and disclosure allow the destination; navigation/read creates no business effect"
+  },
+  {
+    "id": "RECOVERY_ROUTE",
+    "owner": "authorized owning exception/recovery path",
+    "label": "허용된 보완·복구 업무 열기",
+    "result_surface": "owning task or safe workspace",
+    "receipt_or_guard": "권한/소유자별 구체 링크; hidden payload 미전달",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current resource/action discovery and disclosure allow the destination; navigation/read creates no business effect"
+  },
+  {
+    "id": "OPEN_HISTORY",
+    "owner": "common draft revision owner",
+    "label": "허용 초안 이력 열기",
+    "result_surface": "S06",
+    "receipt_or_guard": "whole-chain/pinned version 권한 구분; current form 보존",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current resource/action discovery and disclosure allow the destination; navigation/read creates no business effect"
+  },
+  {
+    "id": "OPEN_REVIEW_CYCLE",
+    "owner": "payroll review owner PC1 open_review_cycle",
+    "label": "검토 시작",
+    "result_surface": "V08",
+    "receipt_or_guard": "Cycle/R/C and DRAFT proposal refs receipt; run REVIEWING; nobody submitted/approved",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "CALCULATED with complete nonempty supported calculation and current close/source/membership proof; current scope-open authority"
+  },
+  {
+    "id": "REVISE_REVIEW_CYCLE",
+    "owner": "payroll review owner PC1 revise_review_cycle",
+    "label": "선택 검토 단위 정정 반영",
+    "result_surface": "V08",
+    "receipt_or_guard": "New immutable cycle and affected input/calculation/proposal refs; unchanged approvals physically preserved; current completion evaluator; no full-run recalc shortcut",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "REVIEWING no Completion/external effect; committed source correction refs and exact affected proposal CAS; current correction/recalculation authority; unchanged evidence may be retained only on full dependency equality"
+  },
+  {
+    "id": "WITHDRAW_REVIEW_DECISION",
+    "owner": "payroll review owner PC1 withdraw_review_decision",
+    "label": "검토 결정 철회",
+    "result_surface": "V08",
+    "receipt_or_guard": "Immutable withdrawal/invalidation receipt and replacement unsubmitted proposal; historical original decision retained; fresh S/D required",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Before whole-run Completion; exact current decision/proposal CAS, explicit policy and required gate; ordinary role/assignment expiry not sufficient"
+  },
+  {
+    "id": "CANCEL_REVIEW_CYCLE",
+    "owner": "payroll review owner PC1 explicit cycle control cancellation",
+    "label": "현재 검토 중지·준비로 복귀",
+    "result_surface": "V04",
+    "receipt_or_guard": "Cycle cancelled under owner fence; prior proposals/receipts retained; return to permitted preparation without unlocking period",
+    "status": "logical contract; exact transport W04",
+    "when_offered": "Current uncompleted REVIEWING cycle and explicit whole-cycle control right; owner guards and exact expected cycle; no approved-run reopening"
+  }
+]

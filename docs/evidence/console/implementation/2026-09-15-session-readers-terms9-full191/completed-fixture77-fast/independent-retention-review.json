@@ -1,0 +1,130 @@
+{
+  "kind": "INDEPENDENT_COMPLETED_FIXTURE77_FAST_RETENTION_PACKAGE_REVIEW",
+  "reviewer": "/root/capture_review",
+  "preparer": "/root/fast_gate_review",
+  "root_importer": "/root",
+  "candidate_allowlist": "/private/tmp/account-session-completed-fixture77-fast-retention-candidate-20260915/retention-allowlist.json",
+  "candidate_allowlist_sha256": "41cbe67b24632ec7f409f73cc3381a63714407e8372cc5a788fe985bb56ed250",
+  "verdict": "APPROVE_EXACT17_PAYLOAD_AND11_GIT_REFERENCE_RETENTION_SUPPLEMENT",
+  "findings": [],
+  "runtime_source_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "existing_evidence_commit": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/completed-fixture77-fast",
+  "archive_checks": {
+    "records": 17,
+    "archive_bytes": 259981,
+    "original_bytes": 1187788,
+    "all_original_and_gzip_hashes_sizes_match": true,
+    "all_decompression_byte_exact": true,
+    "deterministic_gzip_empty_filename_zero_mtime_level9_exact": true,
+    "paths_unique_contained_and_regular_nonexecutable": true,
+    "candidate_directory_contains_only_manifest_and17_payloads": true,
+    "source_payload_copies": 0,
+    "bounded_secret_pattern_scan_hits": {
+      "private_key": 0,
+      "jwt": 0,
+      "aws_access_key": 0
+    }
+  },
+  "git_reference_checks": {
+    "count": 11,
+    "all_exact_commit_regular_blob_mode_oid_archive_and_decompressed_hashes_verified": true,
+    "references": [
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/manifest.json.gz",
+        "git_blob_oid": "f8c5b18758d38015de6907ae643b1c06ffaee53f",
+        "sha256": "257dd9a5b0ca646f5f4a2909d49e1b05bd9ac9ab82c24138c8db939ee2bfd082"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/driver.sh.gz",
+        "git_blob_oid": "0c0b0fec8d8ec3c5e445ea0c8a603069c0c42bab",
+        "sha256": "e3eca19c48d5f611df50a4f8a0e6f48dca2275a1b7e2a183e82da3452bcada8c"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/probe.py.gz",
+        "git_blob_oid": "20eb9396939d2924d58fbc0a27d2dc8e38e98c39",
+        "sha256": "258f03ba207c2a4cdab6cde80671f9a151c5d11e37d2609e130b1b6a96d7509d"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/validate-results.py.gz",
+        "git_blob_oid": "9c9d923198229582a6d453ef8c2a471c1a02e870",
+        "sha256": "9959ac62154a4075ce9116616b8dd7b26cb0db935fb89f3d412e0759fdf7ae86"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/postgres-map.json.gz",
+        "git_blob_oid": "af536ae87d2c4173dbbcdf1688598ca757a7aa88",
+        "sha256": "429ed4458d23c8532a3ec1fdf070a9b2053eeea7677b1a2afbf510d84323fc69"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/fixture-roster.json.gz",
+        "git_blob_oid": "5b205222b85b043fb41ad0b9268d801a37be10ad",
+        "sha256": "2c4511db43b31686cb231d82a2c9e7fe46298349e569a4171863bee294ad9f88"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/only.txt.gz",
+        "git_blob_oid": "fbcb88ec21bca7952ccc009afc31bff762d84aee",
+        "sha256": "3971dd1e568e3dd70bd6af90059f0e7e3d6d21ab3cf4d2fa276b58869db13ca2"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/selected.jsonl.gz",
+        "git_blob_oid": "ab62bcdbf086fc18e88c413b1521db6aa55faeae",
+        "sha256": "38ee2c68b42f795663616ad1245d706eed37c1dca3a72bdc3148e4141942f6be"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/account-session-fixture77-independent-review-capture.json.gz",
+        "git_blob_oid": "706f707ba64780d2e63a69ac5b07ec7da36a9adb",
+        "sha256": "f9bb085cfacaeb260ef8e72e6d5ed6c791e97fa49107233b8199e03752782ee5"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/source-index/source-git-bindings.json.gz",
+        "git_blob_oid": "68bab691aa37610d9cae91e8ceb909cf9583661a",
+        "sha256": "98d027edbd296cedb2779194e6d5ad4dca7096f10c494fb83a95a70f0726f45a"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/npm-default-sandbox/account-session-f96eddd3-npm-verify.log.gz",
+        "git_blob_oid": "f2c4de41a29f734b0db9085421ff539f66c6cd1c",
+        "sha256": "674a02a4569388fb75768f1584881e70d43aa19a8ac710881f1b4993991754bf"
+      }
+    ],
+    "source_rows_reused": 991,
+    "all991_runtime_source_hashes_verified_from_immutable_git_blobs": true,
+    "all7_private_input_hashes_covered": true,
+    "all16_driver_receipt_artifact_hashes_covered": true
+  },
+  "completion_checks": {
+    "fixture77": "Completed source-before/after exact equal at clean f96. Selected77order matches results; raw381fully qualified test results exactly match complete results, allPASS.77running headers; final rollup and probe exit0. Existing independent review supplies complete command/roster validation.",
+    "npm_fast": "Raw78fast headings and final passed marker, explicit21not-mirrored entries, successful independent review and root-reported exit0 retained.5ignored domain doctests remain reported; no global unique-test aggregation.",
+    "cleanup": "Both recorded bounded container lists and listing error files empty; explicit owned-container-absent result retained. No Docker command issued by reviewer and no independent volume/durability claim.",
+    "npm_source_limit": "Source identity is root-attributed and runner/log-reviewed; no invented full npm pre/post snapshot.",
+    "history": "Earlier default-sandbox prerequisite failures retained via exact existing Git gzip reference. Full19123failures and active/later JWT work remain separate."
+  },
+  "pre_mortem": "Unbounded neighbor import, stale/partial runtime evidence, duplicate suite aggregation, or source-hash mismatch could corrupt retained proof or expose unrelated state.",
+  "blast_radius": "17 inert archives and finite manifest under new destination only;11 existing references reused; historical files and repository source unchanged.",
+  "detection": "Byte-exact originals/archive hashes, deterministic gzip recreation, finite paths, immutable Git source bindings, completed result and log consistency, explicit source/cleanup limits.",
+  "rollback": "Discard only unimported private candidate if any mismatch; after serial root import preserve history through reviewed correction.",
+  "stop_conditions": [
+    "Any source/hash/path mismatch",
+    "Unlisted or active input inclusion",
+    "Historical record overwrite",
+    "Claims exceed exact completed runtime or source attribution"
+  ],
+  "remaining_holds": [
+    "Root serial import of only exact17 listed gzip paths plus manifest/review receipts and exact readback",
+    "Current Account/browser/full191 remaining failures",
+    "Hosted CI, protected merge, release, production and legal authority"
+  ],
+  "reviewer_execution": {
+    "runtime_tests": 0,
+    "cargo": 0,
+    "database": 0,
+    "docker": 0,
+    "repository_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

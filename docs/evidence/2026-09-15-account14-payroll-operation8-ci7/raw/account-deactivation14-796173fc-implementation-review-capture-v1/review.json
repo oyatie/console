@@ -1,0 +1,101 @@
+{
+  "verdict": "APPROVE_EXACT_FOUR_FILE_IMPLEMENTATION_FOR_ROOT_RUNTIME__RETAINED_FIXTURE_COMPATIBILITY_HOLD",
+  "reviewer": "/root/capture_review",
+  "candidate": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1",
+  "candidate_manifest_sha256": "ffc4c20e28afea6a1c33b4fdc6b3c9bc47bb72ea629a6958577e8a157a97f48d",
+  "candidate_patch_sha256": "96ebf482ce9338203b8983886451cbd2f2eba11296e2623b6ce9cb1cf659ba1c",
+  "base_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "preimages_verified_at": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "approved_design_sha256": [
+    "19f29899b2c7bf3d6ac448c0daec73f0cdfba6f648458a86b044333c73ddb773",
+    "fee7092299e1a758c3e26d4334efa56e0671dc9f2a57f0a81632a9dc7293f35e"
+  ],
+  "reviewed_test_sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+  "scope": "Exactly identity adapter method/docs, shared metadata-only custody verdict, existing generator, generated operator SQL. No other Rust method/test/migration/dependency/CI/authority source changed.",
+  "blocking_product_findings": [],
+  "conclusions": [
+    {
+      "boundary": "Scope and existence oracle",
+      "evidence": "post/ops/generate-account-custody.py DEACTIVATION_GUARD_BODY; retained identity/rest/src/lib.rs3204",
+      "conclusion": "Null IDs and wrong/missing Company GUC refuse before subject lookup. The exact Company users row is validated and locked under existing RLS before accounts lookup, so missing/native-only/cross-Company IDs do not obtain a fence Boolean. Existing REST self-deactivation, UserManage authorization and branch-scoped get_user check remain unchanged. No new actor/branch authorization is claimed for direct adapter callers."
+    },
+    {
+      "boundary": "Locks and fresh classification",
+      "evidence": "DEACTIVATION_GUARD_BODY users FOR UPDATE then accounts FOR UPDATE; separate SELECT account_legacy_fenced_v1; with_audits111",
+      "conclusion": "READ COMMITTED is required before locks. VOLATILE PL/pgSQL uses separately executed statements and invokes the existing strict STABLE fence projection after the root lock. No combined pre-wait snapshot, split connection or exception block releasing locks appears. Existing immediate account_security parent FK provides the intended KEY SHARE conflict. PostgreSQL race scheduling and both winner paths remain root runtime obligations; future native writers must preserve FK and lock order."
+    },
+    {
+      "boundary": "Failure atomicity and direct fail-closed",
+      "evidence": "identity adapter guard call before UPDATE; with_audits transaction error/commit branches; strict FENCE_BODY unchanged",
+      "conclusion": "Missing routine/table/root, unavailable authority, SQL cancellation/error, null result and unsupported isolation propagate as errors before or within the same transaction, with no false legacy default. SQLx bool decoding rejects null. Only exact guard P0002+subject_not_found maps to existing Domain(NotFound). Backend death rolls back transaction in PostgreSQL; bounded cleanup/cancellation proof is not inferred from source. Altering the guard STABLE would make its SELECT FOR UPDATE impermissible; this source observation is not a runtime result."
+    },
+    {
+      "boundary": "Fenced versus legacy operation",
+      "evidence": "post identity adapter deactivate_user and byte-identical source after activate_user documentation",
+      "conclusion": "Any security row preserves Account custody regardless of state. Fenced transition omits both auth revoke events, reports truthful operation revoke counts zero and preserves Company transition/archive/session-generation behavior. Fenced inactive replay holds locks, commits no credential changes/audits, then returns existing typed Conflict. Unfenced transition/replay retain original credential sweep, audit event order, racing-credential cleanup and typed outcomes. Entire sweep helper and other methods are byte-identical."
+    },
+    {
+      "boundary": "Exact ACL/profile",
+      "evidence": "shared query deactivation_guard/deactivation_users_acl and existing owner topology/root profiles",
+      "conclusion": "New routine is uniquely named/exact two UUID args/boolean, PL/pgSQL VOLATILE SECURITY DEFINER, owner console_account_owner, fixed pg_catalog,pg_temp search_path, exact body/options and only two nongrantable EXECUTE entries (owner and console_rt). Existing owner topology disallows LOGIN/BYPASS/inheritance/membership. Owner users rights are only SELECT(id,org_id), UPDATE(id), nongrantable with users-owner grantor; PUBLIC/broad effective table or column rights, MAINTAIN, unexpected rights and grant options refuse. Existing six routine bodies, root/account ACL contracts and legacy credential ACLs are unchanged."
+    },
+    {
+      "boundary": "Root-preserving upgrade and no repair",
+      "evidence": "generator generated_files control flow; unchanged INSTALL/ROOT_INSTALL blocks; generated SQL equality",
+      "conclusion": "Installer validates full profile under users-first seven table locks before inspecting certified root presence. Present corrupt routine/grants refuse. Absent guard plus dormant extension on valid roots enters only DEACTIVATION_INSTALL; old install/backfill blocks are skipped. Missing roots refuse. Complete finalized replay returns before mutation. Historical rootless inputs retain old path then receive the guard. Final full-profile certification occurs within one atomic DO; failure aborts installation rather than repairing drift."
+    },
+    {
+      "boundary": "Startup and trust boundary",
+      "evidence": "unchanged backend/app/src/account_custody.rs verify",
+      "conclusion": "Startup admits only account_custody.finalized; missing/corrupt mandatory guard produces an upgrade or drift status and refuses. No per-operation full metadata fingerprinting added. Arbitrary privileged post-startup routine-body replacement is outside the accepted trust boundary and demonstrated coverage; this does not excuse installer/startup drift checks."
+    }
+  ],
+  "compatibility_finding": {
+    "severity": "CLOSURE_HOLD_FIXTURE_PREREQUISITE",
+    "paths": [
+      "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs:31",
+      "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs:37"
+    ],
+    "evidence": "Both suites use #[sqlx::test(migrations=\"../../platform/db/migrations\")] and raw SET ROLE console_rt pool helpers, with no custody preparation/finalization call. cargo_needs_postgres.sh creates the isolated topology and runs mapped Cargo tests; no per-test Account finalizer is injected.",
+    "impact": "The newly mandatory guard is absent in those test databases, so retained direct deactivation calls would fail42883 before their existing assertions. This is a source-grounded fixture compatibility issue, not a measured runtime failure and not grounds to weaken the product guard.",
+    "resolution": "Root explicitly authorized Inventory to prepare a separate minimal private fixture prerequisite patch, preserving every existing case/assertion. That patch requires its own exact independent review and runtime. Product V1 remains frozen."
+  },
+  "verification": {
+    "mechanical_script": "python3 /private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/verify.py",
+    "mechanical_checks_passed": 18,
+    "manifest_artifacts_verified": 13,
+    "baseline_source_bindings": 10,
+    "private_rustfmt_invocations": 1,
+    "private_git_apply_invocations": 4,
+    "compiler_discovered": 0,
+    "rust_tests_executed": 0,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "integration_writes": 0
+  },
+  "remaining_holds": [
+    "Root compiler and SQL runtime, same admitted exact14 probe GREEN",
+    "Separate reviewed legacy fixture prerequisites and retained root/profile/lifecycle/freshness gates",
+    "Broader cancellation, unrelated-subject progress, replay-lock, hidden-authority and profile mutation acceptance",
+    "Exact-head closure and independent final review",
+    "Native enrollment/Auth7 and production authority"
+  ],
+  "premortem": "Stale classification, cross-Company oracle, root backfill replay, repaired drift, false security audit claims or unproven runtime coverage.",
+  "blast_radius": "Bounded four-file implementation and separate fixture prerequisites; no credential ownership cutover.",
+  "rollback": "Reject private candidate before import; failed installation rolls back. After activation recover with compatible guarded binary/profile, never unconditional fenced credential deletion.",
+  "stop_conditions": [
+    "Candidate/source drift",
+    "Unapproved fixture assertions or scope changes",
+    "Guard errors swallowed or narrowed ACL broadened",
+    "Unexpected runtime first failure without classification",
+    "Approval reused for a different candidate"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton Fence",
+    "Red Team",
+    "Operability",
+    "Blast radius",
+    "Zero trust"
+  ]
+}

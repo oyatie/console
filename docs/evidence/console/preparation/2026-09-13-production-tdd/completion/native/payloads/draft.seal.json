@@ -1,0 +1,15 @@
+{
+  "kind": "draft.seal",
+  "body": {
+    "draft_id": "1f9a8da5-3585-5ab8-b4a9-46560970445b",
+    "expected_revision_id": "6dae6bf4-4125-5d58-b167-3608a1bd519f",
+    "editing_token": {
+      "draft_id": "1f9a8da5-3585-5ab8-b4a9-46560970445b",
+      "editing_epoch": "1",
+      "nonce": "c56e7e4644312180ca32ef108adc581f17c97c710118be387f8281deaaed3e38",
+      "assignment_epoch": null
+    },
+    "prepared_submission_unit": null,
+    "gate_request_intent": null
+  }
+}

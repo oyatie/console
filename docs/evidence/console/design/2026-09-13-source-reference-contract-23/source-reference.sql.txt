@@ -1,0 +1,348 @@
+-- PROPOSED STRUCTURAL INTEGRATION FRAGMENT. NOT AN APPLIED OR COMPLETE MIGRATION.
+-- Requires22 effect/receipt constraints, seven full native tables and three native heads.
+-- Native base PK(org_id, root, revision), typed UUID/BIGINT/BYTEA columns and head PK
+-- must be supplied by consolidated F02; these are not claimed to exist in product.
+-- Source command/custody are exact CCF1/event-custody projections, never client flags.
+-- No LOGIN grants, table creation, claim table, new draft history or new command namespace.
+BEGIN;
+ALTER TABLE public.ont_action_source_effects
+  ADD CONSTRAINT sr23_effect_exact UNIQUE(org_id,family_code,root_id,revision,effect_kind,command_id,custody_digest),
+  ADD CONSTRAINT sr23_effect_claim_key UNIQUE(org_id,family_code,root_id,revision,effect_kind,command_id),
+  ADD COLUMN claim_revoke_kind text GENERATED ALWAYS AS (CASE WHEN effect_kind=2 THEN 'REVOKE'::text END) STORED,
+  ADD COLUMN claim_verify_kind text GENERATED ALWAYS AS (CASE WHEN effect_kind=2 THEN 'VERIFY'::text END) STORED,
+  ADD CONSTRAINT sr23_claim_verified_history_shape CHECK(effect_kind<>2 OR (revision=3 AND successor_revision=2));
+-- These UNIQUE targets are ordinary/nonpartial/nondeferrable.22 uniqueness remains.
+
+-- FAMILY 1: CALENDAR; native owner attendance.
+ALTER TABLE public.work_calendar_revisions
+  ALTER COLUMN org_id SET NOT NULL,
+  ALTER COLUMN calendar_id SET NOT NULL,
+  ALTER COLUMN revision SET NOT NULL,
+  ALTER COLUMN command_id SET NOT NULL,
+  ALTER COLUMN custody_digest SET NOT NULL,
+  ADD CONSTRAINT sr23_s1_revision CHECK(revision>0),
+  ADD CONSTRAINT sr23_s1_digest CHECK(pg_catalog.octet_length(custody_digest)=32),
+  ADD COLUMN effect_family smallint GENERATED ALWAYS AS (1::smallint) STORED,
+  ADD COLUMN effect_kind smallint GENERATED ALWAYS AS (1::smallint) STORED,
+  ADD CONSTRAINT sr23_s1_exact UNIQUE(org_id,calendar_id,revision,command_id,custody_digest),
+  ADD CONSTRAINT sr23_s1_effect FOREIGN KEY(org_id,effect_family,calendar_id,revision,effect_kind,command_id,custody_digest)
+    REFERENCES public.ont_action_source_effects(org_id,family_code,root_id,revision,effect_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.ont_action_source_effects
+  ADD COLUMN revision_root_1 uuid GENERATED ALWAYS AS (CASE WHEN family_code=1 AND effect_kind=1 THEN root_id END) STORED,
+  ADD CONSTRAINT sr23_e1_revision FOREIGN KEY(org_id,revision_root_1,revision,command_id,custody_digest)
+    REFERENCES public.work_calendar_revisions(org_id,calendar_id,revision,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+
+-- FAMILY 2: ASSIGNMENT; native owner attendance.
+ALTER TABLE public.work_calendar_assignment_revisions
+  ALTER COLUMN org_id SET NOT NULL,
+  ALTER COLUMN assignment_id SET NOT NULL,
+  ALTER COLUMN revision SET NOT NULL,
+  ALTER COLUMN command_id SET NOT NULL,
+  ALTER COLUMN custody_digest SET NOT NULL,
+  ADD CONSTRAINT sr23_s2_revision CHECK(revision>0),
+  ADD CONSTRAINT sr23_s2_digest CHECK(pg_catalog.octet_length(custody_digest)=32),
+  ADD COLUMN effect_family smallint GENERATED ALWAYS AS (2::smallint) STORED,
+  ADD COLUMN effect_kind smallint GENERATED ALWAYS AS (1::smallint) STORED,
+  ADD CONSTRAINT sr23_s2_exact UNIQUE(org_id,assignment_id,revision,command_id,custody_digest),
+  ADD CONSTRAINT sr23_s2_effect FOREIGN KEY(org_id,effect_family,assignment_id,revision,effect_kind,command_id,custody_digest)
+    REFERENCES public.ont_action_source_effects(org_id,family_code,root_id,revision,effect_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.ont_action_source_effects
+  ADD COLUMN revision_root_2 uuid GENERATED ALWAYS AS (CASE WHEN family_code=2 AND effect_kind=1 THEN root_id END) STORED,
+  ADD CONSTRAINT sr23_e2_revision FOREIGN KEY(org_id,revision_root_2,revision,command_id,custody_digest)
+    REFERENCES public.work_calendar_assignment_revisions(org_id,assignment_id,revision,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+
+-- FAMILY 3: COVERAGE; native owner attendance.
+ALTER TABLE public.attendance_coverage_revisions
+  ALTER COLUMN org_id SET NOT NULL,
+  ALTER COLUMN coverage_id SET NOT NULL,
+  ALTER COLUMN revision SET NOT NULL,
+  ALTER COLUMN command_id SET NOT NULL,
+  ALTER COLUMN custody_digest SET NOT NULL,
+  ADD CONSTRAINT sr23_s3_revision CHECK(revision>0),
+  ADD CONSTRAINT sr23_s3_digest CHECK(pg_catalog.octet_length(custody_digest)=32),
+  ADD COLUMN effect_family smallint GENERATED ALWAYS AS (3::smallint) STORED,
+  ADD COLUMN effect_kind smallint GENERATED ALWAYS AS (1::smallint) STORED,
+  ADD CONSTRAINT sr23_s3_exact UNIQUE(org_id,coverage_id,revision,command_id,custody_digest),
+  ADD CONSTRAINT sr23_s3_effect FOREIGN KEY(org_id,effect_family,coverage_id,revision,effect_kind,command_id,custody_digest)
+    REFERENCES public.ont_action_source_effects(org_id,family_code,root_id,revision,effect_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.ont_action_source_effects
+  ADD COLUMN revision_root_3 uuid GENERATED ALWAYS AS (CASE WHEN family_code=3 AND effect_kind=1 THEN root_id END) STORED,
+  ADD CONSTRAINT sr23_e3_revision FOREIGN KEY(org_id,revision_root_3,revision,command_id,custody_digest)
+    REFERENCES public.attendance_coverage_revisions(org_id,coverage_id,revision,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+
+-- FAMILY 4: CLOSE_BASIS; native owner attendance.
+ALTER TABLE public.attendance_native_close_bases
+  ALTER COLUMN org_id SET NOT NULL,
+  ALTER COLUMN close_basis_id SET NOT NULL,
+  ALTER COLUMN revision SET NOT NULL,
+  ALTER COLUMN command_id SET NOT NULL,
+  ALTER COLUMN custody_digest SET NOT NULL,
+  ADD CONSTRAINT sr23_s4_revision CHECK(revision>0),
+  ADD CONSTRAINT sr23_s4_digest CHECK(pg_catalog.octet_length(custody_digest)=32),
+  ADD COLUMN effect_family smallint GENERATED ALWAYS AS (4::smallint) STORED,
+  ADD COLUMN effect_kind smallint GENERATED ALWAYS AS (1::smallint) STORED,
+  ADD CONSTRAINT sr23_s4_exact UNIQUE(org_id,close_basis_id,revision,command_id,custody_digest),
+  ADD CONSTRAINT sr23_s4_effect FOREIGN KEY(org_id,effect_family,close_basis_id,revision,effect_kind,command_id,custody_digest)
+    REFERENCES public.ont_action_source_effects(org_id,family_code,root_id,revision,effect_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.ont_action_source_effects
+  ADD COLUMN revision_root_4 uuid GENERATED ALWAYS AS (CASE WHEN family_code=4 AND effect_kind=1 THEN root_id END) STORED,
+  ADD CONSTRAINT sr23_e4_revision FOREIGN KEY(org_id,revision_root_4,revision,command_id,custody_digest)
+    REFERENCES public.attendance_native_close_bases(org_id,close_basis_id,revision,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+
+-- FAMILY 5: QUALIFICATION; native owner payroll.
+ALTER TABLE public.payroll_source_qualification_revisions
+  ALTER COLUMN org_id SET NOT NULL,
+  ALTER COLUMN qualification_id SET NOT NULL,
+  ALTER COLUMN revision SET NOT NULL,
+  ALTER COLUMN command_id SET NOT NULL,
+  ALTER COLUMN custody_digest SET NOT NULL,
+  ADD CONSTRAINT sr23_s5_revision CHECK(revision>0),
+  ADD CONSTRAINT sr23_s5_digest CHECK(pg_catalog.octet_length(custody_digest)=32),
+  ADD COLUMN effect_family smallint GENERATED ALWAYS AS (5::smallint) STORED,
+  ADD COLUMN effect_kind smallint GENERATED ALWAYS AS (1::smallint) STORED,
+  ADD CONSTRAINT sr23_s5_exact UNIQUE(org_id,qualification_id,revision,command_id,custody_digest),
+  ADD CONSTRAINT sr23_s5_effect FOREIGN KEY(org_id,effect_family,qualification_id,revision,effect_kind,command_id,custody_digest)
+    REFERENCES public.ont_action_source_effects(org_id,family_code,root_id,revision,effect_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.ont_action_source_effects
+  ADD COLUMN revision_root_5 uuid GENERATED ALWAYS AS (CASE WHEN family_code=5 AND effect_kind=1 THEN root_id END) STORED,
+  ADD CONSTRAINT sr23_e5_revision FOREIGN KEY(org_id,revision_root_5,revision,command_id,custody_digest)
+    REFERENCES public.payroll_source_qualification_revisions(org_id,qualification_id,revision,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+
+-- FAMILY 6: ELIGIBILITY; native owner payroll.
+ALTER TABLE public.payroll_eligibility_assessment_revisions
+  ALTER COLUMN org_id SET NOT NULL,
+  ALTER COLUMN assessment_id SET NOT NULL,
+  ALTER COLUMN revision SET NOT NULL,
+  ALTER COLUMN command_id SET NOT NULL,
+  ALTER COLUMN custody_digest SET NOT NULL,
+  ADD CONSTRAINT sr23_s6_revision CHECK(revision>0),
+  ADD CONSTRAINT sr23_s6_digest CHECK(pg_catalog.octet_length(custody_digest)=32),
+  ADD COLUMN effect_family smallint GENERATED ALWAYS AS (6::smallint) STORED,
+  ADD COLUMN effect_kind smallint GENERATED ALWAYS AS (1::smallint) STORED,
+  ADD CONSTRAINT sr23_s6_exact UNIQUE(org_id,assessment_id,revision,command_id,custody_digest),
+  ADD CONSTRAINT sr23_s6_effect FOREIGN KEY(org_id,effect_family,assessment_id,revision,effect_kind,command_id,custody_digest)
+    REFERENCES public.ont_action_source_effects(org_id,family_code,root_id,revision,effect_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.ont_action_source_effects
+  ADD COLUMN revision_root_6 uuid GENERATED ALWAYS AS (CASE WHEN family_code=6 AND effect_kind=1 THEN root_id END) STORED,
+  ADD CONSTRAINT sr23_e6_revision FOREIGN KEY(org_id,revision_root_6,revision,command_id,custody_digest)
+    REFERENCES public.payroll_eligibility_assessment_revisions(org_id,assessment_id,revision,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+
+-- FAMILY 7: TAX_EVIDENCE; native owner payroll.
+ALTER TABLE public.payroll_tax_evidence_revisions
+  ALTER COLUMN org_id SET NOT NULL,
+  ALTER COLUMN evidence_id SET NOT NULL,
+  ALTER COLUMN revision SET NOT NULL,
+  ALTER COLUMN command_id SET NOT NULL,
+  ALTER COLUMN custody_digest SET NOT NULL,
+  ADD CONSTRAINT sr23_s7_revision CHECK(revision>0),
+  ADD CONSTRAINT sr23_s7_digest CHECK(pg_catalog.octet_length(custody_digest)=32),
+  ADD COLUMN effect_family smallint GENERATED ALWAYS AS (7::smallint) STORED,
+  ADD COLUMN effect_kind smallint GENERATED ALWAYS AS (1::smallint) STORED,
+  ADD CONSTRAINT sr23_s7_exact UNIQUE(org_id,evidence_id,revision,command_id,custody_digest),
+  ADD CONSTRAINT sr23_s7_effect FOREIGN KEY(org_id,effect_family,evidence_id,revision,effect_kind,command_id,custody_digest)
+    REFERENCES public.ont_action_source_effects(org_id,family_code,root_id,revision,effect_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.ont_action_source_effects
+  ADD COLUMN revision_root_7 uuid GENERATED ALWAYS AS (CASE WHEN family_code=7 AND effect_kind=1 THEN root_id END) STORED,
+  ADD CONSTRAINT sr23_e7_revision FOREIGN KEY(org_id,revision_root_7,revision,command_id,custody_digest)
+    REFERENCES public.payroll_tax_evidence_revisions(org_id,evidence_id,revision,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+
+-- QUALIFICATION immutable event identities; source19 has one admission per root.
+-- event_kind TEXT and admission_digest BYTEA are required source19 scalar projections.
+ALTER TABLE public.payroll_source_qualification_revisions
+  ALTER COLUMN event_kind SET NOT NULL,
+  ALTER COLUMN admission_digest SET NOT NULL,
+  ADD CONSTRAINT sr23_s5_admission_digest CHECK(pg_catalog.octet_length(admission_digest)=32),
+  ADD CONSTRAINT sr23_s5_event_shape CHECK(
+    (event_kind='PROPOSE' AND revision=1) OR (event_kind='VERIFY' AND revision=2)
+    OR (event_kind='REVOKE' AND revision IN (2,3)) OR (event_kind='SUPERSEDE' AND revision=3)),
+  ADD COLUMN prior_revision bigint GENERATED ALWAYS AS (CASE WHEN revision>1 THEN revision-1 END) STORED,
+  ADD COLUMN prior_event_kind text GENERATED ALWAYS AS (CASE WHEN revision=2 THEN 'PROPOSE'::text WHEN revision=3 THEN 'VERIFY'::text END) STORED,
+  ADD CONSTRAINT sr23_s5_event_admission UNIQUE(org_id,qualification_id,revision,event_kind,admission_digest),
+  ADD CONSTRAINT sr23_s5_event_custody UNIQUE(org_id,qualification_id,revision,event_kind,custody_digest),
+  ADD CONSTRAINT sr23_s5_event_command UNIQUE(org_id,qualification_id,revision,event_kind,command_id,custody_digest),
+  ADD CONSTRAINT sr23_s5_prior FOREIGN KEY(org_id,qualification_id,prior_revision,prior_event_kind,admission_digest)
+    REFERENCES public.payroll_source_qualification_revisions(org_id,qualification_id,revision,event_kind,admission_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD COLUMN successor_root_id uuid,
+  ADD COLUMN successor_revision bigint,
+  ADD COLUMN successor_custody_digest bytea,
+  ADD COLUMN successor_event_kind text GENERATED ALWAYS AS (CASE WHEN event_kind='SUPERSEDE' THEN 'VERIFY'::text END) STORED,
+  ADD CONSTRAINT sr23_s5_successor_shape CHECK(
+    (event_kind<>'SUPERSEDE' AND successor_root_id IS NULL AND successor_revision IS NULL AND successor_custody_digest IS NULL)
+    OR (event_kind='SUPERSEDE' AND successor_root_id IS NOT NULL AND successor_revision IS NOT NULL
+      AND successor_custody_digest IS NOT NULL AND successor_root_id<>qualification_id
+      AND successor_revision=2 AND pg_catalog.octet_length(successor_custody_digest)=32)),
+  ADD CONSTRAINT sr23_s5_successor FOREIGN KEY(org_id,successor_root_id,successor_revision,successor_event_kind,command_id,successor_custody_digest)
+    REFERENCES public.payroll_source_qualification_revisions(org_id,qualification_id,revision,event_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+-- Head keeps one nullable claim-command pointer, not a duplicate successor payload.
+-- This refines15 proposed activated_successor_ref storage; read projection retains that meaning.
+ALTER TABLE public.payroll_source_qualification_heads
+  ALTER COLUMN org_id SET NOT NULL,
+  ALTER COLUMN qualification_id SET NOT NULL,
+  ALTER COLUMN current_revision SET NOT NULL,
+  ADD COLUMN successor_claim_command_id uuid,
+  ADD COLUMN claim_family smallint GENERATED ALWAYS AS (5::smallint) STORED,
+  ADD COLUMN claim_kind smallint GENERATED ALWAYS AS (2::smallint) STORED,
+  ADD CONSTRAINT sr23_h5_claim_state CHECK(successor_claim_command_id IS NULL OR current_revision=3),
+  ADD CONSTRAINT sr23_h5_claim_key UNIQUE(org_id,qualification_id,current_revision,successor_claim_command_id),
+  ADD CONSTRAINT sr23_h5_current FOREIGN KEY(org_id,qualification_id,current_revision)
+    REFERENCES public.payroll_source_qualification_revisions(org_id,qualification_id,revision)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD CONSTRAINT sr23_h5_claim FOREIGN KEY(org_id,claim_family,qualification_id,current_revision,claim_kind,successor_claim_command_id)
+    REFERENCES public.ont_action_source_effects(org_id,family_code,root_id,revision,effect_kind,command_id)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.ont_action_source_effects
+  ADD COLUMN claim_root_5 uuid GENERATED ALWAYS AS (CASE WHEN family_code=5 AND effect_kind=2 THEN root_id END) STORED,
+  ADD COLUMN claim_successor_root_5 uuid GENERATED ALWAYS AS (CASE WHEN family_code=5 AND effect_kind=2 THEN successor_root_id END) STORED,
+  ADD CONSTRAINT sr23_e5_revoked FOREIGN KEY(org_id,claim_root_5,revision,claim_revoke_kind,custody_digest)
+    REFERENCES public.payroll_source_qualification_revisions(org_id,qualification_id,revision,event_kind,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD CONSTRAINT sr23_e5_verified FOREIGN KEY(org_id,claim_successor_root_5,successor_revision,claim_verify_kind,command_id,successor_custody_digest)
+    REFERENCES public.payroll_source_qualification_revisions(org_id,qualification_id,revision,event_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD CONSTRAINT sr23_e5_head FOREIGN KEY(org_id,claim_root_5,revision,command_id)
+    REFERENCES public.payroll_source_qualification_heads(org_id,qualification_id,current_revision,successor_claim_command_id)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+
+-- ELIGIBILITY immutable event identities; source19 has one admission per root.
+-- event_kind TEXT and admission_digest BYTEA are required source19 scalar projections.
+ALTER TABLE public.payroll_eligibility_assessment_revisions
+  ALTER COLUMN event_kind SET NOT NULL,
+  ALTER COLUMN admission_digest SET NOT NULL,
+  ADD CONSTRAINT sr23_s6_admission_digest CHECK(pg_catalog.octet_length(admission_digest)=32),
+  ADD CONSTRAINT sr23_s6_event_shape CHECK(
+    (event_kind='PROPOSE' AND revision=1) OR (event_kind='VERIFY' AND revision=2)
+    OR (event_kind='REVOKE' AND revision IN (2,3)) OR (event_kind='SUPERSEDE' AND revision=3)),
+  ADD COLUMN prior_revision bigint GENERATED ALWAYS AS (CASE WHEN revision>1 THEN revision-1 END) STORED,
+  ADD COLUMN prior_event_kind text GENERATED ALWAYS AS (CASE WHEN revision=2 THEN 'PROPOSE'::text WHEN revision=3 THEN 'VERIFY'::text END) STORED,
+  ADD CONSTRAINT sr23_s6_event_admission UNIQUE(org_id,assessment_id,revision,event_kind,admission_digest),
+  ADD CONSTRAINT sr23_s6_event_custody UNIQUE(org_id,assessment_id,revision,event_kind,custody_digest),
+  ADD CONSTRAINT sr23_s6_event_command UNIQUE(org_id,assessment_id,revision,event_kind,command_id,custody_digest),
+  ADD CONSTRAINT sr23_s6_prior FOREIGN KEY(org_id,assessment_id,prior_revision,prior_event_kind,admission_digest)
+    REFERENCES public.payroll_eligibility_assessment_revisions(org_id,assessment_id,revision,event_kind,admission_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD COLUMN successor_root_id uuid,
+  ADD COLUMN successor_revision bigint,
+  ADD COLUMN successor_custody_digest bytea,
+  ADD COLUMN successor_event_kind text GENERATED ALWAYS AS (CASE WHEN event_kind='SUPERSEDE' THEN 'VERIFY'::text END) STORED,
+  ADD CONSTRAINT sr23_s6_successor_shape CHECK(
+    (event_kind<>'SUPERSEDE' AND successor_root_id IS NULL AND successor_revision IS NULL AND successor_custody_digest IS NULL)
+    OR (event_kind='SUPERSEDE' AND successor_root_id IS NOT NULL AND successor_revision IS NOT NULL
+      AND successor_custody_digest IS NOT NULL AND successor_root_id<>assessment_id
+      AND successor_revision=2 AND pg_catalog.octet_length(successor_custody_digest)=32)),
+  ADD CONSTRAINT sr23_s6_successor FOREIGN KEY(org_id,successor_root_id,successor_revision,successor_event_kind,command_id,successor_custody_digest)
+    REFERENCES public.payroll_eligibility_assessment_revisions(org_id,assessment_id,revision,event_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+-- Head keeps one nullable claim-command pointer, not a duplicate successor payload.
+-- This refines15 proposed activated_successor_ref storage; read projection retains that meaning.
+ALTER TABLE public.payroll_eligibility_assessment_heads
+  ALTER COLUMN org_id SET NOT NULL,
+  ALTER COLUMN assessment_id SET NOT NULL,
+  ALTER COLUMN current_revision SET NOT NULL,
+  ADD COLUMN successor_claim_command_id uuid,
+  ADD COLUMN claim_family smallint GENERATED ALWAYS AS (6::smallint) STORED,
+  ADD COLUMN claim_kind smallint GENERATED ALWAYS AS (2::smallint) STORED,
+  ADD CONSTRAINT sr23_h6_claim_state CHECK(successor_claim_command_id IS NULL OR current_revision=3),
+  ADD CONSTRAINT sr23_h6_claim_key UNIQUE(org_id,assessment_id,current_revision,successor_claim_command_id),
+  ADD CONSTRAINT sr23_h6_current FOREIGN KEY(org_id,assessment_id,current_revision)
+    REFERENCES public.payroll_eligibility_assessment_revisions(org_id,assessment_id,revision)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD CONSTRAINT sr23_h6_claim FOREIGN KEY(org_id,claim_family,assessment_id,current_revision,claim_kind,successor_claim_command_id)
+    REFERENCES public.ont_action_source_effects(org_id,family_code,root_id,revision,effect_kind,command_id)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.ont_action_source_effects
+  ADD COLUMN claim_root_6 uuid GENERATED ALWAYS AS (CASE WHEN family_code=6 AND effect_kind=2 THEN root_id END) STORED,
+  ADD COLUMN claim_successor_root_6 uuid GENERATED ALWAYS AS (CASE WHEN family_code=6 AND effect_kind=2 THEN successor_root_id END) STORED,
+  ADD CONSTRAINT sr23_e6_revoked FOREIGN KEY(org_id,claim_root_6,revision,claim_revoke_kind,custody_digest)
+    REFERENCES public.payroll_eligibility_assessment_revisions(org_id,assessment_id,revision,event_kind,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD CONSTRAINT sr23_e6_verified FOREIGN KEY(org_id,claim_successor_root_6,successor_revision,claim_verify_kind,command_id,successor_custody_digest)
+    REFERENCES public.payroll_eligibility_assessment_revisions(org_id,assessment_id,revision,event_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD CONSTRAINT sr23_e6_head FOREIGN KEY(org_id,claim_root_6,revision,command_id)
+    REFERENCES public.payroll_eligibility_assessment_heads(org_id,assessment_id,current_revision,successor_claim_command_id)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+
+-- TAX_EVIDENCE immutable event identities; source19 has one admission per root.
+-- event_kind TEXT and admission_digest BYTEA are required source19 scalar projections.
+ALTER TABLE public.payroll_tax_evidence_revisions
+  ALTER COLUMN event_kind SET NOT NULL,
+  ALTER COLUMN admission_digest SET NOT NULL,
+  ADD CONSTRAINT sr23_s7_admission_digest CHECK(pg_catalog.octet_length(admission_digest)=32),
+  ADD CONSTRAINT sr23_s7_event_shape CHECK(
+    (event_kind='PROPOSE' AND revision=1) OR (event_kind='VERIFY' AND revision=2)
+    OR (event_kind='REVOKE' AND revision IN (2,3)) OR (event_kind='SUPERSEDE' AND revision=3)),
+  ADD COLUMN prior_revision bigint GENERATED ALWAYS AS (CASE WHEN revision>1 THEN revision-1 END) STORED,
+  ADD COLUMN prior_event_kind text GENERATED ALWAYS AS (CASE WHEN revision=2 THEN 'PROPOSE'::text WHEN revision=3 THEN 'VERIFY'::text END) STORED,
+  ADD CONSTRAINT sr23_s7_event_admission UNIQUE(org_id,evidence_id,revision,event_kind,admission_digest),
+  ADD CONSTRAINT sr23_s7_event_custody UNIQUE(org_id,evidence_id,revision,event_kind,custody_digest),
+  ADD CONSTRAINT sr23_s7_event_command UNIQUE(org_id,evidence_id,revision,event_kind,command_id,custody_digest),
+  ADD CONSTRAINT sr23_s7_prior FOREIGN KEY(org_id,evidence_id,prior_revision,prior_event_kind,admission_digest)
+    REFERENCES public.payroll_tax_evidence_revisions(org_id,evidence_id,revision,event_kind,admission_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD COLUMN successor_root_id uuid,
+  ADD COLUMN successor_revision bigint,
+  ADD COLUMN successor_custody_digest bytea,
+  ADD COLUMN successor_event_kind text GENERATED ALWAYS AS (CASE WHEN event_kind='SUPERSEDE' THEN 'VERIFY'::text END) STORED,
+  ADD CONSTRAINT sr23_s7_successor_shape CHECK(
+    (event_kind<>'SUPERSEDE' AND successor_root_id IS NULL AND successor_revision IS NULL AND successor_custody_digest IS NULL)
+    OR (event_kind='SUPERSEDE' AND successor_root_id IS NOT NULL AND successor_revision IS NOT NULL
+      AND successor_custody_digest IS NOT NULL AND successor_root_id<>evidence_id
+      AND successor_revision=2 AND pg_catalog.octet_length(successor_custody_digest)=32)),
+  ADD CONSTRAINT sr23_s7_successor FOREIGN KEY(org_id,successor_root_id,successor_revision,successor_event_kind,command_id,successor_custody_digest)
+    REFERENCES public.payroll_tax_evidence_revisions(org_id,evidence_id,revision,event_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+-- Head keeps one nullable claim-command pointer, not a duplicate successor payload.
+-- This refines15 proposed activated_successor_ref storage; read projection retains that meaning.
+ALTER TABLE public.payroll_tax_evidence_heads
+  ALTER COLUMN org_id SET NOT NULL,
+  ALTER COLUMN evidence_id SET NOT NULL,
+  ALTER COLUMN current_revision SET NOT NULL,
+  ADD COLUMN successor_claim_command_id uuid,
+  ADD COLUMN claim_family smallint GENERATED ALWAYS AS (7::smallint) STORED,
+  ADD COLUMN claim_kind smallint GENERATED ALWAYS AS (2::smallint) STORED,
+  ADD CONSTRAINT sr23_h7_claim_state CHECK(successor_claim_command_id IS NULL OR current_revision=3),
+  ADD CONSTRAINT sr23_h7_claim_key UNIQUE(org_id,evidence_id,current_revision,successor_claim_command_id),
+  ADD CONSTRAINT sr23_h7_current FOREIGN KEY(org_id,evidence_id,current_revision)
+    REFERENCES public.payroll_tax_evidence_revisions(org_id,evidence_id,revision)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD CONSTRAINT sr23_h7_claim FOREIGN KEY(org_id,claim_family,evidence_id,current_revision,claim_kind,successor_claim_command_id)
+    REFERENCES public.ont_action_source_effects(org_id,family_code,root_id,revision,effect_kind,command_id)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.ont_action_source_effects
+  ADD COLUMN claim_root_7 uuid GENERATED ALWAYS AS (CASE WHEN family_code=7 AND effect_kind=2 THEN root_id END) STORED,
+  ADD COLUMN claim_successor_root_7 uuid GENERATED ALWAYS AS (CASE WHEN family_code=7 AND effect_kind=2 THEN successor_root_id END) STORED,
+  ADD CONSTRAINT sr23_e7_revoked FOREIGN KEY(org_id,claim_root_7,revision,claim_revoke_kind,custody_digest)
+    REFERENCES public.payroll_tax_evidence_revisions(org_id,evidence_id,revision,event_kind,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD CONSTRAINT sr23_e7_verified FOREIGN KEY(org_id,claim_successor_root_7,successor_revision,claim_verify_kind,command_id,successor_custody_digest)
+    REFERENCES public.payroll_tax_evidence_revisions(org_id,evidence_id,revision,event_kind,command_id,custody_digest)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  ADD CONSTRAINT sr23_e7_head FOREIGN KEY(org_id,claim_root_7,revision,command_id)
+    REFERENCES public.payroll_tax_evidence_heads(org_id,evidence_id,current_revision,successor_claim_command_id)
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+
+COMMIT;
+-- Before enrollment: full source payload/index/head definitions, immutable source protection,
+-- forced Company RLS and confined effective role/ACL including default grants and TRUNCATE,
+-- decoded-custody/source scalar agreement, Actor/Account/action/CCF1/downgrade guards,
+-- current head CAS/max transition, independent-human/current Cedar/trust/subject selection,
+-- complete retention/adoption/attempt/gate/work participants and final time check.
+-- Native diagnostics are sensitive;22/F04 typed sanitization and DB log controls mandatory.
+-- Structural FKs check identity irrespective of RLS; they do not grant disclosure or actor rights.
+-- No NOT VALID, trigger disabling, ON CONFLICT DO NOTHING, implicit legacy coercion or raw runtime grants.

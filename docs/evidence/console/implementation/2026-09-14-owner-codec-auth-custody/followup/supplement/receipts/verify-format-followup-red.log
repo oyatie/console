@@ -1,0 +1,126 @@
+Diff in /private/tmp/console-format-followup-20260914/backend/app/tests/auth_rest.rs:38:
+ mod account_custody_lifecycle;
+ #[path = "auth_rest/account_custody_startup.rs"]
+ mod account_custody_startup;
+-#[path = "auth_rest/account_storage.rs"]
+-mod account_storage;
+ #[path = "auth_rest/account_fence_projection.rs"]
+ mod account_fence_projection;
+ #[path = "auth_rest/account_fence_transport.rs"]
+Diff in /private/tmp/console-format-followup-20260914/backend/app/tests/auth_rest.rs:46:
+ mod account_fence_transport;
++#[path = "auth_rest/account_storage.rs"]
++mod account_storage;
+ #[path = "auth_rest/auth_target_parser.rs"]
+ mod auth_target_parser;
+ #[path = "auth_rest/publication_privileges.rs"]
+Diff in /private/tmp/console-format-followup-20260914/backend/app/tests/auth_rest.rs:4170:
+         router_with_key(pool, root, &SigningKey::random(&mut OsRng)).await
+     }
+ 
+-    async fn router_with_key(pool: &PgPool, root: PathBuf, signing_key: &SigningKey) -> axum::Router {
++    async fn router_with_key(
++        pool: &PgPool,
++        root: PathBuf,
++        signing_key: &SigningKey,
++    ) -> axum::Router {
+         let mut pairs = vec![
+             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+Diff in /private/tmp/console-format-followup-20260914/backend/app/tests/auth_rest.rs:5246:
+         );
+         assert!(signed_claims(&changed, &key).is_err());
+         for valid in ["1", "9223372036854775807"] {
+-            assert_eq!(claim_generation(&json!({"security_generation":valid})), valid.parse::<i64>().unwrap());
++            assert_eq!(
++                claim_generation(&json!({"security_generation":valid})),
++                valid.parse::<i64>().unwrap()
++            );
+         }
+-        for invalid in [json!(1), json!("0"), json!("01"), json!("+1"), json!("-1"), json!("9223372036854775808"), Value::Null] {
+-            assert!(std::panic::catch_unwind(|| claim_generation(&json!({"security_generation":invalid}))).is_err());
++        for invalid in [
++            json!(1),
++            json!("0"),
++            json!("01"),
++            json!("+1"),
++            json!("-1"),
++            json!("9223372036854775808"),
++            Value::Null,
++        ] {
++            assert!(
++                std::panic::catch_unwind(|| claim_generation(
++                    &json!({"security_generation":invalid})
++                ))
++                .is_err()
++            );
+         }
+     }
+ 
+Diff in /private/tmp/console-format-followup-20260914/backend/app/tests/health_readiness.rs:763:
+             let b = OrgId::new();
+             let actor_b = seed_org_and_super_admin(&pool, *b.as_uuid(), "PRIVATE-GROUP-B").await;
+             grant_group_viewer(&pool, b, actor_b).await;
+-            let group_a: Uuid = sqlx::query_scalar("SELECT group_id FROM organizations WHERE id=$1")
+-                .bind(a.as_uuid())
+-                .fetch_one(&pool)
+-                .await
+-                .unwrap();
+-            let group_b: Uuid = sqlx::query_scalar("SELECT group_id FROM organizations WHERE id=$1")
+-                .bind(b.as_uuid())
+-                .fetch_one(&pool)
+-                .await
+-                .unwrap();
++            let group_a: Uuid =
++                sqlx::query_scalar("SELECT group_id FROM organizations WHERE id=$1")
++                    .bind(a.as_uuid())
++                    .fetch_one(&pool)
++                    .await
++                    .unwrap();
++            let group_b: Uuid =
++                sqlx::query_scalar("SELECT group_id FROM organizations WHERE id=$1")
++                    .bind(b.as_uuid())
++                    .fetch_one(&pool)
++                    .await
++                    .unwrap();
+             assert_ne!(
+                 group_a, group_b,
+                 "this is cross-tenant, not intra-Group Company separation"
+Diff in /private/tmp/console-format-followup-20260914/backend/app/tests/health_readiness.rs:831:
+             // IDs/counts/order, including data serialized into island props.
+             for phase in 0..2 {
+                 let run_b = seed_run(&pool, b, actor_b).await;
+-                let changed = sqlx::query("UPDATE users SET display_name=$1 WHERE id=$2 AND org_id=$3")
+-                    .bind(format!("PRIVATE-B-DIAGNOSTIC-{phase}-급여"))
+-                    .bind(actor_b.as_uuid())
+-                    .bind(b.as_uuid())
+-                    .execute(&pool)
+-                    .await
+-                    .unwrap();
++                let changed =
++                    sqlx::query("UPDATE users SET display_name=$1 WHERE id=$2 AND org_id=$3")
++                        .bind(format!("PRIVATE-B-DIAGNOSTIC-{phase}-급여"))
++                        .bind(actor_b.as_uuid())
++                        .bind(b.as_uuid())
++                        .execute(&pool)
++                        .await
++                        .unwrap();
+                 assert_eq!(
+                     changed.rows_affected(),
+                     1,
+Diff in /private/tmp/console-format-followup-20260914/backend/crates/attendance/adapter-postgres/tests/concurrency.rs:195:
+     }
+ }
+ 
+-
+ #[sqlx::test(migrations = "../../platform/db/migrations")]
+ async fn concurrent_branch_month_closes_commit_one_snapshot_and_one_audit(owner_pool: PgPool) {
+     scope_org(OrgId::knl(), async move {
+Diff in /private/tmp/console-format-followup-20260914/backend/crates/platform/realtime/tests/hub.rs:166:
+     }
+ }
+ 
+-
+ // Append to backend/crates/platform/realtime/tests/hub.rs at base58b6f758.
+ // Uses existing message_event helper; exact production dispatch method is shared.
+ // This is in-process fanout selection, not actual PostgreSQL membership proof.

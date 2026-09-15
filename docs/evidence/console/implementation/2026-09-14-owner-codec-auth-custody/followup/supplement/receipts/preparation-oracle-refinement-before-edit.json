@@ -1,0 +1,33 @@
+{
+  "kind": "test-refinement-before-edit",
+  "base": "b0ac94f9f2f5851a2bbd3ed808c4340249c93029",
+  "owner": "/root/finish_migration",
+  "owned_paths": [
+    "scripts/check-undeclared-imports.test.mjs",
+    "scripts/prototype-chain-lookup-baseline.json"
+  ],
+  "patch": "/private/tmp/preparation-oracle-refinement-candidate.patch",
+  "patch_sha256": "c835d2ec54758f3ea1044698e9ec0303c865da5a9067fcdff5eaf31ba49885b3",
+  "finding": "Evidence retention added16 real @playwright/test imports; singlehistoricalartifact assertion incorrectly reads wholearchive. Two prototype residual statements movedone line but expressions/classifications unchanged.",
+  "preserved": [
+    "Exact expected finding file/line30/specifier playwright",
+    "All20testbodies and existing assertions",
+    "Wholeliverepo defaultfindingszero/floor/CLI/exclusion workflow safety tests",
+    "All archived evidence bytes",
+    "Residual count3, snippets, kind, key, reasons and notes"
+  ],
+  "changes": [
+    "Use existing Gitfixture with historical artifact Buffer copied byteexact and explicit empty fixture package manifest.",
+    "Only residual line integers249\u2192250 and312\u2192313."
+  ],
+  "premortem": "A fixture scanningzero could falselypass; realindexedhelper and exactnonemptyfinding reject that. Offsetrefresh could hide newlookup; exactuniquesnippet+kind/keycomparison guards that.",
+  "blast_radius": "Two test/registerfiles; no scanner or application source changes.",
+  "detection": "Exact20test probe plus prototypegate and its retained test suite.",
+  "rollback": "Revert isolated2filediff; preserve source receipts and RED logs.",
+  "stop_conditions": [
+    "Independentfinding",
+    "Scannerdependency/evidencechanges",
+    "Assertionweakened"
+  ],
+  "review": "pending /root/review_completeness"
+}

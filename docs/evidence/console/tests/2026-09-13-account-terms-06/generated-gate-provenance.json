@@ -1,0 +1,46 @@
+{
+  "candidate_sha": "1e2ea6d2060a3d875e531a9a9e8f749984d0a171",
+  "fresh_gate": {
+    "command": "PATH=\"/private/tmp/console-authority30-dotslash:$PATH\" RUSTUP_TOOLCHAIN=1.98.1 fnm exec --using=24.16.0 tools/buck/preflight.sh",
+    "exit_code": 0,
+    "tier": "cheap",
+    "full_generated_gate_executed_this_candidate": false
+  },
+  "retained_full_gate": {
+    "candidate_sha": "3305cd3fdce03a04d4b5d354617dd911d9da49ca",
+    "record": "../2026-09-13-account-session-05/generated-gate-comparison.json",
+    "record_sha256": "550540837e20e3a2cb585ed879aff5c4c09b6b63cd96c879d3af774256c35a4d",
+    "exit_code": 1,
+    "missing_reviewed_buildscript_fixups": 12
+  },
+  "input_custody": "Diff from previous full-gate source changes only auth_rest test body and evidence; all third-party manifests, tools, locks and fixups unchanged. Fresh cheap gate checks first-party generation. Prior full-gate failure retained with exact provenance, not represented as freshly executed or repaired.",
+  "changed_paths": [
+    "backend/app/tests/auth_rest.rs",
+    "docs/evidence/console/approvals/2026-09-13-session05/test-approval.json",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/approval-request.txt",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts.json",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/clippy-final.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/clippy-r1.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/container-readback.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/credentials-r2.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/credentials.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/discovery-final.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/discovery-r1.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/execution-final.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/execution-r1.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/generated-final.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/npm-ci.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/reachability.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/vm-start.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/artifacts/vm-stop.log.gz",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/coverage.json",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/execution.json",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/generated-gate-comparison.json",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/record.json",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/review-final.json",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/review-round-1.json",
+    "docs/evidence/console/tests/2026-09-13-account-session-05/source-identities.json",
+    "docs/evidence/console/tests/2026-09-13-account-terms-06/entry.json"
+  ],
+  "full_gate_hold_preserved": true
+}

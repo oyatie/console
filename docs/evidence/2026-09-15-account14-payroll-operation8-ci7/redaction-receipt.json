@@ -1,0 +1,373 @@
+{
+  "transform_id": "postgres-uri-userinfo-v1",
+  "rule": "Replace only the userinfo segment between postgresql:// or postgres:// and @ with <redacted-userinfo>; retain protocol, host, database, every other byte and every newline.",
+  "pattern": "(?i)(postgres(?:ql)?://)[^\\s:@/]+:[^\\s@/]+@",
+  "replacement": "\\1<redacted-userinfo>@",
+  "source_origin": "Every selected match equals an immutable cfg(test) command_database_config_tests constant and occurs in its rustc unused-constant warning excerpt. This is compiler diagnostic output, not application runtime logging.",
+  "source_bindings": [
+    {
+      "revision": "c13016282540c49546af1c0c75db45faef7fc466",
+      "path": "backend/app/src/lib.rs",
+      "sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "git_blob_oid_sha1": "4d536b6666df6dae783ce73b1890d1518ab8ef59",
+      "test_cfg_line": 6116,
+      "module_line": 6118,
+      "constant_lines": {
+        "RUNTIME_URL": 6126,
+        "LEAVE_COMMAND_URL": 6127
+      }
+    },
+    {
+      "revision": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+      "path": "backend/app/src/lib.rs",
+      "sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "git_blob_oid_sha1": "4d536b6666df6dae783ce73b1890d1518ab8ef59",
+      "test_cfg_line": 6116,
+      "module_line": 6118,
+      "constant_lines": {
+        "RUNTIME_URL": 6126,
+        "LEAVE_COMMAND_URL": 6127
+      }
+    },
+    {
+      "revision": "0a625d323be1184f94af549e20c7f47bfbd63702",
+      "path": "backend/app/src/lib.rs",
+      "sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "git_blob_oid_sha1": "4d536b6666df6dae783ce73b1890d1518ab8ef59",
+      "test_cfg_line": 6116,
+      "module_line": 6118,
+      "constant_lines": {
+        "RUNTIME_URL": 6126,
+        "LEAVE_COMMAND_URL": 6127
+      }
+    }
+  ],
+  "original_logs": "Preserved in place; excluded as raw import members if transformed. Original digests in existing reviews remain original digests and are never silently rewritten.",
+  "derivatives": [
+    {
+      "original_source": "/private/tmp/payroll-59c38d60-runtime-v2/1.log",
+      "original_bytes": 19999,
+      "original_sha256": "a12bf12ce35884fe30dd51a19a4a76878815ca01f3e5a6387b35f9e48cfa7fc8",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/payroll-59c38d60-runtime-v2/1.log",
+      "derived_sha256": "95dc3ce5114447b01c1663dfc39e2fae6745e616f87afbe225c4fccee071728e",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 462,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 468,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    },
+    {
+      "original_source": "/private/tmp/payroll-59c38d60-runtime-v2/2.log",
+      "original_bytes": 18288,
+      "original_sha256": "84a2c7148246e00332318da530294bb704cf073b3fa5599dd4092c6abf217ed6",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/payroll-59c38d60-runtime-v2/2.log",
+      "derived_sha256": "12baac092ec60d7a29a238096a72176a9bf1df1b7816201216efeca95084fb5d",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 450,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 456,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    },
+    {
+      "original_source": "/private/tmp/payroll-59c38d60-runtime-v2/4.log",
+      "original_bytes": 18383,
+      "original_sha256": "a7490c38d1dc70c5db2dec7cc7ec075f9dc0b7e4780129acec745ebc1f0bbe81",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/payroll-59c38d60-runtime-v2/4.log",
+      "derived_sha256": "e97749c667fbf86593583bb9b08b038e62c35aa72bed2df66e0b719b0475ac94",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 450,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 456,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    },
+    {
+      "original_source": "/private/tmp/payroll-59c38d60-verification/admission-red-preserved/1.log",
+      "original_bytes": 18999,
+      "original_sha256": "5116c9d7b43918ff9a2607e34e0d5cbc2e48a55f97725af19cf5bf089cdc01e1",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/payroll-59c38d60-verification/admission-red-preserved/1.log",
+      "derived_sha256": "29a3e02b1fcb473f7c6f9ca1cdf4c788b235bd1b40d40170d17f10445e58ac0b",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 450,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 456,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    },
+    {
+      "original_source": "/private/tmp/payroll-59c38d60-verification/admission-red-preserved/2.log",
+      "original_bytes": 18998,
+      "original_sha256": "56257302546d66b8de1d52f7cdd2d41cc46ef74144cd88f8a971c7f3bc021a99",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/payroll-59c38d60-verification/admission-red-preserved/2.log",
+      "derived_sha256": "f14191d0673bcf91e237a14f97ca751845368aee3c040db49fd77fd25494b8d3",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 450,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 456,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    },
+    {
+      "original_source": "/private/tmp/payroll-59c38d60-verification/admission-red-preserved/4.log",
+      "original_bytes": 18851,
+      "original_sha256": "163b52766d8c5581f8097876b5454ff841219b3d6b720bf5d4dfe833c52a1452",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/payroll-59c38d60-verification/admission-red-preserved/4.log",
+      "derived_sha256": "e49c48a264ee9d29ef555e463d197ed64be7c97859dfb511d9be2f4f8fd5c100",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 450,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 456,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    },
+    {
+      "original_source": "/private/tmp/payroll-operation8-0a625d32/probe.log",
+      "original_bytes": 18943,
+      "original_sha256": "0d78c2f74d9237288023095e787d2a925e788f244d4978c84ab9598d34592666",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/payroll-operation8-0a625d32/probe.log",
+      "derived_sha256": "75c8d0fd824cbffa611ff72e203cd89343ff4e52fef97b8ea22bcbaa8523ec36",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 455,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 461,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    },
+    {
+      "original_source": "/private/tmp/payroll-typed-c1301628-red/1.log",
+      "original_bytes": 19103,
+      "original_sha256": "b64af9a81dc23445869cd65244e4d8e0837cbddc79b50eafb3572b5b6db1098e",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/payroll-typed-c1301628-red/1.log",
+      "derived_sha256": "583c4152a33922d8a04e67ccf52cef9c06966fd2492aebf2820249e4f020f7cc",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 451,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 457,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    },
+    {
+      "original_source": "/private/tmp/payroll-typed-c1301628-red/2.log",
+      "original_bytes": 18998,
+      "original_sha256": "c1e968fc7f92be032c411009e505f36929c0d960bf7270cfa97af21f4856b1b0",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/payroll-typed-c1301628-red/2.log",
+      "derived_sha256": "67f9cef0f108270e918a3a3962afc6e75fd7a9ae354e29c817df9f9fac9d2ad5",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 450,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 456,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    },
+    {
+      "original_source": "/private/tmp/payroll-typed-c1301628-red/3.log",
+      "original_bytes": 18281,
+      "original_sha256": "e97674bafcdcc991df046aecd96fe837e86db8880e53c75bb4326b66bfb27771",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/payroll-typed-c1301628-red/3.log",
+      "derived_sha256": "ff4e4c4139a573068e890e868564fb9b5697c2317d8bc5577137602fee9f6541",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 450,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 456,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    },
+    {
+      "original_source": "/private/tmp/payroll-typed-c1301628-red/4.log",
+      "original_bytes": 18851,
+      "original_sha256": "b1946ffdffcdf03a94d49fc287cf6682e66ac92800fd56a397fea64bd625ebc4",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/payroll-typed-c1301628-red/4.log",
+      "derived_sha256": "9a2bdbf16c65f135b1f37cafcfaa7f09a2afa446c3b5e457f9a6dafeba751483",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 450,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 456,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    },
+    {
+      "original_source": "/private/tmp/retained-0a625d32-independent-fast/supervisor/operation/test.log",
+      "original_bytes": 18580,
+      "original_sha256": "7331b788c1dc322c09148a62ef02d6964125bb0e5df46481ebf590547517e7c8",
+      "derived_source": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory/sanitized/retained-0a625d32-independent-fast/supervisor/operation/test.log",
+      "derived_sha256": "9c2c4bf63e3886e78a06f410b03308bdb53db661e1db66d1eaf462e944793ae4",
+      "replacement_count": 2,
+      "matches": [
+        {
+          "line": 447,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6126,
+          "constant": "RUNTIME_URL",
+          "redacted_context": "6126 |     const RUNTIME_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        },
+        {
+          "line": 453,
+          "origin": "rustc unused-constant warning source excerpt",
+          "source_path": "backend/app/src/lib.rs",
+          "source_line": 6127,
+          "constant": "LEAVE_COMMAND_URL",
+          "redacted_context": "6127 |     const LEAVE_COMMAND_URL: &str = \"postgresql://<redacted-userinfo>@db/console\";"
+        }
+      ],
+      "original_unchanged": true
+    }
+  ],
+  "matches": 24
+}

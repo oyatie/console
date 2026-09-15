@@ -1,0 +1,26 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/common_action_composer.rs (/private/tmp/console-account30-cargo/debug/deps/common_action_composer-93c2d478a41e1a4e)
+
+running 17 tests
+test address_encoding_is_injective_for_sequence_and_optional_item_boundaries ... ok
+test composer_form_has_accessible_business_name ... ok
+test conflict_preserves_editor_and_original_tokens_with_authorized_recovery ... ok
+test exact_command_expected_draft_and_csrf_tokens_are_successful_hidden_controls ... ok
+test incomplete_decimal_is_not_coerced_and_error_links_to_exact_field ... ok
+test read_only_projection_has_no_mutation_controls_or_tokens ... ok
+test escaped_labels_values_errors_and_tokens_never_create_markup ... ok
+test no_js_composer_uses_one_post_form_and_distinct_explicit_intents ... ok
+test optional_selected_enum_can_be_cleared_without_javascript ... ok
+test local_tag_oracle_rejects_missing_duplicate_and_prefix_controls ... ok
+test only_projected_fields_and_choices_exist_in_document ... ok
+test submit_only_validation_error_retains_retry_without_inventing_save_authority ... ok
+test save_only_projection_never_offers_submit ... ok
+test repeated_item_addresses_survive_reorder_without_aliasing ... ok
+test unresolved_editor_can_save_and_retry_after_no_js_correction ... ok
+test unsafe_action_paths_never_create_mutation_or_serialize_tokens ... ok
+test unsafe_recovery_paths_never_become_active_links ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

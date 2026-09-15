@@ -1,0 +1,42 @@
+{
+  "recorded_at": "2026-09-12T23:41:50.817281+00:00",
+  "status": "SCOPED_SOURCE_PAYLOAD_DESIGN_ACCEPTANCE_ONLY",
+  "reviewed_candidate_sha": "c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6",
+  "review_mode": "Independent read-only scoped full review and exact correction diffs; /root sole writer",
+  "reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "candidate_sha": "c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "All original findings and opening-boundary ambiguity resolved; no remaining scoped blocker. Exact-SHA static verifier independently passed.",
+      "independently_verified_static_sha": "c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "candidate_sha": "c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Flat refs/day framing, anchored-plan and event corrections coherent. Final three-file boundary diff accepted; prior independent static pass retained without claiming a rerun.",
+      "independently_verified_static_sha": "dc13f447c9f9e58553457d67d02039939fdd5af5",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false
+    }
+  ],
+  "whole_design_consensus": false,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "counts_as_final_integrated_round": false,
+  "remaining_holds": [
+    "F01/F02 partial: source/native/common interface, physical owner/helper/trigger/ACL/caller/transport/adoption and retention integration",
+    "F03-F08 issuance/custody/identity/credential topology/recovery/migration/admission/harness closure from17",
+    "Real qualified rules, issuer/credential sources and normalizer supply; no legal conclusion from synthetic fixtures",
+    "Final authority-aligned integrated design four independent review rounds and explicit exact design SHA approval",
+    "Executable test candidate independent review and explicit exact test SHA approval before actual named RED implementation admission",
+    "Separate release/exposure/legal/payment authority"
+  ]
+}

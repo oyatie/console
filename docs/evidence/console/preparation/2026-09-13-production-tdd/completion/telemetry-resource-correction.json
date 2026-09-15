@@ -1,0 +1,24 @@
+{
+  "kind": "NEW_TEST_RESOURCE_PARTITION_CORRECTION",
+  "base_sha": "e44e0448abee62ea7d296ffca4ace3b3dbfbdb85",
+  "source": "backend/app/src/console_telemetry.rs",
+  "source_sha256": "e9b38b126805593299587e8833afb6b24fcbd95053028641c77d9ae33b17fb56",
+  "change": "Two new tests run in ordinary app unit target only; existing required explicit not(test-postgres) classification added. Entire test helper module has same guard to avoid unused helper build. No assertion or production code change.",
+  "reviewer": "/root/preparation_recovery",
+  "review_receipt": "/private/tmp/preparation-recovery-telemetry-gating-review-20260913/review.txt",
+  "normal_execution": {
+    "discovered": 166,
+    "selected": 2,
+    "passed": 0,
+    "failed": 2,
+    "filtered": 164,
+    "result": "SAME_TWO_MEANINGFUL_DIAGNOSTIC_LEAK_REDS"
+  },
+  "postgres_variant_discovery": {
+    "tests": 23,
+    "result": "EXPECTED_EXISTING_PG_ONLY_VARIANT; discovery only, not execution"
+  },
+  "ordinary_ci": "env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib",
+  "removed_test_cases": 0,
+  "weakened_assertions": 0
+}

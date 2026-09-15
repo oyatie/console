@@ -1,0 +1,37 @@
+[
+  {
+    "lane": "FP04-auth-serving-timeout-provisioning",
+    "base_sha": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+    "owner": "/root",
+    "allow": [
+      "ops/postgres-reconcile-topology.sh"
+    ],
+    "probe": "env -u BUCK_ISOLATION_DIR DOCKER_CONTEXT=colima-console-custody-20260914 python3 /private/tmp/account-auth-transport4-probe.py",
+    "target": "Same real four-case auth transport suite green with original serving timeout validation intact",
+    "guide": [
+      "/private/tmp/account-auth-timeout-topology-design.json",
+      "/private/tmp/account-auth-timeout-topology-independent-review.json"
+    ],
+    "test_sha256": "ea61a10fbce81689afdbf5b3e5bf3b77ccb5e5d2e278a41ca52b28c2d00078bf",
+    "pre_mortem": "Auth role missing managed timeout defaults causes all required-auth startup to fail; old sessions retain unbounded settings after role default changes",
+    "blast_radius": "Existing operator topology tool, auth role only; no grants/password writes added; production not run",
+    "detection": "Shared pool role+timeout validation and exact4tests; existing role catalog/readback and managed-key-only reset/drain",
+    "rollback": "Local source revert; any future applied persistent role defaults require separate recorded-default restoration, not merely software rollback",
+    "stop_conditions": [
+      "Prerequisite schema/finalizer failure",
+      "Infrastructure failure rather than intended RED",
+      "Test weakening",
+      "Unverified fixture cleanup",
+      "New privilege or migration required"
+    ],
+    "reviewers": [
+      "/root/finish_browser"
+    ],
+    "holds": [
+      "Full request fencing and Account sessions",
+      "Physical cluster/HA/restore binding",
+      "Production and legal/payment exposure"
+    ],
+    "shared_resources": "Root exclusive disposable Docker cluster and Cargo target /private/tmp/console-account30-cargo; native agents read only; root generated/evidence writer"
+  }
+]

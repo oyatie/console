@@ -1,0 +1,181 @@
+✖ actual required recovery commands resolve nine owners, the isolated installer and eight app cases (15.946083ms)
+✔ recovery executor refuses wrong checkout (12.081417ms)
+✔ recovery executor refuses no run (6.399917ms)
+✔ recovery executor refuses list only (6.353667ms)
+✔ recovery executor refuses skip selected test (5.694542ms)
+✔ recovery executor refuses success-only second case (5.029667ms)
+✔ recovery executor refuses continued failure (4.861834ms)
+✔ recovery executor refuses echo shell (5.32725ms)
+✔ recovery executor refuses echo command (5.2865ms)
+✔ recovery executor refuses missing scenario (5.375208ms)
+✔ recovery executor refuses duplicate scenario (5.4165ms)
+✔ recovery executor refuses wrong cut (5.276041ms)
+✔ recovery executor refuses late image setup (3.257416ms)
+✔ recovery executor refuses fake setup id (3.411959ms)
+✔ recovery executor refuses unbound checkout ref (2.971834ms)
+✔ recovery executor refuses wrong setup guard (5.395417ms)
+✔ an additional real owner test cannot silently fall outside selected filters (2.453083ms)
+✔ new recovery case replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply must have a real required executor (5.219792ms)
+✔ new recovery case lost_commit_transport_reply_replays_one_real_payroll_effect must have a real required executor (6.358583ms)
+✔ new recovery case fresh_commit_wait_release_requires_explicit_remote_confirmation must have a real required executor (5.445458ms)
+✔ new recovery case staging_success_and_idempotent_restage_wait_for_remote_confirmation must have a real required executor (6.094083ms)
+✔ new recovery case required_remote_unknown_is_bounded_and_never_local_fallback must have a real required executor (4.645709ms)
+✔ new recovery case finite_remote_bound_and_repeated_replay_preserve_exact_rows must have a real required executor (5.487959ms)
+✔ new recovery case fresh_commit_deadline_retains_capacity_until_replay_resumes must have a real required executor (4.664458ms)
+✔ new recovery case aborted_fresh_stage_retains_capacity_until_native_wait_ends must have a real required executor (5.432708ms)
+✔ new recovery case fresh_stage_transport_error_closes_pool_before_reconciliation must have a real required executor (4.58925ms)
+✔ new recovery case real_observer_installer_is_atomic_replay_exact_and_drift_refusing must have a real required executor (5.608541ms)
+✔ new recovery case durability_composition_tests::required_app_startup_admits_only_the_installed_observer must have a real required executor (4.731ms)
+✔ new recovery case durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply must have a real required executor (5.298333ms)
+✔ new recovery case durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry must have a real required executor (4.837416ms)
+✔ new recovery case durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay must have a real required executor (5.196875ms)
+✔ new recovery case durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command must have a real required executor (6.524834ms)
+✔ new recovery case durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs must have a real required executor (4.756583ms)
+✔ new recovery case durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events must have a real required executor (5.166875ms)
+✔ new recovery case durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown must have a real required executor (4.944458ms)
+✔ observer execution refuses  --no-run (7.651916ms)
+✔ observer execution refuses  --list (5.983834ms)
+✔ observer execution refuses  --skip real_observer (5.2875ms)
+✔ observer execution refuses  --ignored (5.996958ms)
+✖ an additional real app case cannot silently fall outside selected filters (3.093417ms)
+✔ app durability_composition_tests::required_app_startup_admits_only_the_installed_observer refuses ordinary feature (6.137209ms)
+✔ app durability_composition_tests::required_app_startup_admits_only_the_installed_observer refuses missing feature (5.36275ms)
+✔ app durability_composition_tests::required_app_startup_admits_only_the_installed_observer refuses substring filter (6.039416ms)
+✔ app durability_composition_tests::required_app_startup_admits_only_the_installed_observer refuses list only (5.160666ms)
+✔ app durability_composition_tests::required_app_startup_admits_only_the_installed_observer refuses all lib tests (6.231708ms)
+✔ app durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply refuses ordinary feature (6.192167ms)
+✔ app durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply refuses missing feature (5.460875ms)
+✔ app durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply refuses substring filter (5.013875ms)
+✔ app durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply refuses list only (6.437625ms)
+✔ app durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply refuses all lib tests (6.443083ms)
+✔ app durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry refuses ordinary feature (4.920834ms)
+✔ app durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry refuses missing feature (4.763791ms)
+✔ app durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry refuses substring filter (4.940292ms)
+✔ app durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry refuses list only (5.620625ms)
+✔ app durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry refuses all lib tests (4.764834ms)
+✔ app durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay refuses ordinary feature (5.404958ms)
+✔ app durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay refuses missing feature (4.842875ms)
+✔ app durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay refuses substring filter (5.18275ms)
+✔ app durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay refuses list only (4.786917ms)
+✔ app durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay refuses all lib tests (5.589083ms)
+✔ app durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command refuses ordinary feature (5.366583ms)
+✔ app durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command refuses missing feature (4.688125ms)
+✔ app durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command refuses substring filter (4.876666ms)
+✔ app durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command refuses list only (4.710708ms)
+✔ app durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command refuses all lib tests (5.523416ms)
+✔ app durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs refuses ordinary feature (4.999125ms)
+✔ app durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs refuses missing feature (5.020417ms)
+✔ app durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs refuses substring filter (4.91225ms)
+✔ app durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs refuses list only (5.284167ms)
+✔ app durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs refuses all lib tests (5.217417ms)
+✔ app durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events refuses ordinary feature (5.685708ms)
+✔ app durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events refuses missing feature (5.858333ms)
+✔ app durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events refuses substring filter (4.992666ms)
+✔ app durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events refuses list only (5.058917ms)
+✔ app durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events refuses all lib tests (5.339292ms)
+✔ app durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown refuses ordinary feature (5.522917ms)
+✔ app durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown refuses missing feature (5.235042ms)
+✔ app durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown refuses substring filter (4.549375ms)
+✔ app durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown refuses list only (4.884459ms)
+✔ app durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown refuses all lib tests (5.2635ms)
+✔ app cases cannot share one supervisor or one failure-sensitive step (5.376708ms)
+✔ app order must follow the isolated observer in the reviewed order (5.435708ms)
+✔ app source refuses extra tokio test (2.874166ms)
+✔ app source refuses extra ordinary test (3.222958ms)
+✔ app source refuses module cfg (2.794625ms)
+✔ app source refuses module cfg_attr (2.582125ms)
+✔ app source refuses selected ignore (2.956292ms)
+✔ app source refuses selected cfg (2.924292ms)
+✔ app source refuses selected cfg_attr (3.065875ms)
+✔ app source refuses nested cases (2.819458ms)
+✖ app source ignores fake attributes and names in comments and literals (0.897833ms)
+✔ app module refuses commented correct guard (12.377625ms)
+✔ app module refuses literal correct guard (8.110375ms)
+✔ app module refuses additional disabling guard (6.499541ms)
+✔ app module refuses ordinary feature guard (8.04425ms)
+✔ comment/literal module examples cannot create a second live declaration (3.4005ms)
+✔ owner source refuses extra tokio test (2.1305ms)
+✔ owner source refuses extra ordinary test (1.989958ms)
+✔ owner source refuses module cfg (1.763584ms)
+✔ owner source refuses module cfg_attr (1.761958ms)
+✔ owner source refuses selected ignore (1.748458ms)
+✔ owner source refuses selected cfg (1.594583ms)
+✔ owner source refuses selected cfg_attr (1.52075ms)
+✔ owner source refuses nested cases (1.582042ms)
+✔ owner census ignores spoofed comments/literals without accepting a missing real case (1.952625ms)
+✔ observer source refuses extra tokio test (1.954416ms)
+✔ observer source refuses extra ordinary test (1.975167ms)
+✔ observer source refuses module cfg (2.110584ms)
+✔ observer source refuses module cfg_attr (2.617708ms)
+✔ observer source refuses selected ignore (2.043167ms)
+✔ observer source refuses selected cfg (1.9975ms)
+✔ observer source refuses selected cfg_attr (2.005417ms)
+✔ observer source refuses nested cases (2.090708ms)
+✔ observer census ignores spoofed comments/literals without accepting a missing real case (0.590625ms)
+ℹ tests 114
+ℹ suites 0
+ℹ pass 111
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 618.1535
+
+✖ failing tests:
+
+test at scripts/lib/recovery-test-invocations.test.mjs:13:1
+✖ actual required recovery commands resolve nine owners, the isolated installer and eight app cases (15.946083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'supervised source cfg/ignore enrollment changed'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-production-tdd-preparation-20260913/scripts/lib/recovery-test-invocations.test.mjs:15:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'supervised source cfg/ignore enrollment changed' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/lib/recovery-test-invocations.test.mjs:74:1
+✖ an additional real app case cannot silently fall outside selected filters (3.093417ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /discovered supervised/. Input:
+  
+  'supervised source cfg/ignore enrollment changed'
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-production-tdd-preparation-20260913/scripts/lib/recovery-test-invocations.test.mjs:77:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'supervised source cfg/ignore enrollment changed',
+    expected: /discovered supervised/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at scripts/lib/recovery-test-invocations.test.mjs:139:1
+✖ app source ignores fake attributes and names in comments and literals (0.897833ms)
+  Error: supervised source cfg/ignore enrollment changed
+      at supervisedSourceCases (file:///private/tmp/console-production-tdd-preparation-20260913/scripts/lib/recovery-test-invocations.mjs:44:67)
+      at appRecoveryCases (file:///private/tmp/console-production-tdd-preparation-20260913/scripts/lib/recovery-test-invocations.test.mjs:11:35)
+      at TestContext.<anonymous> (file:///private/tmp/console-production-tdd-preparation-20260913/scripts/lib/recovery-test-invocations.test.mjs:141:20)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)

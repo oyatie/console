@@ -1,0 +1,112 @@
+{
+  "argv": [
+    "node",
+    "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+    "test",
+    "--config",
+    "/private/tmp/console-browser-owner-producer-r3-20260914/playwright/playwright.config.cjs",
+    "--list",
+    "--reporter=json"
+  ],
+  "env": {
+    "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+  },
+  "exit_code": 0,
+  "application_discovered": 15,
+  "oracle_discovered": 8,
+  "application_executed": 0,
+  "leaf_identities": [
+    [
+      "hydrated",
+      "hydrated edit autosaves an ordinary acknowledged draft receipt"
+    ],
+    [
+      "hydrated",
+      "hydrated stale autosave preserves local input and exposes current receipt recovery"
+    ],
+    [
+      "hydrated",
+      "WASM load failure labels autosave unavailable and retains real manual save"
+    ],
+    [
+      "hydrated",
+      "hydrated offline input remains unacknowledged and reconnect saves exactly once"
+    ],
+    [
+      "no-js",
+      "draft save preserves exact acknowledged input across reload"
+    ],
+    [
+      "no-js",
+      "invalid submission preserves input and exposes linked errors"
+    ],
+    [
+      "no-js",
+      "stale save preserves acknowledged inputs and offers recovery"
+    ],
+    [
+      "no-js",
+      "scoped review presents permitted evidence without hidden coverage"
+    ],
+    [
+      "no-js",
+      "historical own publication remains nonpayable with correction entry"
+    ],
+    [
+      "no-js",
+      "read-only projection has no state-changing form or concealed private fields"
+    ],
+    [
+      "no-js",
+      "keyboard user can discover edit save and recover acknowledged input"
+    ],
+    [
+      "no-js",
+      "narrow composer preserves essential context inputs and actions"
+    ],
+    [
+      "js-enabled-ssr",
+      "scoped review presents permitted evidence without hidden coverage"
+    ],
+    [
+      "js-enabled-ssr",
+      "historical own publication remains nonpayable with correction entry"
+    ],
+    [
+      "js-enabled-ssr",
+      "read-only projection has no state-changing form or concealed private fields"
+    ],
+    [
+      "oracle",
+      "ordinary read form"
+    ],
+    [
+      "oracle",
+      "permitted own logout"
+    ],
+    [
+      "oracle",
+      "renamed business form"
+    ],
+    [
+      "oracle",
+      "GET form with POST submit override"
+    ],
+    [
+      "oracle",
+      "external associated submit override"
+    ],
+    [
+      "oracle",
+      "logout form with hostile submit action"
+    ],
+    [
+      "oracle",
+      "reflow oracle permits vertical scrolling with reachable controls"
+    ],
+    [
+      "oracle",
+      "reflow oracle rejects clipped offscreen control despite zero page overflow"
+    ]
+  ]
+}

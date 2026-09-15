@@ -62,6 +62,9 @@ spec:
             # Runtime connects as the NON-OWNER role console_rt (subject to RLS).
             # Schema migrations are applied out of band with the owner console-db-app
             # secret — never from this workload.
+            - name: CONSOLE_DATABASE_DURABILITY
+              valueFrom:
+                configMapKeyRef: { name: console-config, key: CONSOLE_DATABASE_DURABILITY }
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef: { name: console-db-rt, key: uri }

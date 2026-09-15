@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "class": "evidence",
+  "status": "frozen_scoped_design_candidate",
+  "recorded_at": "2026-09-12T02:45:13.481183+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "reviewed_contract_sha": "f8f504c1bc20f5bf7934bf09f2775198a329ea50",
+  "predecessor_evidence_sha": "04ec346bf1f565176c7883b49459a81b636f7f64",
+  "whole_design_approved": false,
+  "files": [
+    {
+      "path": "acceptance-plan.csv",
+      "bytes": 13096,
+      "sha256": "d848f57f7a3450c832a58205ddfc8925c91b2e18b079d674de0821a8c8d7e749"
+    },
+    {
+      "path": "access-model.txt",
+      "bytes": 43472,
+      "sha256": "9d32e0d3fe8a7f033ab6dfac6ac3fe92b542d5f4f831a5b2fb43ee60a11342e0"
+    },
+    {
+      "path": "access-path-matrix.csv",
+      "bytes": 4076,
+      "sha256": "3d346cd0dd4ff06ea62b79233e0bc888ca582500be32674485a64d327d1c864f"
+    },
+    {
+      "path": "actor-and-identity.txt",
+      "bytes": 22378,
+      "sha256": "2a487dafb1255fbdd3e81b38085d8216bc056066fc13f89789888b170725bdee"
+    },
+    {
+      "path": "approval-and-correction.txt",
+      "bytes": 16564,
+      "sha256": "9b30d44c8714521e12f6d6e76929486168f8c3bb3b917d56257a3897dc4869e9"
+    },
+    {
+      "path": "continuity-and-certificates.txt",
+      "bytes": 18504,
+      "sha256": "a91fdb7e08c744993f0fa8003eb01ef52c3c9a3c028fd845f0d482c717fcde15"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 2123,
+      "sha256": "db3a2e957a32da7983d29ef4a3c9d00b2965aca35dc24066b1cd58f58b067c1c"
+    },
+    {
+      "path": "inspiration.txt",
+      "bytes": 1587,
+      "sha256": "4b4d2f933f1749746ad30cb9172d217896588aa9bac2b22281e0affd32fa75ad"
+    },
+    {
+      "path": "public-sources/cedar.html",
+      "bytes": 35509,
+      "sha256": "2a136e83e4e09862697e87f217ec5f9e147d9633d4e5d52daffb3fe57b576208"
+    },
+    {
+      "path": "public-sources/cedar.json",
+      "bytes": 294,
+      "sha256": "0cd624f028fa5c9e4db6deaef186563f092bde04c31a9efcf92f5c065e03f1fb"
+    },
+    {
+      "path": "public-sources/cedar.txt",
+      "bytes": 14603,
+      "sha256": "d4a3ad1879f6ede492e9c212021e7b2381dd55dee74bec0c3ffa9440af23e73f"
+    },
+    {
+      "path": "public-sources/discord.html",
+      "bytes": 559177,
+      "sha256": "b695e5115df5315b29748091303d7f51b33a660ce43aab780702636713448f29"
+    },
+    {
+      "path": "public-sources/discord.json",
+      "bytes": 299,
+      "sha256": "036c044b95b8b2880961c9eb90c843469a35adc823c2d07e63336cffbcfff55f"
+    },
+    {
+      "path": "public-sources/discord.txt",
+      "bytes": 20622,
+      "sha256": "0dd846899468fa15d13dbd3b9bcf76f04a1add93af32a6c074f0137087579e5b"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 2345,
+      "sha256": "cee3ea0ef806c55503ba2cd2f365adb5fe281cc89c068c556548368c48660f06"
+    },
+    {
+      "path": "review.html",
+      "bytes": 11564,
+      "sha256": "22a8ea90469130464c7fb55e44c9c41a2e52433f0c9ac4531b09f72dcf66e874"
+    },
+    {
+      "path": "reviews.json",
+      "bytes": 2188,
+      "sha256": "aecc806f2d26e09b73b9a96f5c26a8694deca0c2247058543d339cb10442b5fc"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 1582,
+      "sha256": "4764d38647364e1e3fd97b835925f3e2788cd937cedc31cf65ae6421d22e8277"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 6702,
+      "sha256": "f66bec82eee869619c3adad4ff6830de6163ba365354de79c81c5fd0800b72d7"
+    },
+    {
+      "path": "user-invariant.json",
+      "bytes": 3443,
+      "sha256": "2f601c24699effe333acbb573068e027e25d378538328ff60bc81921097cccc5"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 35684,
+      "sha256": "788c3e1332f1ed42a3f7651a2c491bb87a164f9e16dd1b4bff7246fc837262fd"
+    }
+  ],
+  "remaining_holds": [
+    "Whole design consensus and explicit design SHA approval",
+    "Executable tests independently reviewed and explicitly test-SHA approved before implementation",
+    "Partial-visibility decision coverage B02/B07 and B03/B04/B06/B07/B08",
+    "Authority amendment; production/payment/legal claims",
+    "Full diff whitespace and pre-existing document gate findings; not merge-ready"
+  ]
+}

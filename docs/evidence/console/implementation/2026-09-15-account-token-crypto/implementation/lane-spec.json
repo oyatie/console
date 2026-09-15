@@ -1,0 +1,58 @@
+[
+  {
+    "lane": "account-token-crypto-owner",
+    "probe": "env RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --offline --manifest-path backend/Cargo.toml -p console-platform-auth --test jwt_es256 account_crypto:: -- --test-threads=1",
+    "base_sha": "b2c52e27c719237590205d7441ba708a52d66265",
+    "owner": "/root",
+    "private_implementer": "/root/fast_gate_review",
+    "allow": [
+      "backend/crates/platform/auth/src/jwt/account.rs",
+      "backend/crates/platform/auth/src/jwt.rs",
+      "backend/crates/platform/auth/src/lib.rs"
+    ],
+    "root_serialized_paths": [
+      "backend/crates/platform/auth/BUCK"
+    ],
+    "immutable_target": {
+      "api_sha256": "8727208acdfee7e100994f7f12870655423842ff619c5503774bc1b767317ac3",
+      "tests_sha256": "ecc5020a2478a262b89a26c531f2809d434999bc71a4a2b901420cf5974dd3fb"
+    },
+    "mechanical_guide": "/private/tmp/account-token-crypto-acceptance-v3-candidate-f96eddd3/guide.json",
+    "prompt": "Implement frozen APIv3 in a private candidate only after this exact missing-owner compiler probe is admitted. Existing JwtIssuer/JwtVerifier owns all keys/settings. Private nested jwt/account.rs, narrow reexports only; no newcrate/dependency, no dummy implementation. Closed typed claims with raw duplicate refusal, strict clock/issuer/audience/kind/uuid/generation validation, typed Current/Expired access result, fixed non-echoing errors and redacted Debug. Existing legacy helper remains unchanged. Root is sole integrationwriter and Cargoexecutor.",
+    "red_classification": {
+      "exit": 101,
+      "compiler_errors": 27,
+      "error_kinds": [
+        "E0432",
+        "E0599"
+      ],
+      "runtime_discovered": 0,
+      "runtime_executed": 0,
+      "reason": "Existing test binary cannot compile because this exact Account crypto owner API does not exist. The15behavioral assertions remain unreached; this is not15runtimefailures. Prior legacy-protocol3 has separate actual behavioralRED/GREEN."
+    },
+    "pre_mortem": "Expired path skips non-expiry checks; unknown/duplicate grammar leaks claims; unchecked datetime arithmetic overflows; absent real owner replaced by teststub; crypto claims mistaken for live authority.",
+    "blast_radius": "Existing auth purecrypto only. No schema, grants, browser routes, family mutations, Account activation or newservice.",
+    "detection": "Same15test command after real owner exists plus full29+7regression, formatting/librarylint, exactsource and testhashes, independent source/runtime review.",
+    "rollback": "Source-only reviewed correction/revert; preserve alltests and prior legacy marker fix; no credential/database/session rollback.",
+    "stop_conditions": [
+      "Wrong cleanbase/testAPIhash",
+      "Other prerequisite errors not explained by missingowner",
+      "Testweakening/skip/fakeowner",
+      "Unrelated dependency/schema/publicbehaviorchange",
+      "Credential data in logs/errors",
+      "Failed independentreview or runtimechecks"
+    ],
+    "review_identities": [
+      "/root/inventory_repair: tests/API author",
+      "/root/capture_review: independent tests/API approval",
+      "/root: integration/runtime operator"
+    ],
+    "remaining_holds": [
+      "Formal admission",
+      "Executed15behavioral checks and29+7regression",
+      "Independent implementationreview",
+      "Real primaryproof/currentAccount/family/session authority, browser/lifecycle",
+      "Production/payment/legal"
+    ]
+  }
+]

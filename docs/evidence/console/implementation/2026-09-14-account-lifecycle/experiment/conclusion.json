@@ -1,0 +1,34 @@
+{
+  "result": "PASS_BOUNDED_NO_MEMBERSHIP_ADMIN_TRANSFER_EXPERIMENT",
+  "source_base": "cca76fee191c3e8e64b4ac823fccf893830204a1",
+  "controls": [
+    "PASS db_a225legacySQL",
+    "PASS real console_app ownership transfer refused",
+    "PASS injected failure rolls back all6ownerships",
+    "PASS finalizer+base topology replay preserve custody+legacy catalog",
+    "PASS six actual runtime LOGIN privilege refusals",
+    "PASS db_b225legacySQL after db_a custodyfinalization; db_a custodyretained"
+  ],
+  "sql_files_applied": 450,
+  "databases": 2,
+  "mapped_rust_tests_executed": 0,
+  "runtime_login_refusals": 6,
+  "no_membership_owner_checks": "Actual pg_roles+pg_auth_members+effective MEMBER/SET/USAGE and table/column privilege checks after transfer, replay and dbB application; all7legacy application roles denied custody;6tablesempty.",
+  "rollback": "Actual admin transaction changes first3owners then SELECT1/0; psql -1 error rolls back; readback requires all6stillconsole_app before successful admin transfer.",
+  "catalog_preservation": "Ordered JSON of originalpublic tableowners/ACL/columns/nullability/columnACL/constraintdefinitions byte-identical before stagedschema vs after finalizer+base-topology replay. Separate6custodyowner/ACL snapshot also byte-identical across repeat. Not a full function/trigger/default/schema equality proof.",
+  "limitations": [
+    "Explicit transformed draft omits only ownership-transfer statements and temporary schemaCREATE grants; retains originalpreconditions/schema/ACLrevoke. Not executable product0226 and no migration ledger fabricated.",
+    "Actual historical225SQLfiles applied throughpsql twice, not through app run_migrations or SQLx ledger. Application startup/finalization API not validated.",
+    "Admin transfer script exact6ALTEROWNER statements executed in transaction; this experiment does not implement production precondition/digest/version admission or new readiness controls.",
+    "No productionpayload/Account/termshead/backfill/fence rows inserted; schema remains empty.",
+    "No persistent newrole memberships; futureDDL requires admin ownership path or separately reviewed method.",
+    "Restricted LOGIN read refusals real, but general SECURITYDEFINER/caller/egress security not proven."
+  ],
+  "cleanup": {
+    "container": "console-account-lifecycle-experiment-3c7ed7b7c04e",
+    "exit_code": 0,
+    "secret_file_removed": true
+  },
+  "source_record_sha256": "317242e5abc6fb7080d45e19202987b138d8d8bb837203583601f4c1db338017",
+  "raw_result_sha256": "84f98103cc6aff0ddeb82be60e8bed06cab2e1e94bb59ca664ce9cb0a15a32b9"
+}

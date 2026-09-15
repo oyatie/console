@@ -1,0 +1,301 @@
+{
+  "kind": "immutable-evidence-manifest",
+  "files": {
+    "custody-readback.json": {
+      "sha256": "ff92abe5a77cd37a043f7700d303e3b0029f9bd728a1073081d758379050633f",
+      "bytes": 939
+    },
+    "experiment/app-owner-refusal.log": {
+      "sha256": "b17aa7b8a48576a53019d1348ce24e27e9b3cbb43d99a549238f59cd69f869a7",
+      "bytes": 57
+    },
+    "experiment/check-custody.sql": {
+      "sha256": "ebf1fc73c3705d008157cea816db1a37cf4787ba0ab749cae9b257bd6e91c1d5",
+      "bytes": 2002
+    },
+    "experiment/check-rolled-back.sql": {
+      "sha256": "2be541185ccbbf54a12dabb1f38baf16356eb5d385dd333fe6f1305fef59aaae",
+      "bytes": 396
+    },
+    "experiment/cleanup.log": {
+      "sha256": "fbde9345727e20f7b6c09ebab0f15110ed9ec7d4d51123626f1d714ea65225b8",
+      "bytes": 50
+    },
+    "experiment/conclusion.json": {
+      "sha256": "77800e8ba5663193c5d476d384be3bccab262cd9988a0b54df5565891e3b3b80",
+      "bytes": 2602
+    },
+    "experiment/custody-after.json": {
+      "sha256": "21f514fe39a5c34a2da32146e6cad9ff6ff8823ae83fb2360a99556ba7992584",
+      "bytes": 339
+    },
+    "experiment/custody-before.json": {
+      "sha256": "21f514fe39a5c34a2da32146e6cad9ff6ff8823ae83fb2360a99556ba7992584",
+      "bytes": 339
+    },
+    "experiment/custody-snapshot.sql": {
+      "sha256": "b02f41cb9af01ccaa93efe2bc586806d521900491e8d807ea535d4421ef01b5e",
+      "bytes": 352
+    },
+    "experiment/experiment.log": {
+      "sha256": "74b0a7ec76b309d087095edd42574a077f2bb1655f89cdfd17ba004fe5e37c60",
+      "bytes": 3839
+    },
+    "experiment/in-container.sh": {
+      "sha256": "7bca104e38c5b04bb5b13721541b632947248470f68f24bd77947f502528853b",
+      "bytes": 3354
+    },
+    "experiment/legacy-after.json": {
+      "sha256": "122a828209e745777b5c66ebae0fd41b8605bb9fee5b578aac2b405d1870c85b",
+      "bytes": 435757
+    },
+    "experiment/legacy-before.json": {
+      "sha256": "122a828209e745777b5c66ebae0fd41b8605bb9fee5b578aac2b405d1870c85b",
+      "bytes": 435757
+    },
+    "experiment/legacy-snapshot.sql": {
+      "sha256": "cf5b0e22a32632f3fd317941df45330d638f24a13ccf54f3decea7b8d1011f15",
+      "bytes": 706
+    },
+    "experiment/provenance-addendum.json": {
+      "sha256": "ab4d873a36b33f94d60ae3b3fae3dc77825325b7480d3320b8662df209216d45",
+      "bytes": 704
+    },
+    "experiment/result.json": {
+      "sha256": "84f98103cc6aff0ddeb82be60e8bed06cab2e1e94bb59ca664ce9cb0a15a32b9",
+      "bytes": 32630
+    },
+    "experiment/review-limitations.json": {
+      "sha256": "981ba71fc1dcaea4f5eec801782f39d092c1fa73add38e1287cfe9d338a3d5e0",
+      "bytes": 924
+    },
+    "experiment/run.py": {
+      "sha256": "57d0ef4b9e519878cce1faa0c2f8960e2ddd9d12c22f0c4165e05f979e564275",
+      "bytes": 2779
+    },
+    "experiment/sources.json": {
+      "sha256": "317242e5abc6fb7080d45e19202987b138d8d8bb837203583601f4c1db338017",
+      "bytes": 25803
+    },
+    "experiment/staged-schema.sql": {
+      "sha256": "a1384b6070bbb7bcb821b938ddae8405d05a96511d7c9b08593e389e76806c40",
+      "bytes": 7471
+    },
+    "experiment/transfer-fail.log": {
+      "sha256": "f2fde6d2bcc2addea0e93f11fffbd0cf0680e9380133381301013b741354ba7f",
+      "bytes": 63
+    },
+    "experiment/transfer-fail.sql": {
+      "sha256": "7c2bb689b20f0b20fe86acea0edd085fa3fb1d50e9f12b999dc1a34f211986df",
+      "bytes": 440
+    },
+    "experiment/transfer.sql": {
+      "sha256": "1a610a2dc0cb02b4fc6a4249956d21a1527149e7c17ad6811f257d38bfbd79d4",
+      "bytes": 499
+    },
+    "experiment/transformation.patch": {
+      "sha256": "4251f829f8067dd906078478803570dd6300fa2c166588978159bdae01e9267d",
+      "bytes": 643
+    },
+    "experiment-v2/app-owner-refusal.log": {
+      "sha256": "b17aa7b8a48576a53019d1348ce24e27e9b3cbb43d99a549238f59cd69f869a7",
+      "bytes": 57
+    },
+    "experiment-v2/check-custody.sql": {
+      "sha256": "ebf1fc73c3705d008157cea816db1a37cf4787ba0ab749cae9b257bd6e91c1d5",
+      "bytes": 2002
+    },
+    "experiment-v2/check-rolled-back.sql": {
+      "sha256": "2be541185ccbbf54a12dabb1f38baf16356eb5d385dd333fe6f1305fef59aaae",
+      "bytes": 396
+    },
+    "experiment-v2/cleanup.log": {
+      "sha256": "1b5795ee440cf39e4d1dbd4a74fd0a7e72fcb5776580466a1efb90e92bd70b72",
+      "bytes": 50
+    },
+    "experiment-v2/conclusion.json": {
+      "sha256": "2b1763cbc26f0e328739681bd8593ca1d2abade3bd75d52e7ff492c05222ab81",
+      "bytes": 5462
+    },
+    "experiment-v2/custody-after.json": {
+      "sha256": "21f514fe39a5c34a2da32146e6cad9ff6ff8823ae83fb2360a99556ba7992584",
+      "bytes": 339
+    },
+    "experiment-v2/custody-before.json": {
+      "sha256": "21f514fe39a5c34a2da32146e6cad9ff6ff8823ae83fb2360a99556ba7992584",
+      "bytes": 339
+    },
+    "experiment-v2/custody-snapshot.sql": {
+      "sha256": "b02f41cb9af01ccaa93efe2bc586806d521900491e8d807ea535d4421ef01b5e",
+      "bytes": 352
+    },
+    "experiment-v2/experiment.log": {
+      "sha256": "87291b4791ed44591bef770cad4d9606d9c6332d163493bb7174342b420f7f02",
+      "bytes": 3960
+    },
+    "experiment-v2/extra-column-grant.log": {
+      "sha256": "b459127aab26101ef198698ac6bc338bf087ee73997a55dc9321f2d7e917f955",
+      "bytes": 148
+    },
+    "experiment-v2/extra-column-grant.sql": {
+      "sha256": "a80602606bc42d7038f0de37cd88e4798b082bdd467b639d5f0316d08b624c70",
+      "bytes": 85
+    },
+    "experiment-v2/in-container.sh": {
+      "sha256": "e9e694ae37759055113795b36a3bca557eb1d5470e223a6a0ef324935d0e34b8",
+      "bytes": 4423
+    },
+    "experiment-v2/legacy-after.json": {
+      "sha256": "122a828209e745777b5c66ebae0fd41b8605bb9fee5b578aac2b405d1870c85b",
+      "bytes": 435757
+    },
+    "experiment-v2/legacy-before.json": {
+      "sha256": "122a828209e745777b5c66ebae0fd41b8605bb9fee5b578aac2b405d1870c85b",
+      "bytes": 435757
+    },
+    "experiment-v2/legacy-snapshot.sql": {
+      "sha256": "cf5b0e22a32632f3fd317941df45330d638f24a13ccf54f3decea7b8d1011f15",
+      "bytes": 706
+    },
+    "experiment-v2/login-positive-account_security.log": {
+      "sha256": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+      "bytes": 18
+    },
+    "experiment-v2/login-positive-account_security_events.log": {
+      "sha256": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+      "bytes": 18
+    },
+    "experiment-v2/login-positive-account_terms_acceptances.log": {
+      "sha256": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+      "bytes": 18
+    },
+    "experiment-v2/login-positive-account_terms_head.log": {
+      "sha256": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+      "bytes": 18
+    },
+    "experiment-v2/login-positive-account_terms_release_receipts.log": {
+      "sha256": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+      "bytes": 18
+    },
+    "experiment-v2/login-positive-accounts.log": {
+      "sha256": "c9d2cb72206cbbe097ef8f30f2db0080ae828f8de479efe8a3d2129549540f80",
+      "bytes": 18
+    },
+    "experiment-v2/recreate-inputs.py": {
+      "sha256": "390f61fc43ff3da3607ef98f6181a769f6ccc7abf2d8b54e71d1a6f1813a377b",
+      "bytes": 914
+    },
+    "experiment-v2/refusal-account_security.log": {
+      "sha256": "e346903b05a16cd2271016b43b6d6e1c3550c14e751fde94353b4b6783292b59",
+      "bytes": 101
+    },
+    "experiment-v2/refusal-account_security_events.log": {
+      "sha256": "3b8a4704991a8ae0b6903bed2cbecc882fdf96d738224b789f942771a8c1177b",
+      "bytes": 108
+    },
+    "experiment-v2/refusal-account_terms_acceptances.log": {
+      "sha256": "2d4eed4546ade8619c45d3ab75bafd167a59690ad00cf3a77d9a4ed1371d2bc3",
+      "bytes": 110
+    },
+    "experiment-v2/refusal-account_terms_head.log": {
+      "sha256": "8665b6e23c6f3ceb0ce4f35973110987cbed103fea79229e943657d6087d0e73",
+      "bytes": 103
+    },
+    "experiment-v2/refusal-account_terms_release_receipts.log": {
+      "sha256": "5b3ec71b39c115adc06b8c4a93a2e91e9d753e3c686d1b75d502642572208210",
+      "bytes": 115
+    },
+    "experiment-v2/refusal-accounts.log": {
+      "sha256": "065ec2ba894579f0cb921817cf49e634abcd3c50fafb25894b1a105451adeec4",
+      "bytes": 93
+    },
+    "experiment-v2/result.json": {
+      "sha256": "9cb7a20250892962298096b74dd3ae46d18a6ff57bfdff177f85e1e7014a447c",
+      "bytes": 42900
+    },
+    "experiment-v2/run.py": {
+      "sha256": "1279547e9d7eebb4334ebca09dc5a7ef43d2010a3b209501921bf54522d64f34",
+      "bytes": 4315
+    },
+    "experiment-v2/sources.json": {
+      "sha256": "288c6cdce8d56f80cf552934b6fc6220ec43b79232c9ba391a840d02dbaa9721",
+      "bytes": 27404
+    },
+    "experiment-v2/staged-schema.sql": {
+      "sha256": "a1384b6070bbb7bcb821b938ddae8405d05a96511d7c9b08593e389e76806c40",
+      "bytes": 7471
+    },
+    "experiment-v2/topology.sh": {
+      "sha256": "296f16f95f8a7293c73f67387c51840891b66b17ec4aca1f18519b94e543fd37",
+      "bytes": 55375
+    },
+    "experiment-v2/transfer-fail.log": {
+      "sha256": "f2fde6d2bcc2addea0e93f11fffbd0cf0680e9380133381301013b741354ba7f",
+      "bytes": 63
+    },
+    "experiment-v2/transfer-fail.sql": {
+      "sha256": "7c2bb689b20f0b20fe86acea0edd085fa3fb1d50e9f12b999dc1a34f211986df",
+      "bytes": 440
+    },
+    "experiment-v2/transfer-omitted.log": {
+      "sha256": "f3f3efed5a8eb3de4af3c3e7e099027ec78a832bba0de0733f022f276d806daa",
+      "bytes": 152
+    },
+    "experiment-v2/transfer-omitted.sql": {
+      "sha256": "e3dc8e0740e29077b3376173f2e51116ea1ec99be57b173b33ebd994a64c05a3",
+      "bytes": 452
+    },
+    "experiment-v2/transfer.sql": {
+      "sha256": "1a610a2dc0cb02b4fc6a4249956d21a1527149e7c17ad6811f257d38bfbd79d4",
+      "bytes": 499
+    },
+    "experiment-v2/transformation.patch": {
+      "sha256": "4251f829f8067dd906078478803570dd6300fa2c166588978159bdae01e9267d",
+      "bytes": 643
+    },
+    "preserved-phase-conflict.json": {
+      "sha256": "b0ab3aa74b4b63a6ff7db5e9fffdb1e5502de2eabe0180edaf18cd35ade7ec0d",
+      "bytes": 2774
+    },
+    "refinement-v1-reviewed.json": {
+      "sha256": "77571442e927d63939b2f8164f25ad650b9f52a8f4e2337d05442f05341c693f",
+      "bytes": 14906
+    },
+    "refinement.json": {
+      "sha256": "a3cdb0b70d52ac70a0a8f016e6b098ed5680eed2119fe4855a823caf50a4d230",
+      "bytes": 20725
+    },
+    "result.json": {
+      "sha256": "635c49b1834d0b2135c123f0c88fd7278415f4d392ba6c797a86ccd658ddd0b9",
+      "bytes": 3426
+    },
+    "reviews/browser-final.json": {
+      "sha256": "409c8788bc42dbc1bf8560ae1bb26b3c4af74a0750650d0369cd6bb89a3181ae",
+      "bytes": 716
+    },
+    "reviews/browser-v2-final.json": {
+      "sha256": "54ee9fdd43b402210d918dd168adadc74a86c5b3be29bee05ff861fdde04a1da",
+      "bytes": 714
+    },
+    "reviews/independent-contract-v1-findings.json": {
+      "sha256": "66f1e58902e9d1a831a37ecf182b2060715ca0bb7ad2f4144b50243949153d25",
+      "bytes": 698
+    },
+    "reviews/independent-contract-v2-final.json": {
+      "sha256": "4885a3ec77920fe560015f7b928a3ed807de59b1c5751b5e220f533cf926ff21",
+      "bytes": 725
+    },
+    "reviews/initial-security-operations.json": {
+      "sha256": "a7b776a2285625ce16ac065b4628e7fde9cb278564e07c44bd40440f6de014e8",
+      "bytes": 8670
+    },
+    "reviews/security-final.json": {
+      "sha256": "6813b22f549fba808490ce93689a9063a607c0b62c2c6ae1ee7051f24ab28e1f",
+      "bytes": 6822
+    },
+    "reviews/security-v2-final.json": {
+      "sha256": "aeb6d104152188fa1cd4c02881d33ba127fba73cf9cdfc47531a6c83d6d1e855",
+      "bytes": 4053
+    }
+  }
+}

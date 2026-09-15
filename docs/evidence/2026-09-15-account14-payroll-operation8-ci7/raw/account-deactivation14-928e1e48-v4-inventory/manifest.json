@@ -1,0 +1,25 @@
+{
+  "status": "FROZEN_PRIVATE_TEST_CANDIDATE_FULL_REVIEW_PENDING_NO_RUNTIME",
+  "owner": "/root/inventory_repair",
+  "sole_repository_writer": "/root",
+  "base_sha": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+  "target": "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+  "supersedes_v3_manifest_sha256": "1ca53f2156cbe17cb054839245b975adcfdfaba67ec76826a5d5a5ee7482d3a6",
+  "source_sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+  "patch_sha256": "b8c1845c5bd33ae5952c53165cd910ca7325e4f87ea1b501c1eb1aac60f2a04c",
+  "source_attribute_count": 14,
+  "compiler_discovered": 0,
+  "runtime_executed": 0,
+  "files": {
+    "GUIDE.md": "146211e6d23f48d4c7d3a88bec39a781460967d7a9c97e62201909c3a97767d0",
+    "base.rs": "0514aeecc993a126f98be1b24ab9a5d6d8052c373a1abcfc9cf28e59a3e34684",
+    "candidate.patch": "b8c1845c5bd33ae5952c53165cd910ca7325e4f87ea1b501c1eb1aac60f2a04c",
+    "deactivate_revokes_credentials.rs": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+    "mechanical-verification.json": "a3fda1cc66d0de0e8ae88c0092db908227ada2ec6a9ff84a53c20faa5da10159",
+    "profile-only.diff": "367bec8f70a481fee55ced254b595007e936859b5a7dfdfafc0bdefcb9485190",
+    "references.json": "b6000480e63828690579f2b52879dc1147dd19e33d2ea99d82114599a193a978",
+    "rustfmt-check.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rustfmt-parse.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source-bindings.json": "c0bf511bbd924aeb47f2f794e991f1e6f3b8eeb52f640774b315b47abc81d230"
+  }
+}

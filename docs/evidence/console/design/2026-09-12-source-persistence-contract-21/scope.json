@@ -1,0 +1,19 @@
+{
+  "owner": "/root",
+  "base_sha": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+  "product_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "classification": "design evidence",
+  "source_kinds": 7,
+  "sink_rows": 8,
+  "nonexecuted_cases": 26,
+  "synthetic_frames": 3,
+  "additional_relation_proposed": "ont_action_source_effects; derived source result membership only",
+  "full_source_ddl_complete": false,
+  "sql_executed": false,
+  "verus_proofs_executed": 0,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false
+}

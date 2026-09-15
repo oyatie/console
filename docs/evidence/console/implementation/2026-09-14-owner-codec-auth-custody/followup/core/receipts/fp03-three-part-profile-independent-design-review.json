@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/finish_browser",
+  "decision": "approved-revised-design",
+  "files": {
+    "/private/tmp/fk-owner-permissions-probe.py": "2f2db66f1d2b85a13aa1f0f02084324fd7d6f34226787d90b22d392794a5b18d",
+    "/private/tmp/fk-owner-permissions-probe-result.json": "e3658964280b9f60d4e6bda221408638d14875bc70d19d4856a0004186f3f402"
+  },
+  "independent_execution": false,
+  "evidence_review": [
+    "Three cases use same actual FK, NOLOGIN owner and parent row; each psql -c is a separate transaction, preventing earlier abort state contaminating later result.",
+    "SELECT alone and SELECT+REFERENCES fail specifically at FK FOR KEY SHARE; REFERENCES revoked before columnUPDATE positive.",
+    "Exact catalog readback confirms SELECTtable and UPDATE(id)column self-grants; note column remains ungranted.",
+    "PinnedPG18.6, networknone, ownedlabel and successful removal/readback recorded."
+  ],
+  "design": {
+    "dormant": "All six table ACLs empty; no column privileges; historical fixture unchanged.",
+    "prepared": "Finalized isolated NOLOGINowners; exact non-grantable selfSELECT on accounts and account_security; exact non-grantable selfUPDATE on accounts.id; no other table/column grants.",
+    "transition": "Dormant+absentfunction atomically install all3grants+exactfunction; prepared+exactfunction replay read-only; partialprofiles/mismatchedpresence refuse.",
+    "postcondition": "Verify complete collective prepared profile after last mutation; full dormant fault removes3grants.",
+    "oracles": "Reviewed successor adds exact columnACL rollback/replay evidence and drift cases; meaningfulRED thenGREEN before behaviorclaim."
+  },
+  "limits": [
+    "Result does not emit SQLSTATE; permission-denied FK context is observed, exact42501 would require verbose/errorcode capture.",
+    "This minimal FK experiment is not full Console operator verification.",
+    "Owner explicit idUPDATE is an acknowledged privilege; serving roles remain denied."
+  ]
+}

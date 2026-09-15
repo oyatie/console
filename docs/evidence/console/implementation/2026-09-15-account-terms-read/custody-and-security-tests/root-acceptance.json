@@ -1,0 +1,19 @@
+{
+  "source_base": "dba42d1ab50afae99163f7b591e5749933d5dd25",
+  "writer": "/root",
+  "combined_auth_rest_sha256": "dd7c9346c880e2c67940d738f3ba89f2f7dbfe0d30f43b2eec5df700ff7d1df5",
+  "composition": "Two disjoint pub(super) exposures applied to exact approved additive security test postimage. Removing security sibling yields exact approved custody auth_rest postimage.",
+  "test_count": {
+    "new": 12,
+    "static_baseline_before": 184,
+    "static_baseline_after": 196,
+    "runtime_here": 0
+  },
+  "existing_expectation_refinement": "Exact previous five grants retained plus only three reviewed owner SELECT grants on terms_head. New helper added to complete rejection/replay catalog snapshots. Approved independent review bound above; no deletion/skips/quarantine/forbidden-permission relaxation.",
+  "authorization": "Existing user authorizes reversible implementation and complete preparation without routine checkpoints. Narrow terms owner design independently approved.",
+  "remaining_holds": [
+    "Actual custody10 missing-owner RED and formal lane admission",
+    "Full runtime privilege/upgrade/drift/source verification",
+    "Production/publication/legal"
+  ]
+}

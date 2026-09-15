@@ -1,0 +1,14 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-request-context --lib",
+  "exit_code": 101,
+  "discovered": 20,
+  "executed": 20,
+  "passed": 16,
+  "failed": 4,
+  "filtered": 0,
+  "classification": "BEHAVIORAL_RED_AT_HTTP_FORMATTER",
+  "log": "request-context-final.log.gz",
+  "uncompressed_log_sha256": "87c0f2cc2b5ef0ea52d1d4c5747a727c156f9fcf2187eca08ee5ca46cec0d87f",
+  "log_scope": "Runtime output after cargo compilation/poll; build completed in0.53s. Source tree product files unchanged from base."
+}

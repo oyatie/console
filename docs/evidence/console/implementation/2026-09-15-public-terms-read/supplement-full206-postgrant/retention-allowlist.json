@@ -1,0 +1,1801 @@
+{
+  "kind": "FINITE_PUBLIC_TERMS_READ_FULL206_POSTGRANT_RETENTION_SUPPLEMENT",
+  "version": 1,
+  "preparer": "/root/inventory_repair",
+  "repository_writer": "/root",
+  "runtime_source_heads": [
+    "0007132535578f7abdafeb5192cd07c38376f06d",
+    "7b930e0d02a2ce0b925b2ee34ed81bff474f925a",
+    "00199d8b1329792f14eee3d5e178245d4b10b0d4"
+  ],
+  "candidate_root": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant",
+  "status": "FROZEN_FOR_INDEPENDENT_ROOT_REVIEW_AND_SERIAL_IMPORT",
+  "record_count": 106,
+  "original_bytes": 3261981,
+  "archive_bytes": 715406,
+  "manifest_hash_checks": [
+    {
+      "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/metadata.json",
+      "sha256": "37390da01cb18432cade794280d369cb2d1d082391827a6d1ff8181865e6d512",
+      "artifact_hashes_verified": 10
+    },
+    {
+      "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/metadata.json",
+      "sha256": "27f9c707299682a41138fae6dfd57b4fbb82defbb2778d1193916bf87bc729a4",
+      "artifact_hashes_verified": 10
+    },
+    {
+      "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/metadata.json",
+      "sha256": "3d7645b270b0cecfbb0804cceaff98d1948da10a463c34ae802e31b062871a51",
+      "artifact_hashes_verified": 10
+    },
+    {
+      "path": "/private/tmp/account-fence-postgrant-once-candidate-00071325/manifest.json",
+      "sha256": "c9a8d379b73a1e10f83b1ddad8f6823f7c4f48280dfebb1673504d1fff9e51ca",
+      "artifact_hashes_verified": 4
+    }
+  ],
+  "records": [
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/metadata.json"
+      },
+      "original_sha256": "37390da01cb18432cade794280d369cb2d1d082391827a6d1ff8181865e6d512",
+      "original_bytes": 3493,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/metadata.json.gz",
+      "archive_relative_path": "drivers/full206/metadata.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/metadata.json.gz",
+      "archive_sha256": "e93af7dcf98dad357827abf8880a905feedc93207a325f83966b8c2bf1584ad1",
+      "archive_bytes": 1707,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/GUIDE.md"
+      },
+      "original_sha256": "410b5a8771fc0a0365ccc5b64a2fd454181a8b44476dd7a829401f29fcc83246",
+      "original_bytes": 5916,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/GUIDE.md.gz",
+      "archive_relative_path": "drivers/full206/GUIDE.md.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/GUIDE.md.gz",
+      "archive_sha256": "d3ea0c01652fdb7ec427d416afdeefb6b1fc38074e61df948fe218c3a0b577d1",
+      "archive_bytes": 2733,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/control-results.json"
+      },
+      "original_sha256": "87573e9d47ea7ea49afe262da3db107c88b07951d4ef29be348ef6cdf599e7fd",
+      "original_bytes": 13224,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/control-results.json.gz",
+      "archive_relative_path": "drivers/full206/control-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/control-results.json.gz",
+      "archive_sha256": "e14d1080f1b7512683016afc905bfbd6bcd2c9c97a9883ec1b2cf39d4354cc5a",
+      "archive_bytes": 1713,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/controls.py"
+      },
+      "original_sha256": "4fb288dedadb3e5cedc1c8892b512993c6f19b0f30a5eae544e6901891ae8c03",
+      "original_bytes": 12847,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/controls.py.gz",
+      "archive_relative_path": "drivers/full206/controls.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/controls.py.gz",
+      "archive_sha256": "03efbcf95cbf8d6e8d9b1c55e70b221c3400f17f4aa4fa13b7f29440a83a7409",
+      "archive_bytes": 4264,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/controls.py.diff"
+      },
+      "original_sha256": "7fe4702ce2565b14917374223da8595a525a88dc4db6aca88a7fc19789abb51f",
+      "original_bytes": 11342,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/controls.py.diff.gz",
+      "archive_relative_path": "drivers/full206/controls.py.diff.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/controls.py.diff.gz",
+      "archive_sha256": "4162cf14982bc2b7b60ac91c8bbf63aa5cf2a8f7d91ebb4f9990054618e30f00",
+      "archive_bytes": 3490,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/driver.sh"
+      },
+      "original_sha256": "57f762c0c13079882e0722e63ef40c19edf16e48e78a9edcc40bce37cae9e069",
+      "original_bytes": 11307,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/driver.sh.gz",
+      "archive_relative_path": "drivers/full206/driver.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/driver.sh.gz",
+      "archive_sha256": "0e91a5d58a57bcd91a5dedaedd201095694be9a66a63868e5caaf703ea47fc1c",
+      "archive_bytes": 3846,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/driver.sh.diff"
+      },
+      "original_sha256": "4c8ca12d33a537a9454c675280d3d9f725d569c8b4fb7d932b2a1a0b572c52bd",
+      "original_bytes": 1762,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/driver.sh.diff.gz",
+      "archive_relative_path": "drivers/full206/driver.sh.diff.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/driver.sh.diff.gz",
+      "archive_sha256": "cf31f3371e948e6459e16ead0c76997d560fc85b9b153016dbab5d66deffb04b",
+      "archive_bytes": 913,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/expected-cases.json"
+      },
+      "original_sha256": "033ecf15d34334140e8f6d79ef5f752c1287c4a5e7204d968f2c1f4e5afafe66",
+      "original_bytes": 17572,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/expected-cases.json.gz",
+      "archive_relative_path": "drivers/full206/expected-cases.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/expected-cases.json.gz",
+      "archive_sha256": "683830cdf39f96a8f78491346fa0664aa6dda9421b182ccf8d66cb57430e7abe",
+      "archive_bytes": 3807,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/probe.py"
+      },
+      "original_sha256": "4fa744b50d3e87e1783f1d0577c87261b43f3291c14b26392589cb590a6c4b22",
+      "original_bytes": 6332,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/probe.py.gz",
+      "archive_relative_path": "drivers/full206/probe.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/probe.py.gz",
+      "archive_sha256": "9fba4970de7330506f266f071bf17d6681f4ce4959ac465b68ccb8b970434854",
+      "archive_bytes": 2394,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/probe.py.diff"
+      },
+      "original_sha256": "4fa68fa443035e9c9233626202a27d76fdc8c110c3d23479e6837468db794a57",
+      "original_bytes": 7128,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/probe.py.diff.gz",
+      "archive_relative_path": "drivers/full206/probe.py.diff.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/probe.py.diff.gz",
+      "archive_sha256": "bf20d4279bddbf4ebc3b1f1366acb4896d86b911d598fa64282ed40e404b2bad",
+      "archive_bytes": 2548,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-9fa5cc7b/roster-provenance.json"
+      },
+      "original_sha256": "00764403988a93956031e3cf32c558608ef0c373c18d5dfcddccc983dcb60599",
+      "original_bytes": 3196,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/roster-provenance.json.gz",
+      "archive_relative_path": "drivers/full206/roster-provenance.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/roster-provenance.json.gz",
+      "archive_sha256": "12b453a81c8d5c8f69c59ad5c1c5f678491380b41dfef54579b6266603252d4f",
+      "archive_bytes": 1270,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/auth-rest-full206-controls-66bmq82d/control-results.json"
+      },
+      "original_sha256": "87573e9d47ea7ea49afe262da3db107c88b07951d4ef29be348ef6cdf599e7fd",
+      "original_bytes": 13224,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/full206/author-source-control-results.json.gz",
+      "archive_relative_path": "drivers/full206/author-source-control-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/full206/author-source-control-results.json.gz",
+      "archive_sha256": "e14d1080f1b7512683016afc905bfbd6bcd2c9c97a9883ec1b2cf39d4354cc5a",
+      "archive_bytes": 1713,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/metadata.json"
+      },
+      "original_sha256": "27f9c707299682a41138fae6dfd57b4fbb82defbb2778d1193916bf87bc729a4",
+      "original_bytes": 3970,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/metadata.json.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/metadata.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/metadata.json.gz",
+      "archive_sha256": "c40aa96d70f04befa790c7c2bf95ea2990dd492f5e2e93a025fd19c9960bd11d",
+      "archive_bytes": 1910,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/GUIDE.md"
+      },
+      "original_sha256": "bae74c9d665d86e6ba1d4e2747967ea600288d2b5bd91f0d269c5cd44ae96bdd",
+      "original_bytes": 2330,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/GUIDE.md.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/GUIDE.md.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/GUIDE.md.gz",
+      "archive_sha256": "2bc9a2ab11f954f4d52cc53b1700268ee83ddc7ab9d657ea46439c95374be06b",
+      "archive_bytes": 1251,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/control-results.json"
+      },
+      "original_sha256": "60ad9d89152d1334c6f1f8d90736377052c0eb0490a7f609b3cb87db8ce6bedb",
+      "original_bytes": 13291,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/control-results.json.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/control-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/control-results.json.gz",
+      "archive_sha256": "85f1f812584f0099832ce75a92aab35e8df68c3f3c8090cc6c67bdce6756d831",
+      "archive_bytes": 1717,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/controls.py"
+      },
+      "original_sha256": "dc123eea6d3c9a3099d0580d99d73859d0b70b20caf18152eea44a6959480cab",
+      "original_bytes": 13188,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/controls.py.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/controls.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/controls.py.gz",
+      "archive_sha256": "6d3185c63601c105de09794b934e2bd9370ef5415b9ec2f5038e3cf45f70d463",
+      "archive_bytes": 4356,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/controls.py.diff"
+      },
+      "original_sha256": "3da783022bdca9b083ba9593ca56ce33238065cf94bceccc24ca830ed4dbcc5e",
+      "original_bytes": 7539,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/controls.py.diff.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/controls.py.diff.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/controls.py.diff.gz",
+      "archive_sha256": "1312714456cf6b6644a60ba580315c4abc729e2475a6498de652f3ab342d174d",
+      "archive_bytes": 2193,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/driver.sh"
+      },
+      "original_sha256": "13dc922f6d8632ac654aebb1aad466a14cd99b8ac7ddfcd0a436fd4d63af055b",
+      "original_bytes": 11464,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/driver.sh.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/driver.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/driver.sh.gz",
+      "archive_sha256": "9e971321ac09f9a0912e9d3a33d2abefba490064affe08f32c76a326d5e9d937",
+      "archive_bytes": 3896,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/driver.sh.diff"
+      },
+      "original_sha256": "d76a7c873beb5a6139f41cac2e7f3b6e622c596ee95aac087f58fc54a7ace91d",
+      "original_bytes": 1290,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/driver.sh.diff.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/driver.sh.diff.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/driver.sh.diff.gz",
+      "archive_sha256": "f18beb661e3d11cb71144b484b4201ce410a7ede82faae4f259976e7215430f5",
+      "archive_bytes": 741,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/expected-cases.json"
+      },
+      "original_sha256": "a0dfebfe75ed1de62c47cdb66fef5f7a1fc561d5fa2f5ca4d6db53f6267de610",
+      "original_bytes": 117,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/expected-cases.json.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/expected-cases.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/expected-cases.json.gz",
+      "archive_sha256": "a44a262f22fd9ebb2ae495f5d1a6e3b16bf6b799520bb6234358d323c203453d",
+      "archive_bytes": 105,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/probe.py"
+      },
+      "original_sha256": "6ada57a09fcbac3fd533b3acd89a535efb2c720c6cb44109dadf055f4eedeb8e",
+      "original_bytes": 6435,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/probe.py.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/probe.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/probe.py.gz",
+      "archive_sha256": "84a800bb28e22719369004a157f9f74d84ebfb94e947236010d107e6579b9778",
+      "archive_bytes": 2445,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/probe.py.diff"
+      },
+      "original_sha256": "ab976622c6c7b3e7b26a6f5ad37950d524258ad06840f7ae2e3665636a3b8915",
+      "original_bytes": 5194,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/probe.py.diff.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/probe.py.diff.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/probe.py.diff.gz",
+      "archive_sha256": "1ea3db24c87abafdd3253251d0f2f11f984c214a05262ef0e26cddd35bb26589",
+      "archive_bytes": 1999,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-00071325-inventory/roster-provenance.json"
+      },
+      "original_sha256": "605a6d28e2177ebe2f38890971384dd9c5aac01b4d008ceac9a99d3d4c069b73",
+      "original_bytes": 987,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/roster-provenance.json.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/roster-provenance.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/roster-provenance.json.gz",
+      "archive_sha256": "2840d904b8b1804a3141f1cc871ccf4a1103d2fbd635c795d7d8824c629e51b5",
+      "archive_bytes": 566,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v1-rejected-control",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/dormant-drift1-controls-cwgrkrxj/control-results.json"
+      },
+      "original_sha256": "60ad9d89152d1334c6f1f8d90736377052c0eb0490a7f609b3cb87db8ce6bedb",
+      "original_bytes": 13291,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v1-rejected-control/author-source-control-results.json.gz",
+      "archive_relative_path": "drivers/exact1-v1-rejected-control/author-source-control-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v1-rejected-control/author-source-control-results.json.gz",
+      "archive_sha256": "85f1f812584f0099832ce75a92aab35e8df68c3f3c8090cc6c67bdce6756d831",
+      "archive_bytes": 1717,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/metadata.json"
+      },
+      "original_sha256": "3d7645b270b0cecfbb0804cceaff98d1948da10a463c34ae802e31b062871a51",
+      "original_bytes": 4673,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/metadata.json.gz",
+      "archive_relative_path": "drivers/exact1-v2/metadata.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/metadata.json.gz",
+      "archive_sha256": "625b2691eaab412ba3d41e1b1468c57867706863f68cde381319fee03653e8e6",
+      "archive_bytes": 2155,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/GUIDE.md"
+      },
+      "original_sha256": "df26c9c2b0d910695ef30b444b566dde0b6bccc83682eb262d1595c885eb5c6e",
+      "original_bytes": 2807,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/GUIDE.md.gz",
+      "archive_relative_path": "drivers/exact1-v2/GUIDE.md.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/GUIDE.md.gz",
+      "archive_sha256": "3a4787239579575065328aa598b3bcaa62e0ee6c3ca59366444acbc007897c31",
+      "archive_bytes": 1455,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/control-results.json"
+      },
+      "original_sha256": "f19fc13d53a867a21705079cf6f4c3281c7fd4d33ada978d8fcf85d8f2dba91e",
+      "original_bytes": 14354,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/control-results.json.gz",
+      "archive_relative_path": "drivers/exact1-v2/control-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/control-results.json.gz",
+      "archive_sha256": "3ca7e92df31432a3b59bb6f08504c1415698758244faace7d910adcb75e31bec",
+      "archive_bytes": 1740,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/controls.py"
+      },
+      "original_sha256": "33fb098f9821f9f656f45100ff1d5267b0bd089cf7c7ff01c662f1326b0a8929",
+      "original_bytes": 13408,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/controls.py.gz",
+      "archive_relative_path": "drivers/exact1-v2/controls.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/controls.py.gz",
+      "archive_sha256": "4677db0357f2724ebc1f0361b8c2d454700dd566dabfd6a1dd9b0d46d9e09f9d",
+      "archive_bytes": 4451,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/controls.py.diff"
+      },
+      "original_sha256": "2dbd12d7ef0cbaca3d034ecf8df5f2c9aadb5ccb1ad1ee4b7cec4987311e2e36",
+      "original_bytes": 2517,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/controls.py.diff.gz",
+      "archive_relative_path": "drivers/exact1-v2/controls.py.diff.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/controls.py.diff.gz",
+      "archive_sha256": "902b80214724b6fe900af77519a6a89541c005d50d91dcc3503960e04f4c3f10",
+      "archive_bytes": 926,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/driver.sh"
+      },
+      "original_sha256": "13dc922f6d8632ac654aebb1aad466a14cd99b8ac7ddfcd0a436fd4d63af055b",
+      "original_bytes": 11464,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/driver.sh.gz",
+      "archive_relative_path": "drivers/exact1-v2/driver.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/driver.sh.gz",
+      "archive_sha256": "9e971321ac09f9a0912e9d3a33d2abefba490064affe08f32c76a326d5e9d937",
+      "archive_bytes": 3896,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/driver.sh.diff"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/driver.sh.diff.gz",
+      "archive_relative_path": "drivers/exact1-v2/driver.sh.diff.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/driver.sh.diff.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/expected-cases.json"
+      },
+      "original_sha256": "a0dfebfe75ed1de62c47cdb66fef5f7a1fc561d5fa2f5ca4d6db53f6267de610",
+      "original_bytes": 117,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/expected-cases.json.gz",
+      "archive_relative_path": "drivers/exact1-v2/expected-cases.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/expected-cases.json.gz",
+      "archive_sha256": "a44a262f22fd9ebb2ae495f5d1a6e3b16bf6b799520bb6234358d323c203453d",
+      "archive_bytes": 105,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/probe.py"
+      },
+      "original_sha256": "6ada57a09fcbac3fd533b3acd89a535efb2c720c6cb44109dadf055f4eedeb8e",
+      "original_bytes": 6435,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/probe.py.gz",
+      "archive_relative_path": "drivers/exact1-v2/probe.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/probe.py.gz",
+      "archive_sha256": "84a800bb28e22719369004a157f9f74d84ebfb94e947236010d107e6579b9778",
+      "archive_bytes": 2445,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/probe.py.diff"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/probe.py.diff.gz",
+      "archive_relative_path": "drivers/exact1-v2/probe.py.diff.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/probe.py.diff.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-inventory/roster-provenance.json"
+      },
+      "original_sha256": "605a6d28e2177ebe2f38890971384dd9c5aac01b4d008ceac9a99d3d4c069b73",
+      "original_bytes": 987,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/roster-provenance.json.gz",
+      "archive_relative_path": "drivers/exact1-v2/roster-provenance.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/roster-provenance.json.gz",
+      "archive_sha256": "2840d904b8b1804a3141f1cc871ccf4a1103d2fbd635c795d7d8824c629e51b5",
+      "archive_bytes": 566,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/exact1-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/dormant-drift1-v2-controls-i89z7pgj/control-results.json"
+      },
+      "original_sha256": "f19fc13d53a867a21705079cf6f4c3281c7fd4d33ada978d8fcf85d8f2dba91e",
+      "original_bytes": 14354,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/exact1-v2/author-source-control-results.json.gz",
+      "archive_relative_path": "drivers/exact1-v2/author-source-control-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/exact1-v2/author-source-control-results.json.gz",
+      "archive_sha256": "3ca7e92df31432a3b59bb6f08504c1415698758244faace7d910adcb75e31bec",
+      "archive_bytes": 1740,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "fixture/approved-candidate",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-fence-postgrant-once-candidate-00071325/manifest.json"
+      },
+      "original_sha256": "c9a8d379b73a1e10f83b1ddad8f6823f7c4f48280dfebb1673504d1fff9e51ca",
+      "original_bytes": 904,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/fixture/approved-candidate/manifest.json.gz",
+      "archive_relative_path": "fixture/approved-candidate/manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/fixture/approved-candidate/manifest.json.gz",
+      "archive_sha256": "b0fda080a8a257321deca3deb601c3cbda78fa9f19b90bd8bf1df20ddb80ee92",
+      "archive_bytes": 575,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "fixture/approved-candidate",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-fence-postgrant-once-candidate-00071325/base-account_fence_projection.rs"
+      },
+      "original_sha256": "74ad1caf266ec088b08c1e447ccb3d1335772e2bc70f6d1e4d807854b7de8d6f",
+      "original_bytes": 78820,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/fixture/approved-candidate/base-account_fence_projection.rs.gz",
+      "archive_relative_path": "fixture/approved-candidate/base-account_fence_projection.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/fixture/approved-candidate/base-account_fence_projection.rs.gz",
+      "archive_sha256": "6745710724b8f451a92805b676903f42ea45552508e8467c4879e8fb328d3414",
+      "archive_bytes": 13521,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "fixture/approved-candidate",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-fence-postgrant-once-candidate-00071325/backend/app/tests/auth_rest/account_fence_projection.rs"
+      },
+      "original_sha256": "de547bf000d7bb5610eee5edab753b071bd9aa49f6a51278c355ac8321c5679e",
+      "original_bytes": 78906,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/fixture/approved-candidate/backend/app/tests/auth_rest/account_fence_projection.rs.gz",
+      "archive_relative_path": "fixture/approved-candidate/backend/app/tests/auth_rest/account_fence_projection.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/fixture/approved-candidate/backend/app/tests/auth_rest/account_fence_projection.rs.gz",
+      "archive_sha256": "fd722930f41db6cced2e094ad8f14b1fc9fd8d4a0ab3aedb00577629ffda3022",
+      "archive_bytes": 13539,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "fixture/approved-candidate",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-fence-postgrant-once-candidate-00071325/candidate.patch"
+      },
+      "original_sha256": "bd90d233d06f8255fca2fd650c1f5e3f99fe991473d33550411581b196393ab8",
+      "original_bytes": 1921,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/fixture/approved-candidate/candidate.patch.gz",
+      "archive_relative_path": "fixture/approved-candidate/candidate.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/fixture/approved-candidate/candidate.patch.gz",
+      "archive_sha256": "fd5c0ec901f27980e2dcc17a9ea9310a862e51cde9e6cca5573440ed92d129d2",
+      "archive_bytes": 899,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "fixture/approved-candidate",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-fence-postgrant-once-candidate-00071325/guide.json"
+      },
+      "original_sha256": "6b646deb3c5b907c8f602dfb3c3028a115d75b8cb38065902483edb927814160",
+      "original_bytes": 5637,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/fixture/approved-candidate/guide.json.gz",
+      "archive_relative_path": "fixture/approved-candidate/guide.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/fixture/approved-candidate/guide.json.gz",
+      "archive_sha256": "c747c97c1c745624e796a241e376391170bb299486ba4651c14265be3712810c",
+      "archive_bytes": 2313,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/control-history",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/auth-rest-full206-controls-1hyo31wi/control-results.json"
+      },
+      "original_sha256": "3463f520aae7e4fdbe971f5374e2cb24969c999286a01dcf5d0864fcea2e61ec",
+      "original_bytes": 12996,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/control-history/full206-prior59.json.gz",
+      "archive_relative_path": "drivers/control-history/full206-prior59.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/control-history/full206-prior59.json.gz",
+      "archive_sha256": "7a3c843f5071a58336d3e83b75e36d30aeddc7e2f611557a8a75723ab20dd4fd",
+      "archive_bytes": 1686,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/control-history",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/auth-rest-full206-controls-9gu8igjo/control-results.json"
+      },
+      "original_sha256": "d48ae245cfe80253156d04b8b65c47cee6ea08ae3ef20150d291714e0de592e4",
+      "original_bytes": 13224,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/control-history/full206-independent61.json.gz",
+      "archive_relative_path": "drivers/control-history/full206-independent61.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/control-history/full206-independent61.json.gz",
+      "archive_sha256": "9f1397ceeefc2aba1ea4d69355c67ee5e15bce33d31a032446d1255b76ca6655",
+      "archive_bytes": 1707,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/control-history",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/dormant-drift1-v2-controls-p5zlrith/control-results.json"
+      },
+      "original_sha256": "d335ddc9439011457035f655891749357844f9dc39f44fa4f6afd1fe4ee90813",
+      "original_bytes": 14354,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/drivers/control-history/exact1-v2-independent62.json.gz",
+      "archive_relative_path": "drivers/control-history/exact1-v2-independent62.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/drivers/control-history/exact1-v2-independent62.json.gz",
+      "archive_sha256": "119d5ad4252ea8f56c9b6275c40fc54c5135aa2fae4cb9ff78fdb2d7de7b6407",
+      "archive_bytes": 1736,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-driver-independent-review-inventory.json"
+      },
+      "original_sha256": "3b6904db50788e4c60844f35af86e4c953b6c65db883b8807fce148a278a1a62",
+      "original_bytes": 9171,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/reviews/account-auth-rest-full206-driver-independent-review-inventory.json.gz",
+      "archive_relative_path": "reviews/account-auth-rest-full206-driver-independent-review-inventory.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/reviews/account-auth-rest-full206-driver-independent-review-inventory.json.gz",
+      "archive_sha256": "afe3658e4f4b47b17f7ae1317ff902b9cd7d1f81c7ae53f28fff0b88f736b2f6",
+      "archive_bytes": 3812,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-00071325-independent-runtime-review-inventory.json"
+      },
+      "original_sha256": "8675ca9d5d52b5ccad50b6d323cb2eefda983900223f4f8c7ccaf7bcdf705ef5",
+      "original_bytes": 23069,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/reviews/account-auth-rest-full206-00071325-independent-runtime-review-inventory.json.gz",
+      "archive_relative_path": "reviews/account-auth-rest-full206-00071325-independent-runtime-review-inventory.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/reviews/account-auth-rest-full206-00071325-independent-runtime-review-inventory.json.gz",
+      "archive_sha256": "ee421341afc103ac9c106316f0c95be40d2130aa8ab470eb365804cc31eabccd",
+      "archive_bytes": 5839,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-00071325-independent-accounting-review-capture.json"
+      },
+      "original_sha256": "6aa116eb770829df024ad6168676325a5bbc347761a5bd36716beff1cea57343",
+      "original_bytes": 26402,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/reviews/account-auth-rest-full206-00071325-independent-accounting-review-capture.json.gz",
+      "archive_relative_path": "reviews/account-auth-rest-full206-00071325-independent-accounting-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/reviews/account-auth-rest-full206-00071325-independent-accounting-review-capture.json.gz",
+      "archive_sha256": "284623f41c3b0e4aff734ac474935c53a5de6242263fb48ad2540c7467e7a3b1",
+      "archive_bytes": 6444,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-fence-postgrant-once-challenge-capture.json"
+      },
+      "original_sha256": "48ec2e7438f44b8ab497746ea53c2c26e90e3a86f845df39b0ad93209d85b276",
+      "original_bytes": 2703,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/reviews/account-fence-postgrant-once-challenge-capture.json.gz",
+      "archive_relative_path": "reviews/account-fence-postgrant-once-challenge-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/reviews/account-fence-postgrant-once-challenge-capture.json.gz",
+      "archive_sha256": "9fcfc35a7a5fecc06d172101c763c866cff67fca43e60733a11ecb5053d2ebfa",
+      "archive_bytes": 1497,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-fence-postgrant-once-independent-review-inventory.json"
+      },
+      "original_sha256": "f98b99639cb00375c35888f0a44701140fa1d14c3c7f4642fe2bc6d42e782d76",
+      "original_bytes": 4050,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/reviews/account-fence-postgrant-once-independent-review-inventory.json.gz",
+      "archive_relative_path": "reviews/account-fence-postgrant-once-independent-review-inventory.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/reviews/account-fence-postgrant-once-independent-review-inventory.json.gz",
+      "archive_sha256": "3e8acff4a7127aff182335894673a5218998e7de3714b2ec9445068605be869e",
+      "archive_bytes": 1944,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-driver-v2-independent-review-capture.json"
+      },
+      "original_sha256": "33e53e120667946ad085a32b722d69249ab5639a0a68244466f8a9835d228339",
+      "original_bytes": 5843,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/reviews/account-dormant-drift1-driver-v2-independent-review-capture.json.gz",
+      "archive_relative_path": "reviews/account-dormant-drift1-driver-v2-independent-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/reviews/account-dormant-drift1-driver-v2-independent-review-capture.json.gz",
+      "archive_sha256": "d9deccb6203e3505004edc6b7ef468df578747744518de9031e9215d519fa147",
+      "archive_bytes": 2769,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-postgrant-once-red-green-independent-review-inventory.json"
+      },
+      "original_sha256": "52d827d8e4fa383762186890834ab583945082e02dd45f3e5787a321c5103f77",
+      "original_bytes": 6724,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/reviews/account-postgrant-once-red-green-independent-review-inventory.json.gz",
+      "archive_relative_path": "reviews/account-postgrant-once-red-green-independent-review-inventory.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/reviews/account-postgrant-once-red-green-independent-review-inventory.json.gz",
+      "archive_sha256": "deebdcc30fae487b7cc3a5d76b64434634b3964d29c0c5890d667918efc7c470",
+      "archive_bytes": 2711,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "admission",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-postgrant-single-fault-lane-7b930e0d.json"
+      },
+      "original_sha256": "ebfa9744243fe3d00d4f32f651defd68532a4834fff20a2f9bce3049ae577031",
+      "original_bytes": 2290,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/admission/account-postgrant-single-fault-lane-7b930e0d.json.gz",
+      "archive_relative_path": "admission/account-postgrant-single-fault-lane-7b930e0d.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/admission/account-postgrant-single-fault-lane-7b930e0d.json.gz",
+      "archive_sha256": "fc17028b0ecc08a44223ba249a385003d7e5549f4f3f3905f03857b7c28909a2",
+      "archive_bytes": 1227,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "admission",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-postgrant-single-fault-lane-v2-7b930e0d.json"
+      },
+      "original_sha256": "e46b55b46fbac00ae372ef533d35125d749ea7726eef571b3bc6c4ce3b7df68b",
+      "original_bytes": 2284,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/admission/account-postgrant-single-fault-lane-v2-7b930e0d.json.gz",
+      "archive_relative_path": "admission/account-postgrant-single-fault-lane-v2-7b930e0d.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/admission/account-postgrant-single-fault-lane-v2-7b930e0d.json.gz",
+      "archive_sha256": "b7310356d6d60a158047c3ce95c000f41b8c18bc44a302fb72e008514d9b98a0",
+      "archive_bytes": 1228,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "commands",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-00071325-command.json"
+      },
+      "original_sha256": "4ac7fbe673f272fbbf8690413aca75da33235f430a1ac4daa36d6da1a4eedda7",
+      "original_bytes": 425,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/commands/account-auth-rest-full206-00071325-command.json.gz",
+      "archive_relative_path": "commands/account-auth-rest-full206-00071325-command.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/commands/account-auth-rest-full206-00071325-command.json.gz",
+      "archive_sha256": "6422b74ca77c0fe67809680a801db08ea4606bb5c640d096c785d14fb8cfc734",
+      "archive_bytes": 306,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "commands",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-00071325-command.log"
+      },
+      "original_sha256": "e53da1ac0fb053bbd2ee27d01f3f1e09405031f54d957a105b79853bcea740fe",
+      "original_bytes": 72,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/commands/account-auth-rest-full206-00071325-command.log.gz",
+      "archive_relative_path": "commands/account-auth-rest-full206-00071325-command.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/commands/account-auth-rest-full206-00071325-command.log.gz",
+      "archive_sha256": "5424bbacf7d2dd6075375bc708b219ca2f443c6bed651518cfa8267b2a13b3ca",
+      "archive_bytes": 87,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "commands",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-postgrant-drift1-7b930e0d-red-command.json"
+      },
+      "original_sha256": "5279fd93ac15c4d11ad03474feeabdd2d422e4ee11e38cbe8dffe9059894e8fc",
+      "original_bytes": 1162,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/commands/account-postgrant-drift1-7b930e0d-red-command.json.gz",
+      "archive_relative_path": "commands/account-postgrant-drift1-7b930e0d-red-command.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/commands/account-postgrant-drift1-7b930e0d-red-command.json.gz",
+      "archive_sha256": "f7fb2a2315f13be4a1da897d52a9f9fcce301cc09d48f5359aaa1bbdd13336b5",
+      "archive_bytes": 641,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "commands",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-postgrant-drift1-7b930e0d-red-admission.log"
+      },
+      "original_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "original_bytes": 48,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/commands/account-postgrant-drift1-7b930e0d-red-admission.log.gz",
+      "archive_relative_path": "commands/account-postgrant-drift1-7b930e0d-red-admission.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/commands/account-postgrant-drift1-7b930e0d-red-admission.log.gz",
+      "archive_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "archive_bytes": 65,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "commands",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-postgrant-drift1-00199d8b-green-command.json"
+      },
+      "original_sha256": "485406d6a355353d89b1fcd67c38f7e89adf70d49e044f7c098c666f605e062f",
+      "original_bytes": 431,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/commands/account-postgrant-drift1-00199d8b-green-command.json.gz",
+      "archive_relative_path": "commands/account-postgrant-drift1-00199d8b-green-command.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/commands/account-postgrant-drift1-00199d8b-green-command.json.gz",
+      "archive_sha256": "8a8812d6054258813b70e8ef4aeb26559364e09f82f5fefe65c18b7405cb3538",
+      "archive_bytes": 317,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "commands",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-postgrant-drift1-00199d8b-green-command.log"
+      },
+      "original_sha256": "c17ce2fb2517b47dbc0f6d5a75f952509942ed7fbe007e72b7e440c7df91afa7",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/commands/account-postgrant-drift1-00199d8b-green-command.log.gz",
+      "archive_relative_path": "commands/account-postgrant-drift1-00199d8b-green-command.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/commands/account-postgrant-drift1-00199d8b-green-command.log.gz",
+      "archive_sha256": "dbab7127bfc7d213c2f50d17c6859c8ff63bb3f54419fb6059f032e5664132c5",
+      "archive_bytes": 85,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/cleanup.txt"
+      },
+      "original_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/cleanup.txt.gz",
+      "archive_relative_path": "runtime/full206/cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "archive_bytes": 81,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/containers-after.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/containers-after.txt.gz",
+      "archive_relative_path": "runtime/full206/containers-after.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/source-before.json"
+      },
+      "original_sha256": "1fd99ae4720d788da0461593166d89b9c86ada7cfabf54ff2ed1361e97eca232",
+      "original_bytes": 123698,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/source-before.json.gz",
+      "archive_relative_path": "runtime/full206/source-before.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/source-before.json.gz",
+      "archive_sha256": "95ef20489a303bd8c7e5b8c9c34185c505b5a43dfcdbdbb026465c997fe32a66",
+      "archive_bytes": 47480,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/source-after.json"
+      },
+      "original_sha256": "1fd99ae4720d788da0461593166d89b9c86ada7cfabf54ff2ed1361e97eca232",
+      "original_bytes": 123698,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/source-after.json.gz",
+      "archive_relative_path": "runtime/full206/source-after.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/source-after.json.gz",
+      "archive_sha256": "95ef20489a303bd8c7e5b8c9c34185c505b5a43dfcdbdbb026465c997fe32a66",
+      "archive_bytes": 47480,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/probe.log"
+      },
+      "original_sha256": "d992fae34db8d62aa1061ea32a71b0b4edd6e13dd2a2c9ee16eefd370b39388e",
+      "original_bytes": 43690,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/probe.log.gz",
+      "archive_relative_path": "runtime/full206/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/probe.log.gz",
+      "archive_sha256": "e30780f3afe3acef4fcaa4da5f0d1ae6f0f39fbdffd42555882a62bf58435190",
+      "archive_bytes": 7450,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/prebuild-dispatch.txt"
+      },
+      "original_sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "original_bytes": 65,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/prebuild-dispatch.txt.gz",
+      "archive_relative_path": "runtime/full206/prebuild-dispatch.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/prebuild-dispatch.txt.gz",
+      "archive_sha256": "5506835ac8de8135d1ff54dcd47f3b9e35521e95ba37dc5f514d4e435e4bb96a",
+      "archive_bytes": 82,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/cleanup-final-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/cleanup-final-list-error.txt.gz",
+      "archive_relative_path": "runtime/full206/cleanup-final-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/container-name.txt"
+      },
+      "original_sha256": "4a06e2b2e7ef5ccb19f351613a251dfe6ccf7e0dfc31d598e85d1d3cf557f990",
+      "original_bytes": 38,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/container-name.txt.gz",
+      "archive_relative_path": "runtime/full206/container-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/container-name.txt.gz",
+      "archive_sha256": "d6d95114c67d88d717b19ab44cc1170072895d49ab9feff49771b7fe1cbf48b3",
+      "archive_bytes": 58,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/probe-exit.txt"
+      },
+      "original_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/probe-exit.txt.gz",
+      "archive_relative_path": "runtime/full206/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/probe-exit.txt.gz",
+      "archive_sha256": "c28cc69d141393e44a931229323624ef7b8c5bde3ee047ca9b87332daef23c82",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/containers-before-cleanup.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/containers-before-cleanup.txt.gz",
+      "archive_relative_path": "runtime/full206/containers-before-cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/cleanup-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/cleanup-list-error.txt.gz",
+      "archive_relative_path": "runtime/full206/cleanup-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/ownership-label.txt"
+      },
+      "original_sha256": "20d2d95b85ec87a100dc0e1aa1781d47dc18c9e8922bbae8c8a9ee25f0fabd4c",
+      "original_bytes": 59,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/ownership-label.txt.gz",
+      "archive_relative_path": "runtime/full206/ownership-label.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/ownership-label.txt.gz",
+      "archive_sha256": "f90b4a6bfd6eb09ea5db6f34c023d793da1a72aae07597316bb680d5c4b1eedf",
+      "archive_bytes": 77,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/postgres-map.json"
+      },
+      "original_sha256": "06c1726d5a6d6db2d4d9e0d6c31da51ec0b377c5450e310b3d3c02a9cd49cd79",
+      "original_bytes": 184118,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/postgres-map.json.gz",
+      "archive_relative_path": "runtime/full206/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/postgres-map.json.gz",
+      "archive_sha256": "f1d4fbda06373188bd13d5f981c2f2645cd9e4d2189b3ac457b784f832434107",
+      "archive_bytes": 10999,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/driver-receipt.json"
+      },
+      "original_sha256": "b79c43a7f67cd926714302a182373a1aa35b335e458d25fc794ef669df3a053d",
+      "original_bytes": 1623,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/driver-receipt.json.gz",
+      "archive_relative_path": "runtime/full206/driver-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/driver-receipt.json.gz",
+      "archive_sha256": "6a80b04ce3e56d85d02948300e3fe417721ad1b8aba301d5eee3b1e1eea64d44",
+      "archive_bytes": 783,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/full206",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full206-b168216afea84f08bbee9d68b39f31d7/full-test-results.json"
+      },
+      "original_sha256": "3021698265a9396284ff059c52c6d0b1807f221f0222e0ba1140a25157c1ef8b",
+      "original_bytes": 19835,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/full206/full-test-results.json.gz",
+      "archive_relative_path": "runtime/full206/full-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/full206/full-test-results.json.gz",
+      "archive_sha256": "8c514b2a142b5b6cda745683f6688adb2d0a309eb475d7da6726d479a42b74f8",
+      "archive_bytes": 4271,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/cleanup.txt"
+      },
+      "original_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/cleanup.txt.gz",
+      "archive_relative_path": "runtime/exact1-red/cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "archive_bytes": 81,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/containers-after.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/containers-after.txt.gz",
+      "archive_relative_path": "runtime/exact1-red/containers-after.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/source-before.json"
+      },
+      "original_sha256": "9b222a32601de85985392e1925bd808ef44ad0f76b68847dd7dfe97734b6542c",
+      "original_bytes": 123698,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/source-before.json.gz",
+      "archive_relative_path": "runtime/exact1-red/source-before.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/source-before.json.gz",
+      "archive_sha256": "c36d5e8c4c010fa36c4b4ea0fab1dbb727ddea8a2af0acbc482ced2c6fc56a72",
+      "archive_bytes": 47478,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/source-after.json"
+      },
+      "original_sha256": "9b222a32601de85985392e1925bd808ef44ad0f76b68847dd7dfe97734b6542c",
+      "original_bytes": 123698,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/source-after.json.gz",
+      "archive_relative_path": "runtime/exact1-red/source-after.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/source-after.json.gz",
+      "archive_sha256": "c36d5e8c4c010fa36c4b4ea0fab1dbb727ddea8a2af0acbc482ced2c6fc56a72",
+      "archive_bytes": 47478,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/probe.log"
+      },
+      "original_sha256": "0121bf210a8a34615df5b8b1bd3183125997fcb952bc0096057045560905dafe",
+      "original_bytes": 5949,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/probe.log.gz",
+      "archive_relative_path": "runtime/exact1-red/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/probe.log.gz",
+      "archive_sha256": "f20c6d1e3b0f2c8d6c516c68665c79fd9b0ee8f9509e3b99b16f6082d18367b6",
+      "archive_bytes": 1762,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/prebuild-dispatch.txt"
+      },
+      "original_sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "original_bytes": 65,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/prebuild-dispatch.txt.gz",
+      "archive_relative_path": "runtime/exact1-red/prebuild-dispatch.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/prebuild-dispatch.txt.gz",
+      "archive_sha256": "5506835ac8de8135d1ff54dcd47f3b9e35521e95ba37dc5f514d4e435e4bb96a",
+      "archive_bytes": 82,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/cleanup-final-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/cleanup-final-list-error.txt.gz",
+      "archive_relative_path": "runtime/exact1-red/cleanup-final-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/container-name.txt"
+      },
+      "original_sha256": "02bf7f1ff48578c930296732abe78954f63af6d384458452c2554ad9b1448266",
+      "original_bytes": 38,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/container-name.txt.gz",
+      "archive_relative_path": "runtime/exact1-red/container-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/container-name.txt.gz",
+      "archive_sha256": "12f5fe227a393776a2d4599d03fc61fa04a971b30a413ee3a0133b4e5f4e36e3",
+      "archive_bytes": 58,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/probe-exit.txt"
+      },
+      "original_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/probe-exit.txt.gz",
+      "archive_relative_path": "runtime/exact1-red/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/probe-exit.txt.gz",
+      "archive_sha256": "c28cc69d141393e44a931229323624ef7b8c5bde3ee047ca9b87332daef23c82",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/containers-before-cleanup.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/containers-before-cleanup.txt.gz",
+      "archive_relative_path": "runtime/exact1-red/containers-before-cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/cleanup-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/cleanup-list-error.txt.gz",
+      "archive_relative_path": "runtime/exact1-red/cleanup-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/ownership-label.txt"
+      },
+      "original_sha256": "4cb10445689f0cb428a887b3c8dd608beaa3598ffbcf029891272f622824ca1c",
+      "original_bytes": 56,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/ownership-label.txt.gz",
+      "archive_relative_path": "runtime/exact1-red/ownership-label.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/ownership-label.txt.gz",
+      "archive_sha256": "c721f3235da6820fe00fc22d711a2c4baea8ac22b943812a52d5cbbef448601d",
+      "archive_bytes": 72,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/postgres-map.json"
+      },
+      "original_sha256": "49ba4dd8ef5979c3ebc7727c9eccc9c7bbc64a4cf16b700fd2ee5d25b46cb1a8",
+      "original_bytes": 184238,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/postgres-map.json.gz",
+      "archive_relative_path": "runtime/exact1-red/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/postgres-map.json.gz",
+      "archive_sha256": "566e33d552689f0b654011f432a6732e30a0d88a1c85b840fc1f1dca442c9890",
+      "archive_bytes": 11057,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/driver-receipt.json"
+      },
+      "original_sha256": "54efc1d57a582b4778230e532a9530b1dfe04d1748d0d7a73a1b31b0dd208673",
+      "original_bytes": 1623,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/driver-receipt.json.gz",
+      "archive_relative_path": "runtime/exact1-red/driver-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/driver-receipt.json.gz",
+      "archive_sha256": "52e019cccc0cbfdde8ac93c50092982e15839367cb5f13514ae7ca2956e5ce70",
+      "archive_bytes": 788,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-eae3b3548b6d4814993e91a4cf8ab1ab/selected-test-results.json"
+      },
+      "original_sha256": "ac80e116b4eb5e55473602b103d42f01bbe0fa63acfb45ad51a069dca548589b",
+      "original_bytes": 643,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-red/selected-test-results.json.gz",
+      "archive_relative_path": "runtime/exact1-red/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-red/selected-test-results.json.gz",
+      "archive_sha256": "998b96efc3618b6085882c0aa3a14ca44c58a0dc19c9dcc9a67a679c9b3b3a6c",
+      "archive_bytes": 426,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/cleanup.txt"
+      },
+      "original_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/cleanup.txt.gz",
+      "archive_relative_path": "runtime/exact1-green/cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "archive_bytes": 81,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/containers-after.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/containers-after.txt.gz",
+      "archive_relative_path": "runtime/exact1-green/containers-after.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/source-before.json"
+      },
+      "original_sha256": "3bfb8b337806bfd2764941d8b7b095fe49e00bf445c00950ea5c4382636842c9",
+      "original_bytes": 123698,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/source-before.json.gz",
+      "archive_relative_path": "runtime/exact1-green/source-before.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/source-before.json.gz",
+      "archive_sha256": "9950bbe32dc27f1f7c7e07586fe753cb0a8837ff615945257baea5f04d8cb482",
+      "archive_bytes": 47478,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/source-after.json"
+      },
+      "original_sha256": "3bfb8b337806bfd2764941d8b7b095fe49e00bf445c00950ea5c4382636842c9",
+      "original_bytes": 123698,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/source-after.json.gz",
+      "archive_relative_path": "runtime/exact1-green/source-after.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/source-after.json.gz",
+      "archive_sha256": "9950bbe32dc27f1f7c7e07586fe753cb0a8837ff615945257baea5f04d8cb482",
+      "archive_bytes": 47478,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/probe.log"
+      },
+      "original_sha256": "333c2cf88fc494f2e63babcb1e5df6e5eea355e4321365070518a8b56f86a9ad",
+      "original_bytes": 5196,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/probe.log.gz",
+      "archive_relative_path": "runtime/exact1-green/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/probe.log.gz",
+      "archive_sha256": "650d0b45878152ff194ecd9b827348dfc7823a2bf5c2c4e39b46af203ebbdd30",
+      "archive_bytes": 1524,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/prebuild-dispatch.txt"
+      },
+      "original_sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "original_bytes": 65,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/prebuild-dispatch.txt.gz",
+      "archive_relative_path": "runtime/exact1-green/prebuild-dispatch.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/prebuild-dispatch.txt.gz",
+      "archive_sha256": "5506835ac8de8135d1ff54dcd47f3b9e35521e95ba37dc5f514d4e435e4bb96a",
+      "archive_bytes": 82,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/cleanup-final-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/cleanup-final-list-error.txt.gz",
+      "archive_relative_path": "runtime/exact1-green/cleanup-final-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/container-name.txt"
+      },
+      "original_sha256": "3eecab12781ceccdcd18356d52282f168143775d9a58bd0a0cd5dd8939e5a936",
+      "original_bytes": 38,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/container-name.txt.gz",
+      "archive_relative_path": "runtime/exact1-green/container-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/container-name.txt.gz",
+      "archive_sha256": "edaf6b90ba13ff34375e0691bec5d0b7c5e67cd2b0e6374579e990d7f2ab637f",
+      "archive_bytes": 58,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/probe-exit.txt"
+      },
+      "original_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/probe-exit.txt.gz",
+      "archive_relative_path": "runtime/exact1-green/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/probe-exit.txt.gz",
+      "archive_sha256": "89ed3b723e0e40d8957a2df55fcb04d57b6d95fa665c5fe67b098df7f29694ae",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/containers-before-cleanup.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/containers-before-cleanup.txt.gz",
+      "archive_relative_path": "runtime/exact1-green/containers-before-cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/cleanup-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/cleanup-list-error.txt.gz",
+      "archive_relative_path": "runtime/exact1-green/cleanup-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/ownership-label.txt"
+      },
+      "original_sha256": "1ed05d599ad98287663b638d68b3760d330dfcc933242fd69d5f786f4f1e24c7",
+      "original_bytes": 56,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/ownership-label.txt.gz",
+      "archive_relative_path": "runtime/exact1-green/ownership-label.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/ownership-label.txt.gz",
+      "archive_sha256": "bab4934c8bd3b787c366559c46d047ea9c46f5a305d722fd4377e8cd22cac003",
+      "archive_bytes": 73,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/postgres-map.json"
+      },
+      "original_sha256": "49ba4dd8ef5979c3ebc7727c9eccc9c7bbc64a4cf16b700fd2ee5d25b46cb1a8",
+      "original_bytes": 184238,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/postgres-map.json.gz",
+      "archive_relative_path": "runtime/exact1-green/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/postgres-map.json.gz",
+      "archive_sha256": "566e33d552689f0b654011f432a6732e30a0d88a1c85b840fc1f1dca442c9890",
+      "archive_bytes": 11057,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/driver-receipt.json"
+      },
+      "original_sha256": "61647748a6851391ebbde11ec14c63ba0949d4e520043b42499de31ace07a0da",
+      "original_bytes": 1623,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/driver-receipt.json.gz",
+      "archive_relative_path": "runtime/exact1-green/driver-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/driver-receipt.json.gz",
+      "archive_sha256": "c9d12a09c638240490cd5625391280de7056eea03ebb5854f58130fdd663cbc0",
+      "archive_bytes": 788,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/exact1-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-dormant-drift1-193131cc009347789c6899f190765d93/selected-test-results.json"
+      },
+      "original_sha256": "4b50b067512ece9a9cbfd3071c7462f1155fa7058c5cfcfefe1a35a20556cc2a",
+      "original_bytes": 639,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/runtime/exact1-green/selected-test-results.json.gz",
+      "archive_relative_path": "runtime/exact1-green/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/runtime/exact1-green/selected-test-results.json.gz",
+      "archive_sha256": "de3c1441ae8e033bab6bb226b4a2879506fb4aa4e6f20dc6a5838d56b8d498f0",
+      "archive_bytes": 424,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "source-index",
+      "origin": {
+        "kind": "DERIVED_INDEX",
+        "method": "Exact source-before allowlists resolved to regular immutable Git blobs; all SHA256 verified via git cat-file --batch."
+      },
+      "original_sha256": "38ca05978bd4cfe99d610a7c440ddbaaee9707ed3c05568b8ba9500bfebbdea0",
+      "original_bytes": 1335161,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/source-index/source-git-bindings.json.gz",
+      "archive_relative_path": "source-index/source-git-bindings.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/source-index/source-git-bindings.json.gz",
+      "archive_sha256": "ab4301347e0aaa2f26e0a44210f6b80c18da1e0c816f18f6a281cdf1f29e208f",
+      "archive_bytes": 239387,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "fixture/historical-root-approval",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "00199d8b1329792f14eee3d5e178245d4b10b0d4",
+        "path": "docs/evidence/console/implementation/2026-09-15-public-terms-read/postgrant-fixture/approval.json",
+        "git_blob_oid": "0e67d39e54b9982514b0290f3b904c52771b7812",
+        "git_mode": "100644"
+      },
+      "original_sha256": "71dd964f7b9fd14f1f4fe91d19253d2b198680ba5ecbfd8cd3f7e6c93d2452d2",
+      "original_bytes": 1464,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/fixture/historical-root-approval/approval.json.gz",
+      "archive_relative_path": "fixture/historical-root-approval/approval.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant/fixture/historical-root-approval/approval.json.gz",
+      "archive_sha256": "8092449d9a2faa1ba9503c675c47a3729a77519d709ab868afb55e697e8075a9",
+      "archive_bytes": 866,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    }
+  ],
+  "source_binding_rows": 2982,
+  "source_binding_unique_git_blobs": 995,
+  "prior_package": {
+    "manifest": "/private/tmp/terms-public-read-retention-00071325/retention-allowlist.json",
+    "manifest_sha256": "c76c38ad600cd32175459e8ccfaea72488ba27c3783987fba46e4cacb4f3c3a6",
+    "prior_archive_count": 181,
+    "duplicate_private_origins": 0
+  },
+  "classifications": {
+    "full206": "At00071325 original unfiltered Cargo argv executes206:183PASS23FAIL,0ignored/measured/filtered. All15new terms cases pass (custody10 HTTP3 security2). Complete accounting is not full-suiteGREEN.",
+    "historical_comparison": "Prior191 had168PASS23FAIL. Existing public-terms-without-authority case repaired;22same-first-site failures remain, and postgrant fixture witness regressed to3instead of1. Full runtime source/assertion review retains exact per-case evidence and reach limits.",
+    "fixture_correction": "Only once-only event-trigger predicate and stale comments changed. All fixed-error, witness, rollback and recovery assertions retained byte-identically; no product source change.",
+    "exact1_red": "At7b930e0d one selected case executed:0PASS1FAIL205filtered, failure at exact witness3vs1.",
+    "exact1_green": "At00199d8b same selected case executed:1PASS0FAIL205filtered. Exact witness1, full catalog rollback and negative/positive recovery assertions reached; reachability inferred from exact source and completed success, not raw private DB snapshots.",
+    "outer_command_distinction": "RED outer fanout.py admit exits0 while actual inner effective probe exits1; GREEN directly invokes same effective probe and exits0. Outer commands are not identical.",
+    "full206_rerun": "Root explicitly declined full206 rerun after test-only fixture correction. Historical183/23 plus selected repaired1 must not be described as fresh184/22 or full206GREEN.",
+    "driver_full206": "Final author61 and independent61 synthetic controls valid; earlier59 preserved. Synthetic controls do not execute application runtime.",
+    "driver_exact1_v1": "Original report claims62/62 but lower_filtered_inventory mistakenly sent19205 expectedFalse and caught its own expected204 postcondition; parser correctly accepted19205. Preserve report as rejected proof, not valid62control approval.",
+    "driver_exact1_v2": "204 expectedTrue; parser result postconditions moved outside parser exception handling. Driver/probe/roster unchanged; author62 and independent62 valid synthetic controls. Capture receipt retains independent V1 reproduction.",
+    "historic_authority": "Root fixture approval from00199 is retained unchanged with its then-pendingGREEN statement; completed runtime review supplements that historical state.",
+    "scope": "All actual raw failures, control claim/correction packets, exact driver source and review evidence retained as inert gzip. Npm/OpenAPI/draft records remain separate."
+  },
+  "explicit_exclusions": [
+    "All unlisted temporary neighbors and the already imported181archive package.",
+    "Environment/credential/connection material, Docker/Colima configuration, database/volume contents, private fixture directories, caches/bytecode.",
+    "Npm/OpenAPI/draft preparation/runtime and unrelated prior Account packages.",
+    "Any production/publication/legal/compliance conclusion."
+  ],
+  "sensitive_material_check": "Every explicit original is regular and non-symlink; all payloads scanned for actual multiline private keys and credential-bearing URLs, no matches. No values printed.",
+  "pre_mortem": "Blanket import exposes unrelated runtime state; stale control reports masquerade as valid proof; repaired selected case is conflated with a fresh full-suite run; hashes drift.",
+  "blast_radius": "106 inert gzip archives plus finite JSON manifest and guide. Root alone imports; no runtime or source mutation.",
+  "detection": "Pinned candidate/review maps, actual run artifact hashes, deterministic repeat gzip and exact decompression, all2982Git source bindings, independent origin/archive/readback review.",
+  "rollback": "Preserve rejected candidate and all historical raw evidence; append corrective receipts instead of rewriting imported history.",
+  "stop_conditions": [
+    "Hash/size/decompression mismatch",
+    "Any unlisted or unequal existing destination",
+    "Actual credential/local DB data",
+    "Overstated execution or stale-control claims",
+    "Independent review finding"
+  ],
+  "review_identities": {
+    "preparer": "/root/inventory_repair",
+    "independent_reviewer": "/root pending",
+    "runtime_owner": "/root",
+    "original_reviewers": [
+      "/root/inventory_repair",
+      "/root/capture_review"
+    ]
+  },
+  "remaining_holds": [
+    "Independent source/archive review and root serial import/readback",
+    "Separate final environment/OpenAPI/npm and draft work",
+    "Broader Account/Console completion and production/publication/legal authority"
+  ],
+  "execution_by_preparer": {
+    "runtime_tests": 0,
+    "cargo": 0,
+    "real_docker": 0,
+    "database": 0,
+    "repository_writes": 0
+  }
+}

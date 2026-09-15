@@ -1,0 +1,34 @@
+{
+  "status": "APPROVED_EXACT_ADDITIVE30_TEST_AMENDMENT_FOR_ROOT_IMPORT_AND_COMBINED_ADMISSION",
+  "reviewer": "/root/fast_gate_review",
+  "author": "/root/inventory_repair",
+  "base_sha": "23fa277133e83916d094f9b2423b48fd5af65ce4",
+  "patch": "/private/tmp/recovery-outer-cfg-tests-23fa2771-v2-inventory/candidate.patch",
+  "patch_sha256": "1c0342ab624c0dfb3121d5587c288a08dec3a60aa118f1ac158a500224971f5b",
+  "author_receipt_sha256": "d3e143cfe769186cf63016cfe31ffb6fbdd20dcd98b0dc86fc0ddb2a6d457200",
+  "exact_target": "scripts/lib/recovery-test-invocations.test.mjs",
+  "postimage_sha256": "4d515a562f456bc544c8799166161e0547c83598a0b36d4b69d02b5daf2ce6d6",
+  "findings": [],
+  "checks": [
+    "Exact patch/receipt/base/post hashes verified; original test bytes preserved as exact prefix,36lines appended,0deleted.",
+    "Eight candidate source/dependency/fixture files independently equal exact23fa Git blobs.",
+    "9positive controls cover beforeSQLx,betweenSQLx/function,helper acrossowner/observer/App;21negative controls mix allowed outercfg with innercfg/not(test)/allfalse/any/cfg_attr/ignore/nestedmodule.",
+    "Every114original assertion unchanged. Saved114/114 baseline verified. Independent same candidate Node probe144executed=135PASS9FAIL0skipped; exactly9new positive controls fail oldcfg/ignore rule."
+  ],
+  "independent_command": "node --test scripts/lib/recovery-test-invocations.test.mjs",
+  "independent_cwd": "/private/tmp/recovery-outer-cfg-tests-23fa2771-v2-inventory/candidate",
+  "independent_exit": 1,
+  "independent_counts": {
+    "tests": 144,
+    "pass": 135,
+    "fail": 9,
+    "skipped": 0
+  },
+  "independent_log": "/private/tmp/recovery-outer-cfg-tests-v2-independent-red-fast.log",
+  "independent_log_sha256": "243989ebfe7caadbf9ebc172d96798c9e8271bb73b4b720e0845a1063ce59e02",
+  "remaining_holds": [
+    "Root test-only import/clean combinedRED admission.",
+    "Exact checker+cfg6 patch independent review, same combinedGREEN and31compiled-name preservation/runtime."
+  ],
+  "runtime_scope": "0Cargo/DB/Docker/Rust runtime;1Node invocation;0shared/Git-object writes."
+}

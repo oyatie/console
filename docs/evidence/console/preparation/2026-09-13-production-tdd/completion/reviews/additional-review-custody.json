@@ -1,0 +1,62 @@
+{
+  "records": [
+    {
+      "source": "/private/tmp/preparation-recovery-browser-boundary-review-20260913/manifest.json",
+      "retained": "preparation-recovery-browser-boundary-review-20260913/manifest.json",
+      "raw_sha256": "89c0606169c5837879c70eb2a61a01723387bc167c7a617533cedfe418d446ba",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-browser-boundary-review-20260913/review.txt",
+      "retained": "preparation-recovery-browser-boundary-review-20260913/review.txt",
+      "raw_sha256": "e353a59887d21714a46a2eeb91441bd8e8f16165481d1cbb9450a264e03edb57",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-browser-boundary-review-20260913/verification.json",
+      "retained": "preparation-recovery-browser-boundary-review-20260913/verification.json",
+      "raw_sha256": "bf1feca23596f466d9c20730dca599ff2fd632afd985b22c6bacc015f13f564d",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-telemetry-gating-review-20260913/review.txt",
+      "retained": "preparation-recovery-telemetry-gating-review-20260913/review.txt",
+      "raw_sha256": "dd87bcea5b6612c7caedd3acec965797439684622befa3b632a41e7ab8e98683",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-tooling-review-20260913/manifest.json",
+      "retained": "preparation-recovery-tooling-review-20260913/manifest.json",
+      "raw_sha256": "7bd5ad1408833aa12fac184b5f3948a661bc329013e3c8788bef14367fcfaa65",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-tooling-review-20260913/review.txt",
+      "retained": "preparation-recovery-tooling-review-20260913/review.txt",
+      "raw_sha256": "0dad0c02c339d801df035bfebae6abe4bb887e97bee5484017ec2d8fa061f1ee",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-tooling-review-20260913/verification.json",
+      "retained": "preparation-recovery-tooling-review-20260913/verification.json",
+      "raw_sha256": "1cf240c4f73b23280032dd526cac1b917180c7006a1138ec720f1940124490b6",
+      "compression": null
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-native-s1-review-20260913.txt",
+      "retained": "preparation-recovery-native-s1-review-20260913.txt",
+      "raw_sha256": "625333265a738ee8379aba0477a0bada532bee80083f2b929fca00f0eb2a71d0"
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-bootstrap-b1-review-20260913.txt",
+      "retained": "preparation-recovery-bootstrap-b1-review-20260913.txt",
+      "raw_sha256": "fde714c894c6b9fcc781e0d4dccf00e8cb5b2879fb8bc8d8faa82776040383fa"
+    },
+    {
+      "source": "/private/tmp/preparation-recovery-bootstrap-b1-review-addendum-20260913.txt",
+      "retained": "preparation-recovery-bootstrap-b1-review-addendum-20260913.txt",
+      "raw_sha256": "220bffbccbde743fc1081773a99372e5307ff8b2c9920543491b75cca7411646"
+    }
+  ],
+  "note": "B1 initial review is superseded by its explicit HOLD addendum; retained for review history, not approval."
+}

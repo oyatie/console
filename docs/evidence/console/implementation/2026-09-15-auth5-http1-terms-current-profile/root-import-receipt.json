@@ -1,0 +1,13 @@
+{
+  "validator": "/root",
+  "head": "fcaecbbd75609b5c70412d20d77ffe87860a8b52",
+  "allowlist": "/private/tmp/account-auth5-http1-terms-retention-allowlist.json",
+  "allowlist_sha256": "4b5cc5460e3c9a8b5e9baa8450e4fe0391b646f1a9032cf64dd02097752e6876",
+  "gzip_payloads": 205,
+  "already_retained": 49,
+  "source_refs": 309,
+  "status": "ALL_HASHES_ORIGINAL_BYTES_AND_GIT_SOURCES_VERIFIED",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-auth5-http1-terms-current-profile",
+  "prior_validation_attempt": "Read-only validation stopped before any write because a labeled Git diff was initially treated as a filesystem path; now verified via its exact three-path immutable Git command.",
+  "limitations": "Preserves historical partial/failing evidence; excludes full179 and terms9 followups; no production/HA completion claim."
+}

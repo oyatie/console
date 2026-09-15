@@ -1,0 +1,116 @@
+{
+  "kind": "BOUNDED_DISPOSABLE_POSTGRES_DEPENDENCY_REPAIR",
+  "base_sha": "0b1316379d92b166b7786f0ccbc8c528ab3eb58a",
+  "candidate_sha": "45f057800379c7d6675dad220e8a0820ca66e973",
+  "owner": "/root",
+  "reviewer": "/root/fresh29_security",
+  "final_independent_review": "ACCEPT_BOUNDED_DEPENDENCY_REPAIR",
+  "files": {
+    "tools/lanes/pgtest.sh": "4c97e24a01bb08f43c97c885a4712bb722fbcd554b6e4541cf63154e35e0e31f",
+    "tools/ci/cargo_needs_postgres.sh": "d75b1877eb24a4f16168d7e26294677c5711de95444ff7484fffc8b1a2f08a29",
+    "tools/buck/test_needs_postgres.sh": "ebd6d40e0e818a11169460b4125ab3c993ebabaab67c134d93af11aef9214847",
+    "backend/ci/gates/writer-ownership/tests/census_executes_against_postgres.rs": "3ee4ac29b5564164a98b466918620294b5d5b9a06574876502dd1dea3745c5c1"
+  },
+  "image": "postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280",
+  "actual_binary": "postgres (PostgreSQL) 18.6 (Debian 18.6-1.pgdg13+2)",
+  "actual_server_readback": [
+    {
+      "container": "console-cargo-postgres-jasonlee-22529",
+      "exit": 0,
+      "readback": "180006|18.6 (Debian 18.6-1.pgdg13+2)|off|off|off",
+      "error": ""
+    }
+  ],
+  "admission": "fanout.py admit; fresh actual18.4binary+four active pin mismatch classified before edits; same unmodified dependency probe GREEN",
+  "probe_not_proving": [
+    "CVE reproduction",
+    "Console exploit",
+    "authorization correctness",
+    "crash durability",
+    "whole-repository remediation",
+    "production upgrade"
+  ],
+  "executions": [
+    {
+      "suite": "app-health-readiness-pg",
+      "executed": 10,
+      "pass": 10,
+      "fail": 0
+    },
+    {
+      "suite": "attendance-concurrency-postgres",
+      "executed": 8,
+      "pass": 8,
+      "fail": 0
+    },
+    {
+      "suite": "platform-db-rls-isolation",
+      "executed": 8,
+      "pass": 5,
+      "fail": 3
+    },
+    {
+      "suite": "writer-ownership-canonical-census-pg",
+      "executed": 23,
+      "pass": 23,
+      "fail": 0
+    }
+  ],
+  "aggregate": {
+    "executed": 49,
+    "pass": 46,
+    "fail": 3,
+    "ignored": 0,
+    "filtered": 0,
+    "runner_exit": 1
+  },
+  "baseline": {
+    "sha": "0b1316379d92b166b7786f0ccbc8c528ab3eb58a",
+    "image": "18.4originalpinnedimage",
+    "suite": "platform-db-rls-isolation",
+    "executed": 8,
+    "pass": 5,
+    "fail": 3,
+    "same_test_outcomes_and_mechanisms": true,
+    "outcomes": {
+      "account_material_is_not_directly_accessible_to_company_runtime": "FAILED",
+      "account_runtime_cannot_read_unrelated_company_business_data": "FAILED",
+      "company_runtime_cannot_assume_account_custody_roles": "FAILED",
+      "cross_org_writes_are_rejected": "ok",
+      "non_owner_cannot_disable_the_tenant_boundary": "ok",
+      "org_id_is_immutable": "ok",
+      "rls_isolates_two_tenants_and_fails_closed": "ok",
+      "with_org_conn_sets_the_current_org_guc": "ok"
+    },
+    "classification": "Preexisting Account owner/privilege/role TDD RED; not introduced by image update. No tests skipped or weakened."
+  },
+  "commands": {
+    "probe": "DOCKER_CONTEXT=colima-console-design30 python3 /private/tmp/console-pg186-probe.py",
+    "compatibility": "DOCKER_CONTEXT=colima-console-design30 RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --only platform-db-rls-isolation,attendance-concurrency-postgres,app-health-readiness-pg,writer-ownership-canonical-census-pg --runner cargo --num-threads 1",
+    "baseline": "Same environment; immutable18.4checkout; tools/ci/cargo_needs_postgres.sh --only platform-db-rls-isolation --runner cargo --num-threads 1",
+    "syntax": "bash -n tools/lanes/pgtest.sh tools/ci/cargo_needs_postgres.sh tools/buck/test_needs_postgres.sh",
+    "tooling": "fnm exec --using=24.16.0 node --test tools/ci/cargo-needs-postgres-args.test.mjs scripts/check-test-credentials.test.mjs",
+    "buck_wrapper": "bash tools/buck/test_needs_postgres.test.sh"
+  },
+  "holds": [
+    "Account storage/roles missing; RLS suite remains red",
+    "Other active18.4 operational/deployment references unchanged",
+    "No deployed/data/provider transition",
+    "Durabilityoff runner does not prove crash or replica safety"
+  ],
+  "source_review": "fresh29_security independently confirmed exact four literal changes,49/46/3 outcomes and identical eight18.4baseline outcomes/failure mechanisms; no rerun by reviewer.",
+  "tooling_tests": {
+    "node_reported_tests": 13,
+    "pass": 13,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "note": "Node reports13including nested suite accounting; not Rust product tests."
+  },
+  "buck_wrapper_initial": {
+    "exit": 0,
+    "reported_banner": "PASS",
+    "credential_file_oracle": "INVALID: failures of existing mode/content checks were ignored; repair in progress. Other outer assertions not universally invalidated.",
+    "repair": "Subsequent checker candidate b76e9581; see credential-oracle-update.json"
+  }
+}

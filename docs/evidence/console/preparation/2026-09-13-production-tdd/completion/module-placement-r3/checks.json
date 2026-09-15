@@ -1,0 +1,61 @@
+{
+  "command": [
+    "python3",
+    "check.py",
+    "--root",
+    "/private/tmp/console-production-tdd-preparation-20260913"
+  ],
+  "positive_controls": 1,
+  "hostile_controls": 10,
+  "passed": 11,
+  "source_entries": 76,
+  "include_assets": 26,
+  "runtime_assets": 10,
+  "declaration_parsers": [
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-module-placement-r3-20260914/native_acceptance-declarations.rs"
+      ],
+      "exit_code": 0,
+      "scope": "declaration parsing only"
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-module-placement-r3-20260914/account_migration-declarations.rs"
+      ],
+      "exit_code": 0,
+      "scope": "declaration parsing only"
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-module-placement-r3-20260914/auth_rest-declarations.rs"
+      ],
+      "exit_code": 0,
+      "scope": "declaration parsing only"
+    }
+  ],
+  "unresolved_crate_references": 0,
+  "owner_rust_compiled": false,
+  "owner_tests_executed": 0
+}

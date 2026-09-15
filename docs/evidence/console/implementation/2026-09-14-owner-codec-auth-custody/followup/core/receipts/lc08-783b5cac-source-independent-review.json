@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVED_SOURCE_PENDING_SAME_PROBE_GREEN",
+  "base": "e1f184fa19bd9a34569ef8bf1bc760e1f0144a50",
+  "commit": "783b5cac7dbcca150f906aceb433e9be00ce01c9",
+  "files": {
+    "ops/generate-account-custody.py": "d29407b2e4a0894dd4c4440b2b4a699c113115bf1d746802b57c7a82745a7500",
+    "ops/postgres-finalize-account-custody.sql": "9ba7c8be9c7e517e4c0b948e81452da55038fae95934547c2c7f80d74cca3f8f"
+  },
+  "checks": [
+    "Onlygenerator/generatedSQLtwofileschanged.",
+    "Initialfullcanonicalqueryremoved; exactsixpublicname census retains catalog_missing, separate ordinary-tablekind check retains catalog_shape_mismatch.",
+    "ONLY on each same six ACCESS EXCLUSIVE locks avoids unexpected descendant locking before full shape validation. No timeout or lock mode relaxation.",
+    "Unchanged authoritative fullcanonicalinspection remains directly afterlocks and before ownership/grant/function mutation. All subsequent profile/routine/finalpostcondition checks preserved.",
+    "FENCE_INSTALL string exactbytes compared tobase; no grant changes, particularly no rejected UPDATE(id) addition.",
+    "CanonicalmetadataSQL, numberedmigrations and tests unchanged. Independent generate-account-custody.py --check PASS."
+  ],
+  "evidence_boundary": "Fixaddresses reproduced prelock P0001 under concurrentfinalization. Exact PostgreSQLinternal mixedsnapshotmechanism remains inference; same named runtimeprobe must validate intended correction.",
+  "holds": [
+    "SameconcurrentprobeGREEN and retained36regressionrun pending",
+    "OwnerUPDATE(id) automaticapprovalblock unchanged",
+    "Legacyaccountstorageprerequisites and production/HA remain separate"
+  ]
+}

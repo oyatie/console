@@ -1,0 +1,116 @@
+{
+  "base": {
+    "sha": "19299cfdd5f3b808667155901257225b1d769eee",
+    "exit_code": 1,
+    "first_party_generated": "PASS",
+    "missing_buildscript_fixups": [
+      [
+        "camino",
+        "v1.2.5"
+      ],
+      [
+        "leptos",
+        "v0.9.0-beta"
+      ],
+      [
+        "leptos_macro",
+        "v0.9.0-beta"
+      ],
+      [
+        "prettyplease",
+        "v0.2.37"
+      ],
+      [
+        "proc-macro2-diagnostics",
+        "v0.10.1"
+      ],
+      [
+        "reactive_graph",
+        "v0.3.0-beta2"
+      ],
+      [
+        "server_fn",
+        "v0.9.0-beta"
+      ],
+      [
+        "server_fn_macro",
+        "v0.9.0-beta"
+      ],
+      [
+        "slotmap",
+        "v1.1.1"
+      ],
+      [
+        "tachys",
+        "v0.3.0-beta2"
+      ],
+      [
+        "wasm-bindgen",
+        "v0.2.123"
+      ],
+      [
+        "wasm-bindgen-shared",
+        "v0.2.123"
+      ]
+    ],
+    "raw_log_sha256": "b07119e86ff7e1f3c4abe9ea1fc46b884925d8dc0092985d6d43bae3410c9756"
+  },
+  "candidate": {
+    "sha": "2b1a7d3494e6545fa5ee63597a3e285143435505",
+    "exit_code": 1,
+    "first_party_generated": "PASS",
+    "missing_buildscript_fixups": [
+      [
+        "camino",
+        "v1.2.5"
+      ],
+      [
+        "leptos",
+        "v0.9.0-beta"
+      ],
+      [
+        "leptos_macro",
+        "v0.9.0-beta"
+      ],
+      [
+        "prettyplease",
+        "v0.2.37"
+      ],
+      [
+        "proc-macro2-diagnostics",
+        "v0.10.1"
+      ],
+      [
+        "reactive_graph",
+        "v0.3.0-beta2"
+      ],
+      [
+        "server_fn",
+        "v0.9.0-beta"
+      ],
+      [
+        "server_fn_macro",
+        "v0.9.0-beta"
+      ],
+      [
+        "slotmap",
+        "v1.1.1"
+      ],
+      [
+        "tachys",
+        "v0.3.0-beta2"
+      ],
+      [
+        "wasm-bindgen",
+        "v0.2.123"
+      ],
+      [
+        "wasm-bindgen-shared",
+        "v0.2.123"
+      ]
+    ],
+    "raw_log_sha256": "c0c3f0c2d842c10553461dbfd5dd63151d827702a4bf839c55359d24bac49bc6"
+  },
+  "same_twelve_missing_fixups_on_unchanged_base": true,
+  "claim": "Observed existing full-generated-gate blocker; not caused or repaired by this additive test candidate. No warning downgrade or speculative buildscript.run=false fix."
+}
