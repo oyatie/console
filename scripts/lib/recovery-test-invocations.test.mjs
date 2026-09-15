@@ -6,10 +6,10 @@ import { recoveryTestInvocations, RECOVERY_SUPERVISOR } from "./recovery-test-in
 
 const workflow = readFileSync(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
 const source = readFileSync(new URL("../../backend/crates/payroll/adapter-postgres/tests/recovery.rs", import.meta.url), "utf8");
-test("actual required recovery commands resolve both exact owner cases", () => {
+test("actual required recovery commands resolve all six exact owner cases", () => {
   const result = recoveryTestInvocations(workflow, source);
   assert.deepEqual(result.failures, []);
-  assert.equal(result.invocations.length, 2);
+  assert.equal(result.invocations.length, 6);
 });
 
 const mutations = {
@@ -43,3 +43,16 @@ test("an additional real owner test cannot silently fall outside selected filter
   assert.equal(result.invocations.length, 0);
   assert.match(result.failures.join(' '), /discovered/);
 });
+
+for (const name of ["fresh_commit_wait_release_requires_explicit_remote_confirmation", "staging_success_and_idempotent_restage_wait_for_remote_confirmation", "required_remote_unknown_is_bounded_and_never_local_fallback", "finite_remote_bound_and_repeated_replay_preserve_exact_rows"]) {
+  test(`new recovery case ${name} must have a real required executor`, () => {
+    const parsed = yaml.load(workflow);
+    const steps = parsed.jobs['postgres-reachability-domain-b'].steps;
+    const index = steps.findIndex(s => s.run?.includes(` ${name} `));
+    assert.ok(index >= 0);
+    steps.splice(index, 1);
+    const result = recoveryTestInvocations(yaml.dump(parsed, { lineWidth: -1 }), source);
+    assert.equal(result.invocations.length, 0);
+    assert.ok(result.failures.length > 0);
+  });
+}

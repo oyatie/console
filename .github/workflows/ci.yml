@@ -815,6 +815,22 @@ jobs:
         if: ${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
         run: CONSOLE_RECOVERY_CUT=after-commit-response python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery lost_commit_transport_reply_replays_one_real_payroll_effect -- --exact --test-threads=1 --nocapture
 
+      - name: Recovery fresh_commit_wait_release_requires_explicit_remote_confirmation
+        if: ${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
+        run: CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_commit_wait_release_requires_explicit_remote_confirmation -- --exact --test-threads=1 --nocapture
+
+      - name: Recovery staging_success_and_idempotent_restage_wait_for_remote_confirmation
+        if: ${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
+        run: CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery staging_success_and_idempotent_restage_wait_for_remote_confirmation -- --exact --test-threads=1 --nocapture
+
+      - name: Recovery required_remote_unknown_is_bounded_and_never_local_fallback
+        if: ${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
+        run: CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery required_remote_unknown_is_bounded_and_never_local_fallback -- --exact --test-threads=1 --nocapture
+
+      - name: Recovery finite_remote_bound_and_repeated_replay_preserve_exact_rows
+        if: ${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
+        run: CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery finite_remote_bound_and_repeated_replay_preserve_exact_rows -- --exact --test-threads=1 --nocapture
+
   postgres-domain-reachability:
     # Presubmit-gated live Postgres (oyatie pg-gate). A red here still blocks
     # the merge when run_live_postgres is true; otherwise the skip-proof step
