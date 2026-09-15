@@ -2,15 +2,15 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import yaml from "js-yaml";
-import { recoveryTestInvocations, RECOVERY_SUPERVISOR, OBSERVER_CASE } from "./recovery-test-invocations.mjs";
+import { recoveryTestInvocations, RECOVERY_SUPERVISOR, RECOVERY_CASES, OBSERVER_CASE } from "./recovery-test-invocations.mjs";
 
 const workflow = readFileSync(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
 const source = readFileSync(new URL("../../backend/crates/payroll/adapter-postgres/tests/recovery.rs", import.meta.url), "utf8");
 const observerSource = readFileSync(new URL("../../backend/crates/payroll/adapter-postgres/tests/durability_observer.rs", import.meta.url), "utf8");
-test("actual required recovery commands resolve six owner cases and the isolated installer", () => {
+test("actual required recovery commands resolve nine owner cases and the isolated installer", () => {
   const result = recoveryTestInvocations(workflow, source, observerSource);
   assert.deepEqual(result.failures, []);
-  assert.equal(result.invocations.length, 7);
+  assert.equal(result.invocations.length, 10);
 });
 
 const mutations = {
@@ -45,7 +45,7 @@ test("an additional real owner test cannot silently fall outside selected filter
   assert.match(result.failures.join(' '), /discovered/);
 });
 
-for (const name of [OBSERVER_CASE, "fresh_commit_wait_release_requires_explicit_remote_confirmation", "staging_success_and_idempotent_restage_wait_for_remote_confirmation", "required_remote_unknown_is_bounded_and_never_local_fallback", "finite_remote_bound_and_repeated_replay_preserve_exact_rows"]) {
+for (const name of [...RECOVERY_CASES.keys(), OBSERVER_CASE]) {
   test(`new recovery case ${name} must have a real required executor`, () => {
     const parsed = yaml.load(workflow);
     const steps = parsed.jobs['postgres-reachability-domain-b'].steps;

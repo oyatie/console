@@ -218,9 +218,9 @@ function assertOperatorImage(source) {
   assert.equal(entry[0], 'bash');
   assert.match(entry[1], /^\/[a-zA-Z0-9_/-]+\/postgres-finalize-account-custody\.sh$/);
   const directory = entry[1].slice(0, entry[1].lastIndexOf('/'));
-  assert.equal(lines.filter((line) => line.startsWith('COPY ')).length, 3, 'exact three candidate artifacts; no later replacement copy');
+  assert.equal(lines.filter((line) => line.startsWith('COPY ')).length, 4, 'exact four candidate artifacts; no later replacement copy');
   assert.ok(!lines.some((line) => line.startsWith('RUN ')), 'fixed COPY packaging must not rewrite release-bound artifacts');
-  for (const file of ['postgres-finalize-account-custody.sh', 'postgres-finalize-account-custody.sql', 'account-custody-migrations.sha384']) {
+  for (const file of ['postgres-finalize-account-custody.sh', 'postgres-finalize-account-custody.sql', 'postgres-install-durability-observer.sql', 'account-custody-migrations.sha384']) {
     assert.ok(lines.some((line) => {
       const words = line.split(/\s+/).filter((word) => !word.startsWith('--chmod='));
       return words.length === 3 && words[0] === 'COPY' && words[1] === `ops/${file}`
@@ -354,6 +354,7 @@ function nominalSmoke() {
 const nominalDockerfile = `FROM postgres:18.6@sha256:${'a'.repeat(64)}
 COPY ops/postgres-finalize-account-custody.sh /some/fixed/path/
 COPY ops/postgres-finalize-account-custody.sql /some/fixed/path/
+COPY ops/postgres-install-durability-observer.sql /some/fixed/path/
 COPY ops/account-custody-migrations.sha384 /some/fixed/path/
 ENTRYPOINT ["bash","/some/fixed/path/postgres-finalize-account-custody.sh"]`;
 
@@ -414,8 +415,8 @@ for (const [name, mutate] of [
     assert.throws(() => assertSmokeBoundary(fixture), { name: 'AssertionError' });
   });
 }
-test('LC07 machinery: packaging rejects omitted checksum, mutable base and mismatched wrapper path', () => {
-  for (const bad of [nominalDockerfile.replace('COPY ops/account-custody-migrations.sha384 /some/fixed/path/\n', ''), nominalDockerfile.replace(/@sha256:[a-f0-9]{64}/, ''), nominalDockerfile.replace('"/some/fixed/path/postgres-finalize', '"/different/postgres-finalize'), nominalDockerfile + '\nCOPY forged.sql /some/fixed/path/postgres-finalize-account-custody.sql', nominalDockerfile + '\nRUN echo forged > /some/fixed/path/postgres-finalize-account-custody.sql']) {
+test('LC07 machinery: packaging rejects omitted observer or checksum, mutable base and mismatched wrapper path', () => {
+  for (const bad of [nominalDockerfile.replace('COPY ops/postgres-install-durability-observer.sql /some/fixed/path/\n', ''), nominalDockerfile.replace('COPY ops/account-custody-migrations.sha384 /some/fixed/path/\n', ''), nominalDockerfile.replace(/@sha256:[a-f0-9]{64}/, ''), nominalDockerfile.replace('"/some/fixed/path/postgres-finalize', '"/different/postgres-finalize'), nominalDockerfile + '\nCOPY forged.sql /some/fixed/path/postgres-finalize-account-custody.sql', nominalDockerfile + '\nRUN echo forged > /some/fixed/path/postgres-finalize-account-custody.sql']) {
     assert.throws(() => assertOperatorImage(bad), { name: 'AssertionError' });
   }
 });
