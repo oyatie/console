@@ -32,10 +32,10 @@ import { parsePin } from "./lib/rust-pin.mjs";
 const REPO = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const DIST = "https://static.rust-lang.org/dist";
 
-// The hosts this repository builds on. CI is linux/x86_64; developer machines
-// are arm64 macOS. Both must be in the lock or a `buck2 build` on the other one
+// The hosts this repository builds on. CI uses x86_64 and arm64 Linux;
+// developer machines are arm64 macOS. All must be in the lock or a build
 // falls back to... nothing, because there is no fallback by design.
-export const HOSTS = ["x86_64-unknown-linux-gnu", "aarch64-apple-darwin"];
+export const HOSTS = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu", "aarch64-apple-darwin"];
 
 // rustup component name -> dist package name. `rustc` and `rust-std` are not
 // components in the rustup sense; they are what a toolchain IS.
