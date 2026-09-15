@@ -909,6 +909,7 @@ fn rest_error_from_request_context(error: RequestContextError) -> RestError {
     match error {
         RequestContextError::MissingBearer
         | RequestContextError::InvalidToken
+        | RequestContextError::LegacySessionRejected
         | RequestContextError::InvalidClaim(_) => RestError::new(
             StatusCode::UNAUTHORIZED,
             "unauthorized",

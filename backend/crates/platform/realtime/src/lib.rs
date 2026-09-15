@@ -1364,7 +1364,9 @@ fn realtime_error_from_request_context(err: RequestContextError) -> RealtimeApiE
         RequestContextError::MissingBearer => {
             RealtimeApiError::unauthorized("missing or malformed bearer token")
         }
-        RequestContextError::InvalidToken => RealtimeApiError::unauthorized("invalid bearer token"),
+        RequestContextError::InvalidToken | RequestContextError::LegacySessionRejected => {
+            RealtimeApiError::unauthorized("invalid bearer token")
+        }
         RequestContextError::InvalidClaim(message) => {
             RealtimeApiError::unauthorized(format!("token claim is invalid: {message}"))
         }

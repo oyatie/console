@@ -642,7 +642,7 @@ async fn principal_from_headers(
             console_platform_request_context::RequestContextError::MissingBearer => {
                 RestError::unauthorized("missing or malformed bearer token")
             }
-            console_platform_request_context::RequestContextError::InvalidToken => {
+            console_platform_request_context::RequestContextError::InvalidToken | console_platform_request_context::RequestContextError::LegacySessionRejected => {
                 RestError::unauthorized("invalid bearer token")
             }
             console_platform_request_context::RequestContextError::InvalidClaim(message) => {

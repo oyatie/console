@@ -209,6 +209,10 @@ pub enum RequestContextError {
     #[error("invalid bearer token")]
     InvalidToken,
 
+    /// A cryptographically valid legacy session belongs to an Account-fenced subject.
+    #[error("invalid bearer token")]
+    LegacySessionRejected,
+
     /// A claim in an otherwise-valid token did not parse (subject, role, or org).
     #[error("token claim is invalid: {0}")]
     InvalidClaim(&'static str),
@@ -399,7 +403,7 @@ async fn ensure_session_subject(
 ) -> Result<(), RequestContextError> {
     match verifier.legacy_subject_is_fenced(*user_id.as_uuid()).await {
         Ok(false) => Ok(()),
-        Ok(true) => Err(RequestContextError::InvalidToken),
+        Ok(true) => Err(RequestContextError::LegacySessionRejected),
         Err(_) => Err(RequestContextError::SessionVerificationUnavailable),
     }
 }
@@ -584,6 +588,14 @@ fn error_response(status: StatusCode, message: &str) -> Response {
 }
 
 fn error_response_for(err: &RequestContextError) -> Response {
+    if matches!(err, RequestContextError::LegacySessionRejected) {
+        return (
+            StatusCode::UNAUTHORIZED,
+            [(http::header::CONTENT_TYPE, "application/json")],
+            r#"{"error":{"code":"unauthorized","message":"invalid bearer token"}}"#,
+        )
+            .into_response();
+    }
     let status = match err {
         RequestContextError::VerifierUnavailable
         | RequestContextError::SessionVerificationUnavailable => StatusCode::SERVICE_UNAVAILABLE,
@@ -1082,6 +1094,10 @@ mod diagnostic_nondisclosure_tests {
     async fn fixed_public_failure_classes_keep_actionable_statuses() {
         for (error, expected) in [
             (RequestContextError::InvalidToken, StatusCode::UNAUTHORIZED),
+            (
+                RequestContextError::LegacySessionRejected,
+                StatusCode::UNAUTHORIZED,
+            ),
             (RequestContextError::WrongTokenTier, StatusCode::FORBIDDEN),
             (
                 RequestContextError::VerifierUnavailable,

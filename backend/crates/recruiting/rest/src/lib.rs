@@ -699,6 +699,7 @@ async fn principal(
         .map_err(|error| match error {
             RequestContextError::MissingBearer
             | RequestContextError::InvalidToken
+            | RequestContextError::LegacySessionRejected
             | RequestContextError::InvalidClaim(_) => RestError::new(
                 StatusCode::UNAUTHORIZED,
                 "unauthorized",

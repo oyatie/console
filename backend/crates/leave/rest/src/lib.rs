@@ -969,7 +969,9 @@ fn rest_error_from_request_context(err: RequestContextError) -> RestError {
         RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        RequestContextError::InvalidToken => RestError::unauthorized("invalid bearer token"),
+        RequestContextError::InvalidToken | RequestContextError::LegacySessionRejected => {
+            RestError::unauthorized("invalid bearer token")
+        }
         RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }

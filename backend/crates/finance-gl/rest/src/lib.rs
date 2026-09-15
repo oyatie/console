@@ -332,7 +332,9 @@ fn rest_error_from_request_context(
         E::BranchScope(message) | E::EffectivePolicy(message) => RestError::internal(message),
         E::MissingOrg => RestError::internal("no tenant context is bound to the current request"),
         E::MissingBearer => RestError::unauthorized("missing or malformed bearer token"),
-        E::InvalidToken => RestError::unauthorized("invalid bearer token"),
+        E::InvalidToken | E::LegacySessionRejected => {
+            RestError::unauthorized("invalid bearer token")
+        }
         E::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
