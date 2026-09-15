@@ -1248,3 +1248,93 @@ async fn account_terms_profile_refuses_trigger_function_link(pool: PgPool) {
         "account_custody.catalog_shape_mismatch",
     ).await;
 }
+
+// Rollback-only NULL-grantee regression. This administrator transaction observes
+// real catalogs; it is not a claim to authenticate the temporarily renamed role.
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_missing_auth_grantee_refuses_wrong_execute_acl(pool: PgPool) {
+    async fn preserved_role_and_rows(pool: &PgPool) -> Value {
+        // Full original auth-role row includes its password verifier. Compare in
+        // memory with static messages only; never print this retained snapshot.
+        sqlx::query_scalar(r#"SELECT jsonb_build_object(
+          'auth_role',(SELECT to_jsonb(r) FROM pg_catalog.pg_authid r WHERE r.rolname='console_auth_rt'),
+          'accounts',COALESCE((SELECT jsonb_agg(to_jsonb(a) ORDER BY a.id) FROM public.accounts a),'[]'::jsonb),
+          'security',COALESCE((SELECT jsonb_agg(to_jsonb(s) ORDER BY s.account_id) FROM public.account_security s),'[]'::jsonb),
+          'events',COALESCE((SELECT jsonb_agg(to_jsonb(e) ORDER BY e.id) FROM public.account_security_events e),'[]'::jsonb),
+          'acceptances',COALESCE((SELECT jsonb_agg(to_jsonb(a) ORDER BY a.account_id,a.terms_kind,a.terms_version) FROM public.account_terms_acceptances a),'[]'::jsonb),
+          'head',COALESCE((SELECT jsonb_agg(to_jsonb(h) ORDER BY h.id) FROM public.account_terms_head h),'[]'::jsonb),
+          'receipts',COALESCE((SELECT jsonb_agg(to_jsonb(r) ORDER BY r.id) FROM public.account_terms_release_receipts r),'[]'::jsonb),
+          'audit',COALESCE((SELECT jsonb_agg(to_jsonb(a) ORDER BY a.id) FROM public.audit_events a),'[]'::jsonb))"#)
+            .fetch_one(pool).await.expect("private full role/data preservation snapshot")
+    }
+
+    prepare_http_database(&pool).await;
+    let auth = real_auth_pool(&pool).await;
+    let subject = UserId::new();
+    insert_account_fence(&pool, subject, "ACTIVE").await;
+    assert!(fenced(&auth, *subject.as_uuid()).await.unwrap());
+    assert_eq!(
+        projection_custody_verdict(&pool).await,
+        "account_custody.finalized"
+    );
+    auth.close().await;
+    let unused: bool = sqlx::query_scalar("SELECT NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_fixture_auth_missing_grantee')")
+        .fetch_one(&pool).await.unwrap();
+    assert!(unused, "fixed temporary role name must be unused");
+    let before = preserved_role_and_rows(&pool).await;
+    let metadata_before = projection_catalog(&pool).await;
+    let mut tx = pool.begin().await.unwrap();
+    // Every fallible observation returns through Result so rollback runs before
+    // any assertion, including if DDL or the canonical query itself errors.
+    let observation: Result<(bool, Value, String), sqlx::Error> = async {
+        sqlx::raw_sql("SET LOCAL search_path=pg_catalog,pg_temp; SET LOCAL statement_timeout='3s'; SET LOCAL lock_timeout='3s'; ALTER ROLE console_auth_rt RENAME TO console_fixture_auth_missing_grantee; REVOKE EXECUTE ON FUNCTION public.account_legacy_fenced_v1(uuid) FROM console_fixture_auth_missing_grantee; GRANT EXECUTE ON FUNCTION public.account_legacy_fenced_v1(uuid) TO console_rt")
+            .execute(&mut *tx).await?;
+        let missing: bool = sqlx::query_scalar("SELECT NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_auth_rt') AND EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_fixture_auth_missing_grantee')")
+            .fetch_one(&mut *tx).await?;
+        let acl: Value = sqlx::query_scalar("SELECT jsonb_agg(jsonb_build_array(grantor.rolname,grantee.rolname,a.privilege_type,a.is_grantable) ORDER BY grantee.rolname,a.privilege_type) FROM pg_catalog.pg_proc p CROSS JOIN LATERAL pg_catalog.aclexplode(p.proacl) a LEFT JOIN pg_catalog.pg_roles grantor ON grantor.oid=a.grantor LEFT JOIN pg_catalog.pg_roles grantee ON grantee.oid=a.grantee WHERE p.oid='public.account_legacy_fenced_v1(uuid)'::regprocedure")
+            .fetch_one(&mut *tx).await?;
+        let verdict: String = sqlx::query_scalar(include_str!("../../src/account_custody_state.sql"))
+            .fetch_one(&mut *tx).await?;
+        Ok((missing, acl, verdict))
+    }.await;
+    let rollback = tx.rollback().await;
+    let after = preserved_role_and_rows(&pool).await;
+    let metadata_after = projection_catalog(&pool).await;
+    let removed: bool = sqlx::query_scalar("SELECT NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_fixture_auth_missing_grantee')")
+        .fetch_one(&pool).await.unwrap();
+    assert!(
+        rollback.is_ok(),
+        "MISSING_GRANTEE_CLEANUP: catalog fault transaction must roll back"
+    );
+    assert!(
+        before == after && metadata_before == metadata_after && removed,
+        "MISSING_GRANTEE_CLEANUP: exact original role/password verifier/metadata/rows must return"
+    );
+    let (missing, acl, verdict) =
+        observation.expect("same-transaction real catalog fault and canonical observation");
+    assert!(
+        missing,
+        "required Auth role must be absent during observation"
+    );
+    assert_eq!(
+        acl,
+        json!([
+            [
+                "console_account_owner",
+                "console_account_owner",
+                "EXECUTE",
+                false
+            ],
+            ["console_account_owner", "console_rt", "EXECUTE", false]
+        ]),
+        "fault must leave exactly owner plus wrong runtime EXECUTE, without grant option"
+    );
+    assert_eq!(
+        verdict, "account_fence_projection.definition_mismatch",
+        "MISSING_AUTH_GRANTEE: absent required grantee cannot make bool_and(true,NULL) certify wrong EXECUTE ACL"
+    );
+    assert_eq!(
+        projection_custody_verdict(&pool).await,
+        "account_custody.finalized"
+    );
+}
