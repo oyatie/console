@@ -4317,10 +4317,11 @@ mod account_browser {
         // FIRST on baseline and future implementation: real privileged matched
         // no-op UPDATE. Owner-context42501 must not hide the missing guard RED.
         let mut tx = pool.begin().await.unwrap();
-        let result = sqlx::query("UPDATE public.account_terms_release_receipts SET id=id WHERE id=$1")
-            .bind(target)
-            .execute(&mut *tx)
-            .await;
+        let result =
+            sqlx::query("UPDATE public.account_terms_release_receipts SET id=id WHERE id=$1")
+                .bind(target)
+                .execute(&mut *tx)
+                .await;
         tx.rollback().await.unwrap();
         assert!(
             before == terms_reference_rows(&pool).await,
@@ -4412,10 +4413,11 @@ mod account_browser {
             .execute(&mut *tx)
             .await
             .unwrap();
-        let result = sqlx::query("UPDATE public.account_terms_release_receipts SET id=id WHERE id=$1")
-            .bind(target)
-            .execute(&mut *tx)
-            .await;
+        let result =
+            sqlx::query("UPDATE public.account_terms_release_receipts SET id=id WHERE id=$1")
+                .bind(target)
+                .execute(&mut *tx)
+                .await;
         tx.rollback().await.unwrap();
         let restored: String = sqlx::query_scalar("SHOW session_replication_role")
             .fetch_one(&mut *connection)
@@ -6277,8 +6279,10 @@ fn account_auth_database_is_optional_without_serving_account_auth() {
                 ));
             }
             "no_database" => pairs.retain(|(key, _)| *key != "DATABASE_URL"),
+            // Disabled means no JWT verification or issuance services. Keeping
+            // only the public key still requires the separate Auth transport.
             "auth_disabled" => pairs.retain(|(key, _)| {
-                !key.starts_with("CONSOLE_WEBAUTHN_") && *key != "CONSOLE_JWT_PRIVATE_KEY_PEM"
+                !key.starts_with("CONSOLE_WEBAUTHN_") && !key.starts_with("CONSOLE_JWT_")
             }),
             _ => unreachable!(),
         }
@@ -6287,5 +6291,8 @@ fn account_auth_database_is_optional_without_serving_account_auth() {
             config.auth_database_url.is_none(),
             "no auth transport inferred for {mode}"
         );
+        if mode == "auth_disabled" {
+            assert!(config.jwt.is_none() && config.auth_rest.is_none());
+        }
     }
 }

@@ -1676,3 +1676,251 @@ mod issue_family_fence {
         );
     }
 }
+
+// Verifier-only API dependency admission: actual public-key configuration and
+// existing restricted Auth transport; no signing/WebAuthn services or fake pool.
+fn verifier_only_pairs(pool: Option<&PgPool>) -> Vec<(&'static str, String)> {
+    let mut pairs = pool.map_or_else(account_transport_config_pairs, transport_pairs);
+    pairs.retain(|(key, _)| {
+        !key.starts_with("CONSOLE_WEBAUTHN_") && *key != "CONSOLE_JWT_PRIVATE_KEY_PEM"
+    });
+    pairs
+}
+
+async fn verifier_only_ready(router: &axum::Router) -> StatusCode {
+    tokio::time::timeout(
+        std::time::Duration::from_secs(40),
+        router.clone().oneshot(
+            Request::builder()
+                .uri("/readyz")
+                .body(Body::empty())
+                .unwrap(),
+        ),
+    )
+    .await
+    .expect("actual readiness completes within outer request bound")
+    .unwrap()
+    .status()
+}
+
+async fn verifier_only_prerequisites(pool: &PgPool) -> UserId {
+    prepare_http_database(pool).await;
+    let subject = UserId::new();
+    insert_account_fence(pool, subject, "ACTIVE").await;
+    assert_projection(pool, subject, true).await;
+    // The genuine direct Auth positive has closed. A later backend must belong
+    // to the actual application startup, not this prerequisite connection.
+    tokio::time::timeout(std::time::Duration::from_secs(3), async {
+        loop {
+            let count: i64 = sqlx::query_scalar("SELECT count(*) FROM pg_catalog.pg_stat_activity WHERE datname=current_database() AND usename='console_auth_rt'")
+                .fetch_one(pool).await.unwrap();
+            if count == 0 { break; }
+            tokio::time::sleep(std::time::Duration::from_millis(25)).await;
+        }
+    }).await.expect("direct restricted Auth connection must close before startup");
+    subject
+}
+
+#[test]
+fn verifier_only_api_requires_auth_configuration() {
+    for absent in [None, Some(""), Some("   ")] {
+        let mut pairs = verifier_only_pairs(None);
+        // Prove this is a valid public-key verifier without issuance services.
+        let mut positive = pairs.clone();
+        positive.push((
+            "AUTH_DATABASE_URL",
+            "postgresql://console_auth_rt:verifier-auth-canary@localhost:5544/console".into(),
+        ));
+        let configured = AppConfig::from_pairs(positive).unwrap();
+        assert!(configured.jwt.is_some() && configured.auth_rest.is_none());
+        if let Some(value) = absent {
+            pairs.push(("AUTH_DATABASE_URL", value.into()));
+        }
+        let message = match AppConfig::from_pairs(pairs) {
+            Ok(config) => {
+                assert!(config.jwt.is_some() && config.auth_rest.is_none());
+                panic!("VERIFIER_AUTH_CONFIG: missing Auth was accepted for public-key-only API");
+            }
+            Err(console_app::AppError::Config(message)) => message,
+            Err(_) => panic!("VERIFIER_AUTH_CONFIG_PREREQUISITE: unrelated non-config failure"),
+        };
+        assert!(
+            message
+                == "AUTH_DATABASE_URL is required for api authentication when DATABASE_URL is configured",
+            "VERIFIER_AUTH_CONFIG_MESSAGE: refusal must preserve the exact fixed required-Auth diagnostic"
+        );
+    }
+}
+
+#[sqlx::test(migrations = false)]
+async fn verifier_only_api_startup_refuses_removed_auth_binding(pool: PgPool) {
+    verifier_only_prerequisites(&pool).await;
+    let mut config = AppConfig::from_pairs(verifier_only_pairs(Some(&pool))).unwrap();
+    assert!(config.jwt.is_some() && config.auth_rest.is_none());
+    assert!(config.auth_database_url.is_some());
+    let positive = AppState::from_config(config.clone())
+        .await
+        .expect("same real Business/command/Auth configuration starts");
+    assert_eq!(
+        verifier_only_ready(&build_router(positive.clone())).await,
+        StatusCode::OK
+    );
+    positive.shutdown_realtime().await;
+    drop(positive);
+    // Existing public AppConfig field deliberately bypasses only parser admission:
+    // startup must independently require the binding instead of JWT-only serving.
+    config.auth_database_url = None;
+    let attempt = AppState::from_config(config).await;
+    if let Ok(state) = &attempt {
+        state.shutdown_realtime().await;
+    }
+    let message = match attempt {
+        Ok(_) => {
+            panic!("VERIFIER_AUTH_STARTUP: actual startup accepted a removed required Auth binding")
+        }
+        Err(console_app::AppError::Config(message)) => message,
+        Err(_) => {
+            panic!("VERIFIER_AUTH_STARTUP_PREREQUISITE: unrelated non-config startup failure")
+        }
+    };
+    assert!(
+        message == "AUTH_DATABASE_URL is required for API authentication",
+        "VERIFIER_AUTH_STARTUP_MESSAGE: refusal must preserve the exact fixed required-Auth diagnostic"
+    );
+}
+
+#[sqlx::test(migrations = false)]
+async fn verifier_only_api_retains_genuine_auth_transport(pool: PgPool) {
+    verifier_only_prerequisites(&pool).await;
+    let config = AppConfig::from_pairs(verifier_only_pairs(Some(&pool))).unwrap();
+    assert!(config.jwt.is_some() && config.auth_rest.is_none());
+    let state = AppState::from_config(config)
+        .await
+        .expect("public-key-only actual API startup");
+    let router = build_router(state.clone());
+    let ready = verifier_only_ready(&router).await;
+    let retained: i64 = sqlx::query_scalar("SELECT count(*) FROM pg_catalog.pg_stat_activity WHERE datname=current_database() AND usename='console_auth_rt' AND backend_type='client backend'")
+        .fetch_one(&pool).await.unwrap();
+    state.shutdown_realtime().await;
+    assert_eq!(ready, StatusCode::OK);
+    assert!(
+        retained > 0,
+        "VERIFIER_AUTH_RETAINED: public-key-only startup must retain a genuinely authenticated Auth backend"
+    );
+}
+
+#[sqlx::test(migrations = false)]
+async fn verifier_only_api_readiness_tracks_auth_outage_and_no_jwt_stays_ready(pool: PgPool) {
+    let subject = verifier_only_prerequisites(&pool).await;
+    let config = AppConfig::from_pairs(verifier_only_pairs(Some(&pool))).unwrap();
+    assert!(config.jwt.is_some() && config.auth_rest.is_none());
+    let state = AppState::from_config(config)
+        .await
+        .expect("public-key-only positive startup");
+    let router = build_router(state.clone());
+    let mut no_jwt_pairs = verifier_only_pairs(Some(&pool));
+    no_jwt_pairs.retain(|(key, _)| !key.starts_with("CONSOLE_JWT_") && *key != "AUTH_DATABASE_URL");
+    let no_jwt_config = AppConfig::from_pairs(no_jwt_pairs).unwrap();
+    assert!(
+        no_jwt_config.jwt.is_none()
+            && no_jwt_config.auth_rest.is_none()
+            && no_jwt_config.auth_database_url.is_none()
+    );
+    let no_jwt_state = AppState::from_config(no_jwt_config)
+        .await
+        .expect("truly no-JWT API startup remains optional");
+    let no_jwt_router = build_router(no_jwt_state.clone());
+    let auth_url = login_test_database_url(&pool, TestDatabaseLogin::Auth);
+    let original_role: Value = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(original_role["rolcanlogin"] == true);
+    let original_limit = original_role["rolconnlimit"].as_i64().unwrap();
+    assert_ne!(
+        original_limit, 0,
+        "real Auth positive must permit connections"
+    );
+    let before = refresh_complete_snapshot(&pool).await;
+    let outcome = std::panic::AssertUnwindSafe(async {
+        assert_eq!(verifier_only_ready(&router).await, StatusCode::OK);
+        assert_eq!(verifier_only_ready(&no_jwt_router).await, StatusCode::OK);
+        let other_auth: i64 = sqlx::query_scalar("SELECT count(*) FROM pg_catalog.pg_stat_activity WHERE datname<>current_database() AND usename='console_auth_rt'")
+            .fetch_one(&pool).await.unwrap();
+        assert_eq!(other_auth, 0, "Auth-only fault requires exclusive disposable-cluster custody");
+        sqlx::query("ALTER ROLE console_auth_rt NOLOGIN").execute(&pool).await.unwrap();
+        let faulted_role: Value = sqlx::query_scalar("SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'")
+            .fetch_one(&pool).await.unwrap();
+        let mut expected_role = original_role.clone();
+        expected_role["rolcanlogin"] = json!(false);
+        assert!(faulted_role == expected_role,"fault changes only actual Auth LOGIN availability");
+        let stopped: Vec<(i32, bool)> = sqlx::query_as("SELECT pid,pg_terminate_backend(pid,5000) FROM pg_catalog.pg_stat_activity WHERE datname=current_database() AND usename='console_auth_rt' AND backend_type='client backend'")
+            .fetch_all(&pool).await.unwrap();
+        // Empty is intentional on the old JWT-only baseline. A separate test
+        // proves retention; this oracle must reach actual outage/readiness200.
+        assert!(stopped.iter().all(|(_, stopped)| *stopped));
+        let remaining: i64 = sqlx::query_scalar("SELECT count(*) FROM pg_catalog.pg_stat_activity WHERE datname=current_database() AND usename='console_auth_rt'")
+            .fetch_one(&pool).await.unwrap();
+        assert_eq!(remaining, 0);
+        let login = sqlx::postgres::PgPoolOptions::new().max_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(3)).connect(&auth_url).await;
+        let error = match login {
+            Err(error) => error,
+            Ok(unexpected) => {
+                unexpected.close().await;
+                panic!("VERIFIER_AUTH_OUTAGE_FAULT: NOLOGIN Auth unexpectedly authenticated");
+            }
+        };
+        assert!(error.as_database_error().and_then(|error| error.code()).as_deref() == Some("28000"),
+            "fault witness must be actual PostgreSQL NOLOGIN, not network/setup failure");
+        for login in [TestDatabaseLogin::Business,TestDatabaseLogin::LeaveCommand,TestDatabaseLogin::OntologyCommand,TestDatabaseLogin::PlatformForceCommand] {
+            let unaffected = console_platform_test_support::login_test_pool(&pool,login).await;
+            assert_eq!(sqlx::query_scalar::<_,i32>("SELECT 1").fetch_one(&unaffected).await.unwrap(),1);
+            unaffected.close().await;
+        }
+        assert_eq!(verifier_only_ready(&no_jwt_router).await,StatusCode::OK,
+            "same Auth-only outage must preserve true no-JWT API readiness");
+        assert_eq!(verifier_only_ready(&router).await,StatusCode::SERVICE_UNAVAILABLE,
+            "VERIFIER_AUTH_READINESS: public-key-only readiness ignored actual Auth outage");
+        assert!(before == refresh_complete_snapshot(&pool).await,"readiness must preserve all family/token/audit rows");
+    }).catch_unwind().await;
+    // Restore exact role and both retained routers before rethrowing baseline RED.
+    // Readiness remains detection; it does not prove consumer/socket drain.
+    let restore = sqlx::query("ALTER ROLE console_auth_rt LOGIN")
+        .execute(&pool)
+        .await;
+    let restored: Result<Value, _> = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+    )
+    .fetch_one(&pool)
+    .await;
+    let recovered = verifier_only_ready(&router).await;
+    let no_jwt_recovered = verifier_only_ready(&no_jwt_router).await;
+    let retained_rows = refresh_complete_snapshot(&pool).await;
+    let fence_present: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM public.account_security WHERE account_id=$1)",
+    )
+    .bind(subject.as_uuid())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    state.shutdown_realtime().await;
+    no_jwt_state.shutdown_realtime().await;
+    assert!(
+        restore.is_ok() && restored.as_ref().ok() == Some(&original_role),
+        "VERIFIER_AUTH_CLEANUP: exact original Auth role must be restored"
+    );
+    assert!(
+        recovered == StatusCode::OK && no_jwt_recovered == StatusCode::OK,
+        "VERIFIER_AUTH_CLEANUP: same verifier-only and no-JWT routers must recover"
+    );
+    assert!(
+        before == retained_rows && fence_present,
+        "VERIFIER_AUTH_CLEANUP: read-only probes preserve retained data"
+    );
+    if let Err(panic) = outcome {
+        std::panic::resume_unwind(panic);
+    }
+}
