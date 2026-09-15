@@ -166,7 +166,6 @@ fn message_event(branch_id: BranchId, sender_id: UserId, body: &str) -> Realtime
     }
 }
 
-
 // Append to backend/crates/platform/realtime/tests/hub.rs at base58b6f758.
 // Uses existing message_event helper; exact production dispatch method is shared.
 // This is in-process fanout selection, not actual PostgreSQL membership proof.

@@ -195,7 +195,6 @@ mod local_faults {
     }
 }
 
-
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn concurrent_branch_month_closes_commit_one_snapshot_and_one_audit(owner_pool: PgPool) {
     scope_org(OrgId::knl(), async move {
