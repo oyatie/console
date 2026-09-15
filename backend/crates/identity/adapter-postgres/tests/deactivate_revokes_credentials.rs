@@ -18,6 +18,7 @@ use console_identity_application::DeactivateUserCommand;
 use console_kernel_core::{OrgId, TraceContext, UserId};
 use console_platform_auth::{RefreshTokenStore, RefreshTokenUseError};
 use console_platform_request_context::CURRENT_ORG;
+use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
@@ -134,6 +135,7 @@ async fn audit_count(owner_pool: &PgPool, action: &str, user_id: Uuid) -> i64 {
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn deactivate_revokes_passkeys_and_sessions_as_runtime_role(owner_pool: PgPool) {
     let rt_pool = runtime_role_pool(&owner_pool).await;
+    let auth_pool = login_test_pool(&owner_pool, TestDatabaseLogin::Auth).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid()).await;
     // The actor must be a real user (audit_events.actor FKs to users).
@@ -182,6 +184,7 @@ async fn deactivate_revokes_passkeys_and_sessions_as_runtime_role(owner_pool: Pg
     let rotate = RefreshTokenStore
         .rotate(
             &rt_pool,
+            &auth_pool,
             family.token.as_str(),
             now + Duration::minutes(1),
             Duration::days(30),
