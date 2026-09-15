@@ -202,6 +202,9 @@ const PLAN = new Map([
   // PostgreSQL suites. It is the only inventory of mounted routes against
   // openapi.yaml, so a local miss here is a client-contract miss.
   ["Cargo console-app OpenAPI drift suite", { tier: "fast" }],
+  ["Tenant SQL identity regression", { tier: "fast" }],
+  ["Audit signature compatibility regression", { tier: "fast" }],
+  ["Leptos common action SSR regression", { tier: "fast" }],
   ["Cargo console-app inline PostgreSQL suite", { tier: "db" }],
   ["Cargo console-app dev-auth PostgreSQL suite", { tier: "db" }],
 
