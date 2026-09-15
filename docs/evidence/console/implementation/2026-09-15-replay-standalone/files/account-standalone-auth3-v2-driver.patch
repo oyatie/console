@@ -1,0 +1,93 @@
+--- /private/tmp/account-auth-refresh6-driver.sh
++++ /private/tmp/account-standalone-auth3-v2-driver.sh
+@@ -11,7 +11,7 @@
+ export FENCE_CONTAINER_RECORD="${evidence_dir}/container-name.txt"
+ export FENCE_BUILD_RECORD="${evidence_dir}/prebuild-dispatch.txt"
+ export FENCE_IMAGE='postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280'
+-export FENCE_LABEL="account-auth-refresh6-$(openssl rand -hex 16)"
++export FENCE_LABEL="account-standalone-auth3-v2-$(openssl rand -hex 16)"
+ map_path="${evidence_dir}/postgres-map.json"
+ 
+ snapshot() {
+@@ -29,7 +29,18 @@
+  'ops/generate-account-custody.py','ops/postgres-finalize-account-custody.sql',
+  'ops/postgres-finalize-account-custody.sh','ops/account-custody-migrations.sha384',
+  'tools/ci/cargo_needs_postgres.sh','tools/ci/cargo-test-runner.sh',
+- 'tools/ci/postgres-cargo-map.json','tools/ci/postgres-partition.mjs']
++ 'tools/ci/postgres-cargo-map.json','tools/ci/postgres-partition.mjs',
++ 'backend/crates/platform/test-support/src/lib.rs',
++ 'backend/crates/platform/test-support/Cargo.toml','backend/crates/platform/test-support/BUCK',
++ 'backend/crates/platform/auth-rest/Cargo.toml','backend/crates/platform/auth-rest/BUCK',
++ 'backend/crates/platform/auth-rest/tests/dev_auth_session.rs',
++ 'backend/crates/identity/adapter-postgres/Cargo.toml','backend/crates/identity/adapter-postgres/BUCK',
++ 'backend/crates/identity/adapter-postgres/src/lib.rs',
++ 'backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs',
++ 'backend/crates/platform/auth/Cargo.toml','backend/crates/platform/auth/BUCK',
++ 'backend/crates/platform/auth/tests/refresh_tokens.rs',
++ 'backend/ci/gates/writer-ownership/canonical-enforce.sh',
++ 'backend/ci/gates/writer-ownership/canonical-enforce-in-container.sh']
+ def git(*args):return subprocess.check_output(['git','-C',str(root),*args],text=True).strip()
+ data={'head':git('rev-parse','HEAD'),'status_porcelain':git('status','--porcelain'),
+  'files':{name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in files}}
+@@ -46,24 +57,39 @@
+ python3 - "${FENCE_ROOT}" "${map_path}" <<'PY'
+ import json,pathlib,sys
+ root=pathlib.Path(sys.argv[1]); data=json.loads((root/'tools/ci/postgres-cargo-map.json').read_text())
+-entries=[e for e in data['entries'] if e.get('name')=='app-auth-rest-pg']
+-assert len(entries)==1
+-e=entries[0]
+-assert e['package']=='console-app' and e['test']=='auth_rest'
+-expected=['cargo','test','--locked','--manifest-path','backend/Cargo.toml','-p','console-app','--test','auth_rest','--','--test-threads=1']
+-assert e['cargo_argv']==expected, 'unreviewed underlying test command'
+-e['cargo_argv'].insert(e['cargo_argv'].index('--'),'account_fence_transport::account_fence_refresh_')
++targets=[
++ ('auth-rest-dev-auth-session-postgres','console-platform-auth-rest','dev_auth_session'),
++ ('identity-adapter-postgres-deactivate-revokes-credentials-pg','console-identity-adapter-postgres','deactivate_revokes_credentials'),
++ ('platform-auth-refresh-tokens-pg','console-platform-auth','refresh_tokens'),
++]
++for name,package,test in targets:
++    entries=[e for e in data['entries'] if e.get('name')==name]
++    assert len(entries)==1, f'unreviewed selected entry: {name}'
++    e=entries[0]
++    assert e['package']==package and e['test']==test
++    expected=['cargo','test','--locked','--manifest-path','backend/Cargo.toml','-p',package,'--test',test,'--','--test-threads=1']
++    assert e['cargo_argv']==expected, f'unreviewed underlying test command: {name}'
++    if name=='auth-rest-dev-auth-session-postgres':
++        assert e['in_workflow_postgres_job'] is False, 'unreviewed dev-auth workflow flag'
++        e['cargo_argv'][e['cargo_argv'].index('--'):e['cargo_argv'].index('--')]=['--features','dev-auth']
++        # The unchanged partitioner selects only workflow rows, including for
++        # an empty shard. Admit this exact local target in the private map.
++        e['in_workflow_postgres_job']=True
++    else:
++        assert e['in_workflow_postgres_job'] is True, f'unreviewed workflow flag: {name}'
+ # Preserve the whole map: partition validation precedes --only selection.
+ pathlib.Path(sys.argv[2]).write_text(json.dumps(data,indent=2)+'\n')
+ PY
+ 
+ cargo() {
+-  # Only narrow the existing seven-argument package prebuild. A different
+-  # command is passed untouched; the actual Python subprocess test invocation
+-  # in cargo-test-runner.sh does not resolve this Bash function at all.
+-  if [[ $# == 7 && "$1" == test && "$2" == --locked && "$3" == --manifest-path && "$4" == "${FENCE_ROOT}/backend/Cargo.toml" && "$5" == --no-run && "$6" == -p && "$7" == console-app ]]; then
+-    printf '%s\n' 'matched exact seven-argument prebuild; appended --test auth_rest' >> "${FENCE_BUILD_RECORD}"
+-    command cargo "$@" --test auth_rest
++  # Only route the exact selected-package prebuild to these three whole test
++  # targets. A different command passes untouched. The actual Python subprocess
++  # invocations in cargo-test-runner.sh do not resolve this Bash function.
++  if [[ $# == 11 && "$1" == test && "$2" == --locked && "$3" == --manifest-path && "$4" == "${FENCE_ROOT}/backend/Cargo.toml" && "$5" == --no-run && "$6" == -p && "$7" == console-identity-adapter-postgres && "$8" == -p && "$9" == console-platform-auth && "${10}" == -p && "${11}" == console-platform-auth-rest ]]; then
++    printf '%s\n' 'matched exact eleven-argument prebuild; dispatched deactivate_revokes_credentials, refresh_tokens, and dev_auth_session with dev-auth' >> "${FENCE_BUILD_RECORD}"
++    command cargo "${@:1:5}" -p console-identity-adapter-postgres --test deactivate_revokes_credentials || return "$?"
++    command cargo "${@:1:5}" -p console-platform-auth --test refresh_tokens || return "$?"
++    command cargo "${@:1:5}" -p console-platform-auth-rest --test dev_auth_session --features dev-auth
+   else
+     command cargo "$@"
+   fi
+@@ -91,7 +117,7 @@
+ export CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true
+ cd "${FENCE_ROOT}"
+ set +e
+-bash tools/ci/cargo_needs_postgres.sh --map "${map_path}" --only app-auth-rest-pg --num-threads 1 > "${evidence_dir}/probe.log" 2>&1
++bash tools/ci/cargo_needs_postgres.sh --map "${map_path}" --only auth-rest-dev-auth-session-postgres,identity-adapter-postgres-deactivate-revokes-credentials-pg,platform-auth-refresh-tokens-pg --num-threads 1 --keep-going > "${evidence_dir}/probe.log" 2>&1
+ probe_status=$?
+ set -e
+ printf '%s\n' "${probe_status}" > "${evidence_dir}/probe-exit.txt"

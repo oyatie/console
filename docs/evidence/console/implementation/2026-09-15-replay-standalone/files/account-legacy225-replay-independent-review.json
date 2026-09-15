@@ -1,0 +1,149 @@
+{
+  "kind": "independent_historical225_typed_replay_proposal_review",
+  "status": "APPROVE_EXACT_BOUNDED_REPLAY_PROPOSAL_FOR_ROOT_INTEGRATION_AND_RUNTIME_VERIFICATION",
+  "reviewer": "/root/inventory_repair",
+  "author": "/root/capture_review",
+  "repository_writer_and_runtime_operator": "/root",
+  "created_at_utc": "2026-09-15T05:48:14.063625+00:00",
+  "base_sha": "4664c581815ab6278f1a454d04aa6156560bd3c2",
+  "target_path": "backend/app/tests/account_migration.rs",
+  "original_sha256": "a313e2611cb7aabeaab49029e23bd6dd6ca1e3f30e090bc0749e6334d484186a",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "artifacts": {
+    "/private/tmp/account-legacy225-replay-candidate.rs": {
+      "sha256": "5eebbc6348ea29170e4280e910aeaac565c0b7529e6f0c2b2d730e8cef4c4579",
+      "bytes": 23067
+    },
+    "/private/tmp/account-legacy225-replay-design.json": {
+      "sha256": "5485158184e44a6524e89e9364b5b9a48e2a51ce29c9cf50072d841209a4f115",
+      "bytes": 7886
+    },
+    "/private/tmp/account-legacy225-replay.patch": {
+      "sha256": "1e2d23bb48401019e154506f2c5585a1291953c0df465bef9d03585937f82b37",
+      "bytes": 17047
+    },
+    "/private/tmp/account-legacy225-capture-completion-review.json": {
+      "sha256": "33bc5e21f8f939b44423200acc92455e3150763773e5d244a49b45ef4d02bc4d",
+      "bytes": 5233
+    },
+    "/private/tmp/account-legacy225-captured-output-20260915/_sqlx_test_DajtA0KV6TbLO5Sby_VaYlLRoHs25jDXZB3P6OHrqXe4ZlbvpOnQ.json": {
+      "sha256": "bc0c8a562d54866f892706a0a0b6a6723d8874922f58635f3db6f78685889ce4",
+      "bytes": 79424
+    }
+  },
+  "preserved_regions": {
+    "old_migration_login": {
+      "byte_identical": true,
+      "sha256": "8313507e53c289878c7d9d735e98b54a50443c7a2f17d8bb4b46d44452e804ed"
+    },
+    "material_snapshot": {
+      "byte_identical": true,
+      "sha256": "0a16d4376fe6416e869ec72f7f2393a30fd1af0ec5e7abb8d28ba4b1ce3c2140"
+    },
+    "shared_current_helper_and_two_test_bodies": {
+      "byte_identical": true,
+      "sha256": "ed0c782c5483743786908f987a8f587367ba901903fec1f2bc1b94cb1cb2f255"
+    }
+  },
+  "findings": [],
+  "conclusions": [
+    "Frozen candidate changes fixture production only: the existing actual225 login boundary, independent material snapshot, actual-current-migration prerequisite and both test bodies are byte-identical to exact4664c581.",
+    "Fixture input is the exact independently captured TEST_ONLY historical owner output. Embedded SHA256 is checked before any database work; format, producer SHA, version, subject/audit uniqueness and fixed table roster are checked. No expected rows are synthesized from current implementation output.",
+    "Actual numbered migrations run to225 through existing migration LOGIN; runtime checksums are compared against all225 frozen SHA384 checksums. This reviewer independently recomputed every captured checksum from exact4664c581 Git blobs.",
+    "Nine fixed INSERT SELECT statements use actual225 PostgreSQL composite table types through jsonb_populate_recordset. Native bytea, timestamptz, arrays and JSON conversions remain database-owned, with exact affected-row assertions and no conflict suppression.",
+    "Group and organization parents precede users and auth children; refresh families precede one four-token INSERT so normal self-FK replaced_by checks can resolve all referenced token rows within the same statement.",
+    "Actual migration225 organization INSERT trigger creates memberships. Candidate proves the exact two captured group/org key pairs before restoring only original created_at; complete membership rows are then compared with capture. No membership, Account or schema authority is fabricated.",
+    "All ten full native row rosters are read back and compared against frozen capture inside the transaction, together with migration version/checksums, empty unused fixture edges, two credentials, four tokens, two replacement links and one revoked family.",
+    "The retained raw synthetic token is hashed and required to match a restored revoked token and revoked family. Raw token and credential material were never printed by this reviewer.",
+    "After commit, the unchanged original material_snapshot must equal the frozen captured projection before any current migration begins. Postcommit mismatch leaves only failed disposable test state and fails the test; it cannot become a passing oracle.",
+    "No new migration-ledger writes, grants, ALTER TABLE, trigger disabling, constraint disabling, conflict suppression or fake accounts/account_security/company_actors DDL/DML appear in the proposal.",
+    "The original exact ACCOUNT_CATALOG_PREREQUISITE, mapping assertion, byte-preservation comparison and FamilyRevoked-only denial oracle remain unchanged. The proposal does not hide the historical missing company_actors failure."
+  ],
+  "independently_checked_capture_properties": {
+    "fixture_sha256": true,
+    "subject_and_audit_rosters": true,
+    "unique_primary_keys": true,
+    "group_organization_user_fk_closure": true,
+    "credential_user_org_fk": true,
+    "ceremony_user_fk": true,
+    "token_family_user_org_and_replacement_fk": true,
+    "audit_actor_org_fk_and_null_branch": true,
+    "exact_membership_pairs": true,
+    "raw_token_sha256_and_revoked_family_match": true,
+    "complete_rows_project_original_material": true,
+    "all225_migration_checksums_from_exact_git": true
+  },
+  "captured_table_counts": {
+    "users": 2,
+    "groups": 2,
+    "audit_events": 7,
+    "organizations": 2,
+    "group_memberships": 2,
+    "auth_refresh_tokens": 4,
+    "auth_webauthn_ceremonies": 4,
+    "auth_webauthn_credentials": 2,
+    "auth_refresh_token_families": 2,
+    "auth_webauthn_ceremony_bindings": 0
+  },
+  "review_checks": [
+    {
+      "command": "Read exact candidate, design and patch; SHA256 verify all three plus independently reviewed capture",
+      "result": "PASS"
+    },
+    {
+      "command": "git show 4664c581815ab6278f1a454d04aa6156560bd3c2:backend/app/tests/account_migration.rs plus Python exact region comparison",
+      "result": "PASS: login/material/shared helper/two test bodies byte-identical"
+    },
+    {
+      "command": "Python read-only fixture FK, identity, token hash, full material projection and all225 Git SHA384 checksum assertions",
+      "result": "PASS; only boolean/count/hash output"
+    },
+    {
+      "command": "Inspect native225 migration trigger/table/foreign-key declarations and candidate SQL ordering",
+      "result": "PASS static review; no PostgreSQL execution"
+    },
+    {
+      "command": "Python candidate order/fixed9INSERT/one timestampUPDATE/two test/forbidden mutation assertions",
+      "result": "PASS"
+    }
+  ],
+  "author_evidence_reused": {
+    "rustfmt_check": {
+      "command": "rustup run 1.98.1 rustfmt --edition 2024 --check /private/tmp/account-legacy225-replay-candidate.rs",
+      "exit_code": 0
+    },
+    "capture_completion": "Separate exact capture review records1 selected/1 executed/0 passed/1 failed at missing company_actors after capture and current migrator; this is historical capture evidence, not replay execution."
+  },
+  "reviewer_runtime": {
+    "tests_discovered": 0,
+    "tests_executed": 0,
+    "cargo_commands": 0,
+    "database_commands": 0,
+    "source_edits": 0
+  },
+  "pre_mortem": "A generated expectation, wrong producer, altered migration ledger, orphan relation, lossy native conversion or fabricated Account catalog could manufacture compatibility confidence. Frozen independent bytes, exact225 checksum binding, native constraints and full-row/material equality reject these cases before the unchanged current-migration oracle.",
+  "blast_radius": "Review reads private artifacts, immutable Git and migration code; writes only this JSON. Approval is for exact local test fixture replay proposal, not production data or serving-role authorization.",
+  "detection": "Root must show both existing tests actually reach post-replay current migration and retain exact failure/case counts. Digest/row/FK/membership/token controls must fail at the intended invariant; no substitute success output.",
+  "rollback": "Keep immutable historical capture and original4664c581 test bytes; revert only bounded replay installation if validation fails. Precommit failures rollback transaction; postcommit failure is owned disposable-test state cleaned by reviewed harness.",
+  "stop_conditions": [
+    "Candidate or fixture digest changes without delta review",
+    "Original migration helper or test-body oracle changes",
+    "Native constraints, checksums, full rows or material projection differ",
+    "Any fixture/schema/ledger/grant shortcut suppresses a failure",
+    "Replay success is described as completed Account conversion or migration preservation"
+  ],
+  "remaining_holds": [
+    "Root installation custody and exact integrated candidate SHA",
+    "Separate narrow review of required later rotate signature adaptation",
+    "Exact candidate compile and native PostgreSQL replay",
+    "Runtime negative controls for corrupt bytes, omitted/changed rows, membership keys and token correlation",
+    "Both current-migration tests and actual reached assertions; missing company_actors remains expected genuine product RED absent separately authorized implementation",
+    "No production, deployment, migration rollout, authz or legal/compliance approval"
+  ]
+}

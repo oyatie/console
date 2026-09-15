@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "kind": "independent-rust-test-source-inventory-implementation-review",
+  "reviewer": "/root/fast_gate_review",
+  "author": "/root/inventory_repair",
+  "base_sha": "8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3",
+  "candidate_sha": "40b1bfa6b705ee1f018e37922978583dc3e7536d",
+  "root": "/private/tmp/console-test-source-inventory-20260915",
+  "status": "APPROVED_EXACT_BOUNDED_SOURCE_CANDIDATE_BASELINE_GAINS_REMAIN_SERIAL_PARENT_WORK",
+  "receipt_path": "/private/tmp/account-inventory-implementation-receipt.json",
+  "receipt_sha256": "8086a92062b4489cb6bfac674049f9c9717cb39961157cf4942ab8705e27a79d",
+  "owned_paths_verified": [
+    "scripts/check-executed-tests-cfg.mjs",
+    "scripts/check-executed-tests.mjs",
+    "scripts/lib/executed-tests-baseline.mjs"
+  ],
+  "source_sha256_verified": {
+    "scripts/check-executed-tests.mjs": "e8ba074e08aba9a3fb734d0d99deec2b26d09cb6aa695d436dcb2322faa74f01",
+    "scripts/check-executed-tests-cfg.mjs": "bf553ddd461b0bfd2a087b3408f0c65a83d023ef789070cafc19c0c522b196f3",
+    "scripts/lib/executed-tests-baseline.mjs": "2666c2006ba7fc0c383f6b294109455e9153dc41c51acc81b5813ef48c6afb1a"
+  },
+  "log_sha256_verified": {
+    "/private/tmp/console-test-source-inventory-20260915-green.log": "85415c888f1f5c3c39942691db8c92561eafb62aee9a46e3accccc3306c9a6a3",
+    "/private/tmp/console-test-source-inventory-20260915-g005.log": "71e41561d2e5b0959ab5cb37cf5e1869bca50045f941852526b81ec3da65b5ad"
+  },
+  "tests_unchanged_from_reviewed_test_commit": true,
+  "findings": [],
+  "reasoning_lenses": [
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Systems Thinking",
+    "Red Team",
+    "Blast-radius / cell-based"
+  ],
+  "reviewed_semantics": [
+    {
+      "subject": "Integration module closure",
+      "result": "Only declared mod edges contribute files. Ordinary name.rs/name/mod.rs resolution requires exactly one extant candidate. #[path] normal/raw string resolution is explicit and path-relative; inline module scopes update module directories. The compiler-backed graph fixture exercises these exact supported forms."
+    },
+    {
+      "subject": "Orphan exclusion",
+      "result": "The first fixture compiles/executed seven tests with an eighth unlinked source present. The second fixture now reaches its mutation: loss of a referenced child cannot be hidden by an orphan replacement, and the CLI preserves the exact negative diagnostic."
+    },
+    {
+      "subject": "Opaque comments and literals",
+      "result": "Reuses existing Rust comment/string scanner. Module parsing retains complete normal/raw strings as opaque tokens, interpreting only a direct path attribute literal. Attribute counting instead masks literals/comments while preserving line positions. Both new branches have real consumers; default behavior for existing cfg/G005 callers remains equivalent."
+    },
+    {
+      "subject": "Fail-closed unsupported input",
+      "result": "Missing/ambiguous modules, recursive active-file cycles, outside lexical repository paths, non-.rs/non-file references, duplicate/escaped/unsupported path literals, conditional or nested path attributes, include! and unfinished/unbalanced scopes throw named errors. countAttributes catches these only to append unresolved; gate tests unresolved before accepting/updating baseline, so returned zero is not a green fallback."
+    },
+    {
+      "subject": "No hidden baseline relaxation",
+      "result": "Exact-set dark baseline and static loss/gain rules are unchanged. No tests, generated records, migration, Cargo dependency or baseline files were modified by the implementation commit."
+    },
+    {
+      "subject": "Shared helper compatibility",
+      "result": "Old callers use default preserveStrings=false/preserveLines=false; source masking still substitutes one blank for each removed construct. Preserved G005 workflow-lifecycle gate passed."
+    },
+    {
+      "subject": "Macro/runtime accounting",
+      "result": "account_custody_lifecycle.rs contains one lexical sqlx::test inside hostile! and eleven invocations. Ten additional runtime cases explain observed auth_rest static138 versus runtime148 at the reviewed tree; this inventory does not expand macros or claim runtime execution coverage."
+    }
+  ],
+  "verified_evidence": {
+    "node_command": "node --test scripts/check-executed-tests.test.mjs scripts/lib/executed-tests-baseline.test.mjs",
+    "node_discovered": 40,
+    "node_executed": 40,
+    "node_passed": 40,
+    "node_failed": 0,
+    "node_skipped": 0,
+    "nested_rust_fixture_cases": {
+      "discovered": 10,
+      "executed": 10,
+      "passed": 10,
+      "basis": "Mandatory rustc compilation, binary --list count, and actual execution assertions succeeded in the three GREEN Node cases (7+2+1). Compiler stdout is not separately retained by the test helper."
+    },
+    "real_cli_command": "node scripts/check-executed-tests.mjs --json",
+    "real_cli_exit": 1,
+    "real_cli_reason": "Exactly three upward static counts require explicit reviewed baseline update.",
+    "real_cli_defined": 384,
+    "real_cli_executed_binary_count": 384,
+    "real_cli_dark": [
+      "backend/crates/platform/storage/tests/seaweedfs_worm.rs"
+    ],
+    "real_cli_unresolved": [],
+    "missing_old_baseline_sources": [],
+    "static_deltas": [
+      {
+        "source": "backend/app/tests/auth_rest.rs",
+        "before": 55,
+        "after": 138
+      },
+      {
+        "source": "backend/app/tests/workbench_api.rs",
+        "before": 7,
+        "after": 12
+      },
+      {
+        "source": "backend/crates/attendance/adapter-postgres/tests/concurrency.rs",
+        "before": 6,
+        "after": 8
+      }
+    ],
+    "g005_gate": "PASS in preserved hashed log",
+    "diff_check": "git diff --check 8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3 40b1bfa6b705ee1f018e37922978583dc3e7536d passed"
+  },
+  "limits": [
+    "This is a declared-source lexical inventory, not cfg selection, ignore evaluation, macro expansion, or an executed-test case census.",
+    "Library roots retain their existing whole-src-subtree policy; this commit changes integration roots only.",
+    "Path containment is lexical and the scanner follows filesystem links through stat/read. This review does not claim independent custody of symlink targets or immutable operating-system inputs.",
+    "Unsupported valid Rust source forms may fail the gate for explicit review; they are not silently guessed.",
+    "Reviewer inspected exact hashes/diff and preserved execution logs; no new Cargo, DB, or runtime suite was run."
+  ],
+  "parent_next_step": "Integrate the reviewed test commit and source commit through the admitted ownership process. Recompute on the final parent head and serialize only justified upward baseline entries. The three values above bind this candidate; do not blindly copy138 if parent authored additional tests since202d.",
+  "pre_mortem": "Directory enumeration could count orphan tests, syntax text could invent edges, or resolver failures could become zero-count passes. Declared-edge parsing, compiler fixtures and unresolved-before-baseline ordering address the measured failure modes.",
+  "blast_radius": "Three developer verification scripts; no application/database/authority behavior changed.",
+  "detection": "Retained40-case suite, mandatory compiler controls, real CLI and exact baseline delta readback.",
+  "rollback": "Revert only bounded implementation commit if necessary, retaining reviewed test commit and historical RED/GREEN evidence.",
+  "stop_conditions": [
+    "Source SHA changes without delta review",
+    "Unexpected final-head count losses or unresolved links",
+    "Baseline update touches unreviewed counts or dark-set policy",
+    "Any attempt to classify static attributes as runtime cases"
+  ],
+  "remaining_holds": [
+    "Parent-owned final-head baseline update and full gate recheck",
+    "Whole repository runtime coverage and production claims remain separate"
+  ]
+}

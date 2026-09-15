@@ -1,0 +1,199 @@
+{
+  "kind": "independent_legacy_refresh_prewrite_implementation_review",
+  "status": "APPROVE_BOUNDED_REFRESH_IMPLEMENTATION_AND_EXACT_SIX_CASE_GREEN_WITH_INTEGRATION_HOLDS",
+  "reviewer": "/root/inventory_repair",
+  "author_and_runtime_operator": "/root",
+  "created_at_utc": "2026-09-15T05:55:16.689419+00:00",
+  "base_sha": "4664c581815ab6278f1a454d04aa6156560bd3c2",
+  "candidate_sha": "8fcf3ca02bb76f1c8a825b85374c4a67eacd4810",
+  "root": "/private/tmp/console-production-tdd-preparation-20260913",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "changed_files": {
+    "backend/app/tests/auth_rest/account_fence_transport.rs": {
+      "git_blob": "06a1b886db1518518fe62454eb7f6ebf7912e95a",
+      "sha256": "7cd8143272d266b9b2a4abd9087b4075dee3d20432b4c278417e6235fe069ea7"
+    },
+    "backend/crates/platform/auth-rest/src/lib.rs": {
+      "git_blob": "40120059628d425958178d813838713fbbb18179",
+      "sha256": "935f4306bafc964ff9a7d430a033ee1706d57a4db51f721a79f058d757bd1ec4"
+    },
+    "backend/crates/platform/auth/src/refresh.rs": {
+      "git_blob": "1509b886724c52f42e7fbf7dcc266355ac3a0e99",
+      "sha256": "c8bfbded8732dfdba3a06798179d78987679c20db7062882e7ed6212c7bbf1e0"
+    },
+    "backend/crates/platform/auth/tests/refresh_tokens.rs": {
+      "git_blob": "0e42776cb7ed49034aeb6333a5dbcb5c5704fe19",
+      "sha256": "e53c903905f7f3d87f0f77583eb941790441cade6589b70d6eab0bafe2fc4167"
+    }
+  },
+  "findings": [],
+  "conclusions": [
+    {
+      "location": "backend/crates/platform/auth/src/refresh.rs:132",
+      "result": "Public canonical rotate requires auth_pool; no optional or permissive fallback remains. The internal writer receives the same dependency."
+    },
+    {
+      "location": "backend/crates/platform/auth/src/refresh.rs:177",
+      "result": "Presented token hash drives the existing token/family lookup with FOR UPDATE OF t,f. user_id is read from that locked token row, then bound to account_legacy_fenced_v1; request body/cookie subject fields do not supply the fenced identity."
+    },
+    {
+      "location": "backend/crates/platform/auth/src/refresh.rs:212",
+      "result": "Existing FamilyRevoked rollback/return stays before auth lookup, so already-revoked families do not require a successful new fence query. No new write precedes that existing return."
+    },
+    {
+      "location": "backend/crates/platform/auth/src/refresh.rs:223",
+      "result": "Mandatory restricted projection query executes before absolute-TTL revocation, reuse revocation, expired-token revocation, replacement insertion, used/replaced_by mutation and audit insertion. A committed fence returns InvalidToken after rollback, preserving existing refusal semantics."
+    },
+    {
+      "location": "backend/crates/platform/auth/src/refresh.rs:223",
+      "result": "Nonoptional bool decoding makes SQL NULL an error. Connection/query/decoding errors propagate as AuthError::Sqlx and public rotate converts non-Refresh errors to constant Storage. Query-error unwinding drops the uncommitted SQLx transaction; no credential or audit write has occurred at that point."
+    },
+    {
+      "location": "backend/crates/platform/auth-rest/src/lib.rs:2163",
+      "result": "Actual HTTP route passes retained state.auth_database or returns Storage; existing cookie-over-body precedence chooses the actual presented token before canonical rotation. Access-token, JSON refresh-token and Set-Cookie construction remain after successful rotation."
+    },
+    {
+      "location": "backend/app/src/lib.rs:1706",
+      "result": "Unchanged production composition root authenticates console_auth_rt, validates serving-role connection identities and equal observed database target against the business pool, then retains it in AuthRestState. This review does not infer equivalent validation for arbitrary manually constructed PgPool callers."
+    },
+    {
+      "location": "backend/crates/platform/auth-rest/src/lib.rs:786",
+      "result": "Existing mapping emits401 for InvalidToken/FamilyRevoked and500 for constant Storage. No SQL driver detail, DSN or raw token is exposed through the added error path."
+    },
+    {
+      "location": "backend/app/tests/auth_rest/account_fence_transport.rs:668",
+      "result": "Independent mechanical comparison proves the test-file delta contains exactly two required &auth argument insertions; all prewrite, effect, HTTP, cookie-subject and recovery assertions remain byte-exact."
+    },
+    {
+      "location": "backend/crates/platform/auth/tests/refresh_tokens.rs:40",
+      "result": "Independent mechanical comparison proves this test-file delta contains exactly six required &auth argument insertions. Existing assertions are unchanged; these standalone tests were not included in the six-case runtime result."
+    }
+  ],
+  "runtime_evidence": {
+    "red_receipt": "/private/tmp/account-refresh6-meaningful-red-receipt.json",
+    "red_base_sha": "4664c581815ab6278f1a454d04aa6156560bd3c2",
+    "red_selected_executed": 6,
+    "red_passed": 1,
+    "red_failed": 5,
+    "red_failure_markers": [
+      "FENCE_OUTAGE_PREWRITE",
+      "FENCE_PREWRITE body",
+      "FENCE_CANONICAL_PREWRITE",
+      "FENCE_PREWRITE cookie",
+      "FENCE_COOKIE_SUBJECT"
+    ],
+    "green_receipt": "/private/tmp/account-refresh6-green-receipt.json",
+    "green_run": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633",
+    "command": "env -u BUCK_ISOLATION_DIR DOCKER_CONTEXT=colima-console-custody-20260914 python3 /private/tmp/account-auth-refresh6-probe.py",
+    "green_selected_executed": 6,
+    "green_passed": 6,
+    "green_failed": 0,
+    "green_ignored": 0,
+    "green_filtered": 145,
+    "probe_exit": 0,
+    "same_red_green_driver_sha256": "0855a1ad6861ece2b9c16f5464ebf1878f10dfa1f49634cd0fb07a33f3403711",
+    "same_red_green_driver_bytes_verified": true,
+    "candidate_source_file_hashes_verified": 21,
+    "run_artifact_hashes_verified": 13,
+    "clean_source_before_after_equal": true,
+    "cleanup": "Successful bounded owned-container absence readback verified from hashed artifacts",
+    "provenance": "Executed by root. Reviewer independently read six named ok lines, summary, exact source snapshots and all13 artifact digests; reviewer performed no Cargo/Docker/DB execution."
+  },
+  "green_cases": [
+    "account_fence_refresh_auth_only_outage_preserves_token_and_audit_then_recovers",
+    "account_fence_refresh_body_refuses_before_issuance",
+    "account_fence_refresh_canonical_writer_refuses_fenced_subject_and_rotates_control",
+    "account_fence_refresh_cookie_refuses_before_issuance",
+    "account_fence_refresh_effective_cookie_subject_controls_conflicting_body",
+    "account_fence_refresh_snapshot_detects_real_rotation_both_transports"
+  ],
+  "concurrency_and_scope_limits": [
+    "Guarantee covers a fence committed before the separate auth query. It does not serialize a concurrent Account activation/cutover with the legacy business transaction; source explicitly requires admission pause and drain.",
+    "Token and family row locks serialize legacy rotations and remain held during the auth lookup. Production uses a distinct two-connection auth pool with three-second acquisition timeout; this is not a measured throughput bound or proof of SQL execution deadline.",
+    "Passing one PgPool as both transaction and auth pool can require two simultaneous connections per rotation; caller-owned small/saturated shared pools may wait or return Storage. Production composition uses separate pools; saturation testing was not performed.",
+    "Credential/family/audit mutation refusal is proven by the selected tests. Existing earlier HTTP rate-limit accounting and transaction-local tenant GUC setup are not claimed to be absent.",
+    "The public API accepts PgPool values; runtime production startup supplies validated restricted transport. This commit does not introduce a universal type-level transport capability or validate every arbitrary manually injected pool."
+  ],
+  "known_integration_holds": [
+    {
+      "path": "backend/app/tests/account_migration.rs",
+      "lines_at_candidate": [
+        216,
+        368
+      ],
+      "reason": "Two old rotate calls remain at this intermediate SHA; root separately replaces historical producer with approved capture replay and adapts retained revocation call. Whole-target compilation is not claimed by this review."
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "lines_at_candidate": [
+        183
+      ],
+      "reason": "One old rotate signature remains at this intermediate SHA; required genuine auth dependency adaptation remains root-owned."
+    },
+    {
+      "path": "backend/crates/platform/auth/tests/refresh_tokens.rs",
+      "reason": "Required-argument-only change approved; standalone native fixture provisioning/owner-projection readiness and suite execution remain outside the six-case evidence."
+    },
+    {
+      "path": "backend/crates/platform/auth-rest",
+      "reason": "Standalone constructors/dev-auth fixtures must retain admitted auth dependency before broad suite verification; production AppState composition is already connected."
+    }
+  ],
+  "review_checks": [
+    {
+      "command": "git diff --check 4664c581815ab6278f1a454d04aa6156560bd3c2 8fcf3ca02bb76f1c8a825b85374c4a67eacd4810",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff 4664c581815ab6278f1a454d04aa6156560bd3c2 8fcf3ca02bb76f1c8a825b85374c4a67eacd4810 --",
+      "result": "Complete four-file patch reviewed"
+    },
+    {
+      "command": "Python exact test-callsite-only transformation checks",
+      "result": "PASS: two app test arguments and six auth test arguments only"
+    },
+    {
+      "command": "git grep exact candidate rotate callers and read complete canonical writer/HTTP/composition/error flow",
+      "result": "PASS bounded code review; known remaining caller integrations listed"
+    },
+    {
+      "command": "Python verify all21 source snapshot hashes against immutable candidate Git blobs and13 driver artifact hashes",
+      "result": "PASS; same red/green driver bytes and clean before/after source"
+    }
+  ],
+  "pre_mortem": "A request-selected subject, HTTP-only guard, query error treated as absence, postwrite denial or missing auth dependency could let fenced legacy refresh mutate material. Locked-token identity, mandatory canonical prewrite query, nonoptional bool/error mapping and six genuine before/after effect controls address those cases.",
+  "blast_radius": "Two production Rust files plus required test arguments only. No migration, Account activation, grants, CI, generated contracts or baseline changes in reviewed commit.",
+  "detection": "Exact same six-case probe changed from one pass/five meaningful prewrite failures to six passes, including previously unreached outage recovery and conflicting-cookie/body assertions.",
+  "rollback": "Revert bounded implementation only if necessary while retaining red tests/evidence; doing so restores known prewrite vulnerability and is not permission for exposure. No data migration introduced.",
+  "stop_conditions": [
+    "Any mandatory auth lookup becomes optional or permissive",
+    "Subject comes from request instead of locked token",
+    "Any refresh mutation precedes the fence query",
+    "Errors are converted to false or sensitive driver errors are exposed",
+    "Concurrent cutover or whole-repository completion is claimed from this six-case result"
+  ],
+  "remaining_holds": [
+    "Complete and verify remaining required callsites/standalone fixtures",
+    "Exact integrated candidate broad applicable tests and independent delta review",
+    "Account activation/cutover pause-and-drain authority and implementation",
+    "No production exposure, deployment, durability, credential reset or compliance authority"
+  ],
+  "reviewer_execution": {
+    "tests_discovered": 0,
+    "tests_executed": 0,
+    "cargo_db_commands": 0,
+    "source_edits": 0
+  },
+  "evidence_sha256": {
+    "/private/tmp/account-refresh6-meaningful-red-receipt.json": "1f72aa3a0bde08b7f5ba2f5efbdb164865ebdecaa6bd8f6616e9b5c2b35d76c3",
+    "/private/tmp/account-refresh6-green-receipt.json": "9e7c814d4f41c2e183c9dd8cbdaaeb8c29e58dbe55d139ae8c37aab63f1ab17e",
+    "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/driver-receipt.json": "83a380471bf4b543e4ca5cf137d8a1f44bac24b1e328a63b9b35ca0e5e429710",
+    "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/probe.log": "286f81834326275a672eb98d5ffd7b8e90f0287aa6fad9f1988cde761777dbbf"
+  }
+}
