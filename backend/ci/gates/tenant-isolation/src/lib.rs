@@ -125,6 +125,30 @@ pub fn global_table_allowlist() -> &'static [(&'static str, &'static str)] {
 pub fn owner_only_table_allowlist() -> &'static [(&'static str, &'static str)] {
     &[
         (
+            "accounts",
+            "persistent Account identity independent of Company; isolated Account owner only",
+        ),
+        (
+            "account_security",
+            "Account security and context generations; isolated Account owner only",
+        ),
+        (
+            "account_security_events",
+            "Account security event attribution and evidence; isolated Account owner only",
+        ),
+        (
+            "account_terms_acceptances",
+            "Account-linked immutable terms acceptances; isolated Account owner only",
+        ),
+        (
+            "account_terms_head",
+            "operator-approved terms release head; isolated terms owner only",
+        ),
+        (
+            "account_terms_release_receipts",
+            "terms release approval evidence and immutable receipts; isolated terms owner only",
+        ),
+        (
             "group_memberships",
             "cross-tenant group membership authorization; resolver only",
         ),
