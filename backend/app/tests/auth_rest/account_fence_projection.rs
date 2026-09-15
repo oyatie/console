@@ -898,7 +898,7 @@ async fn account_fence_projection_refuses_prepared_acl_with_function_deleted(poo
 }
 
 // Additive source candidate: independently review before mounting. Exercises
-// final prepared-profile certification after the routine's last EXECUTE grant.
+// final profile certification after one fault at the legacy EXECUTE grant.
 #[sqlx::test(migrations = false)]
 async fn account_fence_projection_postinstall_dormant_drift_rolls_back_every_custody_change(
     pool: PgPool,
@@ -912,8 +912,8 @@ async fn account_fence_projection_postinstall_dormant_drift_rolls_back_every_cus
         "account_custody.pending"
     );
     // The first owner SELECT GRANT happens before the projection exists and
-    // cannot fire this fault. The final function EXECUTE GRANT does. REVOKE is
-    // not in this event trigger's tag set, preventing recursive invocation.
+    // cannot fire this fault. The legacy EXECUTE GRANT does, exactly once even
+    // if later helpers add GRANTs. REVOKE is outside the event trigger's tag set.
     // The sequence is a fixture-only nontransactional reachability witness:
     // rollback must remove all custody effects while preserving that it fired.
     sqlx::raw_sql(r#"
@@ -921,7 +921,8 @@ async fn account_fence_projection_postinstall_dormant_drift_rolls_back_every_cus
         CREATE FUNCTION public.fence_fixture_remove_reads_after_grant()
         RETURNS event_trigger LANGUAGE plpgsql AS $trigger_body$
         BEGIN
-            IF pg_catalog.to_regprocedure('public.account_legacy_fenced_v1(uuid)') IS NOT NULL THEN
+            IF pg_catalog.to_regprocedure('public.account_legacy_fenced_v1(uuid)') IS NOT NULL
+                AND NOT (SELECT is_called FROM public.fence_fixture_postgrant_seen) THEN
                 PERFORM pg_catalog.nextval('public.fence_fixture_postgrant_seen'::regclass);
                 REVOKE SELECT ON public.accounts, public.account_security FROM console_account_owner;
                 REVOKE UPDATE(id) ON public.accounts FROM console_account_owner;
