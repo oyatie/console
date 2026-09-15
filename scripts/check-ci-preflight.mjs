@@ -1223,73 +1223,73 @@ function actionStep(index, name, uses, withInputs, options = {}) {
 // be installed on a hosted runner and presenting that accident as proof.
 const requiredJobActionContracts = Object.freeze({
   "preflight": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false,"fetch-depth":0}, { id: "checkout" }),
-    actionStep(1, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24.16.0","cache":"npm"}, { if: preflightCheckoutDependentCondition, id: "setup-node" }),
+    actionStep(0, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false,"fetch-depth":0}, { id: "checkout" }),
+    actionStep(1, "Set up Node.js", "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020", {"node-version":"24.16.0","cache":"npm"}, { if: preflightCheckoutDependentCondition, id: "setup-node" }),
     actionStep(10, "Install Rust toolchain for Cargo.lock consistency", "./.github/actions/setup-rust", { if: preflightCheckoutHeavyCondition, id: "rust-toolchain" }),
   ],
   "domain-unit": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}, { if: runHeavyCondition }),
     actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust", { if: runHeavyCondition }),
-    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
+    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runHeavyCondition }),
   ],
   "backend": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { id: "checkout" }),
+    actionStep(0, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}, { id: "checkout" }),
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust", { if: backendIndependentCondition, id: "rust" }),
-    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo-${{ matrix.os }}","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/dev' && matrix.leg == 'cargo' }}"}, { if: backendIndependentCondition, id: "rust-cache" }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6", {"workspaces":"backend","shared-key":"backend-cargo-${{ matrix.os }}","cache-all-crates":"true","save-if":"${{ github.ref == 'refs/heads/dev' && matrix.leg == 'cargo' }}"}, { if: backendIndependentCondition, id: "rust-cache" }),
   ],
   "migration-expand-contract": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { id: "checkout" }),
+    actionStep(0, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}, { id: "checkout" }),
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust", { if: backendIndependentCondition, id: "rust" }),
-    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: backendIndependentCondition, id: "rust-cache" }),
+    actionStep(4, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: backendIndependentCondition, id: "rust-cache" }),
   ],
   "kubernetes-manifests": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"fetch-depth":0}, { if: runHeavyCondition }),
+    actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"fetch-depth":0}, { if: runHeavyCondition }),
   ],
   "repo-gates": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0"),
-    actionStep(1, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24.16.0","cache":"npm"}),
+    actionStep(0, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"),
+    actionStep(1, "Set up Node.js", "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020", {"node-version":"24.16.0","cache":"npm"}),
   ],
   "api-contract": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", { if: runHeavyCondition }),
-    actionStep(2, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24","cache":"npm"}, { if: runHeavyCondition }),
+    actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", { if: runHeavyCondition }),
+    actionStep(2, "Set up Node.js", "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020", {"node-version":"24","cache":"npm"}, { if: runHeavyCondition }),
   ],
   "generated-face-authority": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
-    actionStep(3, "Set up Node.js", "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e", {"node-version":"24.16.0","cache":"npm"}, { if: runHeavyCondition }),
-    actionStep(4, "Set up Java", "actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520", {"distribution":"temurin","java-version":"21"}, { if: runHeavyCondition }),
+    actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(3, "Set up Node.js", "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020", {"node-version":"24.16.0","cache":"npm"}, { if: runHeavyCondition }),
+    actionStep(4, "Set up Java", "actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6", {"distribution":"temurin","java-version":"21"}, { if: runHeavyCondition }),
     actionStep(5, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust", { if: runHeavyCondition }),
   ],
   "company-conformance": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runHeavyCondition }),
+    actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}, { if: runHeavyCondition }),
     actionStep(3, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust", { if: runHeavyCondition }),
   ],
   "postgres-reachability-app": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runLivePostgresCondition }),
+    actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}, { if: runLivePostgresCondition }),
     actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust", { if: runLivePostgresCondition }),
-    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
+    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
   ],
   "postgres-reachability-platform": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runLivePostgresCondition }),
+    actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}, { if: runLivePostgresCondition }),
     actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust", { if: runLivePostgresCondition }),
-    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
+    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
   ],
   "postgres-reachability-ontology": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runLivePostgresCondition }),
+    actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}, { if: runLivePostgresCondition }),
     actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust", { if: runLivePostgresCondition }),
-    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
+    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
   ],
   "postgres-reachability-domain-a": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runLivePostgresCondition }),
+    actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}, { if: runLivePostgresCondition }),
     actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust", { if: runLivePostgresCondition }),
-    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
+    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
   ],
   "postgres-reachability-domain-b": [
-    actionStep(1, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}, { if: runLivePostgresCondition }),
+    actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}, { if: runLivePostgresCondition }),
     actionStep(2, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust", { if: runLivePostgresCondition }),
-    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
+    actionStep(3, "Cache Rust dependencies + build artifacts", "Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6", {"workspaces":"backend","shared-key":"backend-cargo","cache-all-crates":"true","save-if":false}, { if: runLivePostgresCondition }),
   ],
   "rust-fmt": [
-    actionStep(0, "Checkout", "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0", {"persist-credentials":false}),
+    actionStep(0, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}),
     actionStep(1, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust"),
   ],
   "postgres-domain-reachability": [
@@ -2353,8 +2353,8 @@ function requireExactRequiredJobContracts(workflowModel, failures) {
 // remains in this job is text-only, so it needs neither Rust nor a built binary.
 const apiContractAllowedSteps = [
   "name: Path-class skip proof\n        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}\n        shell: bash\n        run: |\n          set -euo pipefail\n          printf 'path-class skip proof: %s not required for class=%s\\n' \"${GITHUB_JOB}\" \"${{ needs.preflight.outputs.path_class }}\"",
-  "name: Checkout\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7",
-  "name: Set up Node.js\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0\n        with:\n          node-version: \"24\"\n          cache: npm",
+  "name: Checkout\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7",
+  "name: Set up Node.js\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0\n        with:\n          node-version: \"24\"\n          cache: npm",
   "name: Install Node tooling\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        run: npm ci",
   "name: Platform contract drift gate\n        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}\n        run: npm run check:platform-contract-drift",
   "name: Employee import replay contract\n        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}\n        run: npm run test:employee-import-contract",

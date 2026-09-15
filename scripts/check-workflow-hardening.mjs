@@ -10,9 +10,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const securityWorkflowPath = ".github/workflows/security.yml";
 
 const CHECKOUT =
-  "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0";
+  "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1";
 const SETUP_NODE =
-  "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e";
+  "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020";
 const TRIVY_INSTALL = [
   'archive="${RUNNER_TEMP}/trivy_0.71.1_Linux-64bit.tar.gz"',
   'install_dir="${RUNNER_TEMP}/trivy-install"',

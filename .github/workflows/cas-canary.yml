@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: { persist-credentials: false }
       - name: Preflight against an endpoint that is not there
         id: cas
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: { persist-credentials: false }
       - uses: ./.github/actions/buck2-setup
       - uses: ./.github/actions/cas-inrunner
@@ -89,7 +89,7 @@ jobs:
           # upload on every push to every PR and the tee'd buck log is
           # unbounded; nothing prunes artifacts, so the bound is the retention.
           retention-days: 1
-      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: ~/nativelink-cas
           # Saved under the prefix cas-inrunner RESTORED from, which names the
@@ -110,7 +110,7 @@ jobs:
       actions: read
       contents: read
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: { persist-credentials: false }
       - uses: ./.github/actions/buck2-setup
       - uses: ./.github/actions/cas-inrunner
@@ -181,7 +181,7 @@ jobs:
       # expression. It does now, which is the price of making the policy
       # testable -- and a price worth naming rather than leaving as a mystery
       # checkout in a job that otherwise only talks to the API.
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           # This is the only `actions: write` job here -- it can delete caches --
           # and it needs exactly one 86-line script, so it takes neither the
