@@ -6,6 +6,10 @@ export const RECOVERY_SUPERVISOR = "tools/lanes/recovery/supervise_recovery.py";
 export const RECOVERY_CASES = new Map([
   ["replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply", ""],
   ["lost_commit_transport_reply_replays_one_real_payroll_effect", "after-commit-response"],
+  ["fresh_commit_wait_release_requires_explicit_remote_confirmation", ""],
+  ["staging_success_and_idempotent_restage_wait_for_remote_confirmation", ""],
+  ["required_remote_unknown_is_bounded_and_never_local_fallback", ""],
+  ["finite_remote_bound_and_repeated_replay_preserve_exact_rows", ""],
 ]);
 const live = "${{ needs.preflight.outputs.run_live_postgres == 'true' }}";
 const condition = "${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}";
@@ -60,7 +64,7 @@ export function recoveryTestInvocations(workflow, source) {
       usedSteps.add(index);
       found.set(name, cargo);
     }
-    if (found.size !== RECOVERY_CASES.size) refuse("both supervised cases must execute");
+    if (found.size !== RECOVERY_CASES.size) refuse("all supervised cases must execute");
     return { invocations: [...found.values()], failures };
   } catch (error) {
     failures.push(error.message);

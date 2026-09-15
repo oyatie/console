@@ -36,6 +36,34 @@ SQL
     state="$(psql_in "$s" <<<'SELECT pg_is_in_recovery() AND current_setting('\''fsync'\'')='\''on'\'' AND current_setting('\''full_page_writes'\'')='\''on'\'';')"
     [[ "$state" == t ]] || { echo 'FAIL: standby durability topology'; exit 1; }
     echo 'topology: PG primary plus exact synchronous standby; remote_apply enabled' ;;
+  clear-sync-policy)
+    psql_in "$p" <<'SQL'
+ALTER SYSTEM SET synchronous_standby_names = '';
+SELECT pg_reload_conf();
+SQL
+    for ((i=0;i<50;i++)); do
+      state="$(psql_in "$p" <<'SQL'
+SELECT current_setting('synchronous_standby_names')='';
+SQL
+      )"
+      [[ "$state" == t ]] && exit 0
+      sleep .1
+    done
+    exit 1 ;;
+  restore-sync-policy)
+    psql_in "$p" <<'SQL'
+ALTER SYSTEM SET synchronous_standby_names = 'FIRST 1 (console_recovery_s1)';
+SELECT pg_reload_conf();
+SQL
+    for ((i=0;i<50;i++)); do
+      state="$(psql_in "$p" <<'SQL'
+SELECT current_setting('synchronous_standby_names')='FIRST 1 (console_recovery_s1)';
+SQL
+      )"
+      [[ "$state" == t ]] && exit 0
+      sleep .1
+    done
+    exit 1 ;;
   watermarks)
     psql_in "$p" <<'SQL'
 SELECT 'primary', pg_current_wal_flush_lsn(), timeline_id FROM pg_control_checkpoint();
@@ -45,5 +73,5 @@ SQL
 SELECT 'replay', pg_last_wal_replay_lsn(), timeline_id FROM pg_control_checkpoint();
 SQL
     ;;
-  *) echo 'usage: recovery_control.sh pause-replay|resume-replay|assert-topology|watermarks' >&2; exit 2 ;;
+  *) echo 'usage: recovery_control.sh pause-replay|resume-replay|assert-topology|clear-sync-policy|restore-sync-policy|watermarks' >&2; exit 2 ;;
 esac
