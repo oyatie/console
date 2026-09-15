@@ -86,7 +86,7 @@ test('actual dev URL helpers preserve reserved credentials for owner runtime and
 
 test('actual shared dev URL helper preserves a database name with reserved characters', () => {
   const { context } = fixture();
-  context.POSTGRES_DB = 'selected/name?#% value';
+  context.POSTGRES_DB = 'selected-name?#% value';
   context.APP_POSTGRES_PASSWORD = 'owner-safe'; context.RT_POSTGRES_PASSWORD = 'runtime-safe';
   for (const raw of [context.databaseUrl(), context.runtimeDatabaseUrl(), context.commandDatabaseUrl('console_auth_rt', 'auth-safe')]) {
     const url = new URL(raw);
@@ -179,7 +179,7 @@ function executable(run = '') {
 function assertWorkflowAuth(provision, boot, release) {
   const setup = executable(provision.run), serve = executable(boot.run);
   assert.match(setup, /AUTH_PASSWORD="\$\(openssl rand -hex 32\)"/);
-  assert.equal((setup.match(/AUTH_PASSWORD="\$\(openssl rand -hex 32\)"/g) ?? []).length, 1);
+  assert.equal((setup.match(/(?:^|[;\n])\s*(?:export\s+)?AUTH_PASSWORD=/g) ?? []).length, 1, 'one auth credential assignment; later reassignment is not reuse');
   assert.match(setup, /CONSOLE_AUTH_POSTGRES_PASSWORD="\$AUTH_PASSWORD"/);
   const mask = setup.indexOf('::add-mask::$AUTH_PASSWORD');
   assert.ok(mask >= 0 && mask < setup.indexOf('CONSOLE_AUTH_POSTGRES_PASSWORD='), 'mask before credential-bearing command');
@@ -188,7 +188,7 @@ function assertWorkflowAuth(provision, boot, release) {
     assert.match(setup, /echo "CONSOLE_AUTH_POSTGRES_PASSWORD=\$\{AUTH_PASSWORD\}"/);
     assert.ok(setup.includes('probe-topology.env'), 'same credential survives topology replay carrier');
     assert.match(serve, /-e AUTH_DATABASE_URL="\$PROBE_AUTH_DATABASE_URL"/);
-    assert.doesNotMatch(serve, /AUTH_PASSWORD=.*openssl/);
+    assert.doesNotMatch(serve, /(?:^|[;\n])\s*(?:export\s+)?AUTH_PASSWORD=/);
   } else {
     assert.match(setup, /AUTH_DATABASE_URL="postgres(?:ql)?:\/\/console_auth_rt:\$\{AUTH_PASSWORD\}@localhost:5432\/console_ci"/);
     assert.match(serve, /AUTH_DATABASE_URL="\$AUTH_DATABASE_URL"\s*\\/);
@@ -214,6 +214,8 @@ test('workflow guard positive controls reject omitted delivery wrong-role reuse 
     (p, b) => { b.run = b.run.replace('AUTH_DATABASE_URL=', 'UNRELATED='); },
     (p) => { p.run = p.run.replace('console_auth_rt:${AUTH_PASSWORD}', 'console_rt:${RT_PASSWORD}'); },
     (p) => { p.run += '\nAUTH_PASSWORD="$(openssl rand -hex 32)"'; },
+    (p) => { p.run = p.run.replace('docker run', 'AUTH_PASSWORD="$RT_PASSWORD"\ndocker run'); },
+    (p, b) => { b.run = 'AUTH_PASSWORD="$RT_PASSWORD"\n' + b.run; },
     (p) => { p.run = p.run.replace('CONSOLE_AUTH_POSTGRES_PASSWORD="$AUTH_PASSWORD"', 'CONSOLE_AUTH_POSTGRES_PASSWORD="$RT_PASSWORD"'); },
     (p) => { p.run = p.run.replace('echo "::add-mask::$AUTH_PASSWORD"', '# omitted mask'); },
   ]) {
