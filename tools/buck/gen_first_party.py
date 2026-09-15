@@ -117,7 +117,10 @@ RESOURCE_CONFIG = {
                     "tests/auth_rest/publication_privileges.rs",
                     "tests/auth_rest/actor-migration.csv",
                     "tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql",
+                    "tests/auth_rest/fixtures/account-custody-projection-v2-69e3ca9c.sql",
                     "tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql",
+                    "tests/auth_rest/fixtures/account-custody-root-input-d66e2112.sql",
+                    "src/account_custody_state.sql",
                 ],
             },
             "tests/openapi_drift.rs": {
