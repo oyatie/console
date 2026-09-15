@@ -14,9 +14,18 @@ impl Fixture {
             std::process::id(),
             NEXT.fetch_add(1, Ordering::Relaxed)
         ));
-        fs::create_dir(&path).unwrap();
-        fs::create_dir(path.join("migrations")).unwrap();
-        fs::write(path.join("migrations/0001_identity.sql"), sql).unwrap();
+        assert!(
+            fs::create_dir(&path).is_ok(),
+            "create fixture root directory"
+        );
+        assert!(
+            fs::create_dir(path.join("migrations")).is_ok(),
+            "create fixture migrations directory"
+        );
+        assert!(
+            fs::write(path.join("migrations/0001_identity.sql"), sql).is_ok(),
+            "write fixture migration"
+        );
         Self(path)
     }
     fn check(&self) -> GateResult {
@@ -232,4 +241,19 @@ fn dynamic_case_sensitive_identifier_cannot_supply_lowercase_rls() {
         ViolationKind::OrgColumnWithoutRls,
         "widgets",
     );
+}
+
+#[test]
+fn quoted_lowercase_org_column_in_create_preserves_not_null() {
+    clean(&format!(
+        "CREATE TABLE widgets (\"org_id\" uuid NOT NULL); {}",
+        protection("widgets")
+    ));
+}
+#[test]
+fn quoted_lowercase_org_column_in_alter_preserves_not_null() {
+    clean(&format!(
+        "CREATE TABLE widgets (id uuid); ALTER TABLE widgets ADD COLUMN \"org_id\" uuid NOT NULL; {}",
+        protection("widgets")
+    ));
 }
