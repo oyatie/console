@@ -79,7 +79,7 @@ FENCE_INSTALL = """
 def generated_files():
     query = (ROOT / 'backend/app/src/account_custody_state.sql').read_text().strip().removesuffix(';')
     names = ','.join("'" + name + "'" for name in TABLES)
-    locks = ', '.join('public.' + name for name in TABLES)
+    locks = ', '.join('ONLY public.' + name for name in TABLES)
     inspect = 'state := (\n' + query + '\n);'
     inspect_acl = f"""SELECT bool_and(c.relacl IS NOT NULL AND cardinality(c.relacl)=0) INTO dormant
       FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
@@ -108,12 +108,20 @@ BEGIN
           'console_account_owner','console_terms_owner') THEN
         RAISE EXCEPTION USING MESSAGE='account_custody.operator_identity_mismatch', ERRCODE='P0001';
     END IF;
-    {inspect}
-    IF state NOT IN ('account_custody.pending','account_custody.finalized') OR state IS NULL THEN
-        RAISE EXCEPTION USING MESSAGE=COALESCE(state,'account_custody.catalog_missing'), ERRCODE='P0001';
+    -- Before locking, inspect only existence and kind. Catalog helpers in the
+    -- full verdict can wait across another finalizer's ownership/ACL commit.
+    IF (SELECT count(*) FROM pg_catalog.pg_class c
+        JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname='public' AND c.relname IN ({names})) <> {len(TABLES)} THEN
+        RAISE EXCEPTION USING MESSAGE='account_custody.catalog_missing', ERRCODE='P0001';
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_catalog.pg_class c
+        JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname='public' AND c.relname IN ({names}) AND c.relkind<>'r') THEN
+        RAISE EXCEPTION USING MESSAGE='account_custody.catalog_shape_mismatch', ERRCODE='P0001';
     END IF;
     LOCK TABLE {locks} IN ACCESS EXCLUSIVE MODE;
-    -- Recheck under relation locks: pre-lock metadata is not transfer authority.
+    -- The complete verdict is authoritative only under the six relation locks.
     {inspect}
     IF state IS DISTINCT FROM 'account_custody.finalized' AND state IS DISTINCT FROM 'account_custody.pending' THEN
         RAISE EXCEPTION USING MESSAGE=COALESCE(state,'account_custody.catalog_missing'), ERRCODE='P0001';
