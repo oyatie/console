@@ -35,6 +35,20 @@ if [[ "${POSTGRES_ADMIN_USER}" == "console_app" ]]; then
   exit 1
 fi
 
+# Auth transport is staged independently of Account activation. Omission keeps
+# existing credentials unchanged; a newly created role has no password. HBA
+# remains responsible for the accepted authentication methods.
+CONSOLE_AUTH_PASSWORD_SUPPLIED=0
+if [[ "${CONSOLE_AUTH_POSTGRES_PASSWORD+x}" == x ]]; then
+  [[ -n "${CONSOLE_AUTH_POSTGRES_PASSWORD}" ]] || {
+    echo "topology: an explicitly supplied auth password must not be empty" >&2
+    exit 1
+  }
+  CONSOLE_AUTH_PASSWORD_SUPPLIED=1
+fi
+export CONSOLE_AUTH_PASSWORD_SUPPLIED
+export CONSOLE_AUTH_POSTGRES_PASSWORD="${CONSOLE_AUTH_POSTGRES_PASSWORD-}"
+
 passwords=(
   "${POSTGRES_ADMIN_PASSWORD}"
   "${CONSOLE_APP_POSTGRES_PASSWORD}"
@@ -43,6 +57,9 @@ passwords=(
   "${CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD}"
   "${CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD}"
 )
+if [[ "${CONSOLE_AUTH_PASSWORD_SUPPLIED}" == 1 ]]; then
+  passwords+=("${CONSOLE_AUTH_POSTGRES_PASSWORD}")
+fi
 for ((i = 0; i < ${#passwords[@]}; i++)); do
   for ((j = i + 1; j < ${#passwords[@]}; j++)); do
     if [[ "${passwords[i]}" == "${passwords[j]}" ]]; then
@@ -306,6 +323,32 @@ SET LOCAL log_min_error_statement = 'panic';
 -- Read back by the DO $canonical$ block below. A psql variable cannot be
 -- interpolated inside a dollar-quoted body, so it travels as a GUC.
 SET LOCAL console.canonical_require_tables = :'canonical_require';
+
+\getenv auth_password CONSOLE_AUTH_POSTGRES_PASSWORD
+\getenv auth_password_supplied CONSOLE_AUTH_PASSWORD_SUPPLIED
+-- Check the independent auth boundary before the legacy membership repair can
+-- hide an inbound or outbound authority edge. Drift rolls back this transaction.
+SELECT 'CREATE ROLE console_auth_rt LOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD NULL'
+WHERE NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_auth_rt') \gexec
+DO $auth_transport$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_roles
+    WHERE rolname='console_auth_rt' AND rolcanlogin AND NOT rolsuper
+      AND NOT rolbypassrls AND NOT rolinherit AND NOT rolcreatedb
+      AND NOT rolcreaterole AND NOT rolreplication
+  ) OR EXISTS (
+    SELECT 1 FROM pg_catalog.pg_auth_members membership
+    JOIN pg_catalog.pg_roles role ON role.oid=membership.member OR role.oid=membership.roleid
+    WHERE role.rolname='console_auth_rt'
+  ) THEN
+    RAISE EXCEPTION 'account_auth.topology_mismatch';
+  END IF;
+END
+$auth_transport$;
+\if :auth_password_supplied
+SELECT format('ALTER ROLE console_auth_rt PASSWORD %L', :'auth_password') \gexec
+\endif
 
 SELECT format(
   'CREATE ROLE console_app LOGIN NOSUPERUSER BYPASSRLS INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD %L',
