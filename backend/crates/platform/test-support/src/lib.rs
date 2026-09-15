@@ -385,6 +385,49 @@ pub async fn finalize_account_custody(pool: &PgPool) {
     tx.commit().await.expect("commit disposable finalization");
 }
 
+/// Read the fixed production Auth7 SQL; no fixture grants or owner emulation.
+pub fn account_credential_custody_finalizer_sql() -> String {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../../ops/postgres-finalize-account-credentials.sql");
+    std::fs::read_to_string(path)
+        .expect("AUTH7_ARTIFACT_PREREQUISITE: production credential SQL file missing")
+}
+
+/// Actual root+credential SQL in one marked disposable operator transaction.
+pub async fn finalize_serving_account_custody(pool: &PgPool) {
+    // Missing SQL is a prerequisite; never fall back to root-only behavior.
+    let credentials = account_credential_custody_finalizer_sql();
+    let mut tx = pool.begin().await.expect("begin disposable finalization");
+    sqlx::query("SET LOCAL statement_timeout = '60s'")
+        .execute(tx.as_mut())
+        .await
+        .expect("bound disposable finalization statement");
+    sqlx::raw_sql("SET LOCAL lock_timeout='5s'; SET LOCAL search_path=pg_catalog,pg_temp")
+        .execute(tx.as_mut())
+        .await
+        .expect("bound composed operator catalog and lock context");
+    let identity: (String, String, bool) = sqlx::query_as(
+        "SELECT session_user::text,current_user::text,current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' AND (SELECT rolsuper FROM pg_roles WHERE rolname=current_user)",
+    ).fetch_one(tx.as_mut()).await.expect("inspect disposable finalization administrator");
+    assert_eq!(
+        identity,
+        (
+            "console_buck_admin".to_owned(),
+            "console_buck_admin".to_owned(),
+            true
+        )
+    );
+    sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
+        .execute(tx.as_mut())
+        .await
+        .expect("actual production Account custody finalizer");
+    sqlx::raw_sql(sqlx::AssertSqlSafe(credentials))
+        .execute(tx.as_mut())
+        .await
+        .expect("actual production Account credential custody finalizer");
+    tx.commit().await.expect("commit disposable finalization");
+}
+
 /// Reuse the app fixture's exact empty-database and owner-transport admission.
 pub async fn prepare_test_migration_owner_url(pool: &PgPool) -> String {
     let mut connection = pool.acquire().await.expect("disposable admin connection");
@@ -492,7 +535,7 @@ pub async fn prepare_account_test_database(pool: &PgPool) {
         .expect("apply actual numbered migrations as console_app");
     drop(connection);
     owner.close().await;
-    finalize_account_custody(pool).await;
+    finalize_serving_account_custody(pool).await;
     let auth = login_test_pool(pool, TestDatabaseLogin::Auth).await;
     let fenced: bool = sqlx::query_scalar("SELECT public.account_legacy_fenced_v1($1)")
         .bind(uuid::Uuid::new_v4())

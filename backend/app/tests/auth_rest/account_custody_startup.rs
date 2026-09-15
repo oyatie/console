@@ -2,7 +2,10 @@
 //! regression explicitly constructs a state to control readiness session reuse.
 //! Requires ordinary migration and production finalization helpers; missing
 //! lifecycle prerequisites cannot be counted as startup refusal evidence.
-use super::{account_transport_urls, finalize_account_custody, prepare_http_database_staging};
+use super::{
+    account_transport_urls, finalize_account_custody, finalize_serving_account_custody,
+    prepare_http_database_staging,
+};
 use axum::body::Body;
 use console_app::{AppConfig, AppRole, AppState, build_router};
 use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
@@ -59,6 +62,15 @@ async fn pending_then_finalized(pool: PgPool, role: AppRole) {
         "specific custody refusal, not unrelated setup failure: {error}"
     );
     finalize_account_custody(&pool).await;
+    let root_only = AppState::from_config(config(&pool, role)).await;
+    if let Ok(state) = &root_only {
+        state.shutdown_realtime().await;
+    }
+    assert!(
+        matches!(root_only, Err(console_app::AppError::Config(ref code)) if code == "account_credentials.upgrade_required"),
+        "root-only installation must refuse new serving with the exact credential-profile status"
+    );
+    finalize_serving_account_custody(&pool).await;
     let state = AppState::from_config(config(&pool, role))
         .await
         .expect("same transport starts after actual finalization");
@@ -79,7 +91,7 @@ async fn custody_worker_startup_requires_actual_finalization(pool: PgPool) {
 
 async fn drift_after_start(pool: PgPool, role: AppRole, mutation: &'static str) {
     prepare_http_database_staging(&pool).await;
-    finalize_account_custody(&pool).await;
+    finalize_serving_account_custody(&pool).await;
     let state = AppState::from_config(config(&pool, role))
         .await
         .expect("finalized positive startup");
@@ -149,7 +161,7 @@ async fn custody_genuine_no_database_configuration_keeps_existing_behavior() {
 
 async fn partial_catalog(pool: PgPool, role: AppRole) {
     prepare_http_database_staging(&pool).await;
-    finalize_account_custody(&pool).await;
+    finalize_serving_account_custody(&pool).await;
     let healthy = AppState::from_config(config(&pool, role)).await.unwrap();
     assert_eq!(ready(&healthy).await, StatusCode::OK);
     healthy.shutdown_realtime().await;
@@ -208,7 +220,7 @@ async fn custody_configured_database_failure_does_not_become_no_database_mode() 
 #[sqlx::test(migrations = false)]
 async fn custody_readyz_ignores_session_temporary_pg_class_forgery(pool: PgPool) {
     prepare_http_database_staging(&pool).await;
-    finalize_account_custody(&pool).await;
+    finalize_serving_account_custody(&pool).await;
     let login = login_test_pool(&pool, TestDatabaseLogin::Business).await;
     let options = login.connect_options().as_ref().clone();
     login.close().await;
@@ -389,6 +401,20 @@ mod current_profile_admission {
             );
         }
         assert_eq!(upgraded["functions"].as_array().unwrap().len(), 2);
+        assert!(
+            upgraded == complete_state(&pool).await,
+            "root-only upgrade remains unchanged before credential composition"
+        );
+        finalize_serving_account_custody(&pool).await;
+        let serving = complete_state(&pool).await;
+        assert!(
+            upgraded["rows"] == serving["rows"],
+            "credential composition preserves complete root/approval rows"
+        );
+        assert!(
+            upgraded["functions"] == serving["functions"],
+            "credential composition preserves retained root routines exactly"
+        );
         let state = AppState::from_config(config(&pool, role))
             .await
             .expect("same transport starts after real operator upgrade");
@@ -398,14 +424,14 @@ mod current_profile_admission {
         runtime.close().await;
         assert_eq!(ready, StatusCode::OK);
         assert!(
-            upgraded == complete_state(&pool).await,
+            serving == complete_state(&pool).await,
             "successful startup/readiness remains read-only after upgrade"
         );
     }
 
     async fn routine_drift_recovers(pool: PgPool, role: AppRole) {
         prepare_http_database_staging(&pool).await;
-        finalize_account_custody(&pool).await;
+        finalize_serving_account_custody(&pool).await;
         seed_snapshot_rows(&pool).await;
         let state = AppState::from_config(config(&pool, role))
             .await

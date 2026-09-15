@@ -1,6 +1,9 @@
 //! Root-only transition regression candidate. Real historical/current operator
 //! SQL and LOGIN roles; privileged data/fault fixtures confer no Account authority.
-use super::{account_custody_finalizer_sql, prepare_http_database, prepare_http_database_staging};
+use super::{
+    account_custody_finalizer_sql, prepare_http_database_staging,
+    prepare_http_root_database as prepare_http_database,
+};
 use console_kernel_core::OrgId;
 use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
 use futures::FutureExt;
@@ -1065,6 +1068,7 @@ async fn profile_drift_refuses_without_repair(pool: PgPool) {
     ));
     pairs.extend(super::account_transport_urls(&pool));
     let config = super::AppConfig::from_pairs(pairs).unwrap();
+    super::finalize_serving_account_custody(&pool).await;
     let good = super::AppState::from_config(config.clone()).await.unwrap();
     good.shutdown_realtime().await;
     sqlx::raw_sql("ALTER TABLE users DISABLE TRIGGER \"00_account_legacy_user_root_v1\"")

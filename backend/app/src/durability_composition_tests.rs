@@ -8,7 +8,7 @@ use console_kernel_core::{OrgId, UserId, WorkOrderId};
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use console_platform_request_context::scope_org;
 use console_platform_test_support::{
-    TestDatabaseLogin, finalize_account_custody, login_test_database_url, login_test_pool,
+    TestDatabaseLogin, finalize_serving_account_custody, login_test_database_url, login_test_pool,
     prepare_test_migration_owner_url, seed_org_and_super_admin, seed_org_rls_off,
 };
 use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
@@ -128,7 +128,7 @@ async fn setup(owner: &PgPool, timeout_ms: u64) -> Value {
     super::run_migrations(&migration)
         .await
         .expect("actual numbered AND Apalis migrations");
-    finalize_account_custody(owner).await;
+    finalize_serving_account_custody(owner).await;
 
     // Closed-state readback after the recorded ownership handoff. Never call
     // the initial admin-owned installer helper with a weakened ownership guard.

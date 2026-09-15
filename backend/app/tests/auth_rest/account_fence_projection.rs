@@ -1,5 +1,6 @@
 // Test-only candidate for inclusion as auth_rest/account_fence_projection.rs.
 // Parent auth_rest.rs supplies existing real database/finalizer helpers.
+use super::prepare_http_root_database as prepare_http_database;
 use super::*;
 
 async fn real_auth_pool(owner: &PgPool) -> PgPool {
