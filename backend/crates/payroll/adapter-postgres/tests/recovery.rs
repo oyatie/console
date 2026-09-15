@@ -1194,7 +1194,7 @@ async fn assert_fresh_backend_closed(owner: &PgPool, backend: &Backend) {
         }
     })
     .await
-    .expect("FRESH_SYNCREP_CLEANUP: exact abandoned backend survives bounded cleanup while replay remains paused");
+    .expect("FRESH_SYNCREP_CLEANUP: exact abandoned backend survives bounded cleanup after replay recovers");
 }
 
 async fn set_fresh_cleanup_timers(
@@ -1226,34 +1226,97 @@ async fn set_fresh_cleanup_timers(
     );
 }
 
-async fn assert_fresh_sync_wait_ended(owner: &PgPool, backend: &Backend) {
-    // In the 5s policy rows this bound expires before the caller deadline.
-    // Thus replacing a shorter native cap with the full budget cannot pass.
-    tokio::time::timeout(Duration::from_secs(2), async {
-        loop {
-            let waiting: bool = sqlx::query_scalar(
-                "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND backend_start=$2 AND datname=current_database() AND application_name=$3 AND wait_event='SyncRep')",
-            )
-            .bind(backend.pid)
-            .bind(backend.started)
-            .bind(&backend.application_name)
-            .fetch_one(owner)
-            .await
-            .unwrap();
-            if !waiting {
-                break;
-            }
-            tokio::time::sleep(Duration::from_millis(10)).await;
-        }
-    })
+async fn assert_exact_fresh_waiter(owner: &PgPool, backend: &Backend) {
+    let rows: Vec<(i32, time::OffsetDateTime, bool)> = sqlx::query_as(
+        "SELECT pid,backend_start,state='active' AND wait_event_type='IPC' AND wait_event='SyncRep' \
+         FROM pg_stat_activity WHERE datname=current_database() AND usename='console_rt' AND application_name=$1",
+    )
+    .bind(&backend.application_name)
+    .fetch_all(owner)
     .await
-    .expect("FRESH_SYNCREP_NATIVE_TIMER: exact witnessed COMMIT did not leave SyncRep before the shorter native cap bound");
+    .unwrap();
+    assert_eq!(
+        rows,
+        vec![(backend.pid, backend.started, true)],
+        "FRESH_SYNCREP_CAPACITY: exactly the original active native waiter must occupy this isolated pool"
+    );
+}
+
+async fn assert_fresh_capacity_retained(
+    owner: &PgPool,
+    pool: &PgPool,
+    backend: &Backend,
+    descriptor: &Value,
+    draft: &StagePayrollDraft,
+) {
+    // Bound resource occupancy while replay is deliberately unavailable. These
+    // attempts exercise the original pool; opening another pool would evade the
+    // admission condition under test. Each actual owner attempt has its own
+    // short explicit fixture policy and must expire before acquiring capacity.
+    let mut attempted_policy = descriptor.clone();
+    attempted_policy["timeout_ms"] = json!(100);
+    for attempt in 0..3 {
+        assert_exact_fresh_waiter(owner, backend).await;
+        let acquisition = tokio::time::timeout(Duration::from_millis(75), pool.acquire()).await;
+        assert!(
+            acquisition.is_err(),
+            "FRESH_SYNCREP_CAPACITY: acquisition attempt {attempt} completed while the original native waiter remained paused"
+        );
+        assert!(!pool.is_closed(), "responsive retained pool remains open");
+        let port = required_port(pool.clone(), &attempted_policy);
+        let error = tokio::time::timeout(Duration::from_millis(500), port.stage(draft.clone()))
+            .await
+            .expect("FRESH_SYNCREP_ATTEMPT_DEADLINE: queued owner must honor its own policy budget")
+            .unwrap_err();
+        assert_eq!(error.kind, console_kernel_core::ErrorKind::Internal);
+        assert!(
+            error.message.starts_with("database durability UNKNOWN:"),
+            "FRESH_SYNCREP_ATTEMPT_UNKNOWN: queued stage cannot claim success or known rollback: {error}"
+        );
+        assert_exact_fresh_waiter(owner, backend).await;
+    }
+}
+
+async fn replacement_after_fresh_recovery(owner: &PgPool, pool: &PgPool, backend: &Backend) {
+    // The first requested replacement query samples its own PID and the exact
+    // original waiter together. It is queued before replay resumes, proving
+    // there is no separate admission window between recovery and the probe.
+    let mut replacement = Box::pin(
+        sqlx::query_as::<_, (i32, bool)>(
+            "SELECT pg_backend_pid(), EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND backend_start=$2 AND datname=current_database() AND application_name=$3 AND wait_event='SyncRep')",
+        )
+        .bind(backend.pid)
+        .bind(backend.started)
+        .bind(&backend.application_name)
+        .fetch_one(pool),
+    );
+    let early = tokio::time::timeout(Duration::from_millis(200), &mut replacement).await;
+    assert!(
+        early.is_err(),
+        "FRESH_SYNCREP_CAPACITY: replacement query was admitted before actual replay recovery"
+    );
+    assert_exact_fresh_waiter(owner, backend).await;
+    control("resume-replay");
+    let (replacement, abandoned_waiter) = tokio::time::timeout(Duration::from_secs(3), replacement)
+        .await
+        .expect(
+            "FRESH_SYNCREP_POOL_RECOVERY: original capacity did not recover after replay resumed",
+        )
+        .unwrap();
+    assert_ne!(replacement, backend.pid);
+    assert!(
+        !abandoned_waiter,
+        "FRESH_SYNCREP_CAPACITY: replacement overlapped the exact original native waiter"
+    );
+    assert_fresh_backend_closed(owner, backend).await;
 }
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
-async fn fresh_commit_deadline_reclaims_backend_before_replay_resumes(owner: PgPool) {
-    // Positive transaction_timeout disables an equal/longer statement timer.
-    // The shorter-statement row detects overwriting an existing tighter cap.
+async fn fresh_commit_deadline_retains_capacity_until_replay_resumes(owner: PgPool) {
+    // The reviewed amendment bounds caller UNKNOWN and occupied capacity;
+    // backend cleanup follows actual replay recovery. These four inputs preserve
+    // compatibility with supplied session timers, not a disproved native COMMIT
+    // timer claim. The previous hard-cleanup probe is retained as history.
     for (scenario, policy_ms, statement_ms, transaction_ms) in [
         ("default", 700_u64, 0_u64, 0_u64),
         ("equal-positive-timers", 5_000, 1_200, 1_200),
@@ -1281,10 +1344,9 @@ async fn fresh_commit_deadline_reclaims_backend_before_replay_resumes(owner: PgP
         if statement_ms > 0 {
             assert!(
                 started.elapsed() < Duration::from_millis(1_500),
-                "FRESH_SYNCREP_TIMER_PREREQUISITE: witness arrived too late to distinguish native cap from remaining policy budget"
+                "FRESH_SYNCREP_TIMER_PREREQUISITE: fresh native witness arrived after the existing setup budget"
             );
         }
-        assert_fresh_sync_wait_ended(&owner, &backend).await;
         let caller_bound = Duration::from_millis(policy_ms + 1_300);
         let error = tokio::time::timeout_at(started + caller_bound, call)
             .await
@@ -1299,12 +1361,36 @@ async fn fresh_commit_deadline_reclaims_backend_before_replay_resumes(owner: PgP
             "FRESH_SYNCREP_UNKNOWN: actual fresh COMMIT cannot return success or known rollback: {error:?}"
         );
         assert!(started.elapsed() < caller_bound);
-        assert_fresh_backend_closed(&owner, &backend).await;
+        let attempted_draft = match &command.query {
+            PayRunQuery::CreateRun {
+                run_id,
+                period_start,
+                period_end,
+                connector,
+                job,
+            } => StagePayrollDraft {
+                org,
+                outbox_event_id: *command.command_id.as_uuid(),
+                run_id: *run_id,
+                period_start: Some(*period_start),
+                period_end: Some(*period_end),
+                connector: connector.clone(),
+                job: job.clone(),
+            },
+            _ => panic!("fixture requires actual CreateRun input"),
+        };
+        assert_fresh_capacity_retained(&owner, &pool, &backend, &descriptor, &attempted_draft)
+            .await;
+        assert_eq!(
+            command_receipt_rows(&owner, org).await,
+            json!({"receipts": [], "drafts": []}),
+            "live native SyncRep transaction remains snapshot-invisible"
+        );
+        replacement_after_fresh_recovery(&owner, &pool, &backend).await;
+        drop(resume);
         let committed = command_receipt_rows(&owner, org).await;
         assert_eq!(committed["receipts"].as_array().unwrap().len(), 1);
         assert_eq!(committed["drafts"].as_array().unwrap().len(), 1);
-        control("resume-replay");
-        drop(resume);
         let mut retry_descriptor = descriptor.clone();
         retry_descriptor["timeout_ms"] = json!(15_000);
         let retry = required_port(pool.clone(), &retry_descriptor);
@@ -1322,6 +1408,8 @@ async fn fresh_commit_deadline_reclaims_backend_before_replay_resumes(owner: PgP
 
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn aborted_fresh_stage_retains_capacity_until_native_wait_ends(owner: PgPool) {
+    // Native wait ends through actual replay recovery. The unchanged exact
+    // test name and timer inputs preserve historical probe traceability.
     for (scenario, policy_ms, statement_ms, transaction_ms) in [
         ("default", 700_u64, 0_u64, 0_u64),
         ("equal-positive-timers", 5_000, 1_200, 1_200),
@@ -1356,38 +1444,22 @@ async fn aborted_fresh_stage_retains_capacity_until_native_wait_ends(owner: PgPo
         if statement_ms > 0 {
             assert!(
                 started.elapsed() < Duration::from_millis(1_500),
-                "FRESH_SYNCREP_TIMER_PREREQUISITE: witness arrived too late to distinguish native cap from remaining policy budget"
+                "FRESH_SYNCREP_TIMER_PREREQUISITE: fresh native witness arrived after the existing setup budget"
             );
         }
         call.abort();
         assert!(call.await.unwrap_err().is_cancelled());
-        // Query immediately through the one-slot pool. The replacement's first
-        // requested SQL observes its PID and the exact old SyncRep waiter in
-        // one server snapshot; no later owner RTT can hide a sampled overlap.
-        let (replacement, abandoned_waiter): (i32, bool) = tokio::time::timeout(
-            Duration::from_secs(3),
-            sqlx::query_as(
-                "SELECT pg_backend_pid(), EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND backend_start=$2 AND datname=current_database() AND application_name=$3 AND wait_event='SyncRep')",
-            )
-            .bind(backend.pid)
-            .bind(backend.started)
-            .bind(&backend.application_name)
-            .fetch_one(&pool),
-        )
-        .await
-        .expect("FRESH_SYNCREP_POOL_RECOVERY: retained capacity was never released within the native cap bound")
-        .unwrap();
-        assert_ne!(replacement, backend.pid);
-        assert!(
-            !abandoned_waiter,
-            "FRESH_SYNCREP_CAPACITY: replacement admitted while abandoned fresh COMMIT still owns server resources"
+        assert_fresh_capacity_retained(&owner, &pool, &backend, &descriptor, &retry_draft).await;
+        assert_eq!(
+            command_receipt_rows(&owner, org).await,
+            json!({"receipts": [], "drafts": []}),
+            "aborted caller must not expose the still-waiting native transaction"
         );
-        assert_fresh_backend_closed(&owner, &backend).await;
+        replacement_after_fresh_recovery(&owner, &pool, &backend).await;
+        drop(resume);
         let committed = command_receipt_rows(&owner, org).await;
         assert_eq!(committed["receipts"].as_array().unwrap().len(), 0);
         assert_eq!(committed["drafts"].as_array().unwrap().len(), 1);
-        control("resume-replay");
-        drop(resume);
         let mut retry_descriptor = descriptor.clone();
         retry_descriptor["timeout_ms"] = json!(15_000);
         let retry = required_port(pool.clone(), &retry_descriptor);
