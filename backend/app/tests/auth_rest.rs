@@ -4169,6 +4169,266 @@ mod account_browser {
         tx.commit().await.unwrap();
     }
 
+    // Native reference/immutable-data tests only. TEST_ONLY rows below are not
+    // publication approval or an implementation of the future publisher.
+    fn terms_reference_approval(revision: i64) -> Vec<u8> {
+        serde_json::to_vec(&json!({
+                "kind":"ACCOUNT_TERMS_PUBLICATION_APPROVAL",
+                "approval_id":"32323232-3232-4232-8232-323232323232",
+                "manifest_sha256":MANIFEST_DIGEST,
+                "expected_revision":(revision - 1).to_string(),
+                "next_revision":revision.to_string(),
+                "fixture_only":true,
+                "approved_by":"test_only.operator",
+                "approved_at":"2026-09-13T00:00:00Z",
+                "content_authority_refs":[hex::encode(Sha256::digest(b"TEST_ONLY content authority, never legal proof"))]
+            })).unwrap()
+    }
+
+    async fn terms_reference_rows(pool: &PgPool) -> Value {
+        // Complete isolated-fixture rows, including unrelated Account/audit data.
+        // Never print this snapshot or its retained approval bytes.
+        sqlx::query_scalar(r#"SELECT jsonb_build_object(
+                'receipts',COALESCE((SELECT jsonb_agg(to_jsonb(r) ORDER BY r.id) FROM public.account_terms_release_receipts r),'[]'::jsonb),
+                'head',COALESCE((SELECT jsonb_agg(to_jsonb(h) ORDER BY h.id) FROM public.account_terms_head h),'[]'::jsonb),
+                'acceptances',COALESCE((SELECT jsonb_agg(to_jsonb(a) ORDER BY a.account_id,a.terms_kind,a.terms_version) FROM public.account_terms_acceptances a),'[]'::jsonb),
+                'accounts',COALESCE((SELECT jsonb_agg(to_jsonb(a) ORDER BY a.id) FROM public.accounts a),'[]'::jsonb),
+                'security',COALESCE((SELECT jsonb_agg(to_jsonb(s) ORDER BY s.account_id) FROM public.account_security s),'[]'::jsonb),
+                'events',COALESCE((SELECT jsonb_agg(to_jsonb(e) ORDER BY e.id) FROM public.account_security_events e),'[]'::jsonb),
+                'audit',COALESCE((SELECT jsonb_agg(to_jsonb(a) ORDER BY a.id) FROM public.audit_events a),'[]'::jsonb))"#)
+                .fetch_one(pool).await.expect("complete terms reference fixture readback")
+    }
+
+    fn terms_reference_guard_error(result: Result<sqlx::postgres::PgQueryResult, sqlx::Error>) {
+        let error = match result {
+            Ok(done) => {
+                assert_eq!(
+                    done.rows_affected(),
+                    1,
+                    "baseline must update the matched receipt"
+                );
+                panic!("TERMS_GUARD_PREWRITE: matched receipt UPDATE succeeded; affected=1");
+            }
+            Err(error) => error,
+        };
+        let database = error
+            .as_database_error()
+            .expect("guard must be PostgreSQL refusal");
+        assert!(
+            database.code().as_deref() == Some("P0001"),
+            "guard SQLSTATE must be exact"
+        );
+        assert!(
+            database.message() == "account_terms_receipts.immutable",
+            "fixed immutable guard message only"
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn terms_reference_native_fk_preserves_exact_receipt(pool: PgPool) {
+        prepare_http_database(&pool).await;
+        // The current baseline must reach the actual positive head INSERT42501.
+        // This existing data-only fixture stays byte-identical in both variants.
+        seed_terms(&pool).await;
+        let id = Uuid::parse_str(RECEIPT).unwrap();
+        let digest = hex::decode(MANIFEST_DIGEST).unwrap();
+        let approval = terms_reference_approval(1);
+        let receipt: (Uuid, Option<i64>, i64, Vec<u8>, Vec<u8>, Value) = sqlx::query_as(
+                "SELECT id,previous_revision,revision,manifest_sha256,approval_bytes,approved_release_ref FROM public.account_terms_release_receipts WHERE id=$1",
+            ).bind(id).fetch_one(&pool).await.unwrap();
+        assert!(receipt.0 == id && receipt.1.is_none() && receipt.2 == 1);
+        assert!(
+            receipt.3 == digest && receipt.4 == approval,
+            "original digest and approval bytes must be exact"
+        );
+        assert!(
+            receipt.5
+                == json!({"kind":"OPERATOR_RELEASE_APPROVAL","approval_sha256":hex::encode(Sha256::digest(&approval))})
+        );
+        let head: (i16, Uuid, i64, Vec<u8>) = sqlx::query_as(
+            "SELECT id,release_receipt_ref,revision,manifest_sha256 FROM public.account_terms_head",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(head.0 == 1 && head.1 == id && head.2 == 1 && head.3 == digest);
+        let before = terms_reference_rows(&pool).await;
+        assert_eq!(before["receipts"].as_array().unwrap().len(), 1);
+        assert_eq!(before["head"].as_array().unwrap().len(), 1);
+        assert!(before["acceptances"].as_array().unwrap().is_empty());
+        // Pin the actual validated0226 composite FK, not a generic SQL error.
+        let constraint: String = sqlx::query_scalar(
+                "SELECT conname::text FROM pg_catalog.pg_constraint WHERE conrelid='public.account_terms_head'::regclass AND confrelid='public.account_terms_release_receipts'::regclass AND contype='f' AND convalidated AND NOT condeferrable AND NOT condeferred AND conkey=ARRAY[4,3,2]::smallint[] AND confkey=ARRAY[1,3,4]::smallint[] AND confdeltype='r'",
+            ).fetch_one(&pool).await.expect("exact native receipt-reference constraint");
+        let mut wrong_digest = digest.clone();
+        wrong_digest[0] ^= 1;
+        for (candidate_id, revision, candidate_digest) in [
+            (Uuid::new_v4(), 1_i64, digest.clone()),
+            (id, 2_i64, digest.clone()),
+            (id, 1_i64, wrong_digest),
+        ] {
+            let mut tx = pool.begin().await.unwrap();
+            let result = sqlx::query("UPDATE public.account_terms_head SET release_receipt_ref=$1,revision=$2,manifest_sha256=$3 WHERE id=1")
+                    .bind(candidate_id).bind(revision).bind(candidate_digest).execute(&mut *tx).await;
+            tx.rollback().await.unwrap();
+            assert!(
+                before == terms_reference_rows(&pool).await,
+                "failed native FK must preserve all fixture rows and receipt bytes"
+            );
+            let error = result.expect_err("mismatched reference must be refused");
+            let database = error
+                .as_database_error()
+                .expect("native FK PostgreSQL refusal");
+            assert!(
+                database.code().as_deref() == Some("23503"),
+                "mismatch must reach native FK, not privilege/type/CHECK failure"
+            );
+            assert!(
+                database.constraint() == Some(constraint.as_str()),
+                "refusal must identify the exact head receipt-reference FK"
+            );
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn terms_reference_receipt_guard_refuses_real_mutations(pool: PgPool) {
+        prepare_http_database(&pool).await;
+        let target = Uuid::parse_str(RECEIPT).unwrap();
+        let next = Uuid::new_v4();
+        for (id, previous, revision) in [(target, None, 1_i64), (next, Some(1_i64), 2_i64)] {
+            let approval = terms_reference_approval(revision);
+            sqlx::query("INSERT INTO public.account_terms_release_receipts(id,previous_revision,revision,manifest_sha256,approved_release_ref,approval_bytes,recorded_at) VALUES($1,$2,$3,$4,$5,$6,now())")
+                    .bind(id).bind(previous).bind(revision).bind(hex::decode(MANIFEST_DIGEST).unwrap())
+                    .bind(json!({"kind":"OPERATOR_RELEASE_APPROVAL","approval_sha256":hex::encode(Sha256::digest(&approval))}))
+                    .bind(approval).execute(&pool).await.expect("data-only unreferenced receipt fixture");
+        }
+        let before = terms_reference_rows(&pool).await;
+        assert_eq!(before["receipts"].as_array().unwrap().len(), 2);
+        assert!(before["head"].as_array().unwrap().is_empty());
+        assert!(before["acceptances"].as_array().unwrap().is_empty());
+        let identity: (String, String, bool) = sqlx::query_as(
+                "SELECT session_user::text,current_user::text,(SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=current_user)",
+            ).fetch_one(&pool).await.unwrap();
+        assert!(
+            identity.0 == "console_buck_admin" && identity.1 == identity.0 && identity.2,
+            "real marked fixture administrator required"
+        );
+
+        // FIRST on baseline and future implementation: real privileged matched
+        // no-op UPDATE. Owner-context42501 must not hide the missing guard RED.
+        let mut tx = pool.begin().await.unwrap();
+        let result = sqlx::query("UPDATE public.account_terms_release_receipts SET id=id WHERE id=$1")
+            .bind(target)
+            .execute(&mut *tx)
+            .await;
+        tx.rollback().await.unwrap();
+        assert!(
+            before == terms_reference_rows(&pool).await,
+            "rollback preserves original receipt rows and bytes"
+        );
+        terms_reference_guard_error(result);
+
+        for replacement in [target, Uuid::new_v4()] {
+            let mut tx = pool.begin().await.unwrap();
+            // Explicit owner-rights probe from fixture administrator, not a claim
+            // to authenticate the NOLOGIN owner as a serving transport.
+            sqlx::query("SET LOCAL ROLE console_terms_owner")
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+            let owner: (String, String, bool, bool) = sqlx::query_as(
+                    "SELECT session_user::text,current_user::text,has_column_privilege(current_user,'public.account_terms_release_receipts','id','SELECT'),has_column_privilege(current_user,'public.account_terms_release_receipts','id','UPDATE')",
+                ).fetch_one(&mut *tx).await.unwrap();
+            assert!(
+                owner.0 == "console_buck_admin"
+                    && owner.1 == "console_terms_owner"
+                    && owner.2
+                    && owner.3
+            );
+            let result =
+                sqlx::query("UPDATE public.account_terms_release_receipts SET id=$2 WHERE id=$1")
+                    .bind(target)
+                    .bind(replacement)
+                    .execute(&mut *tx)
+                    .await;
+            tx.rollback().await.unwrap();
+            assert!(
+                before == terms_reference_rows(&pool).await,
+                "owner mutation refusal preserves all rows"
+            );
+            terms_reference_guard_error(result);
+        }
+        for statement in [
+            "DELETE FROM public.account_terms_release_receipts WHERE id='31313131-3131-4131-8131-313131313131'::uuid",
+            "TRUNCATE public.account_terms_release_receipts, public.account_terms_head, public.account_terms_acceptances",
+        ] {
+            let mut tx = pool.begin().await.unwrap();
+            sqlx::query("SET LOCAL ROLE console_terms_owner")
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+            let result = sqlx::query(statement).execute(&mut *tx).await;
+            tx.rollback().await.unwrap();
+            assert!(
+                before == terms_reference_rows(&pool).await,
+                "owner privilege refusal preserves all rows"
+            );
+            let error = result.expect_err("minimal owner has no DELETE or TRUNCATE privilege");
+            assert!(
+                error.as_database_error().and_then(|e| e.code()).as_deref() == Some("42501"),
+                "owner privilege refusal cannot substitute for guard proof"
+            );
+        }
+        for statement in [
+            "DELETE FROM public.account_terms_release_receipts WHERE id='31313131-3131-4131-8131-313131313131'::uuid",
+            // PostgreSQL checks referencing-table closure before BEFORE TRUNCATE.
+            // All three0226 relations are explicit; no CASCADE or fixture grants.
+            "TRUNCATE public.account_terms_release_receipts, public.account_terms_head, public.account_terms_acceptances",
+            "UPDATE public.account_terms_release_receipts SET id=id WHERE false",
+            "DELETE FROM public.account_terms_release_receipts WHERE false",
+        ] {
+            let mut tx = pool.begin().await.unwrap();
+            let result = sqlx::query(statement).execute(&mut *tx).await;
+            tx.rollback().await.unwrap();
+            assert!(
+                before == terms_reference_rows(&pool).await,
+                "unconditional statement guard preserves all rows"
+            );
+            let error = result.expect_err("statement guard must refuse even zero-match mutations");
+            let database = error.as_database_error().expect("guard PostgreSQL refusal");
+            assert!(database.code().as_deref() == Some("P0001"));
+            assert!(database.message() == "account_terms_receipts.immutable");
+        }
+        // ENABLE ALWAYS must retain the guard under transaction-local replica
+        // mode. Hold one real connection so restoration readback is not pooled.
+        let mut connection = pool.acquire().await.unwrap();
+        let original: String = sqlx::query_scalar("SHOW session_replication_role")
+            .fetch_one(&mut *connection)
+            .await
+            .unwrap();
+        assert_eq!(original, "origin");
+        let mut tx = sqlx::Connection::begin(&mut *connection).await.unwrap();
+        sqlx::query("SET LOCAL session_replication_role=replica")
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        let result = sqlx::query("UPDATE public.account_terms_release_receipts SET id=id WHERE id=$1")
+            .bind(target)
+            .execute(&mut *tx)
+            .await;
+        tx.rollback().await.unwrap();
+        let restored: String = sqlx::query_scalar("SHOW session_replication_role")
+            .fetch_one(&mut *connection)
+            .await
+            .unwrap();
+        assert_eq!(restored, original);
+        assert!(
+            before == terms_reference_rows(&pool).await,
+            "replica-mode refusal preserves all rows"
+        );
+        terms_reference_guard_error(result);
+    }
+
     async fn fixture(pool: &PgPool) -> Fixture {
         prepare_http_database(pool).await;
         seed_terms(pool).await;
