@@ -1,0 +1,25 @@
+{
+  "kind": "reviewed-exact-issuance-evidence-import",
+  "writer": "/root",
+  "independent_evidence_reviewer": "/root/inventory_repair",
+  "import_base_sha": "8ab2a72fc387bba8459278952c3c367671fa7ad0",
+  "allowlist_sha256": "de420c57427c5a688d347f4803d5d4d059a77313e92c9204db99e7538d15faf5",
+  "payload_count": 141,
+  "byte_exact_decompressions": 141,
+  "existing_references_rechecked": 41,
+  "source_git_blobs_verified": 19,
+  "result": {
+    "issuer4_red": "4 executed;1PASS3 actual behavioral failures; typed/recovery assertions unreached at baseline",
+    "issuer4_green": "4 executed;4PASS; canonical typed/refusal/recovery and unchanged OTP401 reached",
+    "full154": "154 executed;126PASS28 existing failures; no prior151 PASS to FAIL and no missing names",
+    "synthetic_driver_calibration": "6 parser-format examples only; zero Cargo/DB tests; never count as actual runtime",
+    "source_candidates": "Immutable code/history only; copying into evidence never creates a live suite or an approved new implementation"
+  },
+  "excluded": [
+    "Terms current-profile design/test/implementation work",
+    "Auth5 run still owned and being executed by root; no partial runtime import",
+    "Pending HTTP500 candidate or future runtime",
+    "Unreferenced /tmp artifacts, build caches, credentials, environment files or arbitrary directory contents",
+    "Already retained prior full151 run is referenced and hash-verified rather than duplicated"
+  ]
+}

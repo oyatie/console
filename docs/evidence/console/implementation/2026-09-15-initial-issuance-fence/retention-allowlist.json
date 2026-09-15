@@ -1,0 +1,2488 @@
+{
+  "kind": "exact_issuer_preparation_red_green_full154_retention_allowlist",
+  "status": "READY_FOR_ROOT_REVIEW_AND_SERIAL_IMPORT_NO_REPOSITORY_WRITE",
+  "preparer_and_evidence_reviewer": "/root/inventory_repair",
+  "repository_writer": "/root",
+  "source_root": "/private/tmp/console-production-tdd-preparation-20260913",
+  "red_sha": "4c7f49e8540271b20335afefc205119b8c04a0d9",
+  "green_and_full154_sha": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence",
+  "selection_rule": "Finite named preparation/review artifacts and every file enumerated by exactly3 immutable runtime receipts;6 explicitly named synthetic parser cases;19 Git-source payloads. No /tmp sweep or automatic import of future files.",
+  "record_count": 141,
+  "category_counts": {
+    "admission": 3,
+    "driver": 12,
+    "fixtures": 10,
+    "implementation": 4,
+    "preparation": 14,
+    "reviews": 9,
+    "runtime/full154": 14,
+    "runtime/issuer4-green": 15,
+    "runtime/issuer4-red": 15,
+    "sources": 21,
+    "synthetic-driver-calibration": 24
+  },
+  "records": [
+    {
+      "category": "admission",
+      "original_path": "/private/tmp/account-issuer4-admission.log",
+      "original_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "original_bytes": 48,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/admission/account-issuer4-admission.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/admission/account-issuer4-admission.log.gz",
+      "archive_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "archive_bytes": 65,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "admission",
+      "original_path": "/private/tmp/account-issuer4-lane-spec.json",
+      "original_sha256": "6e37cfeb9f8b7df432706bbb416ca6b2702e6b82d68e2c26b5cb83a8f4eac60b",
+      "original_bytes": 2596,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/admission/account-issuer4-lane-spec.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/admission/account-issuer4-lane-spec.json.gz",
+      "archive_sha256": "78ed8fb4c6a2993a27cba8968d05e501f451fa1898b0fe1f93024b618dad7b6b",
+      "archive_bytes": 1251,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "admission",
+      "original_path": "/private/tmp/account-issuer4-red-admission-receipt.json",
+      "original_sha256": "35e89b1b30ccd405d0926908c2e17cca29b2d5dab80ce7cde703bf07da1d24f0",
+      "original_bytes": 1157,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/admission/account-issuer4-red-admission-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/admission/account-issuer4-red-admission-receipt.json.gz",
+      "archive_sha256": "9009bb18b5c048a365b3f1aba423628caf65d0e2e6ea5d5528acc782c05447ac",
+      "archive_bytes": 682,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-auth-rest-full151-driver-candidate.json",
+      "original_sha256": "a42f663f90145828929ec2f22799e35df3e16276855b1208d8d0bdca008472b7",
+      "original_bytes": 10309,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-auth-rest-full151-driver-candidate.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-auth-rest-full151-driver-candidate.json.gz",
+      "archive_sha256": "fd0fc032b2025975edbd9e135d75baa8d481c133106de4a9d8f19981fdad3fa0",
+      "archive_bytes": 4211,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-auth-rest-full151-driver-independent-review.json",
+      "original_sha256": "823c3237aa47d51c038bedf8247aaee86140b77ba6c7637adf8c629efc5cdbe9",
+      "original_bytes": 1050,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-auth-rest-full151-driver-independent-review.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-auth-rest-full151-driver-independent-review.json.gz",
+      "archive_sha256": "411c996bed8528eeedba4a4f4f1a82ce0adb289f466ba2ae45fceae1e67add9c",
+      "archive_bytes": 650,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-auth-rest-full151-driver.sh",
+      "original_sha256": "fb0dd0b381e044e32ad9b5a12feda395ada2fdeb14f6465917e3a6e40747a5df",
+      "original_bytes": 9663,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-auth-rest-full151-driver.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-auth-rest-full151-driver.sh.gz",
+      "archive_sha256": "dd47e85651bf40630bc14d1ef0409b53d51e31dbd15eae1baefefdd7642dd895",
+      "archive_bytes": 3403,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-auth-rest-full151-probe.py",
+      "original_sha256": "e8f6b00211c697474c08e61c055369f0629836b2703307240ae0261be5f07c67",
+      "original_bytes": 397,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-auth-rest-full151-probe.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-auth-rest-full151-probe.py.gz",
+      "archive_sha256": "f4260568ef0a3de937d6c57f963e868655665116a36aa767908cee2a0948b628",
+      "archive_bytes": 271,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-issuer4-driver-candidate.json",
+      "original_sha256": "7f2a446824a887fc442705c15336f5641284a9d56b77b194f0584b07b49f8fc1",
+      "original_bytes": 13234,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-issuer4-driver-candidate.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-issuer4-driver-candidate.json.gz",
+      "archive_sha256": "49cf40ba16cbed570688481b5be43c431f0540412b20cb6d6684a96cec72015c",
+      "archive_bytes": 5395,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-issuer4-driver.patch",
+      "original_sha256": "9817b4b6a830ba82eec6c1f3fcf4309f25835df0f0943c0f2ed90c9a12c952e4",
+      "original_bytes": 4602,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-issuer4-driver.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-issuer4-driver.patch.gz",
+      "archive_sha256": "3e4bd8afe84f84a7a843f163a499b9fccbc81172255ba78cfe5fc1081b63a940",
+      "archive_bytes": 2045,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-issuer4-driver.sh",
+      "original_sha256": "19eb0c11649f914ba93a92815239d1cb5e5b1a78aa9c0895fd8e77571168d93a",
+      "original_bytes": 12569,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-issuer4-driver.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-issuer4-driver.sh.gz",
+      "archive_sha256": "28e4455b1826310a15794612b6b5cd2511477b3270d9881aa16ae47c21d7530f",
+      "archive_bytes": 4443,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-issuer4-partition-error.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-issuer4-partition-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-issuer4-partition-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-issuer4-partition-output.jsonl",
+      "original_sha256": "e3260213c7f725c8d8ed6fc75f0bdd8119c8f5f0e7e8bf703114e710efd18767",
+      "original_bytes": 570,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-issuer4-partition-output.jsonl.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-issuer4-partition-output.jsonl.gz",
+      "archive_sha256": "b3d3ef78918b99d0e75b6b081a6a85eb54dba27f9c1228afbcce7538663185cd",
+      "archive_bytes": 296,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-issuer4-probe.py",
+      "original_sha256": "2ed9ac7afcbdd750a38dbf20d3702abf8bdc290b09fdceb016dbe2efc965e3cf",
+      "original_bytes": 377,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-issuer4-probe.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-issuer4-probe.py.gz",
+      "archive_sha256": "357dbce264c775bc193e35d320f27c537d83d76cf838f3bbc146723c89fa5373",
+      "archive_bytes": 263,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-issuer4-validation-map.json",
+      "original_sha256": "17ff37d0a9b0129689929fef0821a09550fa59c5659111f83f4e28f4cc45dea3",
+      "original_bytes": 184543,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-issuer4-validation-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-issuer4-validation-map.json.gz",
+      "archive_sha256": "864c51872fdbc8bc3076f8cf23bdebadc694537871740b203c6ee6b103c7aaf0",
+      "archive_bytes": 11167,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "driver",
+      "original_path": "/private/tmp/account-issuer4-validation.json",
+      "original_sha256": "0e56a275823296c0ec5214de7cf480eafa5877b43b11cb7cc7d848d11165e770",
+      "original_bytes": 1772,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/driver/account-issuer4-validation.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/driver/account-issuer4-validation.json.gz",
+      "archive_sha256": "37b96aa281bb48216c407be223a8b3e5a8524771d9e1119899389c10e96ad8c8",
+      "archive_bytes": 599,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixtures",
+      "original_path": "/private/tmp/account-issuer-fixture-candidates-4c7f49e8/backend/app/tests/auth_rest/account_fence_transport.rs",
+      "original_sha256": "06ef4c5e71fdb7571dc2174c9023e66a7efec5c24a4f4e22c9a46b7e9306060b",
+      "original_bytes": 55539,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/fixtures/backend/app/tests/auth_rest/account_fence_transport.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/fixtures/backend/app/tests/auth_rest/account_fence_transport.rs.gz",
+      "archive_sha256": "2741c513688255c02dc4b6389a5987de94de498d200492f494f93237c1c95a66",
+      "archive_bytes": 11042,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixtures",
+      "original_path": "/private/tmp/account-issuer-fixture-candidates-4c7f49e8/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "original_sha256": "a043e838741acbd168c69e7198f927668dfe4d03d0f388945cb570dc92401d9f",
+      "original_bytes": 7789,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/fixtures/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/fixtures/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs.gz",
+      "archive_sha256": "1d9e404cc7848514732fb0f8e97756090afcd378076114fc3eae4d4326b2ffc3",
+      "archive_bytes": 2588,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixtures",
+      "original_path": "/private/tmp/account-issuer-fixture-candidates-4c7f49e8/backend/crates/platform/auth-rest/tests/dev_auth_session.rs",
+      "original_sha256": "2ec37e4d58aca361026ed0a882c3baea189d5026ca9fc5bf3e1243452957fb43",
+      "original_bytes": 13758,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/fixtures/backend/crates/platform/auth-rest/tests/dev_auth_session.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/fixtures/backend/crates/platform/auth-rest/tests/dev_auth_session.rs.gz",
+      "archive_sha256": "1bec7991621fd89349efbe7497201c56f460c194e5b29cd049326ac4c77809a9",
+      "archive_bytes": 3687,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixtures",
+      "original_path": "/private/tmp/account-issuer-fixture-candidates-4c7f49e8/backend/crates/platform/auth/tests/refresh_tokens.rs",
+      "original_sha256": "b4c7c50549d6cbf77154552a2260ac244d6e62327654fc344f0e2fd85913de66",
+      "original_bytes": 8100,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/fixtures/backend/crates/platform/auth/tests/refresh_tokens.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/fixtures/backend/crates/platform/auth/tests/refresh_tokens.rs.gz",
+      "archive_sha256": "a1050b037213aadec9dce265d9c6b038471126196d932c7413681d675fc7b1ca",
+      "archive_bytes": 2240,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixtures",
+      "original_path": "/private/tmp/account-issuer-fixture-candidates-4c7f49e8/backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs",
+      "original_sha256": "db2a8f72f536428974c70976995282bca7484a2afbce0d0cc3b7f64490a3f1ab",
+      "original_bytes": 34002,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/fixtures/backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/fixtures/backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs.gz",
+      "archive_sha256": "b26a6e8f90a0fbd1e168507ef32230c6eaa795252a78915da8cb61b7bfc92814",
+      "archive_bytes": 7582,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixtures",
+      "original_path": "/private/tmp/account-issuer-fixture-candidates-4c7f49e8/backend/crates/platform/provisioning/tests/self_enroll_handoff_as_runtime_role.rs",
+      "original_sha256": "a005b0600b3b8ba60baa9e9962f05ed703dd87a3f97197987b539aa7e4d98089",
+      "original_bytes": 17067,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/fixtures/backend/crates/platform/provisioning/tests/self_enroll_handoff_as_runtime_role.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/fixtures/backend/crates/platform/provisioning/tests/self_enroll_handoff_as_runtime_role.rs.gz",
+      "archive_sha256": "ff8f7a69591cd487d8cd4627f174b8a360ce6f526e995534bd5e2149039e6434",
+      "archive_bytes": 4621,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixtures",
+      "original_path": "/private/tmp/account-issuer-fixture-candidates-4c7f49e8/fixtures.patch",
+      "original_sha256": "96315c3a9b3743dc0450597116aac12816e6c5f8281a9debf0b54a2fe52b3397",
+      "original_bytes": 11736,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/fixtures/fixtures.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/fixtures/fixtures.patch.gz",
+      "archive_sha256": "3f6ba9ce0a40695dd0dcdc4b8c5beec600ec94129f1aa3a7f2a7f3950b7c7d67",
+      "archive_bytes": 2794,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixtures",
+      "original_path": "/private/tmp/account-issuer-fixture-candidates-4c7f49e8/generate.py",
+      "original_sha256": "de98c9b0fb117dd9c2acbf729a3b5bafa9a9384da2c07cfd1dda6c3e6075745f",
+      "original_bytes": 13138,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/fixtures/generate.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/fixtures/generate.py.gz",
+      "archive_sha256": "d2dca97f29a714f55d87a5c925e2bb581acabe6ab68414971be3c980f8a0b4c9",
+      "archive_bytes": 3911,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixtures",
+      "original_path": "/private/tmp/account-issuer-fixture-candidates-4c7f49e8/manifest.json",
+      "original_sha256": "ea870230117bfadfab0ee4238e99d0a9579d3054faffcd2dee5303b8f324935c",
+      "original_bytes": 15888,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/fixtures/manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/fixtures/manifest.json.gz",
+      "archive_sha256": "01121eb8d47cc036f39ebcd6cab8b053f437a890cab3ad5ae6cb5f1497078d1b",
+      "archive_bytes": 3686,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "fixtures",
+      "original_path": "/private/tmp/account-issuer-fixture-candidates-4c7f49e8/static-validation.json",
+      "original_sha256": "fb07bd86c716193b536fcc0332ec269ce1ba2c7c4f71fa02916f71a63d10a189",
+      "original_bytes": 2832,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/fixtures/static-validation.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/fixtures/static-validation.json.gz",
+      "archive_sha256": "1ce02fe9b7de74e79724db6ad9835c66e204c1d87182c01abccf3ca8e817f717",
+      "archive_bytes": 834,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "implementation",
+      "original_path": "/private/tmp/account-issuer-fixture-install-review.json",
+      "original_sha256": "e0230358b106e92f9ec6a92abca2ac75945912195d9104b9a30b2de18450da64",
+      "original_bytes": 1409,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/implementation/account-issuer-fixture-install-review.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/implementation/account-issuer-fixture-install-review.json.gz",
+      "archive_sha256": "adb374a95d275663eb8ab68b60628bb4c50585665e1b5373af664ab0e9e38233",
+      "archive_bytes": 801,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "implementation",
+      "original_path": "/private/tmp/account-issuer-production-candidate.json",
+      "original_sha256": "9e0d4812afa4530f2f550fe3c334e7aa0af18c433175f2fcbe0ddcb698fa3d05",
+      "original_bytes": 1146,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/implementation/account-issuer-production-candidate.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/implementation/account-issuer-production-candidate.json.gz",
+      "archive_sha256": "0a283b17dfc629e635e819560d919c1142d6593cf0c18cd56ec9b87d1a4b80e5",
+      "archive_bytes": 718,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "implementation",
+      "original_path": "/private/tmp/account-issuer-production-candidate.patch",
+      "original_sha256": "16a299ee0bab5a9d5f331c6814a7bd50ac5f46f73f64be495e22ff91595ae6fb",
+      "original_bytes": 5355,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/implementation/account-issuer-production-candidate.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/implementation/account-issuer-production-candidate.patch.gz",
+      "archive_sha256": "3cfe32f7a601d0cdb3c4a0986fec69176e7c14863c3c034fa9b6d8d61442e4a0",
+      "archive_bytes": 1701,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "implementation",
+      "original_path": "/private/tmp/account-issuer-production-clippy.log",
+      "original_sha256": "55ed4898915baa5283c727259b340fd6deec33f05cfd570e58d6d81855ababeb",
+      "original_bytes": 2254,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/implementation/account-issuer-production-clippy.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/implementation/account-issuer-production-clippy.log.gz",
+      "archive_sha256": "12dc6d1447bfa87f0a5f512822b24d05476076bb7981e0a7cc954a45804f7da8",
+      "archive_bytes": 578,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-issue-family-fence-append.rs",
+      "original_sha256": "67d83f934448d310e326f03c62c2118295f003b609b4472c230a071669296afa",
+      "original_bytes": 15650,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-issue-family-fence-append.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-issue-family-fence-append.rs.gz",
+      "archive_sha256": "89b47752172a2696b2610b44ce42f31addf8bdf5c3354751066621c2e4e5b5ee",
+      "archive_bytes": 3962,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-issue-family-fence-auth-argument.patch",
+      "original_sha256": "89c918ce936f40bf87e3fd15aead95936e9dbf3f70d78538c81dabcc6d7aa136",
+      "original_bytes": 440,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-issue-family-fence-auth-argument.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-issue-family-fence-auth-argument.patch.gz",
+      "archive_sha256": "dc2ae21ca236122f56b6177370c7c92ac7afe52f993aa75716950d29f6386c3e",
+      "archive_bytes": 237,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-issue-family-fence-auth-candidate.rs",
+      "original_sha256": "54c7efdddc8f64954a5c14179ed2b82fa4b1c521c60c807eceb9507aa82d3669",
+      "original_bytes": 55578,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-issue-family-fence-auth-candidate.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-issue-family-fence-auth-candidate.rs.gz",
+      "archive_sha256": "f1c1f9829a5803650dc5c3a9b3f6b226a07ae7e1b355ea7c1bb9b26cc3c9ce7d",
+      "archive_bytes": 11126,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-issue-family-fence-baseline-candidate.rs",
+      "original_sha256": "9eacb3e0c35047a5f76e45ac68d84fb4874771f43f36c6b0415a95b5ca7fc21e",
+      "original_bytes": 55572,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-issue-family-fence-baseline-candidate.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-issue-family-fence-baseline-candidate.rs.gz",
+      "archive_sha256": "e07f0a10eb996153e97c529e53ce69299984d182b348ef0bd5aad24fa258364a",
+      "archive_bytes": 11123,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-issue-family-fence-baseline.patch",
+      "original_sha256": "c85d76fea66c8ae1c916a6883111fb4060372956dd44ae641fab063a60da13cd",
+      "original_bytes": 16259,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-issue-family-fence-baseline.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-issue-family-fence-baseline.patch.gz",
+      "archive_sha256": "5da9b24e4a30fbcfe4db9502ee63b4db6e89aa989ab49a03701406bd298cbbf5",
+      "archive_bytes": 4092,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-issue-family-fence-manifest.json",
+      "original_sha256": "2a4fccc4e0d1eff9bb1bb78fc9e6c167c649c7602516591265dec211abcf7096",
+      "original_bytes": 6610,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-issue-family-fence-manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-issue-family-fence-manifest.json.gz",
+      "archive_sha256": "606d42eda534cd0467f3bb5447c396b4eafcc2f5cd834d475b1595afaec2d580",
+      "archive_bytes": 2847,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-issue-family-prewrite-design-guide.json",
+      "original_sha256": "f1c734d562c50b33ef3d3e275888ab1cb85b34dd4d46b5613585483470a4e36c",
+      "original_bytes": 14893,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-issue-family-prewrite-design-guide.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-issue-family-prewrite-design-guide.json.gz",
+      "archive_sha256": "350d248ef61b90335da0f2dca442f6301189a7af94ad7a8159ce875430ccb3af",
+      "archive_bytes": 5647,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-issuer-compile-sample-command.log",
+      "original_sha256": "835a7c0eb7be34434229a7f32f4e8ff06bcaf54ca74fa02fb2917c0639a0d324",
+      "original_bytes": 120,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-issuer-compile-sample-command.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-issuer-compile-sample-command.log.gz",
+      "archive_sha256": "4fc733a9f62a25ba602dc2dd61f9b223951e1cdd46ac4cb7d704c3c73386e1ad",
+      "archive_bytes": 121,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-issuer-test-compile.log",
+      "original_sha256": "2bc566f8d98500f5077bec87bf9affdaebc5ec2fd657bdaf483215016600029a",
+      "original_bytes": 3258,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-issuer-test-compile.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-issuer-test-compile.log.gz",
+      "archive_sha256": "c897bfabb1244b6f253b8880b5c5f6893a134e8b061b18552f9238a122884b98",
+      "archive_bytes": 770,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-issuer-test-install-receipt.json",
+      "original_sha256": "3dda3879497821f738ad235cbb0fdbae1d9a1b7a5f515b96456000a9343135c0",
+      "original_bytes": 594,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-issuer-test-install-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-issuer-test-install-receipt.json.gz",
+      "archive_sha256": "b16231cd55fa3325f8325425c98f26f5ea8bdcf54d56d5e45f07af735493f160",
+      "archive_bytes": 374,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-issuer-test-rustfmt.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-issuer-test-rustfmt.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-issuer-test-rustfmt.log.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-legacy-denial-safe-diagnostics-candidate.rs",
+      "original_sha256": "abdf0d0c564a7aa3048b816fa4ea6949fddf6986d6ba7c9ec3079af8d17676aa",
+      "original_bytes": 219922,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-legacy-denial-safe-diagnostics-candidate.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-legacy-denial-safe-diagnostics-candidate.rs.gz",
+      "archive_sha256": "b01f9a067682ede5d46ce7fedfccd1cf0fa86bfa8cbbe432ca2fda6c17c624c1",
+      "archive_bytes": 40345,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-legacy-denial-safe-diagnostics-preparation.json",
+      "original_sha256": "92f90dad2e75de7ccb23ba5046160ca948052106882359cc1d12fd11dff68023",
+      "original_bytes": 3354,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-legacy-denial-safe-diagnostics-preparation.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-legacy-denial-safe-diagnostics-preparation.json.gz",
+      "archive_sha256": "f6e1000e09b8e86014e38a619742664ec092066ddaec491a1630f0fef79f7b4f",
+      "archive_bytes": 1595,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "preparation",
+      "original_path": "/private/tmp/account-legacy-denial-safe-diagnostics.patch",
+      "original_sha256": "de209660707188f199ea4cc1e94a19de7c220d047f814bbae59cf4b6938481f8",
+      "original_bytes": 752,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/preparation/account-legacy-denial-safe-diagnostics.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/preparation/account-legacy-denial-safe-diagnostics.patch.gz",
+      "archive_sha256": "087041096fbddc6b36cffee54941a1c75c2cff3fca2eaef0f1930a4a0c44ecb0",
+      "archive_bytes": 379,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "reviews",
+      "original_path": "/private/tmp/account-auth-rest-full154-independent-review.json",
+      "original_sha256": "9922ea95174eb19877c39991c878eda6a15795adb50a7d793686fb37eee8788b",
+      "original_bytes": 31926,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/reviews/account-auth-rest-full154-independent-review.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/reviews/account-auth-rest-full154-independent-review.json.gz",
+      "archive_sha256": "0e6e22d8e4558892afd574e4ea8d101998236ca88d4fc3aa5e4510ad865a0866",
+      "archive_bytes": 7039,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "reviews",
+      "original_path": "/private/tmp/account-auth-rest-full154-runtime-receipt.json",
+      "original_sha256": "20337d594912c57cf46474ea802082649449f6ae3c6670008e646998b4eb33b1",
+      "original_bytes": 3542,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/reviews/account-auth-rest-full154-runtime-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/reviews/account-auth-rest-full154-runtime-receipt.json.gz",
+      "archive_sha256": "2365e78fcc234504eda8bf9c512f7c51f5b2cd54e3e38e59d217e3a13de04929",
+      "archive_bytes": 1413,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "reviews",
+      "original_path": "/private/tmp/account-issue-family-tests-independent-review.json",
+      "original_sha256": "46f9d0d1bc246eb6adce134fdc2a3fee6e432307a520542b92f5e53388c91aca",
+      "original_bytes": 7215,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/reviews/account-issue-family-tests-independent-review.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/reviews/account-issue-family-tests-independent-review.json.gz",
+      "archive_sha256": "6090ae79a0cc476738fd73e9c8d6afa7a976ad4583945d54af0be57a5fc171da",
+      "archive_bytes": 3233,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "reviews",
+      "original_path": "/private/tmp/account-issuer-production-independent-review.json",
+      "original_sha256": "56a8e80395e5722c14ae042eeb0365f6a8e0063bffb86d50be245cebff04e4a0",
+      "original_bytes": 4685,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/reviews/account-issuer-production-independent-review.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/reviews/account-issuer-production-independent-review.json.gz",
+      "archive_sha256": "2c614e94b8014dc3d2a65caa4506329ad678d2b6b206ef7c87d9b7044f94f4e6",
+      "archive_bytes": 2275,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "reviews",
+      "original_path": "/private/tmp/account-issuer-production-integration-review-69e3ca9c.json",
+      "original_sha256": "02caf9fc7d02b0c31433759b6b2098b5f946401cb75c127710d84bc35f289713",
+      "original_bytes": 4389,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/reviews/account-issuer-production-integration-review-69e3ca9c.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/reviews/account-issuer-production-integration-review-69e3ca9c.json.gz",
+      "archive_sha256": "2605a1dee17f84b689f1bb2c5811f408a3a0dbe6c1cada081e00b02c9277f017",
+      "archive_bytes": 2124,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "reviews",
+      "original_path": "/private/tmp/account-issuer4-driver-independent-review.json",
+      "original_sha256": "b10b00ed4c8aa7531b77065701a6c1668f716c9cf3971dd5fa9e5fefefbcf3db",
+      "original_bytes": 5201,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/reviews/account-issuer4-driver-independent-review.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/reviews/account-issuer4-driver-independent-review.json.gz",
+      "archive_sha256": "ac55b21e634377964bfad276bf8e9215ac11b355cf5ddf570f0ca1281680b609",
+      "archive_bytes": 2333,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "reviews",
+      "original_path": "/private/tmp/account-issuer4-green-independent-review.json",
+      "original_sha256": "1a19335b8770ec4d27f270374dbd632c01b83b8583842dbfee5593d0e5a98bce",
+      "original_bytes": 7790,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/reviews/account-issuer4-green-independent-review.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/reviews/account-issuer4-green-independent-review.json.gz",
+      "archive_sha256": "9bb19105d242303343fb7adc4919c06fdce74c1c53ce14911ab00b9c693e6f95",
+      "archive_bytes": 3265,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "reviews",
+      "original_path": "/private/tmp/account-issuer4-green-receipt.json",
+      "original_sha256": "d4ceef596a688cdc1189195d27e651661df6e75876f7c42d99f354d7ac1a3db3",
+      "original_bytes": 1001,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/reviews/account-issuer4-green-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/reviews/account-issuer4-green-receipt.json.gz",
+      "archive_sha256": "359a7bf798f93472fbe2b4bb0b4d6172e7504b3b9cc8c871f73609e80aa922af",
+      "archive_bytes": 637,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "reviews",
+      "original_path": "/private/tmp/account-issuer4-red-independent-review.json",
+      "original_sha256": "31ae8c89695db5e83e1aaf2130c3edf4cef3566c96f1752a254b5a55b07c3b71",
+      "original_bytes": 5893,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/reviews/account-issuer4-red-independent-review.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/reviews/account-issuer4-red-independent-review.json.gz",
+      "archive_sha256": "0a8583a995795fbe2f21817c17d4f963b4aca978d8801e87f12d14ee04ffa58d",
+      "archive_bytes": 2596,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/cleanup-final-list-error.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/cleanup-final-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/cleanup-list-error.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/cleanup-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/cleanup.txt",
+      "original_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "archive_bytes": 81,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/container-name.txt",
+      "original_sha256": "8c60c959b968c222632859858c34d7b202e0402a5bbafa03b87b6cdbb56bcdd1",
+      "original_bytes": 38,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/container-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/container-name.txt.gz",
+      "archive_sha256": "6cf0121543492c84a7a8ec44c583c98c19778a40cb371ebbd17b6a44cddcafc9",
+      "archive_bytes": 58,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/containers-after.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/containers-after.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/containers-before-cleanup.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/containers-before-cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/driver-receipt.json",
+      "original_sha256": "ef7d4877db46f92d1aa4bde26438e81311aa87f97d6ce35398b736aea65b4f78",
+      "original_bytes": 1609,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/driver-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/driver-receipt.json.gz",
+      "archive_sha256": "f3953c3ae6eb10d1bdc5186f227d4cb445f83f0e10c24be45998f168b98cb9bb",
+      "archive_bytes": 786,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/ownership-label.txt",
+      "original_sha256": "c36ad4b35f41d2a1800e0096c0e87fda2c66e9b93a1e944508df15f639844b04",
+      "original_bytes": 59,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/ownership-label.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/ownership-label.txt.gz",
+      "archive_sha256": "bb6c4a92c7bec0373913a2a7c4aba357f55f582825d5f92f3248bdf882dbf859",
+      "archive_bytes": 77,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/postgres-map.json",
+      "original_sha256": "06c1726d5a6d6db2d4d9e0d6c31da51ec0b377c5450e310b3d3c02a9cd49cd79",
+      "original_bytes": 184118,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/postgres-map.json.gz",
+      "archive_sha256": "f1d4fbda06373188bd13d5f981c2f2645cd9e4d2189b3ac457b784f832434107",
+      "archive_bytes": 10999,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/prebuild-dispatch.txt",
+      "original_sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "original_bytes": 65,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/prebuild-dispatch.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/prebuild-dispatch.txt.gz",
+      "archive_sha256": "5506835ac8de8135d1ff54dcd47f3b9e35521e95ba37dc5f514d4e435e4bb96a",
+      "archive_bytes": 82,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/probe-exit.txt",
+      "original_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/probe-exit.txt.gz",
+      "archive_sha256": "c28cc69d141393e44a931229323624ef7b8c5bde3ee047ca9b87332daef23c82",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/probe.log",
+      "original_sha256": "cbdd2e1588d0770a0c2dbe54eab4007a4beea1de645760f5b978ac151fdc4d2d",
+      "original_bytes": 49225,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/probe.log.gz",
+      "archive_sha256": "ecde79d7847a8d1ab520eeb35d842669bca8a74ff9aad1883d084d59fff6c2bc",
+      "archive_bytes": 7190,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/source-after.json",
+      "original_sha256": "10b7bd4e766f3987e943e09a89441e3d372a93303eed97318fff36385f6bc828",
+      "original_bytes": 5194,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/source-after.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/source-after.json.gz",
+      "archive_sha256": "5c663f6a41e2acd65560ce43fc1e2ade41408421dca9d82d9b8948e3cc3feee6",
+      "archive_bytes": 2390,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/full154",
+      "original_path": "/private/tmp/account-auth-rest-full151-717a934ee0f54505999885cc1eecf169/source-before.json",
+      "original_sha256": "10b7bd4e766f3987e943e09a89441e3d372a93303eed97318fff36385f6bc828",
+      "original_bytes": 5194,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/full154/source-before.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/full154/source-before.json.gz",
+      "archive_sha256": "5c663f6a41e2acd65560ce43fc1e2ade41408421dca9d82d9b8948e3cc3feee6",
+      "archive_bytes": 2390,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/cleanup-final-list-error.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/cleanup-final-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/cleanup-list-error.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/cleanup-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/cleanup.txt",
+      "original_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "archive_bytes": 81,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/container-name.txt",
+      "original_sha256": "cbf89306a1aacf41f6f72742519949a1dd12450f83c4653d2533d9f8d6b5c5ae",
+      "original_bytes": 38,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/container-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/container-name.txt.gz",
+      "archive_sha256": "087ea9488c5ed4fe4909ede0222069a2b70bfe637c77687621eb3016bd2ca49e",
+      "archive_bytes": 58,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/containers-after.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/containers-after.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/containers-before-cleanup.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/containers-before-cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/driver-receipt.json",
+      "original_sha256": "78ad13dd778a95a690b4fa0e8c6eb25b9cdca3305b79e0358cec11d15353321f",
+      "original_bytes": 1711,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/driver-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/driver-receipt.json.gz",
+      "archive_sha256": "ce8dd631ea10e5c0aa12fa486bd4ac5dccf85b7a0b010fd1b137c709ea05eb4d",
+      "archive_bytes": 838,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/ownership-label.txt",
+      "original_sha256": "5df4ca935c985ba9b611ba910cee244f98e797eaf0406ffee302da227ddd9489",
+      "original_bytes": 49,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/ownership-label.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/ownership-label.txt.gz",
+      "archive_sha256": "2e65fcf2a274ea53663a10962ac690571f58e7458201306db0de39eb63b4a484",
+      "archive_bytes": 69,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/postgres-map.json",
+      "original_sha256": "17ff37d0a9b0129689929fef0821a09550fa59c5659111f83f4e28f4cc45dea3",
+      "original_bytes": 184543,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/postgres-map.json.gz",
+      "archive_sha256": "864c51872fdbc8bc3076f8cf23bdebadc694537871740b203c6ee6b103c7aaf0",
+      "archive_bytes": 11167,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/prebuild-dispatch.txt",
+      "original_sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "original_bytes": 65,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/prebuild-dispatch.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/prebuild-dispatch.txt.gz",
+      "archive_sha256": "5506835ac8de8135d1ff54dcd47f3b9e35521e95ba37dc5f514d4e435e4bb96a",
+      "archive_bytes": 82,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/probe-exit.txt",
+      "original_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/probe-exit.txt.gz",
+      "archive_sha256": "89ed3b723e0e40d8957a2df55fcb04d57b6d95fa665c5fe67b098df7f29694ae",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/probe.log",
+      "original_sha256": "01f9663ff05de6102695ee0ea4cfbb762726f725d3f50c61941c0cf3e95c06d4",
+      "original_bytes": 17200,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/probe.log.gz",
+      "archive_sha256": "f9245cec7353bffb49d22341e6da6702585da8ffad301d8e06de16d5f72430a2",
+      "archive_bytes": 2504,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/selected-test-results.json",
+      "original_sha256": "76d057834f967a4a750b1f07541f5fc48e17a2098017eef08a715a3a46059af8",
+      "original_bytes": 1303,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/selected-test-results.json.gz",
+      "archive_sha256": "85ed535e80c8927714c32f0fc4c380cca819a9692aa79fa55bcfe4de7a7cc6ca",
+      "archive_bytes": 419,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/source-after.json",
+      "original_sha256": "10b7bd4e766f3987e943e09a89441e3d372a93303eed97318fff36385f6bc828",
+      "original_bytes": 5194,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/source-after.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/source-after.json.gz",
+      "archive_sha256": "5c663f6a41e2acd65560ce43fc1e2ade41408421dca9d82d9b8948e3cc3feee6",
+      "archive_bytes": 2390,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-green",
+      "original_path": "/private/tmp/account-issuer4-67bb9e19d08d49a3beb41e53acda7fe2/source-before.json",
+      "original_sha256": "10b7bd4e766f3987e943e09a89441e3d372a93303eed97318fff36385f6bc828",
+      "original_bytes": 5194,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-green/source-before.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-green/source-before.json.gz",
+      "archive_sha256": "5c663f6a41e2acd65560ce43fc1e2ade41408421dca9d82d9b8948e3cc3feee6",
+      "archive_bytes": 2390,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/cleanup-final-list-error.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/cleanup-final-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/cleanup-list-error.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/cleanup-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/cleanup.txt",
+      "original_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "archive_bytes": 81,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/container-name.txt",
+      "original_sha256": "cbc5943246f2d56796f5ee9e1bd02d3d1c25b638e97178e3637dfba906fa0e41",
+      "original_bytes": 38,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/container-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/container-name.txt.gz",
+      "archive_sha256": "81e3b4f85cbd10eb2d31503f6fc2cf624e7ba1daaa89e066b30d0abfb36df2bc",
+      "archive_bytes": 58,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/containers-after.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/containers-after.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/containers-before-cleanup.txt",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/containers-before-cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/driver-receipt.json",
+      "original_sha256": "b50762728a713532c3510e10efa00c2ecb565956465b97a135da0e9f2e315d27",
+      "original_bytes": 1711,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/driver-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/driver-receipt.json.gz",
+      "archive_sha256": "256f516d08d37f9685e79a019cd84216148c66e197fd9492c37ad11da2cc9b8d",
+      "archive_bytes": 837,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/ownership-label.txt",
+      "original_sha256": "2b4163575a5721461a668b2aa9e88d8a4eb1e482e136f9e54a7628f19d043718",
+      "original_bytes": 49,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/ownership-label.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/ownership-label.txt.gz",
+      "archive_sha256": "f8c0c65832dd1bb4e8eabadbc89eb35efae11825624dc08f32843f152eb9d15b",
+      "archive_bytes": 69,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/postgres-map.json",
+      "original_sha256": "17ff37d0a9b0129689929fef0821a09550fa59c5659111f83f4e28f4cc45dea3",
+      "original_bytes": 184543,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/postgres-map.json.gz",
+      "archive_sha256": "864c51872fdbc8bc3076f8cf23bdebadc694537871740b203c6ee6b103c7aaf0",
+      "archive_bytes": 11167,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/prebuild-dispatch.txt",
+      "original_sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "original_bytes": 65,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/prebuild-dispatch.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/prebuild-dispatch.txt.gz",
+      "archive_sha256": "5506835ac8de8135d1ff54dcd47f3b9e35521e95ba37dc5f514d4e435e4bb96a",
+      "archive_bytes": 82,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/probe-exit.txt",
+      "original_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/probe-exit.txt.gz",
+      "archive_sha256": "c28cc69d141393e44a931229323624ef7b8c5bde3ee047ca9b87332daef23c82",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/probe.log",
+      "original_sha256": "af3bc0989aa1374881cc464e7ab110773fd8e942216eef32c07bd325d1603558",
+      "original_bytes": 7231,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/probe.log.gz",
+      "archive_sha256": "4dbf221d15082a983d3fcd1df574d9a4d213d56ec6e12cbaf24760dfa82e405c",
+      "archive_bytes": 1945,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/selected-test-results.json",
+      "original_sha256": "382e1df08d7767c3f20aa114f8daed4fe5f8556b1962c53202af7658b4dbb6cf",
+      "original_bytes": 1319,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/selected-test-results.json.gz",
+      "archive_sha256": "bf4514f6c48af45ecb9432c21531a543a5a16b2d23cf2929dfd48144b94d9b31",
+      "archive_bytes": 435,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/source-after.json",
+      "original_sha256": "02e72de17adea247d8e3dcfd9c6156cf4e7a26e05d1608bb658551cd3ce52fb6",
+      "original_bytes": 5194,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/source-after.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/source-after.json.gz",
+      "archive_sha256": "c50f83f5ced513c76fda2a8bc501aeb6882a129e384a39a53296a97371fe9193",
+      "archive_bytes": 2383,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "runtime/issuer4-red",
+      "original_path": "/private/tmp/account-issuer4-abe321bb55c34670be162fee8ee3ff0c/source-before.json",
+      "original_sha256": "02e72de17adea247d8e3dcfd9c6156cf4e7a26e05d1608bb658551cd3ce52fb6",
+      "original_bytes": 5194,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/runtime/issuer4-red/source-before.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/runtime/issuer4-red/source-before.json.gz",
+      "archive_sha256": "c50f83f5ced513c76fda2a8bc501aeb6882a129e384a39a53296a97371fe9193",
+      "archive_bytes": 2383,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/app/tests/auth_rest.rs",
+      "original_sha256": "abdf0d0c564a7aa3048b816fa4ea6949fddf6986d6ba7c9ec3079af8d17676aa",
+      "original_bytes": 219922,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/app/tests/auth_rest.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/app/tests/auth_rest.rs.gz",
+      "archive_sha256": "b01f9a067682ede5d46ce7fedfccd1cf0fa86bfa8cbbe432ca2fda6c17c624c1",
+      "archive_bytes": 40345,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/app/tests/auth_rest/account_fence_transport.rs",
+      "original_sha256": "9eacb3e0c35047a5f76e45ac68d84fb4874771f43f36c6b0415a95b5ca7fc21e",
+      "original_bytes": 55572,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/app/tests/auth_rest/account_fence_transport.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/app/tests/auth_rest/account_fence_transport.rs.gz",
+      "archive_sha256": "e07f0a10eb996153e97c529e53ce69299984d182b348ef0bd5aad24fa258364a",
+      "archive_bytes": 11123,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "original_sha256": "311362d914a59ec32dd346114dbb8094b0003e68b5ea51c6a8e7d835c43c2f4d",
+      "original_bytes": 7710,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs.gz",
+      "archive_sha256": "d14e7d6b15efbca61e89fe0bc9b12887caa7af6a522745a6978e0cfbb95cdea8",
+      "archive_bytes": 2572,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth-rest/src/lib.rs",
+      "original_sha256": "935f4306bafc964ff9a7d430a033ee1706d57a4db51f721a79f058d757bd1ec4",
+      "original_bytes": 149238,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth-rest/src/lib.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth-rest/src/lib.rs.gz",
+      "archive_sha256": "8972ad5a385f6954af5b9c1e4f105485728ee0cb812209eb6782ce2807811b83",
+      "archive_bytes": 35729,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth-rest/tests/dev_auth_session.rs",
+      "original_sha256": "23a7e54f601c79834cf15d813ed00de98175b57603b938c3fe22230bf059dec3",
+      "original_bytes": 13594,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth-rest/tests/dev_auth_session.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth-rest/tests/dev_auth_session.rs.gz",
+      "archive_sha256": "f04903c75faa5cc059856d2bc7613345c7879bb273b89dcd9d97b0c3c9c2dd35",
+      "archive_bytes": 3679,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth/src/refresh.rs",
+      "original_sha256": "c8bfbded8732dfdba3a06798179d78987679c20db7062882e7ed6212c7bbf1e0",
+      "original_bytes": 19754,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth/src/refresh.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth/src/refresh.rs.gz",
+      "archive_sha256": "e67a0685e9e1a865c32760dfd9d8d177216b34232d4d889487f6e9026f0fb3af",
+      "archive_bytes": 4378,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth/tests/refresh_tokens.rs",
+      "original_sha256": "e53c903905f7f3d87f0f77583eb941790441cade6589b70d6eab0bafe2fc4167",
+      "original_bytes": 7936,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth/tests/refresh_tokens.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth/tests/refresh_tokens.rs.gz",
+      "archive_sha256": "19bf5ce40e39928d82e539fccd123a725260df54b7b07a50c6e50598eca251a5",
+      "archive_bytes": 2221,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs",
+      "original_sha256": "ac1060f3e9207b875041dc3a8a17e95591beeeb1e7c11067fd4a764c4d552d09",
+      "original_bytes": 33773,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs.gz",
+      "archive_sha256": "3b5a77b577f0676019cfb093607d49e2c32c1315273f1b50f650080083e95898",
+      "archive_bytes": 7542,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/provisioning/tests/self_enroll_handoff_as_runtime_role.rs",
+      "original_sha256": "2209d74316e7b90211a5928b2ab43bdbac00f17771ceb62733ac3bf1eb515318",
+      "original_bytes": 16810,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/provisioning/tests/self_enroll_handoff_as_runtime_role.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/provisioning/tests/self_enroll_handoff_as_runtime_role.rs.gz",
+      "archive_sha256": "9a527448566972f622ee9b35a93b44c5e817215c02136e34b3aa2ef25379cd1e",
+      "archive_bytes": 4529,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/app/tests/auth_rest.rs",
+      "original_sha256": "abdf0d0c564a7aa3048b816fa4ea6949fddf6986d6ba7c9ec3079af8d17676aa",
+      "original_bytes": 219922,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/app/tests/auth_rest.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/app/tests/auth_rest.rs.gz",
+      "archive_sha256": "b01f9a067682ede5d46ce7fedfccd1cf0fa86bfa8cbbe432ca2fda6c17c624c1",
+      "archive_bytes": 40345,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/app/tests/auth_rest/account_fence_transport.rs",
+      "original_sha256": "06ef4c5e71fdb7571dc2174c9023e66a7efec5c24a4f4e22c9a46b7e9306060b",
+      "original_bytes": 55539,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/app/tests/auth_rest/account_fence_transport.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/app/tests/auth_rest/account_fence_transport.rs.gz",
+      "archive_sha256": "2741c513688255c02dc4b6389a5987de94de498d200492f494f93237c1c95a66",
+      "archive_bytes": 11042,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "original_sha256": "a043e838741acbd168c69e7198f927668dfe4d03d0f388945cb570dc92401d9f",
+      "original_bytes": 7789,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs.gz",
+      "archive_sha256": "1d9e404cc7848514732fb0f8e97756090afcd378076114fc3eae4d4326b2ffc3",
+      "archive_bytes": 2588,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth-rest/src/lib.rs",
+      "original_sha256": "d03032c9fe2a7e38bcd438ddb7fc3a9876f668721e76c61242cbc28d1b0c276e",
+      "original_bytes": 149539,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth-rest/src/lib.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth-rest/src/lib.rs.gz",
+      "archive_sha256": "c9f60da5228ef9f81063548a694bbdcf7cb795f721cbfaf404b78accaff89125",
+      "archive_bytes": 35822,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth-rest/tests/dev_auth_session.rs",
+      "original_sha256": "2ec37e4d58aca361026ed0a882c3baea189d5026ca9fc5bf3e1243452957fb43",
+      "original_bytes": 13758,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth-rest/tests/dev_auth_session.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth-rest/tests/dev_auth_session.rs.gz",
+      "archive_sha256": "1bec7991621fd89349efbe7497201c56f460c194e5b29cd049326ac4c77809a9",
+      "archive_bytes": 3687,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth/src/refresh.rs",
+      "original_sha256": "0b261bbf59b5f37b8962e526ab670ec20f8dcca358fb7e727545da1ebabe7180",
+      "original_bytes": 20197,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth/src/refresh.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth/src/refresh.rs.gz",
+      "archive_sha256": "9d03098ee8ca0367808c4688d4a8401f722020d96d403f8dcb2e4d76c424bc84",
+      "archive_bytes": 4470,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth/tests/refresh_tokens.rs",
+      "original_sha256": "b4c7c50549d6cbf77154552a2260ac244d6e62327654fc344f0e2fd85913de66",
+      "original_bytes": 8100,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth/tests/refresh_tokens.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth/tests/refresh_tokens.rs.gz",
+      "archive_sha256": "a1050b037213aadec9dce265d9c6b038471126196d932c7413681d675fc7b1ca",
+      "archive_bytes": 2240,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs",
+      "original_sha256": "db2a8f72f536428974c70976995282bca7484a2afbce0d0cc3b7f64490a3f1ab",
+      "original_bytes": 34002,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs.gz",
+      "archive_sha256": "b26a6e8f90a0fbd1e168507ef32230c6eaa795252a78915da8cb61b7bfc92814",
+      "archive_bytes": 7582,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/provisioning/tests/self_enroll_handoff_as_runtime_role.rs",
+      "original_sha256": "a005b0600b3b8ba60baa9e9962f05ed703dd87a3f97197987b539aa7e4d98089",
+      "original_bytes": 17067,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/provisioning/tests/self_enroll_handoff_as_runtime_role.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/provisioning/tests/self_enroll_handoff_as_runtime_role.rs.gz",
+      "archive_sha256": "ff8f7a69591cd487d8cd4627f174b8a360ce6f526e995534bd5e2149039e6434",
+      "archive_bytes": 4621,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/91ba2ec0ad929e377a08566892eb8849c3cc8e34/backend/app/tests/auth_rest/account_fence_transport.rs",
+      "original_sha256": "7cd8143272d266b9b2a4abd9087b4075dee3d20432b4c278417e6235fe069ea7",
+      "original_bytes": 39921,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/91ba2ec0ad929e377a08566892eb8849c3cc8e34/backend/app/tests/auth_rest/account_fence_transport.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/91ba2ec0ad929e377a08566892eb8849c3cc8e34/backend/app/tests/auth_rest/account_fence_transport.rs.gz",
+      "archive_sha256": "98ece72afcb8de47fc716e699aa12d365761aa371ec6457018a5e2cd28667d1e",
+      "archive_bytes": 8670,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/complete-eight-file-diff.patch",
+      "original_sha256": "b508b89878a5d95545b0aad369c977824c100417140942feb32effecfff74968",
+      "original_bytes": 19889,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/complete-eight-file-diff.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/complete-eight-file-diff.patch.gz",
+      "archive_sha256": "2f52feb86c10b1742ff424351ad7da2748121f5609e8260f16bfa307f996caff",
+      "archive_bytes": 4705,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "sources",
+      "original_path": "/private/tmp/account-issuer-retained-source-candidate/manifest.json",
+      "original_sha256": "c761c7da2812ca80d8fc5201db57be40e979678c712539b896a7d13c6b15214d",
+      "original_bytes": 9782,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/sources/manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/manifest.json.gz",
+      "archive_sha256": "272bfea6e8eccefe2b17cf244b6ac0a836ef5b89e936d8ed0d34479a484cf8ce",
+      "archive_bytes": 2240,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/compile_failure/postgres-map.json",
+      "original_sha256": "5060a4fe1dd49123f1a3c06e7feb82c045bfb8aad1cb88966310a097923ea357",
+      "original_bytes": 584,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/compile_failure/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/compile_failure/postgres-map.json.gz",
+      "archive_sha256": "50234816b3f4e7a3c6581e84fc714df9acb43d55f3314ffde0c0b3eb3c78e0f2",
+      "archive_bytes": 298,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/compile_failure/probe-exit.txt",
+      "original_sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "original_bytes": 4,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/compile_failure/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/compile_failure/probe-exit.txt.gz",
+      "archive_sha256": "adfbb16b945bf35e46458de84de86dba6eede454a4abce1742bdc852af1004f9",
+      "archive_bytes": 24,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/compile_failure/probe.log",
+      "original_sha256": "b1618bd414b09ae7c7ba7c57f4af1c79d5f4b3620e70eef997f49e24a0b6381b",
+      "original_bytes": 35,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/compile_failure/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/compile_failure/probe.log.gz",
+      "archive_sha256": "9ca63edff93754a1f96e400fb5450dfe6d84c42d438c521b02a56154a3bdf179",
+      "archive_bytes": 53,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/compile_failure/selected-test-results.json",
+      "original_sha256": "de34346d296f38b8f1b892e963a07b4e02bb4313795fab3efeef366b2ee04d10",
+      "original_bytes": 885,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/compile_failure/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/compile_failure/selected-test-results.json.gz",
+      "archive_sha256": "f9b002ee66b1c043f2b1aa5e7955cfaaa4ac167db886752e9dfedc3a71691775",
+      "archive_bytes": 460,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/complete_green/postgres-map.json",
+      "original_sha256": "5060a4fe1dd49123f1a3c06e7feb82c045bfb8aad1cb88966310a097923ea357",
+      "original_bytes": 584,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/complete_green/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/complete_green/postgres-map.json.gz",
+      "archive_sha256": "50234816b3f4e7a3c6581e84fc714df9acb43d55f3314ffde0c0b3eb3c78e0f2",
+      "archive_bytes": 298,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/complete_green/probe-exit.txt",
+      "original_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/complete_green/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/complete_green/probe-exit.txt.gz",
+      "archive_sha256": "89ed3b723e0e40d8957a2df55fcb04d57b6d95fa665c5fe67b098df7f29694ae",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/complete_green/probe.log",
+      "original_sha256": "ac2548548e6052ecd705ac67b9abcbb404a4e8052c34f3da8138e84c720d13b5",
+      "original_bytes": 522,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/complete_green/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/complete_green/probe.log.gz",
+      "archive_sha256": "40f4375609c4cd24b8c6e3e1773ae4501fb1f5be1d5e1418a1c31d366cfd7f90",
+      "archive_bytes": 263,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/complete_green/selected-test-results.json",
+      "original_sha256": "334cf5d52f1cd4d7103b874e90e5864088a101a0bfc88246e9f46fd189520927",
+      "original_bytes": 1303,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/complete_green/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/complete_green/selected-test-results.json.gz",
+      "archive_sha256": "bfdc3788db51fbc67354921b6fb19eb2b47058d162577d77901782e9f43caf33",
+      "archive_bytes": 420,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/complete_red/postgres-map.json",
+      "original_sha256": "5060a4fe1dd49123f1a3c06e7feb82c045bfb8aad1cb88966310a097923ea357",
+      "original_bytes": 584,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/complete_red/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/complete_red/postgres-map.json.gz",
+      "archive_sha256": "50234816b3f4e7a3c6581e84fc714df9acb43d55f3314ffde0c0b3eb3c78e0f2",
+      "archive_bytes": 298,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/complete_red/probe-exit.txt",
+      "original_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/complete_red/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/complete_red/probe-exit.txt.gz",
+      "archive_sha256": "c28cc69d141393e44a931229323624ef7b8c5bde3ee047ca9b87332daef23c82",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/complete_red/probe.log",
+      "original_sha256": "09af713ff8aaf62bb06695c543838c678ecc863dbe9623e9a036307600f8d219",
+      "original_bytes": 538,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/complete_red/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/complete_red/probe.log.gz",
+      "archive_sha256": "b1907450a295cbebc9b33c7046b3833ee3ae2378840360a7ecca93a0d6292f4a",
+      "archive_bytes": 280,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/complete_red/selected-test-results.json",
+      "original_sha256": "3c2448a3b66cb9dad05d0b0dff73bf2222d159b900ac19ecb0f00af2e9ef20c0",
+      "original_bytes": 1319,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/complete_red/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/complete_red/selected-test-results.json.gz",
+      "archive_sha256": "693522b87a637d989524acf26d2df4a32606aecdb79d9b9247ed5496cb61c8ea",
+      "archive_bytes": 435,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/duplicate_name/postgres-map.json",
+      "original_sha256": "5060a4fe1dd49123f1a3c06e7feb82c045bfb8aad1cb88966310a097923ea357",
+      "original_bytes": 584,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/duplicate_name/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/duplicate_name/postgres-map.json.gz",
+      "archive_sha256": "50234816b3f4e7a3c6581e84fc714df9acb43d55f3314ffde0c0b3eb3c78e0f2",
+      "archive_bytes": 298,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/duplicate_name/probe-exit.txt",
+      "original_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/duplicate_name/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/duplicate_name/probe-exit.txt.gz",
+      "archive_sha256": "89ed3b723e0e40d8957a2df55fcb04d57b6d95fa665c5fe67b098df7f29694ae",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/duplicate_name/probe.log",
+      "original_sha256": "86a7e518f73164f9d0f4fb0a7f88d13bcb2fc89b9ba626b1c79fe0118f79a329",
+      "original_bytes": 558,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/duplicate_name/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/duplicate_name/probe.log.gz",
+      "archive_sha256": "6cec65ad701fb492c54b6fd4737de12c7f51b5ac04b3bfe899a75e47f01d2abc",
+      "archive_bytes": 235,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/duplicate_name/selected-test-results.json",
+      "original_sha256": "95500e0901318769c00fce47e8b3da6814fc01e104c752029760028decc8a4e1",
+      "original_bytes": 1442,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/duplicate_name/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/duplicate_name/selected-test-results.json.gz",
+      "archive_sha256": "556f5fcccfb321c819ca414ffd691d5ab481f2e3f81739eef2e2d7a87437569f",
+      "archive_bytes": 480,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/ignored_case/postgres-map.json",
+      "original_sha256": "5060a4fe1dd49123f1a3c06e7feb82c045bfb8aad1cb88966310a097923ea357",
+      "original_bytes": 584,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/ignored_case/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/ignored_case/postgres-map.json.gz",
+      "archive_sha256": "50234816b3f4e7a3c6581e84fc714df9acb43d55f3314ffde0c0b3eb3c78e0f2",
+      "archive_bytes": 298,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/ignored_case/probe-exit.txt",
+      "original_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/ignored_case/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/ignored_case/probe-exit.txt.gz",
+      "archive_sha256": "89ed3b723e0e40d8957a2df55fcb04d57b6d95fa665c5fe67b098df7f29694ae",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/ignored_case/probe.log",
+      "original_sha256": "2a6deabcbd12ca83e58dc3bc9df89bae31c17014eed4b765f57e444b753d3892",
+      "original_bytes": 527,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/ignored_case/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/ignored_case/probe.log.gz",
+      "archive_sha256": "5e54e4ab8841e39023481483cd65581302662a21592eab75bd0959eb21c18780",
+      "archive_bytes": 268,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/ignored_case/selected-test-results.json",
+      "original_sha256": "57f981183b70ca6c11532d207b557ca02280f8d262897e7b6e6002d8ea5f6140",
+      "original_bytes": 1379,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/ignored_case/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/ignored_case/selected-test-results.json.gz",
+      "archive_sha256": "6e52e20a8e618629ae9cee98953d45553987bbe622ac48748a583c3114cd19e3",
+      "archive_bytes": 473,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/omitted_name/postgres-map.json",
+      "original_sha256": "5060a4fe1dd49123f1a3c06e7feb82c045bfb8aad1cb88966310a097923ea357",
+      "original_bytes": 584,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/omitted_name/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/omitted_name/postgres-map.json.gz",
+      "archive_sha256": "50234816b3f4e7a3c6581e84fc714df9acb43d55f3314ffde0c0b3eb3c78e0f2",
+      "archive_bytes": 298,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/omitted_name/probe-exit.txt",
+      "original_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/omitted_name/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/omitted_name/probe-exit.txt.gz",
+      "archive_sha256": "89ed3b723e0e40d8957a2df55fcb04d57b6d95fa665c5fe67b098df7f29694ae",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/omitted_name/probe.log",
+      "original_sha256": "46b844e6bbdca6b781f32ad2ee2fe0c04ae6e748d9598759b1be89ce2e82eaa1",
+      "original_bytes": 447,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/omitted_name/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/omitted_name/probe.log.gz",
+      "archive_sha256": "2985495f17848d7de355b611bdad58924f1623f2d4a223c4cef3bb73ea552bc8",
+      "archive_bytes": 232,
+      "byte_exact_decompression_verified": true
+    },
+    {
+      "category": "synthetic-driver-calibration",
+      "original_path": "/private/tmp/account-issuer4-selection-calibration/omitted_name/selected-test-results.json",
+      "original_sha256": "39f67e0a32e1a986438213a718480fd87ea58b4da6b4859cfb406c599c572557",
+      "original_bytes": 1353,
+      "archive_candidate": "/private/tmp/account-issuer-retention-packaging-20260915/synthetic-driver-calibration/omitted_name/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/synthetic-driver-calibration/omitted_name/selected-test-results.json.gz",
+      "archive_sha256": "e58140e22a49759d77e8f2e6222bc0d7928af6045e92e73ca5a9157ef6ac5963",
+      "archive_bytes": 500,
+      "byte_exact_decompression_verified": true
+    }
+  ],
+  "source_snapshots_fully_resolved": {
+    "red": 43,
+    "green": 43,
+    "full154": "same43 exact source hashes as green; shared source_refs",
+    "source_refs": [
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/Cargo.lock",
+        "sha256": "2e5586b55b6eab8d797dcdf00ff7d26a82400340dcbc81c338822aac15944bc6",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/Cargo.lock.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/Cargo.toml",
+        "sha256": "a5e16e5e06d0265958106a2a7860230b4ab6ea1368e9150a225cae66377bfd42",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/BUCK",
+        "sha256": "73ee62edecfeaa92a47d73e12052b36f8b86f1a34a4f0aec7e47d17c1120f0c0",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/BUCK.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/Cargo.toml",
+        "sha256": "e8c85e4df469d998ef31874aa09f4e2556e459bcc3fa086b2fd79117af3c17a5",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/src/account_custody_state.sql",
+        "sha256": "bbaa00932e808745070ebb866c7050d5f5544961a3e7158d0aa1da58be7c8899",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/src/account_custody_state.sql.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/src/lib.rs",
+        "sha256": "19ff33ff11d79d936872e188198c78c23efbc531e78f14d3322e66222b670742",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/src/lib.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/tests/auth_rest.rs",
+        "sha256": "abdf0d0c564a7aa3048b816fa4ea6949fddf6986d6ba7c9ec3079af8d17676aa",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/app/tests/auth_rest.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/tests/auth_rest/account_custody_lifecycle.rs",
+        "sha256": "9543211d466783ec5d09bea6ff41166fec877efa9608b164da6de23a3bc0a7ee",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_custody_lifecycle.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/tests/auth_rest/account_custody_startup.rs",
+        "sha256": "81953bdc593727a81c72b7857738a6cdc11715a5ec492eb203fe28447656fc19",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_custody_startup.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/tests/auth_rest/account_fence_projection.rs",
+        "sha256": "82510bc9ac573be671efeac769d97d144a8ed256539909a12dd34178502fd9bc",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_fence_projection.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/tests/auth_rest/account_fence_transport.rs",
+        "sha256": "9eacb3e0c35047a5f76e45ac68d84fb4874771f43f36c6b0415a95b5ca7fc21e",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/app/tests/auth_rest/account_fence_transport.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/tests/auth_rest/account_storage.rs",
+        "sha256": "5aaad30f462ee34f0c1cefdec7ccb9a467cce036c3890b83aed353b912629add",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_storage.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/tests/auth_rest/actor-migration.csv",
+        "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/actor-migration.csv.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/tests/auth_rest/auth_target_parser.rs",
+        "sha256": "71110a504b7c44a46ed5c49d1eca5c1780cebe11777304a2728470ed3326156c",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/auth_target_parser.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql",
+        "sha256": "84e356b88be8762726c26df03a4990a19e98c0fcda3d48a73389d1d2a087559a",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/app/tests/auth_rest/publication_privileges.rs",
+        "sha256": "20fdcc350261b94a4bfbb12e5a4f0cc923397e134f3d5fa8e4bd60ff4955f621",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/publication_privileges.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/ci/gates/writer-ownership/canonical-enforce-in-container.sh",
+        "sha256": "7a73814bea60dd6b120938c39d454a17f4163ea80e68c986f0b051935362019f",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/ci/gates/writer-ownership/canonical-enforce-in-container.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/ci/gates/writer-ownership/canonical-enforce.sh",
+        "sha256": "49ee2e142276924be97b00ccaea5c3d5c0eb955b5faf21db4be88798e04f2120",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/ci/gates/writer-ownership/canonical-enforce.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/identity/adapter-postgres/BUCK",
+        "sha256": "900dd790a6fd37448d89285758e22139c3cbef4e9d2ccbbc39e912523d8eb1cb",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/BUCK.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/identity/adapter-postgres/Cargo.toml",
+        "sha256": "6db97b153f56292f7f6df407e60f0f411bd9851b965c128ffb17ff38912116e1",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/identity/adapter-postgres/src/lib.rs",
+        "sha256": "ef620495a547484ededbb8b2e080222b47a63119534ff6f48f722116c9edd32a",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/src/lib.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+        "sha256": "311362d914a59ec32dd346114dbb8094b0003e68b5ea51c6a8e7d835c43c2f4d",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/platform/auth-rest/BUCK",
+        "sha256": "7d28aa9ffaab41b77ee7c38be648f7ed5d3349c15cc1f1ec803c7dd8c83fb819",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/BUCK.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/platform/auth-rest/Cargo.toml",
+        "sha256": "307b48e5fcc130c98c5072c42cd9342087f4b65de4d7c8ebde6c142b6af51c27",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/platform/auth-rest/src/lib.rs",
+        "sha256": "935f4306bafc964ff9a7d430a033ee1706d57a4db51f721a79f058d757bd1ec4",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth-rest/src/lib.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/platform/auth-rest/tests/dev_auth_session.rs",
+        "sha256": "23a7e54f601c79834cf15d813ed00de98175b57603b938c3fe22230bf059dec3",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth-rest/tests/dev_auth_session.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/platform/auth/BUCK",
+        "sha256": "1748e74f1ced7da7446531468e650c9ee8ca84b89eaf117448323ba5bc3bd0bb",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/BUCK.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/platform/auth/Cargo.toml",
+        "sha256": "b9e5e73eec7a921157a591f78596a42d1bfd74315b24a852c60742c429ce59f5",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/platform/auth/src/refresh.rs",
+        "sha256": "c8bfbded8732dfdba3a06798179d78987679c20db7062882e7ed6212c7bbf1e0",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth/src/refresh.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/platform/auth/tests/refresh_tokens.rs",
+        "sha256": "e53c903905f7f3d87f0f77583eb941790441cade6589b70d6eab0bafe2fc4167",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/4c7f49e8540271b20335afefc205119b8c04a0d9/backend/crates/platform/auth/tests/refresh_tokens.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/platform/test-support/BUCK",
+        "sha256": "3b970c9941f291fd0b93d03e2d5e626b21a5fc93f7bdfe223a339b0df72230a9",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/BUCK.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/platform/test-support/Cargo.toml",
+        "sha256": "927ad4f1bfa07994157ad32f07cbab4d383b9b710bf53383eadceb4edcdab594",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/crates/platform/test-support/src/lib.rs",
+        "sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/src/lib.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:backend/rust-toolchain.toml",
+        "sha256": "c91677902069dfe54d5d4895372aecaa296dd15c36679f7aab8442a0ae02bad7",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/rust-toolchain.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:ops/account-custody-migrations.sha384",
+        "sha256": "adc836e55749bb1775631289deb3e39566f98d4848e67d837a486c59ebf99c96",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/account-custody-migrations.sha384.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:ops/generate-account-custody.py",
+        "sha256": "f0b61cc8e7fb6aef7ba2494e7c983103f62d89b674ea7ab45a9a40e7cbdb2558",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/generate-account-custody.py.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:ops/postgres-finalize-account-custody.sh",
+        "sha256": "e064c08f8cc5141f8c99c17b750e5c1714eb7337fedf2a957ff429dbb6e08c47",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-finalize-account-custody.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:ops/postgres-finalize-account-custody.sql",
+        "sha256": "eea1ef091ebdacf3fe537bee293a0e0eedf077ab0033bb87f37d617fe6e75c5c",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-finalize-account-custody.sql.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:ops/postgres-reconcile-topology.sh",
+        "sha256": "9a8156858d5b00a14e1f2e4a7dacdd754d968b146b4d16d3ff897fff323a0acd",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-reconcile-topology.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:tools/ci/cargo-test-runner.sh",
+        "sha256": "7d2ea01b5921e045ab468ed0a99671ae15512cd418cf0f10512ddb7cb641853e",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/cargo-test-runner.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:tools/ci/cargo_needs_postgres.sh",
+        "sha256": "d75b1877eb24a4f16168d7e26294677c5711de95444ff7484fffc8b1a2f08a29",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/cargo_needs_postgres.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:tools/ci/postgres-cargo-map.json",
+        "sha256": "2b41e0b864e3e053bd1f6ff2ea380dce0683659297b4ee5ac88a6e06273afc54",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/postgres-cargo-map.json.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "red",
+        "git_selector": "4c7f49e8540271b20335afefc205119b8c04a0d9:tools/ci/postgres-partition.mjs",
+        "sha256": "99cab75623ac358c3cebbf8edc22a0164060796716362017f3bab33c7b02d5c3",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/postgres-partition.mjs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/Cargo.lock",
+        "sha256": "2e5586b55b6eab8d797dcdf00ff7d26a82400340dcbc81c338822aac15944bc6",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/Cargo.lock.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/Cargo.toml",
+        "sha256": "a5e16e5e06d0265958106a2a7860230b4ab6ea1368e9150a225cae66377bfd42",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/BUCK",
+        "sha256": "73ee62edecfeaa92a47d73e12052b36f8b86f1a34a4f0aec7e47d17c1120f0c0",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/BUCK.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/Cargo.toml",
+        "sha256": "e8c85e4df469d998ef31874aa09f4e2556e459bcc3fa086b2fd79117af3c17a5",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/src/account_custody_state.sql",
+        "sha256": "bbaa00932e808745070ebb866c7050d5f5544961a3e7158d0aa1da58be7c8899",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/src/account_custody_state.sql.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/src/lib.rs",
+        "sha256": "19ff33ff11d79d936872e188198c78c23efbc531e78f14d3322e66222b670742",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/src/lib.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/tests/auth_rest.rs",
+        "sha256": "abdf0d0c564a7aa3048b816fa4ea6949fddf6986d6ba7c9ec3079af8d17676aa",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/app/tests/auth_rest.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/tests/auth_rest/account_custody_lifecycle.rs",
+        "sha256": "9543211d466783ec5d09bea6ff41166fec877efa9608b164da6de23a3bc0a7ee",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_custody_lifecycle.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/tests/auth_rest/account_custody_startup.rs",
+        "sha256": "81953bdc593727a81c72b7857738a6cdc11715a5ec492eb203fe28447656fc19",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_custody_startup.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/tests/auth_rest/account_fence_projection.rs",
+        "sha256": "82510bc9ac573be671efeac769d97d144a8ed256539909a12dd34178502fd9bc",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_fence_projection.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/tests/auth_rest/account_fence_transport.rs",
+        "sha256": "06ef4c5e71fdb7571dc2174c9023e66a7efec5c24a4f4e22c9a46b7e9306060b",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/app/tests/auth_rest/account_fence_transport.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/tests/auth_rest/account_storage.rs",
+        "sha256": "5aaad30f462ee34f0c1cefdec7ccb9a467cce036c3890b83aed353b912629add",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_storage.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/tests/auth_rest/actor-migration.csv",
+        "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/actor-migration.csv.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/tests/auth_rest/auth_target_parser.rs",
+        "sha256": "71110a504b7c44a46ed5c49d1eca5c1780cebe11777304a2728470ed3326156c",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/auth_target_parser.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql",
+        "sha256": "84e356b88be8762726c26df03a4990a19e98c0fcda3d48a73389d1d2a087559a",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/app/tests/auth_rest/publication_privileges.rs",
+        "sha256": "20fdcc350261b94a4bfbb12e5a4f0cc923397e134f3d5fa8e4bd60ff4955f621",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/publication_privileges.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/ci/gates/writer-ownership/canonical-enforce-in-container.sh",
+        "sha256": "7a73814bea60dd6b120938c39d454a17f4163ea80e68c986f0b051935362019f",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/ci/gates/writer-ownership/canonical-enforce-in-container.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/ci/gates/writer-ownership/canonical-enforce.sh",
+        "sha256": "49ee2e142276924be97b00ccaea5c3d5c0eb955b5faf21db4be88798e04f2120",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/ci/gates/writer-ownership/canonical-enforce.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/identity/adapter-postgres/BUCK",
+        "sha256": "900dd790a6fd37448d89285758e22139c3cbef4e9d2ccbbc39e912523d8eb1cb",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/BUCK.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/identity/adapter-postgres/Cargo.toml",
+        "sha256": "6db97b153f56292f7f6df407e60f0f411bd9851b965c128ffb17ff38912116e1",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/identity/adapter-postgres/src/lib.rs",
+        "sha256": "ef620495a547484ededbb8b2e080222b47a63119534ff6f48f722116c9edd32a",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/src/lib.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+        "sha256": "a043e838741acbd168c69e7198f927668dfe4d03d0f388945cb570dc92401d9f",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/platform/auth-rest/BUCK",
+        "sha256": "7d28aa9ffaab41b77ee7c38be648f7ed5d3349c15cc1f1ec803c7dd8c83fb819",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/BUCK.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/platform/auth-rest/Cargo.toml",
+        "sha256": "307b48e5fcc130c98c5072c42cd9342087f4b65de4d7c8ebde6c142b6af51c27",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/platform/auth-rest/src/lib.rs",
+        "sha256": "d03032c9fe2a7e38bcd438ddb7fc3a9876f668721e76c61242cbc28d1b0c276e",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth-rest/src/lib.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/platform/auth-rest/tests/dev_auth_session.rs",
+        "sha256": "2ec37e4d58aca361026ed0a882c3baea189d5026ca9fc5bf3e1243452957fb43",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth-rest/tests/dev_auth_session.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/platform/auth/BUCK",
+        "sha256": "1748e74f1ced7da7446531468e650c9ee8ca84b89eaf117448323ba5bc3bd0bb",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/BUCK.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/platform/auth/Cargo.toml",
+        "sha256": "b9e5e73eec7a921157a591f78596a42d1bfd74315b24a852c60742c429ce59f5",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/platform/auth/src/refresh.rs",
+        "sha256": "0b261bbf59b5f37b8962e526ab670ec20f8dcca358fb7e727545da1ebabe7180",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth/src/refresh.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/platform/auth/tests/refresh_tokens.rs",
+        "sha256": "b4c7c50549d6cbf77154552a2260ac244d6e62327654fc344f0e2fd85913de66",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-initial-issuance-fence/sources/69e3ca9cd82144cf4cb5194e116536b67f4b90e4/backend/crates/platform/auth/tests/refresh_tokens.rs.gz",
+        "custody": "new exact payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/platform/test-support/BUCK",
+        "sha256": "3b970c9941f291fd0b93d03e2d5e626b21a5fc93f7bdfe223a339b0df72230a9",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/BUCK.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/platform/test-support/Cargo.toml",
+        "sha256": "927ad4f1bfa07994157ad32f07cbab4d383b9b710bf53383eadceb4edcdab594",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/Cargo.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/crates/platform/test-support/src/lib.rs",
+        "sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/src/lib.rs.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:backend/rust-toolchain.toml",
+        "sha256": "c91677902069dfe54d5d4895372aecaa296dd15c36679f7aab8442a0ae02bad7",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/rust-toolchain.toml.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:ops/account-custody-migrations.sha384",
+        "sha256": "adc836e55749bb1775631289deb3e39566f98d4848e67d837a486c59ebf99c96",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/account-custody-migrations.sha384.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:ops/generate-account-custody.py",
+        "sha256": "f0b61cc8e7fb6aef7ba2494e7c983103f62d89b674ea7ab45a9a40e7cbdb2558",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/generate-account-custody.py.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:ops/postgres-finalize-account-custody.sh",
+        "sha256": "e064c08f8cc5141f8c99c17b750e5c1714eb7337fedf2a957ff429dbb6e08c47",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-finalize-account-custody.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:ops/postgres-finalize-account-custody.sql",
+        "sha256": "eea1ef091ebdacf3fe537bee293a0e0eedf077ab0033bb87f37d617fe6e75c5c",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-finalize-account-custody.sql.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:ops/postgres-reconcile-topology.sh",
+        "sha256": "9a8156858d5b00a14e1f2e4a7dacdd754d968b146b4d16d3ff897fff323a0acd",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-reconcile-topology.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:tools/ci/cargo-test-runner.sh",
+        "sha256": "7d2ea01b5921e045ab468ed0a99671ae15512cd418cf0f10512ddb7cb641853e",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/cargo-test-runner.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:tools/ci/cargo_needs_postgres.sh",
+        "sha256": "d75b1877eb24a4f16168d7e26294677c5711de95444ff7484fffc8b1a2f08a29",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/cargo_needs_postgres.sh.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:tools/ci/postgres-cargo-map.json",
+        "sha256": "2b41e0b864e3e053bd1f6ff2ea380dce0683659297b4ee5ac88a6e06273afc54",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/postgres-cargo-map.json.gz",
+        "custody": "already retained byte-identical historical payload"
+      },
+      {
+        "stage": "green",
+        "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:tools/ci/postgres-partition.mjs",
+        "sha256": "99cab75623ac358c3cebbf8edc22a0164060796716362017f3bab33c7b02d5c3",
+        "archive_destination": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/postgres-partition.mjs.gz",
+        "custody": "already retained byte-identical historical payload"
+      }
+    ]
+  },
+  "already_retained_references": [
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/Cargo.lock.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/Cargo.lock.gz",
+      "archive_sha256": "62477161e091c92138f1d5c2d4a0c2f2362d5589674310b931d501ef7e9f5ba2",
+      "original_sha256": "2e5586b55b6eab8d797dcdf00ff7d26a82400340dcbc81c338822aac15944bc6"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/Cargo.toml.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/Cargo.toml.gz",
+      "archive_sha256": "5954f1cb71dd3e6fefc59559cf5e9848bc28964ef9659e74a8c79b361a890621",
+      "original_sha256": "a5e16e5e06d0265958106a2a7860230b4ab6ea1368e9150a225cae66377bfd42"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/BUCK.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/BUCK.gz",
+      "archive_sha256": "1eac4bbf021285de4ccb5c43c4db19f37157fb132182e17e56bb7d254d7ce35e",
+      "original_sha256": "73ee62edecfeaa92a47d73e12052b36f8b86f1a34a4f0aec7e47d17c1120f0c0"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/Cargo.toml.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/Cargo.toml.gz",
+      "archive_sha256": "7639e72186370cfb24e89f387da16948035acb479f693e97840a34d1e001e99b",
+      "original_sha256": "e8c85e4df469d998ef31874aa09f4e2556e459bcc3fa086b2fd79117af3c17a5"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/src/account_custody_state.sql.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/src/account_custody_state.sql.gz",
+      "archive_sha256": "888979c9daa4a421e6b1906e6324cdca41b70522f342a0ed2772d80aa0502ee1",
+      "original_sha256": "bbaa00932e808745070ebb866c7050d5f5544961a3e7158d0aa1da58be7c8899"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/src/lib.rs.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/src/lib.rs.gz",
+      "archive_sha256": "6fa086d6b36e52bb5e8bd6175c7f5560361ced66c3020c7d27c7bd25d9b150f0",
+      "original_sha256": "19ff33ff11d79d936872e188198c78c23efbc531e78f14d3322e66222b670742"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_custody_lifecycle.rs.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_custody_lifecycle.rs.gz",
+      "archive_sha256": "5111b7442ae99af25a1912ede8f71346a119d32b6ae933853b14cf714771078d",
+      "original_sha256": "9543211d466783ec5d09bea6ff41166fec877efa9608b164da6de23a3bc0a7ee"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_custody_startup.rs.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_custody_startup.rs.gz",
+      "archive_sha256": "3776ac2dc2bfdfdecdeebf59dc74fa750f3cf8f713624a473c9395dbed088639",
+      "original_sha256": "81953bdc593727a81c72b7857738a6cdc11715a5ec492eb203fe28447656fc19"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_fence_projection.rs.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_fence_projection.rs.gz",
+      "archive_sha256": "57a9e327a214ff4f0905e73144e1fdf33e6f28356fb6621e273832d8f29ad55e",
+      "original_sha256": "82510bc9ac573be671efeac769d97d144a8ed256539909a12dd34178502fd9bc"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_storage.rs.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_storage.rs.gz",
+      "archive_sha256": "663f41a117385a06ffe4344cc352b2d1b028890ff4db26063b451d18a0c9c76a",
+      "original_sha256": "5aaad30f462ee34f0c1cefdec7ccb9a467cce036c3890b83aed353b912629add"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/actor-migration.csv.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/actor-migration.csv.gz",
+      "archive_sha256": "94a6dbbf3c05f965fcd20a9e85192a45d0056a506396f62383bbbe8cc96d97ac",
+      "original_sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/auth_target_parser.rs.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/auth_target_parser.rs.gz",
+      "archive_sha256": "af902adf4358af3d151b8e16c716587906adf63de4983de85c50f47cf56aeb22",
+      "original_sha256": "71110a504b7c44a46ed5c49d1eca5c1780cebe11777304a2728470ed3326156c"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql.gz",
+      "archive_sha256": "ef316af8e25853bd72e0d76327ec148696b5802c91f1d72e4fd0d7fb07c6420c",
+      "original_sha256": "84e356b88be8762726c26df03a4990a19e98c0fcda3d48a73389d1d2a087559a"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/publication_privileges.rs.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/publication_privileges.rs.gz",
+      "archive_sha256": "39da460c692eca3042811cb89ea4c95fa6bc12932d89244479a7283a3fc3072d",
+      "original_sha256": "20fdcc350261b94a4bfbb12e5a4f0cc923397e134f3d5fa8e4bd60ff4955f621"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/ci/gates/writer-ownership/canonical-enforce-in-container.sh.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/ci/gates/writer-ownership/canonical-enforce-in-container.sh.gz",
+      "archive_sha256": "a571ca7062541eec61889ae03026917a6792e7f6c3c46a05025d962acec190d5",
+      "original_sha256": "7a73814bea60dd6b120938c39d454a17f4163ea80e68c986f0b051935362019f"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/ci/gates/writer-ownership/canonical-enforce.sh.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/ci/gates/writer-ownership/canonical-enforce.sh.gz",
+      "archive_sha256": "a2eb7120cd68a3a12535c78f15fc0ced3ef6109fb85838a9771f01cf812ac288",
+      "original_sha256": "49ee2e142276924be97b00ccaea5c3d5c0eb955b5faf21db4be88798e04f2120"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/BUCK.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/BUCK.gz",
+      "archive_sha256": "12596beced0ded4143611af4be67b1a0666a89f7e4c9e64a2b8f5924393b97cc",
+      "original_sha256": "900dd790a6fd37448d89285758e22139c3cbef4e9d2ccbbc39e912523d8eb1cb"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/Cargo.toml.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/Cargo.toml.gz",
+      "archive_sha256": "acea0467217f408d675a86619c6c986bfac05e505d7f72f9add0b64276fe5910",
+      "original_sha256": "6db97b153f56292f7f6df407e60f0f411bd9851b965c128ffb17ff38912116e1"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/src/lib.rs.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/src/lib.rs.gz",
+      "archive_sha256": "6467521d08fc0feb7f2f9f7cbe5f7ca869310eae70ffdde6ce0317ba1ffeb80f",
+      "original_sha256": "ef620495a547484ededbb8b2e080222b47a63119534ff6f48f722116c9edd32a"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/BUCK.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/BUCK.gz",
+      "archive_sha256": "f123e8012e94d6c929eb670834d6bf95f8cc8fb75f303006c93ffe313fa27586",
+      "original_sha256": "7d28aa9ffaab41b77ee7c38be648f7ed5d3349c15cc1f1ec803c7dd8c83fb819"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/Cargo.toml.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/Cargo.toml.gz",
+      "archive_sha256": "41e6b20ee040b8ad5f394c4be186f87e9a2c2cd1b8e227af0d7513c5216f9e10",
+      "original_sha256": "307b48e5fcc130c98c5072c42cd9342087f4b65de4d7c8ebde6c142b6af51c27"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/BUCK.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/BUCK.gz",
+      "archive_sha256": "6b914011e77d6f426a5cb839c3a90d6c1567a5cf851004e436a8aadd5c682de4",
+      "original_sha256": "1748e74f1ced7da7446531468e650c9ee8ca84b89eaf117448323ba5bc3bd0bb"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/Cargo.toml.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/Cargo.toml.gz",
+      "archive_sha256": "b2eac19ad5549b086a8f34521a617395307419b18ede0b032954ba54bf22ba69",
+      "original_sha256": "b9e5e73eec7a921157a591f78596a42d1bfd74315b24a852c60742c429ce59f5"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/BUCK.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/BUCK.gz",
+      "archive_sha256": "eca8361c600383461c7a5acbca55b884e0f9c367b51810c59f87e55526983978",
+      "original_sha256": "3b970c9941f291fd0b93d03e2d5e626b21a5fc93f7bdfe223a339b0df72230a9"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/Cargo.toml.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/Cargo.toml.gz",
+      "archive_sha256": "318572a24b8e397fe6a86d6df39d92abff1806c2b287d6ef513dd48f8b0777bc",
+      "original_sha256": "927ad4f1bfa07994157ad32f07cbab4d383b9b710bf53383eadceb4edcdab594"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/src/lib.rs.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/src/lib.rs.gz",
+      "archive_sha256": "1e778211262e341db88b631f87e6c12fa300c5de5fb915aa59a2a21b39bf3ce6",
+      "original_sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/rust-toolchain.toml.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/rust-toolchain.toml.gz",
+      "archive_sha256": "63b90e1e6ee98b52c01d8d70cd60bf5f5193dab9ad88c2eb339f26eb05e8d9b2",
+      "original_sha256": "c91677902069dfe54d5d4895372aecaa296dd15c36679f7aab8442a0ae02bad7"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/account-custody-migrations.sha384.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/account-custody-migrations.sha384.gz",
+      "archive_sha256": "6fb896132cf8a004de7caac86a8a35cbd08484617e8cb1c75614e2d994a21bb5",
+      "original_sha256": "adc836e55749bb1775631289deb3e39566f98d4848e67d837a486c59ebf99c96"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/generate-account-custody.py.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/generate-account-custody.py.gz",
+      "archive_sha256": "375141102d9b0975edab323a2bc2c60b3c0c8ffd6585db73eec16a6b21b47f5f",
+      "original_sha256": "f0b61cc8e7fb6aef7ba2494e7c983103f62d89b674ea7ab45a9a40e7cbdb2558"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-finalize-account-custody.sh.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-finalize-account-custody.sh.gz",
+      "archive_sha256": "a70466555e1f39a2db48f90462c7a68b311928a5c9d6968ea5d6602ff9ae8fd9",
+      "original_sha256": "e064c08f8cc5141f8c99c17b750e5c1714eb7337fedf2a957ff429dbb6e08c47"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-finalize-account-custody.sql.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-finalize-account-custody.sql.gz",
+      "archive_sha256": "f9efe0fe154a1157aaaa5cd2061bde2ef9f77f045a2d3e873242773d6d7ef9bb",
+      "original_sha256": "eea1ef091ebdacf3fe537bee293a0e0eedf077ab0033bb87f37d617fe6e75c5c"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-reconcile-topology.sh.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-reconcile-topology.sh.gz",
+      "archive_sha256": "77fbbd032adb0628bac963f5d6fd3e2eea1408fa43b4a057aba9597cd9cfb9ac",
+      "original_sha256": "9a8156858d5b00a14e1f2e4a7dacdd754d968b146b4d16d3ff897fff323a0acd"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/cargo-test-runner.sh.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/cargo-test-runner.sh.gz",
+      "archive_sha256": "156283a3796a62bcc0e74669d3d0816de91501a1d47f3169cc054286ccebb0c6",
+      "original_sha256": "7d2ea01b5921e045ab468ed0a99671ae15512cd418cf0f10512ddb7cb641853e"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/cargo_needs_postgres.sh.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/cargo_needs_postgres.sh.gz",
+      "archive_sha256": "4ea0595727b3434fdab82fbb01d9e9bb0615aaf2cc416e0c7783a65ae5c2ab37",
+      "original_sha256": "d75b1877eb24a4f16168d7e26294677c5711de95444ff7484fffc8b1a2f08a29"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/postgres-cargo-map.json.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/postgres-cargo-map.json.gz",
+      "archive_sha256": "d0e81747777e8aa79f0dfdb78128a7ab9071069afd674b0fa58755d01ced6cc6",
+      "original_sha256": "2b41e0b864e3e053bd1f6ff2ea380dce0683659297b4ee5ac88a6e06273afc54"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/postgres-partition.mjs.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/postgres-partition.mjs.gz",
+      "archive_sha256": "d0638e57c0f81eafe275b100ad68b7c6aca6975be963f4209d058d6e1f224f5b",
+      "original_sha256": "99cab75623ac358c3cebbf8edc22a0164060796716362017f3bab33c7b02d5c3"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/artifacts/account-auth-rest-full151-runtime-independent-review.json.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/artifacts/account-auth-rest-full151-runtime-independent-review.json.gz",
+      "archive_sha256": "8677f5ebebb4217f39a123cce22e84d54ca4768f2a1f36f69919d4019eb60417",
+      "original_sha256": "3582a5a19cc0d693e670afc035704645103f2d8b589632e09f96b5bebc8493ff"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/artifacts/probe.log.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/artifacts/probe.log.gz",
+      "archive_sha256": "feef3bf1d156eca4ebbf8520bb2a4d822429ddabfd2b8d79d57646972931b4c5",
+      "original_sha256": "44fd189444092e11a86abfc8d280f97c8c1ab14057100a31e42c7d9c9ce1b2a1"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/artifacts/driver-receipt.json.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/artifacts/driver-receipt.json.gz",
+      "archive_sha256": "db3bac712e8514beaa1f38fd4258f27982fdcab4d255189edb70a021fca4ca4e",
+      "original_sha256": "d5ae28e3f322a2a97619b3892971a88d0b4bbf3181595191f2de15241bfee642"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/artifacts/source-before.json.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/artifacts/source-before.json.gz",
+      "archive_sha256": "71188c10275c2e0623ee57a428116e33c6b8bd1a6faef3df8fb036529839ebf5",
+      "original_sha256": "136c9c46c711c0ef7ee36f079476213eb2ca5f87e9a55d9da8ed0b5539a5dca6"
+    },
+    {
+      "path": "docs/evidence/console/implementation/2026-09-15-auth-rest-full151/artifacts/source-after.json.gz",
+      "git_selector": "69e3ca9cd82144cf4cb5194e116536b67f4b90e4:docs/evidence/console/implementation/2026-09-15-auth-rest-full151/artifacts/source-after.json.gz",
+      "archive_sha256": "71188c10275c2e0623ee57a428116e33c6b8bd1a6faef3df8fb036529839ebf5",
+      "original_sha256": "136c9c46c711c0ef7ee36f079476213eb2ca5f87e9a55d9da8ed0b5539a5dca6"
+    }
+  ],
+  "gzip_contract": "Each supplied archive uses gzip.GzipFile(filename=\"\", compresslevel=9, mtime=0); decompression exactly equals original bytes. All payloads are inert .gz, including test code, diagnostics and synthetic results. Root should copy supplied archive bytes, not regenerate them.",
+  "evidence_classification": {
+    "issuer4_red": "4 executed;1PASS3 actual behavioral failures; typed/recovery assertions unreached at baseline",
+    "issuer4_green": "4 executed;4PASS; canonical typed/refusal/recovery and unchanged OTP401 reached",
+    "full154": "154 executed;126PASS28 existing failures; no prior151 PASS to FAIL and no missing names",
+    "synthetic_driver_calibration": "6 parser-format examples only; zero Cargo/DB tests; never count as actual runtime",
+    "source_candidates": "Immutable code/history only; copying into evidence never creates a live suite or an approved new implementation"
+  },
+  "source_binding": "All43 source preimages per run were independently checked against recorded immutable Git heads. The source_refs table resolves each to a newly supplied payload or a byte-identical already retained archive; full8-file delta and all6 fixture candidates are additionally frozen.",
+  "root_import_contract": [
+    "Verify this allowlist hash and every supplied archive/original/decompressed hash. Do not glob parent /tmp or copy unlisted neighbors.",
+    "Before writing, require destination root absent; copy only the exact records to exact archive destinations. Preserve every existing historical archive and authority record.",
+    "Copy this allowlist as retention-allowlist.json and create a separate root import receipt binding its SHA256, exact imported destinations/counts/hashes and root head before/after. Never rewrite old pending-design or prior-run receipts to look current.",
+    "Independently verify every imported byte and all86 source-reference rows including historical archive hashes. Source/current authority and runtime remain root-owned; importing evidence does not satisfy remaining failed lanes."
+  ],
+  "explicit_exclusions": [
+    "Terms current-profile design/test/implementation work",
+    "Auth5 run still owned and being executed by root; no partial runtime import",
+    "Pending HTTP500 candidate or future runtime",
+    "Unreferenced /tmp artifacts, build caches, credentials, environment files or arbitrary directory contents",
+    "Already retained prior full151 run is referenced and hash-verified rather than duplicated"
+  ],
+  "pre_mortem": "A broad copy can import secrets/unrelated work, source suffixes can be discovered as live tests, omitted failure evidence can misstate success, or historical receipts can be silently rewritten. Finite receipt-derived files, inert exact archives and separate import custody prevent these errors.",
+  "blast_radius": "Private source/archive/allowlist preparation only. Root may later add one bounded evidence subtree; no production/test/checker/CI/migration changes.",
+  "detection": "Hash every original, gzip payload and round trip; preserve exact named run accounting and86 source-reference mappings.",
+  "rollback": "Before import discard candidate packaging; after import use a reviewed normal evidence-only change while preserving history. No original private files are deleted.",
+  "stop_conditions": [
+    "Any source or archive hash drift",
+    "Unlisted file import",
+    "Existing destination overwrite",
+    "Live-source/test/authority mutation",
+    "Runtime success claim beyond recorded cases"
+  ],
+  "remaining_holds": [
+    "Root independent import review and receipt",
+    "Full auth_rest28 failures and separate auth5/HTTP500 verification",
+    "Concurrent activation/drain and bearer-reader migration",
+    "Account/Console/production/HA/legal readiness"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton\u2019s Fence",
+    "Essentialism / YAGNI",
+    "Blast-radius / cell-based"
+  ],
+  "preparer_execution": {
+    "repository_edits": 0,
+    "cargo": 0,
+    "docker": 0,
+    "database": 0,
+    "tests_executed": 0,
+    "private_gzip_round_trips": 141
+  }
+}
