@@ -38,12 +38,12 @@ const TEST_ORIGIN: &str = "https://auth.example.com";
 mod account_custody_lifecycle;
 #[path = "auth_rest/account_custody_startup.rs"]
 mod account_custody_startup;
-#[path = "auth_rest/account_storage.rs"]
-mod account_storage;
 #[path = "auth_rest/account_fence_projection.rs"]
 mod account_fence_projection;
 #[path = "auth_rest/account_fence_transport.rs"]
 mod account_fence_transport;
+#[path = "auth_rest/account_storage.rs"]
+mod account_storage;
 #[path = "auth_rest/auth_target_parser.rs"]
 mod auth_target_parser;
 #[path = "auth_rest/publication_privileges.rs"]
@@ -4170,7 +4170,11 @@ mod account_browser {
         router_with_key(pool, root, &SigningKey::random(&mut OsRng)).await
     }
 
-    async fn router_with_key(pool: &PgPool, root: PathBuf, signing_key: &SigningKey) -> axum::Router {
+    async fn router_with_key(
+        pool: &PgPool,
+        root: PathBuf,
+        signing_key: &SigningKey,
+    ) -> axum::Router {
         let mut pairs = vec![
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -5246,10 +5250,26 @@ mod account_browser {
         );
         assert!(signed_claims(&changed, &key).is_err());
         for valid in ["1", "9223372036854775807"] {
-            assert_eq!(claim_generation(&json!({"security_generation":valid})), valid.parse::<i64>().unwrap());
+            assert_eq!(
+                claim_generation(&json!({"security_generation":valid})),
+                valid.parse::<i64>().unwrap()
+            );
         }
-        for invalid in [json!(1), json!("0"), json!("01"), json!("+1"), json!("-1"), json!("9223372036854775808"), Value::Null] {
-            assert!(std::panic::catch_unwind(|| claim_generation(&json!({"security_generation":invalid}))).is_err());
+        for invalid in [
+            json!(1),
+            json!("0"),
+            json!("01"),
+            json!("+1"),
+            json!("-1"),
+            json!("9223372036854775808"),
+            Value::Null,
+        ] {
+            assert!(
+                std::panic::catch_unwind(|| claim_generation(
+                    &json!({"security_generation":invalid})
+                ))
+                .is_err()
+            );
         }
     }
 

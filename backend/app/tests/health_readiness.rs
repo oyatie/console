@@ -763,16 +763,18 @@ mod authorized {
             let b = OrgId::new();
             let actor_b = seed_org_and_super_admin(&pool, *b.as_uuid(), "PRIVATE-GROUP-B").await;
             grant_group_viewer(&pool, b, actor_b).await;
-            let group_a: Uuid = sqlx::query_scalar("SELECT group_id FROM organizations WHERE id=$1")
-                .bind(a.as_uuid())
-                .fetch_one(&pool)
-                .await
-                .unwrap();
-            let group_b: Uuid = sqlx::query_scalar("SELECT group_id FROM organizations WHERE id=$1")
-                .bind(b.as_uuid())
-                .fetch_one(&pool)
-                .await
-                .unwrap();
+            let group_a: Uuid =
+                sqlx::query_scalar("SELECT group_id FROM organizations WHERE id=$1")
+                    .bind(a.as_uuid())
+                    .fetch_one(&pool)
+                    .await
+                    .unwrap();
+            let group_b: Uuid =
+                sqlx::query_scalar("SELECT group_id FROM organizations WHERE id=$1")
+                    .bind(b.as_uuid())
+                    .fetch_one(&pool)
+                    .await
+                    .unwrap();
             assert_ne!(
                 group_a, group_b,
                 "this is cross-tenant, not intra-Group Company separation"
@@ -831,13 +833,14 @@ mod authorized {
             // IDs/counts/order, including data serialized into island props.
             for phase in 0..2 {
                 let run_b = seed_run(&pool, b, actor_b).await;
-                let changed = sqlx::query("UPDATE users SET display_name=$1 WHERE id=$2 AND org_id=$3")
-                    .bind(format!("PRIVATE-B-DIAGNOSTIC-{phase}-급여"))
-                    .bind(actor_b.as_uuid())
-                    .bind(b.as_uuid())
-                    .execute(&pool)
-                    .await
-                    .unwrap();
+                let changed =
+                    sqlx::query("UPDATE users SET display_name=$1 WHERE id=$2 AND org_id=$3")
+                        .bind(format!("PRIVATE-B-DIAGNOSTIC-{phase}-급여"))
+                        .bind(actor_b.as_uuid())
+                        .bind(b.as_uuid())
+                        .execute(&pool)
+                        .await
+                        .unwrap();
                 assert_eq!(
                     changed.rows_affected(),
                     1,
