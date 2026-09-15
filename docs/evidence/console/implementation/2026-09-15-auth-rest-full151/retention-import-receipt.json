@@ -1,0 +1,522 @@
+{
+  "kind": "exact-allowlist-archive-import",
+  "head": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef",
+  "owner": "/root",
+  "reviewer": "/root/inventory_repair",
+  "allowlist_sha256": "e7e87b5ce118392af151cd49b4be6265a95bf31915bd3165089e26e5f77b0219",
+  "runtime_result": {
+    "discovered": 151,
+    "executed": 151,
+    "passed": 122,
+    "failed": 29,
+    "ignored": 0,
+    "measured": 0,
+    "filtered": 0,
+    "duration_seconds": 210.1,
+    "probe_exit": 1,
+    "basis": "151 distinct actual Rust test-result lines; failed-footer names equal all29 FAILED lines; actual final Rust summary agrees."
+  },
+  "records": [
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "artifacts/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "source_bytes": 0,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "artifacts/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "source_bytes": 0,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "archive": "artifacts/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "source_bytes": 69,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/container-name.txt",
+      "sha256": "a0142b6a858daa306624c067645011dde68f5920ef29091a8067d4c2602da167",
+      "archive": "artifacts/container-name.txt.gz",
+      "archive_sha256": "e875155ed9a2a21dcceb1056ffda54580da837de1f1214f4b0226eaa3f6eba12",
+      "source_bytes": 38,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "artifacts/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "source_bytes": 0,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "artifacts/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "source_bytes": 0,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/driver-receipt.json",
+      "sha256": "d5ae28e3f322a2a97619b3892971a88d0b4bbf3181595191f2de15241bfee642",
+      "archive": "artifacts/driver-receipt.json.gz",
+      "archive_sha256": "db3bac712e8514beaa1f38fd4258f27982fdcab4d255189edb70a021fca4ca4e",
+      "source_bytes": 1609,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/ownership-label.txt",
+      "sha256": "203f703df00366882385c44cfcc824a559dbb572964bb0d933c90c92ed764afd",
+      "archive": "artifacts/ownership-label.txt.gz",
+      "archive_sha256": "fd6cd5cc1882977ab732fa04a7895519dc9d8d11d6483587aaf20762d576dea6",
+      "source_bytes": 59,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/postgres-map.json",
+      "sha256": "06c1726d5a6d6db2d4d9e0d6c31da51ec0b377c5450e310b3d3c02a9cd49cd79",
+      "archive": "artifacts/postgres-map.json.gz",
+      "archive_sha256": "f1d4fbda06373188bd13d5f981c2f2645cd9e4d2189b3ac457b784f832434107",
+      "source_bytes": 184118,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "archive": "artifacts/prebuild-dispatch.txt.gz",
+      "archive_sha256": "5506835ac8de8135d1ff54dcd47f3b9e35521e95ba37dc5f514d4e435e4bb96a",
+      "source_bytes": 65,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "archive": "artifacts/probe-exit.txt.gz",
+      "archive_sha256": "c28cc69d141393e44a931229323624ef7b8c5bde3ee047ca9b87332daef23c82",
+      "source_bytes": 2,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/probe.log",
+      "sha256": "44fd189444092e11a86abfc8d280f97c8c1ab14057100a31e42c7d9c9ce1b2a1",
+      "archive": "artifacts/probe.log.gz",
+      "archive_sha256": "feef3bf1d156eca4ebbf8520bb2a4d822429ddabfd2b8d79d57646972931b4c5",
+      "source_bytes": 49231,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/source-after.json",
+      "sha256": "136c9c46c711c0ef7ee36f079476213eb2ca5f87e9a55d9da8ed0b5539a5dca6",
+      "archive": "artifacts/source-after.json.gz",
+      "archive_sha256": "71188c10275c2e0623ee57a428116e33c6b8bd1a6faef3df8fb036529839ebf5",
+      "source_bytes": 5194,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-097801fed8c845af875265954d693a3e/source-before.json",
+      "sha256": "136c9c46c711c0ef7ee36f079476213eb2ca5f87e9a55d9da8ed0b5539a5dca6",
+      "archive": "artifacts/source-before.json.gz",
+      "archive_sha256": "71188c10275c2e0623ee57a428116e33c6b8bd1a6faef3df8fb036529839ebf5",
+      "source_bytes": 5194,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-driver-candidate.json",
+      "sha256": "a42f663f90145828929ec2f22799e35df3e16276855b1208d8d0bdca008472b7",
+      "archive": "artifacts/account-auth-rest-full151-driver-candidate.json.gz",
+      "archive_sha256": "fd0fc032b2025975edbd9e135d75baa8d481c133106de4a9d8f19981fdad3fa0",
+      "source_bytes": 10309,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-driver-independent-review.json",
+      "sha256": "823c3237aa47d51c038bedf8247aaee86140b77ba6c7637adf8c629efc5cdbe9",
+      "archive": "artifacts/account-auth-rest-full151-driver-independent-review.json.gz",
+      "archive_sha256": "411c996bed8528eeedba4a4f4f1a82ce0adb289f466ba2ae45fceae1e67add9c",
+      "source_bytes": 1050,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-driver.sh",
+      "sha256": "fb0dd0b381e044e32ad9b5a12feda395ada2fdeb14f6465917e3a6e40747a5df",
+      "archive": "artifacts/account-auth-rest-full151-driver.sh.gz",
+      "archive_sha256": "dd47e85651bf40630bc14d1ef0409b53d51e31dbd15eae1baefefdd7642dd895",
+      "source_bytes": 9663,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-probe.py",
+      "sha256": "e8f6b00211c697474c08e61c055369f0629836b2703307240ae0261be5f07c67",
+      "archive": "artifacts/account-auth-rest-full151-probe.py.gz",
+      "archive_sha256": "f4260568ef0a3de937d6c57f963e868655665116a36aa767908cee2a0948b628",
+      "source_bytes": 397,
+      "byte_exact_round_trip": true
+    },
+    {
+      "source": "/private/tmp/account-auth-rest-full151-runtime-independent-review.json",
+      "sha256": "3582a5a19cc0d693e670afc035704645103f2d8b589632e09f96b5bebc8493ff",
+      "archive": "artifacts/account-auth-rest-full151-runtime-independent-review.json.gz",
+      "archive_sha256": "8677f5ebebb4217f39a123cce22e84d54ca4768f2a1f36f69919d4019eb60417",
+      "source_bytes": 11857,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/Cargo.lock",
+      "sha256": "2e5586b55b6eab8d797dcdf00ff7d26a82400340dcbc81c338822aac15944bc6",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/Cargo.lock.gz",
+      "archive_sha256": "62477161e091c92138f1d5c2d4a0c2f2362d5589674310b931d501ef7e9f5ba2",
+      "source_bytes": 228448,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/Cargo.toml",
+      "sha256": "a5e16e5e06d0265958106a2a7860230b4ab6ea1368e9150a225cae66377bfd42",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/Cargo.toml.gz",
+      "archive_sha256": "5954f1cb71dd3e6fefc59559cf5e9848bc28964ef9659e74a8c79b361a890621",
+      "source_bytes": 20875,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/BUCK",
+      "sha256": "73ee62edecfeaa92a47d73e12052b36f8b86f1a34a4f0aec7e47d17c1120f0c0",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/BUCK.gz",
+      "archive_sha256": "1eac4bbf021285de4ccb5c43c4db19f37157fb132182e17e56bb7d254d7ce35e",
+      "source_bytes": 757658,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/Cargo.toml",
+      "sha256": "e8c85e4df469d998ef31874aa09f4e2556e459bcc3fa086b2fd79117af3c17a5",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/Cargo.toml.gz",
+      "archive_sha256": "7639e72186370cfb24e89f387da16948035acb479f693e97840a34d1e001e99b",
+      "source_bytes": 8791,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/src/account_custody_state.sql",
+      "sha256": "bbaa00932e808745070ebb866c7050d5f5544961a3e7158d0aa1da58be7c8899",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/src/account_custody_state.sql.gz",
+      "archive_sha256": "888979c9daa4a421e6b1906e6324cdca41b70522f342a0ed2772d80aa0502ee1",
+      "source_bytes": 7038,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/src/lib.rs",
+      "sha256": "19ff33ff11d79d936872e188198c78c23efbc531e78f14d3322e66222b670742",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/src/lib.rs.gz",
+      "archive_sha256": "6fa086d6b36e52bb5e8bd6175c7f5560361ced66c3020c7d27c7bd25d9b150f0",
+      "source_bytes": 287995,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/tests/auth_rest.rs",
+      "sha256": "f2fdfd3916ec1dd35576ff4acc9962141f3f439c03c8e2f6a235fc49dd84f954",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest.rs.gz",
+      "archive_sha256": "f24f546af133e8f7a9036884aed635da2aad4aded894d3b169be7374f656448d",
+      "source_bytes": 219777,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/tests/auth_rest/account_custody_lifecycle.rs",
+      "sha256": "9543211d466783ec5d09bea6ff41166fec877efa9608b164da6de23a3bc0a7ee",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_custody_lifecycle.rs.gz",
+      "archive_sha256": "5111b7442ae99af25a1912ede8f71346a119d32b6ae933853b14cf714771078d",
+      "source_bytes": 31090,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/tests/auth_rest/account_custody_startup.rs",
+      "sha256": "81953bdc593727a81c72b7857738a6cdc11715a5ec492eb203fe28447656fc19",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_custody_startup.rs.gz",
+      "archive_sha256": "3776ac2dc2bfdfdecdeebf59dc74fa750f3cf8f713624a473c9395dbed088639",
+      "source_bytes": 10382,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/tests/auth_rest/account_fence_projection.rs",
+      "sha256": "82510bc9ac573be671efeac769d97d144a8ed256539909a12dd34178502fd9bc",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_fence_projection.rs.gz",
+      "archive_sha256": "57a9e327a214ff4f0905e73144e1fdf33e6f28356fb6621e273832d8f29ad55e",
+      "source_bytes": 41640,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/tests/auth_rest/account_fence_transport.rs",
+      "sha256": "7cd8143272d266b9b2a4abd9087b4075dee3d20432b4c278417e6235fe069ea7",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_fence_transport.rs.gz",
+      "archive_sha256": "98ece72afcb8de47fc716e699aa12d365761aa371ec6457018a5e2cd28667d1e",
+      "source_bytes": 39921,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/tests/auth_rest/account_storage.rs",
+      "sha256": "5aaad30f462ee34f0c1cefdec7ccb9a467cce036c3890b83aed353b912629add",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/account_storage.rs.gz",
+      "archive_sha256": "663f41a117385a06ffe4344cc352b2d1b028890ff4db26063b451d18a0c9c76a",
+      "source_bytes": 16630,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/tests/auth_rest/actor-migration.csv",
+      "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/actor-migration.csv.gz",
+      "archive_sha256": "94a6dbbf3c05f965fcd20a9e85192a45d0056a506396f62383bbbe8cc96d97ac",
+      "source_bytes": 8170,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/tests/auth_rest/auth_target_parser.rs",
+      "sha256": "71110a504b7c44a46ed5c49d1eca5c1780cebe11777304a2728470ed3326156c",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/auth_target_parser.rs.gz",
+      "archive_sha256": "af902adf4358af3d151b8e16c716587906adf63de4983de85c50f47cf56aeb22",
+      "source_bytes": 13203,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql",
+      "sha256": "84e356b88be8762726c26df03a4990a19e98c0fcda3d48a73389d1d2a087559a",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql.gz",
+      "archive_sha256": "ef316af8e25853bd72e0d76327ec148696b5802c91f1d72e4fd0d7fb07c6420c",
+      "source_bytes": 20303,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/app/tests/auth_rest/publication_privileges.rs",
+      "sha256": "20fdcc350261b94a4bfbb12e5a4f0cc923397e134f3d5fa8e4bd60ff4955f621",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/app/tests/auth_rest/publication_privileges.rs.gz",
+      "archive_sha256": "39da460c692eca3042811cb89ea4c95fa6bc12932d89244479a7283a3fc3072d",
+      "source_bytes": 6460,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/ci/gates/writer-ownership/canonical-enforce-in-container.sh",
+      "sha256": "7a73814bea60dd6b120938c39d454a17f4163ea80e68c986f0b051935362019f",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/ci/gates/writer-ownership/canonical-enforce-in-container.sh.gz",
+      "archive_sha256": "a571ca7062541eec61889ae03026917a6792e7f6c3c46a05025d962acec190d5",
+      "source_bytes": 4196,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/ci/gates/writer-ownership/canonical-enforce.sh",
+      "sha256": "49ee2e142276924be97b00ccaea5c3d5c0eb955b5faf21db4be88798e04f2120",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/ci/gates/writer-ownership/canonical-enforce.sh.gz",
+      "archive_sha256": "a2eb7120cd68a3a12535c78f15fc0ced3ef6109fb85838a9771f01cf812ac288",
+      "source_bytes": 3885,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/identity/adapter-postgres/BUCK",
+      "sha256": "900dd790a6fd37448d89285758e22139c3cbef4e9d2ccbbc39e912523d8eb1cb",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/BUCK.gz",
+      "archive_sha256": "12596beced0ded4143611af4be67b1a0666a89f7e4c9e64a2b8f5924393b97cc",
+      "source_bytes": 12329,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/identity/adapter-postgres/Cargo.toml",
+      "sha256": "6db97b153f56292f7f6df407e60f0f411bd9851b965c128ffb17ff38912116e1",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/Cargo.toml.gz",
+      "archive_sha256": "acea0467217f408d675a86619c6c986bfac05e505d7f72f9add0b64276fe5910",
+      "source_bytes": 852,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/identity/adapter-postgres/src/lib.rs",
+      "sha256": "ef620495a547484ededbb8b2e080222b47a63119534ff6f48f722116c9edd32a",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/src/lib.rs.gz",
+      "archive_sha256": "6467521d08fc0feb7f2f9f7cbe5f7ca869310eae70ffdde6ce0317ba1ffeb80f",
+      "source_bytes": 103160,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "sha256": "311362d914a59ec32dd346114dbb8094b0003e68b5ea51c6a8e7d835c43c2f4d",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs.gz",
+      "archive_sha256": "d14e7d6b15efbca61e89fe0bc9b12887caa7af6a522745a6978e0cfbb95cdea8",
+      "source_bytes": 7710,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/platform/auth-rest/BUCK",
+      "sha256": "7d28aa9ffaab41b77ee7c38be648f7ed5d3349c15cc1f1ec803c7dd8c83fb819",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/BUCK.gz",
+      "archive_sha256": "f123e8012e94d6c929eb670834d6bf95f8cc8fb75f303006c93ffe313fa27586",
+      "source_bytes": 12943,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/platform/auth-rest/Cargo.toml",
+      "sha256": "307b48e5fcc130c98c5072c42cd9342087f4b65de4d7c8ebde6c142b6af51c27",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/Cargo.toml.gz",
+      "archive_sha256": "41e6b20ee040b8ad5f394c4be186f87e9a2c2cd1b8e227af0d7513c5216f9e10",
+      "source_bytes": 1372,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/platform/auth-rest/src/lib.rs",
+      "sha256": "935f4306bafc964ff9a7d430a033ee1706d57a4db51f721a79f058d757bd1ec4",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/src/lib.rs.gz",
+      "archive_sha256": "8972ad5a385f6954af5b9c1e4f105485728ee0cb812209eb6782ce2807811b83",
+      "source_bytes": 149238,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/platform/auth-rest/tests/dev_auth_session.rs",
+      "sha256": "23a7e54f601c79834cf15d813ed00de98175b57603b938c3fe22230bf059dec3",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth-rest/tests/dev_auth_session.rs.gz",
+      "archive_sha256": "f04903c75faa5cc059856d2bc7613345c7879bb273b89dcd9d97b0c3c9c2dd35",
+      "source_bytes": 13594,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/platform/auth/BUCK",
+      "sha256": "1748e74f1ced7da7446531468e650c9ee8ca84b89eaf117448323ba5bc3bd0bb",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/BUCK.gz",
+      "archive_sha256": "6b914011e77d6f426a5cb839c3a90d6c1567a5cf851004e436a8aadd5c682de4",
+      "source_bytes": 12472,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/platform/auth/Cargo.toml",
+      "sha256": "b9e5e73eec7a921157a591f78596a42d1bfd74315b24a852c60742c429ce59f5",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/Cargo.toml.gz",
+      "archive_sha256": "b2eac19ad5549b086a8f34521a617395307419b18ede0b032954ba54bf22ba69",
+      "source_bytes": 1369,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/platform/auth/src/refresh.rs",
+      "sha256": "c8bfbded8732dfdba3a06798179d78987679c20db7062882e7ed6212c7bbf1e0",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/src/refresh.rs.gz",
+      "archive_sha256": "e67a0685e9e1a865c32760dfd9d8d177216b34232d4d889487f6e9026f0fb3af",
+      "source_bytes": 19754,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/platform/auth/tests/refresh_tokens.rs",
+      "sha256": "e53c903905f7f3d87f0f77583eb941790441cade6589b70d6eab0bafe2fc4167",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/auth/tests/refresh_tokens.rs.gz",
+      "archive_sha256": "19bf5ce40e39928d82e539fccd123a725260df54b7b07a50c6e50598eca251a5",
+      "source_bytes": 7936,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/platform/test-support/BUCK",
+      "sha256": "3b970c9941f291fd0b93d03e2d5e626b21a5fc93f7bdfe223a339b0df72230a9",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/BUCK.gz",
+      "archive_sha256": "eca8361c600383461c7a5acbca55b884e0f9c367b51810c59f87e55526983978",
+      "source_bytes": 1050,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/platform/test-support/Cargo.toml",
+      "sha256": "927ad4f1bfa07994157ad32f07cbab4d383b9b710bf53383eadceb4edcdab594",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/Cargo.toml.gz",
+      "archive_sha256": "318572a24b8e397fe6a86d6df39d92abff1806c2b287d6ef513dd48f8b0777bc",
+      "source_bytes": 448,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/crates/platform/test-support/src/lib.rs",
+      "sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/crates/platform/test-support/src/lib.rs.gz",
+      "archive_sha256": "1e778211262e341db88b631f87e6c12fa300c5de5fb915aa59a2a21b39bf3ce6",
+      "source_bytes": 21727,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:backend/rust-toolchain.toml",
+      "sha256": "c91677902069dfe54d5d4895372aecaa296dd15c36679f7aab8442a0ae02bad7",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/backend/rust-toolchain.toml.gz",
+      "archive_sha256": "63b90e1e6ee98b52c01d8d70cd60bf5f5193dab9ad88c2eb339f26eb05e8d9b2",
+      "source_bytes": 193,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:ops/account-custody-migrations.sha384",
+      "sha256": "adc836e55749bb1775631289deb3e39566f98d4848e67d837a486c59ebf99c96",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/account-custody-migrations.sha384.gz",
+      "archive_sha256": "6fb896132cf8a004de7caac86a8a35cbd08484617e8cb1c75614e2d994a21bb5",
+      "source_bytes": 22718,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:ops/generate-account-custody.py",
+      "sha256": "f0b61cc8e7fb6aef7ba2494e7c983103f62d89b674ea7ab45a9a40e7cbdb2558",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/generate-account-custody.py.gz",
+      "archive_sha256": "375141102d9b0975edab323a2bc2c60b3c0c8ffd6585db73eec16a6b21b47f5f",
+      "source_bytes": 10046,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:ops/postgres-finalize-account-custody.sh",
+      "sha256": "e064c08f8cc5141f8c99c17b750e5c1714eb7337fedf2a957ff429dbb6e08c47",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-finalize-account-custody.sh.gz",
+      "archive_sha256": "a70466555e1f39a2db48f90462c7a68b311928a5c9d6968ea5d6602ff9ae8fd9",
+      "source_bytes": 6246,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:ops/postgres-finalize-account-custody.sql",
+      "sha256": "eea1ef091ebdacf3fe537bee293a0e0eedf077ab0033bb87f37d617fe6e75c5c",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-finalize-account-custody.sql.gz",
+      "archive_sha256": "f9efe0fe154a1157aaaa5cd2061bde2ef9f77f045a2d3e873242773d6d7ef9bb",
+      "source_bytes": 30290,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:ops/postgres-reconcile-topology.sh",
+      "sha256": "9a8156858d5b00a14e1f2e4a7dacdd754d968b146b4d16d3ff897fff323a0acd",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/ops/postgres-reconcile-topology.sh.gz",
+      "archive_sha256": "77fbbd032adb0628bac963f5d6fd3e2eea1408fa43b4a057aba9597cd9cfb9ac",
+      "source_bytes": 59180,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:tools/ci/cargo-test-runner.sh",
+      "sha256": "7d2ea01b5921e045ab468ed0a99671ae15512cd418cf0f10512ddb7cb641853e",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/cargo-test-runner.sh.gz",
+      "archive_sha256": "156283a3796a62bcc0e74669d3d0816de91501a1d47f3169cc054286ccebb0c6",
+      "source_bytes": 3892,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:tools/ci/cargo_needs_postgres.sh",
+      "sha256": "d75b1877eb24a4f16168d7e26294677c5711de95444ff7484fffc8b1a2f08a29",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/cargo_needs_postgres.sh.gz",
+      "archive_sha256": "4ea0595727b3434fdab82fbb01d9e9bb0615aaf2cc416e0c7783a65ae5c2ab37",
+      "source_bytes": 15302,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:tools/ci/postgres-cargo-map.json",
+      "sha256": "2b41e0b864e3e053bd1f6ff2ea380dce0683659297b4ee5ac88a6e06273afc54",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/postgres-cargo-map.json.gz",
+      "archive_sha256": "d0e81747777e8aa79f0dfdb78128a7ab9071069afd674b0fa58755d01ced6cc6",
+      "source_bytes": 184115,
+      "byte_exact_round_trip": true
+    },
+    {
+      "git_selector": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef:tools/ci/postgres-partition.mjs",
+      "sha256": "99cab75623ac358c3cebbf8edc22a0164060796716362017f3bab33c7b02d5c3",
+      "archive": "sources/dd95a8d00a3aed179ef8fb17c998ddf7ad92abef/tools/ci/postgres-partition.mjs.gz",
+      "archive_sha256": "d0638e57c0f81eafe275b100ad68b7c6aca6975be963f4209d058d6e1f224f5b",
+      "source_bytes": 17263,
+      "byte_exact_round_trip": true
+    }
+  ],
+  "limits": [
+    "Explicit selection only; no temp sweep/copy/archive/delete performed.",
+    "Recheck SHA256s before retention; extract listed source from immutable Git commit, not current checkout.",
+    "Preserve29 failures and all reached/unreached distinctions; no broad GREEN or production claim."
+  ]
+}
