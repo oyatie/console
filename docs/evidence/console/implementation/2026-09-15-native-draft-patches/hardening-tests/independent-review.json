@@ -1,0 +1,197 @@
+{
+  "kind": "INDEPENDENT_ADDITIVE_DRAFT_HARDENING_TEST_REVIEW",
+  "reviewer": "/root/capture_review",
+  "author": "/root/inventory_repair",
+  "repository_writer_runtime_operator": "/root",
+  "base_sha": "3807135a511f899d3a46788c337cf9d3e07ee362",
+  "status": "APPROVED_FOR_ROOT_IMPORT_AND_ACTUAL_RED_PROBE",
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Blast-radius / cell-based"
+  ],
+  "candidate_manifest": "/private/tmp/native-draft-id-constraint-tests-3807135a-v1/manifest.json",
+  "candidate_manifest_sha256": "705d1d37caecd609343a5b599b497470bccf1ccc942616ce5f2c050e5225113e",
+  "candidate_patch_sha256": "4f51060ea9343e57101daed97dde8594c99bc55c689f0f5125a9a82d807e2fc4",
+  "candidate_guide_sha256": "37cfd5eebc2e5264d7a8c0f87c367a4e3daf5ca5eb77feaff5e7c2809f8e42ff",
+  "immutable_target": [
+    {
+      "path": "backend/crates/ontology/application/src/draft_patch_snapshot_tests.rs",
+      "preimage_sha256": "9ee6452a8971a6bd0c7221df983c0c451d3b0f50736c5a74ce158eeef53b50ff",
+      "postimage_sha256": "9171979ce85093a7e5630e96127d2ce35bcbc5767f0a2acb2ef1a0bfdda09da6",
+      "postimage_bytes": 35363
+    },
+    {
+      "path": "backend/crates/ontology/application/src/draft/schema.rs",
+      "preimage_sha256": "80804ef92982598c3599b95083fb2a338ae3d5fae6a32d4a769990315bcaa53d",
+      "postimage_sha256": "cfd808234eb45a2397a58b335abd6b54fc84aae47b2bdc6611fee1b3274bfdc8",
+      "postimage_bytes": 11266
+    },
+    {
+      "path": "backend/crates/ontology/application/src/draft/schema_tests.rs",
+      "preimage_sha256": null,
+      "postimage_sha256": "2dabfab594964bf3bed848521fe3633004c687474aa5ed8b4ae468ea5bef2c2b",
+      "postimage_bytes": 1480
+    }
+  ],
+  "mechanical_checks": {
+    "path": "/private/tmp/capture-draft-additive-review-2j99qzar/mechanical-checks.json",
+    "sha256": "20312dd6fb51cfd459fab25fdcc9ceac78f7cee82db697c7c3b9bca092163a64",
+    "private_patch_apply_check_exit": 0,
+    "private_patch_apply_exit": 0,
+    "three_postimages_byte_equal": true,
+    "rustfmt_check_three_files_exit": 0
+  },
+  "preservation": {
+    "original_test_file_bytes": 30822,
+    "original_test_file_sha256": "9ee6452a8971a6bd0c7221df983c0c451d3b0f50736c5a74ce158eeef53b50ff",
+    "all_original_bytes_preserved_as_prefix": true,
+    "original_test_bodies_unchanged": 12,
+    "original_helpers_and_attributes_unchanged": true,
+    "schema_rs_original_prefix_preserved": true,
+    "schema_rs_only_append_bytes": 53,
+    "schema_rs_append": "#[cfg(test)] child module declaration",
+    "new_test_bodies": 5,
+    "new_test_bodies_existing_test_module": 3,
+    "new_test_bodies_private_compiler_module": 2,
+    "production_body_edits": 0,
+    "registered_schema_edits": 0,
+    "cargo_lock_generated_db_ci_authority_edits": 0
+  },
+  "findings": [],
+  "case_reviews": [
+    {
+      "test": "draft_patch_snapshot_tests::duplicate_item_ids_across_registered_collections_refuse",
+      "positive": "ordinary_tax no-op proves exact unchanged snapshot and valid schema/scope/values",
+      "negative": "Existing matching provenance and valid values carry HIDDEN UUID in COUNTS and CHILDREN; patch touches unrelated valid S1. V1 local per-list seen plus FieldAddress set permit the global UUID duplicate.",
+      "assertion_site": "existing refuses helper apply_draft_patches(...).is_err()"
+    },
+    {
+      "test": "draft_patch_snapshot_tests::insert_requires_fresh_live_id_before_later_removal",
+      "positive": "Fresh S3 scalar INSERT followed by permitted CHILDREN/HIDDEN removal yields exact expected cells/provenance/basis",
+      "negative": "Identical operation shape instead inserts live HIDDEN in COUNTS then removes old CHILDREN/HIDDEN. Both addresses explicitly editable. Final state alone is unique, so insertion-time check is required.",
+      "assertion_site": "existing refuses helper apply_draft_patches(...).is_err()"
+    },
+    {
+      "test": "draft_patch_snapshot_tests::create_container_requires_fresh_live_id_before_subtree_removal",
+      "positive": "Fresh OTHER_DAY RECORD creation then DAY removal yields exact expected unset record and User provenance; calendar_scope covers every removed descendant",
+      "negative": "CREATE reuses live nested DUTY UUID as override item before removing original DAY subtree. It does not repeat an ancestor within either address and reaches global freshness rather than address/scope refusal.",
+      "assertion_site": "existing refuses helper apply_draft_patches(...).is_err()"
+    },
+    {
+      "test": "draft::schema::tests::conflicting_registered_reference_sibling_refuses",
+      "positive": "Actual immutable TaxSupport resolves as object; unchanged ref head exactly equals registered resource and compiles to Record",
+      "negative": "Private compiler boundary wraps actual ref with conflicting type array; V1 head silently retains target object and drops conflicting sibling. Refusal expectation follows accepted fail-closed structural scope.",
+      "assertion_site": "head(conflicting_wrapper).is_err()",
+      "scope": "Private compiler hostile-input control, not caller-supplied registration or product-schema edit"
+    },
+    {
+      "test": "draft::schema::tests::unsupported_registered_container_assertion_refuses",
+      "positive": "Unchanged actual TaxSupport ref compiles as Record under same empty binding trie",
+      "negative": "Wrapper adds unsupported maxProperties:1 assertion; V1 head carries it but record compiler ignores it. Refusal prevents treating unsupported assertion as admitted editing contract.",
+      "assertion_site": "compile(unsupported_wrapper,...).is_err()",
+      "scope": "Does not demand a new maxProperties engine or broader schema language"
+    }
+  ],
+  "prior_root_runtime_evidence_read_only": [
+    {
+      "receipt": "/private/tmp/native-draft12-jxu531ty/receipt.json",
+      "receipt_sha256": "fa2dfd42f7261f4999ea91a102de94848cf31de88dac208cc2d9b9c48741afe5",
+      "log": "/private/tmp/native-draft12-jxu531ty/probe.log",
+      "log_sha256": "4a4790c77360aa7cbf7341c01a48b0342d0f1bf096d292337adb1543e10c0f2d",
+      "summary": [
+        "test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 0.34s"
+      ]
+    },
+    {
+      "receipt": "/private/tmp/native-draft-v1-3807135a/checks.json",
+      "receipt_sha256": "7f7bf4a1821f10be4bcfe96671abc9e540a70e5cdc6b0c777936b8a11989201d",
+      "log": "/private/tmp/native-draft-v1-3807135a/application43.log",
+      "log_sha256": "4ddb06fb6611c58d9ee4810522a7b5d20144f96aa79119fb4c447b757c8c9271",
+      "summary": [
+        "test result: ok. 43 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s"
+      ]
+    }
+  ],
+  "root_decision_binding": {
+    "path": "/private/tmp/native-draft-v1-3807135a/root-observations.json",
+    "sha256": "4d73deb4978a5a6dc79c712237cb904bca3ff15ad17feb60c56a7ddd2439ada8",
+    "decisions": [
+      "Global live editor UUID uniqueness and freshness at each insertion",
+      "Fail-closed fixed-schema structural constraint handling",
+      "Narrow checked non-test lint expectations until real integration caller exists"
+    ]
+  },
+  "probe_accounting": {
+    "runtime_executed_by_reviewer": 0,
+    "cargo_executed_by_reviewer": 0,
+    "database_docker_operations_by_reviewer": 0,
+    "repository_writes_by_reviewer": 0,
+    "prior_root_original_selector": {
+      "executed": 12,
+      "passed": 12,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 31
+    },
+    "prior_root_full_library": {
+      "executed": 43,
+      "passed": 43,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0
+    },
+    "candidate_expected_full_library": 48,
+    "candidate_expected_expanded_draft_selector": 15,
+    "new_assertion_semantic_red": "Predicted statically only; root actual probe must verify reached failure sites after positive controls. Compilation or fixture failure is not semantic RED."
+  },
+  "premortem": "False negatives from scope, invalid typed values, partial-list minimum or unavailable resource could masquerade as intended refusal. Positive controls, complete scopes and real fixed resource bindings address those cases; root runtime remains required.",
+  "blast_radius": "Three additive test/declaration paths in one pure crate; no production source behavior changed by candidate.",
+  "rollback": "Retain frozen candidate/review and any root RED logs. Corrections receive new artifacts and serial root-only forward changes; preserve original tests.",
+  "stop_conditions": [
+    "Any original test/helper byte changes",
+    "Mismatch from immutable candidate postimages",
+    "Runtime fails before intended negative assertions",
+    "Probe skips, ignores, weakens or loses original compatibility tests"
+  ],
+  "remaining_holds": [
+    "Root import and clean-tree named actual semantic RED, then lane admission",
+    "Corrected same-probe GREEN and independent source review",
+    "Full application and exact Clippy proof",
+    "No claim of durable authority/CAS/history/server projection/SSR or production/payment/legal readiness"
+  ],
+  "source_bindings": [
+    {
+      "path": "backend/crates/ontology/application/src/draft.rs",
+      "git_blob": "f5667178b116d63924888c8206ba07df21ac6b9b",
+      "sha256": "c3703386987cb931480e7f31a04e9ae1019601576be85b01e6320f825266204d"
+    },
+    {
+      "path": "backend/crates/ontology/application/src/draft/apply.rs",
+      "git_blob": "4e7f997d2def00072891d43c2461bac34f856928",
+      "sha256": "95faaf9e8c4402e8b8d02a756219044edbf6aec5898b3189d182fe324877aeaa"
+    },
+    {
+      "path": "backend/crates/ontology/application/src/draft/schema.rs",
+      "git_blob": "aec9d71619646ab089c29a36976313bd427bdd66",
+      "sha256": "80804ef92982598c3599b95083fb2a338ae3d5fae6a32d4a769990315bcaa53d"
+    },
+    {
+      "path": "backend/crates/ontology/application/src/draft_patch_snapshot_tests.rs",
+      "git_blob": "0dcef520f38790c635a15bdf075a3816ff55e821",
+      "sha256": "9ee6452a8971a6bd0c7221df983c0c451d3b0f50736c5a74ce158eeef53b50ff"
+    },
+    {
+      "path": "backend/crates/ontology/application/src/owner28/schema.rs",
+      "git_blob": "6fa84f85ee75fe60bb5d93f51d1eabc5e8020008",
+      "sha256": "1ee814b8844597c91e4902dc9838564c256027bd95a1114d75072ec1807ac73b"
+    },
+    {
+      "path": "backend/crates/ontology/application/src/owner28_schemas/2026-09-12-source-payload-contract-19/source-types.schema.json",
+      "git_blob": "29a072cbf65a0ab3d7aa75cb05cc1d5033e2f4a7",
+      "sha256": "c572905e8fee5d2d289f1040bcac5694ca00803589819df9c985a150b07f8a37"
+    }
+  ]
+}

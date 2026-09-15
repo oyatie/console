@@ -946,3 +946,148 @@ fn strict_patch_decoder_preserves_decimal_strings_and_rejects_raw_ambiguity() {
         "error Display echoed submitted input"
     );
 }
+
+// Root review clarification: editor item UUIDs are unique across the complete
+// live snapshot. Field/ancestor addresses do not create separate UUID namespaces.
+#[test]
+fn duplicate_item_ids_across_registered_collections_refuse() {
+    let schema = tax_schema();
+    let before = ordinary_tax();
+    apply(
+        &schema,
+        &before,
+        &scalar_scope(),
+        json!([set(COUNTS, &[], Some(S1), "INTEGER", "1")]),
+        &before,
+        false,
+    );
+    let corrupt = tax(
+        list(vec![
+            (S1, value("INTEGER", "1")),
+            (HIDDEN, value("INTEGER", "2")),
+        ]),
+        vec![
+            (address(COUNTS, &[], Some(S1)), Provenance::User),
+            (address(COUNTS, &[], Some(HIDDEN)), Provenance::User),
+            (
+                address(CHILDREN, &[], Some(HIDDEN)),
+                Provenance::Source {
+                    reference: reference(30),
+                },
+            ),
+        ],
+    );
+    refuses(
+        &schema,
+        &corrupt,
+        &scalar_scope(),
+        json!([set(COUNTS, &[], Some(S1), "INTEGER", "1")]),
+    );
+}
+
+#[test]
+fn insert_requires_fresh_live_id_before_later_removal() {
+    let schema = tax_schema();
+    let before = ordinary_tax();
+    let mut allowed = scalar_scope();
+    allowed.editable.extend([
+        address(COUNTS, &[], Some(HIDDEN)),
+        address(CHILDREN, &[], Some(HIDDEN)),
+    ]);
+    let expected = snapshot(
+        vec![(
+            PAYLOAD,
+            record(vec![(
+                SUPPORT,
+                record(vec![
+                    (
+                        COUNTS,
+                        list(vec![
+                            (S3, value("INTEGER", "3")),
+                            (S1, value("INTEGER", "1")),
+                            (S2, value("INTEGER", "2")),
+                        ]),
+                    ),
+                    (CHILDREN, list(vec![])),
+                ]),
+            )]),
+        )],
+        vec![
+            (address(COUNTS, &[], Some(S1)), Provenance::User),
+            (address(COUNTS, &[], Some(S2)), Provenance::User),
+            (address(COUNTS, &[], Some(S3)), Provenance::User),
+        ],
+    );
+    // The same structural save with a fresh ID succeeds, proving the removal
+    // scope and partial empty required list are not the refusal's cause.
+    apply(
+        &schema,
+        &before,
+        &allowed,
+        json!([
+            {"kind":"INSERT_ITEM","address":wire_address(COUNTS,&[],Some(S3)),"after_item_id":null,"value":{"kind":"INTEGER","value":"3"}},
+            {"kind":"REMOVE_ITEM","address":wire_address(CHILDREN,&[],Some(HIDDEN))}
+        ]),
+        &expected,
+        true,
+    );
+    // A final-only uniqueness check would miss the collision after removal.
+    refuses(
+        &schema,
+        &before,
+        &allowed,
+        json!([
+            {"kind":"INSERT_ITEM","address":wire_address(COUNTS,&[],Some(HIDDEN)),"after_item_id":null,"value":{"kind":"INTEGER","value":"3"}},
+            {"kind":"REMOVE_ITEM","address":wire_address(CHILDREN,&[],Some(HIDDEN))}
+        ]),
+    );
+}
+
+#[test]
+fn create_container_requires_fresh_live_id_before_subtree_removal() {
+    let schema = calendar_schema();
+    let before = snapshot(
+        vec![(
+            OVERRIDES,
+            list(vec![(
+                DAY,
+                day(list(vec![(
+                    DUTY,
+                    duty(Cell::Unset, Cell::Unset, Cell::Unset),
+                )])),
+            )]),
+        )],
+        vec![],
+    );
+    let mut allowed = calendar_scope();
+    allowed.editable.extend([
+        address(OVERRIDES, &[], Some(OTHER_DAY)),
+        address(OVERRIDES, &[], Some(DUTY)),
+    ]);
+    let expected = snapshot(
+        vec![(OVERRIDES, list(vec![(OTHER_DAY, day(Cell::Unset))]))],
+        vec![(address(OVERRIDES, &[], Some(OTHER_DAY)), Provenance::User)],
+    );
+    apply(
+        &schema,
+        &before,
+        &allowed,
+        json!([
+            create(OVERRIDES, &[], Some(OTHER_DAY), "RECORD"),
+            {"kind":"REMOVE_ITEM","address":wire_address(OVERRIDES,&[],Some(DAY))}
+        ]),
+        &expected,
+        true,
+    );
+    // DUTY is already a live nested item. Removing its old subtree afterward
+    // cannot make that UUID fresh at the earlier CREATE_CONTAINER operation.
+    refuses(
+        &schema,
+        &before,
+        &allowed,
+        json!([
+            create(OVERRIDES, &[], Some(DUTY), "RECORD"),
+            {"kind":"REMOVE_ITEM","address":wire_address(OVERRIDES,&[],Some(DAY))}
+        ]),
+    );
+}
