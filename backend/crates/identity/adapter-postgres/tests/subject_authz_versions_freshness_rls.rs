@@ -24,6 +24,7 @@ use console_identity_application::{
 };
 use console_kernel_core::{BranchScope, OrgId, TraceContext, UserId};
 use console_platform_request_context::CURRENT_ORG;
+use console_platform_test_support::prepare_account_test_database;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
@@ -123,10 +124,11 @@ async fn count_as_runtime(rt_pool: &PgPool, org: Uuid) -> i64 {
     count
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn subject_authz_versions_isolate_tenants_and_deny_delete_as_runtime_role(
     owner_pool: PgPool,
 ) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let org_a = *OrgId::knl().as_uuid();
     let org_b = ORG_B;
@@ -230,8 +232,9 @@ async fn mint_role_change_receipt(
         .id
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn bump_and_get_subject_authz_versions_via_store(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let org = OrgId::knl();
     let org_uuid = *org.as_uuid();
@@ -404,8 +407,9 @@ async fn bump_and_get_subject_authz_versions_via_store(owner_pool: PgPool) {
 /// user-edit form re-sends the current roles on a profile edit — that must save
 /// without a receipt and must not bump the subject version — while any real
 /// change (including one that no longer matches its receipt) is still rejected.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn update_user_delta_scopes_the_preview_receipt_gate(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let org = OrgId::knl();
     let org_uuid = *org.as_uuid();

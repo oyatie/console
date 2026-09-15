@@ -45,6 +45,48 @@ USER_ID_GUARD_BODY = """BEGIN
     RETURN NEW;
 END;"""
 
+DEACTIVATION_GUARD_BODY = """DECLARE
+    fenced boolean;
+BEGIN
+    IF pg_catalog.current_setting('transaction_isolation') <> 'read committed' THEN
+        RAISE EXCEPTION USING MESSAGE='account_company_deactivation.unsupported_isolation', ERRCODE='P0001';
+    END IF;
+    IF company_id IS NULL OR subject_id IS NULL THEN
+        RAISE EXCEPTION USING MESSAGE='account_company_deactivation.null_identity', ERRCODE='22004';
+    END IF;
+    IF company_id IS DISTINCT FROM NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid THEN
+        RAISE EXCEPTION USING MESSAGE='account_company_deactivation.company_context_mismatch', ERRCODE='42501';
+    END IF;
+    -- Keep Company RLS active and hold both locks in the caller's transaction.
+    PERFORM u.id FROM public.users u
+        WHERE u.id=subject_id AND u.org_id=company_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING MESSAGE='account_company_deactivation.subject_not_found', ERRCODE='P0002';
+    END IF;
+    PERFORM a.id FROM public.accounts a WHERE a.id=subject_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING MESSAGE='account_company_deactivation.missing_root', ERRCODE='P0001';
+    END IF;
+    -- Separate SPI statement: READ COMMITTED takes a fresh snapshot after the
+    -- root wait. The strict Auth projection refuses hidden authority as well.
+    SELECT public.account_legacy_fenced_v1(subject_id) INTO fenced;
+    IF fenced IS NULL THEN
+        RAISE EXCEPTION USING MESSAGE='account_company_deactivation.invalid_fence', ERRCODE='P0001';
+    END IF;
+    RETURN NOT fenced;
+END;"""
+
+DEACTIVATION_INSTALL = """
+    -- Only a completely absent guard and users ACL reach this narrow upgrade.
+    GRANT SELECT(id,org_id), UPDATE(id) ON public.users TO console_account_owner;
+    EXECUTE pg_catalog.format('CREATE FUNCTION public.account_company_deactivation_guard_v1(company_id uuid,subject_id uuid)
+        RETURNS boolean LANGUAGE plpgsql VOLATILE SECURITY DEFINER
+        SET search_path=pg_catalog,pg_temp AS %L', expected_deactivation_guard_body);
+    ALTER FUNCTION public.account_company_deactivation_guard_v1(uuid,uuid) OWNER TO console_account_owner;
+    REVOKE ALL ON FUNCTION public.account_company_deactivation_guard_v1(uuid,uuid) FROM PUBLIC;
+    GRANT EXECUTE ON FUNCTION public.account_company_deactivation_guard_v1(uuid,uuid) TO console_rt;
+"""
+
 INSTALL = """
     IF NOT guard_present THEN
         EXECUTE pg_catalog.format('CREATE FUNCTION public.account_terms_receipts_immutable_v1()
@@ -130,7 +172,8 @@ def generated_files():
                        ('account_terms_current_v1', CURRENT_BODY),
                        ('account_roots_immutable_v1', ROOT_GUARD_BODY),
                        ('account_legacy_user_root_v1', ROOT_BRIDGE_BODY),
-                       ('account_legacy_user_id_immutable_v1', USER_ID_GUARD_BODY)):
+                       ('account_legacy_user_id_immutable_v1', USER_ID_GUARD_BODY),
+                       ('account_company_deactivation_guard_v1', DEACTIVATION_GUARD_BODY)):
         expected = f"('{name}','{hashlib.sha256(body.encode()).hexdigest()}')"
         if query.count(expected) != 1:
             raise SystemExit('reviewed custody routine digest differs: ' + name)
@@ -150,12 +193,14 @@ DECLARE
     fence_present boolean;
     guard_present boolean;
     current_present boolean;
+    root_present boolean;
     expected_fence_body text := $fence_body${FENCE_BODY}$fence_body$;
     expected_guard_body text := $guard_body${GUARD_BODY}$guard_body$;
     expected_current_body text := $current_body${CURRENT_BODY}$current_body$;
     expected_root_guard_body text := $root_guard_body${ROOT_GUARD_BODY}$root_guard_body$;
     expected_root_bridge_body text := $root_bridge_body${ROOT_BRIDGE_BODY}$root_bridge_body$;
     expected_user_id_guard_body text := $user_id_guard_body${USER_ID_GUARD_BODY}$user_id_guard_body$;
+    expected_deactivation_guard_body text := $deactivation_guard_body${DEACTIVATION_GUARD_BODY}$deactivation_guard_body$;
 BEGIN
     PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
     PERFORM pg_catalog.set_config('lock_timeout','5s',true);
@@ -207,14 +252,20 @@ BEGIN
     ) THEN
         RAISE EXCEPTION 'account_fence_projection.role_mismatch';
     END IF;
-    IF state='account_custody.finalized' THEN
+    -- The complete verdict above certified every present root/profile field.
+    -- Presence now selects the already-certified upgrade path, never authority.
+    SELECT pg_catalog.to_regprocedure('public.account_roots_immutable_v1()') IS NOT NULL INTO root_present;
+    IF root_present THEN
         -- Serving admission is metadata-only. The privileged operator alone
         -- detects corrupt missing roots and refuses rather than repairing them.
         IF EXISTS(SELECT 1 FROM public.users u LEFT JOIN public.accounts a ON a.id=u.id WHERE a.id IS NULL) THEN
             RAISE EXCEPTION USING MESSAGE='account_root_transition.missing_root', ERRCODE='P0001';
         END IF;
+    END IF;
+    IF state='account_custody.finalized' THEN
         RETURN;
     END IF;
+    IF NOT root_present THEN
     -- The same complete read-only contract certifies historical input before
     -- any mutation and current output afterward. No second routine validator.
     SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p
@@ -250,6 +301,8 @@ BEGIN
     END IF;
 {INSTALL}
 {ROOT_INSTALL}
+    END IF;
+{DEACTIVATION_INSTALL}
     -- Certify the complete installed state, not merely the routine definition.
     {inspect}
     IF state IS DISTINCT FROM 'account_custody.finalized' THEN
