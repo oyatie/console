@@ -87,7 +87,8 @@ test('actual dev URL helpers preserve reserved credentials for owner runtime and
 test('actual shared dev URL helper preserves a database name with reserved characters', () => {
   const { context } = fixture();
   context.POSTGRES_DB = 'selected/name?#% value';
-  for (const raw of [context.databaseUrl(), context.runtimeDatabaseUrl(), context.commandDatabaseUrl('console_auth_rt', authPassword)]) {
+  context.APP_POSTGRES_PASSWORD = 'owner-safe'; context.RT_POSTGRES_PASSWORD = 'runtime-safe';
+  for (const raw of [context.databaseUrl(), context.runtimeDatabaseUrl(), context.commandDatabaseUrl('console_auth_rt', 'auth-safe')]) {
     const url = new URL(raw);
     assert.equal(decodeURIComponent(url.pathname.slice(1)), context.POSTGRES_DB);
     assert.equal(url.search, ''); assert.equal(url.hash, '');
