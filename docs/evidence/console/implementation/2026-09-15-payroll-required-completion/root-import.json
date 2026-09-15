@@ -1,0 +1,15 @@
+{
+  "owner": "/root",
+  "base_sha": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+  "guide_sha256": "da2887dd2f1fc0cff9d296cb624c8de236ae935c969e6e9959ff1eb832143e2d",
+  "review_sha256": "bbc2c5cbc46d651c4ba15c771f4715e0ddf579962317b00fb5ab2094d720311d",
+  "copied_allowlist_count": 316,
+  "verified_post_copy": true,
+  "metadata_additions": [
+    "copy-guide.json",
+    "independent-review.json",
+    "root-import.json"
+  ],
+  "claim_clarification": "Historical full verify passed all other locally executed gates;21hosted steps were explicitly unmirrored. Final full verify not rerun.",
+  "authority": "local historical evidence only; no production or product completion"
+}
