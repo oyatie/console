@@ -1078,3 +1078,173 @@ async fn assert_terms_receipt_guard_profile(pool: &PgPool) {
         "current finalized profile requires the complete immutable receipt guard"
     );
 }
+
+// Additive current terms-profile negatives. The existing helper owns real
+// migration/finalization, authenticated projection positive controls, actual
+// metadata mutation, exact read-only/operator refusal and no-repair snapshots.
+// Missing future guard on the historical baseline is a prerequisite failure,
+// never a new RED admission witness. These tests run after terms7 admission.
+// Direct catalog faults model hostile administration in disposable databases;
+// no malformed trigger is invoked and no production grants are fabricated.
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_receipt_required_revision_select_missing(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; REVOKE SELECT(revision) ON public.account_terms_release_receipts FROM console_terms_owner",
+        "account_custody.unexpected_privilege",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_receipt_extra_approval_bytes_select(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; GRANT SELECT(approval_bytes) ON public.account_terms_release_receipts TO console_terms_owner",
+        "account_custody.unexpected_privilege",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_receipt_broad_owner_update(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; GRANT UPDATE ON public.account_terms_release_receipts TO console_terms_owner",
+        "account_custody.unexpected_privilege",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_receipt_key_lock_on_wrong_column(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; REVOKE UPDATE(id) ON public.account_terms_release_receipts FROM console_terms_owner; GRANT UPDATE(approval_bytes) ON public.account_terms_release_receipts TO console_terms_owner",
+        "account_custody.unexpected_privilege",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_receipt_column_wrong_grantor(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; UPDATE pg_catalog.pg_attribute SET attacl=ARRAY['console_terms_owner=r/console_account_owner'::aclitem] WHERE attrelid='public.account_terms_release_receipts'::regclass AND attname='revision'",
+        "account_custody.unexpected_privilege",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_receipt_column_serving_grantee(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; GRANT SELECT(revision) ON public.account_terms_release_receipts TO console_auth_rt",
+        "account_custody.unexpected_privilege",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_receipt_column_grant_option(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; GRANT SELECT(revision) ON public.account_terms_release_receipts TO console_terms_owner WITH GRANT OPTION",
+        "account_custody.unexpected_privilege",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_guard_body(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; UPDATE pg_catalog.pg_proc SET prosrc='BEGIN RETURN NULL; END;' WHERE oid='public.account_terms_receipts_immutable_v1()'::regprocedure",
+        "account_terms_receipts.definition_mismatch",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_guard_owner(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; ALTER FUNCTION public.account_terms_receipts_immutable_v1() OWNER TO console_app",
+        "account_terms_receipts.definition_mismatch",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_guard_security_definer(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; ALTER FUNCTION public.account_terms_receipts_immutable_v1() SECURITY DEFINER",
+        "account_terms_receipts.definition_mismatch",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_guard_search_path(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; ALTER FUNCTION public.account_terms_receipts_immutable_v1() SET search_path=public",
+        "account_terms_receipts.definition_mismatch",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_guard_public_execute(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; GRANT EXECUTE ON FUNCTION public.account_terms_receipts_immutable_v1() TO PUBLIC",
+        "account_terms_receipts.definition_mismatch",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_guard_overload(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; CREATE FUNCTION public.account_terms_receipts_immutable_v1(uuid) RETURNS boolean LANGUAGE sql AS $hostile$ SELECT false $hostile$",
+        "account_terms_receipts.definition_mismatch",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_trigger_missing(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; DROP TRIGGER account_terms_receipts_immutable_v1 ON public.account_terms_release_receipts",
+        "account_custody.catalog_shape_mismatch",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_trigger_disabled(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; ALTER TABLE public.account_terms_release_receipts DISABLE TRIGGER account_terms_receipts_immutable_v1",
+        "account_custody.catalog_shape_mismatch",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_trigger_origin_only(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; ALTER TABLE public.account_terms_release_receipts ENABLE TRIGGER account_terms_receipts_immutable_v1",
+        "account_custody.catalog_shape_mismatch",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_trigger_column_filter(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; UPDATE pg_catalog.pg_trigger SET tgattr='1'::int2vector WHERE tgrelid='public.account_terms_release_receipts'::regclass AND tgname='account_terms_receipts_immutable_v1'",
+        "account_custody.catalog_shape_mismatch",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_terms_profile_refuses_trigger_function_link(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "DO $prerequisite$ BEGIN IF pg_catalog.to_regprocedure('public.account_terms_receipts_immutable_v1()') IS NULL THEN RAISE EXCEPTION 'CURRENT_GUARD_PREREQUISITE: real guard missing; not independent behavioral RED'; END IF; END; $prerequisite$; UPDATE pg_catalog.pg_trigger SET tgfoid='public.account_legacy_fenced_v1(uuid)'::regprocedure WHERE tgrelid='public.account_terms_release_receipts'::regclass AND tgname='account_terms_receipts_immutable_v1'",
+        "account_custody.catalog_shape_mismatch",
+    ).await;
+}
