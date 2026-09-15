@@ -18,6 +18,7 @@ use console_identity_adapter_postgres::PgOrgStore;
 use console_identity_application::{ActivateUserCommand, DeactivateUserCommand};
 use console_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
 use console_platform_request_context::CURRENT_ORG;
+use console_platform_test_support::prepare_account_test_database;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::OffsetDateTime;
@@ -168,8 +169,9 @@ async fn user_is_active(owner_pool: &PgPool, user_id: Uuid) -> bool {
     is_active
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn replaying_deactivate_writes_no_second_transition_audit_row(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let org_b = OrgId::from_uuid(ORG_B);
@@ -250,8 +252,9 @@ async fn replaying_deactivate_writes_no_second_transition_audit_row(owner_pool: 
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn replaying_deactivate_revokes_a_racing_credential(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), true).await;
@@ -290,8 +293,9 @@ async fn replaying_deactivate_revokes_a_racing_credential(owner_pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn replaying_activate_writes_no_second_transition_audit_row(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), false).await;

@@ -46,7 +46,8 @@ ORDER BY wanted.name), relations AS (
  ('account_terms_current_v1','e39c2c73c35b1be6ca7379b08c684879ab831df369f264ec63552490057563ec'),
  ('account_roots_immutable_v1','0ccca6c1b15d5ad3f95f25b8ef88db47f11622a89699326908a7a957fa5fe7fa'),
  ('account_legacy_user_root_v1','2d0643734b149d32b7f81ce052746b2c414ab64439161fc3d64214c680299f31'),
- ('account_legacy_user_id_immutable_v1','77f85eea3c295aae356a4a3aa9925d1e2a2a8d7696cbfeedaa6f706882422b56')
+ ('account_legacy_user_id_immutable_v1','77f85eea3c295aae356a4a3aa9925d1e2a2a8d7696cbfeedaa6f706882422b56'),
+ ('account_company_deactivation_guard_v1','07deace275ef849889d86de62c08bce171974d35d713d67fad8a1fc1899543cf')
 ), root_names(name, relation_name, trigger_name, trigger_type, definer) AS (VALUES
  ('account_roots_immutable_v1','accounts','account_roots_immutable_v1',58,false),
  ('account_legacy_user_root_v1','users','00_account_legacy_user_root_v1',5,true),
@@ -193,6 +194,68 @@ ORDER BY wanted.name), relations AS (
                 AND COALESCE(a.grantee IN (p.proowner,(SELECT oid FROM pg_roles WHERE rolname='console_auth_rt')),false))
                FROM pg_catalog.aclexplode(COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))) a)
  ) AS valid
+), deactivation_guard AS (
+ SELECT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public' AND p.proname='account_company_deactivation_guard_v1') AS present,
+ (SELECT count(*)=1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public' AND p.proname='account_company_deactivation_guard_v1') AND EXISTS (
+   SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   JOIN pg_roles owner_role ON owner_role.oid=p.proowner
+   JOIN pg_language language ON language.oid=p.prolang
+   WHERE n.nspname='public' AND p.proname='account_company_deactivation_guard_v1'
+     AND owner_role.rolname='console_account_owner' AND language.lanname='plpgsql'
+     AND p.prokind='f' AND p.prosecdef AND NOT p.proisstrict AND NOT p.proretset
+     AND NOT p.proleakproof AND p.provolatile='v' AND p.proparallel='u' AND p.prosupport=0
+     AND p.pronargs=2 AND p.proargtypes=ARRAY['pg_catalog.uuid'::regtype::oid,'pg_catalog.uuid'::regtype::oid]::oidvector
+     AND p.proargnames=ARRAY['company_id','subject_id']::text[]
+     AND p.proallargtypes IS NULL AND p.proargmodes IS NULL AND p.provariadic=0
+     AND p.pronargdefaults=0 AND p.proargdefaults IS NULL
+     AND p.prorettype='pg_catalog.bool'::regtype AND p.probin IS NULL
+     AND p.prosqlbody IS NULL AND p.protrftypes IS NULL
+     AND p.procost=100 AND p.prorows=0
+     AND encode(sha256(convert_to(p.prosrc,'UTF8')),'hex')=(SELECT sha256 FROM routine_bodies WHERE name='account_company_deactivation_guard_v1')
+     AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']::text[]
+     AND p.proacl IS NOT NULL AND cardinality(p.proacl)=2
+     AND (SELECT count(*)=2 AND count(DISTINCT a.grantee)=2 AND bool_and(
+       a.grantor=p.proowner AND a.privilege_type='EXECUTE' AND NOT a.is_grantable
+       AND COALESCE(a.grantee IN (p.proowner,(SELECT oid FROM pg_roles WHERE rolname='console_rt')),false))
+       FROM aclexplode(p.proacl) a)
+ ) AS valid
+), deactivation_users AS (
+ SELECT c.oid,c.relowner,c.relacl,r.oid AS guard_owner
+ FROM pg_class c CROSS JOIN pg_roles r
+ WHERE c.oid=to_regclass('public.users') AND r.rolname='console_account_owner'
+), deactivation_user_grants AS (
+ -- Other Company grants remain outside this extension. PUBLIC would widen
+ -- the definer's effective rights and is never a valid guard grant.
+ SELECT a.attname,x.* FROM deactivation_users c
+ JOIN pg_attribute a ON a.attrelid=c.oid
+ CROSS JOIN LATERAL aclexplode(a.attacl) x
+ WHERE x.grantee IN (0,c.guard_owner)
+), deactivation_users_acl AS (
+ SELECT COALESCE(NOT has_table_privilege(c.guard_owner,c.oid,
+       'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER,MAINTAIN')
+     AND NOT EXISTS(SELECT 1 FROM aclexplode(COALESCE(c.relacl,acldefault('r',c.relowner))) x
+       WHERE x.grantee IN (0,c.guard_owner))
+     AND NOT has_any_column_privilege(c.guard_owner,c.oid,'SELECT,INSERT,UPDATE,REFERENCES')
+     AND NOT EXISTS(SELECT 1 FROM deactivation_user_grants),false) AS dormant,
+   COALESCE(NOT has_table_privilege(c.guard_owner,c.oid,
+       'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER,MAINTAIN')
+     AND NOT EXISTS(SELECT 1 FROM aclexplode(COALESCE(c.relacl,acldefault('r',c.relowner))) x
+       WHERE x.grantee IN (0,c.guard_owner))
+     AND (SELECT count(*)=3 AND count(DISTINCT (x.attname,x.privilege_type))=3
+       AND bool_and(x.grantor=c.relowner AND x.grantee=c.guard_owner AND NOT x.is_grantable
+         AND ((x.privilege_type='SELECT' AND x.attname IN ('id','org_id'))
+           OR (x.privilege_type='UPDATE' AND x.attname='id')))
+       FROM deactivation_user_grants x)
+     AND (SELECT bool_and(
+       has_column_privilege(c.guard_owner,c.oid,a.attname,'SELECT')=(a.attname IN ('id','org_id'))
+       AND has_column_privilege(c.guard_owner,c.oid,a.attname,'UPDATE')=(a.attname='id')
+       AND NOT has_column_privilege(c.guard_owner,c.oid,a.attname,'INSERT,REFERENCES')
+       AND NOT has_column_privilege(c.guard_owner,c.oid,a.attname,
+         'SELECT WITH GRANT OPTION,INSERT WITH GRANT OPTION,UPDATE WITH GRANT OPTION,REFERENCES WITH GRANT OPTION'))
+       FROM pg_attribute a WHERE a.attrelid=c.oid AND a.attnum>0 AND NOT a.attisdropped),false) AS valid
+ FROM deactivation_users c
 ), receipt_guard AS (
  SELECT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
    WHERE n.nspname='public' AND p.proname='account_terms_receipts_immutable_v1') AS present,
@@ -361,6 +424,12 @@ SELECT CASE
  WHEN (((SELECT ready FROM acl_profiles) OR (SELECT present FROM root_profile)) AND NOT (SELECT present FROM terms_current))
    OR ((SELECT present FROM terms_current) AND (SELECT dormant OR prepared OR guarded FROM acl_profiles))
  THEN 'account_terms_current.profile_mismatch'
+ WHEN (SELECT present AND NOT valid FROM deactivation_guard)
+ THEN 'account_company_deactivation.definition_mismatch'
+ WHEN ((SELECT present FROM deactivation_guard)
+     AND (NOT (SELECT valid FROM root_profile) OR NOT COALESCE((SELECT valid FROM deactivation_users_acl),false)))
+   OR (NOT (SELECT present FROM deactivation_guard) AND NOT COALESCE((SELECT dormant FROM deactivation_users_acl),false))
+ THEN 'account_company_deactivation.profile_mismatch'
  WHEN NOT COALESCE((SELECT dormant OR prepared OR guarded OR ready FROM acl_profiles),false)
    -- INSERT normalization must not hide duplicate or empty raw ACL items.
    OR ((SELECT present FROM root_profile) AND EXISTS(
@@ -381,7 +450,8 @@ SELECT CASE
    AND (SELECT valid FROM projection) AND (SELECT valid FROM receipt_guard)
    AND (SELECT valid FROM terms_current)
    AND COALESCE((SELECT valid FROM guard_trigger),false)
- THEN CASE WHEN (SELECT valid FROM root_profile) THEN 'account_custody.finalized'
+ THEN CASE WHEN (SELECT valid FROM root_profile) AND (SELECT valid FROM deactivation_guard)
+     AND (SELECT valid FROM deactivation_users_acl) THEN 'account_custody.finalized'
    ELSE 'account_custody.upgrade_required' END
  -- Historical profiles are complete upgrade inputs, never serving profiles.
  WHEN (SELECT finalized FROM ownership) AND (SELECT guarded FROM acl_profiles)
