@@ -74,6 +74,12 @@ jobs:
       - name: PostgreSQL topology integration regression
         run: ops/postgres-topology.integration.test.sh
 
+      - name: Restricted auth topology integration regression
+        timeout-minutes: 10
+        env:
+          DOCKER_CONTEXT: default
+        run: python3 ops/postgres-auth-topology.integration.test.py ops/postgres-reconcile-topology.sh
+
       - name: dev-up bootstrap (compose deps + migrate + backend readyz)
         # macOS/Windows GH-hosted runners cannot run Linux containers reliably,
         # so this smoke test is ubuntu-only; the other OSes' acceptance is the
