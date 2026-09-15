@@ -1,0 +1,20 @@
+{
+  "kind": "ROOT_SERIAL_REVIEWED_EVIDENCE_IMPORT",
+  "source_head": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "owner": "/root",
+  "packages": [
+    {
+      "path": "/private/tmp/account-session-retention-candidate-capture-20260915/retention-allowlist.json",
+      "sha256": "c160a32bba80714c161cb3f21331173392064729db8da5d0c0fa585332ce5f50"
+    },
+    {
+      "path": "/private/tmp/account-session-retention-supplement-capture-20260915/retention-allowlist.json",
+      "sha256": "734baacd06e441c2b93b551069a8d82d9d43acb022a36fcdeecbf7116c78cc55"
+    }
+  ],
+  "new_archives": 199,
+  "archive_bytes": 1092675,
+  "readback": "All compressed and decompressed hashes and exact destination bytes verified. Source Git reference review retained.",
+  "scope": "Completed prior session-reader/terms/full Auth191 evidence plus frozen fixture77 preparation. Final fixture77 runtime and successful npm rerun retained separately.",
+  "outstanding": "Full Auth191 has23failures. This import does not claim full Account/browser/Console or production completion."
+}
