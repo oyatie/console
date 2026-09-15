@@ -116,6 +116,9 @@ GRANT EXECUTE ON FUNCTION public.console_durability_observation_v1(name, oid)
     -- Existing elevated access is drift; never strip or silently repair it.
     SELECT r.rolcanlogin AND NOT r.rolsuper AND NOT r.rolbypassrls
        AND NOT r.rolcreatedb AND NOT r.rolcreaterole AND NOT r.rolreplication
+       AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles replication_role
+           WHERE replication_role.rolreplication
+             AND pg_catalog.pg_has_role(r.oid,replication_role.oid,'MEMBER'))
        AND NOT pg_catalog.pg_has_role(r.oid,'pg_read_all_stats','MEMBER')
        AND NOT pg_catalog.pg_has_role(r.oid,'pg_monitor','MEMBER')
        AND NOT pg_catalog.pg_has_role(r.oid,observer,'MEMBER')
