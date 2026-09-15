@@ -323,6 +323,7 @@ test("quickstart supplies all six distinct login passwords and Compose accepts i
         ACCOUNT_CUSTODY_PASSWORD_FILE: path.join(custody, "password"),
         ACCOUNT_CUSTODY_CA_FILE: path.join(custody, "ca.crt"),
         ACCOUNT_CUSTODY_PG_TLS_DIR: custody,
+        CONSOLE_DATABASE_DURABILITY: '{"mode":"local_development"}',
         CONSOLE_POSTGRES_ADMIN_PASSWORD: "admin-quickstart",
         CONSOLE_APP_POSTGRES_PASSWORD: "app-quickstart",
         CONSOLE_RT_POSTGRES_PASSWORD: "runtime-quickstart",
