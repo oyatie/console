@@ -13,7 +13,9 @@ use console_platform_auth::{
     PasskeyRegistrationStart, PasskeyService, RefreshTokenStore, WebauthnSettings,
 };
 use console_platform_provisioning::{BootstrapCredentialStore, RosterProvisioner};
-use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::PgPool;
 use time::{Duration, OffsetDateTime};
 use url::Url;
@@ -207,8 +209,9 @@ async fn issue_admin_otp_as_runtime(rt_pool: &PgPool, org: OrgId, user_id: Uuid)
 // ===========================================================================
 // (1) KNL: full chain — admin OTP -> redeem -> passkey register -> passkey login.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn knl_auth_chain_works_as_runtime_role(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = auth_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL").await;
@@ -228,6 +231,7 @@ async fn knl_auth_chain_works_as_runtime_role(owner_pool: PgPool) {
     // The redeemed user can mint a session (refresh family issue is RLS-gated).
     RefreshTokenStore
         .issue_family(
+            &rt_pool,
             &rt_pool,
             user_id,
             knl,
@@ -265,8 +269,9 @@ async fn knl_auth_chain_works_as_runtime_role(owner_pool: PgPool) {
 // Proves cross-tenant new-account registration works through its supplied restricted pool (the KNL hardcode
 // + no-GUC bug broke this for every tenant other than KNL).
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn non_knl_admin_otp_and_redeem_work_as_runtime_role(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = auth_role_pool(&owner_pool).await;
     let org2 = OrgId::from_uuid(ORG_T2);
     let _admin = seed_admin(&owner_pool, ORG_T2, "T2").await;
@@ -294,6 +299,7 @@ async fn non_knl_admin_otp_and_redeem_work_as_runtime_role(owner_pool: PgPool) {
 
     RefreshTokenStore
         .issue_family(
+            &rt_pool,
             &rt_pool,
             user_id,
             org2,
@@ -715,8 +721,9 @@ async fn admin_credential_reset_is_tenant_scoped_as_runtime_role(owner_pool: PgP
 // by `with_audits` or the WITH CHECK rejects the row. Then the new user redeems
 // its own code and gets a session — the same first-sign-in path, all through its supplied restricted pool.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn open_signup_creates_member_and_redeems_as_runtime_role(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = login_test_pool(&owner_pool, TestDatabaseLogin::Business).await;
     let auth_pool = auth_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
@@ -760,6 +767,7 @@ async fn open_signup_creates_member_and_redeems_as_runtime_role(owner_pool: PgPo
     // And the redeemed MEMBER can mint a session (refresh-family issue is RLS-gated).
     RefreshTokenStore
         .issue_family(
+            &auth_pool,
             &auth_pool,
             issue.user_id,
             knl,

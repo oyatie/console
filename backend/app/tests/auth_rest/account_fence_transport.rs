@@ -609,9 +609,11 @@ async fn control_refresh_token(pool: &PgPool, fixture: &LegacyFenceFixture) -> S
     // This also calibrates the complete snapshot against a real one-effect write.
     let business =
         console_platform_test_support::login_test_pool(pool, TestDatabaseLogin::Business).await;
+    let auth = console_platform_test_support::login_test_pool(pool, TestDatabaseLogin::Auth).await;
     let issued = RefreshTokenStore
         .issue_family(
             &business,
+            &auth,
             *fixture.control.as_uuid(),
             OrgId::knl(),
             OffsetDateTime::now_utc(),
@@ -619,6 +621,7 @@ async fn control_refresh_token(pool: &PgPool, fixture: &LegacyFenceFixture) -> S
         )
         .await
         .expect("real control-subject token issuance prerequisite");
+    auth.close().await;
     business.close().await;
     assert_projection(pool, fixture.subject, false).await;
     assert_projection(pool, fixture.control, false).await;
@@ -990,8 +993,6 @@ mod issue_family_fence {
     use super::*;
     use console_platform_auth::{AuthError, RefreshTokenIssue};
 
-    // Baseline bridge calls the existing canonical owner without deciding access.
-    // The post-signature variant adds only `auth,` after `business,` below.
     async fn issue(
         business: &PgPool,
         auth: &PgPool,
@@ -999,9 +1000,8 @@ mod issue_family_fence {
         now: OffsetDateTime,
         ttl: Duration,
     ) -> Result<RefreshTokenIssue, AuthError> {
-        let _ = auth;
         RefreshTokenStore
-            .issue_family(business, *subject.as_uuid(), OrgId::knl(), now, ttl)
+            .issue_family(business, auth, *subject.as_uuid(), OrgId::knl(), now, ttl)
             .await
     }
 
