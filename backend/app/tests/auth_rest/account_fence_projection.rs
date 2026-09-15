@@ -599,7 +599,8 @@ async fn account_fence_projection_prepared_profile_has_only_two_exact_owner_read
     // PostgreSQL's actual FK key-share check needs UPDATE on one parent
     // column. This is an ordinary owner-only UPDATE privilege, not a new
     // serving action; the non-assumable owner and exact read-only function
-    // remain separately enforced. Census every column of all six relations.
+    // remain separately enforced. Root creation additionally permits owner-only
+    // INSERT(id,created_at). Census every column of all six relations.
     let column_acl: Vec<(String, String, String, String, String, bool)> = sqlx::query_as(
         "SELECT c.relname::text,column_row.attname::text,pg_catalog.pg_get_userbyid(acl.grantor)::text,pg_catalog.pg_get_userbyid(acl.grantee)::text,acl.privilege_type,acl.is_grantable FROM pg_catalog.pg_class c JOIN pg_catalog.pg_attribute column_row ON column_row.attrelid=c.oid CROSS JOIN LATERAL pg_catalog.aclexplode(column_row.attacl) acl WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts') ORDER BY c.relname,column_row.attnum,acl.grantee,acl.privilege_type"
     ).fetch_all(&pool).await.unwrap();
@@ -667,7 +668,23 @@ async fn account_fence_projection_prepared_profile_has_only_two_exact_owner_read
                 "id".into(),
                 "console_account_owner".into(),
                 "console_account_owner".into(),
+                "INSERT".into(),
+                false,
+            ),
+            (
+                "accounts".into(),
+                "id".into(),
+                "console_account_owner".into(),
+                "console_account_owner".into(),
                 "UPDATE".into(),
+                false,
+            ),
+            (
+                "accounts".into(),
+                "created_at".into(),
+                "console_account_owner".into(),
+                "console_account_owner".into(),
+                "INSERT".into(),
                 false,
             ),
         ]
@@ -727,13 +744,39 @@ async fn account_fence_projection_dormant_finalized_v1_is_upgradeable_without_da
         projection_custody_verdict(&pool).await,
         "account_custody.upgrade_required"
     );
-    let data_before: Vec<i64> = sqlx::query_scalar("SELECT (SELECT count(*) FROM public.accounts) UNION ALL SELECT count(*) FROM public.account_security")
-        .fetch_all(&pool).await.unwrap();
+    let expected_roots = super::account_root_transition::expected_roots_after_backfill(&pool).await;
+    let security_count_before: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM public.account_security")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    let security_before: Vec<Value> =
+        sqlx::query_scalar("SELECT to_jsonb(s) FROM public.account_security s ORDER BY account_id")
+            .fetch_all(&pool)
+            .await
+            .unwrap();
     finalize_account_custody(&pool).await;
     assert!(!fenced(&auth, Uuid::new_v4()).await.unwrap());
     let data_after: Vec<i64> = sqlx::query_scalar("SELECT (SELECT count(*) FROM public.accounts) UNION ALL SELECT count(*) FROM public.account_security")
         .fetch_all(&pool).await.unwrap();
-    assert_eq!(data_before, data_after);
+    assert_eq!(
+        data_after,
+        vec![
+            i64::try_from(expected_roots.as_array().unwrap().len()).unwrap(),
+            security_count_before,
+        ],
+        "only exact legacy roots may be added; security count stays unchanged"
+    );
+    super::account_root_transition::assert_exact_roots(&pool, &expected_roots).await;
+    let security_after: Vec<Value> =
+        sqlx::query_scalar("SELECT to_jsonb(s) FROM public.account_security s ORDER BY account_id")
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        security_after, security_before,
+        "security rows remain exact"
+    );
     assert_eq!(
         projection_custody_verdict(&pool).await,
         "account_custody.finalized"
