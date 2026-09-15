@@ -20,6 +20,7 @@ ops/**
 !ops/account-custody.Dockerfile
 !ops/postgres-finalize-account-custody.sh
 !ops/postgres-finalize-account-custody.sql
+!ops/postgres-install-durability-observer.sql
 !ops/account-custody-migrations.sha384
 
 # Prune heavy / irrelevant paths back out of the re-included trees.
