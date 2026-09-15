@@ -534,10 +534,10 @@ async fn concurrent_finalizers_have_complete_request_outcomes_and_one_final_stat
         }
     };
     let requests = [("first", true), ("second", second_outcome.is_ok())];
-    assert!(complete_successful_requests(
-        &["first", "second"],
-        &requests
-    ));
+    assert!(
+        complete_successful_requests(&["first", "second"], &requests),
+        "finalizer request accounting failed: second={second_outcome:?}"
+    );
     assert_owners(&pool, true).await;
     assert_empty(&pool).await;
     let before = snapshot(&pool).await;
