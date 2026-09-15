@@ -2,14 +2,15 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import yaml from "js-yaml";
-import { recoveryTestInvocations, RECOVERY_SUPERVISOR } from "./recovery-test-invocations.mjs";
+import { recoveryTestInvocations, RECOVERY_SUPERVISOR, OBSERVER_CASE } from "./recovery-test-invocations.mjs";
 
 const workflow = readFileSync(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
 const source = readFileSync(new URL("../../backend/crates/payroll/adapter-postgres/tests/recovery.rs", import.meta.url), "utf8");
-test("actual required recovery commands resolve all six exact owner cases", () => {
-  const result = recoveryTestInvocations(workflow, source);
+const observerSource = readFileSync(new URL("../../backend/crates/payroll/adapter-postgres/tests/durability_observer.rs", import.meta.url), "utf8");
+test("actual required recovery commands resolve six owner cases and the isolated installer", () => {
+  const result = recoveryTestInvocations(workflow, source, observerSource);
   assert.deepEqual(result.failures, []);
-  assert.equal(result.invocations.length, 6);
+  assert.equal(result.invocations.length, 7);
 });
 
 const mutations = {
@@ -33,25 +34,35 @@ for (const [name, mutate] of Object.entries(mutations)) {
   test(`recovery executor refuses ${name}`, () => {
     const parsed = yaml.load(workflow);
     mutate(parsed.jobs['postgres-reachability-domain-b'].steps);
-    const result = recoveryTestInvocations(yaml.dump(parsed, { lineWidth: -1 }), source);
+    const result = recoveryTestInvocations(yaml.dump(parsed, { lineWidth: -1 }), source, observerSource);
     assert.equal(result.invocations.length, 0);
     assert.ok(result.failures.length > 0);
   });
 }
 test("an additional real owner test cannot silently fall outside selected filters", () => {
-  const result = recoveryTestInvocations(workflow, source + '\n#[sqlx::test]\nasync fn third_case() {}\n');
+  const result = recoveryTestInvocations(workflow, source + '\n#[sqlx::test]\nasync fn third_case() {}\n', observerSource);
   assert.equal(result.invocations.length, 0);
   assert.match(result.failures.join(' '), /discovered/);
 });
 
-for (const name of ["fresh_commit_wait_release_requires_explicit_remote_confirmation", "staging_success_and_idempotent_restage_wait_for_remote_confirmation", "required_remote_unknown_is_bounded_and_never_local_fallback", "finite_remote_bound_and_repeated_replay_preserve_exact_rows"]) {
+for (const name of [OBSERVER_CASE, "fresh_commit_wait_release_requires_explicit_remote_confirmation", "staging_success_and_idempotent_restage_wait_for_remote_confirmation", "required_remote_unknown_is_bounded_and_never_local_fallback", "finite_remote_bound_and_repeated_replay_preserve_exact_rows"]) {
   test(`new recovery case ${name} must have a real required executor`, () => {
     const parsed = yaml.load(workflow);
     const steps = parsed.jobs['postgres-reachability-domain-b'].steps;
     const index = steps.findIndex(s => s.run?.includes(` ${name} `));
     assert.ok(index >= 0);
     steps.splice(index, 1);
-    const result = recoveryTestInvocations(yaml.dump(parsed, { lineWidth: -1 }), source);
+    const result = recoveryTestInvocations(yaml.dump(parsed, { lineWidth: -1 }), source, observerSource);
+    assert.equal(result.invocations.length, 0);
+    assert.ok(result.failures.length > 0);
+  });
+}
+
+for (const suffix of [' --no-run', ' --list', ' --skip real_observer', ' --ignored']) {
+  test(`observer execution refuses ${suffix}`, () => {
+    const parsed = yaml.load(workflow);
+    parsed.jobs['postgres-reachability-domain-b'].steps.find(s => s.run?.includes(` ${OBSERVER_CASE} `)).run += suffix;
+    const result = recoveryTestInvocations(yaml.dump(parsed), source, observerSource);
     assert.equal(result.invocations.length, 0);
     assert.ok(result.failures.length > 0);
   });

@@ -22,7 +22,13 @@ RECOVERY = "tools/lanes/recovery/supervise_recovery.py"
 CASES = {
     "replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply": "",
     "lost_commit_transport_reply_replays_one_real_payroll_effect": "after-commit-response",
+    "fresh_commit_wait_release_requires_explicit_remote_confirmation": "",
+    "staging_success_and_idempotent_restage_wait_for_remote_confirmation": "",
+    "required_remote_unknown_is_bounded_and_never_local_fallback": "",
+    "finite_remote_bound_and_repeated_replay_preserve_exact_rows": "",
 }
+OBSERVER_CASE = "real_observer_installer_is_atomic_replay_exact_and_drift_refusing"
+SUPERVISED_CASES = {**CASES, OBSERVER_CASE: ""}
 LIVE_IF = "${{ needs.preflight.outputs.run_live_postgres == 'true' }}"
 CEDAR_IF = "${{ needs.preflight.outputs.run_heavy == 'true' }}"
 RECOVERY_IF = "${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}"
@@ -33,6 +39,7 @@ TARGETS = (
     ("console-app", "backend/app", "account_migration", "postgres"),
     ("console-platform-authz", "backend/crates/platform/authz", "cedar_diagnostic_fail_closed", "none"),
     ("console-payroll-adapter-postgres", "backend/crates/payroll/adapter-postgres", "recovery", "postgres-recovery"),
+    ("console-payroll-adapter-postgres", "backend/crates/payroll/adapter-postgres", "durability_observer", "postgres-recovery"),
 )
 
 
@@ -79,8 +86,9 @@ def fixture_workflow():
         if: {LIVE_IF}
         run: tools/ci/cargo_needs_postgres.sh --workflow-only --shard-id domain-b --num-threads=1 --runner nextest
 """
-    for case, mode in CASES.items():
-        command = " ".join(RECOVERY_CARGO + [case, "--", "--exact", "--test-threads=1", "--nocapture"])
+    for case, mode in SUPERVISED_CASES.items():
+        prefix = RECOVERY_CARGO[:-1] + ["durability_observer" if case == OBSERVER_CASE else "recovery"]
+        command = " ".join(prefix + [case, "--", "--exact", "--test-threads=1", "--nocapture"])
         steps += f"""      - name: Recovery {case}
         if: {RECOVERY_IF}
         run: CONSOLE_RECOVERY_CUT={mode} python3 {RECOVERY} "$GITHUB_WORKSPACE" -- {command}
@@ -124,7 +132,7 @@ class PreparationWiringTests(unittest.TestCase):
         self.assertEqual(1, len(selected), "migration binary needs one actual app-facet mapping")
         self.assertTrue(selected[0].get("in_workflow_postgres_job"))
         self.assertEqual(["cargo", "test", "--locked", "--manifest-path", "backend/Cargo.toml", "-p", "console-app", "--test", "account_migration", "--", "--test-threads=1"], selected[0]["cargo_argv"])
-        self.assertFalse(any(entry.get("package") == "console-payroll-adapter-postgres" and entry.get("test") == "recovery" for entry in entries), "two-node recovery cannot be a one-node map entry, even an inactive one")
+        self.assertFalse(any(entry.get("package") == "console-payroll-adapter-postgres" and entry.get("test") in ("recovery", "durability_observer") for entry in entries), "two-node recovery cannot be a one-node map entry, even an inactive one")
 
     def assert_cedar_workflow(self, workflow=None):
         found = []
@@ -154,6 +162,8 @@ class PreparationWiringTests(unittest.TestCase):
         source = (ROOT / "backend/crates/payroll/adapter-postgres/tests/recovery.rs").read_text()
         discovered = set(re.findall(r"#\[sqlx::test[^\n]*\]\s*async fn ([A-Za-z0-9_]+)", source))
         self.assertEqual(set(CASES), discovered)
+        observer_source = (ROOT / "backend/crates/payroll/adapter-postgres/tests/durability_observer.rs").read_text()
+        self.assertEqual([OBSERVER_CASE], re.findall(r"#\[sqlx::test[^\n]*\]\s*async fn ([A-Za-z0-9_]+)", observer_source))
         job_match = re.search(r"^  postgres-reachability-domain-b:\n([\s\S]*?)(?=^  [A-Za-z0-9_-]+:|\Z)", workflow, re.M)
         self.assertIsNotNone(job_match)
         job = job_match.group(1)
@@ -192,12 +202,12 @@ class PreparationWiringTests(unittest.TestCase):
             self.assertEqual("$GITHUB_WORKSPACE", tokens[2], "supervisor must run the checked-out candidate")
             self.assertEqual("--", tokens[3])
             cargo = tokens[4:]
-            self.assertEqual(RECOVERY_CARGO, cargo[:9])
             case = cargo[9]
-            self.assertIn(case, CASES)
+            self.assertIn(case, SUPERVISED_CASES)
+            self.assertEqual(RECOVERY_CARGO[:-1] + ["durability_observer" if case == OBSERVER_CASE else "recovery"], cargo[:9])
             self.assertEqual(["--", "--exact", "--test-threads=1", "--nocapture"], cargo[10:])
             self.assertNotIn(case, found, "duplicate recovery execution")
-            self.assertEqual(["CONSOLE_RECOVERY_CUT=" + CASES[case]] + tokens, command["raw"], "only the exact fault-mode assignment may wrap the executor")
+            self.assertEqual(["CONSOLE_RECOVERY_CUT=" + SUPERVISED_CASES[case]] + tokens, command["raw"], "only the exact fault-mode assignment may wrap the executor")
             self.assertEqual(RECOVERY_IF, scalar(command["step"], "if"), "both cases must run despite earlier test failure, only after real setup success")
             self.assertIsNone(scalar(command["step"], "continue-on-error"))
             self.assertIsNone(scalar(command["step"], "working-directory"))
@@ -208,7 +218,7 @@ class PreparationWiringTests(unittest.TestCase):
             self.assertNotIn(index, scenario_steps, "separate steps preserve second-case execution after first failure")
             scenario_steps.append(index)
             found[case] = command
-        self.assertEqual(set(CASES), set(found), "both owner cases must execute through two-node supervision")
+        self.assertEqual(set(SUPERVISED_CASES), set(found), "both owner cases must execute through two-node supervision")
 
     def test_both_recovery_cases_have_separate_supervised_exact_workflow_paths(self):
         self.assert_recovery_workflow()

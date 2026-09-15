@@ -465,7 +465,7 @@ async fn real_observer_installer_is_atomic_replay_exact_and_drift_refusing(owner
         ),
         (
             "function_body",
-            "DO $drift$ BEGIN EXECUTE replace(pg_get_functiondef('public.console_durability_observation_v1(name,oid)'::regprocedure),'slots.active','NOT slots.active'); END $drift$",
+            "DO $drift$ BEGIN EXECUTE replace(pg_get_functiondef('public.console_durability_observation_v1(name,oid)'::regprocedure),'AND slots.active','AND NOT slots.active'); END $drift$",
         ),
     ] {
         drift_refused(&mut connection, &sql, name, mutation).await;
@@ -494,6 +494,10 @@ async fn real_observer_installer_is_atomic_replay_exact_and_drift_refusing(owner
         ("runtime_createdb", "ALTER ROLE console_rt CREATEDB"),
         ("runtime_createrole", "ALTER ROLE console_rt CREATEROLE"),
         ("runtime_replication", "ALTER ROLE console_rt REPLICATION"),
+        (
+            "native_public_execute",
+            "GRANT EXECUTE ON FUNCTION pg_catalog.pg_control_system() TO PUBLIC",
+        ),
     ] {
         drift_refused(&mut connection, &sql, name, mutation).await;
     }

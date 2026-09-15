@@ -104,6 +104,11 @@ OPENAPI_DRIFT_EXTERNAL["//backend/openapi:openapi.yaml"] = (
 # Compile-time and runtime fixture inputs outside a crate package. Labels expose
 # the authoritative bytes; mapped destinations preserve the checkout topology.
 RESOURCE_CONFIG = {
+    "console-payroll-adapter-postgres": {
+        "itest_external": {
+            "//ops:postgres-install-durability-observer.sql": "ops/postgres-install-durability-observer.sql",
+        },
+    },
     "console-app": {
         "srcs": ["src/account_custody_state.sql"],
         "external": {
@@ -783,7 +788,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-payroll-adapter-postgres': {
         'unit': 'none',
         'integration': {
-            'tests/durability_observer.rs': 'postgres',
+            'tests/durability_observer.rs': 'postgres-recovery',
             'tests/recovery.rs': 'postgres-recovery',
             'tests/pay_run_port_as_runtime_role.rs': 'postgres',
             'tests/payroll_lifecycle_rls_as_runtime_role.rs': 'postgres',
