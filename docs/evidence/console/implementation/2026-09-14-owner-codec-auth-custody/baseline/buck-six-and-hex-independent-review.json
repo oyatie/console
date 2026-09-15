@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/finish_browser",
+  "candidate": "/private/tmp/test_gen_first_party.owner28-candidate.py",
+  "sha256": "81cf8cb8600590335ca29e1ad86d3ebca684dd5a6d7bf4ee11eec8b35cf7961e",
+  "decision": "approved",
+  "independent_execution": {
+    "discovered": 6,
+    "executed": 6,
+    "passed": 3,
+    "failed": 3,
+    "errors": 0,
+    "generator": "/private/tmp/console-production-tdd-preparation-20260913/tools/buck/gen_first_party.py",
+    "generator_sha256": "af77a550ee784ca9381d641b52b5861813993db682f7bac5aac58358231d8e88"
+  },
+  "red_causes": [
+    "owner18local resources absent",
+    "account custody SQL absent",
+    "exact historical fixture absent"
+  ],
+  "oracle_review": "Complete whitelist AST local expression; materialized exact sets; positive controls and hostile globs/unions/private files; existing external contracts separately tested. Source unchanged; import location substituted in memory only for scratch execution.",
+  "separate_test_refinement": "Approved exact format LowerHex to hex::encode correction of historical fixture SHA256 assertion; digest and expected value unchanged. Prior compiler failure executed0tests."
+}

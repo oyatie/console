@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/finish_migration",
+  "candidate": "/private/tmp/postgres-auth-topology.integration.test.py",
+  "sha256": "b3cb67cd499ecf38cef07e3cbf89baaa30175f13a86a0b42e645b9594bcb4cf1",
+  "verdict": "APPROVE test-only machinery",
+  "cases": 21,
+  "blocking_findings": [],
+  "checks": [
+    "Pinned image, exact source copy/hash, explicit Docker context",
+    "Real TCP password auth and NULL-password negative",
+    "Refusal snapshot covers roles/members/settings/database/namespace/default ACL",
+    "Flag and membership fault injection restored under finally",
+    "Inbound membership demonstrated via real restricted TCP SET ROLE",
+    "Every topology invocation scans captured client and server output for generated plaintext credentials",
+    "Fixed labels only emitted; sensitive snapshots not printed",
+    "Named owner-label cleanup and absence verification"
+  ],
+  "limits": [
+    "No Docker/Cargo or product execution by reviewer",
+    "Old seven role case proves existence count only, not complete attribute/ACL preservation",
+    "tmpfs test is topology/atomicity evidence, not durability"
+  ],
+  "successor_checks": [
+    "Explicit initdb SCRAM host auth",
+    "Actual wrong-password authentication failure",
+    "Adversarial log_statement=all and log_min_error_statement=error plus actual setting and log positive control",
+    "Source path symlink/nonregular refusal"
+  ]
+}

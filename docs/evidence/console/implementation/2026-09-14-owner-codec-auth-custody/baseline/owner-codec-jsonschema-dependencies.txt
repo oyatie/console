@@ -1,0 +1,121 @@
+jsonschema v0.56.0
+├── ahash v0.8.12
+│   ├── cfg-if v1.0.4
+│   ├── getrandom v0.3.4
+│   │   ├── cfg-if v1.0.4
+│   │   └── libc v0.2.186
+│   ├── once_cell v1.21.4
+│   │   ├── critical-section v1.2.0
+│   │   └── portable-atomic v1.13.1
+│   ├── serde v1.0.228
+│   │   ├── serde_core v1.0.228
+│   │   └── serde_derive v1.0.228 (proc-macro)
+│   │       ├── proc-macro2 v1.0.106
+│   │       │   └── unicode-ident v1.0.24
+│   │       ├── quote v1.0.45
+│   │       │   └── proc-macro2 v1.0.106 (*)
+│   │       └── syn v2.0.117
+│   │           ├── proc-macro2 v1.0.106 (*)
+│   │           ├── quote v1.0.45 (*)
+│   │           └── unicode-ident v1.0.24
+│   └── zerocopy v0.8.52
+│       └── zerocopy-derive v0.8.52 (proc-macro)
+│           ├── proc-macro2 v1.0.106 (*)
+│           ├── quote v1.0.45 (*)
+│           └── syn v2.0.117 (*)
+├── bytecount v0.6.9
+├── data-encoding v2.11.0
+├── email_address v0.2.9
+│   └── serde v1.0.228 (*)
+├── fancy-regex v0.19.2
+│   ├── bit-set v0.8.0
+│   │   └── bit-vec v0.8.0
+│   ├── regex-automata v0.4.18
+│   │   ├── aho-corasick v1.1.4
+│   │   │   └── memchr v2.8.2
+│   │   ├── memchr v2.8.2
+│   │   └── regex-syntax v0.8.11
+│   └── regex-syntax v0.8.11
+├── fraction v0.17.0
+│   ├── num v0.4.3
+│   │   ├── num-bigint v0.4.8
+│   │   │   ├── num-integer v0.1.46
+│   │   │   │   └── num-traits v0.2.19
+│   │   │   │       └── libm v0.2.16
+│   │   │   └── num-traits v0.2.19 (*)
+│   │   ├── num-complex v0.4.6
+│   │   │   └── num-traits v0.2.19 (*)
+│   │   ├── num-integer v0.1.46 (*)
+│   │   ├── num-iter v0.1.45
+│   │   │   ├── num-integer v0.1.46 (*)
+│   │   │   └── num-traits v0.2.19 (*)
+│   │   ├── num-rational v0.4.2
+│   │   │   ├── num-bigint v0.4.8 (*)
+│   │   │   ├── num-integer v0.1.46 (*)
+│   │   │   └── num-traits v0.2.19 (*)
+│   │   └── num-traits v0.2.19 (*)
+│   └── num-bigint v0.4.8 (*)
+├── itoa v1.0.18
+├── jsonschema-regex v0.56.0
+│   └── regex-syntax v0.8.11
+├── jsonschema-value v0.56.0
+│   ├── ahash v0.8.12 (*)
+│   ├── bytecount v0.6.9
+│   ├── fraction v0.17.0 (*)
+│   ├── num-cmp v0.1.0
+│   ├── num-traits v0.2.19 (*)
+│   ├── serde_json v1.0.150
+│   │   ├── indexmap v2.14.0
+│   │   │   ├── equivalent v1.0.2
+│   │   │   └── hashbrown v0.17.1
+│   │   │       ├── allocator-api2 v0.2.21
+│   │   │       ├── equivalent v1.0.2
+│   │   │       └── foldhash v0.2.0
+│   │   ├── itoa v1.0.18
+│   │   ├── memchr v2.8.2
+│   │   ├── serde_core v1.0.228
+│   │   └── zmij v1.0.23
+│   └── zmij v1.0.23
+├── num-cmp v0.1.0
+├── num-traits v0.2.19 (*)
+├── percent-encoding v2.3.2
+├── referencing v0.56.0
+│   ├── ahash v0.8.12 (*)
+│   ├── fluent-uri v0.4.1
+│   │   ├── borrow-or-share v0.2.4
+│   │   ├── ref-cast v1.0.25
+│   │   │   └── ref-cast-impl v1.0.25 (proc-macro)
+│   │   │       ├── proc-macro2 v1.0.106 (*)
+│   │   │       ├── quote v1.0.45 (*)
+│   │   │       └── syn v2.0.117 (*)
+│   │   └── serde v1.0.228 (*)
+│   ├── hashbrown v0.17.1 (*)
+│   ├── itoa v1.0.18
+│   ├── micromap v0.3.0
+│   ├── parking_lot v0.12.5
+│   │   ├── lock_api v0.4.14
+│   │   │   └── scopeguard v1.2.0
+│   │   └── parking_lot_core v0.9.12
+│   │       ├── cfg-if v1.0.4
+│   │       ├── libc v0.2.186
+│   │       └── smallvec v1.15.2
+│   │           └── serde v1.0.228 (*)
+│   ├── percent-encoding v2.3.2
+│   └── serde_json v1.0.150 (*)
+├── regex v1.12.4
+│   ├── aho-corasick v1.1.4 (*)
+│   ├── memchr v2.8.2
+│   ├── regex-automata v0.4.18 (*)
+│   └── regex-syntax v0.8.11
+├── serde v1.0.228 (*)
+├── serde_json v1.0.150 (*)
+├── strum v0.28.0
+│   └── strum_macros v0.28.0 (proc-macro)
+│       ├── heck v0.5.0
+│       ├── proc-macro2 v1.0.106 (*)
+│       ├── quote v1.0.45 (*)
+│       └── syn v2.0.117 (*)
+├── unicode-general-category v1.1.0
+└── uuid-simd v0.8.0
+    ├── outref v0.5.2
+    └── vsimd v0.8.0

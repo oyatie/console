@@ -1,0 +1,27 @@
+{
+  "candidate_sha": "ca672445de0c20936a2d4b6289a6389f79a0582e",
+  "base_sha": "3b7dbb0aecdcebb5e2ac0e062ced92de850f3108",
+  "owner": "/root/finish_browser",
+  "reviewer": "/root/review_completeness",
+  "review_receipt": "/private/tmp/account-fence-projection-29-independent-review.json",
+  "test_sha256": "1ed93de41455db89225e0bc8fda02bcc4c6dcb8ca2e8fbd55f2e76555dea252f",
+  "historical_fixture": {
+    "path": "backend/app/tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql",
+    "git_blob": "2fc677e1a1ac181b25fb64d1f55de4f24446f1b7",
+    "sha256": "84e356b88be8762726c26df03a4990a19e98c0fcda3d48a73389d1d2a087559a"
+  },
+  "changes": {
+    "existing_tests": 14,
+    "additive_tests": 15,
+    "candidate_total": 29,
+    "setup_correction": "One prior verdict read now uses documented transaction-local pg_catalog,pg_temp search_path; expected finalized result unchanged.",
+    "oracle_strengthening": "Existing relation metadata snapshot also captures pg_class xmin to detect table ACL rewrite on valid replay.",
+    "new_profile_contract": "Exact collective dormant-v1 zero ACL, or prepared-v2 SELECT only to existing NOLOGIN owner on accounts+account_security; other4tables ACLzero; no serving raw grants. Function/profile mismatch refuses; original serving denials unchanged."
+  },
+  "runtime_status": "Not compiled/executed by this agent; no Cargo lease used. Root integrates and runs exact probe against current function/source.",
+  "limits": [
+    "Historical operator SQL fixture proves SQL-level compatibility using actual frozen artifact. Rowcount preservation is not general populated-row content conservation.",
+    "Simultaneous privileged removal of function and both grants is indistinguishable from old dormant-v1 without a durable marker; not claimed prevented.",
+    "Activation, full credential conversion, whole-transport enforcement and production exposure remain separately held."
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "reviewer": "/root/finish_browser",
+  "candidate_sha": "58e849b6d73357d0455266c7e92b75dc2d6119c0",
+  "base_sha": "349253875189f37b75532c93af47bd57c668bac3",
+  "source": "/private/tmp/console-production-tdd-preparation-20260913/ops/postgres-reconcile-topology.sh",
+  "source_sha256": "4d0e11b02935459a3f79a3bf103bf23f58d98e605541acd3d7f324c26fc178f5",
+  "diff": {
+    "files": 1,
+    "added_lines": 43,
+    "deleted_lines": 0
+  },
+  "decision": "APPROVE scoped restricted auth LOGIN topology implementation",
+  "source_findings": [
+    "Optional supplied credential participates existing distinct-secret checks; explicit empty rejected; omission leaves existing password unchanged and creates fresh LOGIN with NULL password.",
+    "Strict flags and zero membership edges validated before existing membership repair, within same normal topology transaction. No business/table grants or Account activation.",
+    "Existing SQL logging suppression precedes psql password expansion. Real role provisioning remains existing operator boundary."
+  ],
+  "execution_review": {
+    "artifact": "/private/tmp/auth-topology-first-green.json",
+    "sha256": "a8055bbe41ed5129c74d5c4285bce037c984dac2b74d910e7f6efcc55a4a039c",
+    "reported_discovered": 21,
+    "reported_executed": 21,
+    "reported_passed": 21,
+    "reported_blocked": 0,
+    "reviewer_reran": false,
+    "observed": "Read root-produced real-SCRAM execution artifact and matched exact reviewed source hash; source reviewer did not independently rerun Docker."
+  },
+  "remaining_holds": [
+    "Projection function and isolated pool behavior",
+    "Startup/live function metadata verification",
+    "Whole successful legacy authentication fence coverage",
+    "Cutover admission pause/drain/reconciliation",
+    "Account enrollment and production exposure"
+  ]
+}

@@ -267,7 +267,7 @@ async fn account_fence_projection_null_and_database_failure_never_return_false(p
 
 async fn projection_catalog(pool: &PgPool) -> Value {
     sqlx::query_scalar(
-        "SELECT jsonb_build_object('functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_legacy_fenced_v1'),'relations',(SELECT jsonb_agg(jsonb_build_object('name',c.relname,'xmin',c.xmin::text,'owner',c.relowner,'acl',c.relacl,'rls',c.relrowsecurity,'force',c.relforcerowsecurity) ORDER BY c.relname) FROM pg_catalog.pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')))"
+        "SELECT jsonb_build_object('columns',(SELECT jsonb_agg(jsonb_build_object('relation',c.relname,'number',a.attnum,'name',a.attname,'acl',a.attacl,'xmin',a.xmin::text) ORDER BY c.relname,a.attnum) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')),'functions',(SELECT COALESCE(jsonb_agg(jsonb_build_object('row',to_jsonb(p),'xmin',p.xmin::text) ORDER BY p.oid),'[]'::jsonb) FROM pg_catalog.pg_proc p WHERE p.pronamespace='public'::regnamespace AND p.proname='account_legacy_fenced_v1'),'relations',(SELECT jsonb_agg(jsonb_build_object('name',c.relname,'xmin',c.xmin::text,'owner',c.relowner,'acl',c.relacl,'rls',c.relrowsecurity,'force',c.relforcerowsecurity) ORDER BY c.relname) FROM pg_catalog.pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')))"
     ).fetch_one(pool).await.unwrap()
 }
 
@@ -590,6 +590,24 @@ async fn account_fence_projection_prepared_profile_has_only_two_exact_owner_read
             ),
         ]
     );
+    // PostgreSQL's actual FK key-share check needs UPDATE on one parent
+    // column. This is an ordinary owner-only UPDATE privilege, not a new
+    // serving action; the non-assumable owner and exact read-only function
+    // remain separately enforced. Census every column of all six relations.
+    let column_acl: Vec<(String, String, String, String, String, bool)> = sqlx::query_as(
+        "SELECT c.relname::text,column_row.attname::text,pg_catalog.pg_get_userbyid(acl.grantor)::text,pg_catalog.pg_get_userbyid(acl.grantee)::text,acl.privilege_type,acl.is_grantable FROM pg_catalog.pg_class c JOIN pg_catalog.pg_attribute column_row ON column_row.attrelid=c.oid CROSS JOIN LATERAL pg_catalog.aclexplode(column_row.attacl) acl WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts') ORDER BY c.relname,column_row.attnum,acl.grantee,acl.privilege_type"
+    ).fetch_all(&pool).await.unwrap();
+    assert_eq!(
+        column_acl,
+        vec![(
+            "accounts".into(),
+            "id".into(),
+            "console_account_owner".into(),
+            "console_account_owner".into(),
+            "UPDATE".into(),
+            false,
+        )]
+    );
     assert_eq!(
         projection_custody_verdict(&pool).await,
         "account_custody.finalized"
@@ -793,7 +811,7 @@ async fn account_fence_projection_refuses_terms_receipts_read(pool: PgPool) {
 async fn account_fence_projection_refuses_function_with_all_owner_reads_removed(pool: PgPool) {
     assert_prepared_profile_drift_is_not_repaired(
         &pool,
-        "REVOKE SELECT ON public.accounts,public.account_security FROM console_account_owner",
+        "REVOKE SELECT ON public.accounts,public.account_security FROM console_account_owner; REVOKE UPDATE(id) ON public.accounts FROM console_account_owner",
         "account_fence_projection.profile_mismatch",
     )
     .await;
@@ -836,6 +854,7 @@ async fn account_fence_projection_postinstall_dormant_drift_rolls_back_every_cus
             IF pg_catalog.to_regprocedure('public.account_legacy_fenced_v1(uuid)') IS NOT NULL THEN
                 PERFORM pg_catalog.nextval('public.fence_fixture_postgrant_seen'::regclass);
                 REVOKE SELECT ON public.accounts, public.account_security FROM console_account_owner;
+                REVOKE UPDATE(id) ON public.accounts FROM console_account_owner;
             END IF;
         END;
         $trigger_body$;
@@ -891,4 +910,75 @@ async fn account_fence_projection_postinstall_dormant_drift_rolls_back_every_cus
         fenced(&auth, *subject.as_uuid()).await.unwrap(),
         "same installation and real owner read work once only the fault is removed"
     );
+}
+
+// Additive exact owner key-lock column profile negatives. Real isolated
+// catalog mutations must be observed and refused without repair.
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_required_key_lock_grant_missing(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "REVOKE UPDATE(id) ON public.accounts FROM console_account_owner",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_key_lock_grant_on_wrong_column(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "REVOKE UPDATE(id) ON public.accounts FROM console_account_owner; GRANT UPDATE(created_at) ON public.accounts TO console_account_owner",
+        "account_custody.unexpected_privilege",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_extra_owner_column_update(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "GRANT UPDATE(created_at) ON public.accounts TO console_account_owner",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_key_lock_grant_option(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "GRANT UPDATE(id) ON public.accounts TO console_account_owner WITH GRANT OPTION",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_key_lock_wrong_grantor(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "UPDATE pg_catalog.pg_attribute SET attacl=ARRAY['console_account_owner=w/console_terms_owner'::aclitem] WHERE attrelid='public.accounts'::regclass AND attname='id'",
+        "account_custody.unexpected_privilege",
+    ).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_key_lock_serving_grantee(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "GRANT UPDATE(id) ON public.accounts TO console_auth_rt",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_projection_refuses_broad_parent_owner_update(pool: PgPool) {
+    assert_prepared_profile_drift_is_not_repaired(
+        &pool,
+        "GRANT UPDATE ON public.accounts TO console_account_owner",
+        "account_custody.unexpected_privilege",
+    )
+    .await;
 }

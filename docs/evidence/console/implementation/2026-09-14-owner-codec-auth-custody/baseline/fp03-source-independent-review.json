@@ -1,0 +1,34 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVED_SOURCE_PENDING_SAME_PROBE_GREEN",
+  "base": "3f3216d2cdc3bd23b2c11c3d7d285d89a4c1d05a",
+  "files": {
+    "backend/app/src/account_custody_state.sql": "ba63eb0ba3a878ded7173b3154b1c11d9f0cb9f20a31a48efb1fa46e32518a2f",
+    "ops/generate-account-custody.py": "1fe7cd69ca8ecc6e4ed670689091504f0ef64aff0f94d47eb893371e5f99b091",
+    "ops/postgres-finalize-account-custody.sql": "76b259a65a1452e30821f197e701cebaa4779d1cd21a80f55911d2ac766bd79e"
+  },
+  "checks": [
+    "Collective dormant and prepared ACL predicates preserve NULL refusal, exact ownership and all prior shape/role/nonowner/column checks.",
+    "Pre-mutation locked routine presence must be logical complement of dormant profile; partial profiles and incompatible presence are drift rather than repair input.",
+    "Guarded install grants only SELECT to nonlogin nonassumable account owner on accounts/account_security, within existing atomic statement and relation locks.",
+    "Exact routine checker requires two distinct allowed EXECUTE grantees and exact grantor/type/no grant option.",
+    "Independent finding resolved: final canonical metadata recheck requires finalized, followed by explicit non-dormant check to certify installed prepared profile.",
+    "Existing valid prepared replay performs metadata reads/locks only, no GRANT or CREATE/ALTER.",
+    "python3 ops/generate-account-custody.py --check passed independently; no numbered migration modifications."
+  ],
+  "runtime_evidence_observed": {
+    "owner": "/root",
+    "log": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/probe.log",
+    "red_executed": 29,
+    "red_passed": 2,
+    "red_failed": 27,
+    "ignored": 0,
+    "filtered": 94
+  },
+  "limits": [
+    "Reviewer executed generator byte check only, no Cargo/PostgreSQL; same29probe GREEN remains required.",
+    "Source and snapshots do not guarantee authority against arbitrary malicious superuser concurrency. Simultaneous removal of prepared ACLs and routine is indistinguishable from historical dormant-v1.",
+    "No auth-pool/HTTP activation, Account lifecycle activation, crosscluster binding, HA, durability or production exposure claim."
+  ],
+  "additive_test_candidate": "/private/tmp/account-fence-projection-postcondition-test.rs"
+}
