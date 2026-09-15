@@ -1,0 +1,3 @@
+# Generate category.rs from the crate's committed Unicode category tables.
+[buildscript]
+run = true
