@@ -1,0 +1,93 @@
+{
+  "kind": "independent_actual_historical225_capture_completion_review",
+  "status": "APPROVE_CAPTURED_TEST_ONLY_BYTES_FOR_BOUNDED_REPLAY_PROPOSAL",
+  "reviewer": "/root/capture_review",
+  "runtime_operator": "/root",
+  "created_at_utc": "2026-09-15T05:40:18.278102+00:00",
+  "producer_base_sha": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+  "instrumentation_commit": "028828acec82733c081a34a8782c063f10461bbf",
+  "fixture": {
+    "path": "/private/tmp/account-legacy225-captured-output-20260915/_sqlx_test_DajtA0KV6TbLO5Sby_VaYlLRoHs25jDXZB3P6OHrqXe4ZlbvpOnQ.json",
+    "sha256": "bc0c8a562d54866f892706a0a0b6a6723d8874922f58635f3db6f78685889ce4",
+    "bytes": 79424,
+    "file_mode": "0600",
+    "directory_mode": "0700",
+    "only_capture_file": true,
+    "contains_live_dsn_or_authenticator_private_key": false
+  },
+  "run": "/private/tmp/account-legacy225-capture-8150db408a534b218da06daa143b1cfa",
+  "run_artifacts": {
+    "cleanup.txt": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+    "containers-after.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source-before.json": "64f2143e53e112977abd0ccfc1087670c35ff84583d73519aa1f6415a554e337",
+    "source-after.json": "64f2143e53e112977abd0ccfc1087670c35ff84583d73519aa1f6415a554e337",
+    "probe.log": "4000fe94fb8932bccb86ac8ace26a35462166771a95ba7229ba7fbfc75e99bfa",
+    "prebuild-dispatch.txt": "555b64b39b042baf3407017d0276c5d12b5e2358dc78dd48b096ea01e1ec22ff",
+    "cleanup-final-list-error.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "container-name.txt": "1506200a610e17890723204a7b798f20df04510c1346a57e9a5596f56b222338",
+    "probe-exit.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "containers-before-cleanup.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cleanup-list-error.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "driver-receipt.json": "b7f5cd889babf2b6b78f7587f04338ea02eb8407d9965d4e73640278b7ce7cb5",
+    "ownership-label.txt": "091174afc7e38017aa6552daa18a49ff3cbd6d6b18204a0a22fa22d24711ff32",
+    "postgres-map.json": "c2530ddbf3b7288b109b824dcc6d61a5a8395f0bcbb0bc294fb61b88c28df918"
+  },
+  "table_counts": {
+    "groups": 2,
+    "organizations": 2,
+    "group_memberships": 2,
+    "users": 2,
+    "auth_webauthn_credentials": 2,
+    "auth_webauthn_ceremonies": 4,
+    "auth_webauthn_ceremony_bindings": 0,
+    "auth_refresh_token_families": 2,
+    "auth_refresh_tokens": 4,
+    "audit_events": 7
+  },
+  "checks": {
+    "fixture_identity_and_unique_keys": true,
+    "complete_fk_closure": true,
+    "two_independently_generated_credentials": true,
+    "four_ceremonies_two_outstanding": true,
+    "four_tokens_two_correlated_replacements": true,
+    "one_revoked_family": true,
+    "exported_token_sha256_matches_revoked_token_and_family": true,
+    "exact_seven_original_audit_ids_and_subject_org_attribution": true,
+    "full_tables_project_exact_original_material": true,
+    "all225_checksums_equal_immutable_git_sha384": true,
+    "exact22_source_hashes_equal_instrumentation_git_tree": true,
+    "source_before_after_identical_and_clean": true,
+    "instrumentation_sole_parent_and_path_match_approved_capture": true,
+    "all14_manifest_artifact_hashes_match": true,
+    "owned_container_absence_recorded": true,
+    "fixture_dsn_private_key_secret_field_scan": true
+  },
+  "runtime_result": {
+    "selected": 1,
+    "executed": 1,
+    "passed": 0,
+    "failed": 1,
+    "filtered": 1,
+    "exit_code": 1,
+    "boundary": "ACCOUNT_CATALOG_PREREQUISITE missing company_actors after two subjects, two credentials, seven audit rows and actual current migrator completed",
+    "deeper_material_preservation_assertions_reached": false,
+    "account_mapping_assertions_reached": false,
+    "revocation_test_executed": false
+  },
+  "findings": [],
+  "scope_limitations": [
+    "Successful historical capture and recorded clean-source/container custody only.",
+    "The actual migration test remains RED; no preservation, mapping or revocation pass is claimed.",
+    "No actual replay or runtime tampering controls performed by reviewer.",
+    "No production data, serving authorization, durability, migration implementation or release claim."
+  ],
+  "custody": "No fixture bytes, raw token, credential data, or private material printed. Review reports only counts, hashes and verdicts; imported payload remains expressly TEST_ONLY.",
+  "pre_mortem": "Wrong historical producer or altered fixture would invalidate compatibility evidence; exact Git/fixture/225checksums/full material projections and recorded RED boundary were independently checked.",
+  "blast_radius": "Read-only fixture/log/Git inspection and this private JSON. No source, Cargo, Docker, PostgreSQL or service mutation by reviewer.",
+  "rollback": "Keep historical capture immutable; reject replay import if any digest or schema/row invariant changes.",
+  "remaining_holds": [
+    "Permanent replay candidate independent review.",
+    "Actual native replay, negative controls and two-test current-migration rerun.",
+    "Missing company_actors/current conversion remains genuine product RED."
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "base_sha": "4664c581815ab6278f1a454d04aa6156560bd3c2",
+  "run": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238",
+  "executed": 6,
+  "passed": 1,
+  "failed": 5,
+  "filtered": 145,
+  "classification": "MEANINGFUL_PREWRITE_RED",
+  "failures": [
+    "FENCE_OUTAGE_PREWRITE",
+    "FENCE_PREWRITE body",
+    "FENCE_CANONICAL_PREWRITE",
+    "FENCE_PREWRITE cookie",
+    "FENCE_COOKIE_SUBJECT"
+  ],
+  "prerequisites": "Actuallegacyfixture/projection/unrelatedrotationcontrols passed; authfault proven/restored",
+  "source_pre_post": "clean_equal",
+  "cleanup": "confirmed owned container absent via successful bounded docker ps -a",
+  "later_assertions": "Outage recovery/detailedHTTP/refusedcookieopposite direction behind firstassertion; must executeGREEN",
+  "implementation_owner": "/root",
+  "scope": "Mandatoryrestrictedauthpool parameter at canonicalrotate and actualHTTPretaineddependency, gate afterread-onlyFamilyRevoked and beforeallmutations; noactivation/cutover guarantee",
+  "mechanical_test_adapter": "Insert genuine &auth after existingbusinesspool parameter, preserveall assertions; replacehistorical225seed onlywithcaptured realowneroutput afterindependentreview"
+}

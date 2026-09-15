@@ -1,0 +1,132 @@
+{
+  "kind": "historical225_native_replay_four_controls_proposal",
+  "status": "PROPOSAL_ONLY_PENDING_INDEPENDENT_REVIEW_AND_RUNTIME",
+  "author": "/root/capture_review",
+  "repository_and_runtime_owner": "/root",
+  "created_at_utc": "2026-09-15T05:50:17.133288+00:00",
+  "base_git_sha": "4664c581815ab6278f1a454d04aa6156560bd3c2",
+  "base_replay_sha256": "5eebbc6348ea29170e4280e910aeaac565c0b7529e6f0c2b2d730e8cef4c4579",
+  "target_path": "backend/app/tests/account_migration.rs",
+  "artifacts": {
+    "/private/tmp/account-legacy225-replay-controls-candidate.rs": {
+      "sha256": "90e153ff8604c99dedf2172755d5d24f556971b6ce34768aeaea0b5d2d58ca13",
+      "bytes": 28097
+    },
+    "/private/tmp/account-legacy225-replay-controls.patch": {
+      "sha256": "8fab9234d4563fdfac713d66d1180009fac4e5c8a283535800c62e77ff86df37",
+      "bytes": 21124
+    },
+    "/private/tmp/account-legacy225-replay-candidate.rs": {
+      "sha256": "5eebbc6348ea29170e4280e910aeaac565c0b7529e6f0c2b2d730e8cef4c4579",
+      "bytes": 23067
+    },
+    "/private/tmp/account-legacy225-replay-design.json": {
+      "sha256": "5485158184e44a6524e89e9364b5b9a48e2a51ce29c9cf50072d841209a4f115",
+      "bytes": 7886
+    }
+  },
+  "frozen_replay_candidate_changed": false,
+  "fixture_sha256": "bc0c8a562d54866f892706a0a0b6a6723d8874922f58635f3db6f78685889ce4",
+  "changes": [
+    "Extract the existing exact digest assertion into one private synchronous guard. seed_legacy still calls it before JSON parsing or migration/replay DB work.",
+    "Move the unchanged fixed native capture/readback query into one private const used by seed and controls.",
+    "Extract the existing exact full-row/version/checksum/unused-edge assertions into one private synchronous guard used by seed and controls.",
+    "Append4sqlx tests plus one private helper for the three rollback mutations. No new dependency or framework."
+  ],
+  "test_preservation": {
+    "old_migration_login_unchanged": true,
+    "material_snapshot_unchanged": true,
+    "shared_current_migration_oracle_unchanged": true,
+    "original_two_test_bodies_unchanged": true,
+    "fixed_native_query_byte_exact": true,
+    "static_total_tests": 6,
+    "static_controls": 4
+  },
+  "controls": [
+    {
+      "name": "historical225_fixture_corrupt_digest_refuses_before_replay_write",
+      "positive": "Call actual seed_legacy and capture full native state.",
+      "fault": "Change only the captured JSON trailing newline to a space, preserving JSON validity but changing its digest.",
+      "oracle": "The same production-fixture digest guard must panic with exactly historical fixture digest differs; pure guard accepts no DB handle and runs before the seeding DB work in seed_legacy. Full native DB state must remain equal.",
+      "limit": "This tests the exact shared digest guard and source ordering, not a second re-entrant seed_legacy call against a populated DB."
+    },
+    {
+      "name": "historical225_fixture_omitted_row_rejects_and_rolls_back",
+      "positive": "Call actual seed_legacy, including native inserts/full-row/material checks.",
+      "fault": "Delete exactly one captured ceremony inside a new transaction; bindings are empty in this immutable capture.",
+      "oracle": "Same seed full-row guard must reject the missing row with its exact nondumping message. Explicit rollback, full native equality and original material equality must then succeed."
+    },
+    {
+      "name": "historical225_fixture_token_correlation_rejects_and_rolls_back",
+      "positive": "Call actual seed_legacy, including native inserts/full-row/material checks.",
+      "fault": "Update exactly one original replaced_by link to an existing token from the other captured family. The self-FK remains active and valid, so PostgreSQL storage failure cannot substitute for the row oracle.",
+      "oracle": "Same full-row guard rejects, then explicit rollback and native/material equality."
+    },
+    {
+      "name": "historical225_fixture_membership_key_rejects_and_rolls_back",
+      "positive": "Call actual seed_legacy, including generated membership keys and timestamp restoration.",
+      "fault": "Update exactly one membership group_id to the other captured existing group while retaining its org_id. All referenced rows still exist.",
+      "oracle": "Same full-row guard rejects, then explicit rollback and native/material equality."
+    }
+  ],
+  "control_boundary": "Each sqlx case owns one marked disposable database. Tampering is deliberately after a successful replay, inside a separate rollback-only transaction; it calibrates the same full-row guard without bypassing the immutable file digest. These controls do not simulate every possible replay statement omission or PostgreSQL fault.",
+  "error_calibration": "Each DML must succeed and affect exactly one row before reading the altered state. Each expected panic must have the exact digest/full-row message; unrelated storage or decoding failures are test failures. No sensitive fixture values enter assertion diagnostics.",
+  "selected_cargo_argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "backend/Cargo.toml",
+    "-p",
+    "console-app",
+    "--test",
+    "account_migration",
+    "historical225_fixture_",
+    "--",
+    "--test-threads=1"
+  ],
+  "execution_guide": [
+    "Independently review exact controls candidate and its mechanical extractions before root installs it.",
+    "Adapt the reviewed owned PostgreSQL driver only to the historical225_fixture_ prefix, without --exact, and snapshot exact candidate/fixture hash. Driver diff requires independent review.",
+    "Require exactly4executed controls and4passes after successful seed_legacy for each; neither original current-migration test needs to pass for these controls to run.",
+    "Run the unfiltered6-test target separately to retain the2original migration RED results and4control PASS results; report actual reached boundaries/counts."
+  ],
+  "validation": {
+    "executed": [
+      {
+        "command": "rustup run 1.98.1 rustfmt --edition 2024 --check /private/tmp/account-legacy225-replay-controls-candidate.rs",
+        "exit_code": 0
+      },
+      {
+        "command": "Python exact frozen hash/helper/test-body/query/static roster/patch comparison",
+        "result": "PASS; frozen5eebbc63 unchanged; oldlogin/material/oracle/two bodies unchanged; query moved byte-exact;6total/4controls"
+      }
+    ],
+    "tests_discovered": 0,
+    "tests_executed": 0,
+    "not_executed": [
+      "Cargo/typecheck",
+      "PostgreSQL",
+      "Docker",
+      "all control branches"
+    ]
+  },
+  "pre_mortem": "A vacuous negative control could pass on storage failure or a different panic. Positive seed, exact one-row DML success, same shared guard with exact panic message, and explicit rollback+full/material readback distinguish real rejection.",
+  "blast_radius": "Only separate private candidate/patch/guide files written; no repository, original proposal, Cargo, service or DB mutation by author. Future controls touch only their SQLx-owned disposable DB.",
+  "rollback": "Every DB mutation is inside an explicitly rolled-back transaction; a failed assertion drops the transaction and fails the owned disposable test. Root harness retains cleanup/absence custody.",
+  "stop_conditions": [
+    "Frozen replay/source fixture hash changed.",
+    "Original test/helper/query semantics drift.",
+    "Positive seed fails.",
+    "Mutation affects0or>1rows or storage failure prevents the shared row guard.",
+    "Expected panic has a different cause.",
+    "Rollback/native/material equality fails.",
+    "Anything would disable constraints, weaken the digest, fabricate current Account schema, or touch a shared service."
+  ],
+  "remaining_holds": [
+    "Independent controls code and execution-adapter review.",
+    "Actual compile and4control runtime outcomes.",
+    "Current migration implementation and2original preservation tests.",
+    "Mandatory auth dependency call plumbing remains a separate root-owned review."
+  ]
+}

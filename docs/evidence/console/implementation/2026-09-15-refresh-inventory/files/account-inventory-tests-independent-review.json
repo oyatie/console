@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "task": "Independent review of test-only Rust source inventory regression admission",
+  "reviewer": "/root/fast_gate_review",
+  "base_sha": "202d5e1e6bb7083190c8ea7d7451742df9f8c788",
+  "target_sha": "8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3",
+  "root": "/private/tmp/console-test-source-inventory-20260915",
+  "result": "approved_for_bounded_implementation_admission",
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Red Team",
+    "Blast-radius / cell-based"
+  ],
+  "scope": "One test-file commit. No source implementation, baseline changes, fixture checker replacement, or weakened existing test.",
+  "artifacts": {
+    "test_path": "scripts/check-executed-tests.test.mjs",
+    "test_sha256": "fd470ae366e598a9ee4e10ac21799b8a3936d13e468bcca530ebebbe753b67e1",
+    "red_log_path": "/private/tmp/console-test-source-inventory-20260915-red.log",
+    "red_log_sha256": "97fa1e55dab9af27a5c9bd62a01f1d80b171d15da3f20113a3c7eb5481d339ce",
+    "unchanged_implementation_sha256": {
+      "scripts/check-executed-tests.mjs": "9e86ca2580f28621e169cf61747304a4cd75b66a491556ab07891352f7ac093d",
+      "scripts/check-executed-tests-cfg.mjs": "1d1a5678d862b4607b5f53daa0cda59369b9601ab04579afa8b39cf98e27d0c0",
+      "scripts/lib/executed-tests-baseline.mjs": "dfa073b942e9850773434944670cb07069048494b1c6d95a10654c4f4b71642b",
+      "scripts/lib/recovery-test-invocations.mjs": "f9441064f5e59df140a17ffd87aaff7ec4892ad30013e17c5dcb8d4583ccc9ce"
+    }
+  },
+  "facts": [
+    "Parent SHA is exactly 202d5e1e6bb7083190c8ea7d7451742df9f8c788; working tree is clean; only scripts/check-executed-tests.test.mjs changes.",
+    "Existing tests are retained. Three new CLI fixture cases are appended; filesystem/process imports support those cases.",
+    "Fixtures copy the actual scripts/check-executed-tests.mjs, scripts/check-executed-tests-cfg.mjs, and scripts/lib tree, without modifying checker bytes.",
+    "CLI is executed by process.execPath with scripts/check-executed-tests.mjs --json inside the fixture; stdout JSON is parsed rather than fabricated.",
+    "Fixture dependencies link to the repository node_modules; no stub executable or fake Cargo metadata response is installed.",
+    "Actual cargo generate-lockfile --offline creates the dependency-free fixture lock; the unchanged CLI obtains actual cargo metadata --no-deps --locked --format-version 1.",
+    "Fixtures retain the exact real supervised recovery workflow job and real recovery.rs source, with two real sqlx test declarations. Recovery reachability validation runs unchanged.",
+    "Synthetic fixture Cargo/BUCK/workflow inputs intentionally bound the graph; this is a real resolver test over fixture inputs, not proof that the full production graph executes.",
+    "Every new case first compiles the integration root with rustc --edition=2021 --test, asserts the actual binary --list count, executes that binary, and checks all expected cases passed with zero failed/ignored.",
+    "Every CLI result must have unresolved=[] and dark=[] before the intended inventory assertion. Red evidence reaches count/status assertions after these checks.",
+    "Supplied Node log reports 40 discovered/executed, 37 passed, 3 failed, zero skipped/cancelled/todo."
+  ],
+  "cases": [
+    {
+      "name": "follows path and ordinary modules recursively without counting orphan sources",
+      "test_location": "scripts/check-executed-tests.test.mjs:238",
+      "compiler_confirmed_cases": 7,
+      "reachable_graph": [
+        "backend/app/tests/auth_rest.rs",
+        "backend/app/tests/auth_rest/linked.rs",
+        "backend/app/tests/auth_rest/nested.rs",
+        "backend/app/tests/auth_rest/nested/child.rs",
+        "backend/app/tests/auth_rest/directory/mod.rs",
+        "backend/app/tests/auth_rest/directory/leaf.rs",
+        "backend/app/tests/auth_rest/inline/child.rs"
+      ],
+      "orphan_excluded_by_rustc": "backend/app/tests/auth_rest/orphan.rs",
+      "observed_red": "report.testAttributes[integrationRoot] = 1; expected 7. Gate stderr identifies 7 -> 1 (-6), so source closure is not followed.",
+      "verdict": "Intended missing traversal failure; compiler validates ordinary, path, mod.rs, nested and inline-module layouts. A broad subtree scan would overcount the orphan."
+    },
+    {
+      "name": "rejects loss of a referenced child test even when an orphan gains a replacement",
+      "test_location": "scripts/check-executed-tests.test.mjs:255",
+      "compiler_confirmed_initial_cases": 2,
+      "observed_red": "Initial healthy fixture gate returns 1 with 2 -> 1 (-1); expected initial success.",
+      "future_mutation": "Replace referenced linked.rs test with a helper, add an unlinked orphan.rs test, require measured count 1 plus failing exit and explicit 2 -> 1 loss diagnostic.",
+      "verdict": "Valid staged regression: missing initial traversal currently blocks later mutation assertions. Same test must reach those mutation assertions on GREEN.",
+      "limit": "Post-mutation fixture is not separately compiled, but its one root test plus helper and unlinked file is mechanically simple; seven-case compiler control independently establishes orphan exclusion."
+    },
+    {
+      "name": "ignores test attributes and module declarations in comments and strings",
+      "test_location": "scripts/check-executed-tests.test.mjs:272",
+      "compiler_confirmed_cases": 1,
+      "observed_red": "report.testAttributes[integrationRoot] = 3; expected 1. Gate stderr reports a static attribute gain.",
+      "verdict": "Intended lexical false positive. Existing raw attribute regex counts test-like text inside block comments and a raw string. Comment/string module paths also point to real fixture files, so future traversal must ignore them."
+    }
+  ],
+  "root_causes": [
+    {
+      "location": "scripts/check-executed-tests.mjs:434",
+      "finding": "countAttributes visits only integration root file; library behavior separately scans a whole src subtree."
+    },
+    {
+      "location": "scripts/lib/executed-tests-baseline.mjs:87",
+      "finding": "countDeclaredTestAttributes applies a raw multiline regex without masking Rust comments/string literals."
+    }
+  ],
+  "review_checks": [
+    {
+      "command": "git diff --check 202d5e1e6bb7083190c8ea7d7451742df9f8c788 8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3",
+      "exit_code": 0
+    },
+    {
+      "command": "git show --stat --format=fuller 8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3; git diff 202d5e1e6bb7083190c8ea7d7451742df9f8c788 8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3 --",
+      "purpose": "Inspected exact complete one-file test-only delta"
+    },
+    {
+      "command": "Read /private/tmp/console-test-source-inventory-20260915-red.log",
+      "discovered": 40,
+      "executed": 40,
+      "passed": 37,
+      "failed": 3,
+      "skipped": 0,
+      "provenance": "Supplied prior execution, not a reviewer rerun. The log itself does not include its invocation command."
+    }
+  ],
+  "implementation_guidance": "Admit only the observed named red inventory command through the existing lane mechanism. Reuse the existing Rust lexical helper where appropriate, resolve actual module links rather than walking nearby files, retain all baseline tests, and rerun the same command to GREEN without lowering baselines.",
+  "pre_mortem": "A fake checker response, orphan-inclusive directory count, or failed metadata/anchor prerequisite could create misleading red evidence. Exact source copying, Rust compiler controls, and empty unresolved/dark assertions address these hazards.",
+  "blast_radius": "Review approves only local inventory implementation admission from this exact test commit. No auth, DB, migrations, CI producer, or authority source changes are part of approval.",
+  "detection": "Same tests must report authentic compiler counts and reach the child-loss mutation assertions after implementation; unchanged source guards continue to run.",
+  "rollback": "Do not remove new tests to restore green; retain immutable red log and test commit while reverting only a defective bounded implementation.",
+  "stop_conditions": [
+    "Checker or metadata stubbing replaces real CLI execution",
+    "Existing tests are skipped or baseline counts are weakened",
+    "Orphan files contribute to referenced-source counts",
+    "Root, target or test SHA changes without delta review"
+  ],
+  "remaining_holds": [
+    "Implementation is not yet present or verified",
+    "No full production-graph or runtime coverage claim",
+    "No authority to serialize generated/baseline records outside the parent-owned process"
+  ],
+  "reviewer_execution": "No Node/Cargo/rustc tests rerun and no repository source edits. Read-only commands plus this report write only."
+}

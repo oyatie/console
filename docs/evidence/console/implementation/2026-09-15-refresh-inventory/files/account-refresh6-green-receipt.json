@@ -1,0 +1,19 @@
+{
+  "kind": "same-probe-refresh-prewrite-green",
+  "candidate_sha": "8fcf3ca02bb76f1c8a825b85374c4a67eacd4810",
+  "driver_receipt": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/driver-receipt.json",
+  "driver_receipt_sha256": "83a380471bf4b543e4ca5cf137d8a1f44bac24b1e328a63b9b35ca0e5e429710",
+  "command": "env -u BUCK_ISOLATION_DIR DOCKER_CONTEXT=colima-console-custody-20260914 python3 /private/tmp/account-auth-refresh6-probe.py",
+  "tests_executed": 6,
+  "passed": 6,
+  "failed": 0,
+  "filtered": 145,
+  "same_probe_red_receipt": "/private/tmp/account-refresh6-meaningful-red-receipt.json",
+  "cleanup": "confirmed owned container absent via successful bounded docker ps -a",
+  "source_pre_post": "exactly equal",
+  "limits": [
+    "precommitted fence only; separate-pool read does not serialize live cutover",
+    "remaining historical callers and standalone dev-auth fixtures pending",
+    "no production or durability claims"
+  ]
+}

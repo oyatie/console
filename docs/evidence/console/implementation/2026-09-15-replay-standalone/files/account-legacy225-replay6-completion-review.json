@@ -1,0 +1,108 @@
+{
+  "reviewer": "/root/capture_review",
+  "runtime_operator_and_repository_writer": "/root",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "reviewer_actions": {
+    "cargo_commands": 0,
+    "database_commands": 0,
+    "docker_commands": 0,
+    "root_edits": 0
+  },
+  "findings": [],
+  "pre_mortem": "False completion from counted build selections, stale or changed source, vacuous controls, swallowed suite errors or empty Docker output after a failed listing.",
+  "detection": "Exact native test rows and summaries match bound source; all artifact hashes and clean immutable source snapshots match; reviewed driver only reports cleanup after two successful bounded listings.",
+  "rollback": "Retain immutable run and proposal artifacts. Failed suites remain failed; no test or implementation mutation belongs to this review.",
+  "stop_conditions": [
+    "Any cited digest or immutable source mismatch",
+    "Any test result hidden or reclassified as pass",
+    "Compiler prerequisite counted as native execution",
+    "Still-running full151 evidence mixed into completed runs"
+  ],
+  "cleanup_limit": "Recorded successful owned-container absence is verified through exact reviewed driver and artifacts; reviewer did not query Docker again.",
+  "publication_limit": "Evidence-only allowlist, not production, deployment, legal, migration-admission or implementation approval.",
+  "kind": "independent_replay6_completed_runtime_review",
+  "status": "ACCEPT_ACCURATE_COMPLETED_EVIDENCE_4_PASS_2_CATALOG_PREREQUISITE_FAIL",
+  "run": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a",
+  "head": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef",
+  "driver_receipt_sha256": "95ff0347ee4c8011d7e9e8a9a648d9def650a718c5e2f23dcebaca4359cdc061",
+  "driver_sha256": "24167812218388234cab22320f521b823f7915e73b34aef5c9f2b7bba1e85cb3",
+  "artifact_hashes_verified": 14,
+  "source_snapshot_paths_verified_against_git": 23,
+  "source_pre_post_exact_clean": true,
+  "tests": [
+    {
+      "name": "historical225_fixture_corrupt_digest_refuses_before_replay_write",
+      "result": "ok"
+    },
+    {
+      "name": "historical225_fixture_membership_key_rejects_and_rolls_back",
+      "result": "ok"
+    },
+    {
+      "name": "historical225_fixture_omitted_row_rejects_and_rolls_back",
+      "result": "ok"
+    },
+    {
+      "name": "historical225_fixture_token_correlation_rejects_and_rolls_back",
+      "result": "ok"
+    },
+    {
+      "name": "populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits",
+      "result": "FAILED"
+    },
+    {
+      "name": "populated_225_to_current_preserves_preexisting_family_and_token_revocations",
+      "result": "FAILED"
+    }
+  ],
+  "native_counts": {
+    "executed": 6,
+    "passed": 4,
+    "failed": 2,
+    "ignored": 0,
+    "filtered": 0
+  },
+  "native_commands": [
+    "cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test account_migration -- --test-threads=1"
+  ],
+  "probe_exit": 1,
+  "recorded_owned_container_absence": true,
+  "reviewer_live_docker_check": false,
+  "integrated_source_sha256": "84475ea347514e617a0ba5a0d7a2bdd11521e6c4d098b2e6d3b59fe1c88d629d",
+  "integrated_delta_review": "Exactly one &str to &static str lifetime annotation (Rust syntax includes apostrophe) on test-only mutation argument, with only three existing string-literal callers. Exact reversal restores reviewed c18f069b. SQL, assertions and guards unchanged.",
+  "invariant_proof": "All six bodies reached successful seed_legacy first. Passing controls and original failures at later catalog guard establish that frozen fixture digest, native225 rows/checksums, token correlation and postcommit material checks completed before the tested condition.",
+  "controls": "Four controls pass: corrupt digest; omitted ceremony; token replacement into another family; wrong membership group. Three row mutations each require one successful affected row, exact shared row-guard rejection, explicit rollback and full native/material equality.",
+  "actual_failure_boundary": "Both original tests execute actual current migrator, then fail ACCOUNT_CATALOG_PREREQUISITE at account_migration.rs385 missing company_actors. Original mapping, post-current preservation and revoked-family oracle are unexecuted.",
+  "separate_compiler_prerequisite": {
+    "run": "/private/tmp/account-legacy225-replay6-97c613021d9441e090f6cd4ead2c9da8",
+    "head": "925e60d90766773249a26b383fb8e32bb88ec7a3",
+    "driver_receipt_sha256": "dd0b57bc96de68d07a51d69aeb65972f916ca83c42f8a30d71e3c8583e146cc8",
+    "driver_sha256": "24167812218388234cab22320f521b823f7915e73b34aef5c9f2b7bba1e85cb3",
+    "artifact_hashes_verified": 14,
+    "source_snapshot_paths_verified_against_git": 23,
+    "source_pre_post_exact_clean": true,
+    "tests": [],
+    "native_counts": {
+      "executed": 0,
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0
+    },
+    "native_commands": [],
+    "probe_exit": 101,
+    "recorded_owned_container_absence": true,
+    "reviewer_live_docker_check": false
+  },
+  "remaining_holds": [
+    "Current Account conversion and company_actors owner remain absent",
+    "No claim that all importer fault modes were simulated",
+    "No production cutover, durability or serving authority claim"
+  ]
+}

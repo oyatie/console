@@ -1,0 +1,310 @@
+{
+  "kind": "verified-exact-allowlist-retention",
+  "base_sha": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef",
+  "allowlist_sha256": "4e1d621048b5cbd260d4ab340b8661783369dd01746428de1d3826fcff8905d3",
+  "payloads": 60,
+  "bytes": 1056890,
+  "source_and_destination_hashes_verified": true,
+  "records": [
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/cleanup-final-list-error.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/cleanup-list-error.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/cleanup.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/container-name.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/container-name.txt",
+      "sha256": "ad55f1fc456d16243cb281962224c4a3d4be67d6dea3d673da13d935d5164739"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/containers-after.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/containers-before-cleanup.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/driver-receipt.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/driver-receipt.json",
+      "sha256": "8d467922563917284d619d7b7a6777e6abde205a38dd1c7e55051adab5ce845e"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/ownership-label.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/ownership-label.txt",
+      "sha256": "14edc9c63b53fc4241798a507fd7d2c823b52318aa3bf3c3f8ecc395193a3193"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/postgres-map.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/postgres-map.json",
+      "sha256": "a21b9cb9fe591f2a22116648e50a3e50ac733edf1f18f146e3e7be4c6282e5ef"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/prebuild-dispatch.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/probe-exit.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/probe.log",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/probe.log",
+      "sha256": "745b9876a4544e20fe0129743231f6d12fa50a5f06487fa57069ec3bda0cf1d5"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/source-after.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/source-after.json",
+      "sha256": "9482dae19e70124ea423ae20224476fb035d4e20eb686dd74710b0b66cb36b85"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-46137830b5874598b7146f00cc02f238/source-before.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-46137830b5874598b7146f00cc02f238/source-before.json",
+      "sha256": "9482dae19e70124ea423ae20224476fb035d4e20eb686dd74710b0b66cb36b85"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/cleanup-final-list-error.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/cleanup-list-error.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/cleanup.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/container-name.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/container-name.txt",
+      "sha256": "a702677d03171f66814241fe12f832124fa13e632d1472e4df9856fe5a70d2ad"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/containers-after.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/containers-before-cleanup.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/driver-receipt.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/driver-receipt.json",
+      "sha256": "83a380471bf4b543e4ca5cf137d8a1f44bac24b1e328a63b9b35ca0e5e429710"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/ownership-label.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/ownership-label.txt",
+      "sha256": "e977d3d29ccd9cb7162eea3b53553e6266a60a1f88f62336e47cee0bb9ed9beb"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/postgres-map.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/postgres-map.json",
+      "sha256": "a21b9cb9fe591f2a22116648e50a3e50ac733edf1f18f146e3e7be4c6282e5ef"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/prebuild-dispatch.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/probe-exit.txt",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/probe-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/probe.log",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/probe.log",
+      "sha256": "286f81834326275a672eb98d5ffd7b8e90f0287aa6fad9f1988cde761777dbbf"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/source-after.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/source-after.json",
+      "sha256": "57469bb5791f1509b9fb5d9a9cf3e06f74d1e58052e558cecd1595e5638f651b"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/source-before.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-9054344a02a24cb2bba3aeff0a308633/source-before.json",
+      "sha256": "57469bb5791f1509b9fb5d9a9cf3e06f74d1e58052e558cecd1595e5638f651b"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-driver.sh",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-driver.sh",
+      "sha256": "0855a1ad6861ece2b9c16f5464ebf1878f10dfa1f49634cd0fb07a33f3403711"
+    },
+    {
+      "source": "/private/tmp/account-auth-refresh6-probe.py",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-auth-refresh6-probe.py",
+      "sha256": "72525e112bec3a8016ead01bd2088d4d2234f7e74dc95763e2b6de1d6628147f"
+    },
+    {
+      "source": "/private/tmp/account-inventory-admission.log",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-inventory-admission.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+    },
+    {
+      "source": "/private/tmp/account-inventory-implementation-independent-review.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-inventory-implementation-independent-review.json",
+      "sha256": "f45cddeb97bc578f78ef2ad986d02b0ac07fe50ce6a1f261e183517710c9e1c4"
+    },
+    {
+      "source": "/private/tmp/account-inventory-implementation-receipt.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-inventory-implementation-receipt.json",
+      "sha256": "8086a92062b4489cb6bfac674049f9c9717cb39961157cf4942ab8705e27a79d"
+    },
+    {
+      "source": "/private/tmp/account-inventory-tests-independent-review.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-inventory-tests-independent-review.json",
+      "sha256": "73db0838f95bae4d30466c6cd65fb6469c7272a4445ef92a1ff99448511aa34d"
+    },
+    {
+      "source": "/private/tmp/account-refresh6-green-receipt.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-refresh6-green-receipt.json",
+      "sha256": "9e7c814d4f41c2e183c9dd8cbdaaeb8c29e58dbe55d139ae8c37aab63f1ab17e"
+    },
+    {
+      "source": "/private/tmp/account-refresh6-meaningful-red-receipt.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-refresh6-meaningful-red-receipt.json",
+      "sha256": "1f72aa3a0bde08b7f5ba2f5efbdb164865ebdecaa6bd8f6616e9b5c2b35d76c3"
+    },
+    {
+      "source": "/private/tmp/account-refresh6-production-independent-review.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/account-refresh6-production-independent-review.json",
+      "sha256": "b50e8e645decfde6dc5c170248359b69e089c454cf63b50d7fccfb0d314da5b3"
+    },
+    {
+      "source": "/private/tmp/console-test-source-inventory-20260915-g005.log",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/console-test-source-inventory-20260915-g005.log",
+      "sha256": "71e41561d2e5b0959ab5cb37cf5e1869bca50045f941852526b81ec3da65b5ad"
+    },
+    {
+      "source": "/private/tmp/console-test-source-inventory-20260915-green.log",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/console-test-source-inventory-20260915-green.log",
+      "sha256": "85415c888f1f5c3c39942691db8c92561eafb62aee9a46e3accccc3306c9a6a3"
+    },
+    {
+      "source": "/private/tmp/console-test-source-inventory-20260915-red.log",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/console-test-source-inventory-20260915-red.log",
+      "sha256": "97fa1e55dab9af27a5c9bd62a01f1d80b171d15da3f20113a3c7eb5481d339ce"
+    },
+    {
+      "source": "/private/tmp/console-test-source-inventory-20260915-repo.json",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/console-test-source-inventory-20260915-repo.json",
+      "sha256": "9b4a6887cf65d62f6906b1bb78894c3a16fdc8ad0720a1c735bff06080115547"
+    },
+    {
+      "source": "/private/tmp/console-test-source-inventory-20260915-repo.stderr",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/files/console-test-source-inventory-20260915-repo.stderr",
+      "sha256": "015728d4e2886024b3c6f8dcd5f98b28460657d000a9bc16e64be59d3835409e"
+    },
+    {
+      "git_selector": "4664c581815ab6278f1a454d04aa6156560bd3c2:backend/app/tests/auth_rest/account_fence_transport.rs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/4664c581815ab6278f1a454d04aa6156560bd3c2/backend/app/tests/auth_rest/account_fence_transport.rs",
+      "sha256": "a34dbc6d10b89bfa03e03a4112aea4f17974d9a0d5a56751ec46bee60ad73cb6"
+    },
+    {
+      "git_selector": "4664c581815ab6278f1a454d04aa6156560bd3c2:backend/crates/platform/auth-rest/src/lib.rs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/4664c581815ab6278f1a454d04aa6156560bd3c2/backend/crates/platform/auth-rest/src/lib.rs",
+      "sha256": "1378b5d8032fdc87b35c7bc1c6387ae397e222591de592e95653d6d9b026001d"
+    },
+    {
+      "git_selector": "4664c581815ab6278f1a454d04aa6156560bd3c2:backend/crates/platform/auth/src/refresh.rs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/4664c581815ab6278f1a454d04aa6156560bd3c2/backend/crates/platform/auth/src/refresh.rs",
+      "sha256": "429402bb25a003481b15ca30abbd1847f558720c9db1c7741ab64856bfa0fc38"
+    },
+    {
+      "git_selector": "4664c581815ab6278f1a454d04aa6156560bd3c2:backend/crates/platform/auth/tests/refresh_tokens.rs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/4664c581815ab6278f1a454d04aa6156560bd3c2/backend/crates/platform/auth/tests/refresh_tokens.rs",
+      "sha256": "9e5b1357d63b3ab1da5e6dd11066d12a42cbf931f5ce5800f84d0cce1cfeb9b5"
+    },
+    {
+      "git_selector": "8fcf3ca02bb76f1c8a825b85374c4a67eacd4810:backend/app/tests/auth_rest/account_fence_transport.rs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8fcf3ca02bb76f1c8a825b85374c4a67eacd4810/backend/app/tests/auth_rest/account_fence_transport.rs",
+      "sha256": "7cd8143272d266b9b2a4abd9087b4075dee3d20432b4c278417e6235fe069ea7"
+    },
+    {
+      "git_selector": "8fcf3ca02bb76f1c8a825b85374c4a67eacd4810:backend/crates/platform/auth-rest/src/lib.rs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8fcf3ca02bb76f1c8a825b85374c4a67eacd4810/backend/crates/platform/auth-rest/src/lib.rs",
+      "sha256": "935f4306bafc964ff9a7d430a033ee1706d57a4db51f721a79f058d757bd1ec4"
+    },
+    {
+      "git_selector": "8fcf3ca02bb76f1c8a825b85374c4a67eacd4810:backend/crates/platform/auth/src/refresh.rs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8fcf3ca02bb76f1c8a825b85374c4a67eacd4810/backend/crates/platform/auth/src/refresh.rs",
+      "sha256": "c8bfbded8732dfdba3a06798179d78987679c20db7062882e7ed6212c7bbf1e0"
+    },
+    {
+      "git_selector": "8fcf3ca02bb76f1c8a825b85374c4a67eacd4810:backend/crates/platform/auth/tests/refresh_tokens.rs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8fcf3ca02bb76f1c8a825b85374c4a67eacd4810/backend/crates/platform/auth/tests/refresh_tokens.rs",
+      "sha256": "e53c903905f7f3d87f0f77583eb941790441cade6589b70d6eab0bafe2fc4167"
+    },
+    {
+      "git_selector": "8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3:scripts/check-executed-tests.mjs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3/scripts/check-executed-tests.mjs",
+      "sha256": "9e86ca2580f28621e169cf61747304a4cd75b66a491556ab07891352f7ac093d"
+    },
+    {
+      "git_selector": "8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3:scripts/check-executed-tests-cfg.mjs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3/scripts/check-executed-tests-cfg.mjs",
+      "sha256": "1d1a5678d862b4607b5f53daa0cda59369b9601ab04579afa8b39cf98e27d0c0"
+    },
+    {
+      "git_selector": "8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3:scripts/lib/executed-tests-baseline.mjs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3/scripts/lib/executed-tests-baseline.mjs",
+      "sha256": "dfa073b942e9850773434944670cb07069048494b1c6d95a10654c4f4b71642b"
+    },
+    {
+      "git_selector": "8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3:scripts/check-executed-tests.test.mjs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3/scripts/check-executed-tests.test.mjs",
+      "sha256": "fd470ae366e598a9ee4e10ac21799b8a3936d13e468bcca530ebebbe753b67e1"
+    },
+    {
+      "git_selector": "8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3:scripts/lib/executed-tests-baseline.test.mjs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3/scripts/lib/executed-tests-baseline.test.mjs",
+      "sha256": "946942a90c398a55dad7932e6ac05220714fbea146dc3baa58ba0ce1714cd123"
+    },
+    {
+      "git_selector": "40b1bfa6b705ee1f018e37922978583dc3e7536d:scripts/check-executed-tests.mjs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/40b1bfa6b705ee1f018e37922978583dc3e7536d/scripts/check-executed-tests.mjs",
+      "sha256": "e8ba074e08aba9a3fb734d0d99deec2b26d09cb6aa695d436dcb2322faa74f01"
+    },
+    {
+      "git_selector": "40b1bfa6b705ee1f018e37922978583dc3e7536d:scripts/check-executed-tests-cfg.mjs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/40b1bfa6b705ee1f018e37922978583dc3e7536d/scripts/check-executed-tests-cfg.mjs",
+      "sha256": "bf553ddd461b0bfd2a087b3408f0c65a83d023ef789070cafc19c0c522b196f3"
+    },
+    {
+      "git_selector": "40b1bfa6b705ee1f018e37922978583dc3e7536d:scripts/lib/executed-tests-baseline.mjs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/40b1bfa6b705ee1f018e37922978583dc3e7536d/scripts/lib/executed-tests-baseline.mjs",
+      "sha256": "2666c2006ba7fc0c383f6b294109455e9153dc41c51acc81b5813ef48c6afb1a"
+    },
+    {
+      "git_selector": "40b1bfa6b705ee1f018e37922978583dc3e7536d:scripts/check-executed-tests.test.mjs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/40b1bfa6b705ee1f018e37922978583dc3e7536d/scripts/check-executed-tests.test.mjs",
+      "sha256": "fd470ae366e598a9ee4e10ac21799b8a3936d13e468bcca530ebebbe753b67e1"
+    },
+    {
+      "git_selector": "40b1bfa6b705ee1f018e37922978583dc3e7536d:scripts/lib/executed-tests-baseline.test.mjs",
+      "destination": "docs/evidence/console/implementation/2026-09-15-refresh-inventory/sources/40b1bfa6b705ee1f018e37922978583dc3e7536d/scripts/lib/executed-tests-baseline.test.mjs",
+      "sha256": "946942a90c398a55dad7932e6ac05220714fbea146dc3baa58ba0ce1714cd123"
+    }
+  ]
+}

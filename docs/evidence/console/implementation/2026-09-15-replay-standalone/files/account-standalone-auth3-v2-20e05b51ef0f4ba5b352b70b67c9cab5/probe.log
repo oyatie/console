@@ -1,0 +1,119 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_86245" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_86245, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+SELECT 27
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+cargo-postgres: running 3 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.31s
+[1m[92m  Executable[0m tests/deactivate_revokes_credentials.rs (/private/tmp/console-account30-cargo/debug/deps/deactivate_revokes_credentials-7f1d12c6a5032217)
+[1m[92m   Compiling[0m serde_json v1.0.150
+[1m[92m   Compiling[0m der-parser v9.0.0
+[1m[92m   Compiling[0m webauthn-attestation-ca v0.5.5
+[1m[92m   Compiling[0m simple_asn1 v0.6.4
+[1m[92m   Compiling[0m x509-parser v0.16.0
+[1m[92m   Compiling[0m sqlx-core v0.9.0
+[1m[92m   Compiling[0m webauthn-rs-proto v0.5.5
+[1m[92m   Compiling[0m console-kernel-core v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/kernel/core)
+[1m[92m   Compiling[0m jsonwebtoken v10.4.0
+[1m[92m   Compiling[0m webauthn-rs-core v0.5.5
+[1m[92m   Compiling[0m sqlx-postgres v0.9.0
+[1m[92m   Compiling[0m webauthn-rs v0.5.5
+[1m[92m   Compiling[0m webauthn-authenticator-rs v0.5.5
+[1m[92m   Compiling[0m sqlx-macros-core v0.9.0
+[1m[92m   Compiling[0m sqlx-macros v0.9.0
+[1m[92m   Compiling[0m sqlx v0.9.0
+[1m[92m   Compiling[0m console-platform-db v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/db)
+[1m[92m   Compiling[0m console-platform-test-support v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/test-support)
+[1m[92m   Compiling[0m console-platform-auth v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/auth)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 38.23s
+[1m[92m  Executable[0m tests/refresh_tokens.rs (/private/tmp/console-account30-cargo/debug/deps/refresh_tokens-7e61b54571574cba)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.34s
+[1m[92m  Executable[0m tests/dev_auth_session.rs (/private/tmp/console-account30-cargo/debug/deps/dev_auth_session-3b2d8da9f0a8b36c)
+cargo-postgres: === auth-rest-dev-auth-session-postgres ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-auth-rest --test dev_auth_session --features dev-auth -- --test-threads=1
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.25s
+[1m[92m     Running[0m tests/dev_auth_session.rs (/private/tmp/console-account30-cargo/debug/deps/dev_auth_session-3b2d8da9f0a8b36c)
+
+running 7 tests
+test cookie_refresh_keeps_synthetic_dev_persona_out_of_passkey_onboarding ... ok
+test cookie_refresh_still_requires_passkey_for_ordinary_zero_passkey_user ... ok
+test mints_a_real_session_and_backs_it_with_a_real_user ... ok
+test rejects_a_branch_that_does_not_belong_to_the_org ... ok
+test rejects_an_org_that_does_not_exist ... ok
+test rejects_an_unknown_role ... ok
+test rejects_the_platform_sentinel_org ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.12s
+
+cargo-postgres-timing: {"name": "auth-rest-dev-auth-session-postgres", "package": "console-platform-auth-rest", "seconds": 17.38, "shard": "", "status": "pass"}
+cargo-postgres: === identity-adapter-postgres-deactivate-revokes-credentials-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-identity-adapter-postgres --test deactivate_revokes_credentials -- --test-threads=1
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.33s
+[1m[92m     Running[0m tests/deactivate_revokes_credentials.rs (/private/tmp/console-account30-cargo/debug/deps/deactivate_revokes_credentials-7f1d12c6a5032217)
+
+running 1 test
+test deactivate_revokes_passkeys_and_sessions_as_runtime_role ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.25s
+
+cargo-postgres-timing: {"name": "identity-adapter-postgres-deactivate-revokes-credentials-pg", "package": "console-identity-adapter-postgres", "seconds": 3.783, "shard": "", "status": "pass"}
+cargo-postgres: === platform-auth-refresh-tokens-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-auth --test refresh_tokens -- --test-threads=1
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.48s
+[1m[92m     Running[0m tests/refresh_tokens.rs (/private/tmp/console-account30-cargo/debug/deps/refresh_tokens-7e61b54571574cba)
+
+running 3 tests
+test refresh_token_reuse_revokes_the_whole_family ... FAILED
+test rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role ... FAILED
+test rotation_past_family_absolute_ttl_revokes_the_family ... FAILED
+
+failures:
+
+---- refresh_token_reuse_revokes_the_whole_family stdout ----
+
+thread 'refresh_token_reuse_revokes_the_whole_family' (32743003) panicked at crates/platform/auth/tests/refresh_tokens.rs:95:10:
+called `Result::unwrap()` on an `Err` value: Sqlx(Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table auth_refresh_token_families", detail: None, hint: None, position: None, where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") }))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role stdout ----
+
+thread 'rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role' (32743021) panicked at crates/platform/auth/tests/refresh_tokens.rs:38:10:
+called `Result::unwrap()` on an `Err` value: Sqlx(Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table auth_refresh_token_families", detail: None, hint: None, position: None, where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") }))
+
+---- rotation_past_family_absolute_ttl_revokes_the_family stdout ----
+
+thread 'rotation_past_family_absolute_ttl_revokes_the_family' (32743117) panicked at crates/platform/auth/tests/refresh_tokens.rs:183:10:
+called `Result::unwrap()` on an `Err` value: Sqlx(Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table auth_refresh_token_families", detail: None, hint: None, position: None, where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") }))
+
+
+failures:
+    refresh_token_reuse_revokes_the_whole_family
+    rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role
+    rotation_past_family_absolute_ttl_revokes_the_family
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.25s
+
+[1m[91merror[0m: test failed, to rerun pass `-p console-platform-auth --test refresh_tokens`
+cargo-postgres-timing: {"name": "platform-auth-refresh-tokens-pg", "package": "console-platform-auth", "seconds": 6.824, "shard": "", "status": "fail"}
+
+cargo-postgres: summary
+  PASS  auth-rest-dev-auth-session-postgres
+  PASS  identity-adapter-postgres-deactivate-revokes-credentials-pg
+  FAIL  platform-auth-refresh-tokens-pg
+cargo-postgres: 2 passed, 1 failed
+cargo-postgres: one or more invocations failed
