@@ -340,6 +340,7 @@ pub async fn login_test_pool(owner_pool: &PgPool, login: TestDatabaseLogin) -> P
     let identity: (String, String, bool, bool, bool, bool, bool) = sqlx::query_as(
         "SELECT session_user::text, current_user::text, rolsuper, rolbypassrls, rolcreaterole, rolcreatedb, rolreplication FROM pg_catalog.pg_roles WHERE rolname = current_user",
     )
+    // rls-arming: ok pg_catalog.pg_roles is cluster-global login metadata; this restricted-session identity check reads no Company rows
     .fetch_one(&pool)
     .await
     .unwrap();
