@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVED_SOURCE_AND_SIX_TEST_PROBE",
+  "base": "3f3216d2",
+  "commit": "3923f041b3ba9da87337046451f61774bf5545c0",
+  "source": "tools/buck/gen_first_party.py",
+  "sha256": "08a49e692b20ba6c02c5d8dd1b02ca452fbc09dbb1a59bd8976a5ef0fa8b248a",
+  "diff": "Nine added RESOURCE_CONFIG lines only; exact app custody SQL, exact historical auth fixture, three ontology owner schema/golden patterns. No tests changed or generator algorithm altered.",
+  "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/buck/test_gen_first_party.py OwnerResourcesTests AccountResourcesTests",
+  "cwd": "/private/tmp/console-buck-owner-resources-20260914",
+  "executed": 6,
+  "passed": 6,
+  "failed": 0,
+  "limits": [
+    "Named generator tests execute actual emit and exact local resource materialization; not a full Buck compile/build claim.",
+    "Existing generator ResourceWarning for unclosed test source read remains unrelated to resource mapping change.",
+    "Root owns generated BUCK regeneration and subsequent whole-suite/drift validation."
+  ]
+}

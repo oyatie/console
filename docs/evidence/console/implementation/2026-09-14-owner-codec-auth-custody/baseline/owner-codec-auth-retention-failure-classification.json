@@ -1,0 +1,124 @@
+{
+  "3f3216d2cdc3bd23b2c11c3d7d285d89a4c1d05a": {
+    "failures": {
+      "account_fence_projection::account_fence_projection_dormant_finalized_v1_is_upgradeable_without_data_change": "account_security_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_body_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_default_argument_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_duplicate_owner_acl_without_auth": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_invoker_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_overload_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_owner_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_public_execute_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_row_security_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_search_path_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_replay_is_exactly_unchanged": "account_security_42501",
+      "account_fence_projection::account_fence_projection_installation_failure_rolls_back_custody_and_created_function": "account_security_42501",
+      "account_fence_projection::account_fence_projection_null_and_database_failure_never_return_false": "account_security_42501",
+      "account_fence_projection::account_fence_projection_operator_refuses_serving_and_migration_logins": "account_security_42501",
+      "account_fence_projection::account_fence_projection_prepared_profile_has_only_two_exact_owner_reads": "expected_acl_assertion",
+      "account_fence_projection::account_fence_projection_presence_is_state_independent_and_not_rls_absence": "account_security_42501",
+      "account_fence_projection::account_fence_projection_refuses_function_with_all_owner_reads_removed": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_refuses_half_profile_without_accounts_read": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_refuses_half_profile_without_security_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_owner_grant_option": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_owner_write": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_owner_wrong_grantor": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_prepared_acl_with_function_deleted": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_security_events_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_terms_acceptances_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_terms_head_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_terms_receipts_read": "storage_prerequisite"
+    },
+    "counts": {
+      "account_security_42501": 6,
+      "accounts_fk_42501": 11,
+      "expected_acl_assertion": 1,
+      "storage_prerequisite": 9
+    },
+    "summary": [
+      "test result: FAILED. 2 passed; 27 failed; 0 ignored; 0 measured; 94 filtered out; finished in 78.68s"
+    ]
+  },
+  "c23e4be0aff7a94d40c11f25f16d97d65c348b8e": {
+    "failures": {
+      "account_fence_projection::account_fence_projection_finalizer_refuses_body_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_default_argument_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_duplicate_owner_acl_without_auth": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_invoker_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_overload_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_owner_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_public_execute_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_row_security_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_search_path_drift": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_finalizer_replay_is_exactly_unchanged": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_installation_failure_rolls_back_custody_and_created_function": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_null_and_database_failure_never_return_false": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_postinstall_dormant_drift_rolls_back_every_custody_change": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_prepared_profile_has_only_two_exact_owner_reads": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_presence_is_state_independent_and_not_rls_absence": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_refuses_function_with_all_owner_reads_removed": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_refuses_half_profile_without_accounts_read": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_refuses_half_profile_without_security_read": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_refuses_owner_grant_option": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_refuses_owner_write": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_refuses_owner_wrong_grantor": "accounts_fk_42501",
+      "account_fence_projection::account_fence_projection_refuses_prepared_acl_with_function_deleted": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_security_events_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_terms_acceptances_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_terms_head_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_terms_receipts_read": "storage_prerequisite"
+    },
+    "counts": {
+      "accounts_fk_42501": 21,
+      "storage_prerequisite": 5
+    },
+    "summary": [
+      "test result: FAILED. 4 passed; 26 failed; 0 ignored; 0 measured; 94 filtered out; finished in 97.05s"
+    ]
+  },
+  "782a95dd987959d48ca5eba352a1ce30dc7aa81b": {
+    "failures": {},
+    "counts": {},
+    "summary": []
+  },
+  "4b3b51f2f79e6a83646dfd761390a0cc5554ba9f": {
+    "failures": {
+      "account_fence_projection::account_fence_projection_dormant_finalized_v1_is_upgradeable_without_data_change": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_execute_only_and_no_custody_business_grants": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_body_drift": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_default_argument_drift": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_duplicate_owner_acl_without_auth": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_invoker_drift": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_overload_drift": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_owner_drift": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_public_execute_drift": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_row_security_drift": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_finalizer_refuses_search_path_drift": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_finalizer_replay_is_exactly_unchanged": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_installation_failure_rolls_back_custody_and_created_function": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_null_and_database_failure_never_return_false": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_operator_refuses_serving_and_migration_logins": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_prepared_profile_has_only_two_exact_owner_reads": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_presence_is_state_independent_and_not_rls_absence": "plpgsql_ambiguity",
+      "account_fence_projection::account_fence_projection_real_login_is_restricted_and_database_bound": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_function_with_all_owner_reads_removed": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_half_profile_without_accounts_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_half_profile_without_security_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_owner_grant_option": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_owner_write": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_owner_wrong_grantor": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_prepared_acl_with_function_deleted": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_security_events_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_terms_acceptances_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_terms_head_read": "storage_prerequisite",
+      "account_fence_projection::account_fence_projection_refuses_terms_receipts_read": "storage_prerequisite"
+    },
+    "counts": {
+      "plpgsql_ambiguity": 17,
+      "storage_prerequisite": 12
+    },
+    "summary": [
+      "test result: FAILED. 0 passed; 29 failed; 0 ignored; 0 measured; 94 filtered out; finished in 64.16s"
+    ]
+  }
+}

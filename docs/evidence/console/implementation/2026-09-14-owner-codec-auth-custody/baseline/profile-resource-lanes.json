@@ -1,0 +1,63 @@
+[
+  {
+    "lane": "FP03-exact-owner-read-profile",
+    "base_sha": "3f3216d2cdc3bd23b2c11c3d7d285d89a4c1d05a",
+    "owner": "/root",
+    "allow": [
+      "backend/app/src/account_custody_state.sql",
+      "ops/generate-account-custody.py",
+      "ops/postgres-finalize-account-custody.sql"
+    ],
+    "probe": "DOCKER_CONTEXT=colima-console-custody-20260914 python3 /private/tmp/account-fence-probe.py",
+    "target": "Collective exact dormant-v1 / prepared-v2 custody and atomic projection installation",
+    "test_sha256": "19466faa2b2339c0335205225938b95afbb987e29e4ee9998588959ff4e81791",
+    "guide": "Extend canonical metadata with collective exact profiles. Dormant all6empty; prepared finalized owners, two self-granted non-grantable SELECTs on accounts/account_security only, other4empty. Existing column/serving denials unchanged. Under existing locks, before mutation, require dormant/no-function or prepared/exact-existing-function; profile mismatch refuses. Only dormant installs grant+projection atomically; prepared replay changes nothing. Exact function requires2distinct grantees. No numbered migration. Same29test probe green.",
+    "pre_mortem": "False absent fence or serving-role projection access after drift.",
+    "blast_radius": "Only existing finalizer SQL installed by explicit operator; no Account activation or HTTP pool yet.",
+    "detection": "Actual29projection cases including exactACL,halfprofile,body/role drift,replay xmin,existing-v1transition and DDL fault rollback.",
+    "rollback": "Source revert isolated; never transfer Account custody to serving roles.",
+    "stop_conditions": [
+      "Table custody drift",
+      "Unexpected privilege",
+      "Unverified fixture cleanup",
+      "Test weakening"
+    ],
+    "reviewers": [
+      "/root/finish_browser",
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Auth pool wiring and all legacy auth refusal",
+      "Lifecycle activation and full credential conversion",
+      "Production/HA/no-loss claims",
+      "Simultaneous superuser removal of prepared ACLs and function cannot be distinguished from historical dormant-v1"
+    ]
+  },
+  {
+    "lane": "BR01-exact-owner-custody-resource-mapping",
+    "base_sha": "3f3216d2cdc3bd23b2c11c3d7d285d89a4c1d05a",
+    "owner": "/root",
+    "allow": [
+      "tools/buck/gen_first_party.py"
+    ],
+    "probe": "python3 tools/buck/test_gen_first_party.py OwnerResourcesTests AccountResourcesTests",
+    "target": "Exact local ontology schemas/goldens and custody SQL in emitted library/test targets",
+    "guide": "Add owner3srcpatterns, console-app src SQL and exact auth_rest historicalfixture to existing RESOURCE_CONFIG only. Preserve old tests. Generate serialized after GREEN.",
+    "pre_mortem": "Build omits required blobs or imports unrelated local data",
+    "blast_radius": "Compile-time mapped source config",
+    "detection": "Six actual generator/oracle cases; complete suite; generated faces and real Buck unit",
+    "rollback": "Revert isolated mapping source and regenerate faces",
+    "stop_conditions": [
+      "Unexpected mapped data",
+      "Generated drift",
+      "weakened assertion"
+    ],
+    "reviewers": [
+      "/root/finish_browser",
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Production exposure"
+    ]
+  }
+]

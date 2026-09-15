@@ -1,0 +1,23 @@
+{
+  "files": {
+    "backend/Cargo.lock": "59495028c3765cf1f8c0e05bb2194f2fbd5b9595395c8fded0a94f2c15872d2f",
+    "backend/Cargo.toml": "a5e16e5e06d0265958106a2a7860230b4ab6ea1368e9150a225cae66377bfd42",
+    "backend/app/Cargo.toml": "e8c85e4df469d998ef31874aa09f4e2556e459bcc3fa086b2fd79117af3c17a5",
+    "backend/app/src/account_custody_state.sql": "de9c39ca0f3dc057137e3ed5f7e2d56f57f82536fbed4b9bfa297613cf13a916",
+    "backend/app/src/lib.rs": "8ea50ca6faa752b3c5e1f1777a6574e88ca841a3957582394cf43559e494dbd4",
+    "backend/app/tests/auth_rest.rs": "91a30d996b8c549a69d5f65d83a6e73fa4eea1474d6d6bf7e498774e5a643b34",
+    "backend/app/tests/auth_rest/account_fence_projection.rs": "1ed93de41455db89225e0bc8fda02bcc4c6dcb8ca2e8fbd55f2e76555dea252f",
+    "backend/rust-toolchain.toml": "c91677902069dfe54d5d4895372aecaa296dd15c36679f7aab8442a0ae02bad7",
+    "ops/account-custody-migrations.sha384": "adc836e55749bb1775631289deb3e39566f98d4848e67d837a486c59ebf99c96",
+    "ops/generate-account-custody.py": "89595e29915ecf33c705f8ad5a6ad2d7d0638441a2dc15fa9056994c44698328",
+    "ops/postgres-finalize-account-custody.sh": "e064c08f8cc5141f8c99c17b750e5c1714eb7337fedf2a957ff429dbb6e08c47",
+    "ops/postgres-finalize-account-custody.sql": "334467b6d522ef17304f95302ecb622ad4d2fa4cc0d98fb6aa675e20114a6231",
+    "ops/postgres-reconcile-topology.sh": "4d0e11b02935459a3f79a3bf103bf23f58d98e605541acd3d7f324c26fc178f5",
+    "tools/ci/cargo-test-runner.sh": "7d2ea01b5921e045ab468ed0a99671ae15512cd418cf0f10512ddb7cb641853e",
+    "tools/ci/cargo_needs_postgres.sh": "d75b1877eb24a4f16168d7e26294677c5711de95444ff7484fffc8b1a2f08a29",
+    "tools/ci/postgres-cargo-map.json": "2b41e0b864e3e053bd1f6ff2ea380dce0683659297b4ee5ac88a6e06273afc54",
+    "tools/ci/postgres-partition.mjs": "99cab75623ac358c3cebbf8edc22a0164060796716362017f3bab33c7b02d5c3"
+  },
+  "head": "782a95dd987959d48ca5eba352a1ce30dc7aa81b",
+  "status_porcelain": ""
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "lane": "BG02-validator-buildscripts",
+    "owner": "/root",
+    "base_sha": "de0ad257f71ffa830b6fa9d3c89884712b031d56",
+    "allow": [
+      "third-party/rust/fixups/ahash/fixups.toml",
+      "third-party/rust/fixups/unicode-general-category/fixups.toml",
+      "third-party/rust/BUCK"
+    ],
+    "probe": "RUSTUP_TOOLCHAIN=1.98.1 tools/buck/generated-face-reindeer.sh",
+    "target": "Locked validator dependencies generate executable Buck graph",
+    "guide": "Run both inspected upstream scripts via existing buildscript.run=true pattern. ahash derives architecture cfg; unicode generates category.rs from committed src/tables.rs. Preserve strict unresolved-fixup gate. Regenerate serialized and run real ontology Buck31unit.",
+    "pre_mortem": "Missing cfg/generated unicode table yields broken or incorrect validator build",
+    "blast_radius": "Third-party Buck graph only; Cargo source and lock unchanged",
+    "detection": "Exact generator RED then GREEN, generated-face preflight and actual Buck unit",
+    "rollback": "Revert isolated fixups and regenerate from prior reviewed lock",
+    "stop_conditions": [
+      "Unexpected dependency or lock change",
+      "Unverified generated input"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Production exposure"
+    ]
+  }
+]

@@ -1,0 +1,391 @@
+{
+  "record_type": "historical implementation and verification evidence; not product authority",
+  "source_head": "c23e4be0aff7a94d40c11f25f16d97d65c348b8e",
+  "results": {
+    "auth_topology": "21/21 PASS prior source58e849b6",
+    "ontology_cargo_library": "31/31 PASS",
+    "ontology_buck_unit": "31/31 PASS,520 local actions",
+    "buck_generated_faces": "full preflight PASS on4b3b51f2; generator41/41 PASS",
+    "projection_red_3f3216d2": "29 executed:2PASS27FAIL;11 accounts FK permission failures,6 account_security permission failures,1 exact ACL assertion,9 storage prerequisite failures.",
+    "projection_4b3b51f2": "29 executed:0PASS29FAIL;17 PLPGSQL42702 ambiguity failures (including one expected-code assertion),12 storage prerequisite failures; superseded byc23e4be0.",
+    "projection_c23e4be0": "30 executed:4PASS26FAIL;21 accounts FK row-lock42501 failures and5 fixture storage prerequisite failures; NOT GREEN.",
+    "fk_permission_experiment": "SELECT fails; REFERENCES fails; exact owner UPDATE(id) succeeds, no network, owned cleanup confirmed",
+    "projection_782a95dd": "Compile prerequisite E0277 in test hash formatting;0 tests executed. Corrected using existing hex::encode with unchanged expected digest."
+  },
+  "limits": [
+    "Cargo and Buck31 tests overlap; do not sum as disjoint coverage",
+    "Projection implementation not yet green; revised owner column-lock permission under independent test review",
+    "No Account auth-pool/context/lifecycle completion",
+    "No production exposure, HA/failover/PITR/no-loss certification or legal/payable payroll authority"
+  ],
+  "artifacts": {
+    "auth-topology-34925387-red.json": {
+      "source": "/private/tmp/auth-topology-34925387-red.json",
+      "sha256": "9860d6915786c29a1ca582b09c2253c9c27c2cc55a9588001f4db79ebf2cc202"
+    },
+    "auth-topology-34925387-admit.log": {
+      "source": "/private/tmp/auth-topology-34925387-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+    },
+    "auth-topology-lane.json": {
+      "source": "/private/tmp/auth-topology-lane.json",
+      "sha256": "be8355aeecac4fa168de1f2e68a426ef0de2d579e2ad83761c46a33fbe6759c0"
+    },
+    "auth-topology-first-green.json": {
+      "source": "/private/tmp/auth-topology-first-green.json",
+      "sha256": "a8055bbe41ed5129c74d5c4285bce037c984dac2b74d910e7f6efcc55a4a039c"
+    },
+    "auth-topology-58e849-independent-source-review.json": {
+      "source": "/private/tmp/auth-topology-58e849-independent-source-review.json",
+      "sha256": "b7c22fe18fc9269e4de0da3c0d191de686731dbf0bb1209f5b82fab56b8658dd"
+    },
+    "auth-topology-b3cb-independent-review.json": {
+      "source": "/private/tmp/auth-topology-b3cb-independent-review.json",
+      "sha256": "9d7f416b740bbb9b8ba75f6859ff84b16bc37effa7f7f9d24e6d5bcfa1677831"
+    },
+    "owner-codec-3c566100-implementation.json": {
+      "source": "/private/tmp/owner-codec-3c566100-implementation.json",
+      "sha256": "5eed7f68e453cc00d5a1c79b47c03bdd58b2b6b34630935b5c1358245e9d2e61"
+    },
+    "owner-codec-independent-source-review.json": {
+      "source": "/private/tmp/owner-codec-independent-source-review.json",
+      "sha256": "de53b3e51ce15f6236df49db09a3036816fda6c7e39d6d3e9c5459ee69205f2f"
+    },
+    "owner-codec-extraction-independent-review.json": {
+      "source": "/private/tmp/owner-codec-extraction-independent-review.json",
+      "sha256": "d583a7e51e6570b02a99152740c7657824a47b3411990c3f78d12959157580fb"
+    },
+    "owner-codec-malformed-independent-review.json": {
+      "source": "/private/tmp/owner-codec-malformed-independent-review.json",
+      "sha256": "3b6359b500f7d9b6a6b7d34d648402e63a99e126dd1cb17cc4b81511ef502797"
+    },
+    "owner28-schema-reachability.json": {
+      "source": "/private/tmp/owner28-schema-reachability.json",
+      "sha256": "354cc18186bd2b6fd1e3343d1fe46fe279eedafbd9d86fe763e740b0be82325a"
+    },
+    "owner-codec-product-data-copy.json": {
+      "source": "/private/tmp/owner-codec-product-data-copy.json",
+      "sha256": "59f0dd3728c159fe650a8eebdfe229aabb76d10410d7826398625642816f4691"
+    },
+    "owner-codec-jsonschema-dependencies.txt": {
+      "source": "/private/tmp/owner-codec-jsonschema-dependencies.txt",
+      "sha256": "38c361912ecccbb288fe437ca860c48d7e6c9635c88df160eee7599aaeeca48f"
+    },
+    "owner-codec-root31.log": {
+      "source": "/private/tmp/owner-codec-root31.log",
+      "sha256": "a55cc53a43b3b9ef682bfaedee657f5350f2bde672717ec1c1cc0b8b3836b843"
+    },
+    "buck-six-and-hex-independent-review.json": {
+      "source": "/private/tmp/buck-six-and-hex-independent-review.json",
+      "sha256": "5099fcc442a90eeb5132d85db5b3f61302deb6e9709f895756d8f146a1a3bef7"
+    },
+    "br01-implementation-receipt.json": {
+      "source": "/private/tmp/br01-implementation-receipt.json",
+      "sha256": "d8cb589aa668f4a4c05690aa2e342c03ebcde0b65426b4ef6d8dc2bb5c2f4a70"
+    },
+    "br01-resource-implementation-independent-review.json": {
+      "source": "/private/tmp/br01-resource-implementation-independent-review.json",
+      "sha256": "4a2d9e5369989e28c7db5dddc9f7e09396741682b1d0d9c72cecdf474ae7b9dc"
+    },
+    "br01-root-full41.log": {
+      "source": "/private/tmp/br01-root-full41.log",
+      "sha256": "ee218d90f06fa826485f307a4d8720513c9255c4f6189143415db21cf80ebdc9"
+    },
+    "bg02-buildscript-independent-review.json": {
+      "source": "/private/tmp/bg02-buildscript-independent-review.json",
+      "sha256": "a9a92dd43859bac11740610e1563330216cb1123a0fade5ab55804589fa5576c"
+    },
+    "validator-buildscripts-lane.json": {
+      "source": "/private/tmp/validator-buildscripts-lane.json",
+      "sha256": "b6a6839bce6a4e7c1f738092ea88f13323f17c4d7b2ffc55bf86094a2385dcc8"
+    },
+    "validator-buildscripts-admit.log": {
+      "source": "/private/tmp/validator-buildscripts-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+    },
+    "owner28-root-reindeer-generation.log": {
+      "source": "/private/tmp/owner28-root-reindeer-generation.log",
+      "sha256": "1db62a93e9db9fe97b0adfff514ca44e56ce4e82af44b84fc71769cead8ee303"
+    },
+    "owner28-root-reindeer-green.log": {
+      "source": "/private/tmp/owner28-root-reindeer-green.log",
+      "sha256": "8ed86f39c3ced8bd1815b1d3576079e6432f52f3173c11e3b9044a88afd2660d"
+    },
+    "owner28-buck-full-preflight.log": {
+      "source": "/private/tmp/owner28-buck-full-preflight.log",
+      "sha256": "6a086527b72c899e9a506d4beac4bb4363a6f63905bad27e44630ac6f73a585d"
+    },
+    "owner28-buck-unit.log": {
+      "source": "/private/tmp/owner28-buck-unit.log",
+      "sha256": "684243e9f550b2739ebaa8b11016a19a3af22d848fed7712212dc0b00ef40e6e"
+    },
+    "account-fence-projection-29-independent-review.json": {
+      "source": "/private/tmp/account-fence-projection-29-independent-review.json",
+      "sha256": "8c9372c26d77e8ffbabb30d0601c94091bdee523c11e679c0f9dd560cea13334"
+    },
+    "account-fence-projection-ca672-test-refinement.json": {
+      "source": "/private/tmp/account-fence-projection-ca672-test-refinement.json",
+      "sha256": "b6ba0bb50a5542074bc0c300596239cdbd0681406ba62675dd185cfb8617dc79"
+    },
+    "profile-resource-lanes.json": {
+      "source": "/private/tmp/profile-resource-lanes.json",
+      "sha256": "27b86ddd702a494fe1842486140ab9d9cd49cd55de10dfe935e8eb65cc2c87ed"
+    },
+    "profile-resource-admit.log": {
+      "source": "/private/tmp/profile-resource-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+    },
+    "fp03-source-independent-review.json": {
+      "source": "/private/tmp/fp03-source-independent-review.json",
+      "sha256": "31eafc983f96c1ea6c1171cce4f09bd12f83a2dad2a0353ca5257c5eec496be7"
+    },
+    "fp03-c23e4be0-correction-independent-review.json": {
+      "source": "/private/tmp/fp03-c23e4be0-correction-independent-review.json",
+      "sha256": "4a0a29b458ac3ad181d2c748322f3dfe7623cc59f06e0b59feaeba44673c55c8"
+    },
+    "account-fence-postcondition-independent-review.json": {
+      "source": "/private/tmp/account-fence-postcondition-independent-review.json",
+      "sha256": "3b910532fd28b9d153aab4eca9b3c0ab8fae0e1e13b46d14c2d363c1fc3d7026"
+    },
+    "fk-owner-permissions-probe.py": {
+      "source": "/private/tmp/fk-owner-permissions-probe.py",
+      "sha256": "2f2db66f1d2b85a13aa1f0f02084324fd7d6f34226787d90b22d392794a5b18d"
+    },
+    "fk-owner-permissions-probe-result.json": {
+      "source": "/private/tmp/fk-owner-permissions-probe-result.json",
+      "sha256": "e3658964280b9f60d4e6bda221408638d14875bc70d19d4856a0004186f3f402"
+    },
+    "fp03-three-part-profile-independent-design-review.json": {
+      "source": "/private/tmp/fp03-three-part-profile-independent-design-review.json",
+      "sha256": "15563fd55deb24ea98dfa621c376ce1495d414c5d99a93d8a3acbaff495e1c35"
+    },
+    "account-custody-regression-driver-independent-review.json": {
+      "source": "/private/tmp/account-custody-regression-driver-independent-review.json",
+      "sha256": "862cf9f0a9e29c6ec0f69dcd994f4325bbcb9577ee76e369464799a2529535a6"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/cleanup-final-list-error.txt": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/cleanup-list-error.txt": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/cleanup.txt": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/container-name.txt": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/container-name.txt",
+      "sha256": "1ebac776737ad9d5a1cf0c04e10648eb887029abd27a852b4bd0c75a5e95230f"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/containers-after.txt": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/containers-before-cleanup.txt": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/driver-receipt.json": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/driver-receipt.json",
+      "sha256": "ee0afb6f7163f44e1ec67e76b73d3fd59cbba4442a328dcfc01978d189cd5d66"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/ownership-label.txt": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/ownership-label.txt",
+      "sha256": "cfe9a437c6c7b09ef37b7dd2d6daa177324f6a4e7070bcd265c35458ab4e1d05"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/postgres-map.json": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/postgres-map.json",
+      "sha256": "28f7f200f883f9a7f55d317e35114cafcb023313812c2edd3644d8c0ec709ec4"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/prebuild-dispatch.txt": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/probe-exit.txt": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/probe-exit.txt",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/probe.log": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/probe.log",
+      "sha256": "ec4e9bd7472b31f38d724d603b2e5e0744813c46f75c41c930e5aa482103d1a7"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/source-after.json": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/source-after.json",
+      "sha256": "d8788dea25cc46efea7e143fcda63d31b204d32955b2598cc7b0271a6282562c"
+    },
+    "account-fence14-0a180323c92943759909b39666389846/source-before.json": {
+      "source": "/private/tmp/account-fence14-0a180323c92943759909b39666389846/source-before.json",
+      "sha256": "d8788dea25cc46efea7e143fcda63d31b204d32955b2598cc7b0271a6282562c"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/cleanup-final-list-error.txt": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/cleanup-list-error.txt": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/cleanup.txt": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/container-name.txt": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/container-name.txt",
+      "sha256": "f0e504c152f0c62b0be16c4462b167733763706e21228a9bbe95296fac482fd2"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/containers-after.txt": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/containers-before-cleanup.txt": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/driver-receipt.json": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/driver-receipt.json",
+      "sha256": "8d50ada9fe3d86d7cb622e818480ebdf72194bdfd2ca5549d9a89581375d4532"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/ownership-label.txt": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/ownership-label.txt",
+      "sha256": "207e46d549940c70f92a9624e574517363c50dae77d2f46fa7b38bfae49de3a4"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/postgres-map.json": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/postgres-map.json",
+      "sha256": "28f7f200f883f9a7f55d317e35114cafcb023313812c2edd3644d8c0ec709ec4"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/prebuild-dispatch.txt": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/probe-exit.txt": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/probe.log": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/probe.log",
+      "sha256": "5083d5ab906790b2dbe95cd079c346c8a12d28d2184d8e6d2fb122f664a2a2a4"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/source-after.json": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/source-after.json",
+      "sha256": "eea730eb37793f835b86f03fe4327d9ec9122f2698b0fc0cb7119637a2a73180"
+    },
+    "account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/source-before.json": {
+      "source": "/private/tmp/account-fence14-2ada1f7fc0e840aba8240fd7c2fbb029/source-before.json",
+      "sha256": "eea730eb37793f835b86f03fe4327d9ec9122f2698b0fc0cb7119637a2a73180"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/cleanup-final-list-error.txt": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/cleanup-list-error.txt": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/cleanup.txt": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/container-name.txt": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/container-name.txt",
+      "sha256": "8f65e5bec13c8fab6a3276ba03849ff50c183423d40aeec3380ce38963091b01"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/containers-after.txt": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/containers-before-cleanup.txt": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/driver-receipt.json": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/driver-receipt.json",
+      "sha256": "07dd42ab4feaf4f55c63e51154ff3b33ce6be88793ca52403845f9f3d295fa0b"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/ownership-label.txt": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/ownership-label.txt",
+      "sha256": "60e864b2bc7b7d6e0239533cfcf9e60649b96f03389ae9cb9ee15d55eb43520d"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/postgres-map.json": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/postgres-map.json",
+      "sha256": "28f7f200f883f9a7f55d317e35114cafcb023313812c2edd3644d8c0ec709ec4"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/prebuild-dispatch.txt": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/probe-exit.txt": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/probe.log": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/probe.log",
+      "sha256": "77721ef7797224436d10ddf5032f535b815f740d244f52c6ee40d0a1279b3548"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/source-after.json": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/source-after.json",
+      "sha256": "168f2df41a5e6127a821011355abc2857383ff7dd54bc96c39f24e34bd50fb98"
+    },
+    "account-fence14-bce50422e28d46d9b78b33c686812dfb/source-before.json": {
+      "source": "/private/tmp/account-fence14-bce50422e28d46d9b78b33c686812dfb/source-before.json",
+      "sha256": "168f2df41a5e6127a821011355abc2857383ff7dd54bc96c39f24e34bd50fb98"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/cleanup-final-list-error.txt": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/cleanup-list-error.txt": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/cleanup.txt": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/container-name.txt": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/container-name.txt",
+      "sha256": "88ef528d43e39e807bf717884185fd4d6c337cdf3d7f00223dd1b70dcd25969f"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/containers-after.txt": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/containers-before-cleanup.txt": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/driver-receipt.json": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/driver-receipt.json",
+      "sha256": "21b6249c1bfc47553df69c10512dac4fda96edcfe23d872158a9170ce763d28e"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/ownership-label.txt": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/ownership-label.txt",
+      "sha256": "4db3e70df9c273b99ea7c6bd5b5623135918a0ef8d9fba91dcc955265653300a"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/postgres-map.json": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/postgres-map.json",
+      "sha256": "28f7f200f883f9a7f55d317e35114cafcb023313812c2edd3644d8c0ec709ec4"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/prebuild-dispatch.txt": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/probe-exit.txt": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/probe.log": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/probe.log",
+      "sha256": "cc3924fb619093dd9edb150cec490750a6aacb7dee509d152f746c3e5a1e6013"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/source-after.json": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/source-after.json",
+      "sha256": "66503c2d7a57ff75a08a36191604579c80c65054c34593923a479040d445f2a7"
+    },
+    "account-fence14-9607e1a6782e4480a18fd5234bed82b1/source-before.json": {
+      "source": "/private/tmp/account-fence14-9607e1a6782e4480a18fd5234bed82b1/source-before.json",
+      "sha256": "66503c2d7a57ff75a08a36191604579c80c65054c34593923a479040d445f2a7"
+    }
+  }
+}

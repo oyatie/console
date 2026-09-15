@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/finish_browser",
+  "decision": "approved-source-only",
+  "candidate": "/private/tmp/account-fence-projection-postcondition-test.rs",
+  "sha256": "01fe5f5ef381c17576dc41b0993eddc18d9f0bbfa097109855f227ec188917b1",
+  "execution": {
+    "executed": 0,
+    "reason": "Read-only independent review; no Cargo or PostgreSQL authorization in assignment"
+  },
+  "checks": [
+    "Actual GRANT ddl_command_end fault fires only after function exists; REVOKE tag avoids recursive trigger.",
+    "Nontransactional sequence starts uncalled and ends exactly(1,true), preventing earlier failure from claiming reached postcondition.",
+    "Removing both ownerSELECT yields dormant finalized metadata, so expected profile_mismatch specifically exercises final non-dormant guard.",
+    "Selected catalog compares all six owner/ACL/RLS/xmin and exact target function record; unrelated fixture sequence is intentionally outside rollback oracle.",
+    "After removing only fault resources, actual finalizer and restricted-auth false/true reads are positive controls."
+  ],
+  "limits": [
+    "Not general row-content conservation or all-catalog rollback proof",
+    "Needs actual runnable RED/GREEN and discovered/executed counts before behavioral claim"
+  ]
+}
