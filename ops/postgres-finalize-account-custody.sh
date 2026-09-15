@@ -4,6 +4,14 @@ set +x
 set -euo pipefail
 umask 077
 
+# Opt-in only: the existing account-only command remains unchanged.
+observer_profile=0
+case "$#:${1:-}" in
+  0:) ;;
+  1:--with-durability-observer) observer_profile=1 ;;
+  *) printf '%s\n' account_custody.invalid_profile >&2; exit 1 ;;
+esac
+
 fail() { printf '%s\n' "$1" >&2; exit 1; }
 for name in POSTGRES_HOST POSTGRES_PORT POSTGRES_DB POSTGRES_ADMIN_USER \
   POSTGRES_ADMIN_PASSWORD_FILE PGSSLROOTCERT ACCOUNT_CUSTODY_EXPECTED_OPERATOR \
@@ -93,6 +101,11 @@ SELECT NOT EXISTS (
 \endif
 SQL
 
+installer_files=(--file "${script_dir}/postgres-finalize-account-custody.sql")
+if [[ "$observer_profile" == 1 ]]; then
+  installer_files+=(--file "${script_dir}/postgres-install-durability-observer.sql")
+fi
+
 # Clear all ambient libpq settings, service files, passwords and client keys.
 # These fixed options take effect before the DO begins; its own SET cannot
 # enforce a timeout on the already-running outer statement.
@@ -108,5 +121,5 @@ env -i LC_ALL=C \
   --set "expected_database=${ACCOUNT_CUSTODY_EXPECTED_DATABASE}" \
   --set "expected_database_oid=${ACCOUNT_CUSTODY_EXPECTED_DATABASE_OID}" \
   --set "expected_system_identifier=${ACCOUNT_CUSTODY_EXPECTED_SYSTEM_IDENTIFIER}" \
-  --file "${private_dir}/preflight.sql" --file "${script_dir}/postgres-finalize-account-custody.sql"
+  --file "${private_dir}/preflight.sql" "${installer_files[@]}"
 printf '%s\n' account_custody.finalized
