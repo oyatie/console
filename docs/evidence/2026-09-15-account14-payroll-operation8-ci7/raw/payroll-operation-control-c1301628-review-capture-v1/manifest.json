@@ -1,0 +1,23 @@
+{
+  "status": "FROZEN_INDEPENDENT_SOURCE_REVIEW",
+  "files": {
+    "checks.json": "a74c354b80f7f03656190448f062babbf810dd15dee5dac021ba4a5ec6c6a466",
+    "current-source-bindings.json": "7265b146a7f6aa5594cfb804059b7b821eeac94cb1123a936385fa526dea25ad",
+    "review.json": "402b0e177b8107d4c068e848100bd575a9a12f13e346ba8102dcd405a649dd63"
+  },
+  "candidate_sha256": "0f02b3aec6f15449015b22a54b70453b66f2a5d17fb7670f3a241cce53b2a7cb",
+  "counts": {
+    "manifest_artifacts": 18,
+    "immutable_source_bindings": 11,
+    "source_cases_before": 7,
+    "source_cases_after": 8,
+    "mechanical_checks": 12,
+    "rustfmt_checks": 1,
+    "private_git_apply_invocations": 4,
+    "compiler_discovered": 0,
+    "runtime_executed": 0,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "shared_writes": 0
+  }
+}

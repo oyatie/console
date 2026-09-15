@@ -1,0 +1,233 @@
+{
+  "reviewer": "/root/fast_gate_review",
+  "verdict": "APPROVE_BOUNDED_F1_CORRECTION_AND_CLASSIFY_SAVED_TYPED_RUNTIME_GREEN",
+  "implementation_sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "implementation_tree": "f8901b1d4c70686af0cdbbc578ca99b91e4fa1a8",
+  "correction_sha": "0578134acc1099c7d96738300c310bbea6449e25",
+  "correction_tree": "60d52041441f3dd5bd26a9387df2b020bd6a294a",
+  "correction_diff_sha256": "fe1165699ee72d78efa019885dabf0caef9fd622e6e124c1f95874eecfec2263",
+  "observed_later_head": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "previous_review_sha256": "947c7a9b6df8e1ef68928dd92d0abce3a4468d8142ceba930066047788bc52d8",
+  "finding_resolution": {
+    "id": "F1",
+    "status": "CLOSED_AT_0578134a",
+    "conclusion": "Both source and generated OpenAPI now scope immutable receipt, split canonical audit, same-command reconciliation and audit repair to canonical projected owners. The 200 description explicitly leaves other projected handlers their own audit behavior. Generic 408/disconnect/lost-response uncertainty and no-rollback-inference caution remain. These corrected blobs remain unchanged at observed0a625d32.",
+    "source_bindings": [
+      {
+        "path": "sources/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml",
+        "sha256": "120070f0c3487edcbfa2b771b81ae4f9ec9d624f60b0fa2ab77cbe15c08bf82c",
+        "size_bytes": 3176
+      },
+      {
+        "path": "sources/backend/openapi/openapi.yaml",
+        "sha256": "508a6f0d519ca5e1f0410aab1790d0464fa8cd1533663458d6a4940e87b6e176",
+        "size_bytes": 1225418
+      }
+    ]
+  },
+  "runtime_cases": [
+    {
+      "case": 1,
+      "test_name": "required_api_completion_unknown_reconciles_same_command_after_replay",
+      "sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture > /private/tmp/payroll-typed-c1301628-admission/1.log 2>&1",
+      "command_matches_initial_base_probe_without_redirection": true,
+      "status": "PASS",
+      "counts": {
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 29
+      },
+      "log_sha256": "a12bf12ce35884fe30dd51a19a4a76878815ca01f3e5a6387b35f9e48cfa7fc8",
+      "supervisor_run": "console-recovery-76962-6810294b",
+      "supervisor_evidence_path": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.vJwwfX",
+      "supervisor_exit": 0
+    },
+    {
+      "case": 2,
+      "test_name": "required_api_receipt_absent_unknown_renews_approval_with_same_command",
+      "sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command -- --exact --test-threads=1 --nocapture > /private/tmp/payroll-typed-c1301628-admission/2.log 2>&1",
+      "command_matches_initial_base_probe_without_redirection": true,
+      "status": "PASS",
+      "counts": {
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 29
+      },
+      "log_sha256": "84a2c7148246e00332318da530294bb704cf073b3fa5599dd4092c6abf217ed6",
+      "supervisor_run": "console-recovery-78111-676d313d",
+      "supervisor_evidence_path": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.7LH1Oy",
+      "supervisor_exit": 0
+    },
+    {
+      "case": 4,
+      "test_name": "required_workflow_typed_unknown_preserves_pending_and_failed_events",
+      "sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events -- --exact --test-threads=1 --nocapture > /private/tmp/payroll-typed-c1301628-admission/4.log 2>&1",
+      "command_matches_initial_base_probe_without_redirection": true,
+      "status": "PASS",
+      "counts": {
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 29
+      },
+      "log_sha256": "a7490c38d1dc70c5db2dec7cc7ec075f9dc0b7e4780129acec745ebc1f0bbe81",
+      "supervisor_run": "console-recovery-78469-31e7b899",
+      "supervisor_evidence_path": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.5MZIjP",
+      "supervisor_exit": 0
+    }
+  ],
+  "acceptance_reached": [
+    {
+      "case": 1,
+      "assessment": "Completed test passes positive native payroll SyncRep witness, bounded fixed503 envelope, no snapshot-visible effect/receipt/audit while native completion remains waiting, resume and backend disappearance, immutable one receipt/draft and idempotent same-command audit repair, repeated replay and standby equality."
+    },
+    {
+      "case": 2,
+      "assessment": "Completed test passes actual observer EXECUTE removal/effective denial/restoration, fixed503 after governance consumption with absent effect/receipt/audit, spent-reference403, fresh approval changing only four_eyes_request_ref, exactly one owner effect/receipt/audit, retained original decision/consumption plus second history, repeated replay and standby equality."
+    },
+    {
+      "case": 4,
+      "assessment": "Completed test reaches both PENDING and FAILED iterations, actual native staging confirmation, local draft with no ACK/receipt/drain audit, typed unknown telemetry, exact event preservation during unknown, and recovery using the same event/draft with one ACK attempt increment and one audit plus standby equality. Two internal status histories remain one executed SQLx case."
+    }
+  ],
+  "unit_suites": [
+    {
+      "log": "ontology-rest.log",
+      "sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+      "command": "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-ontology-rest --lib projected_dispatch_derivation -- --test-threads=1 --nocapture > /private/tmp/payroll-59c38d60-verification/ontology-rest.log 2>&1",
+      "command_metadata_source": "Root message; raw log independently confirms package, executed roster and totals but does not embed invocation or Git head.",
+      "root_reported_tool_exit": 0,
+      "status": "PASS",
+      "test_names": [
+        "projected_dispatch_derivation::a_canonical_target_requires_the_idempotency_key",
+        "projected_dispatch_derivation::a_canonical_target_routes_through_the_derivation",
+        "projected_dispatch_derivation::a_payload_that_decodes_as_a_different_target_is_refused",
+        "projected_dispatch_derivation::a_payload_whose_subject_differs_from_target_id_is_refused",
+        "projected_dispatch_derivation::a_roster_target_with_no_port_fails_closed",
+        "projected_dispatch_derivation::a_subject_bearing_payload_without_target_id_is_refused",
+        "projected_dispatch_derivation::an_unknown_target_still_fails_closed",
+        "projected_dispatch_derivation::diagnostic_unknown_prefix_does_not_classify_an_operation_error",
+        "projected_dispatch_derivation::digest_conflict_from_port_surfaces_as_conflict_not_internal",
+        "projected_dispatch_derivation::every_dispatch_target_in_the_contract_resolves_to_a_port",
+        "projected_dispatch_derivation::typed_completion_unknown_ignores_changing_private_display"
+      ],
+      "counts": {
+        "executed": 11,
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 10
+      },
+      "log_sha256": "cb068a3436cfb3593e98c2a73a1d48d3a77e460302330b6e5a7532039fcb68d0"
+    },
+    {
+      "log": "workflow-domain.log",
+      "sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+      "command": "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-workflow-domain --lib -- --test-threads=1 > /private/tmp/payroll-59c38d60-verification/workflow-domain.log 2>&1",
+      "command_metadata_source": "Root message; raw log independently confirms package, executed roster and totals but does not embed invocation or Git head.",
+      "root_reported_tool_exit": 0,
+      "status": "PASS",
+      "test_names": [
+        "tests::finalized_runs_are_terminal_and_non_reopenable",
+        "tests::legal_run_edges_pass_and_illegal_ones_fail",
+        "tests::node_terminal_states_have_no_outgoing_edges",
+        "tests::run_status_roundtrips_db_spelling",
+        "tests::terminal_run_statuses_map_to_the_check_column"
+      ],
+      "counts": {
+        "executed": 5,
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0
+      },
+      "log_sha256": "f69345fa5343fa10e67df7db5a6c6c4349ebd114dfc512d3e76489df93c13b94"
+    }
+  ],
+  "failed_environment_attempt": {
+    "path": "/private/tmp/payroll-59c38d60-verification/1.log",
+    "log_sha256": "d9737ba57d043b8f3038be4aabf62f71a85c6d6dc73b069c16cd9240caf6854f",
+    "sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture > /private/tmp/payroll-typed-c1301628-admission/1.log 2>&1",
+    "exit": 1,
+    "classification": "ENVIRONMENT_DENIED_BEFORE_TEST_EXECUTION",
+    "executed": 0,
+    "reason": "Permission denied connecting to the existing Docker socket. Preserved separately; not product RED and not a skipped test."
+  },
+  "historical_admission_red_preservation": [
+    {
+      "case": 1,
+      "path": "/private/tmp/payroll-59c38d60-verification/admission-red-preserved/1.log",
+      "sha256": "5116c9d7b43918ff9a2607e34e0d5cbc2e48a55f97725af19cf5bf089cdc01e1",
+      "classification": "Historical semantic RED retained independently of later success log."
+    },
+    {
+      "case": 2,
+      "path": "/private/tmp/payroll-59c38d60-verification/admission-red-preserved/2.log",
+      "sha256": "56257302546d66b8de1d52f7cdd2d41cc46ef74144cd88f8a971c7f3bc021a99",
+      "classification": "Historical semantic RED retained independently of later success log."
+    },
+    {
+      "case": 4,
+      "path": "/private/tmp/payroll-59c38d60-verification/admission-red-preserved/4.log",
+      "sha256": "163b52766d8c5581f8097876b5454ff841219b3d6b720bf5d4dfe833c52a1452",
+      "classification": "Historical semantic RED retained independently of later success log."
+    }
+  ],
+  "counts": {
+    "saved_successful_invocations_reviewed": 5,
+    "saved_runtime_cases_executed": 19,
+    "saved_runtime_cases_passed": 19,
+    "saved_runtime_cases_failed": 0,
+    "saved_runtime_cases_ignored": 0,
+    "saved_environment_denied_invocations": 1,
+    "saved_environment_denied_cases_executed": 0,
+    "new_cargo_invocations_by_reviewer": 0,
+    "new_database_commands_by_reviewer": 0,
+    "shared_repository_writes_by_reviewer": 0
+  },
+  "reviewer_mechanical_commands": [
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/private/tmp/console-production-tdd-preparation-20260913",
+        "diff",
+        "--check",
+        "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+        "0578134acc1099c7d96738300c310bbea6449e25"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "limits": [
+    "Runtime evidence is bound to59c38d60; docs correction is bound to0578134a. Later Account5b85ab7b and Operation0a625d32 are not final-head runtime proof from these saved results.",
+    "Ordinary Operation control is independently source-approved and now integrated, but its runtime result is outside this receipt.",
+    "Existing App3, confirmed-owner/audit500 control, recovery9, period-lock suite and final CI enrollment still require their scoped final evidence; none is inferred from these19 tests.",
+    "No newly executed408/disconnect case, global capacity, native enrollment, production, legal/compliance or payment-execution claim."
+  ],
+  "pending_findings_in_bounded_correction": [],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

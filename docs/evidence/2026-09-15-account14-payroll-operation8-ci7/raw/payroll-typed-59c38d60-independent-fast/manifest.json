@@ -1,0 +1,24 @@
+{
+  "candidate_sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "files": {
+    "candidate.diff": "befebeafebec7883262dc0b07c96f3d433a81dc5e80e75e144b840f8ee0f3cf9",
+    "mechanical.json": "2d131394b27f60bc1c4d597384d89d128aa2df3e2c0e88452b9b5e4ad14086ff",
+    "review.json": "947c7a9b6df8e1ef68928dd92d0abce3a4468d8142ceba930066047788bc52d8",
+    "sources/backend/app/src/durability_composition_tests.rs": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+    "sources/backend/app/src/lib.rs": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+    "sources/backend/app/src/workflow_drain.rs": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+    "sources/backend/crates/ontology/canonical-domain/src/lib.rs": "39e099b0b0a941eecba0af50892df28611a81aedd79f4695f28c07b4f7108892",
+    "sources/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml": "0ca1c472cdf3711981d28155b7b7611dbb2040661d8de7b76ed484f0cfe3924c",
+    "sources/backend/crates/ontology/rest/src/lib.rs": "5a4177be846b37c5b1720ad1bf7ab968fd81aaa48c5c6e9f0bc2dd2e966e26e0",
+    "sources/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs": "0e436f1ec3936c67ad423e2b61c7199dfebdb4c87c16a4657d592611adb0169c",
+    "sources/backend/crates/payroll/adapter-postgres/src/pay_run.rs": "5e7de7a0f65be90c60ff07a2f33c96e6363940a97c78d50558152b70a0082bfc",
+    "sources/backend/crates/payroll/adapter-postgres/tests/recovery.rs": "a5365bf77e1b1c12dac8f33575e464e8b13b64c4295eb685d9f056dbb6652e8c",
+    "sources/backend/crates/platform/db/src/durability.rs": "db992203fe23b22501dd7c6cea73263c5cb507d88ae4b659c301e3d46d0c2634",
+    "sources/backend/crates/workflow/adapter-postgres/src/lib.rs": "c679720840e232ecb1eeaf5df7e3b40c4d3ab647171c90b4f6c4341b39b66b3b",
+    "sources/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs": "a1f6b08f62dd0acd089fa0fc7cdbe58de1e1d0c6bf32f4f923727fd115dd480c",
+    "sources/backend/crates/workflow/domain/src/lib.rs": "a287e83061ad22cec1b470bb85a8f548a5bebf89fb5adf49748620232b2f136b",
+    "sources/backend/openapi/openapi.yaml": "47f6985551d34feb9b470af109d179cf6a37b365a707b524702e25cf4f85b185",
+    "verify.py": "d5e75bd45d6946e5a1c62324ef2a613e01dc3838a4ecb1eb722590a2cc8f5b4b",
+    "write_review.py": "22db34a6076941b5e7e5ce4875472c01b65fce68403049eba1e580bf00460201"
+  }
+}

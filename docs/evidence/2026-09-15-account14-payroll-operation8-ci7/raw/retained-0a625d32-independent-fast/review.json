@@ -1,0 +1,502 @@
+{
+  "reviewer": "/root/fast_gate_review",
+  "review_identity": "Independent saved runtime classification; authored separate Operation control, which Capture independently source-approved before root execution.",
+  "head_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "verdict": "APPROVE_RETAINED56_PASS_AND_PRESERVE_NATIVE_REGISTRATION_FIRST_FAILURE",
+  "counts": {
+    "saved_cargo_test_invocations": 8,
+    "executed": 57,
+    "passed": 56,
+    "failed": 1,
+    "ignored": 0,
+    "source_bindings": 19,
+    "new_cargo_invocations_by_reviewer": 0,
+    "new_database_commands_by_reviewer": 0,
+    "shared_repository_writes": 0
+  },
+  "runs": [
+    {
+      "scope": "identity-retained-two-targets",
+      "source_head": "0a625d323be1184f94af549e20c7f47bfbd63702",
+      "outer_command": "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= SQLX_OFFLINE=true DOCKER_CONTEXT=colima-console-custody-20260914 bash tools/ci/cargo_needs_postgres.sh --only identity-adapter-postgres-user_lifecycle_noop_replay-pg,identity-adapter-postgres-subject-authz-versions-freshness-rls-pg --num-threads 1",
+      "command_metadata": "Outer command and head from root; two exact raw Cargo commands and complete case rosters are printed in log.",
+      "cargo_commands": [
+        "cargo test --locked --manifest-path backend/Cargo.toml -p console-identity-adapter-postgres --test subject_authz_versions_freshness_rls -- --test-threads=1",
+        "cargo test --locked --manifest-path backend/Cargo.toml -p console-identity-adapter-postgres --test user_lifecycle_noop_replay -- --test-threads=1"
+      ],
+      "cases": [
+        "bump_and_get_subject_authz_versions_via_store",
+        "subject_authz_versions_isolate_tenants_and_deny_delete_as_runtime_role",
+        "update_user_delta_scopes_the_preview_receipt_gate",
+        "replaying_activate_writes_no_second_transition_audit_row",
+        "replaying_deactivate_revokes_a_racing_credential",
+        "replaying_deactivate_writes_no_second_transition_audit_row"
+      ],
+      "invocations": 2,
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": [
+        0,
+        0
+      ],
+      "tool_exit_root_report": 0,
+      "log_sha256": "3c3bff2eaa8d2ca36e0c933fc32c26ecdda1dc803b3877f054c6d02f6cee2eb2"
+    },
+    {
+      "scope": "account_root_transition",
+      "source_head": "0a625d323be1184f94af549e20c7f47bfbd63702",
+      "command": [
+        "python3",
+        "tools/lanes/recovery/supervise_recovery.py",
+        "/private/tmp/console-production-tdd-preparation-20260913",
+        "--",
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "auth_rest",
+        "account_root_transition",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "cases": [
+        "account_root_transition::bridge_collision_and_retained_identity_reinsertion_refuse",
+        "account_root_transition::bridge_insert_conflict_noop_and_rollback_are_exact",
+        "account_root_transition::concurrent_root_allocators_have_one_winner",
+        "account_root_transition::fault_after_backfill_rolls_back_complete_transition",
+        "account_root_transition::initial_overlap_refuses_atomically_without_association",
+        "account_root_transition::native_fk_enforces_default_and_explicit_constraint_timing",
+        "account_root_transition::populated_upgrade_preserves_rows_roots_and_legacy_acl",
+        "account_root_transition::profile_drift_refuses_without_repair",
+        "account_root_transition::root_guard_preserves_native_keyshare_and_user_identity",
+        "account_root_transition::root_roles_and_bridge_privileges_are_exact"
+      ],
+      "invocations": 1,
+      "passed": 10,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": [
+        206
+      ],
+      "exit": 0,
+      "log_sha256": "cc79c590b89b32f40e21c9686e5fa5132dc4c0892535db3f8a727ed53f04d9ad",
+      "supervisor": {
+        "run_id": "console-recovery-11425-6c7e326b",
+        "evidence_path": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.v2Lzb7",
+        "source_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+        "exit": 0,
+        "source_sha_file_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+        "test_log_sha256": "2935405c1a8e150f1fed040bab80fbe23877a731b50674a78fa3a718da214762"
+      }
+    },
+    {
+      "scope": "account_custody_startup",
+      "source_head": "0a625d323be1184f94af549e20c7f47bfbd63702",
+      "command": [
+        "python3",
+        "tools/lanes/recovery/supervise_recovery.py",
+        "/private/tmp/console-production-tdd-preparation-20260913",
+        "--",
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "auth_rest",
+        "account_custody_startup",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "cases": [
+        "account_custody_startup::current_profile_admission::api_historical_projection_requires_upgrade_then_starts",
+        "account_custody_startup::current_profile_admission::api_projection_and_guard_drift_readiness_recovers",
+        "account_custody_startup::current_profile_admission::worker_historical_projection_requires_upgrade_then_starts",
+        "account_custody_startup::current_profile_admission::worker_projection_and_guard_drift_readiness_recovers",
+        "account_custody_startup::custody_api_readyz_detects_column_grant_drift",
+        "account_custody_startup::custody_api_readyz_detects_owner_drift",
+        "account_custody_startup::custody_api_startup_refuses_partial_catalog",
+        "account_custody_startup::custody_api_startup_requires_actual_finalization",
+        "account_custody_startup::custody_configured_database_failure_does_not_become_no_database_mode",
+        "account_custody_startup::custody_genuine_no_database_configuration_keeps_existing_behavior",
+        "account_custody_startup::custody_readyz_ignores_session_temporary_pg_class_forgery",
+        "account_custody_startup::custody_worker_readyz_detects_column_grant_drift",
+        "account_custody_startup::custody_worker_readyz_detects_owner_drift",
+        "account_custody_startup::custody_worker_startup_refuses_partial_catalog",
+        "account_custody_startup::custody_worker_startup_requires_actual_finalization"
+      ],
+      "invocations": 1,
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": [
+        201
+      ],
+      "exit": 0,
+      "log_sha256": "6958e9ad77260a5db6f3dace9ddfd250a4d4016219d17a171d44da72e806db61",
+      "supervisor": {
+        "run_id": "console-recovery-11949-c17a48f9",
+        "evidence_path": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.NpnldA",
+        "source_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+        "exit": 0,
+        "source_sha_file_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+        "test_log_sha256": "17e996ce79e9dca92cc8c7bce23533a7600e8a7850c4bdef4ba650d4f9e9c058"
+      }
+    },
+    {
+      "scope": "account_custody_lifecycle",
+      "source_head": "0a625d323be1184f94af549e20c7f47bfbd63702",
+      "command": [
+        "python3",
+        "tools/lanes/recovery/supervise_recovery.py",
+        "/private/tmp/console-production-tdd-preparation-20260913",
+        "--",
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "auth_rest",
+        "account_custody_lifecycle",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "cases": [
+        "account_custody_lifecycle::another_database_crosses_0165_while_finalization_is_in_flight",
+        "account_custody_lifecycle::blocked_finalizer_times_out_without_partial_transfer_and_retries",
+        "account_custody_lifecycle::committed_finalization_survives_unobserved_cli_response_and_retry",
+        "account_custody_lifecycle::concurrent_finalizers_have_complete_request_outcomes_and_one_final_state",
+        "account_custody_lifecycle::failure_after_actual_third_transfer_rolls_back_every_owner",
+        "account_custody_lifecycle::fresh_actual_migration_finalizes_empty_catalog_and_is_idempotent",
+        "account_custody_lifecycle::missing_relation_refuses",
+        "account_custody_lifecycle::mixed_owners_refuse",
+        "account_custody_lifecycle::nonempty_staging_refuses",
+        "account_custody_lifecycle::owner_membership_refuses_and_fixture_cleans_cluster_edge",
+        "account_custody_lifecycle::populated_225_upgrade_preserves_legacy_rows_and_checksums",
+        "account_custody_lifecycle::request_accounting_rejects_omission_duplicate_and_failure",
+        "account_custody_lifecycle::runtime_refusals_have_real_login_and_exact_table_controls",
+        "account_custody_lifecycle::snapshot_checker_detects_missing_null_duplicate_and_omitted_transfer",
+        "account_custody_lifecycle::unexpected_column_privilege_refuses",
+        "account_custody_lifecycle::unexpected_inheritance_refuses",
+        "account_custody_lifecycle::unexpected_rule_refuses",
+        "account_custody_lifecycle::unexpected_table_privilege_refuses",
+        "account_custody_lifecycle::unexpected_table_trigger_refuses",
+        "account_custody_lifecycle::unvalidated_tuple_fk_refuses",
+        "account_custody_lifecycle::wrong_column_shape_refuses",
+        "account_custody_lifecycle::wrong_owner_refuses"
+      ],
+      "invocations": 1,
+      "passed": 22,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": [
+        194
+      ],
+      "exit": 0,
+      "log_sha256": "d75146791a6cdc3a125da969e5ab3317aa743582ae3814bdcac1538c8b390b19",
+      "supervisor": {
+        "run_id": "console-recovery-12671-faac224d",
+        "evidence_path": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.WfhVQ8",
+        "source_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+        "exit": 0,
+        "source_sha_file_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+        "test_log_sha256": "9a7d8bc16b1085bbae402d9b66854b95549a8ff2ee0e331ca9a5157934fb7339"
+      }
+    },
+    {
+      "scope": "account_browser::company_free_registration_me_and_empty_contexts",
+      "source_head": "0a625d323be1184f94af549e20c7f47bfbd63702",
+      "command": [
+        "python3",
+        "tools/lanes/recovery/supervise_recovery.py",
+        "/private/tmp/console-production-tdd-preparation-20260913",
+        "--",
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "auth_rest",
+        "account_browser::company_free_registration_me_and_empty_contexts",
+        "--",
+        "--test-threads=1",
+        "--nocapture",
+        "--exact"
+      ],
+      "cases": [
+        "account_browser::company_free_registration_me_and_empty_contexts"
+      ],
+      "invocations": 1,
+      "passed": 0,
+      "failed": 1,
+      "ignored": 0,
+      "filtered": [
+        215
+      ],
+      "exit": 101,
+      "log_sha256": "074e1b73b0ac18ab0519ababec3eed5ef56409ac7c5dd01832b968aec3fae4e5",
+      "supervisor": {
+        "run_id": "console-recovery-13849-91d478c7",
+        "evidence_path": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.Wfhn59",
+        "source_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+        "exit": 101,
+        "source_sha_file_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+        "test_log_sha256": "8bf194749deca62d68ecbdca616f0269acdbffcca58e0474cd5170469f7c55fb"
+      }
+    },
+    {
+      "scope": "operation",
+      "source_head": "0a625d323be1184f94af549e20c7f47bfbd63702",
+      "command": "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= SQLX_OFFLINE=true DOCKER_CONTEXT=colima-console-custody-20260914 CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py /private/tmp/console-production-tdd-preparation-20260913 -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown -- --exact --test-threads=1 --nocapture",
+      "command_metadata": "Root exact command report; independently checked source-sha and raw case/exit records.",
+      "cases": [
+        "durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown"
+      ],
+      "invocations": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": [
+        30
+      ],
+      "exit": 0,
+      "log_sha256": "0d78c2f74d9237288023095e787d2a925e788f244d4978c84ab9598d34592666",
+      "supervisor": {
+        "run_id": "console-recovery-7560-d6d53663",
+        "evidence_path": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.czHSC9",
+        "source_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+        "exit": 0,
+        "source_sha_file_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+        "test_log_sha256": "7331b788c1dc322c09148a62ef02d6964125bb0e5df46481ebf590547517e7c8"
+      }
+    },
+    {
+      "scope": "period",
+      "source_head": "0a625d323be1184f94af549e20c7f47bfbd63702",
+      "command": "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= SQLX_OFFLINE=true DOCKER_CONTEXT=colima-console-custody-20260914 CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py /private/tmp/console-production-tdd-preparation-20260913 -- cargo test --locked --manifest-path backend/Cargo.toml -p console-workflow-runtime-adapter-postgres --test payroll_drain_period_lock -- --test-threads=1 --nocapture",
+      "command_metadata": "Root exact command report; independently checked source-sha and raw case/exit records.",
+      "cases": [
+        "a_lock_acquired_after_the_read_gate_still_blocks_the_staging_write",
+        "payroll_period_lock_blocks_draft_creation_and_unlock_restores"
+      ],
+      "invocations": 1,
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": [
+        0
+      ],
+      "exit": 0,
+      "log_sha256": "88e7321d20b430001f074371345c539fc56eda0c483951cca835c74561c0e1eb",
+      "supervisor": {
+        "run_id": "console-recovery-14568-5a707f49",
+        "evidence_path": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.M5pWuP",
+        "source_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+        "exit": 0,
+        "source_sha_file_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+        "test_log_sha256": "cca1c5564e29bfa896c7e299d0b4bde469adced3e6dfea9c2532b82b22d204a9"
+      }
+    }
+  ],
+  "source_bindings": [
+    {
+      "path": "backend/app/tests/auth_rest.rs",
+      "head_git_blob": "a11efe9ae29b6f44277dfbe04e1d8acbe6867392",
+      "sha256": "38bff0cf3a7dbcea4ffe57642df389f54929d39754f290060c4689c828afb102",
+      "same_as_59c38": true
+    },
+    {
+      "path": "backend/app/tests/auth_rest/account_root_transition.rs",
+      "head_git_blob": "942b92299a8d28ffe20ab4d93a93b3b246b5ef2f",
+      "sha256": "3689f01d037ec3a2977c21fdab80fa2f50944dff480688835fb291b72cc243d0",
+      "same_as_59c38": true
+    },
+    {
+      "path": "backend/app/tests/auth_rest/account_custody_startup.rs",
+      "head_git_blob": "ad267c6d55f3e343a74f0674c854058c0a368677",
+      "sha256": "22a569b605008f2da3657b91f07e3775a0be5e9d7bd32905161c7d984f28ac10",
+      "same_as_59c38": true
+    },
+    {
+      "path": "backend/app/tests/auth_rest/account_custody_lifecycle.rs",
+      "head_git_blob": "caaba562f9fe238b6463ac0dae5db43be93f0144",
+      "sha256": "68347f847e47a2232a8e861aad39419c8d0b1772858be97031f9eda1425020f1",
+      "same_as_59c38": true
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs",
+      "head_git_blob": "d748446ce38847e962ad5a523b917757032e8f72",
+      "sha256": "29bb7caf7e0f7fbe9a7d0145656a9cf4dedfdfe94b48fa3bfb7ad594bcc0cdeb",
+      "same_as_59c38": false
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs",
+      "head_git_blob": "7bf849dccca0499b92af9a7de7b7ceaa37eb3909",
+      "sha256": "e9da06dd4940c3d1307d15d0f0d0e193b2f9b3b57c152153e67f56947bd7c394",
+      "same_as_59c38": false
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/src/lib.rs",
+      "head_git_blob": "6fb2a20ef2e47e1a515cc981a51d0920d1705e06",
+      "sha256": "c826372974692ca5a939d3a817b8067c4bf174fb682a92e25d4002c148a9a42f",
+      "same_as_59c38": false
+    },
+    {
+      "path": "backend/app/src/durability_composition_tests.rs",
+      "head_git_blob": "ec6b064d5e95fe61f74134252d9f72a1c1149f1b",
+      "sha256": "0f02b3aec6f15449015b22a54b70453b66f2a5d17fb7670f3a241cce53b2a7cb",
+      "same_as_59c38": false
+    },
+    {
+      "path": "backend/app/src/lib.rs",
+      "head_git_blob": "4d536b6666df6dae783ce73b1890d1518ab8ef59",
+      "sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "same_as_59c38": true
+    },
+    {
+      "path": "backend/app/src/workflow_drain.rs",
+      "head_git_blob": "ef37b66726c8cb756f5bcdde4efeb16e752fde45",
+      "sha256": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+      "same_as_59c38": true
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "head_git_blob": "20bf09da0c7c164c36dbd984b6e2ff1b047d4b09",
+      "sha256": "5e7de7a0f65be90c60ff07a2f33c96e6363940a97c78d50558152b70a0082bfc",
+      "same_as_59c38": true
+    },
+    {
+      "path": "backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "head_git_blob": "dbaf6d206e03d9d98293cb2c0255bb5f38aa9c3a",
+      "sha256": "c679720840e232ecb1eeaf5df7e3b40c4d3ab647171c90b4f6c4341b39b66b3b",
+      "same_as_59c38": true
+    },
+    {
+      "path": "backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "head_git_blob": "067cd504c5bdbe9979d8ed79084ffdb20400f147",
+      "sha256": "a1f6b08f62dd0acd089fa0fc7cdbe58de1e1d0c6bf32f4f923727fd115dd480c",
+      "same_as_59c38": true
+    },
+    {
+      "path": "backend/crates/workflow/domain/src/lib.rs",
+      "head_git_blob": "c8cbea46c85de26a1838c20f2cea215c606600ae",
+      "sha256": "a287e83061ad22cec1b470bb85a8f548a5bebf89fb5adf49748620232b2f136b",
+      "same_as_59c38": true
+    },
+    {
+      "path": "ops/postgres-finalize-account-custody.sql",
+      "head_git_blob": "da76fd277145f9bfdb684fb98fa4ed818b01abe6",
+      "sha256": "f2f6c3c9d048ac518e84196a2fc42624c97cfe1d571122dfa453675d8a359ca3",
+      "same_as_59c38": false
+    },
+    {
+      "path": "backend/app/src/account_custody_state.sql",
+      "head_git_blob": "cc519ec87b3d574df4e44eac7cfaeeacf00656f8",
+      "sha256": "d4b9a13d2340c40b6a87174933c099011b2b26873a3efbb420c234622dd1fc5b",
+      "same_as_59c38": false
+    },
+    {
+      "path": "backend/crates/platform/test-support/src/lib.rs",
+      "head_git_blob": "e8a6557c6f37e1639d60be0e1c833cd749fffacd",
+      "sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+      "same_as_59c38": true
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/src/lib.rs",
+      "head_git_blob": "1ae8cc262cc890669595a169bc24b1137b0f53d0",
+      "sha256": "9b3a006784f9523df608d182e2f1509ac2464a0a295cefaf84ede606df821110",
+      "same_as_59c38": true
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/src/terms.rs",
+      "head_git_blob": "1fcc316d9d915f7a10465ad9b4c03166a2559de1",
+      "sha256": "b1d7eda634bffd101ed4cf87d798d0649661501cdbe00096a86ecb20844ac013",
+      "same_as_59c38": true
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "identity-retained.log",
+      "sha256": "3c3bff2eaa8d2ca36e0c933fc32c26ecdda1dc803b3877f054c6d02f6cee2eb2"
+    },
+    {
+      "path": "auth/results.json",
+      "sha256": "18bc3d00db41b9ab1dd3d3973dee1c9ec075fe0286b0253308ee4f335a8f125e"
+    },
+    {
+      "path": "auth/account_root_transition.log",
+      "sha256": "cc79c590b89b32f40e21c9686e5fa5132dc4c0892535db3f8a727ed53f04d9ad"
+    },
+    {
+      "path": "auth/account_custody_startup.log",
+      "sha256": "6958e9ad77260a5db6f3dace9ddfd250a4d4016219d17a171d44da72e806db61"
+    },
+    {
+      "path": "auth/account_custody_lifecycle.log",
+      "sha256": "d75146791a6cdc3a125da969e5ab3317aa743582ae3814bdcac1538c8b390b19"
+    },
+    {
+      "path": "auth/account_browser-company_free_registration_me_and_empty_contexts.log",
+      "sha256": "074e1b73b0ac18ab0519ababec3eed5ef56409ac7c5dd01832b968aec3fae4e5"
+    },
+    {
+      "path": "operation/probe.log",
+      "sha256": "0d78c2f74d9237288023095e787d2a925e788f244d4978c84ab9598d34592666"
+    },
+    {
+      "path": "period/probe.log",
+      "sha256": "88e7321d20b430001f074371345c539fc56eda0c483951cca835c74561c0e1eb"
+    }
+  ],
+  "conclusions": [
+    "Identity retained2x3 cases pass unchanged business assertions after the exact real finalization setup amendment: subject versions, tenant isolation, preview receipt scope, activation/deactivation replay audit behavior and legacy racing-credential revocation. Removing only helper import,3 setup calls and the migration-attribute substitutions restores59c38 source byte-for-byte.",
+    "Account root transition10, startup15 and lifecycle22 case rosters pass. Their test sources are unchanged from59c38, now exercised with0a625 finalizer/state sources. This is47 selected cases: native root/FK/bridge/profile and rollback, actual API/Worker startup/readiness, historical upgrade, finalizer lifecycle/drift/refusal; readiness detection does not prove every running consumer stops.",
+    "Actual App Operation control passes exact ordinary provenance refusal telemetry, no correlated unknown, completed drainer pass and exact observed owner/standby workflow snapshot preservation. It remains1 executed case with30filtered, not the full App8 suite.",
+    "Both actual period-lock tests pass using the typed staging interface: existing locked-window refusal/unlock recovery and a lock introduced after the workflow read gate but before owner staging. The compatibility wrapper source is unchanged from59c38; no runtime stage fake or weakened business assertion was added by this review."
+  ],
+  "native_registration": {
+    "status": "RED_FIRST_HTTP_CONTRACT_FAILURE; deeper native acceptance not established",
+    "raw_fact": "Exactly1 selected case executes and fails at app/tests/auth_rest.rs:4034:13, Response::json shared helper: HTTP404 versus expected200. Supervisor exits101;0ignored,215filtered. This is a real application HTTP status mismatch, not a compile failure or missing-test count.",
+    "source_inference": "The test calls start at auth_rest.rs4518, which POSTs /api/v2/auth/registration/start. The actual auth router registers v2 terms endpoints and v1 passkey registration only (platform/auth-rest/src/lib.rs330\u2013337); no v2 native registration handler is present in inspected routing. This strongly supports the unimplemented native registration path as the cause.",
+    "observability_limit": "Raw panic does not print the request URI and the same json helper also checks terms/me/contexts. Do not describe an HTTP trace or certify preceding public terms/artifact checks from this log alone.",
+    "unreached_or_unproved": [
+      "Native registration start response and its pending Account/cookie invariants",
+      "WebAuthn registration completion and immutable terms acceptance",
+      "Native session credentials and account projection",
+      "GET /api/v2/accounts/me and empty contexts contract",
+      "Final no-Company/Employee/Person creation and end-to-end native enrollment"
+    ],
+    "attribution": "Relevant auth_rest test, app router and auth-rest routing sources are unchanged from59c38. This record does not establish a regression caused by Account14, admit a new implementation lane, or clear native enrollment HOLD."
+  },
+  "limits": [
+    "Source-sha files independently bind each supervised run to0a625; they are narrower custody evidence than the Account14 driver1005-file pre/post closure. Root metadata supplies non-logged command/env details.",
+    "This receipt covers8 saved Cargo test invocations, not final CI18 or whole auth216. No skipped/filtered case is counted as executed.",
+    "No full binary provenance or production replication-durability claim follows from these selective fixtures; prior stale-build evidence remains retained separately.",
+    "Final-head CI/import/aggregate verification, native enrollment, legal/compliance/payment/production authority remain separate."
+  ],
+  "pending": "Inventory curated evidence allowlist review when frozen; root final runtime17 remains separate.",
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

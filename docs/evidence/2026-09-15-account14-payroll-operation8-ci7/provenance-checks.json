@@ -1,0 +1,989 @@
+{
+  "selected_digest_rechecks": 218,
+  "selected_original_manifest_bindings_checked": 136,
+  "mismatches": [],
+  "bindings": [
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/GUIDE.md",
+      "expected_sha256": "af531b5eae9ee6766ad0592f7e2fba1143ed4508862b758b96a3e3c651b4597b",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/candidate.patch",
+      "expected_sha256": "96ebf482ce9338203b8983886451cbd2f2eba11296e2623b6ce9cb1cf659ba1c",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/checks.json",
+      "expected_sha256": "3053598ade9d6d00a85487778770378f2842b6c026341cdc7f699ccba5262cef",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/preimages.json",
+      "expected_sha256": "d4ea9586cd780073fc9702dfd51c3880c0ecf4e4f874eb23409d337649205b12",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/verify.py",
+      "expected_sha256": "f7f3cf879980b363e5ad393a023a2b76b7a8fd3d406fd1c6c2d39f500d89fdf8",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-review-capture-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-implementation-review-capture-v1/independent-bindings-check.json",
+      "expected_sha256": "4467ff576c641959c9f94079396a34d70665f6d8957d4c337d1db6e4de2fecf9",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-review-capture-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-implementation-review-capture-v1/review.json",
+      "expected_sha256": "962de6ddf4bb83ca57815dd6d369f379d2d0471dfc8e5ed3e8943945feba6555",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-review-capture-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-implementation-review-capture-v1/source-bindings.json",
+      "expected_sha256": "8cc70893eacc8574d8860a0959ee69f6a6b9201701ac6d26a2453b931f93af9a",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-review-capture-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-implementation-review-capture-v1/supplemental-source-bindings.json",
+      "expected_sha256": "58311302e81b0bbb29a3386b968edef2f5199a8b7e0aed6a58bf213e2f0fd6f3",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-review-capture-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-implementation-review-capture-v1/verification-output.json",
+      "expected_sha256": "bd8fbee26e0ef12dcce7b9b839d6abe17873a0ae9edc9a0cbae453ff53207a81",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-red-v1/cleanup.txt",
+      "expected_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-red-v1/containers-after.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-red-v1/source-before.json",
+      "expected_sha256": "de42acd6706927f553486947071dc3f288a62182ff4879582f009aba88bb579e",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-red-v1/source-after.json",
+      "expected_sha256": "de42acd6706927f553486947071dc3f288a62182ff4879582f009aba88bb579e",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-red-v1/probe.log",
+      "expected_sha256": "56e8a69ee3960707bd814bb1a77b3de64f6a2179c972bfa7e17eb046a9613fd4",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-red-v1/prebuild-dispatch.txt",
+      "expected_sha256": "f122c9a7b6f01997bd1d882f72e4631468e99205f0a0a3587c6eaf4e9e12a9d0",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-red-v1/cleanup-final-list-error.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-red-v1/probe-exit.txt",
+      "expected_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-red-v1/containers-before-cleanup.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-796173fc-red-v1/cleanup-list-error.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/manifest.json",
+      "member": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/GUIDE.md",
+      "expected_sha256": "146211e6d23f48d4c7d3a88bec39a781460967d7a9c97e62201909c3a97767d0",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/manifest.json",
+      "member": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/candidate.patch",
+      "expected_sha256": "b8c1845c5bd33ae5952c53165cd910ca7325e4f87ea1b501c1eb1aac60f2a04c",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/manifest.json",
+      "member": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/mechanical-verification.json",
+      "expected_sha256": "a3fda1cc66d0de0e8ae88c0092db908227ada2ec6a9ff84a53c20faa5da10159",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/manifest.json",
+      "member": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/references.json",
+      "expected_sha256": "b6000480e63828690579f2b52879dc1147dd19e33d2ea99d82114599a193a978",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/manifest.json",
+      "member": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/rustfmt-check.log",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/manifest.json",
+      "member": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/rustfmt-parse.log",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/manifest.json",
+      "member": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/source-bindings.json",
+      "expected_sha256": "c0bf511bbd924aeb47f2f794e991f1e6f3b8eeb52f640774b315b47abc81d230",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/cleanup.txt",
+      "expected_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/containers-after.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/source-before.json",
+      "expected_sha256": "2b8d4f87cca553a90ddee0944101335d943b5a827cfaf1ab534a06d93796f194",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/source-after.json",
+      "expected_sha256": "2b8d4f87cca553a90ddee0944101335d943b5a827cfaf1ab534a06d93796f194",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/probe.log",
+      "expected_sha256": "39906632340a84a0a716c2bdf10311ce686f69540da8eaebf12d12f38576825a",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/prebuild-dispatch.txt",
+      "expected_sha256": "f122c9a7b6f01997bd1d882f72e4631468e99205f0a0a3587c6eaf4e9e12a9d0",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/cleanup-final-list-error.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/probe-exit.txt",
+      "expected_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/containers-before-cleanup.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/cleanup-list-error.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/cleanup.txt",
+      "expected_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/containers-after.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/source-before.json",
+      "expected_sha256": "2b8d4f87cca553a90ddee0944101335d943b5a827cfaf1ab534a06d93796f194",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/source-after.json",
+      "expected_sha256": "2b8d4f87cca553a90ddee0944101335d943b5a827cfaf1ab534a06d93796f194",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/probe.log",
+      "expected_sha256": "02f98ad116ebb20a534e1616a1df7e10453250fb5b013aa3d7e504fcfe7c161c",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/prebuild-dispatch.txt",
+      "expected_sha256": "f122c9a7b6f01997bd1d882f72e4631468e99205f0a0a3587c6eaf4e9e12a9d0",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/cleanup-final-list-error.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/probe-exit.txt",
+      "expected_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/containers-before-cleanup.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/cleanup-list-error.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/cleanup.txt",
+      "expected_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/containers-after.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/source-before.json",
+      "expected_sha256": "de42acd6706927f553486947071dc3f288a62182ff4879582f009aba88bb579e",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/source-after.json",
+      "expected_sha256": "de42acd6706927f553486947071dc3f288a62182ff4879582f009aba88bb579e",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/probe.log",
+      "expected_sha256": "00ebab366d8d7047bf2a4ad233027a04967aeb4dbea5b91e4655349cd32ab8b4",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/prebuild-dispatch.txt",
+      "expected_sha256": "f122c9a7b6f01997bd1d882f72e4631468e99205f0a0a3587c6eaf4e9e12a9d0",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/cleanup-final-list-error.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/probe-exit.txt",
+      "expected_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/containers-before-cleanup.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/cleanup-list-error.txt",
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/manifest.json",
+      "member": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/GUIDE.md",
+      "expected_sha256": "957c7ef4478918aa2ab2824ecf95f5d2d9c4a5e6dda4be0d603ff623f3123c96",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/manifest.json",
+      "member": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch",
+      "expected_sha256": "0861dbe77c0d527ad0b774c93fe6a13902259265a1b0598a761fe84fb5fbca58",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/manifest.json",
+      "member": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/checks.json",
+      "expected_sha256": "ed25f48bb9ada3b1a162a7c00868232b3ed201e9af339d19a97354932f34edf0",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-retained-fixtures-review-capture-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-retained-fixtures-review-capture-v1/checks.json",
+      "expected_sha256": "f0613f15bd410cb0c2b2dda62ddad9e6736c1f69a0f010ff3476a4e36b8685a0",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-retained-fixtures-review-capture-v1/manifest.json",
+      "member": "/private/tmp/account-deactivation14-retained-fixtures-review-capture-v1/review.json",
+      "expected_sha256": "217f5263383035ba66fa7ea54a2508af887137ad98ae40cf9294c280b05ac65e",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "member": "/private/tmp/account14-0a625d32-green-independent-fast/mechanical.json",
+      "expected_sha256": "756be120771afe160dce309e94a48189db7863a43e6097323b26e30982cee332",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "member": "/private/tmp/account14-0a625d32-green-independent-fast/verify.py",
+      "expected_sha256": "c966f33c3d9e20b5e65d18e0373addb2a37dea790831a4a2603799cf5b542755",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "member": "/private/tmp/account14-0a625d32-green-independent-fast/review.json",
+      "expected_sha256": "232720688faba1bc59aaad8d0c710ea1de720d0fce7c74eb6ba04b3f612f32bd",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/GUIDE.md",
+      "expected_sha256": "8f341a6920fd788b473783767cdc936049cd88981b58a1e4f4d5c19c5760cb7f",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/candidate.patch",
+      "expected_sha256": "3292aa623fc40c2fc7d9c08ae45b76d81222cc54299241a19123024a0beb2808",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/executed-tests.log",
+      "expected_sha256": "8957125b6941246ac0fa7ce2219037ba086270be8d18456270cdad3480b8fc29",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/mechanical-checks.json",
+      "expected_sha256": "4fbf4ccd2db88fe2b49c8c69105960784442ec104080a4d63dceb7ff306d2b05",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/preflight-focused-indexed.log",
+      "expected_sha256": "3b697f01614fa1092324ca727d5ea8e26d7a05c4e490465f5f328ab10bd83a3a",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/preflight-focused.log",
+      "expected_sha256": "f64e24295a71493e7bd9dc87bec8fecf0ee5ca578c1acac856d57043aa80b4fa",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/preflight-gate-indexed.log",
+      "expected_sha256": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/preflight-gate.log",
+      "expected_sha256": "dca694ace5dbfb5b50eae15e4b960124d30ce11e5c3691af4b559dc4a175238a",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/preimages.json",
+      "expected_sha256": "c28ecc7a4f15d397fcaf2ca3d9f57fadce9444a6f3a9b21748641ff89d991029",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/preparation.log",
+      "expected_sha256": "66bc21ea52d6e9c53653403cc15967eea9d43b99ad098161694d537c723ed5eb",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/probe.log",
+      "expected_sha256": "bc460f8a0b28082f8cabd0c2df76cf210a69e522a6964b4ca9a92e00b8f9b513",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/recovery-unit-process-access.log",
+      "expected_sha256": "00a1cb7bf2bd0158a6d866d715545eadc141349fdb73832e07089fbffd897477",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/recovery-unit.log",
+      "expected_sha256": "782098d75fcb6e25c6d6bbae359acf688c44b626426395e944310ca417d562c4",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/roster.json",
+      "expected_sha256": "39a515746c65a7e74c01beaaa33e7adea2be7241753055599293d2242d301f4a",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/source-checks.json",
+      "expected_sha256": "471af098368a255ddb97e8cad9c2e6094921ec158488a00b99f4d6a5b9ff1f9b",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/validation-results.json",
+      "expected_sha256": "0b46daf99d86bfd14788b93e5c5db33576b5d3256e4508ba45a745ab4b8447bc",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/verify-source.mjs",
+      "expected_sha256": "57b829096d155b750bfa94fd2729e277f25a3f733b24e0226f8852a7a552e7ac",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-enrollment-map-59c38d60-v1-inventory/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-enrollment-map-59c38d60-v1-inventory/MAP.md",
+      "expected_sha256": "b16b97893e5c0eec40c7743bd620bfd47e78ce42e46ac14232c46f8ba024d6aa",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-enrollment-map-59c38d60-v1-inventory/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-enrollment-map-59c38d60-v1-inventory/rosters.json",
+      "expected_sha256": "aeb5851c6b096515f46d29e57113b13ea52b02a51a9edfa97e9a45ce82a18b00",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-enrollment-map-59c38d60-v1-inventory/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-enrollment-map-59c38d60-v1-inventory/source-bindings.json",
+      "expected_sha256": "e98d48e9470c45aa9c44ffb0d411240f7672433cb19ea745b8125aaa3403ec02",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-v1-independent-fast/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-v1-independent-fast/mechanical.json",
+      "expected_sha256": "6148abc13272e568d784de09d18746835cee80c5457a7d42be8e7267e906f524",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-v1-independent-fast/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-v1-independent-fast/independent-probe.log",
+      "expected_sha256": "23089851107bc540b039e4b62604ba6978a16e419cce9190949922d48aea1510",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-v1-independent-fast/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-v1-independent-fast/verify.py",
+      "expected_sha256": "e1e90bd3f6b2799cad23e4e0e23839e597ba5c4ce9ee31827f1adabb729be735",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-v1-independent-fast/manifest.json",
+      "member": "/private/tmp/account14-app8-ci-v1-independent-fast/review.json",
+      "expected_sha256": "f5694d6d2b5a70505156d4fe889c25817d9cc210e12e663fe368640db7f2638b",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-review-capture-v1/manifest.json",
+      "member": "/private/tmp/payroll-operation-control-c1301628-review-capture-v1/checks.json",
+      "expected_sha256": "a74c354b80f7f03656190448f062babbf810dd15dee5dac021ba4a5ec6c6a466",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-review-capture-v1/manifest.json",
+      "member": "/private/tmp/payroll-operation-control-c1301628-review-capture-v1/current-source-bindings.json",
+      "expected_sha256": "7265b146a7f6aa5594cfb804059b7b821eeac94cb1123a936385fa526dea25ad",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-review-capture-v1/manifest.json",
+      "member": "/private/tmp/payroll-operation-control-c1301628-review-capture-v1/review.json",
+      "expected_sha256": "402b0e177b8107d4c068e848100bd575a9a12f13e346ba8102dcd405a649dd63",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/GUIDE.md",
+      "expected_sha256": "c98b008b2bb51694047f15ba7a228c4e6de19b54c1d644369fb5b4970c5e8ba1",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/candidate.patch",
+      "expected_sha256": "0e62463ef150e376bd0216e21128e3f3f3643ea8b299bc68a485e6e30180a12b",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/freeze_packet.py",
+      "expected_sha256": "d50427c7414e4b781fd33505a2954f099d212166c34b63f702f84450569954a0",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/mechanical-verification.json",
+      "expected_sha256": "03acd09aa0dbe59ba974bbf7d803432a99ceed9dc96073faf454cc35a9511c9f",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/source-bindings.json",
+      "expected_sha256": "65de96c44298b6c7e74a0c0978e68bcdb62b229869617bd98fca4e82e42c9670",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/correction.diff",
+      "expected_sha256": "fe1165699ee72d78efa019885dabf0caef9fd622e6e124c1f95874eecfec2263",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/review.json",
+      "expected_sha256": "e33c76f8cd84965d63db3fb1ed0726ae5f9339d131f7e58a8b203bb013963bbe",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/verify_review.py",
+      "expected_sha256": "2ce0d28f712b6f8f7c9cf9efd446fee8f20201b21a497cb41294cab80588d0f5",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "member": "/private/tmp/payroll-typed-59c38d60-independent-fast/candidate.diff",
+      "expected_sha256": "befebeafebec7883262dc0b07c96f3d433a81dc5e80e75e144b840f8ee0f3cf9",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "member": "/private/tmp/payroll-typed-59c38d60-independent-fast/mechanical.json",
+      "expected_sha256": "2d131394b27f60bc1c4d597384d89d128aa2df3e2c0e88452b9b5e4ad14086ff",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "member": "/private/tmp/payroll-typed-59c38d60-independent-fast/review.json",
+      "expected_sha256": "947c7a9b6df8e1ef68928dd92d0abce3a4468d8142ceba930066047788bc52d8",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "member": "/private/tmp/payroll-typed-59c38d60-independent-fast/verify.py",
+      "expected_sha256": "d5e75bd45d6946e5a1c62324ef2a613e01dc3838a4ecb1eb722590a2cc8f5b4b",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-runtime-custody-addendum-fast/manifest.json",
+      "member": "/private/tmp/payroll-typed-runtime-custody-addendum-fast/root-cause-report.json",
+      "expected_sha256": "2cb4e9c475e69ff79fc043b5d22e264a3ddad8151aae190954dd55539476a9db",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-runtime-custody-addendum-fast/manifest.json",
+      "member": "/private/tmp/payroll-typed-runtime-custody-addendum-fast/review.json",
+      "expected_sha256": "aeaf0b1f34976aa940166359586f0651185798b704e6a72c8517a71c832b2631",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/DESIGN.md",
+      "expected_sha256": "1ca5c188e600c036ba6309e29498cbc9aa58db5ae6956bcc80c7b72575ca2cbd",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/README.md",
+      "expected_sha256": "33554ae74967e472955a4f0eb8151d7454d5096a4cf0f7587ea4d75767345df9",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/REVISION.md",
+      "expected_sha256": "561886cada867f0fe4d748bdc3ace27d2b3838082edba8cf0860f069b5914684",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/checks.json",
+      "expected_sha256": "799997a7fd17adb1f786dab650e6c08a9e87057ef10d9353434263a01a498862",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility.patch",
+      "expected_sha256": "5f824ceec87f4d1bad7ec264041c3fd502a37f09a2abb153c7c60a6c9d54f72a",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/current-head-bindings.json",
+      "expected_sha256": "7e8189eb956bec73199febfe312818b93f5a0535f8a839d875a01704585ed871",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/mechanical-attempt1.json",
+      "expected_sha256": "7233412dcabf8c5081eb660a903d027bd1451d8bf9ff7ce0f6ac9a481dcf769f",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/primary.patch",
+      "expected_sha256": "8e54f40d01161cde6d826a14d453be7dbdab8d8ae7f72fc5e1d846494a1dc081",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/run-primary.sh",
+      "expected_sha256": "d773f21f08cbd7b130956967b580585fb7a8946a5501a50413b94091eb8d7619",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/source-bindings.json",
+      "expected_sha256": "37c37f88bf5deb97f9de8ce31498c98924d13e762899255b95f9a0d05ee8f529",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/trait-census.json",
+      "expected_sha256": "e7b6904264f928742cc4e043761128efe48cd74ffa67891bec7a7e42b9b4d928",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/trait-source-bindings.json",
+      "expected_sha256": "197b530f8afc2604cc0727a016958b4a22153ef56e1908bb9f76941e8cfc2d92",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-v4-app-seams-796173fc-v2-inventory/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-v4-app-seams-796173fc-v2-inventory/source-bindings.json",
+      "expected_sha256": "7483700cae9d3c8a0ec7cf6fcd3429edca29494647983334d791cbc5c504bcea",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-v4-app-seams-796173fc-v2-inventory/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-v4-app-seams-796173fc-v2-inventory/reviewed-v1-v4.diff",
+      "expected_sha256": "852f5e83dcc4d9db767629c884cc89f47e166c3b1e324297ef65b8e449e76579",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-v4-app-seams-796173fc-v2-inventory/manifest.json",
+      "member": "/private/tmp/payroll-typed-unknown-v4-app-seams-796173fc-v2-inventory/review.json",
+      "expected_sha256": "afac1a6701d999641ce5d109e496d092f1ed5da92691c56c70ef709db7e04713",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/review_saved.py",
+      "expected_sha256": "beb33e4cc4c885c63ee9bb5dea74c6cc1362fec0fc26a963bea3333a491ea873",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/review.json",
+      "expected_sha256": "8628b923a070553be17f3d8ee9291e9df871869b6198acb95c4e355412bce801",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/period/probe.log",
+      "expected_sha256": "88e7321d20b430001f074371345c539fc56eda0c483951cca835c74561c0e1eb",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/operation/test.log",
+      "expected_sha256": "7331b788c1dc322c09148a62ef02d6964125bb0e5df46481ebf590547517e7c8",
+      "matched": true,
+      "copy_kind": "sanitized_derivative"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/operation/source-sha.txt",
+      "expected_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/account_browser-company_free_registration_me_and_empty_contexts/test.log",
+      "expected_sha256": "8bf194749deca62d68ecbdca616f0269acdbffcca58e0474cd5170469f7c55fb",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/account_browser-company_free_registration_me_and_empty_contexts/source-sha.txt",
+      "expected_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/account_root_transition/test.log",
+      "expected_sha256": "2935405c1a8e150f1fed040bab80fbe23877a731b50674a78fa3a718da214762",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/account_root_transition/source-sha.txt",
+      "expected_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/account_custody_lifecycle/test.log",
+      "expected_sha256": "9a7d8bc16b1085bbae402d9b66854b95549a8ff2ee0e331ca9a5157934fb7339",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/account_custody_lifecycle/source-sha.txt",
+      "expected_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/period/test.log",
+      "expected_sha256": "cca1c5564e29bfa896c7e299d0b4bde469adced3e6dfea9c2532b82b22d204a9",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/period/source-sha.txt",
+      "expected_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/account_custody_startup/test.log",
+      "expected_sha256": "17e996ce79e9dca92cc8c7bce23533a7600e8a7850c4bdef4ba650d4f9e9c058",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "member": "/private/tmp/retained-0a625d32-independent-fast/supervisor/account_custody_startup/source-sha.txt",
+      "expected_sha256": "dd8f57162302928e21206c14dac41c5a64d2302eb7f0a2f17a43846f5f5ab9c8",
+      "matched": true,
+      "copy_kind": "original_bytes"
+    }
+  ],
+  "fixed_path_history_aliases": [
+    {
+      "record": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "original_path": "/private/tmp/account14-app8-ci-0a625d32-admission/probe.log",
+      "preserved_path": "/private/tmp/account14-app8-ci-0a625d32-admission/probe-red.log",
+      "sha256": "f40c38104ac7afdaae04df747ef50c9ce19c12d5e99ab719a2dcf576bd34997c",
+      "meaning": "Original admission RED preserved before fixed-path GREEN overwrite; live probe.log intentionally omitted."
+    },
+    {
+      "record": "/private/tmp/payroll-typed-c1301628-admission/manual-admission-classification.json",
+      "original_path": "/private/tmp/payroll-typed-c1301628-admission/1.log",
+      "preserved_path": "/private/tmp/payroll-59c38d60-verification/admission-red-preserved/1.log",
+      "sha256": "5116c9d7b43918ff9a2607e34e0d5cbc2e48a55f97725af19cf5bf089cdc01e1",
+      "meaning": "Original semantic admission RED; selected payload is explicitly sanitized derivative whose original digest equals this value."
+    },
+    {
+      "record": "/private/tmp/payroll-typed-c1301628-admission/manual-admission-classification.json",
+      "original_path": "/private/tmp/payroll-typed-c1301628-admission/2.log",
+      "preserved_path": "/private/tmp/payroll-59c38d60-verification/admission-red-preserved/2.log",
+      "sha256": "56257302546d66b8de1d52f7cdd2d41cc46ef74144cd88f8a971c7f3bc021a99",
+      "meaning": "Original semantic admission RED; selected payload is explicitly sanitized derivative whose original digest equals this value."
+    },
+    {
+      "record": "/private/tmp/payroll-typed-c1301628-admission/manual-admission-classification.json",
+      "original_path": "/private/tmp/payroll-typed-c1301628-admission/4.log",
+      "preserved_path": "/private/tmp/payroll-59c38d60-verification/admission-red-preserved/4.log",
+      "sha256": "163b52766d8c5581f8097876b5454ff841219b3d6b720bf5d4dfe833c52a1452",
+      "meaning": "Original semantic admission RED; selected payload is explicitly sanitized derivative whose original digest equals this value."
+    }
+  ]
+}

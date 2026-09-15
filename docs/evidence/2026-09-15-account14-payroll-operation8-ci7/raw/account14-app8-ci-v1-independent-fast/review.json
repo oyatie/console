@@ -1,0 +1,73 @@
+{
+  "reviewer": "/root/fast_gate_review",
+  "verdict": "APPROVE_EXACT_PRIVATE_CI7_V1_FOR_ROOT_SERIAL_IMPORT",
+  "base_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "candidate_manifest_sha256": "10f02dd6af65419f8cc6a13498c3a692a64173f12ed956a96af94145ed6040f1",
+  "candidate_patch_sha256": "3292aa623fc40c2fc7d9c08ae45b76d81222cc54299241a19123024a0beb2808",
+  "guide_sha256": "8f341a6920fd788b473783767cdc936049cd88981b58a1e4f4d5c19c5760cb7f",
+  "map_sha256": "b16b97893e5c0eec40c7743bd620bfd47e78ce42e46ac14232c46f8ba024d6aa",
+  "mechanical_sha256": "6148abc13272e568d784de09d18746835cee80c5457a7d42be8e7267e906f524",
+  "blocking_findings": [],
+  "conclusions": [
+    "Exact seven-file allowlist matches admitted scope. All31 manifest files,3 immutable admission records and the MAP hash match; all7 preimages are regular exact0a625 Git blobs and unchanged in the shared tree. Private9867-path index differs from base only at the7 reviewed postimages and its working tree matches that index.",
+    "Each of5 new App cases receives its own exact fresh-supervisor step, test-recovery feature, full test name, --exact, one test thread, nocapture and blank recovery cut. Steps preserve !cancelled and the precise successful recovery checkout/toolchain/image conditions, with no continue-on-error. Removing the5 exact blocks restores the entire workflow byte-for-byte; all original13 commands, order, fault modes, job metadata, setup and aggregators are unchanged.",
+    "The JavaScript and Python App rosters exactly match all8 actual App SQLx source case names, in order. The original source/module/cfg/ignore oracles and per-case executor mutation loops are byte-preserved. Union grows13 to18, producing30 additional Node controls; literal count remains independent rather than derived tautologically.",
+    "Preflight changes only5 exact command strings and5 named indexed proof entries. Original executor controls and setup/metadata/envelope digests remain unchanged. Domain-b22,total156 and 468 bypass checks reflect5 added run steps and3 mutations per step; all original tests are preserved.",
+    "Static baselines change only App192 to197, Account6 to14, ontology/rest19 to21 and the App3-to8 explanation. Named dark set, dark_baseline1, deferred sets and feature pins are unchanged. Account14 remains on its existing complete unfiltered target; no map, shard, Buck, lockfile or product source changes are introduced.",
+    "Independent same Node probe rerun passed114 of114, zero skipped. Four independent private git apply/check/inverse operations reproduce exact7 postimages and restore exact originals. The frozen packet and shared preimages remain unchanged afterward."
+  ],
+  "validation_review": {
+    "same_admitted_probe": "node --test scripts/lib/recovery-test-invocations.test.mjs",
+    "baseline": "Root immutable admission log84executed82PASS2FAIL from stale App3 roster versus live App8; same named probe114GREEN after enrollment.",
+    "author_saved_pass_results": {
+      "node_probe": 114,
+      "preparation_python": 15,
+      "executed_tests_node": 15,
+      "preflight_focused": 2,
+      "recovery_python_stub_units": 21,
+      "preflight_gate": "PASS",
+      "resolver_raw_output": {
+        "defined": 387,
+        "reachable": 387,
+        "static_attributes": 3193,
+        "dark": 1,
+        "buck_only": 13
+      }
+    },
+    "author_bypass_mutations": 468,
+    "raw_logs_and_manifest_bindings_checked": true,
+    "environment_attempts_retained": [
+      "Missing private Git index caused source-resolution failure; unchanged candidate passed after the original tracked index was established.",
+      "Sandbox denied ps for the owned-child death check in first recovery unit run; unchanged21-case stub suite passed on approved process access."
+    ],
+    "limits": "Only2 selected preflight test cases ran in this packet. The recovery unit suite uses stubs; no Cargo, real Docker or database execution is supplied by CI enrollment evidence. Resolver/source counts are not runtime counts or proof that all software is tested."
+  },
+  "counts": {
+    "manifest_files_checked": 31,
+    "source_target_preimages_checked": 7,
+    "private_index_paths_checked": 9867,
+    "independent_patch_operations": 4,
+    "independent_node_probe_tests_executed": 114,
+    "independent_node_probe_tests_passed": 114,
+    "independent_node_probe_tests_skipped": 0,
+    "new_cargo_invocations": 0,
+    "new_database_commands": 0,
+    "new_docker_commands": 0,
+    "shared_repository_writes": 0
+  },
+  "root_import_guide": "Verify manifest and all seven preimages, apply only candidate.patch or the seven postimages serially, bind the integration commit, and run the admitted probe plus affected full required gates on that exact head. Validation support archive and node_modules link are not import targets.",
+  "remaining_holds": [
+    "Root serial import and exact integration commit readback",
+    "Root full required preflight/contract/generated/reachability gates; selected2 is not full preflight-suite proof",
+    "Runtime18 evidence and final-head verification remain separate from CI command reachability",
+    "No production, native enrollment, compliance, payment or release authority granted"
+  ],
+  "lenses": [
+    "Essentialism / YAGNI",
+    "Systems Thinking",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

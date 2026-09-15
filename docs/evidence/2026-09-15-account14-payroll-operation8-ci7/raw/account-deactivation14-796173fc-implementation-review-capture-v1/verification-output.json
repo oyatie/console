@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "checks": [
+    "exact four base preimages",
+    "four integration preimages unchanged",
+    "exact four postimage paths",
+    "reviewed14 source unchanged",
+    "rustfmt --edition 2024",
+    "Rust stdin format exact",
+    "six old bodies and two old install blocks exact",
+    "private finalizer generation exact",
+    "migration ledger unchanged",
+    "existing generator --check via private read references",
+    "candidate patch exact",
+    "git apply --check /private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/candidate.patch",
+    "git apply /private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/candidate.patch",
+    "applied postimages exact",
+    "git apply --reverse --check /private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/candidate.patch",
+    "git apply --reverse /private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/candidate.patch",
+    "inverse restores exact preimages",
+    "no patch whitespace errors"
+  ],
+  "check_count": 18,
+  "rustfmt_invocations": 1,
+  "private_git_apply_invocations": 4,
+  "compiler_discovered": 0,
+  "rust_executed": 0,
+  "cargo_invocations": 0,
+  "database_commands": 0,
+  "integration_writes": 0,
+  "patch_check_directory": "/private/tmp/account-deactivation14-private-patch-check-zui3yjuc"
+}

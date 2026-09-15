@@ -1,0 +1,21 @@
+{
+  "head_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "files": {
+    "backend/crates/platform/request-context/src/lib.rs": "519138649e745b8903d9c40e56b628651669fe296c838ec8ca04a587e8ee9f23",
+    "backend/crates/platform/authz/src/lib.rs": "1e663e5ef898c129b9e6cdfc1a5eb16574b57c7e0dab1e8ab1ade8dbd9e0f65d",
+    "backend/crates/ontology/rest/src/lib.rs": "bb18fab3163f17fc31f48017b0e846c500f113969bc99d23ee2c9c17952631fc",
+    "backend/crates/ontology/application/src/prepared.rs": "82b2bb5c13ae7cbf0b2f5127f496eaae31a0a336ce8d048f4757a0f6e0890117",
+    "backend/crates/governance/rest/src/lib.rs": "e5199bcbcbfad5d7dcbe5f84ec6971e5bc53690f01a2522601dd12f0fb94b289",
+    "backend/crates/platform/db/src/durability.rs": "db992203fe23b22501dd7c6cea73263c5cb507d88ae4b659c301e3d46d0c2634",
+    "backend/crates/platform/db/src/audit_tx.rs": "6d749bd55cf98fbce524a8152b046db492068dccbc8b9f2a459e7c6cb3a4952c",
+    "backend/crates/platform/db/migrations/0031_runtime_role_and_immutable_org.sql": "f2b9537ef1c063f55fcbfe7519a4769690bfd3f613eb8704c6cd36dbda062329",
+    "backend/crates/platform/db/migrations/0164_bind_consume_four_eyes.sql": "a5acce6041a273a9d330355b2b040d8cb6d1550bd620d030e14d46343715971b",
+    "backend/app/src/lib.rs": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+    "backend/app/src/workflow_drain.rs": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+    "backend/app/src/durability_composition_tests.rs": "a7a4cbd3d56c5321500964027571837223a3f9bb3720fa8b60e5fa3ef06bf1aa",
+    "backend/crates/workflow/adapter-postgres/src/lib.rs": "4b22816b36ae67a0aea4ab68e7cce1ba2e8be8c8fc61c7aa8bd82ce5f8423df5",
+    "backend/crates/platform/test-support/src/lib.rs": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+    "backend/crates/platform/db/migrations/0026_create_organizations.sql": "9a7bd499d4e71e020e2703cfa0d5c940735a6093823d51e9a161087c274ad1cb",
+    "backend/crates/ontology/rest/Cargo.toml": "09794e842becbc25843a8e9462bd7509cdb99c3179224aa66614b107351630ed"
+  }
+}

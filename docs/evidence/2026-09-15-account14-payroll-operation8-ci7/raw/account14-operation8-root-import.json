@@ -1,0 +1,15 @@
+{
+  "writer": "/root",
+  "base_sha": "0578134acc1099c7d96738300c310bbea6449e25",
+  "approved_patches": {
+    "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1": "96ebf482ce9338203b8983886451cbd2f2eba11296e2623b6ce9cb1cf659ba1c",
+    "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory": "0861dbe77c0d527ad0b774c93fe6a13902259265a1b0598a761fe84fb5fbca58",
+    "/private/tmp/payroll-operation-control-c1301628-v1-fast": "0e62463ef150e376bd0216e21128e3f3f3643ea8b299bc68a485e6e30180a12b"
+  },
+  "reviews": [
+    "962de6ddf4bb83ca57815dd6d369f379d2d0471dfc8e5ed3e8943945feba6555",
+    "217f5263383035ba66fa7ea54a2508af887137ad98ae40cf9294c280b05ac65e",
+    "402b0e177b8107d4c068e848100bd575a9a12f13e346ba8102dcd405a649dd63"
+  ],
+  "root_review": "Read unique guard/Rust/ACL/installer changes and full fixture/Operation patches; approved exact separately reviewed prerequisites/additive control under standing authorization. Runtime pending."
+}

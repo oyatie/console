@@ -1,0 +1,156 @@
+{
+  "verdict": "APPROVE_EXACT_PRIMARY5_RUNTIME_CLASSIFICATION_THREE_SEMANTIC_RED_TWO_POSITIVE",
+  "reviewer": "/root/fast_gate_review",
+  "runtime_writer": "/root",
+  "head_sha": "c13016282540c49546af1c0c75db45faef7fc466",
+  "results_sha256": "983ec59518c87eccabe8325b2d991a5fd195081686127460cdd171b177cd07f1",
+  "approved_V4_manifest_sha256": "e14dfe66a20403ef23bba7136403000b950edfbac4f90e1b31f9cdec5ef670b0",
+  "source_bindings": {
+    "backend/app/src/durability_composition_tests.rs": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+    "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs": "5fb47e80467e54dd243d2db788333ecdcdb6c450a4e003b7c70d676908fb3329"
+  },
+  "cases": [
+    {
+      "case": 1,
+      "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture",
+      "exit": 101,
+      "seconds": 77.57,
+      "log_sha256": "b64af9a81dc23445869cd65244e4d8e0837cbddc79b50eafb3572b5b6db1098e",
+      "name": "durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay",
+      "counts": [
+        "FAILED",
+        "0",
+        "1",
+        "0",
+        "0",
+        "29"
+      ],
+      "first_failure": [
+        [
+          "app/src/durability_composition_tests.rs",
+          "1251",
+          "5",
+          "assertion `left == right` failed: typed owner uncertainty must have its public outcome: Object {\"error\": Object {\"code\": String(\"internal\"), \"message\": String(\"database durability UNKNOWN: completion deadline elapsed\")}}"
+        ]
+      ],
+      "classification": "semantic_red"
+    },
+    {
+      "case": 2,
+      "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command -- --exact --test-threads=1 --nocapture",
+      "exit": 101,
+      "seconds": 20.34,
+      "log_sha256": "c1e968fc7f92be032c411009e505f36929c0d960bf7270cfa97af21f4856b1b0",
+      "name": "durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command",
+      "counts": [
+        "FAILED",
+        "0",
+        "1",
+        "0",
+        "0",
+        "29"
+      ],
+      "first_failure": [
+        [
+          "app/src/durability_composition_tests.rs",
+          "1251",
+          "5",
+          "assertion `left == right` failed: typed owner uncertainty must have its public outcome: Object {\"error\": Object {\"code\": String(\"internal\"), \"message\": String(\"database durability UNKNOWN: database transport or observation failed\")}}"
+        ]
+      ],
+      "classification": "semantic_red"
+    },
+    {
+      "case": 3,
+      "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 21.56,
+      "log_sha256": "e97674bafcdcc991df046aecd96fe837e86db8880e53c75bb4326b66bfb27771",
+      "name": "durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs",
+      "counts": [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "29"
+      ],
+      "first_failure": [],
+      "classification": "positive_control"
+    },
+    {
+      "case": 4,
+      "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events -- --exact --test-threads=1 --nocapture",
+      "exit": 101,
+      "seconds": 25.35,
+      "log_sha256": "b1946ffdffcdf03a94d49fc287cf6682e66ac92800fd56a397fea64bd625ebc4",
+      "name": "durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events",
+      "counts": [
+        "FAILED",
+        "0",
+        "1",
+        "0",
+        "0",
+        "29"
+      ],
+      "first_failure": [
+        [
+          "app/src/durability_composition_tests.rs",
+          "1639",
+          "10",
+          "typed stage Unknown must be distinguished at the real drainer boundary: Elapsed(())"
+        ]
+      ],
+      "classification": "semantic_red"
+    },
+    {
+      "case": 5,
+      "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+      "command": "cargo test --locked --manifest-path backend/Cargo.toml -p console-ontology-rest --lib projected_dispatch_derivation::diagnostic_unknown_prefix_does_not_classify_an_operation_error -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 27.9,
+      "log_sha256": "c91ba84b35582929fae6ff3fc42fc04883f5fd3cbd8d43af61e18f9e52c6fb1f",
+      "name": "projected_dispatch_derivation::diagnostic_unknown_prefix_does_not_classify_an_operation_error",
+      "counts": [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "19"
+      ],
+      "first_failure": [],
+      "classification": "positive_control"
+    }
+  ],
+  "source_bound_reached_evidence": [
+    "Case1 reached public assertion after positive actual payroll nativeSyncRep waiter and completedHTTP500; later still-waiting/snapshot/reconciliation checks not reached.",
+    "Case2 reached public assertion after real observerEXECUTE denial and exact restoration; response diagnostic identifies owner admission uncertainty. Approval consumption/history/renewal assertions after503 remain unreached.",
+    "Case4 reached typed log timeout afterPENDING event, actual confirmation backend, local draft, unchanged event/noaudit/noreceipt, pausedfrontier and backendgone assertions. FAILED iteration and recovery assertions remain unreached.",
+    "Case3 exercised actual confirmed owner/audit500/ACL restoration/replay1audit/standby equality; case5 actual dispatcher prefix-negative passed."
+  ],
+  "execution_counts": {
+    "commands": 5,
+    "selected_executed": 5,
+    "passed": 2,
+    "failed": 3,
+    "ignored": 0,
+    "app_filtered_per_command": 29,
+    "rest_filtered": 19
+  },
+  "admission": "Root may use same3raw named supervised commands as semanticRED lanes and manually classify each fresh admission result. Raw nonzero alone does not automatically classify an unexpected failure. Preserve exact commands/tests and require sameprobeGREEN.",
+  "holds": [
+    "Ordinary staging Operation log-negative private authoring underway",
+    "Same3raw admission runs at actual currenthead with manual firstfailure classification",
+    "Typed implementation/future compatibility and fullApp7/recovery preservation",
+    "Later approval/replay/FAILED assertions require execution before closure",
+    "Public contract/408/lostreply/OpenAPI/CI/currenthead andproduction limits"
+  ],
+  "reviewer_runtime_invocations": 0,
+  "reviewer_repository_writes": 0,
+  "private_check_note": "Initial private counter assertion omitted measured count in expected positive tuple; corrected6field comparison passes. Input logs/source unchanged."
+}

@@ -1,0 +1,236 @@
+[
+  {
+    "index": 1,
+    "name": "replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply",
+    "filtered": 8,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.FpgGL5",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "41e70ec4599f63f1bc3128cc9ea57fba70e8ccce6716be5e521f929add568f7e",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 2,
+    "name": "lost_commit_transport_reply_replays_one_real_payroll_effect",
+    "filtered": 8,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.mk01RJ",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "81d5063b2087ce594b82fe8fdc17234e81fcb63f6e8665b5bc90f906fba6ff35",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 3,
+    "name": "fresh_commit_wait_release_requires_explicit_remote_confirmation",
+    "filtered": 8,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.47BPnu",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "67a9450063353f4351bd291ec7c6d54231462f2c75bf30ee414f7a69769e8de3",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 4,
+    "name": "staging_success_and_idempotent_restage_wait_for_remote_confirmation",
+    "filtered": 8,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.jX6W4r",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "05807e54b06d1f7f61a64cc6ea4f4b901b8e5b818aa7218554238b89d27df55b",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 5,
+    "name": "required_remote_unknown_is_bounded_and_never_local_fallback",
+    "filtered": 8,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.OKHlFt",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "0071217fc7842bb19329ef877173180b3f34c78b2c766b4abba4341040480791",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 6,
+    "name": "finite_remote_bound_and_repeated_replay_preserve_exact_rows",
+    "filtered": 8,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.JcjBwv",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "6e0f919f78acb25f50a4ffa481659366a97227da43d32ea9d92c64584c170a0f",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 7,
+    "name": "fresh_commit_deadline_retains_capacity_until_replay_resumes",
+    "filtered": 8,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.Jni60t",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "19e7e77c1d6ac212d112f7437bf8477665e36e5edfa970b367b2eb2420200e34",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 8,
+    "name": "aborted_fresh_stage_retains_capacity_until_native_wait_ends",
+    "filtered": 8,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.tFt6wI",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "b575a17dd24f207cc9e9a55e373955b8f65971de5e3b7b31512e6e66d07ba70f",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 9,
+    "name": "fresh_stage_transport_error_closes_pool_before_reconciliation",
+    "filtered": 8,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.VuJzKY",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "4d709b7378e1a9212f61dd161895d6b9fa79a4d52a80849cc8e7cec8fa2ca79a",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 10,
+    "name": "real_observer_installer_is_atomic_replay_exact_and_drift_refusing",
+    "filtered": 0,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.bh9J6F",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "a442547fb5295f782e7f2e2068f2f889eb9f44da2b59d17ceae9df92fc44dda2",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 11,
+    "name": "durability_composition_tests::required_app_startup_admits_only_the_installed_observer",
+    "filtered": 30,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.VfNxRN",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "d04d75a50f7afdc140a9478e8f066d51d480561c0633eef22feecfc4590c1686",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 12,
+    "name": "durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply",
+    "filtered": 30,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.WiYEcx",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "cb4a9d60f2efb777405ba1b692ec4e605bb796649eaeea3b085377a3a5108ea6",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 13,
+    "name": "durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry",
+    "filtered": 30,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.YGp5Ki",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "8b36c353d297af6fe704bebcd5392496d732b27af42cdf349e98d6a00aad0cee",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 14,
+    "name": "durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay",
+    "filtered": 30,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.lPuehb",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "4a965e6f79271fc408ec77f6d3ef8958071c7369d5746c59f8fcbbd23ef3f8a7",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 15,
+    "name": "durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command",
+    "filtered": 30,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.xiaRRR",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "4c8196eb6e9b39d35509fd6a781ac795256e49dc06edd2ae5a488e63486c0c12",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 16,
+    "name": "durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs",
+    "filtered": 30,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.YQiUt7",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "cccadb996a985a5caec49f66c375f67a819312c7b741cf5aa1e4e47e44959bbf",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 17,
+    "name": "durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events",
+    "filtered": 30,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.S103aJ",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "dd4c4375c10b386f67d2b69a47ef01a6d0d9ce2773fc4b80f973d42d10c1f50d",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  },
+  {
+    "index": 18,
+    "name": "durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown",
+    "filtered": 30,
+    "scratch": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-recovery.jJTPi1",
+    "image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64",
+    "scratch_file_sha256": {
+      "source-sha.txt": "1fc033a3b1cd7f9313b84ee631f7ce846c06348ecdb097a69ffc09d27e60d22e",
+      "test.log": "1223c508ce34958fbccd2789f956688f2b9b4ad4160b4002822034fa49a161ec",
+      "image.txt": "7d825073f32a6df73b50e84894d68ddd7ab478a4429fffe4867615461b99d865",
+      "topology.log": "db5e1a80eabd87a18f2f5ca2b416f48187e436dbb9034d07322a32aa4fad1622"
+    }
+  }
+]

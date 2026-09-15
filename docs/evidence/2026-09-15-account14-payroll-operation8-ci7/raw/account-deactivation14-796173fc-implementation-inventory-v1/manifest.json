@@ -1,0 +1,44 @@
+{
+  "status": "FROZEN_PRIVATE_IMPLEMENTATION_REVIEW_PENDING",
+  "owner": "/root/inventory_repair",
+  "integration_writer": "/root",
+  "reviewer": "/root/capture_review",
+  "base_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "preimages_verified_at": "c13016282540c49546af1c0c75db45faef7fc466",
+  "admission_receipt": "/private/tmp/account-deactivation14-796173fc-admission/result.json",
+  "admission_receipt_sha256": "edcee5d087ab75c619ecb6644ba9ec39be691a3c963d6d26d7c95dc770d52779",
+  "reviewed_test_sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+  "files": {
+    "GUIDE.md": "af531b5eae9ee6766ad0592f7e2fba1143ed4508862b758b96a3e3c651b4597b",
+    "base/backend/app/src/account_custody_state.sql": "e735fb392dceeea589faed80bff7e8c9a02e12ed25cd5df9f855cfee23188fbc",
+    "base/backend/crates/identity/adapter-postgres/src/lib.rs": "ef620495a547484ededbb8b2e080222b47a63119534ff6f48f722116c9edd32a",
+    "base/ops/generate-account-custody.py": "1bee882acf5d709f51ed89c3f098b3b6fd8255965af9e4090c24d0e6b484b274",
+    "base/ops/postgres-finalize-account-custody.sql": "f4626454cbd5f1ab09f1684d0bc8a6de28fc3c7122de849eb504b7ba3b938036",
+    "candidate.patch": "96ebf482ce9338203b8983886451cbd2f2eba11296e2623b6ce9cb1cf659ba1c",
+    "checks.json": "3053598ade9d6d00a85487778770378f2842b6c026341cdc7f699ccba5262cef",
+    "post/backend/app/src/account_custody_state.sql": "d4b9a13d2340c40b6a87174933c099011b2b26873a3efbb420c234622dd1fc5b",
+    "post/backend/crates/identity/adapter-postgres/src/lib.rs": "c826372974692ca5a939d3a817b8067c4bf174fb682a92e25d4002c148a9a42f",
+    "post/ops/generate-account-custody.py": "3c01562c78c8bcd6441cd331231f500930380998c301c6b84a7410bfd92b8208",
+    "post/ops/postgres-finalize-account-custody.sql": "f2f6c3c9d048ac518e84196a2fc42624c97cfe1d571122dfa453675d8a359ca3",
+    "preimages.json": "d4ea9586cd780073fc9702dfd51c3880c0ecf4e4f874eb23409d337649205b12",
+    "verify.py": "f7f3cf879980b363e5ad393a023a2b76b7a8fd3d406fd1c6c2d39f500d89fdf8"
+  },
+  "counts": {
+    "postimage_files": 4,
+    "source_mechanical_checks": 18,
+    "compiler_discovered": 0,
+    "rust_executed": 0,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "integration_writes": 0
+  },
+  "remaining_holds": [
+    "independent implementation review",
+    "root exact14GREEN and retained root/profile/legacy controls",
+    "compiler discovery and SQL/runtime execution",
+    "exact-head closure",
+    "broader guard tests",
+    "native enrollment/Auth7",
+    "production authority"
+  ]
+}

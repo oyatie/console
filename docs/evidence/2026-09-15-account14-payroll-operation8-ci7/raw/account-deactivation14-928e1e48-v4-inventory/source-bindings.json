@@ -1,0 +1,57 @@
+{
+  "base_sha": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+  "source": {
+    "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs": {
+      "sha256": "0514aeecc993a126f98be1b24ab9a5d6d8052c373a1abcfc9cf28e59a3e34684",
+      "bytes": 26083,
+      "matches_2931be9e": true,
+      "historical_design_preimage_sha256": "0514aeecc993a126f98be1b24ab9a5d6d8052c373a1abcfc9cf28e59a3e34684",
+      "historical_design_preimage_matches": true,
+      "matches_e27623ab": true,
+      "matches_928e1e48": true
+    },
+    "backend/crates/identity/adapter-postgres/src/lib.rs": {
+      "sha256": "ef620495a547484ededbb8b2e080222b47a63119534ff6f48f722116c9edd32a",
+      "bytes": 103160,
+      "matches_2931be9e": true,
+      "historical_design_preimage_sha256": "ef620495a547484ededbb8b2e080222b47a63119534ff6f48f722116c9edd32a",
+      "historical_design_preimage_matches": true,
+      "matches_e27623ab": true,
+      "matches_928e1e48": true
+    },
+    "backend/app/src/account_custody_state.sql": {
+      "sha256": "e735fb392dceeea589faed80bff7e8c9a02e12ed25cd5df9f855cfee23188fbc",
+      "bytes": 28604,
+      "matches_2931be9e": true,
+      "historical_design_preimage_sha256": "e735fb392dceeea589faed80bff7e8c9a02e12ed25cd5df9f855cfee23188fbc",
+      "historical_design_preimage_matches": true,
+      "matches_e27623ab": true,
+      "matches_928e1e48": true
+    },
+    "ops/generate-account-custody.py": {
+      "sha256": "1bee882acf5d709f51ed89c3f098b3b6fd8255965af9e4090c24d0e6b484b274",
+      "bytes": 15786,
+      "matches_2931be9e": true,
+      "historical_design_preimage_sha256": "1bee882acf5d709f51ed89c3f098b3b6fd8255965af9e4090c24d0e6b484b274",
+      "historical_design_preimage_matches": true,
+      "matches_e27623ab": true,
+      "matches_928e1e48": true
+    },
+    "ops/postgres-finalize-account-custody.sql": {
+      "sha256": "f4626454cbd5f1ab09f1684d0bc8a6de28fc3c7122de849eb504b7ba3b938036",
+      "bytes": 99429,
+      "matches_2931be9e": true,
+      "historical_design_preimage_sha256": "f4626454cbd5f1ab09f1684d0bc8a6de28fc3c7122de849eb504b7ba3b938036",
+      "historical_design_preimage_matches": true,
+      "matches_e27623ab": true,
+      "matches_928e1e48": true
+    }
+  },
+  "schema_fixture_constraint": {
+    "path": "backend/crates/platform/db/migrations/0026_create_organizations.sql",
+    "sha256": "9a7bd499d4e71e020e2703cfa0d5c940735a6093823d51e9a161087c274ad1cb",
+    "slug_regex": "^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$",
+    "old_slug_length": 42,
+    "new_slug_length": 38
+  }
+}

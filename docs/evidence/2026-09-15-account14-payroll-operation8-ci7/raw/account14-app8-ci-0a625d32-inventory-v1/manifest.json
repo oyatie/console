@@ -1,0 +1,94 @@
+{
+  "status": "FROZEN_PRIVATE_CI7_REVIEW_PENDING",
+  "author": "/root/inventory_repair",
+  "reviewer": "/root/fast_gate_review",
+  "integration_writer": "/root",
+  "base_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "preimages_verified_at": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "map_binding": {
+    "path": "/private/tmp/account14-app8-ci-enrollment-map-59c38d60-v1-inventory/MAP.md",
+    "sha256": "b16b97893e5c0eec40c7743bd620bfd47e78ce42e46ac14232c46f8ba024d6aa"
+  },
+  "admission_bindings": {
+    "/private/tmp/account14-app8-ci-0a625d32-admission/lane.json": "23b0fbe71cbc6b4fc16752ac217f6f35de85f623c58bd9290ff85c1609bad7db",
+    "/private/tmp/account14-app8-ci-0a625d32-admission/result.json": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "/private/tmp/account14-app8-ci-0a625d32-admission/probe.log": "f40c38104ac7afdaae04df747ef50c9ce19c12d5e99ab719a2dcf576bd34997c"
+  },
+  "app8_source_sha256": "0f02b3aec6f15449015b22a54b70453b66f2a5d17fb7670f3a241cce53b2a7cb",
+  "files": {
+    "GUIDE.md": "8f341a6920fd788b473783767cdc936049cd88981b58a1e4f4d5c19c5760cb7f",
+    "base/.github/workflows/ci.yml": "3ac68326e809780332a35a2e90043e8409ce69fcef1b75595dbb8ee22f7a070d",
+    "base/docs/program/executed-tests-baseline.json": "166ed21d79532582dc59a90cbd73f6a415d8409a6ecf58864d4f5b05d8ffea99",
+    "base/scripts/check-ci-preflight.mjs": "8ff3871b60b343bbc80c6028bad3fb42e85694bf836c7f43fe4bd398d5a0fd60",
+    "base/scripts/check-ci-preflight.test.mjs": "94a13437619d7f19c78668b517e06ba2a89dfb8a1c3aabed238463c578be8a70",
+    "base/scripts/lib/recovery-test-invocations.mjs": "498ac4f0cd4e3f0c465257ab8f1de0311b9b24098aa160f541d16099e71f20da",
+    "base/scripts/lib/recovery-test-invocations.test.mjs": "2a71ce282b6373a3d533597121f23bdd9f76a4f1ddd8cf0e3435c91d3e448260",
+    "base/tools/buck/test_preparation_wiring.py": "73c75ae43fcc996ab2830b6c83eaf5b5da0064d6b7a66057523035e1e7814dd0",
+    "candidate.patch": "3292aa623fc40c2fc7d9c08ae45b76d81222cc54299241a19123024a0beb2808",
+    "executed-tests.log": "8957125b6941246ac0fa7ce2219037ba086270be8d18456270cdad3480b8fc29",
+    "mechanical-checks.json": "4fbf4ccd2db88fe2b49c8c69105960784442ec104080a4d63dceb7ff306d2b05",
+    "post/.github/workflows/ci.yml": "b4bfe6d6674cacfcf8f0e4444af7cf541b9a135cc81ab84fd8cfdf790a070e7b",
+    "post/docs/program/executed-tests-baseline.json": "160ec28aa3a11fd1aef7ee8caeab1312d4ac0cc6462926805a3c9ad90d49b6eb",
+    "post/scripts/check-ci-preflight.mjs": "b23a42033dfba33e40c203aa1daff3ccac30d3e947fe410901a203adf80132f9",
+    "post/scripts/check-ci-preflight.test.mjs": "8285554e9e32e721d34552c8245ae6feed63631713c2d2ad96be9d6d71a11379",
+    "post/scripts/lib/recovery-test-invocations.mjs": "46dc5f8d8c5bb6a14114a7ea7efec0fa7f61c406f188adfe3b4ffe8771d39521",
+    "post/scripts/lib/recovery-test-invocations.test.mjs": "fe8d1266f937c3de191e7fddb1f2ce0ccd17b4f5fc66e42c6c0f06cb7f367a45",
+    "post/tools/buck/test_preparation_wiring.py": "9dbf6eac92ba52951ecda37423031d94124c2550234b39e3a66034a4e4a4cc4d",
+    "preflight-focused-indexed.log": "3b697f01614fa1092324ca727d5ea8e26d7a05c4e490465f5f328ab10bd83a3a",
+    "preflight-focused.log": "f64e24295a71493e7bd9dc87bec8fecf0ee5ca578c1acac856d57043aa80b4fa",
+    "preflight-gate-indexed.log": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e",
+    "preflight-gate.log": "dca694ace5dbfb5b50eae15e4b960124d30ce11e5c3691af4b559dc4a175238a",
+    "preimages.json": "c28ecc7a4f15d397fcaf2ca3d9f57fadce9444a6f3a9b21748641ff89d991029",
+    "preparation.log": "66bc21ea52d6e9c53653403cc15967eea9d43b99ad098161694d537c723ed5eb",
+    "probe.log": "bc460f8a0b28082f8cabd0c2df76cf210a69e522a6964b4ca9a92e00b8f9b513",
+    "recovery-unit-process-access.log": "00a1cb7bf2bd0158a6d866d715545eadc141349fdb73832e07089fbffd897477",
+    "recovery-unit.log": "782098d75fcb6e25c6d6bbae359acf688c44b626426395e944310ca417d562c4",
+    "roster.json": "39a515746c65a7e74c01beaaa33e7adea2be7241753055599293d2242d301f4a",
+    "source-checks.json": "471af098368a255ddb97e8cad9c2e6094921ec158488a00b99f4d6a5b9ff1f9b",
+    "validation-results.json": "0b46daf99d86bfd14788b93e5c5db33576b5d3256e4508ba45a745ab4b8447bc",
+    "verify-source.mjs": "57b829096d155b750bfa94fd2729e277f25a3f733b24e0226f8852a7a552e7ac"
+  },
+  "validation_snapshot": {
+    "path": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/validation",
+    "private_index_tree": "f25e2dd2341f8427a093c97afd1f8beab481f7aa",
+    "tracked_paths": 9867,
+    "changed_paths": [
+      ".github/workflows/ci.yml",
+      "scripts/lib/recovery-test-invocations.mjs",
+      "scripts/lib/recovery-test-invocations.test.mjs",
+      "tools/buck/test_preparation_wiring.py",
+      "scripts/check-ci-preflight.mjs",
+      "scripts/check-ci-preflight.test.mjs",
+      "docs/program/executed-tests-baseline.json"
+    ],
+    "note": "support copy only; import candidate.patch or seven postimages only"
+  },
+  "postimages": {
+    ".github/workflows/ci.yml": "b4bfe6d6674cacfcf8f0e4444af7cf541b9a135cc81ab84fd8cfdf790a070e7b",
+    "scripts/lib/recovery-test-invocations.mjs": "46dc5f8d8c5bb6a14114a7ea7efec0fa7f61c406f188adfe3b4ffe8771d39521",
+    "scripts/lib/recovery-test-invocations.test.mjs": "fe8d1266f937c3de191e7fddb1f2ce0ccd17b4f5fc66e42c6c0f06cb7f367a45",
+    "tools/buck/test_preparation_wiring.py": "9dbf6eac92ba52951ecda37423031d94124c2550234b39e3a66034a4e4a4cc4d",
+    "scripts/check-ci-preflight.mjs": "b23a42033dfba33e40c203aa1daff3ccac30d3e947fe410901a203adf80132f9",
+    "scripts/check-ci-preflight.test.mjs": "8285554e9e32e721d34552c8245ae6feed63631713c2d2ad96be9d6d71a11379",
+    "docs/program/executed-tests-baseline.json": "160ec28aa3a11fd1aef7ee8caeab1312d4ac0cc6462926805a3c9ad90d49b6eb"
+  },
+  "counts": {
+    "source_mechanical_checks": 20,
+    "same_probe_executed": 114,
+    "same_probe_passed": 114,
+    "preparation_passed": 15,
+    "executed_tests_regressions_passed": 15,
+    "preflight_focused_passed": 2,
+    "bypass_mutations": 468,
+    "recovery_unit_passed": 21,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "integration_writes": 0
+  },
+  "remaining_holds": [
+    "independent Fast review",
+    "root exact-head import and required gates",
+    "complete product runtime closure",
+    "production authority"
+  ]
+}

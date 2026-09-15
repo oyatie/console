@@ -1,0 +1,162 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -858,6 +858,26 @@
+         if: ${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
+         run: CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry -- --exact --test-threads=1 --nocapture
+ 
++      - name: App recovery required_api_completion_unknown_reconciles_same_command_after_replay
++        if: ${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
++        run: CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture
++
++      - name: App recovery required_api_receipt_absent_unknown_renews_approval_with_same_command
++        if: ${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
++        run: CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command -- --exact --test-threads=1 --nocapture
++
++      - name: App recovery required_api_confirmed_owner_audit_failure_replays_and_repairs
++        if: ${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
++        run: CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs -- --exact --test-threads=1 --nocapture
++
++      - name: App recovery required_workflow_typed_unknown_preserves_pending_and_failed_events
++        if: ${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
++        run: CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events -- --exact --test-threads=1 --nocapture
++
++      - name: App recovery required_workflow_provenance_refusal_is_operation_not_unknown
++        if: ${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
++        run: CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown -- --exact --test-threads=1 --nocapture
++
+   postgres-domain-reachability:
+     # Presubmit-gated live Postgres (oyatie pg-gate). A red here still blocks
+     # the merge when run_live_postgres is true; otherwise the skip-proof step
+--- a/scripts/lib/recovery-test-invocations.mjs
++++ b/scripts/lib/recovery-test-invocations.mjs
+@@ -20,6 +20,11 @@
+   "durability_composition_tests::required_app_startup_admits_only_the_installed_observer",
+   "durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply",
+   "durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry",
++  "durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay",
++  "durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command",
++  "durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs",
++  "durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events",
++  "durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown",
+ ];
+ const ownerPrefix = ["cargo", "test", "--locked", "--manifest-path", "backend/Cargo.toml", "-p", "console-payroll-adapter-postgres", "--test"];
+ const appPrefix = ["cargo", "test", "--locked", "--manifest-path", "backend/Cargo.toml", "-p", "console-app", "--lib", "--features", "test-recovery"];
+--- a/scripts/lib/recovery-test-invocations.test.mjs
++++ b/scripts/lib/recovery-test-invocations.test.mjs
+@@ -10,10 +10,10 @@
+ const appSource = readFileSync(new URL("../../backend/app/src/durability_composition_tests.rs", import.meta.url), "utf8");
+ const appRecoveryCases = value => supervisedSourceCases(value, APP_CASES, "durability_composition_tests::");
+ const appLibSource = readFileSync(new URL("../../backend/app/src/lib.rs", import.meta.url), "utf8");
+-test("actual required recovery commands resolve nine owners, the isolated installer and three app cases", () => {
++test("actual required recovery commands resolve nine owners, the isolated installer and eight app cases", () => {
+   const result = recoveryTestInvocations(workflow, source, observerSource, appSource, appLibSource);
+   assert.deepEqual(result.failures, []);
+-  assert.equal(result.invocations.length, 13);
++  assert.equal(result.invocations.length, 18);
+ });
+ 
+ const mutations = {
+--- a/tools/buck/test_preparation_wiring.py
++++ b/tools/buck/test_preparation_wiring.py
+@@ -36,6 +36,11 @@
+     "durability_composition_tests::required_app_startup_admits_only_the_installed_observer",
+     "durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply",
+     "durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry",
++    "durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay",
++    "durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command",
++    "durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs",
++    "durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events",
++    "durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown",
+ ]
+ SUPERVISED_CASES = {**CASES, OBSERVER_CASE: "", **dict.fromkeys(APP_CASES, "")}
+ LIVE_IF = "${{ needs.preflight.outputs.run_live_postgres == 'true' }}"
+--- a/scripts/check-ci-preflight.mjs
++++ b/scripts/check-ci-preflight.mjs
+@@ -53,7 +53,12 @@
+   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test durability_observer real_observer_installer_is_atomic_replay_exact_and_drift_refusing -- --exact --test-threads=1 --nocapture",
+   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_app_startup_admits_only_the_installed_observer -- --exact --test-threads=1 --nocapture",
+   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply -- --exact --test-threads=1 --nocapture",
+-  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry -- --exact --test-threads=1 --nocapture"
++  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry -- --exact --test-threads=1 --nocapture",
++  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture",
++  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command -- --exact --test-threads=1 --nocapture",
++  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs -- --exact --test-threads=1 --nocapture",
++  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events -- --exact --test-threads=1 --nocapture",
++  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown -- --exact --test-threads=1 --nocapture"
+ ];
+ const skipLivePostgresCondition = "${{ needs.preflight.outputs.run_live_postgres != 'true' }}";
+ /** Heavy proofs that are postsubmit-only (push / workflow_dispatch). */
+@@ -1189,6 +1194,11 @@
+     proofRun("App recovery required_app_startup_admits_only_the_installed_observer", recoveryCommands[10], { if: recoveryRunCondition }),
+     proofRun("App recovery required_api_projected_payroll_dispatch_waits_for_remote_apply", recoveryCommands[11], { if: recoveryRunCondition }),
+     proofRun("App recovery required_workflow_spawn_keeps_unknown_staging_pending_until_retry", recoveryCommands[12], { if: recoveryRunCondition }),
++    proofRun("App recovery required_api_completion_unknown_reconciles_same_command_after_replay", recoveryCommands[13], { if: recoveryRunCondition }),
++    proofRun("App recovery required_api_receipt_absent_unknown_renews_approval_with_same_command", recoveryCommands[14], { if: recoveryRunCondition }),
++    proofRun("App recovery required_api_confirmed_owner_audit_failure_replays_and_repairs", recoveryCommands[15], { if: recoveryRunCondition }),
++    proofRun("App recovery required_workflow_typed_unknown_preserves_pending_and_failed_events", recoveryCommands[16], { if: recoveryRunCondition }),
++    proofRun("App recovery required_workflow_provenance_refusal_is_operation_not_unknown", recoveryCommands[17], { if: recoveryRunCondition }),
+   ],
+   "rust-fmt": [
+     proofRun("rustfmt check", "cargo fmt --all -- --check"),
+--- a/scripts/check-ci-preflight.test.mjs
++++ b/scripts/check-ci-preflight.test.mjs
+@@ -948,8 +948,8 @@
+       "postgres-reachability-platform": 3,
+       "postgres-reachability-ontology": 3,
+       "postgres-reachability-domain-a": 3,
+-      // Pinned image setup, nine recovery scenarios, observer and three app cases.
+-      "postgres-reachability-domain-b": 17,
++      // Pinned image setup, nine recovery scenarios, observer and eight app cases.
++      "postgres-reachability-domain-b": 22,
+       "postgres-domain-reachability": 3,
+       "required-ci": 1,
+       "rust-fmt": 1,
+@@ -1009,9 +1009,9 @@
+     // previously dark 13-test suite and subjects the new step to all bypasses.
+     // 2026-08-28: +1 rust-fmt presubmit run step (oyatie lint analog).
+     // +1: isolate the app dev-auth feature case so an earlier failure cannot hide it.
+-    assert.equal(runStepCount, 151, "required and planned job run-step coverage must not shrink");
+-    // Three app composition proofs extend the matrix: 151*3 = 453.
+-    assert.equal(mutationCount, 453, "exhaustive bypass matrix must not shrink");
++    assert.equal(runStepCount, 156, "required and planned job run-step coverage must not shrink");
++    // Five additional app composition proofs extend the matrix: 156*3 = 468.
++    assert.equal(mutationCount, 468, "exhaustive bypass matrix must not shrink");
+   });
+ 
+   it("rejects every setup-action condition and soft-failure bypass", () => {
+--- a/docs/program/executed-tests-baseline.json
++++ b/docs/program/executed-tests-baseline.json
+@@ -24,7 +24,7 @@
+   "why_feature_variants_are_pinned_here": "These are NOT dark and are NOT part of the set above — they execute today. They are pinned into the DEFINED population because both of the other sources for a binary's feature dimension are artifacts that a deletion PR deletes. `rust_test features` was the only source, so a commit removing //tools/buck:auth-rest-dev-auth-inline-postgres from ci.yml together with its sh_test and its rust_test — the ordinary shape of a wrapper-removal PR — dropped this binary from `defined` and from `executed` in the same instant. The dark set did not move, the gate exited 0, and an entire dev-auth PostgreSQL suite stopped running with no diagnostic. Pinned, the binary survives its own deletion, goes dark, and names itself. The current entries include ordinary database, Auth development, and dedicated app recovery variants; a pinned entry that stops being `defined` is reported UNRESOLVED, so this list cannot rot into decoration.",
+   "test_attribute_baseline_note": "This map is a cheap lexical deletion ratchet over reachable source files, not a runtime case count. It counts declared #[test], #[tokio::test], and #[sqlx::test] attributes without evaluating cfg expressions, feature selection, macro expansion, or #[ignore]. A source reached by multiple feature-bearing binaries appears once; exact (source, feature set) binary reachability is enforced separately by the named dark-set ratchet. For example, console-app's bare and test-postgres binaries list 153 and 18 tests respectively in the compiler harness, while this static source metric records 171 attributes once.",
+   "test_attribute_baseline": {
+-    "backend/app/src/lib.rs": 192,
++    "backend/app/src/lib.rs": 197,
+     "backend/app/tests/account_migration.rs": 6,
+     "backend/app/tests/action_inbox_api.rs": 10,
+     "backend/app/tests/attendance_persona_api.rs": 2,
+@@ -181,7 +181,7 @@
+     "backend/crates/governance/domain/src/lib.rs": 11,
+     "backend/crates/identity/adapter-postgres/src/lib.rs": 4,
+     "backend/crates/identity/adapter-postgres/tests/branch_under_deactivated_region.rs": 2,
+-    "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs": 6,
++    "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs": 14,
+     "backend/crates/identity/adapter-postgres/tests/me_workspace_layouts_rls.rs": 2,
+     "backend/crates/identity/adapter-postgres/tests/region_branch_crud_rls_surfaces_as_runtime_role.rs": 6,
+     "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs": 3,
+@@ -252,7 +252,7 @@
+     "backend/crates/ontology/canonical-adapter-postgres/tests/receipt_owner_widening.rs": 4,
+     "backend/crates/ontology/canonical-domain/src/lib.rs": 11,
+     "backend/crates/ontology/domain/src/lib.rs": 14,
+-    "backend/crates/ontology/rest/src/lib.rs": 19,
++    "backend/crates/ontology/rest/src/lib.rs": 21,
+     "backend/crates/ontology/rest/tests/action_execute_as_runtime_role.rs": 16,
+     "backend/crates/ontology/rest/tests/canonical_dispatch_audit_as_runtime_role.rs": 2,
+     "backend/crates/ontology/rest/tests/canonical_replay.rs": 5,
+@@ -411,5 +411,5 @@
+   },
+   "why_10_became_1": "All nine wired-capable entries now execute and pass; only the out-of-pivot binary remains. The seven deferred_fixture_or_defect binaries were repaired -- and every one failed for a PRODUCTION defect, not fixture rot: facilities decoded sum(bigint) NUMERIC into i64 and separately bound kwh as String into NUMERIC; compliance put Option<i64> behind serde(flatten), which serde_urlencoded cannot deserialize, so ?limit=/?offset= 400'd in the extractor on five catalog routes; facilities pre-gated create/get/list on authorize_org_wide, collapsing FacilitiesManage [D,D,D,A,D,A] and FacilitiesObserve [D,A,A,A,A,A] to SUPER_ADMIN and locking out every branch-scoped ADMIN; consulting emitted a nine-element array where OpenAPI declares string/date-time; benefit made Option<Date> fields mandatory; identity ordered a directory page by an unqualified column with the collation pinned nowhere; logistics shipped a CHECK regex exceeding RE_DUP_MAX so no POD could ever be written, which in turn masked a terminal-state trigger that made SETTLED unreachable. deferred_needs_postgres_lane (platform/db) and deferred_feature_variant (platform/auth-rest) needed NO source change -- they were dark purely for want of a postgres-cargo-map entry, and are now wired as platform-db-lib-pg and auth-rest-lib-pg. Each retirement is an entry removed because its binary now EXECUTES, never a count adjusted.",
+   "why_one_entry_remains": "backend/crates/platform/storage/tests/seaweedfs_worm.rs stays named, by explicit owner decision. It is not analogous to code deleted by the pivot: platform/storage/src/lib.rs still ships and is depended on by backend/app (src/mail_sync.rs), comms/application and comms/rest. The test asserts an object-lock/WORM retention guarantee on live code and is #[ignore]d, so it consumes no CI time. Deleting it would be coverage loss, not hygiene -- and removing a compliance-retention test while compliance is on HOLD converts a known gap into an unknown one. A literal zero is only reachable by deleting a live-code compliance test, so one named and sanctioned entry is the truthful end state.",
+-  "why_app_recovery_variant_is_pinned": "The app test-recovery variant enables the ordinary test-postgres dependencies but gates three additional live two-node durability cases. Each exact case has a distinct supervised CI command and fresh cluster. Pinning this defined variant keeps deletion of its feature/wiring from silently removing it from the reachability population; this is source reachability, not proof of runtime success."
++  "why_app_recovery_variant_is_pinned": "The app test-recovery variant enables the ordinary test-postgres dependencies but gates eight additional live two-node durability cases. Each exact case has a distinct supervised CI command and fresh cluster. Pinning this defined variant keeps deletion of its feature/wiring from silently removing it from the reachability population; this is source reachability, not proof of runtime success."
+ }

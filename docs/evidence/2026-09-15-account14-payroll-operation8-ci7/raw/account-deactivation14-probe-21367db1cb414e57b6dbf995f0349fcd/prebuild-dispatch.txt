@@ -1,0 +1,1 @@
+matched exact seven-argument prebuild; appended --test deactivate_revokes_credentials

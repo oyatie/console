@@ -1,0 +1,21 @@
+{
+  "implementation_sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "correction_sha": "0578134acc1099c7d96738300c310bbea6449e25",
+  "files": {
+    "correction.diff": "fe1165699ee72d78efa019885dabf0caef9fd622e6e124c1f95874eecfec2263",
+    "denied/1.log": "d9737ba57d043b8f3038be4aabf62f71a85c6d6dc73b069c16cd9240caf6854f",
+    "denied/probe-results.json": "e25288fb7929d30368ce31b28e16974894875af69e624bd39e261b07d99b14a4",
+    "openapi-correction.log": "bc7ce6c387ae7f1868627c48199353c428ff4ae5b202244ea652c9766ca6de31",
+    "review.json": "e33c76f8cd84965d63db3fb1ed0726ae5f9339d131f7e58a8b203bb013963bbe",
+    "runtime/1.log": "a12bf12ce35884fe30dd51a19a4a76878815ca01f3e5a6387b35f9e48cfa7fc8",
+    "runtime/2.log": "84a2c7148246e00332318da530294bb704cf073b3fa5599dd4092c6abf217ed6",
+    "runtime/4.log": "a7490c38d1dc70c5db2dec7cc7ec075f9dc0b7e4780129acec745ebc1f0bbe81",
+    "runtime/probe-results.json": "3a9857c287a12e33cb2b357e3fc41b62de47acba280d3527abb72add06585972",
+    "sources/backend/app/src/durability_composition_tests.rs": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+    "sources/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml": "120070f0c3487edcbfa2b771b81ae4f9ec9d624f60b0fa2ab77cbe15c08bf82c",
+    "sources/backend/openapi/openapi.yaml": "508a6f0d519ca5e1f0410aab1790d0464fa8cd1533663458d6a4940e87b6e176",
+    "units/ontology-rest.log": "cb068a3436cfb3593e98c2a73a1d48d3a77e460302330b6e5a7532039fcb68d0",
+    "units/workflow-domain.log": "f69345fa5343fa10e67df7db5a6c6c4349ebd114dfc512d3e76489df93c13b94",
+    "verify_review.py": "2ce0d28f712b6f8f7c9cf9efd446fee8f20201b21a497cb41294cab80588d0f5"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "base_sha": "23fa277133e83916d094f9b2423b48fd5af65ce4",
+  "path": "backend/app/src/durability_composition_tests.rs",
+  "before": "0f02b3aec6f15449015b22a54b70453b66f2a5d17fb7670f3a241cce53b2a7cb",
+  "after": "ae58a39fb4caa820ef49e6cedf196d0785df8efa7f54f7284aa75bd67cd861e9",
+  "patch": "029131cb1715a0f81598572756c473f281b0c55c004624cd44d14e14dbe1366d",
+  "added_cfg_test_lines": 6,
+  "all_other_bytes_identical": true,
+  "baseline": "/private/tmp/recovery-test-local-cfg-run-ecbe018a970c4014ab634a7ff0e0ee98"
+}

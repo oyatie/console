@@ -1,0 +1,10 @@
+[
+  {
+    "lane": "recovery-test-local-cfg",
+    "probe": "python3 /private/tmp/recovery-test-local-cfg-23fa2771/probe.py",
+    "prompt": "Root sole writer. Add explicit cfg(test) to six actual test-only functions in durability_composition_tests.rs to match the existing file-local gate mask. All function bodies/names/assertions remain identical; no gate-source edits.",
+    "allow": [
+      "backend/app/src/durability_composition_tests.rs"
+    ]
+  }
+]

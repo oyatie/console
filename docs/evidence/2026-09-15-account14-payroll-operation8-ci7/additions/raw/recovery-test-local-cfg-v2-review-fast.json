@@ -1,0 +1,86 @@
+{
+  "status": "APPROVED_EXACT_TWO_FILE_CFG6_AND_SCALAR_OUTER_TEST_CENSUS_FIX",
+  "reviewer": "/root/fast_gate_review",
+  "writer": "/root",
+  "base_sha": "6fa6443d5b3a9df81f2a254d6c875942be64a488",
+  "patch_sha256": "75584dbcfefd2c0db773bbe529de2487cc51a9c6aa9a8da042a4cb4e49b2d9e3",
+  "postimages": {
+    "backend/app/src/durability_composition_tests.rs": "ae58a39fb4caa820ef49e6cedf196d0785df8efa7f54f7284aa75bd67cd861e9",
+    "scripts/lib/recovery-test-invocations.mjs": "962f760265b3bd9e31d024fb6d0ced20bda4df09d9218e1b77cbe2fd978d7193"
+  },
+  "findings": [],
+  "mechanical": "Only2paths10insertions1deletion. Six redundant cfg lines invert to original Rust bytes; all8SQLx attributes/functions/oracles retained. App parent remains all(test,feature=test-recovery). Approved additive tests exact4d515a56 committed atbase.",
+  "checker_review": "After existing comment/string stripping, blanks only outer scalar #[cfg(test)] while retaining newlines. Inner !, compound/negated cfg, cfg_attr and ignore still reach unchanged blanket rejection. Case attribute/name/count/topology/module guard and all old114test assertions unchanged.",
+  "scope_tradeoff": "Existing file-local gate masks now see existing test-only functions; no audit/RLS gate exemptions or source edits, no file move, no broader Rust module resolver.",
+  "saved_same_probe_runs": {
+    "red": [
+      {
+        "name": "audit-coverage",
+        "violation_count": 3,
+        "tail": "  [MissingAuditEvent] /private/tmp/console-production-tdd-preparation-20260913/backend/app/src/durability_composition_tests.rs::required_workflow_typed_unknown_preserves_pending_and_failed_events: state-changing handler must construct AuditEvent and call with_audit"
+      },
+      {
+        "name": "rls-arming",
+        "violation_count": 3,
+        "tail": "  [BarePoolQuery] /private/tmp/console-production-tdd-preparation-20260913/backend/app/src/durability_composition_tests.rs:861: .fetch_one(pool) executes on a bare pool with no armed app.current_org GUC \u2014 wrap the read in with_org_conn(self.pool(), current_org()?, ..) / with_audit(s), or add `// rls-arming: ok <reason>` if the table is global/non-RLS"
+      },
+      {
+        "name": "recovery-roster",
+        "counts": {
+          "tests": 144,
+          "pass": 135,
+          "fail": 9,
+          "skipped": 0
+        }
+      }
+    ],
+    "green": [
+      {
+        "name": "audit-coverage",
+        "violation_count": 0,
+        "tail": "console-gate-audit-coverage: PASSED"
+      },
+      {
+        "name": "rls-arming",
+        "violation_count": 0,
+        "tail": "console-gate-rls-arming: PASSED"
+      },
+      {
+        "name": "recovery-roster",
+        "counts": {
+          "tests": 144,
+          "pass": 144,
+          "fail": 0,
+          "skipped": 0
+        }
+      }
+    ]
+  },
+  "saved_log_sha256": {
+    "/private/tmp/recovery-test-local-cfg-v2-run-df3388d8aa5a43c395c78cbf12eadd6b/audit-coverage.log": "ecbcc1655573c54d0c99dfdf244c4cdc4534e35ee403f73580fd5f920bcc8c1a",
+    "/private/tmp/recovery-test-local-cfg-v2-run-df3388d8aa5a43c395c78cbf12eadd6b/rls-arming.log": "0224bb2daa51054f195b924c24e25793b0f78cf4a51b5ddc2685f3403676fe12",
+    "/private/tmp/recovery-test-local-cfg-v2-run-df3388d8aa5a43c395c78cbf12eadd6b/recovery-roster.log": "97b226a60a3adba316bc4ab2b2c91d7dcaca93ab710a37234ce1fb314ccdfa4a",
+    "/private/tmp/recovery-test-local-cfg-v2-run-df3388d8aa5a43c395c78cbf12eadd6b/result.json": "180beadbf57b62149ac853e88459e3255dc112dd399d57ef7d99cc9327ce351f",
+    "/private/tmp/recovery-test-local-cfg-v2-run-e47ac8997852430ba10bba58cc2a9fa9/audit-coverage.log": "6cd2186542139ca7a137f08612373b2cef0fa9f81a4e139a54322ae15a39b53b",
+    "/private/tmp/recovery-test-local-cfg-v2-run-e47ac8997852430ba10bba58cc2a9fa9/rls-arming.log": "030d6f9cb87a7c6a7a21d790367938be1df47638305ccda9b59593aa7ad516fc",
+    "/private/tmp/recovery-test-local-cfg-v2-run-e47ac8997852430ba10bba58cc2a9fa9/recovery-roster.log": "caa8c4bba1171394ac5ce41cf56726c3d7e02609bb035aa2c534f6834515a6a0",
+    "/private/tmp/recovery-test-local-cfg-v2-run-e47ac8997852430ba10bba58cc2a9fa9/result.json": "07efd5d8165807730161f872f6c1ba1d660ff8aae6513b107f00d1a0c2b7d0ba"
+  },
+  "independent_node_command": "node --test scripts/lib/recovery-test-invocations.test.mjs",
+  "independent_node_cwd": "/private/tmp/console-production-tdd-preparation-20260913",
+  "independent_node_counts": {
+    "tests": 144,
+    "pass": 144,
+    "fail": 0,
+    "skipped": 0
+  },
+  "independent_node_log": "/private/tmp/recovery-test-local-cfg-v2-independent-green-fast.log",
+  "independent_node_log_sha256": "a298c7917508e324f671ef6cd415c0ec08234b51a370225c7a46c9b447d68530",
+  "probe_sha256": "a982ae3605f7fd53a4e74d9d00d39c814f13339076abcac9381eee62545f90e8",
+  "counts_limit": "Root saved2gates and144Node tests per invocation; reviewer1Node144/144,0Cargo/DB/Docker/Rust runtime.",
+  "remaining_holds": [
+    "Root compiled31exact-name preservation, clean candidate commit/readback and supervisedrecovery18.",
+    "Source freeze applicability to Auth7fixture/probe and final required gates."
+  ],
+  "private_review_only": true
+}

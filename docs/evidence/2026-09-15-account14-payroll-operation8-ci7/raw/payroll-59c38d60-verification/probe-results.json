@@ -1,0 +1,10 @@
+[
+  {
+    "lane": "payroll-typed-unknown-1",
+    "sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture > /private/tmp/payroll-typed-c1301628-admission/1.log 2>&1",
+    "exit": 1,
+    "seconds": 0.18,
+    "log_sha256": "d9737ba57d043b8f3038be4aabf62f71a85c6d6dc73b069c16cd9240caf6854f"
+  }
+]

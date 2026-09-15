@@ -1,0 +1,16 @@
+   Compiling console-notifications-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/notifications/domain)
+   Compiling console-workflow-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/workflow/domain)
+   Compiling console-ontology-canonical-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/canonical-domain)
+   Compiling console-notifications-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/notifications/application)
+   Compiling console-payroll-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/adapter-postgres)
+   Compiling console-workflow-runtime-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/workflow/adapter-postgres)
+   Compiling console-notifications-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/notifications/adapter-postgres)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.62s
+     Running tests/payroll_drain_period_lock.rs (/private/tmp/console-account30-cargo/debug/deps/payroll_drain_period_lock-dd8d4efe642889c6)
+
+running 2 tests
+test a_lock_acquired_after_the_read_gate_still_blocks_the_staging_write ... ok
+test payroll_period_lock_blocks_draft_creation_and_unlock_restores ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.47s
+

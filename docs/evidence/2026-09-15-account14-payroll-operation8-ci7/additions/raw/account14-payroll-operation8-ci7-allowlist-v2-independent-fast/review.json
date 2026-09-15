@@ -1,0 +1,58 @@
+{
+  "kind": "INDEPENDENT_CURATED_EVIDENCE_ALLOWLIST_V2_REVIEW",
+  "status": "APPROVED_EXACT227_PROPOSED_REGULAR_BLOBS_SUBJECT_TO_ROOT_IMPORT_READBACK",
+  "reviewer": "/root/fast_gate_review",
+  "author": "/root/inventory_repair",
+  "integration_writer": "/root",
+  "review_scope": "Independent review of Inventory curation and transformation, not independent original authorship of every selected historical artifact; Fast authored some historical evidence and reviewed other packets.",
+  "base_sha": "23fa277133e83916d094f9b2423b48fd5af65ce4",
+  "immutable_target": "/private/tmp/account14-payroll-operation8-ci7-evidence-allowlist-v2-inventory",
+  "manifest_sha256": "74aa35ea8ab9ed12b2492bd5a57ce67a01de1e8c0d39c8d02feacd0d1fdabeb9",
+  "allowlist_sha256": "89d2da2457574969f2c49d83dc880d1415da5faafeae06985b4d214deb99dd98",
+  "proposal_sha256": "bca69c16bea84d10d3ad52990c0fdc572696658f8ab01f81bb339a869b863d5f",
+  "findings": [],
+  "facts": [
+    "All218 explicit selected regular files independently reread and verified against byte lengths, SHA256 and Git SHA1 blob framing.206original records and12labeled sanitized derivatives total2,027,946bytes.",
+    "All9 proposal records verified, including manifest self-digest supplied in handoff; complete proposed bundle227regular blobs, all mode100644. TSV is exact JSON projection. No duplicate, escaping or parent/file-colliding destinations and no symlink path components.",
+    "136 selected historical manifest/driver bindings independently resolved by exact member path and digest. Four originally overwritten fixed-path RED aliases resolve to preserved bytes matching original admission hashes; live alias outputs are excluded.",
+    "All12 derivative transformations reproduced byte-for-byte with exactly24 userinfo substitutions.24 source excerpts resolve to two cfg(test) constants with identical immutable Git source bindings atc1301628,59c38d60,0a625d32. Original runtime/admission/reviewer digests retain their original meaning.",
+    "Bounded screening of all218 payloads and9 proposal records for credential-bearing URIs, private-key headers and common token formats found0candidates. This is a bounded content screen, not a general security or production logging certification.",
+    "24 saved Rust run records and5 saved Node run records independently recounted from selected raw/derived logs. This review executed0Rust tests,0Node tests,0Cargo/DB/Docker and made0shared/Git-object writes.",
+    "Account baseline/admission, stale artifact attempt and rebuiltGREEN are separately retained; typedRED,19PASS with required custody addendum, retained57=56PASS1native404FAIL, Operation overlap and CI initial failures/reruns remain explicitly qualified. No unique-coverage aggregate or final-head/production proof inferred.",
+    "141 declared historical omissions are not selected. Historical packet manifests remain unchanged and the proposal explicitly disclaims complete historical packet import. No recursive directory import.",
+    "At clean23fa277133e83916d094f9b2423b48fd5af65ce4, proposed destination prefix has no tracked entries and no filesystem path."
+  ],
+  "decisions": [
+    "Approve exactly218 allowlist members plus9 enumerated proposal records at the proposed prefix, subject to root rereading and matching each immutable source immediately before copying the same bytes.",
+    "Use expected-import.json as the exact227-member mode/OID/size/SHA256 comparison for the proposed prefix. If root selects a different prefix or adds final evidence/review records, freeze and review that exact resulting inventory separately.",
+    "Root alone stages/imports. Candidate Git tree/commit, regular-blob mode and every blob digest must be independently read back before claiming custody completion.",
+    "Frozen current CI/final gates and runtime17 are not in this proposal. New custody4/Auth7 work, native resolution and production/release/legal authority remain outside the selected scope."
+  ],
+  "validation": {
+    "command": "python3 -B /private/tmp/account14-payroll-operation8-ci7-allowlist-v2-independent-fast/verify.py",
+    "mechanical_artifact": "mechanical.json",
+    "checks_scope": "Read-only file/Git blob comparisons, redaction reproduction, bounded content screening and saved-log recount; no new product or Node runtime."
+  },
+  "pre_mortem": "Reused logs could relabelGREEN asRED, redaction could sever original provenance, or broad copying could import runtime state.",
+  "blast_radius": "Exact proposed docs/evidence prefix only; this reviewer wrote private receipts only.",
+  "detection": "Frozen allowlist/manifest hashes, four history alias bindings, precise derivative transforms and227-entry candidate blob comparison.",
+  "rollback": "Reject before import or root reverts only later evidence-only import; preserve every original and frozen predecessor.",
+  "stop_conditions": [
+    "Any source hash/size/type mismatch or destination drift.",
+    "Undeclared payload, changed original/derivative relationship, lostRED history or unsupported closure claim.",
+    "Candidate path/mode/OID/SHA256 mismatch."
+  ],
+  "remaining_holds": [
+    "Root atomic byte-copy/stage/candidate-tree custody and final independent readback.",
+    "Separately frozen finalCI/gate/runtime evidence and complete-head review.",
+    "Registration/native/Auth7/actor/production/release/payment/legal authority."
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

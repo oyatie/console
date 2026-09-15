@@ -1,0 +1,544 @@
+{
+  "status": "Saved evidence census, not a new test run or aggregate unique coverage claim",
+  "new_cargo_invocations": 0,
+  "new_compiler_discovery": 0,
+  "new_runtime_tests": 0,
+  "new_node_tests": 0,
+  "rust_saved_runs": [
+    {
+      "label": "Account semantic baseline",
+      "historical_revision_prefix": "796173fc",
+      "artifact": "raw/account-deactivation14-796173fc-red-v1/probe.log",
+      "runner_announced": [
+        14
+      ],
+      "result_summaries": [
+        {
+          "passed": 3,
+          "failed": 11,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Account repeated actual admission",
+      "historical_revision_prefix": "796173fc",
+      "artifact": "raw/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/probe.log",
+      "runner_announced": [
+        14
+      ],
+      "result_summaries": [
+        {
+          "passed": 3,
+          "failed": 11,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Account stale build attempt, environment-qualified",
+      "historical_revision_prefix": "0a625d32",
+      "artifact": "raw/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/probe.log",
+      "runner_announced": [
+        14
+      ],
+      "result_summaries": [
+        {
+          "passed": 1,
+          "failed": 13,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Account rebuilt GREEN",
+      "historical_revision_prefix": "0a625d32",
+      "artifact": "raw/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/probe.log",
+      "runner_announced": [
+        14
+      ],
+      "result_summaries": [
+        {
+          "passed": 14,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed primary baseline1",
+      "historical_revision_prefix": "c1301628",
+      "artifact": "sanitized/payroll-typed-c1301628-red/1.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 0,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 29
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed primary baseline2",
+      "historical_revision_prefix": "c1301628",
+      "artifact": "sanitized/payroll-typed-c1301628-red/2.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 0,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 29
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed existing-behavior control3",
+      "historical_revision_prefix": "c1301628",
+      "artifact": "sanitized/payroll-typed-c1301628-red/3.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 29
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed primary baseline4",
+      "historical_revision_prefix": "c1301628",
+      "artifact": "sanitized/payroll-typed-c1301628-red/4.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 0,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 29
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed existing-behavior control5",
+      "historical_revision_prefix": "c1301628",
+      "artifact": "raw/payroll-typed-c1301628-red/5.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 19
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed actual admission1",
+      "historical_revision_prefix": "c1301628",
+      "artifact": "sanitized/payroll-59c38d60-verification/admission-red-preserved/1.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 0,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 29
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed actual admission2",
+      "historical_revision_prefix": "c1301628",
+      "artifact": "sanitized/payroll-59c38d60-verification/admission-red-preserved/2.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 0,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 29
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed actual admission4",
+      "historical_revision_prefix": "c1301628",
+      "artifact": "sanitized/payroll-59c38d60-verification/admission-red-preserved/4.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 0,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 29
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed GREEN1",
+      "historical_revision_prefix": "59c38d60",
+      "artifact": "sanitized/payroll-59c38d60-runtime-v2/1.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 29
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed GREEN2",
+      "historical_revision_prefix": "59c38d60",
+      "artifact": "sanitized/payroll-59c38d60-runtime-v2/2.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 29
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed GREEN4",
+      "historical_revision_prefix": "59c38d60",
+      "artifact": "sanitized/payroll-59c38d60-runtime-v2/4.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 29
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed REST unit selectors",
+      "historical_revision_prefix": "59c38d60",
+      "artifact": "raw/payroll-59c38d60-verification/ontology-rest.log",
+      "runner_announced": [
+        11
+      ],
+      "result_summaries": [
+        {
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 10
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Typed workflow domain unit suite",
+      "historical_revision_prefix": "59c38d60",
+      "artifact": "raw/payroll-59c38d60-verification/workflow-domain.log",
+      "runner_announced": [
+        5
+      ],
+      "result_summaries": [
+        {
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Ordinary Operation control",
+      "historical_revision_prefix": "0a625d32",
+      "artifact": "sanitized/payroll-operation8-0a625d32/probe.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 30
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Retained identity two targets",
+      "historical_revision_prefix": "0a625d32",
+      "artifact": "raw/account-retained-0a625d32/probe.log",
+      "runner_announced": [
+        3,
+        3
+      ],
+      "result_summaries": [
+        {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        },
+        {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Retained Account root",
+      "historical_revision_prefix": "0a625d32",
+      "artifact": "raw/account-retained-0a625d32/auth/account_root_transition.log",
+      "runner_announced": [
+        10
+      ],
+      "result_summaries": [
+        {
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 206
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Retained Account startup",
+      "historical_revision_prefix": "0a625d32",
+      "artifact": "raw/account-retained-0a625d32/auth/account_custody_startup.log",
+      "runner_announced": [
+        15
+      ],
+      "result_summaries": [
+        {
+          "passed": 15,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 201
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Retained Account lifecycle",
+      "historical_revision_prefix": "0a625d32",
+      "artifact": "raw/account-retained-0a625d32/auth/account_custody_lifecycle.log",
+      "runner_announced": [
+        22
+      ],
+      "result_summaries": [
+        {
+          "passed": 22,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 194
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Retained registration failure",
+      "historical_revision_prefix": "0a625d32",
+      "artifact": "raw/account-retained-0a625d32/auth/account_browser-company_free_registration_me_and_empty_contexts.log",
+      "runner_announced": [
+        1
+      ],
+      "result_summaries": [
+        {
+          "passed": 0,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 215
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    },
+    {
+      "label": "Retained period-lock two controls",
+      "historical_revision_prefix": "0a625d32",
+      "artifact": "raw/retained-0a625d32-independent-fast/period/probe.log",
+      "runner_announced": [
+        2
+      ],
+      "result_summaries": [
+        {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      ],
+      "source_of_counts": "Saved Rust runner output; curation did not compile, discover or execute tests."
+    }
+  ],
+  "node_saved_runs": [
+    {
+      "label": "CI actual RED",
+      "artifact": "raw/account14-app8-ci-0a625d32-admission/probe-red.log",
+      "counts": {
+        "tests": 84,
+        "pass": 82,
+        "fail": 2,
+        "skipped": 0
+      }
+    },
+    {
+      "label": "CI author same-probe GREEN",
+      "artifact": "raw/account14-app8-ci-0a625d32-inventory-v1/probe.log",
+      "counts": {
+        "tests": 114,
+        "pass": 114,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "label": "CI reviewer same-probe GREEN",
+      "artifact": "raw/account14-app8-ci-v1-independent-fast/independent-probe.log",
+      "counts": {
+        "tests": 114,
+        "pass": 114,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "label": "Executed-test inventory Node regressions",
+      "artifact": "raw/account14-app8-ci-0a625d32-inventory-v1/executed-tests.log",
+      "counts": {
+        "tests": 15,
+        "pass": 15,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "label": "CI final focused preflight",
+      "artifact": "raw/account14-app8-ci-0a625d32-inventory-v1/preflight-focused-indexed.log",
+      "counts": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skipped": 0
+      }
+    }
+  ],
+  "source_and_mutation_counts": {
+    "Account_static_attributes": 14,
+    "App_static_attributes": 197,
+    "ontology_rest_static_attributes": 21,
+    "App_supervised_names": 8,
+    "supervised_union": 18,
+    "CI_source_checks": 10,
+    "CI_mechanical_checks": 10,
+    "CI_bypass_mutations_in_focused_preflight": 468,
+    "CI_wiring_python_tests": 15,
+    "executed_inventory_defined": 387,
+    "executed_inventory_reachable": 387,
+    "executed_inventory_static_attributes": 3193,
+    "named_dark_baseline": 1
+  },
+  "historical_environment_failures": [
+    "Typed first verification Docker API access denied:0Rust tests executed; preserved log and result.json.",
+    "Account stale build:runner14=1PASS13FAIL; same probe126 from stale test-support finalizer path; not semantic admission RED.",
+    "CI archive initially lacked required Git index:preflight gate FAIL,focused1PASS1FAIL; unchanged source then gate PASS,focused2PASS.",
+    "CI recovery unit first21 executed=20PASS1ERROR due ps denial; unchanged21-case approved process-access rerun PASS."
+  ],
+  "python_saved_results": {
+    "CI_wiring": {
+      "executed": 15,
+      "passed": 15
+    },
+    "CI_recovery_after_process_access": {
+      "executed": 21,
+      "passed": 21
+    }
+  },
+  "anti_double_counting": [
+    "Repeated RED/green/reviewer runs and supervisor copies are separate invocations, not new unique cases.",
+    "Operation1 is also included in the retained review57 total.",
+    "Typed saved19PASS means App3+REST11+workflow-domain5 at59c38, qualified by custody addendum; it is not final-head validation.",
+    "Retained review57=56PASS1registration404FAIL; no deeper registration success assertion was reached.",
+    "Static source attributes and468mutations are not Rust compiler-discovered/executed test counts."
+  ],
+  "pending_root_additions": [
+    "Frozen current CI probe.log GREEN at23fa2771 and final required gates.",
+    "Final runtime17 and any later registration/control resolution.",
+    "Final candidate Git-tree custody and independent complete-head review."
+  ]
+}

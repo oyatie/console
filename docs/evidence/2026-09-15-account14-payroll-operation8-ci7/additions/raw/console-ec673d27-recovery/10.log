@@ -1,0 +1,67 @@
+recovery-fixture run=console-recovery-3847-16e39041 evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.bh9J6F
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+SELECT 28
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+   Compiling console-payroll-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/adapter-postgres)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.30s
+     Running tests/durability_observer.rs (/private/tmp/console-account30-cargo/debug/deps/durability_observer-f6ed774501799e57)
+
+running 1 test
+test real_observer_installer_is_atomic_replay_exact_and_drift_refusing ... durability-observer-subcase: preexisting_unbound_role PASS
+durability-observer-subcase: preexisting_login_role PASS
+durability-observer-subcase: preexisting_wrong_function PASS
+durability-observer-subcase: unexpected_default_function_grantee PASS
+durability-observer-subcase: full_outer_rollback PASS
+durability-observer-subcase: initial_install PASS
+durability-observer-subcase: exact_replay PASS
+durability-observer-subcase: actual_business_login_capability PASS
+durability-observer-subcase: role_login PASS
+durability-observer-subcase: role_superuser PASS
+durability-observer-subcase: role_bypassrls PASS
+durability-observer-subcase: role_noinherit PASS
+durability-observer-subcase: role_createdb PASS
+durability-observer-subcase: role_createrole PASS
+durability-observer-subcase: role_replication PASS
+durability-observer-subcase: role_configuration PASS
+durability-observer-subcase: missing_membership PASS
+durability-observer-subcase: extra_membership PASS
+durability-observer-subcase: membership_admin PASS
+durability-observer-subcase: membership_noinherit PASS
+durability-observer-subcase: membership_set_enabled PASS
+durability-observer-subcase: incoming_membership PASS
+durability-observer-subcase: missing_native_grant PASS
+durability-observer-subcase: native_grant_option PASS
+durability-observer-subcase: extra_direct_native_grant PASS
+durability-observer-subcase: missing_function PASS
+durability-observer-subcase: wrong_function_owner PASS
+durability-observer-subcase: function_invoker PASS
+durability-observer-subcase: function_stable PASS
+durability-observer-subcase: function_parallel PASS
+durability-observer-subcase: function_strict PASS
+durability-observer-subcase: function_search_path PASS
+durability-observer-subcase: function_extra_config PASS
+durability-observer-subcase: function_public_execute PASS
+durability-observer-subcase: function_auth_execute PASS
+durability-observer-subcase: function_runtime_grant_option PASS
+durability-observer-subcase: function_runtime_denied PASS
+durability-observer-subcase: function_overload PASS
+durability-observer-subcase: function_body PASS
+durability-observer-subcase: runtime_monitor_membership PASS
+durability-observer-subcase: runtime_direct_control_execute PASS
+durability-observer-subcase: runtime_nologin PASS
+durability-observer-subcase: runtime_superuser PASS
+durability-observer-subcase: runtime_bypassrls PASS
+durability-observer-subcase: runtime_createdb PASS
+durability-observer-subcase: runtime_createrole PASS
+durability-observer-subcase: runtime_replication PASS
+durability-observer-subcase: native_public_execute PASS
+durability-observer-subcase: runtime_replication_role_membership PASS
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.92s
+
+recovery-fixture evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.bh9J6F exit=0

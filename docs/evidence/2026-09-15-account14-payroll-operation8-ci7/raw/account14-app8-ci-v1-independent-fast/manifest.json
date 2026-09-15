@@ -1,0 +1,10 @@
+{
+  "candidate_manifest_sha256": "10f02dd6af65419f8cc6a13498c3a692a64173f12ed956a96af94145ed6040f1",
+  "files": {
+    "candidate.patch": "3292aa623fc40c2fc7d9c08ae45b76d81222cc54299241a19123024a0beb2808",
+    "mechanical.json": "6148abc13272e568d784de09d18746835cee80c5457a7d42be8e7267e906f524",
+    "independent-probe.log": "23089851107bc540b039e4b62604ba6978a16e419cce9190949922d48aea1510",
+    "verify.py": "e1e90bd3f6b2799cad23e4e0e23839e597ba5c4ce9ee31827f1adabb729be735",
+    "review.json": "f5694d6d2b5a70505156d4fe889c25817d9cc210e12e663fe368640db7f2638b"
+  }
+}

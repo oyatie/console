@@ -1324,6 +1324,136 @@
       "archive_tag": null
     },
     {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/PROPOSAL.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "269adcb27d34916858dffe7dc58bb294f658fe6e",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/additions/SUMMARY.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "9864023a0d54821ebf3afd1521e5501072396608",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account-deactivation14-796173fc-implementation-inventory-v1/GUIDE.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "2ab31fba110c97e8f34c4bf83e8fa6477ae45f1b",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account-deactivation14-928e1e48-v4-inventory/GUIDE.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "6b662e13da3ebb13c845a1c241981eba2d9b3595",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account-deactivation14-retained-fixtures-796173fc-v1-inventory/GUIDE.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "7a9bd0a3334ff3d371160a60de1f9e4381a3a58f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account-deactivation6-1cef89ea-v1-fast/GUIDE.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fdb4c32627223c61eade160cf72243a3b19534aa",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account-deactivation6-guard-contract-supplement-1cef89ea-v2-fast.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5df9b349654b7e97dc6bad88bff9905151773f33",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account14-app8-ci-0a625d32-inventory-v1/GUIDE.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "75b91427c89eddef2103c6c08320bd820bf7bd0f",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account14-app8-ci-enrollment-map-59c38d60-v1-inventory/MAP.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "581a858ab08090ef1f667a7c03d90260b0eaf5ec",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/payroll-operation-control-c1301628-v1-fast/GUIDE.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "5fa3a732867db3e5b8ac58c123197a2c160d3a01",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/payroll-typed-unknown-e27623ab-tests-v4-capture/DESIGN.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fbe6330a2651a58a1f2187ac3d462cfd821df402",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/payroll-typed-unknown-e27623ab-tests-v4-capture/README.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "f5eb1ceab2634280f9933b5ac05f85a06cc74091",
+      "archive_tag": null
+    },
+    {
+      "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/payroll-typed-unknown-e27623ab-tests-v4-capture/REVISION.md",
+      "class": "evidence",
+      "owner": "repository maintainers",
+      "status": "frozen",
+      "replacement": null,
+      "retention": "retain",
+      "blob_sha": "fd87d9a1cc3f6ca640de9abe894c545c187ba649",
+      "archive_tag": null
+    },
+    {
       "path": "docs/evidence/apalis-soak-1781278893.md",
       "class": "evidence",
       "owner": "repository maintainers",

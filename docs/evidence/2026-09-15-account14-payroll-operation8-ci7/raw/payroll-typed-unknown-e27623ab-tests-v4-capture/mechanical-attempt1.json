@@ -1,0 +1,15 @@
+{
+  "status": "CHECKER_EXPECTATION_CORRECTED",
+  "command": [
+    "git",
+    "diff",
+    "--no-index",
+    "--check",
+    "base",
+    "post"
+  ],
+  "exit": 1,
+  "stdout": "",
+  "stderr": "",
+  "reason": "No-index diff returns1 for differing source trees, including with --check; source had no whitespace diagnostics. Expected exit corrected to0 or1 while requiring empty output. Earlier mechanical apply/inverse passed; exact full checks repeated in attempt2."
+}

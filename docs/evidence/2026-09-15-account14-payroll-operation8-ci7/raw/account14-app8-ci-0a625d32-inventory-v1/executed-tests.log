@@ -1,0 +1,41 @@
+npm notice run check:executed-tests
+npm notice run node --test scripts/check-executed-tests.test.mjs && node scripts/check-executed-tests.mjs
+▶ hasLiveCfgTestAttribute — false-dark controls
+  ✔ documents the RED substring defect the durable fix replaces (0.370333ms)
+  ✔ does not treat doc-comment-only #[cfg(test)] as live (0.290666ms)
+  ✔ does not treat line- or block-comment-only #[cfg(test)] as live (0.115709ms)
+  ✔ does not treat string-literal-only #[cfg(test)] as live (0.055584ms)
+  ✔ still detects a real #[cfg(test)] attribute (fails closed on live tests) (0.052625ms)
+  ✔ still detects live attribute when a doc comment also mentions it (0.062375ms)
+✔ hasLiveCfgTestAttribute — false-dark controls (2.190958ms)
+▶ unitTestedCrateSrcRoots — inventory + examined-zero
+  ✔ excludes crates whose only hit is a doc comment (0.13125ms)
+  ✔ includes crates with a live #[cfg(test)] under src/ (0.369917ms)
+  ✔ fails closed when examined src inventory is empty (0.226875ms)
+✔ unitTestedCrateSrcRoots — inventory + examined-zero (0.840417ms)
+▶ cargoTestKind — cargo metadata lib aliases
+  ✔ maps default lib and explicit rlib/cdylib to cargo test --lib (0.09825ms)
+  ✔ keeps integration tests and drops bins (0.05175ms)
+✔ cargoTestKind — cargo metadata lib aliases (0.202541ms)
+▶ gate wiring
+  ✔ routes definedBinaries through the comment-aware helper, not raw includes (0.486708ms)
+✔ gate wiring (0.551167ms)
+▶ reachable Rust source inventory
+  ✔ follows path and ordinary modules recursively without counting orphan sources (3705.38175ms)
+  ✔ rejects loss of a referenced child test even when an orphan gains a replacement (2157.989ms)
+  ✔ ignores test attributes and module declarations in comments and strings (1034.813625ms)
+✔ reachable Rust source inventory (6898.464416ms)
+ℹ tests 15
+ℹ suites 5
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6978.278958
+test binaries defined         : 387
+reachable from a CI step      : 387
+declared test attrs in reachable sources: 3193  (static; cfg/ignore-unaware)
+executed nowhere              : 1
+reachable only through buck2  : 13  (--gap to list; the Buck2 exit has to wire these)
+  dark  backend/crates/platform/storage/tests/seaweedfs_worm.rs

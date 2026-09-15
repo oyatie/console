@@ -1,0 +1,24 @@
+{
+  "owner": "/root",
+  "base_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "test_source_sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+  "guide": [
+    "/private/tmp/account-deactivation6-1cef89ea-v1-fast/GUIDE.md",
+    "/private/tmp/account-deactivation6-guard-contract-supplement-1cef89ea-v2-fast.md"
+  ],
+  "test_approval": "/private/tmp/account-deactivation14-v4-root-approval.json",
+  "raw_red_review": "/private/tmp/account-deactivation14-796173fc-independent-fast/review.json",
+  "probe": "python3 /private/tmp/account-deactivation14-probe-v2/probe.py",
+  "pre_mortem": "Cross-company oracle, stale classification or unconditional legacy credential deletion survives.",
+  "blast_radius": "One identity owner plus exact Account routine/profile/operator installer; no Auth7, endpoints, numbered migrations or raw credential ACL changes.",
+  "detection": "Same exact14 probe, root/profile preservation tests, independent implementation review.",
+  "rollback": "Compatible guarded binary/profile; never return to unconditional fenced-credential deletion; installation transaction rolls back on failure.",
+  "stop": "Unreviewed source/ACL/test changes, preimage drift, unknown probe126, new namespace/owner/migration, or false deeper coverage claims.",
+  "writer": "Root integration only; Inventory may prepare private4-file postimages after confirmed admission.",
+  "holds": [
+    "fanout RED admission still pending",
+    "14GREEN and retained profile tests",
+    "broader guard cancellation/isolation/progress coverage",
+    "production exposure"
+  ]
+}

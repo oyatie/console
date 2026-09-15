@@ -1,0 +1,104 @@
+[
+  {
+    "path": ".github/workflows/ci.yml",
+    "mode": "100644",
+    "git_blob": "b457a998fee9819d79b02b140571d56ed659dcae",
+    "sha256": "b4bfe6d6674cacfcf8f0e4444af7cf541b9a135cc81ab84fd8cfdf790a070e7b"
+  },
+  {
+    "path": "tools/lanes/recovery/supervise_recovery.py",
+    "mode": "100755",
+    "git_blob": "5ecc39d44d9bdbb1767b6e2a642088da56a3c0c9",
+    "sha256": "0249a2011cf63938cded4b2785a69a9cbe88ebd1ed45447f62e7dad4a19df40c"
+  },
+  {
+    "path": "tools/lanes/recovery/recovery_postgres.sh",
+    "mode": "100755",
+    "git_blob": "c10478544aaa56e1a81de7ccd7f0cd551b053196",
+    "sha256": "0471c492a076eb24ce8f75e490155fd2c7a4111938a45f5f5b121b5cb14215e8"
+  },
+  {
+    "path": "tools/lanes/recovery/commit_relay.py",
+    "mode": "100755",
+    "git_blob": "2dca06d5b02fa6940b3a03cdd04d5d0edd9b2b0c",
+    "sha256": "bb90cf1189d5eabdd74e1dfcebec0e83fafc181df59ad9c379549bae1158c1bb"
+  },
+  {
+    "path": "backend/app/src/durability_composition_tests.rs",
+    "mode": "100644",
+    "git_blob": "4e1465f887517fa85b550aeb3b3f9191739fdbc2",
+    "sha256": "ae58a39fb4caa820ef49e6cedf196d0785df8efa7f54f7284aa75bd67cd861e9"
+  },
+  {
+    "path": "backend/app/src/lib.rs",
+    "mode": "100644",
+    "git_blob": "4d536b6666df6dae783ce73b1890d1518ab8ef59",
+    "sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4"
+  },
+  {
+    "path": "backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+    "mode": "100644",
+    "git_blob": "1fa369d8bd8d7d35cc549fc9222554ec72d801d0",
+    "sha256": "a5365bf77e1b1c12dac8f33575e464e8b13b64c4295eb685d9f056dbb6652e8c"
+  },
+  {
+    "path": "backend/crates/payroll/adapter-postgres/tests/durability_observer.rs",
+    "mode": "100644",
+    "git_blob": "373e27c7e88d49ba553e0c23262409459a8efa59",
+    "sha256": "5187e0b2ffe59b60cf05ed8ba2f36457b9f54e62503addf68590303fb0e8f3c1"
+  },
+  {
+    "path": "backend/crates/platform/test-support/src/lib.rs",
+    "mode": "100644",
+    "git_blob": "e8a6557c6f37e1639d60be0e1c833cd749fffacd",
+    "sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb"
+  },
+  {
+    "path": "ops/postgres-install-durability-observer.sql",
+    "mode": "100644",
+    "git_blob": "39c0096115126dde06e41f37509254758de7e83a",
+    "sha256": "ffe7038b43de0207d6ae3e3ce0487498edc4d061c21e4249abacc91abaacdbbc"
+  },
+  {
+    "path": "ops/postgres-finalize-account-custody.sql",
+    "mode": "100644",
+    "git_blob": "da76fd277145f9bfdb684fb98fa4ed818b01abe6",
+    "sha256": "f2f6c3c9d048ac518e84196a2fc42624c97cfe1d571122dfa453675d8a359ca3"
+  },
+  {
+    "path": "backend/Cargo.toml",
+    "mode": "100644",
+    "git_blob": "771ca37f4a0408e6a28d894115985aba20de4e1d",
+    "sha256": "a5e16e5e06d0265958106a2a7860230b4ab6ea1368e9150a225cae66377bfd42"
+  },
+  {
+    "path": "backend/Cargo.lock",
+    "mode": "100644",
+    "git_blob": "c7f4c821df1d0f291a97de68a1173c6cf6dd2cab",
+    "sha256": "f0d96db1679b13d83dd0c3cde3e42ce274fdf61ad6aebeca6b5035671f91d59b"
+  },
+  {
+    "path": "backend/app/Cargo.toml",
+    "mode": "100644",
+    "git_blob": "6c755dba14d008d5d1923581df98b8c0391c3d03",
+    "sha256": "adc778c0805ebdfa275f5de8f9f34d426240a538aff1da3d8685e11493e788bc"
+  },
+  {
+    "path": "backend/crates/payroll/adapter-postgres/Cargo.toml",
+    "mode": "100644",
+    "git_blob": "64cadf63b4f4ec4c56c18cb2523f4bdb5b186fbb",
+    "sha256": "267a4c4e38b5ef93c177a72603395e7eb1cce49b18feaccaf064d36bd0b0ee73"
+  },
+  {
+    "path": "backend/crates/platform/test-support/Cargo.toml",
+    "mode": "100644",
+    "git_blob": "3361f3d797d5c7f156c5acf4596647c70e5f7a60",
+    "sha256": "927ad4f1bfa07994157ad32f07cbab4d383b9b710bf53383eadceb4edcdab594"
+  },
+  {
+    "path": "tools/lanes/recovery/recovery_control.sh",
+    "mode": "100755",
+    "git_blob": "c33e9c88b805ecf7ffbe54ac3560edb5b2c78ccb",
+    "sha256": "2df01e749b2ad1189fc10c1d45a37adefc11f5e5300117b324236d556355ecef"
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "base_sha": "23fa277133e83916d094f9b2423b48fd5af65ce4",
+  "owner": "/root",
+  "private_implementer": "/root/inventory_repair",
+  "design_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "approved_test_sha": "1e2ea6d2060a3d875e531a9a9e8f749984d0a171",
+  "mechanical_guide": "Use BW31 contract/routes/wire.schema and existing AuthRestState/configured RP origin/restricted Auth pool. Implement strict bounded browser DTO/cookie/origin admission and sanitized errors in existing auth-rest owner. Root serializes real owner API mounting; do not fake unavailable sessions/context. Keep v1 behavior.",
+  "premortem": "A browser or cookie supplied account/company identity becomes authority, malformed credentials trigger fallback, or a shadow credential store bypasses Account custody.",
+  "blast_radius": "Private auth-rest browser adapter; root exclusively owns shared mounting and generated OpenAPI.",
+  "detection": "Same exact retained HTTP test plus original BW31 negative cases; compare raw trace and source-inferred boundary separately.",
+  "rollback": "Reject private candidate or scoped revert; preserve permanent Account/credential state.",
+  "stop": [
+    "missing real owner API replaced by invented authority",
+    "test body weakening",
+    "unreviewed protocol/schema",
+    "new shared writer"
+  ],
+  "reviews": [
+    "/root/capture_review",
+    "/root/fast_gate_review"
+  ],
+  "holds": [
+    "admission raw classification",
+    "Auth7 owner and coherent native operation dependencies",
+    "same probe GREEN and deeper acceptance",
+    "SSR/draft/payroll full vertical",
+    "production/payment/legal authority"
+  ]
+}

@@ -1,0 +1,4 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
+     Running `/private/tmp/console-account30-cargo/debug/console-gate-audit-coverage`
+console-gate-audit-coverage: checking workspace at /private/tmp/console-production-tdd-preparation-20260913/backend
+console-gate-audit-coverage: PASSED

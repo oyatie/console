@@ -1,0 +1,21 @@
+{
+  "owner": "/root",
+  "decision": "APPROVE_EXACT_PRIMARY_ACCEPTANCE_AND_NARROW_COMPATIBILITY_AMENDMENTS",
+  "current_preimage_base": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "candidate_manifest_sha256": "e14dfe66a20403ef23bba7136403000b950edfbac4f90e1b31f9cdec5ef670b0",
+  "primary_patch_sha256": "8e54f40d01161cde6d826a14d453be7dbdab8d8ae7f72fc5e1d846494a1dc081",
+  "compatibility_patch_sha256": "5f824ceec87f4d1bad7ec264041c3fd502a37f09a2abb153c7c60a6c9d54f72a",
+  "primary_scope": "Append four real AppState/router/worker fault cases and one generic dispatcher prefix-negative control; preserve original App3 and all existing helper/test bytes.",
+  "contract": "Existing HTTP error envelope,503 completion_unknown with fixed reviewed message; default typed CanonicalPortError classifier, one ActionError unit variant, consumer-owned PayrollStageError and specific future alias. No new endpoint, KernelError variant, response field or dependency.",
+  "compatibility_condition": "Only with admitted typed-interface implementation. Preserve native capacity/row/receipt/PID/PoolClosed assertions; replace exactly two lossy staging KernelError text predicates with typed Unknown, update one existing test wrapper signature, add generic typed display-independence control.",
+  "review_conclusions": [
+    "Native payroll SyncRep witness includes actual receipt/draft relation locks and exact backend identity.",
+    "Real observer EXECUTE removal forces pre-owner admission uncertainty after governance consumption; fresh approval changes only top-level reference, retaining command identity and both histories.",
+    "Real post-owner audit permission failure tests500 with confirmed effect and immutable same-command repair.",
+    "Real worker spawn retains PENDING and FAILED history during Unknown; distinct fixture slugs prevent masked second-row23505.",
+    "Error classification derives from type, not private diagnostic text."
+  ],
+  "source_review": "Root independently read full App append, dispatcher control, compatibility patch and V4 changes. Fast final immutable review required before primary import; Inventory V4 bounded seam review afac1a67 retained.",
+  "execution": "Run all5 commands individually despite expected failures;4fresh supervised clusters. Cases1/2/4 need meaningfulRED; cases3/5 are existing-behavior controls and are not admitted as RED lanes.",
+  "remaining": ["Actual compile/discovery/RED admission", "Same exact probesGREEN", "Existing App3/owner9/period-lock preservation", "Ordinary staging Operation non-unknown telemetry negative control", "OpenAPI correction for separate owner/audit transactions and408/lost-response guidance", "CI source/reachability enrollment and final independent review", "Production/legal/payment HOLDs"]
+}

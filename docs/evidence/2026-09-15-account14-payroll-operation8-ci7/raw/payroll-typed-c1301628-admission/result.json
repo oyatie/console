@@ -1,0 +1,19 @@
+{
+  "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+  "command": [
+    "python3",
+    "tools/lanes/fanout.py",
+    "admit",
+    "--spec",
+    "/private/tmp/payroll-typed-c1301628-admission/lanes.json"
+  ],
+  "exit": 0,
+  "seconds": 65.72,
+  "manual_classification_required": true,
+  "logs": {
+    "4.log": "163b52766d8c5581f8097876b5454ff841219b3d6b720bf5d4dfe833c52a1452",
+    "2.log": "56257302546d66b8de1d52f7cdd2d41cc46ef74144cd88f8a971c7f3bc021a99",
+    "1.log": "5116c9d7b43918ff9a2607e34e0d5cbc2e48a55f97725af19cf5bf089cdc01e1",
+    "admit.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+  }
+}
