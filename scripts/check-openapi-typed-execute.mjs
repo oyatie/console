@@ -22,7 +22,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 import { CANONICAL_ACTIONS, ACTION_FLOOR } from "./check-openapi-semantic-contract.mjs";
 import { hasOwnKey, isPlainObject, own } from "./own-property.mjs";

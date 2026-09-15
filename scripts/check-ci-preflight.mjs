@@ -5,7 +5,7 @@ import { appendFileSync, lstatSync, readFileSync, realpathSync } from "node:fs";
 import { dirname, posix, relative, resolve, sep } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 import { gitFixtureEnvironment } from "./lib/git-fixture-environment.mjs";
 

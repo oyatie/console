@@ -23,7 +23,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 import { OP_FLOOR } from "./check-openapi-head-get-permissions.mjs";
 import {

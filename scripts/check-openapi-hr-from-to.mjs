@@ -24,7 +24,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 import {
   EMPLOYMENT_SCHEMA,

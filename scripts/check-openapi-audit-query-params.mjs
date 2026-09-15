@@ -18,7 +18,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 import { GET_FLOOR as ASOF_GET_FLOOR } from "./check-openapi-hr-asof.mjs";
 import { hasOwnKey, isPlainObject, own } from "./own-property.mjs";

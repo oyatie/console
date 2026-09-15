@@ -31,7 +31,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 // The component sections OpenAPI 3.1 defines — the version backend/openapi/openapi.yaml
 // declares. Closed by the specification: a section a later version adds is rejected until it
