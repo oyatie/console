@@ -13,6 +13,69 @@ TABLES = ('accounts', 'account_security', 'account_security_events',
           'account_terms_acceptances', 'account_terms_head', 'account_terms_release_receipts')
 
 
+FENCE_BODY = """BEGIN
+    IF subject_account_id IS NULL THEN
+        RAISE EXCEPTION USING MESSAGE='account_fence_projection.null_identity', ERRCODE='22004';
+    END IF;
+    RETURN EXISTS(SELECT 1 FROM public.account_security WHERE account_id=subject_account_id);
+END;"""
+
+# Installed only by the existing operator transaction. This is a presence
+# projection, never credential or lifecycle write authority. Valid replay is
+# read-only; any incompatible existing routine is drift, not repair input.
+FENCE_INSTALL = """
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_auth_rt'
+          AND rolcanlogin AND NOT rolsuper AND NOT rolbypassrls AND NOT rolinherit
+          AND NOT rolcreatedb AND NOT rolcreaterole AND NOT rolreplication
+    ) OR EXISTS (
+        SELECT 1 FROM pg_catalog.pg_auth_members m
+        JOIN pg_catalog.pg_roles r ON r.oid=m.member OR r.oid=m.roleid
+        WHERE r.rolname='console_auth_rt'
+    ) THEN
+        RAISE EXCEPTION 'account_fence_projection.role_mismatch';
+    END IF;
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+        WHERE n.nspname='public' AND p.proname='account_legacy_fenced_v1'
+    ) THEN
+        EXECUTE pg_catalog.format('CREATE FUNCTION public.account_legacy_fenced_v1(subject_account_id uuid)
+            RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER
+            SET search_path=pg_catalog,pg_temp SET row_security=off AS %L', expected_fence_body);
+        ALTER FUNCTION public.account_legacy_fenced_v1(uuid) OWNER TO console_account_owner;
+        REVOKE ALL ON FUNCTION public.account_legacy_fenced_v1(uuid) FROM PUBLIC;
+        GRANT EXECUTE ON FUNCTION public.account_legacy_fenced_v1(uuid) TO console_auth_rt;
+    END IF;
+    IF (SELECT count(*) FROM pg_catalog.pg_proc p
+        JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+        WHERE n.nspname='public' AND p.proname='account_legacy_fenced_v1') <> 1
+    OR NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_proc p
+        JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+        JOIN pg_catalog.pg_roles owner_role ON owner_role.oid=p.proowner
+        JOIN pg_catalog.pg_language language ON language.oid=p.prolang
+        WHERE n.nspname='public' AND p.proname='account_legacy_fenced_v1'
+          AND owner_role.rolname='console_account_owner' AND language.lanname='plpgsql'
+          AND p.prokind='f' AND p.prosecdef AND NOT p.proisstrict AND NOT p.proretset
+          AND NOT p.proleakproof AND p.provolatile='s' AND p.proparallel='u' AND p.prosupport=0
+          AND p.pronargs=1 AND p.proargtypes=ARRAY['pg_catalog.uuid'::regtype::oid]::oidvector
+          AND p.proargnames=ARRAY['subject_account_id']::text[]
+          AND p.proallargtypes IS NULL AND p.proargmodes IS NULL AND p.provariadic=0
+          AND p.pronargdefaults=0 AND p.proargdefaults IS NULL
+          AND p.prorettype='pg_catalog.bool'::regtype AND p.probin IS NULL
+          AND p.prosqlbody IS NULL AND p.protrftypes IS NULL
+          AND p.prosrc=expected_fence_body
+          AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp','row_security=off']::text[]
+          AND (SELECT count(*)=2 AND bool_and(a.grantor=p.proowner
+                AND a.privilege_type='EXECUTE' AND NOT a.is_grantable
+                AND a.grantee IN (p.proowner,'console_auth_rt'::regrole::oid))
+               FROM pg_catalog.aclexplode(COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))) a)
+    ) THEN
+        RAISE EXCEPTION 'account_fence_projection.definition_mismatch';
+    END IF;
+"""
+
+
 def generated_files():
     query = (ROOT / 'backend/app/src/account_custody_state.sql').read_text().strip().removesuffix(';')
     names = ','.join("'" + name + "'" for name in TABLES)
@@ -28,6 +91,7 @@ DECLARE
     relation_name text;
     target_owner text;
     populated boolean;
+    expected_fence_body text := $fence_body${FENCE_BODY}$fence_body$;
 BEGIN
     PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
     PERFORM pg_catalog.set_config('lock_timeout','5s',true);
@@ -46,11 +110,10 @@ BEGIN
     LOCK TABLE {locks} IN ACCESS EXCLUSIVE MODE;
     -- Recheck under relation locks: pre-lock metadata is not transfer authority.
     {inspect}
-    IF state='account_custody.finalized' THEN
-        RETURN;
-    ELSIF state IS DISTINCT FROM 'account_custody.pending' THEN
+    IF state IS DISTINCT FROM 'account_custody.finalized' AND state IS DISTINCT FROM 'account_custody.pending' THEN
         RAISE EXCEPTION USING MESSAGE=COALESCE(state,'account_custody.catalog_missing'), ERRCODE='P0001';
     END IF;
+    IF state='account_custody.pending' THEN
     FOREACH relation_name IN ARRAY ARRAY[{names}] LOOP
         EXECUTE format('SELECT EXISTS(SELECT 1 FROM public.%I)',relation_name) INTO populated;
         IF populated IS DISTINCT FROM false THEN
@@ -66,6 +129,8 @@ BEGIN
     IF state IS DISTINCT FROM 'account_custody.finalized' THEN
         RAISE EXCEPTION USING MESSAGE=COALESCE(state,'account_custody.catalog_missing'), ERRCODE='P0001';
     END IF;
+    END IF;
+{FENCE_INSTALL}
 END
 $account_custody$;
 """
