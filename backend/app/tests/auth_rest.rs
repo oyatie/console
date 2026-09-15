@@ -42,6 +42,10 @@ mod account_custody_startup;
 mod account_storage;
 #[path = "auth_rest/account_fence_projection.rs"]
 mod account_fence_projection;
+#[path = "auth_rest/account_fence_transport.rs"]
+mod account_fence_transport;
+#[path = "auth_rest/auth_target_parser.rs"]
+mod auth_target_parser;
 #[path = "auth_rest/publication_privileges.rs"]
 mod publication_privileges;
 
@@ -6015,6 +6019,63 @@ mod account_browser {
                 .unwrap()
                 .iter()
                 .all(|f| !f["revoked_at"].is_null())
+        );
+    }
+}
+
+#[test]
+fn account_auth_database_retains_transport_and_redacts_config_debug() {
+    let mut pairs = account_transport_config_pairs();
+    let auth_url = "postgresql://console_auth_rt:auth-debug-canary@localhost:5544/console";
+    pairs.push(("AUTH_DATABASE_URL", auth_url.to_owned()));
+    let config = AppConfig::from_pairs(pairs.clone()).unwrap();
+    assert_eq!(config.auth_database_url.as_deref(), Some(auth_url));
+    let debug = format!("{config:?}");
+    assert!(debug.contains("AppConfig"));
+    assert!(debug.contains("auth_database_configured: true"));
+    for (key, value) in pairs {
+        if key.ends_with("DATABASE_URL") || key == "CONSOLE_JWT_PRIVATE_KEY_PEM" {
+            assert!(!debug.contains(&value), "Debug must not serialize {key}");
+        }
+    }
+    for secret in [
+        "auth-debug-canary",
+        "runtime-fixture",
+        "leave-fixture",
+        "ontology-fixture",
+        "force-fixture",
+        "PRIVATE KEY",
+    ] {
+        assert!(
+            !debug.contains(secret),
+            "configuration Debug leaked secret material"
+        );
+    }
+}
+
+#[test]
+fn account_auth_database_is_optional_without_serving_account_auth() {
+    for mode in ["worker", "migrate", "no_database", "auth_disabled"] {
+        let mut pairs = account_transport_config_pairs();
+        match mode {
+            "worker" => pairs.push(("CONSOLE_APP_ROLE", "worker".into())),
+            "migrate" => {
+                pairs.push(("CONSOLE_APP_ROLE", "migrate".into()));
+                pairs.push((
+                    "DATABASE_URL",
+                    "postgresql://console_app:migrate-fixture@localhost:5544/console".into(),
+                ));
+            }
+            "no_database" => pairs.retain(|(key, _)| *key != "DATABASE_URL"),
+            "auth_disabled" => pairs.retain(|(key, _)| {
+                !key.starts_with("CONSOLE_WEBAUTHN_") && *key != "CONSOLE_JWT_PRIVATE_KEY_PEM"
+            }),
+            _ => unreachable!(),
+        }
+        let config = AppConfig::from_pairs(pairs).unwrap();
+        assert!(
+            config.auth_database_url.is_none(),
+            "no auth transport inferred for {mode}"
         );
     }
 }
