@@ -444,3 +444,6 @@ pub mod owner28;
 // Pure draft patch acceptance; internal values do not confer current authority.
 #[cfg(test)]
 mod draft_patch_snapshot_tests;
+
+/// Pure draft editing over plain owner-supplied facts; no authority or persistence.
+pub(crate) mod draft;

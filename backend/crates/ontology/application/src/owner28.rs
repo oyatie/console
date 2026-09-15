@@ -17,7 +17,7 @@ use std::{
 };
 use uuid::Uuid;
 
-mod schema;
+pub(crate) mod schema;
 const TAG: &[u8] = b"console.owner28.submission.v1\0";
 const MAX_FRAME: usize = 8_388_608;
 const ORDINARY_FRAME: usize = 65_536;
@@ -145,7 +145,7 @@ fn digest(tag: &[u8], value: &Value) -> Result<String, CodecError> {
     hash.update(canonical(value)?);
     Ok(hex_digest(hash.finalize()))
 }
-fn canonical(value: &Value) -> Result<Vec<u8>, CodecError> {
+pub(crate) fn canonical(value: &Value) -> Result<Vec<u8>, CodecError> {
     // Explicitly sort, independent of serde_json's preserve_order feature union.
     fn sorted(value: &Value) -> Value {
         match value {
@@ -509,3 +509,27 @@ impl<'de> Visitor<'de> for BoundedValue<'_> {
 #[cfg(test)]
 #[path = "owner28_limits_tests.rs"]
 mod limits_tests;
+
+// Shared bounded parsing for plain editor values; existing submission semantics
+// stay unchanged. Callers select a smaller budget before any untrusted parsing.
+pub(crate) fn deserialize_bounded<'de, D: Deserializer<'de>>(
+    deserializer: D,
+    limit: usize,
+) -> Result<Value, D::Error> {
+    let mut remaining = limit;
+    BoundedValue {
+        depth: 1,
+        remaining: &mut remaining,
+    }
+    .deserialize(deserializer)
+}
+pub(crate) fn parse_bounded(bytes: &[u8], limit: usize) -> Result<Value, CodecError> {
+    require(bytes.len() <= limit, "owner input size")?;
+    let mut deserializer = serde_json::Deserializer::from_slice(bytes);
+    let value = deserialize_bounded(&mut deserializer, limit)
+        .map_err(|_| CodecError("invalid bounded owner input"))?;
+    deserializer
+        .end()
+        .map_err(|_| CodecError("owner trailing input"))?;
+    Ok(value)
+}
