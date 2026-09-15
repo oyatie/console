@@ -105,6 +105,7 @@ OPENAPI_DRIFT_EXTERNAL["//backend/openapi:openapi.yaml"] = (
 # the authoritative bytes; mapped destinations preserve the checkout topology.
 RESOURCE_CONFIG = {
     "console-app": {
+        "srcs": ["src/account_custody_state.sql"],
         "external": {
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
             **MIGRATION_TREE,
@@ -115,6 +116,7 @@ RESOURCE_CONFIG = {
                     "tests/auth_rest/account_storage.rs",
                     "tests/auth_rest/publication_privileges.rs",
                     "tests/auth_rest/actor-migration.csv",
+                    "tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql",
                 ],
             },
             "tests/openapi_drift.rs": {
@@ -133,6 +135,13 @@ RESOURCE_CONFIG = {
                 "srcs": ["slos/**"],
             },
         },
+    },
+    "console-ontology-application": {
+        "srcs": [
+            "src/owner28_schemas/**/*.json",
+            "src/codec-goldens/*.bin",
+            "src/codec-goldens/*.json",
+        ],
     },
     "console-intelligence-application": {
         "srcs": ["Cargo.toml"],
