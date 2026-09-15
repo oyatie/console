@@ -24,6 +24,7 @@ export CONSOLE_POSTGRES_ADMIN_PASSWORD="$(openssl rand -hex 32)"
 export CONSOLE_APP_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
 export CONSOLE_RT_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
 export CONSOLE_AUTH_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
+export CONSOLE_DATABASE_DURABILITY="${CONSOLE_DATABASE_DURABILITY:?supply an explicit reviewed durability policy}"
 export AUTH_DATABASE_URL="postgresql://console_auth_rt:${CONSOLE_AUTH_POSTGRES_PASSWORD}@postgres:5432/${CONSOLE_POSTGRES_DB:-console_prod}"
 export CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
 export CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD="$(openssl rand -hex 32)"
@@ -38,6 +39,14 @@ export ACCOUNT_CUSTODY_RUN_GID="$(id -g)"
 docker compose -f ops/compose.yml config --quiet
 docker compose -f ops/compose.yml up -d
 ```
+
+The API and worker require an explicit `CONSOLE_DATABASE_DURABILITY` JSON policy.
+Single-node local development may intentionally select `{"mode":"local_development"}`.
+Required remote application needs its reviewed primary/peer descriptor and the
+observer installed through `postgres-finalize-account-custody.sh --with-durability-observer`.
+The default finalizer remains Account-only. The current private-network descriptor
+is a bounded fixture/development capability, not production TLS peer admission or
+HA certification; the production descriptor and recovery evidence remain HOLD.
 
 `server-tls` contains `server.key` and `server.crt` for the `postgres` DNS name;
 the server certificate must be an end entity (`CA:FALSE`). `target.env` supplies

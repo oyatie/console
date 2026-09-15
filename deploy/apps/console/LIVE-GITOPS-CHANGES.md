@@ -80,3 +80,11 @@ this change.
 The checked-in policy union contains default-deny ingress and PostgreSQL allowances for app/worker and migration/finalizer pods, but no DB-peer or CNPG-controller ingress allowance; the production overlay adds none. These manifests therefore do not establish replication or controller connectivity for a multi-instance target. An independently provisioned policy and effective connectivity readback are required before these hooks run; the presence of an existing database is not evidence that those paths are preserved. Likewise, hook ordering and policy object creation do not prove dataplane enforcement or uninterrupted restriction while a `BeforeHookCreation` policy is replaced. No live network or Argo readback was performed for this declaration.
 
 Existing LC07 evidence records source/orchestration and bounded local operator checks; it is not Kubernetes execution, live image promotion, complete Account/auth activation, or production authorization. The header HOLD and all existing release/production gates remain unchanged.
+
+## 2026-09-15 — require an explicit payroll durability policy
+
+**Status: source declaration only; POST-PIVOT UNVERIFIED / HOLD remains in force.**
+
+**Changed:** `deploy/apps/console/base/backend.yaml` and `deploy/apps/console/base/worker.yaml` require the `CONSOLE_DATABASE_DURABILITY` key from `console-config`. Both serving roles pass that policy to their payroll owner. There is no implicit local-completion default. The checked-in ConfigMap and production overlay do not supply an admitted descriptor; these manifests therefore cannot establish a deployable production configuration.
+
+Before exposure, the operator must supply a reviewed policy and its matching observer installation, peer/transport admission, and recovery evidence. The implemented private-network descriptor does not establish production TLS peer authentication or certify HA, failover, or backup recovery. This declaration changes no live resource, supplies no production credential, and authorizes no deployment or Argo reconciliation. Production, payment and legal HOLDs remain unchanged.
