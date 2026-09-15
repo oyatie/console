@@ -57,9 +57,9 @@ fn protection(table: &str) -> String {
 #[test]
 fn public_global_table_resolves_to_existing_classification() {
     for table in [
-        "public.accounts",
-        "public . accounts",
-        "\"public\" . \"accounts\"",
+        "public.object_types",
+        "public . object_types",
+        "\"public\" . \"object_types\"",
     ] {
         clean(&format!(
             "CREATE TABLE IF NOT EXISTS {table} (id uuid primary key);"
@@ -105,9 +105,9 @@ fn qualified_unknown_table_remains_unclassified() {
 #[test]
 fn other_schema_does_not_inherit_global_or_nullable_allowlists() {
     violation(
-        "CREATE TABLE private.accounts (id uuid);",
+        "CREATE TABLE private.object_types (id uuid);",
         ViolationKind::UnclassifiedTable,
-        "accounts",
+        "object_types",
     );
     violation(
         &format!(
@@ -143,14 +143,14 @@ fn two_tables_in_one_schema_cannot_share_rls_evidence() {
 #[test]
 fn quoted_case_or_dot_does_not_alias_existing_global_table() {
     for table in [
-        "public.\"Accounts\"",
-        "\"Public\".accounts",
-        "\"public.accounts\"",
+        "public.\"Object_types\"",
+        "\"Public\".object_types",
+        "\"public.object_types\"",
     ] {
         violation(
             &format!("CREATE TABLE {table} (id uuid);"),
             ViolationKind::UnclassifiedTable,
-            "accounts",
+            "object_types",
         );
     }
 }
@@ -192,4 +192,13 @@ fn qualified_create_reuses_existing_unqualified_dynamic_rls_evidence() {
         EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY', t);
         EXECUTE format('CREATE POLICY org_isolation ON %I USING (org_id = current_setting(''app.current_org'', true)::uuid)', t);
         END LOOP; END $$;");
+}
+
+#[test]
+fn account_catalog_requires_explicit_classification_outside_parser_repair() {
+    violation(
+        "CREATE TABLE public.accounts (id uuid);",
+        ViolationKind::UnclassifiedTable,
+        "accounts",
+    );
 }
