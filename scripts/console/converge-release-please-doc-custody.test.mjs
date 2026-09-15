@@ -145,7 +145,7 @@ const protectedReleaseIssuerClosure = Object.freeze([
   ['./converge-release-please-doc-custody.mjs', 'a3d8d44840bd3397732a9a7cfd76f49c80029adfb4f7660d09ccdf2d3d22de70'],
   ['./release-please-pr-fallback.mjs', 'f0a8fb9c2e4698b07d38092efb29de2faa7a954143d12f8befa029b5c0edc0c6'],
   ['./release-please-pr-envelope.mjs', 'df8e389bd22f46e6747fd6f93027190e5c710be8cb1998ed7c8c5dd30b627096'],
-  ['./generate-documentation-manifest.mjs', 'df87d926caa67c08ccecc6eba7fca58c9f4bc1190c1e08fd3857290985379481'],
+  ['./generate-documentation-manifest.mjs', '173b46230fa3949de972742e3ee237f2b692fe6361f6a0c797267a07a7e38cf5'],
   ['./validate-documentation-archive.mjs', '8462e2650bc8a5d2802d77701d490fcae4d0b33eaa34f2a2f6fb8130e193c2e8'],
   ['./release-please-bot-candidate.mjs', '91aa1f7c4f0c882c4de560e3d5af0a37351b233d48cb974b897b7c1ebdaa3b6e'],
   ['./authority-ledger-path.mjs', '756e838e3979508d3be0b7d9974a0e719de9f1a08effbe60c272c2cad25b498e'],

@@ -85,9 +85,10 @@ test("topology reconciliation drains every serving role after changing defaults"
   const topology = read("ops/postgres-reconcile-topology.sh");
   assert.match(
     topology,
-    /WHERE usename IN \('console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd'\) AND pid <> pg_backend_pid\(\) ORDER BY pid/,
+    /WHERE usename IN \('console_auth_rt','console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd'\) AND pid <> pg_backend_pid\(\) ORDER BY pid/,
   );
   assert.match(topology, /verify_serving_login console_platform_force_cmd/);
+  assert.match(topology, /verify_serving_login console_auth_rt/);
 });
 
 test("live Argo, base, prod, and secret wiring remain DARK-topology-free", () => {
