@@ -1,0 +1,1022 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+//! Each exact SQLx case requires a fresh owned recovery-supervisor invocation.
+//! Initial observer custody precedes the real app database ownership handoff.
+
+use super::{AppConfig, AppError, AppRole, AppState, DatabaseDependency, build_router};
+use axum::body::{Body, to_bytes};
+use console_kernel_core::{OrgId, UserId, WorkOrderId};
+use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+use console_platform_request_context::scope_org;
+use console_platform_test_support::{
+    TestDatabaseLogin, finalize_account_custody, login_test_database_url, login_test_pool,
+    prepare_test_migration_owner_url, seed_org_and_super_admin, seed_org_rls_off,
+};
+use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
+use http::{Request, StatusCode, header};
+use p256::ecdsa::SigningKey;
+use p256::elliptic_curve::rand_core::OsRng;
+use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
+use serde_json::{Value, json};
+use sqlx::{PgPool, Row};
+use std::time::Duration;
+use time::OffsetDateTime;
+use tower::ServiceExt;
+use uuid::Uuid;
+
+const ISSUER: &str = "console-composition-durability";
+const AUDIENCE: &str = "console-api";
+
+fn control(action: &str) {
+    let status = std::process::Command::new(
+        std::env::var("CONSOLE_RECOVERY_CONTROL").expect("owned two-node harness required"),
+    )
+    .arg(action)
+    .status()
+    .expect("invoke owned fixture control");
+    assert!(status.success(), "fixture control failed: {action}");
+}
+
+struct RestoreReplication;
+impl Drop for RestoreReplication {
+    fn drop(&mut self) {
+        if let Ok(command) = std::env::var("CONSOLE_RECOVERY_CONTROL") {
+            for action in ["resume-replay", "restore-sync-policy"] {
+                let _ = std::process::Command::new(&command).arg(action).status();
+            }
+        }
+    }
+}
+
+fn observer_sql() -> String {
+    std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../ops/postgres-install-durability-observer.sql"),
+    )
+    .expect("real shared observer installer required")
+}
+
+async fn observer_identity(owner: &PgPool) -> Value {
+    sqlx::query_scalar(
+        "SELECT jsonb_build_array(r.oid,p.oid,p.proowner,p.proacl::text,p.prosrc) \
+         FROM pg_catalog.pg_roles r CROSS JOIN pg_catalog.pg_proc p \
+         WHERE r.rolname='console_durability_observer' \
+           AND p.oid=pg_catalog.to_regprocedure('public.console_durability_observation_v1(name,oid)')",
+    )
+    .fetch_one(owner)
+    .await
+    .expect("installed observer identity")
+}
+
+async fn setup(owner: &PgPool, timeout_ms: u64) -> Value {
+    control("assert-topology");
+    let identity: (String, i64, bool) = sqlx::query_as(
+        "SELECT current_database(),d.oid::bigint, \
+         session_user='console_buck_admin' AND current_user=session_user \
+         AND current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' \
+         AND (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=current_user) \
+         AND pg_catalog.pg_get_userbyid(d.datdba)=current_user \
+         FROM pg_catalog.pg_database d WHERE d.datname=current_database()",
+    )
+    .fetch_one(owner)
+    .await
+    .unwrap();
+    assert!(
+        identity.2,
+        "initial observer requires marked admin-owned DB"
+    );
+    assert_eq!(
+        owner.connect_options().get_database(),
+        Some(identity.0.as_str())
+    );
+    let suffix = identity.0.strip_prefix("_sqlx_test_").unwrap();
+    assert!(
+        suffix.len() == 52
+            && suffix
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'_')
+    );
+    let absent: bool = sqlx::query_scalar(
+        "SELECT NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_durability_observer') \
+         AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace \
+         WHERE n.nspname='public' AND p.proname='console_durability_observation_v1')",
+    ).fetch_one(owner).await.unwrap();
+    assert!(
+        absent,
+        "each exact case needs a fresh dedicated observer cluster"
+    );
+    let sql = observer_sql();
+    let mut tx = owner.begin().await.unwrap();
+    sqlx::raw_sql("SET LOCAL statement_timeout='15s'; SET LOCAL lock_timeout='2s'")
+        .execute(tx.as_mut())
+        .await
+        .unwrap();
+    sqlx::raw_sql(sqlx::AssertSqlSafe(sql.as_str()))
+        .execute(tx.as_mut())
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    let installed = observer_identity(owner).await;
+
+    // This public helper retains its exact EMPTY/admin-owned admission, then
+    // deliberately transfers this database to the real migration owner.
+    let migration_url = prepare_test_migration_owner_url(owner).await;
+    let migration = AppConfig::from_pairs([
+        ("CONSOLE_APP_ROLE", "migrate".to_owned()),
+        ("DATABASE_URL", migration_url),
+    ])
+    .unwrap();
+    super::run_migrations(&migration)
+        .await
+        .expect("actual numbered AND Apalis migrations");
+    finalize_account_custody(owner).await;
+
+    // Closed-state readback after the recorded ownership handoff. Never call
+    // the initial admin-owned installer helper with a weakened ownership guard.
+    let closed: (String, i64, bool) = sqlx::query_as(
+        "SELECT current_database(),d.oid::bigint, \
+         session_user='console_buck_admin' AND current_user=session_user \
+         AND current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' \
+         AND (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=current_user) \
+         AND pg_catalog.pg_get_userbyid(d.datdba)='console_app' \
+         FROM pg_catalog.pg_database d WHERE d.datname=current_database()",
+    )
+    .fetch_one(owner)
+    .await
+    .unwrap();
+    assert_eq!((&closed.0, closed.1), (&identity.0, identity.1));
+    assert!(
+        closed.2,
+        "same marked DB with expected migration-owner handoff"
+    );
+    assert_eq!(
+        observer_identity(owner).await,
+        installed,
+        "migrations must preserve observer"
+    );
+    let mut tx = owner.begin().await.unwrap();
+    sqlx::raw_sql("SET LOCAL statement_timeout='15s'; SET LOCAL lock_timeout='2s'")
+        .execute(tx.as_mut())
+        .await
+        .unwrap();
+    sqlx::raw_sql(sqlx::AssertSqlSafe(sql.as_str()))
+        .execute(tx.as_mut())
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    assert_eq!(
+        observer_identity(owner).await,
+        installed,
+        "closed readback must not repair"
+    );
+    control("assert-topology");
+    let native = sqlx::query(
+        "SELECT c.system_identifier::text AS system_id,pg_postmaster_start_time() AS primary_start, \
+         r.usesysid::bigint AS role_oid,r.usename::text AS role_name,host(r.client_addr) AS client_addr,x.ssl \
+         FROM pg_control_system() c CROSS JOIN pg_replication_slots s \
+         JOIN pg_stat_replication r ON r.pid=s.active_pid JOIN pg_stat_ssl x ON x.pid=r.pid \
+         WHERE s.slot_name='console_recovery_s1' AND s.slot_type='physical' AND s.active \
+         AND r.application_name='console_recovery_s1' AND r.usename='console_fixture_replica' AND r.state='streaming'",
+    ).fetch_one(owner).await.unwrap();
+    assert!(
+        !native.get::<bool, _>("ssl"),
+        "fixture is admitted private-network SCRAM"
+    );
+    let started: OffsetDateTime = native.get("primary_start");
+    json!({
+        "mode":"required_remote_apply",
+        "primary_system_id":native.get::<String,_>("system_id"),
+        "primary_started_at":started.format(&time::format_description::well_known::Rfc3339).unwrap(),
+        "slot":"console_recovery_s1",
+        "replication_role_oid":native.get::<i64,_>("role_oid"),
+        "replication_role_name":native.get::<String,_>("role_name"),
+        "application_name":"console_recovery_s1",
+        "peer":{"mode":"admitted_private_network","client_addr":native.get::<String,_>("client_addr")},
+        "timeout_ms":timeout_ms
+    })
+}
+
+fn config(
+    owner: &PgPool,
+    role: AppRole,
+    descriptor: &Value,
+    public_key: Option<&str>,
+) -> AppConfig {
+    let mut pairs = vec![
+        ("CONSOLE_APP_ROLE", role.to_string()),
+        ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+        ("CONSOLE_DATABASE_DURABILITY", descriptor.to_string()),
+        (
+            "DATABASE_URL",
+            login_test_database_url(owner, TestDatabaseLogin::Business),
+        ),
+    ];
+    if role == AppRole::Api {
+        for (key, login) in [
+            (
+                "LEAVE_COMMAND_DATABASE_URL",
+                TestDatabaseLogin::LeaveCommand,
+            ),
+            (
+                "ONTOLOGY_COMMAND_DATABASE_URL",
+                TestDatabaseLogin::OntologyCommand,
+            ),
+            (
+                "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                TestDatabaseLogin::PlatformForceCommand,
+            ),
+        ] {
+            pairs.push((key, login_test_database_url(owner, login)));
+        }
+    }
+    if let Some(public_key) = public_key {
+        pairs.extend([
+            ("CONSOLE_JWT_ISSUER", ISSUER.to_owned()),
+            ("CONSOLE_JWT_AUDIENCE", AUDIENCE.to_owned()),
+            ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key.to_owned()),
+            (
+                "AUTH_DATABASE_URL",
+                login_test_database_url(owner, TestDatabaseLogin::Auth),
+            ),
+        ]);
+    }
+    AppConfig::from_pairs(pairs).expect("explicit real app transports and policy")
+}
+
+async fn start(config: AppConfig) -> AppState {
+    let state = tokio::time::timeout(Duration::from_secs(20), AppState::from_config(config))
+        .await
+        .unwrap()
+        .expect("actual custody/identity/observer startup must succeed");
+    let pool = business(&state);
+    let identity: (String, String) = sqlx::query_as("SELECT session_user::text,current_user::text")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(identity, ("console_rt".into(), "console_rt".into()));
+    let response = build_router(state.clone())
+        .oneshot(
+            Request::builder()
+                .uri("/readyz")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        response.status(),
+        StatusCode::OK,
+        "real startup readiness positive"
+    );
+    state
+}
+
+fn business(state: &AppState) -> PgPool {
+    match &state.database {
+        DatabaseDependency::Postgres(pool) => pool.clone(),
+        DatabaseDependency::NotConfigured => panic!("test requires actual admitted Postgres state"),
+    }
+}
+
+async fn close_state(state: AppState) {
+    state.shutdown_realtime().await;
+    for database in [
+        &state.database,
+        &state.leave_command_database,
+        &state.ontology_command_database,
+        &state.platform_force_command_database,
+    ] {
+        if let DatabaseDependency::Postgres(pool) = database {
+            pool.close().await;
+        }
+    }
+    if let Some(auth) = state
+        .auth_rest
+        .as_ref()
+        .and_then(|auth| auth.auth_database())
+    {
+        auth.close().await;
+    }
+}
+
+async fn startup_refuses(config: AppConfig, marker: &str) {
+    let result = tokio::time::timeout(Duration::from_secs(20), AppState::from_config(config))
+        .await
+        .unwrap();
+    match result {
+        Ok(state) => {
+            close_state(state).await;
+            panic!("DURABILITY_COMPOSITION_STARTUP_ACCEPTED: {marker}");
+        }
+        Err(AppError::Config(message)) => assert!(
+            message.starts_with("database durability UNKNOWN:"),
+            "specific native durability refusal required for {marker}: {message}"
+        ),
+        Err(_) => panic!("DURABILITY_COMPOSITION_UNRELATED_STARTUP_FAILURE: {marker}"),
+    }
+}
+
+#[sqlx::test(migrations = false)]
+async fn required_app_startup_admits_only_the_installed_observer(owner: PgPool) {
+    let descriptor = setup(&owner, 2_000).await;
+    let login = login_test_pool(&owner, TestDatabaseLogin::Business).await;
+    login.close().await;
+    for role in [AppRole::Api, AppRole::Worker] {
+        close_state(start(config(&owner, role, &descriptor, None)).await).await;
+    }
+    let baseline = observer_identity(&owner).await;
+    sqlx::raw_sql("REVOKE EXECUTE ON FUNCTION public.console_durability_observation_v1(name,oid) FROM console_rt")
+        .execute(&owner).await.unwrap();
+    for role in [AppRole::Api, AppRole::Worker] {
+        startup_refuses(
+            config(&owner, role, &descriptor, None),
+            "missing_business_observer_execute",
+        )
+        .await;
+    }
+    sqlx::raw_sql("GRANT EXECUTE ON FUNCTION public.console_durability_observation_v1(name,oid) TO console_rt")
+        .execute(&owner).await.unwrap();
+    assert_eq!(
+        observer_identity(&owner).await,
+        baseline,
+        "restore exact function identity/ACL/body"
+    );
+    for role in [AppRole::Api, AppRole::Worker] {
+        for (key, wrong) in [
+            ("primary_system_id", json!("1")),
+            ("primary_started_at", json!("2000-01-01T00:00:00Z")),
+        ] {
+            let mut rejected = descriptor.clone();
+            rejected[key] = wrong;
+            startup_refuses(config(&owner, role, &rejected, None), key).await;
+        }
+        close_state(start(config(&owner, role, &descriptor, None)).await).await;
+        let mut missing = config(&owner, role, &descriptor, None);
+        missing.database_durability = None;
+        missing.database_url =
+            Some("postgresql://console_rt:synthetic@127.0.0.1:1/unreachable".into());
+        match tokio::time::timeout(Duration::from_secs(1), AppState::from_config(missing))
+            .await
+            .unwrap()
+        {
+            Err(AppError::Config(message)) => {
+                assert!(message.contains("CONSOLE_DATABASE_DURABILITY"))
+            }
+            Ok(state) => {
+                close_state(state).await;
+                panic!("missing policy accepted");
+            }
+            Err(_) => panic!("missing policy reached transport instead of config gate"),
+        }
+    }
+    println!("durability-composition: actual_api_worker_startup PASS");
+}
+
+#[derive(Debug)]
+struct HttpResult {
+    status: StatusCode,
+    etag: Option<String>,
+    body: Value,
+}
+
+async fn request(
+    router: axum::Router,
+    method: &str,
+    path: &str,
+    token: &str,
+    etag: Option<&str>,
+    body: Value,
+) -> HttpResult {
+    let mut request = Request::builder()
+        .method(method)
+        .uri(path)
+        .header(header::AUTHORIZATION, format!("Bearer {token}"))
+        .header(header::CONTENT_TYPE, "application/json");
+    if let Some(etag) = etag {
+        request = request.header(header::IF_MATCH, etag);
+    }
+    let response = router
+        .oneshot(
+            request
+                .body(Body::from(serde_json::to_vec(&body).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let status = response.status();
+    let etag = response
+        .headers()
+        .get(header::ETAG)
+        .map(|v| v.to_str().unwrap().to_owned());
+    let bytes = to_bytes(response.into_body(), 1024 * 1024).await.unwrap();
+    let body = serde_json::from_slice(&bytes).expect("actual JSON route response");
+    HttpResult { status, etag, body }
+}
+
+fn issue(issuer: &JwtIssuer, subject: UserId, org: OrgId) -> String {
+    issuer
+        .issue_access_token(AccessTokenInput {
+            subject,
+            org_id: org,
+            roles: vec!["SUPER_ADMIN".into()],
+            branches: Vec::new(),
+            platform: false,
+            view_as: false,
+            read_only: false,
+            display_name: None,
+            feature_grants: Vec::new(),
+            authz_subject_version: 0,
+            authz_policy_version: 0,
+            session_generation: 0,
+            issued_at: OffsetDateTime::now_utc(),
+        })
+        .unwrap()
+}
+
+async fn publish_payroll_type(
+    router: &axum::Router,
+    author: &str,
+    approver: &str,
+    actor: UserId,
+) -> Value {
+    // Reuse the existing real HTTP author/review/approval/publish sequence.
+    // No owner UPDATE of lifecycle, forged approval, or manual port registry.
+    let created = request(router.clone(), "POST", "/api/v1/ontology/object-types", author, None, json!({
+        "stable_key":"canonical.pay_run", "title":"Payroll composition fixture",
+        "title_property_key":"label", "backing_kind":"projected",
+        "backing_table":"payroll_draft_runs", "primary_key_property":"id",
+        "properties":[{"key":"label","title":"Label","field_type":"text","config":{},"required":true}],
+        "links":[], "analytics":[], "actions":[{
+            "stable_key":"create_run","title":"Create blocked draft","params_schema":{},
+            "edits":[],"submission_criteria":[],"side_effects":[],
+            "dispatch":"projected_usecase","dispatch_target":"payroll.create_run",
+            "control_points":["authority"]
+        }]
+    })).await;
+    assert_eq!(
+        created.status,
+        StatusCode::CREATED,
+        "actual authoring prerequisite: {:?}",
+        created.body
+    );
+    let id = created.body["id"].clone();
+    assert!(id.as_str().and_then(|s| Uuid::parse_str(s).ok()).is_some());
+    let reviewed = request(
+        router.clone(),
+        "POST",
+        "/api/v1/ontology/object-types/canonical.pay_run/lifecycle",
+        author,
+        Some(created.etag.as_deref().unwrap()),
+        json!({"to_state":"review_pending"}),
+    )
+    .await;
+    assert_eq!(
+        reviewed.status,
+        StatusCode::OK,
+        "real review transition prerequisite: {:?}",
+        reviewed.body
+    );
+    let revision = reviewed.body["key_write_revision"].as_i64().unwrap();
+    let request_ref = Uuid::new_v4();
+    let requested = request(
+        router.clone(),
+        "POST",
+        "/api/v1/governance/approvals",
+        author,
+        None,
+        json!({
+            "request_ref":request_ref,"kind":"ontology.schema.publish","target_ref":id,
+            "payload_summary":{"key_revision":revision}
+        }),
+    )
+    .await;
+    assert_eq!(
+        requested.status,
+        StatusCode::CREATED,
+        "real approval request: {:?}",
+        requested.body
+    );
+    let decided = request(
+        router.clone(),
+        "POST",
+        "/api/v1/governance/approvals/decide",
+        approver,
+        None,
+        json!({
+            "request_ref":request_ref,"kind":"ontology.schema.publish",
+            "requested_by":actor.as_uuid(),"decision":"approved"
+        }),
+    )
+    .await;
+    assert_eq!(
+        decided.status,
+        StatusCode::CREATED,
+        "distinct principal approval: {:?}",
+        decided.body
+    );
+    let published = request(
+        router.clone(),
+        "POST",
+        "/api/v1/ontology/object-types/canonical.pay_run/lifecycle",
+        author,
+        Some(reviewed.etag.as_deref().unwrap()),
+        json!({"to_state":"published"}),
+    )
+    .await;
+    assert_eq!(
+        published.status,
+        StatusCode::OK,
+        "real publication prerequisite: {:?}",
+        published.body
+    );
+    assert_eq!(published.body["lifecycle_state"], "published");
+    id
+}
+
+#[derive(Clone, Debug)]
+struct Backend {
+    pid: i32,
+    started: OffsetDateTime,
+    application_name: String,
+    query_started: OffsetDateTime,
+}
+
+async fn database_now(owner: &PgPool) -> OffsetDateTime {
+    sqlx::query_scalar("SELECT clock_timestamp()")
+        .fetch_one(owner)
+        .await
+        .unwrap()
+}
+
+async fn confirmation_backend(owner: &PgPool, not_before: OffsetDateTime) -> Option<Backend> {
+    // Idle is legitimate between the owner's native polling queries. Bound the
+    // query timestamp to this operation instead of accepting old query history
+    // or sampling only sub-millisecond active windows.
+    let rows: Vec<(i32, OffsetDateTime, String, OffsetDateTime)> = sqlx::query_as(
+        "SELECT pid,backend_start,application_name,query_start FROM pg_stat_activity \
+         WHERE datname=current_database() AND usename='console_rt' \
+         AND query_start >= $1 AND query LIKE '%/* console_durability_observe_v1 */%'",
+    )
+    .bind(not_before)
+    .fetch_all(owner)
+    .await
+    .unwrap();
+    assert!(
+        rows.len() <= 1,
+        "one isolated current-operation owner confirmation backend required"
+    );
+    rows.into_iter()
+        .next()
+        .map(|(pid, started, application_name, query_started)| Backend {
+            pid,
+            started,
+            application_name,
+            query_started,
+        })
+}
+
+async fn observes(owner: &PgPool, backend: &Backend) -> bool {
+    sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND backend_start=$2 \
+         AND application_name=$3 AND datname=current_database() AND query_start >= $4 \
+         AND query LIKE '%/* console_durability_observe_v1 */%')",
+    )
+    .bind(backend.pid)
+    .bind(backend.started)
+    .bind(&backend.application_name)
+    .bind(backend.query_started)
+    .fetch_one(owner)
+    .await
+    .unwrap()
+}
+
+async fn standby(owner: &PgPool) -> PgPool {
+    let port = std::env::var("CONSOLE_RECOVERY_STANDBY_PORT")
+        .unwrap()
+        .parse()
+        .unwrap();
+    sqlx::postgres::PgPoolOptions::new()
+        .max_connections(2)
+        .connect_with(owner.connect_options().as_ref().clone().port(port))
+        .await
+        .unwrap()
+}
+
+async fn assert_paused_below(owner: &PgPool, standby: &PgPool) {
+    let bound: String = sqlx::query_scalar("SELECT pg_current_wal_insert_lsn()::text")
+        .fetch_one(owner)
+        .await
+        .unwrap();
+    let below: bool = sqlx::query_scalar(
+        "SELECT pg_is_in_recovery() AND pg_get_wal_replay_pause_state()='paused' \
+         AND pg_last_wal_replay_lsn() < $1::pg_lsn",
+    )
+    .bind(bound)
+    .fetch_one(standby)
+    .await
+    .unwrap();
+    assert!(
+        below,
+        "actual paused standby must be below the local effect bound"
+    );
+}
+
+async fn canonical_snapshot(pool: &PgPool, org: OrgId, command: Uuid) -> Value {
+    sqlx::query_scalar(
+        "SELECT jsonb_build_object( \
+         'receipts',(SELECT coalesce(jsonb_agg(to_jsonb(r) ORDER BY command_id),'[]') FROM ont_action_command_receipts r WHERE org_id=$1 AND command_id=$2), \
+         'drafts',(SELECT coalesce(jsonb_agg(to_jsonb(d) ORDER BY id),'[]') FROM payroll_draft_runs d WHERE org_id=$1), \
+         'audits',(SELECT coalesce(jsonb_agg(to_jsonb(a) ORDER BY id),'[]') FROM audit_events a \
+                    WHERE org_id=$1 AND target_id=($2::uuid)::text AND action='ontology.canonical.execute'))",
+    ).bind(org.as_uuid()).bind(command).fetch_one(pool).await.unwrap()
+}
+
+#[sqlx::test(migrations = false)]
+async fn required_api_projected_payroll_dispatch_waits_for_remote_apply(owner: PgPool) {
+    let descriptor = setup(&owner, 15_000).await;
+    let org = OrgId::from_uuid(Uuid::new_v4());
+    let actor = seed_org_and_super_admin(&owner, *org.as_uuid(), "durability-api-author").await;
+    let approver =
+        seed_org_and_super_admin(&owner, *org.as_uuid(), "durability-api-approver").await;
+    assert_ne!(actor, approver);
+    let auth = login_test_pool(&owner, TestDatabaseLogin::Auth).await;
+    for subject in [actor, approver] {
+        let fenced: bool = sqlx::query_scalar("SELECT public.account_legacy_fenced_v1($1)")
+            .bind(subject.as_uuid())
+            .fetch_one(&auth)
+            .await
+            .unwrap();
+        assert!(
+            !fenced,
+            "real Auth projection must admit each actual fixture subject"
+        );
+    }
+    auth.close().await;
+    let key = SigningKey::random(&mut OsRng);
+    let private_key = key.to_pkcs8_pem(LineEnding::LF).unwrap();
+    let public_key = key
+        .verifying_key()
+        .to_public_key_pem(LineEnding::LF)
+        .unwrap();
+    let issuer = JwtIssuer::from_es256_pem(
+        JwtSettings {
+            issuer: ISSUER.into(),
+            audience: AUDIENCE.into(),
+            access_token_ttl: time::Duration::minutes(15),
+        },
+        private_key.as_bytes(),
+        public_key.as_bytes(),
+    )
+    .unwrap();
+    let author_token = issue(&issuer, actor, org);
+    let approver_token = issue(&issuer, approver, org);
+    let state = start(config(&owner, AppRole::Api, &descriptor, Some(&public_key))).await;
+    let router = build_router(state.clone());
+    let object_type = publish_payroll_type(&router, &author_token, &approver_token, actor).await;
+    let command = Uuid::new_v4();
+    let run = Uuid::new_v4();
+    let payload = json!({
+        "object_type_id":object_type,"instance_id":run,"command_id":command,
+        "reason":"durability composition","valid_from":"2026-06-01T00:00:00Z",
+        "params":{"run_id":run,"period_start":[2026,152],"period_end":[2026,181],"connector":"m2","job":"payroll_draft"}
+    });
+    let replica = standby(&owner).await;
+    assert_eq!(
+        canonical_snapshot(&owner, org, command).await["drafts"],
+        json!([])
+    );
+    control("pause-replay");
+    let restore = RestoreReplication;
+    // Audit COMMIT must remain executable, so only the real owner's explicit
+    // remote confirmation can hold back HTTP success and its success audit.
+    control("clear-sync-policy");
+    let observation_not_before = database_now(&owner).await;
+    let route = router.clone();
+    let token = author_token.clone();
+    let sent = payload.clone();
+    let mut call = tokio::spawn(async move {
+        request(
+            route,
+            "POST",
+            "/api/v1/ontology/actions/create_run/execute",
+            &token,
+            None,
+            sent,
+        )
+        .await
+    });
+    let local = tokio::time::timeout(Duration::from_secs(5), async {
+        loop {
+            let local = canonical_snapshot(&owner, org, command).await;
+            if local["receipts"].as_array().unwrap().len() == 1 {
+                break local;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("real local canonical receipt");
+    assert_eq!(local["drafts"].as_array().unwrap().len(), 1);
+    assert_paused_below(&owner, &replica).await;
+    let observed = tokio::time::timeout(Duration::from_secs(5), async {
+        loop {
+            if let Some(backend) = confirmation_backend(&owner, observation_not_before).await {
+                break observes(&owner, &backend).await;
+            }
+            if call.is_finished() {
+                break false;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .unwrap();
+    let early = tokio::time::timeout(Duration::from_millis(300), &mut call).await;
+    let premature = matches!(&early, Ok(Ok(response)) if response.status.is_success());
+    let before_resume = canonical_snapshot(&owner, org, command).await;
+    control("resume-replay");
+    control("restore-sync-policy");
+    drop(restore);
+    let response = match early {
+        Ok(result) => result.unwrap(),
+        Err(_) => tokio::time::timeout(Duration::from_secs(20), call)
+            .await
+            .unwrap()
+            .unwrap(),
+    };
+    assert_eq!(
+        response.status,
+        StatusCode::OK,
+        "post-resume actual API success: {:?}",
+        response.body
+    );
+    assert!(
+        observed && !premature,
+        "app registry must retain Required through native confirmation"
+    );
+    assert_eq!(
+        before_resume["audits"],
+        json!([]),
+        "no canonical success audit before remote confirmation"
+    );
+    let receipt = &local["receipts"][0];
+    assert_eq!(response.body["projected"]["owner"], receipt["owner"]);
+    assert_eq!(response.body["projected"]["target"], "payroll.create_run");
+    assert_eq!(response.body["projected"]["command_id"], json!(command));
+    assert_eq!(response.body["projected"]["result"], receipt["receipt"]);
+    let replay = request(
+        router.clone(),
+        "POST",
+        "/api/v1/ontology/actions/create_run/execute",
+        &author_token,
+        None,
+        payload,
+    )
+    .await;
+    assert_eq!(replay.status, StatusCode::OK);
+    assert_eq!(replay.body["projected"], response.body["projected"]);
+    let final_rows = canonical_snapshot(&owner, org, command).await;
+    assert_eq!(final_rows["receipts"], local["receipts"]);
+    assert_eq!(final_rows["drafts"], local["drafts"]);
+    assert_eq!(final_rows["drafts"][0]["status"], "BLOCKED_LEGAL_GATE");
+    assert_eq!(final_rows["drafts"][0]["calculation_enabled"], false);
+    assert_eq!(final_rows["audits"].as_array().unwrap().len(), 1);
+    assert_eq!(canonical_snapshot(&replica, org, command).await, final_rows);
+    drop(router);
+    close_state(state).await;
+    replica.close().await;
+    println!("durability-composition: actual_projected_api_dispatch PASS");
+}
+
+async fn seed_completion(pool: &PgPool, org: OrgId) -> (Uuid, Uuid) {
+    // This is the existing M2 fixture shape, executed with actual Business
+    // LOGIN. The engine, rather than SQL event inserts, emits the payroll job.
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(org.to_string())
+        .execute(tx.as_mut())
+        .await
+        .unwrap();
+    let definition: Uuid = sqlx::query_scalar(
+        "INSERT INTO workflow_definitions \
+         (org_id,workflow_key,display_name,object_type,status,latest_version,active_version) \
+         VALUES ($1,'work_order.completion','Completion fixture','work_order','ACTIVE',1,1) RETURNING id",
+    ).bind(org.as_uuid()).fetch_one(tx.as_mut()).await.unwrap();
+    sqlx::query(
+        "INSERT INTO workflow_definition_versions \
+         (org_id,definition_id,version,status,definition,required_approval_line,required_payment_line) \
+         VALUES ($1,$2,1,'PUBLISHED',$3,TRUE,TRUE)",
+    ).bind(org.as_uuid()).bind(definition)
+        .bind(json!({"schema_version":"wf.exec.v1","template":"work_order_completion"}))
+        .execute(tx.as_mut()).await.unwrap();
+    tx.commit().await.unwrap();
+    let store = PgWorkflowRuntimeStore::new(pool.clone());
+    scope_org(
+        org,
+        console_workorder_rest::m2_strangler::drive_completion_tail(
+            &store,
+            org,
+            WorkOrderId::new(),
+            None,
+            definition,
+            1,
+            Vec::new(),
+        ),
+    )
+    .await
+    .expect("real completion engine emits the pending payroll job");
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(org.to_string())
+        .execute(tx.as_mut())
+        .await
+        .unwrap();
+    let rows: Vec<(Uuid, Uuid)> = sqlx::query_as(
+        "SELECT id,run_id FROM workflow_outbox_events WHERE org_id=$1 \
+         AND channel='JOB' AND payload->>'job'='payroll_draft'",
+    )
+    .bind(org.as_uuid())
+    .fetch_all(tx.as_mut())
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+    assert_eq!(
+        rows.len(),
+        1,
+        "real engine emitted exactly one payroll event"
+    );
+    rows[0]
+}
+
+async fn workflow_snapshot(pool: &PgPool, org: OrgId, event: Uuid, run: Uuid) -> Value {
+    // Independent witness only: all serving work uses the actual Business pool.
+    sqlx::query_scalar(
+        "SELECT jsonb_build_object( \
+         'event',(SELECT to_jsonb(e) FROM workflow_outbox_events e WHERE org_id=$1 AND id=$2 AND run_id=$3), \
+         'runs',(SELECT coalesce(jsonb_agg(to_jsonb(r) ORDER BY id),'[]') FROM workflow_runs r WHERE org_id=$1), \
+         'nodes',(SELECT coalesce(jsonb_agg(to_jsonb(n) ORDER BY id),'[]') FROM workflow_node_runs n WHERE org_id=$1 AND run_id=$3), \
+         'drafts',(SELECT coalesce(jsonb_agg(to_jsonb(d) ORDER BY id),'[]') FROM payroll_draft_runs d WHERE org_id=$1), \
+         'receipts',(SELECT coalesce(jsonb_agg(to_jsonb(r) ORDER BY command_id),'[]') FROM ont_action_command_receipts r WHERE org_id=$1), \
+         'audits',(SELECT coalesce(jsonb_agg(to_jsonb(a) ORDER BY id),'[]') FROM audit_events a \
+                    WHERE org_id=$1 AND target_id=($2::uuid)::text AND action='workflow_runtime.outbox_drain'))",
+    ).bind(org.as_uuid()).bind(event).bind(run).fetch_one(pool).await.unwrap()
+}
+
+async fn staging_observer(
+    owner: &PgPool,
+    org: OrgId,
+    event: Uuid,
+    run: Uuid,
+    not_before: OffsetDateTime,
+) -> Backend {
+    tokio::time::timeout(Duration::from_secs(4), async {
+        loop {
+            if let Some(backend) = confirmation_backend(owner, not_before).await {
+                return backend;
+            }
+            let snapshot = workflow_snapshot(owner, org, event, run).await;
+            assert_eq!(
+                snapshot["event"]["status"], "PENDING",
+                "DURABILITY_COMPOSITION_WORKER_PREMATURE_ACK: no Required observer before delivery"
+            );
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("actual staging owner's native confirmation query")
+}
+
+async fn backend_gone(owner: &PgPool, backend: &Backend) {
+    tokio::time::timeout(Duration::from_secs(10), async {
+        loop {
+            let exists: bool = sqlx::query_scalar(
+                "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND backend_start=$2 \
+                 AND application_name=$3 AND datname=current_database())",
+            )
+            .bind(backend.pid)
+            .bind(backend.started)
+            .bind(&backend.application_name)
+            .fetch_one(owner)
+            .await
+            .unwrap();
+            if !exists {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("actual unconfirmed owner backend discarded after bounded UNKNOWN");
+}
+
+#[sqlx::test(migrations = false)]
+async fn required_workflow_spawn_keeps_unknown_staging_pending_until_retry(owner: PgPool) {
+    let descriptor = setup(&owner, 5_000).await;
+    let org = OrgId::from_uuid(Uuid::new_v4());
+    seed_org_rls_off(&owner, *org.as_uuid(), "durability-workflow").await;
+    let state = start(config(&owner, AppRole::Worker, &descriptor, None)).await;
+    let pool = business(&state);
+    let (event, run) = seed_completion(&pool, org).await;
+    let before = workflow_snapshot(&owner, org, event, run).await;
+    assert_eq!(before["runs"].as_array().unwrap().len(), 1);
+    assert_eq!(before["runs"][0]["id"], json!(run));
+    assert_eq!(before["runs"][0]["status"], "SUCCEEDED");
+    assert_eq!(before["nodes"].as_array().unwrap().len(), 2);
+    assert_eq!(before["event"]["status"], "PENDING");
+    assert_eq!(before["event"]["delivered_at"], Value::Null);
+    assert_eq!(before["event"]["attempt_count"], 0);
+    for key in ["drafts", "receipts", "audits"] {
+        assert_eq!(before[key], json!([]));
+    }
+    let replica = standby(&owner).await;
+    control("pause-replay");
+    let restore = RestoreReplication;
+    // Phase 1 SELECT FOR UPDATE may itself wait in SyncRep. Clear policy before
+    // the real spawn, then prove Required using the staging owner's native
+    // confirmation. Neither claim nor ACK COMMIT may hide a Local regression.
+    control("clear-sync-policy");
+    let observation_not_before = database_now(&owner).await;
+    let drain = super::workflow_drain::spawn(pool.clone(), state.postgres_durability());
+    let backend = staging_observer(&owner, org, event, run, observation_not_before).await;
+    let staged = workflow_snapshot(&owner, org, event, run).await;
+    assert_eq!(
+        staged["drafts"].as_array().unwrap().len(),
+        1,
+        "UNKNOWN permits the genuine local draft; it must not authorize ACK"
+    );
+    assert_eq!(
+        staged["drafts"][0]["source_label"],
+        format!("workflow_runtime_m2:run:{run}")
+    );
+    assert_eq!(staged["drafts"][0]["status"], "BLOCKED_LEGAL_GATE");
+    assert_eq!(staged["drafts"][0]["calculation_enabled"], false);
+    assert_eq!(staged["event"], before["event"]);
+    assert_eq!(staged["audits"], json!([]));
+    assert_eq!(staged["receipts"], json!([]));
+    assert_paused_below(&owner, &replica).await;
+    assert!(observes(&owner, &backend).await);
+    backend_gone(&owner, &backend).await;
+    let unknown = workflow_snapshot(&owner, org, event, run).await;
+    assert_eq!(
+        unknown, staged,
+        "completed unconfirmed stage must leave event and all evidence unchanged"
+    );
+    drain.shutdown();
+    close_state(state).await;
+    drop(pool);
+    // shutdown signals the existing loop; closing its pool waits for active
+    // leases and prevents this instance from writing during the fresh retry.
+    let after_shutdown = workflow_snapshot(&owner, org, event, run).await;
+    assert_eq!(after_shutdown, staged);
+    control("resume-replay");
+    control("restore-sync-policy");
+    drop(restore);
+    control("assert-topology");
+    let retry_state = start(config(&owner, AppRole::Worker, &descriptor, None)).await;
+    let retry_pool = business(&retry_state);
+    let retry = super::workflow_drain::spawn(retry_pool.clone(), retry_state.postgres_durability());
+    let delivered = tokio::time::timeout(Duration::from_secs(15), async {
+        loop {
+            let rows = workflow_snapshot(&owner, org, event, run).await;
+            if rows["event"]["status"] == "DELIVERED" {
+                break rows;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("actual fresh spawn immediately restages and delivers same pending event");
+    retry.shutdown();
+    close_state(retry_state).await;
+    drop(retry_pool);
+    assert_eq!(
+        delivered["drafts"], staged["drafts"],
+        "same-provenance retry must preserve the one local draft"
+    );
+    assert_eq!(delivered["runs"], before["runs"]);
+    assert_eq!(delivered["nodes"], before["nodes"]);
+    assert_eq!(delivered["event"]["attempt_count"], 1);
+    assert!(delivered["event"]["delivered_at"].is_string());
+    let mut original_event = before["event"].clone();
+    let mut delivered_event = delivered["event"].clone();
+    for key in ["status", "attempt_count", "delivered_at", "updated_at"] {
+        original_event.as_object_mut().unwrap().remove(key);
+        delivered_event.as_object_mut().unwrap().remove(key);
+    }
+    assert_eq!(
+        delivered_event, original_event,
+        "ACK must retain exact event identity and payload"
+    );
+    assert_eq!(
+        delivered["receipts"],
+        json!([]),
+        "staging never creates canonical receipts"
+    );
+    assert_eq!(delivered["audits"].as_array().unwrap().len(), 1);
+    assert_eq!(workflow_snapshot(&owner, org, event, run).await, delivered);
+    assert_eq!(
+        workflow_snapshot(&replica, org, event, run).await,
+        delivered
+    );
+    replica.close().await;
+    println!("durability-composition: actual_workflow_spawn_unknown_retry PASS");
+}
