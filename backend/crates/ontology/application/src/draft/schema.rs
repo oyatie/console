@@ -310,3 +310,7 @@ fn compile(raw: &Value, trie: &Trie, depth: usize) -> Result<Node, DraftError> {
         source: raw.clone(),
     })
 }
+
+#[cfg(test)]
+#[path = "schema_tests.rs"]
+mod tests;
