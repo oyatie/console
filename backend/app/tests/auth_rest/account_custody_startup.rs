@@ -12,6 +12,10 @@ use tower::ServiceExt;
 
 fn config(pool: &PgPool, role: AppRole) -> AppConfig {
     let mut pairs = vec![
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", role.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
     ];
@@ -179,6 +183,10 @@ async fn custody_worker_startup_refuses_partial_catalog(pool: PgPool) {
 #[tokio::test]
 async fn custody_configured_database_failure_does_not_become_no_database_mode() {
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#,
+        ),
         ("CONSOLE_APP_ROLE", "worker"),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0"),
         (

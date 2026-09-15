@@ -1059,6 +1059,10 @@ async fn profile_drift_refuses_without_repair(pool: PgPool) {
     // Real serving admission sees committed drift. A separate pool timeout on
     // an uncommitted DDL fixture would not prove metadata-drift detection.
     let mut pairs = vec![("CONSOLE_APP_ROLE", super::AppRole::Worker.to_string())];
+    pairs.push((
+        "CONSOLE_DATABASE_DURABILITY",
+        r#"{"mode":"local_development"}"#.to_owned(),
+    ));
     pairs.extend(super::account_transport_urls(&pool));
     let config = super::AppConfig::from_pairs(pairs).unwrap();
     let good = super::AppState::from_config(config.clone()).await.unwrap();

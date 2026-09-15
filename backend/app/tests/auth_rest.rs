@@ -2842,6 +2842,10 @@ async fn app_state_with_trusted_proxy(
     public_key_pem: String,
 ) -> Result<AppState, console_app::AppError> {
     let mut pairs = vec![
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -2866,6 +2870,10 @@ async fn app_state(
     public_key_pem: String,
 ) -> Result<AppState, console_app::AppError> {
     let mut pairs = vec![
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -3148,6 +3156,10 @@ async fn assert_audit_count(pool: &PgPool, action: &str, expected: i64) {
 fn account_transport_config_pairs() -> Vec<(&'static str, String)> {
     let signing_key = SigningKey::random(&mut OsRng);
     vec![
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         (
@@ -4157,6 +4169,10 @@ mod account_browser {
 
     async fn state_with_key(pool: &PgPool, root: PathBuf, signing_key: &SigningKey) -> AppState {
         let mut pairs = vec![
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
             ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),

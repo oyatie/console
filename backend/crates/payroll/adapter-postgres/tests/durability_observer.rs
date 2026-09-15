@@ -498,6 +498,10 @@ async fn real_observer_installer_is_atomic_replay_exact_and_drift_refusing(owner
             "native_public_execute",
             "GRANT EXECUTE ON FUNCTION pg_catalog.pg_control_system() TO PUBLIC",
         ),
+        (
+            "runtime_replication_role_membership",
+            "CREATE ROLE console_observer_replication_probe NOLOGIN REPLICATION; GRANT console_observer_replication_probe TO console_rt",
+        ),
     ] {
         drift_refused(&mut connection, &sql, name, mutation).await;
     }
