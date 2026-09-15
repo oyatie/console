@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "task": "Independent bounded diagnosis of three fast verification failures",
+  "reviewer": "/root/fast_gate_review",
+  "base_sha": "202d5e1e6bb7083190c8ea7d7451742df9f8c788",
+  "root": "/private/tmp/console-production-tdd-preparation-20260913",
+  "source_log": "/private/tmp/account-auth-verify-fast-20260915.log",
+  "ownership": "Read-only review; parent is sole source writer. This JSON is the only review artifact written.",
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "findings": [
+    {
+      "gate": "Console PR authority bootstrap regression",
+      "classification": "Sound byte-custody guard with stale reviewed digest after a narrowly reviewed capacity fix",
+      "observed": "86 tests discovered/executed in supplied fast log; 85 pass, 1 fail. Only protected issuer closure pin test fails.",
+      "location": "scripts/console/converge-release-please-doc-custody.test.mjs:148",
+      "source_location": "scripts/console/generate-documentation-manifest.mjs:126",
+      "source_change_commit": "666abb427de929627567ccfc53dec2e694da1d4c",
+      "old_sha256": "df87d926caa67c08ccecc6eba7fca58c9f4bc1190c1e08fd3857290985379481",
+      "reviewed_sha256": "173b46230fa3949de972742e3ee237f2b692fe6361f6a0c797267a07a7e38cf5",
+      "independent_proof": [
+        "Computed and compared all 8 protected closure member hashes; exactly the generator differs and all other 7 retain their existing pin.",
+        "Read exact parent blob at 666abb427de929627567ccfc53dec2e694da1d4c^; its hash equals the old pin.",
+        "Asserted that removing exactly the sole maxBuffer: 32 * 1024 * 1024 insertion from current generator produces byte-identical parent source.",
+        "Reviewed generator Git helper and callers: sanitized Git environment, replace-object rejection, exact index tree and blob lookup, validation, and bounded failure remain unchanged.",
+        "Reran both large-index regression cases: 2 discovered/executed, 2 pass. Each builds a >1 MiB Git listing, checks full custody, adds a lexically trailing unclassified Markdown file and requires rejection; generator additionally checks write/restage/readback."
+      ],
+      "precise_correction": "Update only the generator literal SHA-256 pin to the reviewed digest above, with this independent review rationale. Keep all closure members, strict byte equality, and mutation-rejection assertions unchanged. Do not generate expected hashes dynamically.",
+      "limit": "32 MiB remains a bounded capture ceiling. This review does not expand release or production authority."
+    },
+    {
+      "gate": "ADR governance gate",
+      "classification": "Scanner scope includes immutable machine evidence containing rejected test cases",
+      "location": "scripts/check-adrs.mjs:160",
+      "observed": "Existing unit suite: 29 discovered/executed, 29 pass. Real gate returns two errors for historical machine logs.",
+      "evidence_locations": [
+        "docs/evidence/console/implementation/2026-09-14-owner-codec-auth-custody/followup/final/receipts/console-followup-verify-3f0c4e17.log:2054",
+        "docs/evidence/console/implementation/2026-09-14-owner-codec-auth-custody/followup/supplement/receipts/console-followup-verify-after-mirror.log:4238"
+      ],
+      "exact_matched_text": "rejects stale cross-repository references that still use ADR-0022 for portability",
+      "cause": "Both lines are successful historical test titles, not current claims that ADR-0022 governs portability. The scanner pairs ADR-0022 with portability terms in every text file without distinguishing retained execution evidence.",
+      "authority_rationale": "README and current PRODUCT/DELIVERY treat docs/evidence and historical execution records as non-authority; preserving rejected inputs in receipts must not require falsifying old evidence.",
+      "precise_correction": "Exclude only .log files lexically within join(root, docs, evidence) from retired-reference content validation, using the existing isWithinDirectory helper. Keep all Markdown, IaC, and every .log outside that root scanned. Preserve both existing receipt blobs unchanged. Prefer explicit evidence scope over recognizing reporter/test-name syntax.",
+      "required_controls": [
+        "Accepted: preserved execution text in docs/evidence/run.log, including existing rejected-case titles.",
+        "Rejected: real stale citation in docs/evidence/stale.md.",
+        "Rejected: real stale citation in deploy/stale.log.",
+        "Rejected: real stale citation in docs/evidence-other/stale.log (root boundary).",
+        "Existing stale Markdown and tracked IaC retired-path regressions remain unchanged and green."
+      ],
+      "withdrawn_hypothesis": "Initially suspected the scanner matched its own diagnostic messages; direct receipt inspection disproved this. It matches test titles."
+    },
+    {
+      "gate": "Governed command-database DARK wiring regression",
+      "classification": "Stale exact serving-role roster in a static regression",
+      "location": "scripts/check-command-database-wiring.test.mjs:84",
+      "source_location": "ops/postgres-reconcile-topology.sh:1188",
+      "source_change_commit": "c76ebaf6cc4418e5d9be0ed3b0aa3ab52b244163",
+      "observed": "10 tests discovered/executed in supplied fast log; 9 pass, 1 fail. Only exact four-role drain regex fails.",
+      "cause": "The source adds console_auth_rt ahead of all four previous roles, matching newly managed auth-role timeout defaults. Existing role identities, self-PID exclusion, order, termination timeout, captured-set absence barrier, and login readback remain intact.",
+      "precise_correction": "Add console_auth_rt to the exact expected drain roster, preserving the four incumbent roles and every existing assertion. Add direct auth login-readback expectation if needed. Do not remove auth from source, use an optional auth regex, or loosen to arbitrary SQL.",
+      "independent_proof": [
+        "Reviewed c76ebaf6 exact diff: auth is added consistently to role defaults, per-database overrides, default readback, serving drain, and password-supplied login verification.",
+        "In-memory static assertion: proposed exact five-role regex matches source.",
+        "Five negative role-removal mutants are rejected by the proposed regex.",
+        "Removing self-PID exclusion or ordering is rejected (two additional negative mutants).",
+        "Positive pg_terminate_backend timeout 5000, captured-set drain barrier, and auth readback remain present."
+      ],
+      "limit": "This is static wiring evidence. No PostgreSQL process, mutation, or Cargo invocation was run for this review."
+    }
+  ],
+  "verification": [
+    {
+      "command": "node --test --test-name-pattern='large Git index' scripts/check-doc-links.test.mjs",
+      "discovered": 2,
+      "executed": 2,
+      "passed": 2,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test scripts/check-adrs.test.mjs",
+      "discovered": 29,
+      "executed": 29,
+      "passed": 29,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/check-adrs.mjs",
+      "diagnostics": 2,
+      "exit_code": 1
+    },
+    {
+      "command": "node --input-type=module < inline SHA-256 and exact parent-byte comparison script",
+      "closure_members_examined": 8,
+      "matching_existing_pins": 7,
+      "reviewed_changes": 1,
+      "exit_code": 0
+    },
+    {
+      "command": "node --input-type=module < inline proposed drain-regex static mutation check",
+      "positive_source_checks": 4,
+      "negative_mutants": 7,
+      "exit_code": 0
+    }
+  ],
+  "pre_mortem": "Blind pin refresh could bless unreviewed issuer execution; broad log exclusions could hide real reference drift; weakening the drain regex could permit missing serving roles.",
+  "blast_radius": "Proposed edits are limited to one issuer expected digest, evidence-log scope of one ADR scan, and one static serving-role expectation. Parent owns all implementation.",
+  "detection": "Existing red gates plus direct large-index behavior, exact closure comparison, evidence-scope positive controls, and drain role-removal controls.",
+  "rollback": "Parent can restore only its bounded source/test corrections; keep historical receipt bytes and this independent review record unchanged.",
+  "stop_conditions": [
+    "Any issuer byte change beyond reviewed maxBuffer insertion",
+    "Any omitted incumbent serving role or weakened drain barrier",
+    "Any exclusion of active Markdown, IaC, or non-evidence logs",
+    "Any need to rewrite historical receipts"
+  ],
+  "remaining_holds": [
+    "Implementation and same-probe green evidence belong to parent lane",
+    "No production exposure, credential reset, release, legal/compliance, or database-runtime claim"
+  ],
+  "conclusion": "Three precise local corrections are justified. No source edits performed by reviewer; original red evidence preserved.",
+  "candidate_review": {
+    "reviewer": "/root/fast_gate_review",
+    "base_sha": "202d5e1e6bb7083190c8ea7d7451742df9f8c788",
+    "review_type": "Independent static approval of exact immutable candidate bytes",
+    "result": "approved",
+    "artifacts": [
+      {
+        "target": "scripts/check-adrs.test.mjs",
+        "candidate_path": "/private/tmp/account-adr-logscope-test-candidate.mjs",
+        "base_sha256": "c9c0860b7f2afb2ae4cedd6df7e5899365cfb8b105a79835ecd2466a137e4806",
+        "candidate_sha256": "33ab4e00ea6f2cff42dce640d38060adb31f80c60bb26da7a51f1a359bbb3b7a",
+        "decision": "Approve: 4 additive regression cases; correct evaluateAdrGovernance(root).failures shape. One evidence-log acceptance and three real stale-reference positive controls; no existing tests removed or skipped."
+      },
+      {
+        "target": "scripts/check-adrs.mjs",
+        "candidate_path": "/private/tmp/account-adr-logscope-source-candidate.mjs",
+        "base_sha256": "ce2f834007cd53a779e2e65183ca7e9cc7ed90a1ca1fc159f123446c17115d7b",
+        "candidate_sha256": "4cb253e8a437a3ae57cda97f0a0138e78fec0cfb8ea67390f771462e8b7c5702",
+        "decision": "Approve: only retired-reference scan scope changes. Uses existing path-boundary helper and exact lowercase .log suffix under docs/evidence. Markdown and external logs remain scanned."
+      },
+      {
+        "target": "scripts/check-command-database-wiring.test.mjs",
+        "candidate_path": "/private/tmp/account-command-drain-test-candidate.mjs",
+        "base_sha256": "86cbf4c5b2e4522c9b7eaaf8f83fecbb0e5590356f7720740a426b94166dcabd",
+        "candidate_sha256": "a09323f7a7b43f0cdbf17ef982bd0a236f3cd999ba229aa1667e5a302d6076fe",
+        "decision": "Approve: exact five-role drain expression preserves all incumbent roles, self-PID exclusion, and ordering. Adds mandatory auth-login-readback assertion; every other test unchanged."
+      },
+      {
+        "target": "scripts/console/converge-release-please-doc-custody.test.mjs",
+        "candidate_path": "/private/tmp/account-issuer-closure-test-candidate.mjs",
+        "base_sha256": "096d706a2805d8678714647bfd07093650be4befbfc1752fe3391f9fb04a3478",
+        "candidate_sha256": "1e018d2f2d212e5dd39ed55e88ecf09659d6e47377e5862153225f94036f2de5",
+        "decision": "Approve: exactly one reviewed literal digest replaced. All eight closure entries, byte comparisons, authority tests, and mutation rejection logic remain unchanged."
+      }
+    ],
+    "required_validation": [
+      "ADR regression suite: expected 33 cases, with 4 additive cases; obtain real discovered/executed counts.",
+      "ADR real gate green on installed bytes while historical receipt hashes remain unchanged.",
+      "Command database wiring suite: all 10 cases green.",
+      "Complete Console PR authority bootstrap regression: retain and run all existing authority/mutation cases."
+    ],
+    "test_execution": "No additional candidate tests executed during parent database snapshot; static review only. Earlier baseline and large-index validation remains recorded separately.",
+    "authority_limit": "Approval covers only these exact source/test bytes as a local correction. It does not authorize shipping, release, credentials, data changes, production exposure, or weaker gates.",
+    "stop_condition": "Any candidate SHA-256 change requires checking the new delta before using this approval."
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "kind": "independent-auth-timeout-topology-source-review",
+  "reviewer": "/root/finish_browser",
+  "author": "/root",
+  "base_sha": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+  "source_path": "ops/postgres-reconcile-topology.sh",
+  "source_sha256": "4d0e11b02935459a3f79a3bf103bf23f58d98e605541acd3d7f324c26fc178f5",
+  "candidate_path": "/private/tmp/account-auth-timeout-topology-candidate.sh",
+  "candidate_sha256": "9a8156858d5b00a14e1f2e4a7dacdd754d968b146b4d16d3ff897fff323a0acd",
+  "design_sha256": "1e407002c93f901c0825d27fd12f8e6beea43997c1a59de7ae4b3bac9b2a7237",
+  "status": "PASS_BOUNDED_OPERATOR_PREREQUISITE_CANDIDATE_NOT_EXECUTION_OR_PRODUCTION_APPROVAL",
+  "exact_declared_transformation": true,
+  "bash_syntax_exit": 0,
+  "reviewed_changes": [
+    "Same30s statement,30s idle-in-transaction and45s transaction global defaults added only for console_auth_rt.",
+    "Auth added to three existing managed per-database override clearing queries and existing override census. Each targets only exact three managed keys; unrelated settings unchanged.",
+    "Auth added to catalog defaults VALUES census.",
+    "Auth added to existing post-commit serving backend drain. Defaults affect new connections; retaining existing auth sessions would otherwise preserve old settings. Existing captured-set termination/readback mechanics unchanged.",
+    "Conditional real verify_serving_login call only when auth password was already supplied. Existing env flag semantics and omitted-credential preservation unchanged."
+  ],
+  "sensitive_surface": {
+    "grant_revoke_password_statement_lines_byte_preserved": true,
+    "new_grants": false,
+    "new_memberships": false,
+    "new_password_assignments": false,
+    "schema_changes": false,
+    "credential_omission_behavior": "No auth password assignment or real login attempt introduced when omitted; catalog timeout checks still apply."
+  },
+  "adversarial_limits": [
+    "Cluster-global auth defaults and drain affect all databases using this role, matching existing serving-role administration scope. This is an operator reconciliation action, not harmless live refresh. Production execution remains HOLD.",
+    "Drain is inherited capture-and-terminate behavior; not a new proof against PID reuse/session races or a comprehensive traffic quiescence barrier.",
+    "Role settings alter persistent operator configuration. Reverting source alone does not restore previous GUC defaults; retain bounded safe defaults or explicitly restore reviewed recorded values if operational rollback is needed. No production mutation performed here.",
+    "This source review does not establish actual PostgreSQL execution, prerequisite failure classification,4GREEN, concurrency capacity or HA. Root must retain authentic before/after evidence."
+  ],
+  "required_evidence": [
+    "Preserve same4 firstimplementation failure if mandatory auth timeouts are actual blocker.",
+    "After independent candidate admission, rerun exact same4 with original role validator intact and inspect actual discovered/executed counts and positive controls.",
+    "Preserve isolated container ownership and successful cleanup evidence."
+  ],
+  "blocking_findings": [],
+  "performed": [
+    "Read complete source diff and surrounding operator setup/readback/drain/conditional credential code.",
+    "Mechanically assert entire candidate equals only declared additions/substitutions from frozen source.",
+    "Compare grant/revoke/password statement lines unchanged.",
+    "bash -n only; no DB/Cargo/Docker/repository writes."
+  ]
+}

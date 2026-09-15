@@ -1,0 +1,1247 @@
+{
+  "schema_version": 1,
+  "kind": "explicit-hash-bound-retention-manifest",
+  "evidence_id": "2026-09-15-auth-transport",
+  "prepared_by": "/root/fast_gate_review",
+  "repository_writer": "/root",
+  "status": "READY_FOR_SERIAL_ROOT_IMPORT_NO_FILES_IMPORTED",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-auth-transport",
+  "manifest_scope": "Completed auth transport evidence and completed fast-gate corrections only. Exact review/receipt allowlists; no recursive inclusion of arbitrary temporary files.",
+  "artifact_count": 97,
+  "total_size_bytes": 1704585,
+  "records": [
+    {
+      "source_path": "/private/tmp/account-adr-logscope-source-candidate.mjs",
+      "size_bytes": 20186,
+      "sha256": "4cb253e8a437a3ae57cda97f0a0138e78fec0cfb8ea67390f771462e8b7c5702",
+      "kind": "fast_candidate",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-fast-gate-candidate-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-adr-logscope-source-candidate.mjs"
+    },
+    {
+      "source_path": "/private/tmp/account-adr-logscope-test-candidate.mjs",
+      "size_bytes": 17578,
+      "sha256": "33ab4e00ea6f2cff42dce640d38060adb31f80c60bb26da7a51f1a359bbb3b7a",
+      "kind": "fast_candidate",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-fast-gate-candidate-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-adr-logscope-test-candidate.mjs"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-pool-credential-candidate.rs",
+      "size_bytes": 12190,
+      "sha256": "db2bb8e31db91c1582abb4be781a70c36fbe0ba78bc749080bd6d24bc3b3863c",
+      "kind": "test_candidate",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-readiness-test-design.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-auth-pool-credential-candidate.rs"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-timeout-topology-candidate.sh",
+      "size_bytes": 59180,
+      "sha256": "9a8156858d5b00a14e1f2e4a7dacdd754d968b146b4d16d3ff897fff323a0acd",
+      "kind": "source_candidate",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-timeout-topology-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-auth-timeout-topology-candidate.sh"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport-readiness-candidate.rs",
+      "size_bytes": 20491,
+      "sha256": "ea61a10fbce81689afdbf5b3e5bf3b77ccb5e5d2e278a41ca52b28c2d00078bf",
+      "kind": "design_artifact",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-design-independent-review.json",
+        "/private/tmp/account-auth-transport-readiness-test-design.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-auth-transport-readiness-candidate.rs"
+    },
+    {
+      "source_path": "/private/tmp/account-command-drain-test-candidate.mjs",
+      "size_bytes": 22708,
+      "sha256": "a09323f7a7b43f0cdbf17ef982bd0a236f3cd999ba229aa1667e5a302d6076fe",
+      "kind": "fast_candidate",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-fast-gate-candidate-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-command-drain-test-candidate.mjs"
+    },
+    {
+      "source_path": "/private/tmp/account-issuer-closure-test-candidate.mjs",
+      "size_bytes": 33155,
+      "sha256": "1e018d2f2d212e5dd39ed55e88ecf09659d6e47377e5862153225f94036f2de5",
+      "kind": "fast_candidate",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-fast-gate-candidate-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/candidates/account-issuer-closure-test-candidate.mjs"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport3-driver.sh",
+      "size_bytes": 8454,
+      "sha256": "bac6c8b4563cd58793adcf93b7fa47d2c02b737983bf0f37fad33d4faf03d27d",
+      "kind": "design_artifact",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-design-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/drivers/account-auth-transport3-driver.sh"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport3-probe.py",
+      "size_bytes": 393,
+      "sha256": "6e25fc7aaad1692b6fda64f95c4771bae4131ff2cfb93fa15d717df75e064c2d",
+      "kind": "design_artifact",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-design-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/drivers/account-auth-transport3-probe.py"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-driver.sh",
+      "size_bytes": 8454,
+      "sha256": "612b5907632d090023dfa5320c59fbbbcb2709579f0d05f6c409e5c47805beb2",
+      "kind": "design_artifact",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-design-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/drivers/account-auth-transport4-driver.sh"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-probe.py",
+      "size_bytes": 393,
+      "sha256": "b207a90053d3b227345df8a7e7d9d7569744b8baa1e877600d9c5bd1f02f4875",
+      "kind": "design_artifact",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-design-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/drivers/account-auth-transport4-probe.py"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-pool-mechanical-guide.json",
+      "size_bytes": 7112,
+      "sha256": "e70d9f92f9195e9c1939edb9aa103440baf407362ef7461207ff5ce026321be8",
+      "kind": "design_artifact",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-design-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/guides/account-auth-pool-mechanical-guide.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-pool-retention-refinement.json",
+      "size_bytes": 4684,
+      "sha256": "cfcfc9bfc3c5d7c8d8f7fb05ef747cb6943bc9cc0e0ff3cc74a9dec14d05219c",
+      "kind": "design_artifact",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-design-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/guides/account-auth-pool-retention-refinement.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-timeout-topology-design.json",
+      "size_bytes": 1532,
+      "sha256": "1e407002c93f901c0825d27fd12f8e6beea43997c1a59de7ae4b3bac9b2a7237",
+      "kind": "design",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-timeout-topology-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/guides/account-auth-timeout-topology-design.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-timeout-topology-lane.json",
+      "size_bytes": 1946,
+      "sha256": "6b4fd65d0087377cc9dfae085bddbefcb367e48b6d984ea84547621a63768242",
+      "kind": "admission_or_receipt",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/guides/account-auth-timeout-topology-lane.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport-readiness-test-design.json",
+      "size_bytes": 5609,
+      "sha256": "4c7fa8dedf34a9e0742c0850301ad7af2743444348d9b55d2d2f2c02efc4b402",
+      "kind": "test_design",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/guides/account-auth-transport-readiness-test-design.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-lane.json",
+      "size_bytes": 2026,
+      "sha256": "e6a0f5374bb478759851c6e697ad8a95339c413cf22e42d9b9111cce1d8adae3",
+      "kind": "admission_or_receipt",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/guides/account-auth-transport4-lane.json"
+    },
+    {
+      "source_path": "/private/tmp/account-adr-corrected-gate.log",
+      "size_bytes": 53,
+      "sha256": "9da728c9a29f09c299185d4563a9805fd185e29ade4a180d3f2ac0b054d9fa82",
+      "kind": "regression_record",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-adr-corrected-gate.log"
+    },
+    {
+      "source_path": "/private/tmp/account-adr-logscope-admission.log",
+      "size_bytes": 48,
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "kind": "fast_record",
+      "allowlist_sources": [
+        "/private/tmp/account-fast-corrections-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-adr-logscope-admission.log"
+    },
+    {
+      "source_path": "/private/tmp/account-adr-logscope-red.log",
+      "size_bytes": 4460,
+      "sha256": "5336d0a98dad7bac06f4d9882021c852b95ed34ae6fbce75ad8cbbae3923e42d",
+      "kind": "fast_record",
+      "allowlist_sources": [
+        "/private/tmp/account-fast-corrections-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-adr-logscope-red.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-command-config-unit-20260915.log",
+      "size_bytes": 2725,
+      "sha256": "9c2b8c77ec78c997ea70f4d6b1eac84fd7ddcb0633e04656d4fe9689ba9da56d",
+      "kind": "regression_record",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-auth-command-config-unit-20260915.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-timeout-topology-admission.log",
+      "size_bytes": 48,
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "kind": "admission_or_receipt",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-auth-timeout-topology-admission.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-admission.log",
+      "size_bytes": 48,
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "kind": "admission_or_receipt",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-auth-transport4-admission.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-corrected-run.log",
+      "size_bytes": 70,
+      "sha256": "489e61b70243c4c600403b22279d22e861f3eb51a10dcb415a0396875f4a84d3",
+      "kind": "admission_or_receipt",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-auth-transport4-corrected-run.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-first-implementation.log",
+      "size_bytes": 70,
+      "sha256": "2904338988681b683e8dfe4065c66076790e14af14e129f4cb307b8386655e02",
+      "kind": "admission_or_receipt",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-auth-transport4-first-implementation.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-red-receipt.json",
+      "size_bytes": 1124,
+      "sha256": "02abc43a52cd4ce0d7cad8c6b68b6d48cbc84d3c6762b5330eab546126402994",
+      "kind": "admission_or_receipt",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-auth-transport4-red-receipt.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-verify-fast-20260915.log",
+      "size_bytes": 618171,
+      "sha256": "25e06260ec6fbc712800a423765b3f0916ebaa5cb9f304fe1babf62cd557f3ff",
+      "kind": "fast_record",
+      "allowlist_sources": [
+        "/private/tmp/account-fast-corrections-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-auth-verify-fast-20260915.log"
+    },
+    {
+      "source_path": "/private/tmp/account-fast-corrections-green.log",
+      "size_bytes": 5689,
+      "sha256": "a33bea93f83827001bc6d5254d2c518c4c9cad0db7eab76c465138dc1952b028",
+      "kind": "regression_record",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-fast-corrections-green.log"
+    },
+    {
+      "source_path": "/private/tmp/account-fast-corrections-receipt.json",
+      "size_bytes": 1132,
+      "sha256": "f1077f003d69ac9ce5b7d979f7fae8a23c08f58315c2b9c84c37241164e4ffa9",
+      "kind": "fast_receipt",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/receipts/account-fast-corrections-receipt.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-config-regressions-20260915/account_auth_database_.log",
+      "size_bytes": 1431,
+      "sha256": "830959b30260c3dc484b0351c636acf1904d2ccc6a5db1db96f02dc49c9637f6",
+      "kind": "config_run",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-config-regressions-20260915/receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/regressions/config/account_auth_database_.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-config-regressions-20260915/account_custody_startup__custody_configured_database_failure_does_not_become_no_database_mode.log",
+      "size_bytes": 1028,
+      "sha256": "155569f4d72c64b7124223f7d06109cf326e3d271c7053aa995a5ec34ee10f38",
+      "kind": "config_run",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-config-regressions-20260915/receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/regressions/config/account_custody_startup__custody_configured_database_failure_does_not_become_no_database_mode.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-config-regressions-20260915/account_custody_startup__custody_genuine_no_database_configuration_keeps_existing_behavior.log",
+      "size_bytes": 1025,
+      "sha256": "849e40c728146c6a9927a6a1a075cdcc26a5f3a9afe67111941fdf8197a094ad",
+      "kind": "config_run",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-config-regressions-20260915/receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/regressions/config/account_custody_startup__custody_genuine_no_database_configuration_keeps_existing_behavior.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-config-regressions-20260915/auth_target_parser__.log",
+      "size_bytes": 1700,
+      "sha256": "3d993df2d80485570727120fe90f5c9a7bccc6089e55c960c189a1c3c9212852",
+      "kind": "config_run",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-config-regressions-20260915/receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/regressions/config/auth_target_parser__.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-config-regressions-20260915/receipt.json",
+      "size_bytes": 2459,
+      "sha256": "6c4f76d72120f8db77efc3de4687d929612126130b66af0943c95df8907bc6b7",
+      "kind": "config_receipt",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/regressions/config/receipt.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-fast-gate-candidate-review.json",
+      "size_bytes": 3300,
+      "sha256": "c46110e6d174680826135bb10215982e1305e4cbd1a242044148ef9ee4928e64",
+      "kind": "fast_record",
+      "allowlist_sources": [
+        "/private/tmp/account-fast-corrections-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/reviews/account-auth-fast-gate-candidate-review.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-fast-gate-diagnosis.json",
+      "size_bytes": 12482,
+      "sha256": "cd2fcbca700db8d25b0cb4d2ea3a3ce1ab94e3304885bf4692f2437c894b0b61",
+      "kind": "regression_record",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/reviews/account-auth-fast-gate-diagnosis.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-timeout-topology-independent-review.json",
+      "size_bytes": 3556,
+      "sha256": "2d36ed5182d2a9b1addbf719df90a692c51b5f55bc9ea14c2eb7dd3f10665464",
+      "kind": "review",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-completion-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/reviews/account-auth-timeout-topology-independent-review.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport-completion-independent-review.json",
+      "size_bytes": 9646,
+      "sha256": "f11951e983147bb232e993982b94f2f0661f51d3e88f42483d9ffd2b0dfe5e36",
+      "kind": "review",
+      "allowlist_sources": [
+        "explicit task"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/reviews/account-auth-transport-completion-independent-review.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport-design-independent-review.json",
+      "size_bytes": 8551,
+      "sha256": "d4e20c2d09e21ba7a10dac31ed0ceceaca2ee6de706c20bdf341638ec5bef5b5",
+      "kind": "review",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-completion-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/reviews/account-auth-transport-design-independent-review.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport-implementation-independent-review.json",
+      "size_bytes": 4619,
+      "sha256": "5b14a135b674a31185283b508c98c5251c9d3878fa3f2d51339eaf7754a3a6e7",
+      "kind": "review",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-completion-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/reviews/account-auth-transport-implementation-independent-review.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport3-driver-independent-review.json",
+      "size_bytes": 4809,
+      "sha256": "88caca1fbd031fb660989b492f511e1df1eae5db7aa77e1f4c65e61f6040ddc4",
+      "kind": "design_artifact",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-design-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/reviews/account-auth-transport3-driver-independent-review.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/cleanup-final-list-error.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/cleanup-final-list-error.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/cleanup-list-error.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/cleanup-list-error.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/cleanup.txt",
+      "size_bytes": 69,
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/cleanup.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/container-name.txt",
+      "size_bytes": 38,
+      "sha256": "156e7048a1820ed3ed7bd04b113481ef5553cf6ddfb80e0047af3701fc808f4b",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/container-name.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/containers-after.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/containers-after.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/containers-before-cleanup.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/containers-before-cleanup.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json",
+      "size_bytes": 1609,
+      "sha256": "9273d12c91ac31a8eb6c9c44bda2167812675d23631fda6d76136bcfd355fe56",
+      "kind": "run_receipt",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-completion-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/ownership-label.txt",
+      "size_bytes": 57,
+      "sha256": "74b8462b6e6ce9352dd90339532ac2fbb53c3f35b6014caf83a825bfedff3697",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/ownership-label.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/postgres-map.json",
+      "size_bytes": 184154,
+      "sha256": "ec86dc11e8259df5597e90f4f6244ced595c6b472a26c7012074b716a571dda8",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/postgres-map.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/prebuild-dispatch.txt",
+      "size_bytes": 65,
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/prebuild-dispatch.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/probe-exit.txt",
+      "size_bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/probe-exit.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/probe.log",
+      "size_bytes": 7030,
+      "sha256": "085fe6863c79a526d4a8e466e4a6fc1b1bcd6e32bdd7cdb1e1ad6cdacfff6d62",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/probe.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/source-after.json",
+      "size_bytes": 2334,
+      "sha256": "19f4a35281cb37d3a33d4545bdec5ad74728bc1c9c9b074308ffa83ee20adf00",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/source-after.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/source-before.json",
+      "size_bytes": 2334,
+      "sha256": "19f4a35281cb37d3a33d4545bdec5ad74728bc1c9c9b074308ffa83ee20adf00",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-0cc9825026c94c13ab6526515df44beb/source-before.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/cleanup-final-list-error.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/cleanup-final-list-error.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/cleanup-list-error.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/cleanup-list-error.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/cleanup.txt",
+      "size_bytes": 69,
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/cleanup.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/container-name.txt",
+      "size_bytes": 38,
+      "sha256": "2ab08a1fcf52d8637929ddca977dc466d0c4fcba5515b30a2b7b6077e5e24744",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/container-name.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/containers-after.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/containers-after.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/containers-before-cleanup.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/containers-before-cleanup.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json",
+      "size_bytes": 1609,
+      "sha256": "0d805eaf598ae0dcb6ab72643b5c49b5c7f48fb53bc8bc1aeb6e2dec1b7b1b93",
+      "kind": "run_receipt",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-completion-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/ownership-label.txt",
+      "size_bytes": 57,
+      "sha256": "7c746e9a42b682d40080593ca5f738d259dda7585a0d6b5d2016d5e19c5bfbbf",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/ownership-label.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/postgres-map.json",
+      "size_bytes": 184154,
+      "sha256": "ec86dc11e8259df5597e90f4f6244ced595c6b472a26c7012074b716a571dda8",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/postgres-map.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/prebuild-dispatch.txt",
+      "size_bytes": 65,
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/prebuild-dispatch.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/probe-exit.txt",
+      "size_bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/probe-exit.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/probe.log",
+      "size_bytes": 5300,
+      "sha256": "82c255601e747d0c6ca9e49c55e3358163142e36347196f6f9a0f1c0fdc541d9",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/probe.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/source-after.json",
+      "size_bytes": 2334,
+      "sha256": "7dc2f7367181531786d157314310d99c51bf029e665308189836dcaf20c77aac",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/source-after.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/source-before.json",
+      "size_bytes": 2334,
+      "sha256": "7dc2f7367181531786d157314310d99c51bf029e665308189836dcaf20c77aac",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc/source-before.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/cleanup-final-list-error.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/cleanup-final-list-error.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/cleanup-list-error.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/cleanup-list-error.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/cleanup.txt",
+      "size_bytes": 69,
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/cleanup.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/container-name.txt",
+      "size_bytes": 38,
+      "sha256": "edc9177d0e50648867d69e9793e844257d3137ffb10142004a3725a588b176d6",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/container-name.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/containers-after.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/containers-after.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/containers-before-cleanup.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/containers-before-cleanup.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json",
+      "size_bytes": 1609,
+      "sha256": "daae6b7f21a195dc5ab937bb7c8745fbd11bb219f64b585262f41ec177b00e1b",
+      "kind": "run_receipt",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-completion-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/ownership-label.txt",
+      "size_bytes": 57,
+      "sha256": "4ea5a0e5467e7d62101bc20f541a0ab6c3aee03c4dd02d5e1f07fb54e2c24627",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/ownership-label.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/postgres-map.json",
+      "size_bytes": 184154,
+      "sha256": "ec86dc11e8259df5597e90f4f6244ced595c6b472a26c7012074b716a571dda8",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/postgres-map.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/prebuild-dispatch.txt",
+      "size_bytes": 65,
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/prebuild-dispatch.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/probe-exit.txt",
+      "size_bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/probe-exit.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/probe.log",
+      "size_bytes": 7869,
+      "sha256": "ca2fcc0fcac92ce329cc5f7a83dd21f7fdec791cb0b3f9abd10c1f14b16eee04",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/probe.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/source-after.json",
+      "size_bytes": 2334,
+      "sha256": "13d93076493cf80a78dcfec8d29b6c87c199211d023c2dd594d863554de9178b",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/source-after.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/source-before.json",
+      "size_bytes": 2334,
+      "sha256": "13d93076493cf80a78dcfec8d29b6c87c199211d023c2dd594d863554de9178b",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6/source-before.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/cleanup-final-list-error.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/cleanup-final-list-error.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/cleanup-list-error.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/cleanup-list-error.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/cleanup.txt",
+      "size_bytes": 69,
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/cleanup.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/container-name.txt",
+      "size_bytes": 38,
+      "sha256": "70012851777eae843f993420d71be02a4a6311d0c66139fc14810202b1fe1a29",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/container-name.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/containers-after.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/containers-after.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/containers-before-cleanup.txt",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/containers-before-cleanup.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json",
+      "size_bytes": 1609,
+      "sha256": "15dd4c8821684927ea97082cb760daacf72873d5dc7b2a376b991f9eafc1e3e3",
+      "kind": "run_receipt",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport-completion-independent-review.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/ownership-label.txt",
+      "size_bytes": 57,
+      "sha256": "716be048982f9f89402eb651fcbeff352b4aff63d7a41c6df16781c46efb9a5d",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/ownership-label.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/postgres-map.json",
+      "size_bytes": 184154,
+      "sha256": "ec86dc11e8259df5597e90f4f6244ced595c6b472a26c7012074b716a571dda8",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/postgres-map.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/prebuild-dispatch.txt",
+      "size_bytes": 65,
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/prebuild-dispatch.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/probe-exit.txt",
+      "size_bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/probe-exit.txt"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/probe.log",
+      "size_bytes": 7403,
+      "sha256": "8b626c748bb2ece6f25195c6869e2da5a9853d7b27c91239625f935d69676224",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/probe.log"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/source-after.json",
+      "size_bytes": 2334,
+      "sha256": "13d93076493cf80a78dcfec8d29b6c87c199211d023c2dd594d863554de9178b",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/source-after.json"
+    },
+    {
+      "source_path": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/source-before.json",
+      "size_bytes": 2334,
+      "sha256": "13d93076493cf80a78dcfec8d29b6c87c199211d023c2dd594d863554de9178b",
+      "kind": "run_payload",
+      "allowlist_sources": [
+        "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/driver-receipt.json"
+      ],
+      "destination": "docs/evidence/console/implementation/2026-09-15-auth-transport/runs/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1/source-before.json"
+    }
+  ],
+  "custody_validation": {
+    "reviewed_hash_mismatches": [],
+    "missing_or_nonregular_sources": [],
+    "symlinks_included": false,
+    "transport_runs": 4,
+    "payloads_per_transport_run": 13,
+    "transport_driver_receipts_verified_against_completion_review": 4,
+    "run_payload_hashes_rechecked": 52,
+    "candidate_and_guide_hashes": "Every recorded expected hash in completion/design/readiness/timeout/fast candidate reviews compared with current bytes; no mismatch.",
+    "second_read_stability": "Every selected size and SHA-256 rechecked immediately before manifest construction.",
+    "immutability_limit": "This is an exact-byte import plan, not a copy or off-device custody proof. Root must recheck source hashes before import and destination hashes after copy; changed bytes require a separately reviewed new record."
+  },
+  "sensitive_content_screen": {
+    "files_scanned": 97,
+    "private_key_blocks_found": 0,
+    "provider_token_or_long_bearer_patterns_found": 0,
+    "postgres_dsn_patterns_found": 0,
+    "sensitive_environment_assignment_patterns_found": 0,
+    "environment_or_dotfiles_included": false,
+    "matches_printed": false,
+    "method": "Byte-pattern scan for private PEM/OpenSSH keys, provider/AWS token forms, long bearer tokens, PostgreSQL DSNs, and concrete password/token/secret/database-URL assignments in logs/text/JSON. File set contains no environment capture or key log. No matched values printed.",
+    "limit": "Pattern screening is bounded evidence, not a universal proof that arbitrary sensitive material cannot exist."
+  },
+  "results_retained": {
+    "transport": [
+      {
+        "directory": "/private/tmp/account-auth-transport4-0cc9825026c94c13ab6526515df44beb",
+        "head_sha": "a2aa1ff712d882a639f2be504336223a0486c3a2",
+        "discovered_executed": 4,
+        "passed": 1,
+        "failed": 3,
+        "ignored": 0,
+        "filtered": 144,
+        "probe_exit": 1,
+        "classification": "Meaningful behavioral RED: same-target startup positive passes. Other3 fail at AUTH_DATABASE_BINDING, AUTH_POOL_RETAINED and AUTH_POOL_CREDENTIAL respectively after actual prerequisites/positive controls. Deeper outage assertion blocked behind retention failure at this point."
+      },
+      {
+        "directory": "/private/tmp/account-auth-transport4-6c4ae664ba7c412d92da886c906504c6",
+        "head_sha": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+        "discovered_executed": 4,
+        "passed": 0,
+        "failed": 4,
+        "ignored": 0,
+        "filtered": 144,
+        "probe_exit": 1,
+        "classification": "Firstimplementation prerequisite regression: all4 execute but fail at valid configured startup before intended deeper negative assertions. Fixed generic error does not expose actual failing timeout values; do not call this4behavioral RED."
+      },
+      {
+        "directory": "/private/tmp/account-auth-transport4-cb33f92d42a9408b962fc950915a62b1",
+        "head_sha": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+        "discovered_executed": 4,
+        "passed": 0,
+        "failed": 4,
+        "ignored": 0,
+        "filtered": 144,
+        "probe_exit": 1,
+        "classification": "Separate ops lane admission repeats same clean1bb valid-startup prerequisite0PASS4FAIL. Same failure classification; not independent proof of timeout values."
+      },
+      {
+        "directory": "/private/tmp/account-auth-transport4-438f4e979e6d46b598f52f8969fe2cdc",
+        "head_sha": "c76ebaf6cc4418e5d9be0ed3b0aa3ab52b244163",
+        "discovered_executed": 4,
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 144,
+        "probe_exit": 0,
+        "classification": "Controlled ops-only correction to reviewed timeout provisioning/readbacks yields all4GREEN with tests and two-file implementation unchanged. Supports causal diagnosis of operator provisioning mismatch; no raw pre-correction timeout value observation claimed."
+      }
+    ],
+    "config_regressions": {
+      "head_sha": "202d5e1e6bb7083190c8ea7d7451742df9f8c788",
+      "executed": 17,
+      "passed": 17,
+      "failed": 0,
+      "invocations": [
+        {
+          "log": "/private/tmp/account-auth-config-regressions-20260915/account_auth_database_.log",
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "--manifest-path",
+            "backend/Cargo.toml",
+            "-p",
+            "console-app",
+            "--test",
+            "auth_rest",
+            "account_auth_database_",
+            "--",
+            "--test-threads=1"
+          ],
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "filtered": 141,
+          "exit": 0
+        },
+        {
+          "log": "/private/tmp/account-auth-config-regressions-20260915/auth_target_parser__.log",
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "--manifest-path",
+            "backend/Cargo.toml",
+            "-p",
+            "console-app",
+            "--test",
+            "auth_rest",
+            "auth_target_parser::",
+            "--",
+            "--test-threads=1"
+          ],
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "filtered": 140,
+          "exit": 0
+        },
+        {
+          "log": "/private/tmp/account-auth-config-regressions-20260915/account_custody_startup__custody_genuine_no_database_configuration_keeps_existing_behavior.log",
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "--manifest-path",
+            "backend/Cargo.toml",
+            "-p",
+            "console-app",
+            "--test",
+            "auth_rest",
+            "account_custody_startup::custody_genuine_no_database_configuration_keeps_existing_behavior",
+            "--",
+            "--test-threads=1"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "filtered": 147,
+          "exit": 0
+        },
+        {
+          "log": "/private/tmp/account-auth-config-regressions-20260915/account_custody_startup__custody_configured_database_failure_does_not_become_no_database_mode.log",
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "--manifest-path",
+            "backend/Cargo.toml",
+            "-p",
+            "console-app",
+            "--test",
+            "auth_rest",
+            "account_custody_startup::custody_configured_database_failure_does_not_become_no_database_mode",
+            "--",
+            "--test-threads=1"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "filtered": 147,
+          "exit": 0
+        }
+      ]
+    },
+    "command_config_unit": {
+      "log": "/private/tmp/account-auth-command-config-unit-20260915.log",
+      "executed": 20,
+      "passed": 20,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 146,
+      "binding_limit": "Standalone log preserves output; it does not itself carry an exact Git head receipt."
+    },
+    "full_fast_before_corrections": {
+      "log": "/private/tmp/account-auth-verify-fast-20260915.log",
+      "head_sha": "202d5e1e6bb7083190c8ea7d7451742df9f8c788",
+      "result": "FAILED (3)",
+      "failed_steps": [
+        "Console PR authority bootstrap regression",
+        "ADR governance gate",
+        "Governed command-database DARK wiring regression"
+      ],
+      "limit": "Preserved failed full verification. Later narrow green does not relabel this full run green."
+    },
+    "adr_scope_red": {
+      "log": "/private/tmp/account-adr-logscope-red.log",
+      "tests": 33,
+      "pass": 32,
+      "fail": 1,
+      "skipped": 0,
+      "cancelled": 0,
+      "todo": 0
+    },
+    "fast_corrections_green": {
+      "log": "/private/tmp/account-fast-corrections-green.log",
+      "tests": 63,
+      "pass": 63,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "todo": 0,
+      "binding": "Exact candidate approvals and account-fast-corrections-receipt.json retained separately; log alone does not include a final correction head snapshot."
+    },
+    "adr_corpus_after_correction": {
+      "log": "/private/tmp/account-adr-corrected-gate.log",
+      "adrs": 40,
+      "design_notes": 8,
+      "result": "passed"
+    }
+  },
+  "proved_transport_boundary": [
+    "Real configured auth credential consumed; direct wrongpassword control plus startup refusal.",
+    "Separate valid database configuration refused rather than silently reading absent fence.",
+    "Same observed target real startup succeeds.",
+    "Retained auth transport is operationally required: auth-only NOLOGIN/session termination produces503 with other serving transports/custody healthy; exact role restoration and same-state200recovery."
+  ],
+  "transport_nonclaims": [
+    "Physical cluster identity, reconnect target authority, primary/freshness, serving generation, HA or durable failover.",
+    "Actual Account request-context/prewrite fence enforcement and tenant/field authorization.",
+    "Whole148auth tests:144were filtered each invocation.",
+    "All mode/missingrequiredpool/parser/reset regressions; any later authored tests need separate evidence.",
+    "Configured60connection production capacity under68connection stated surge, production rollout or wholeConsole implementationreadiness.",
+    "Prior failedruns do not reveal exact timeout GUC values; attribution comes from source inspection and controlled correction."
+  ],
+  "remaining_holds": [
+    "Downstream authorization/fence activation and expanded regression evidence remain separate.",
+    "Production topology/authority/capacity/operations admission remains separate.",
+    "No fresh full npm verify GREEN is asserted by the narrow 63-test correction run.",
+    "Root owns repository import, generated manifest updates, and current-authority records."
+  ],
+  "excluded": [
+    {
+      "scope": "Mutable or newly authored refresh/capture/runtime evidence",
+      "reason": "Separate active work; not completed evidence admitted by this task."
+    },
+    {
+      "scope": "Pending inventory implementation and account-inventory-tests-independent-review.json",
+      "reason": "Independent unfinished lane outside this completed retention set."
+    },
+    {
+      "scope": "account-auth-transport-five-independent-review.json",
+      "reason": "Earlier five-case source review mixes refresh behavior and is outside the final four-case completion review allowlist; retained in its existing location, not imported here."
+    },
+    {
+      "scope": "Any unlisted temporary path, environment capture, credentials, private key or key log",
+      "reason": "No blanket temporary-directory import."
+    }
+  ],
+  "separate_existing_custody": {
+    "owner_source_sha": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+    "already_retained_by_commit": "202d5e1e6bb7083190c8ea7d7451742df9f8c788",
+    "action": "Leave existing committed owner/finalizer evidence in place. This dedicated destination does not overwrite, move, replace, or duplicate that prior custody tranche."
+  },
+  "import_contract": [
+    "Only root may import these exact listed source bytes into the dedicated destination.",
+    "Recompute size and SHA-256 before copy; stop on any mismatch or nonregular path.",
+    "Refuse preexisting destination bytes that disagree; do not overwrite historical evidence.",
+    "Verify copied size and SHA-256; retain failed-run logs, cleanup errors, exact labels and prior-stage classifications.",
+    "Keep manifest and correction evidence separate from current product/delivery authority; no production, credential reset, physical-cluster identity, HA, legal or payment claim follows."
+  ]
+}
