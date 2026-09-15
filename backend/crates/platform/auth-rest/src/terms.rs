@@ -16,9 +16,6 @@ use sha2::{Digest, Sha256};
 
 use super::{AuthRestState, RestError, hex_encode};
 
-pub(super) const CURRENT_PATH: &str = "/api/v2/auth/terms";
-pub(super) const MANIFEST_PATH: &str = "/api/v2/auth/terms/manifests/{sha256}";
-pub(super) const CONTENT_PATH: &str = "/api/v2/auth/terms/content/{sha256}";
 const MANIFEST_LIMIT: u64 = 16 * 1024;
 const CONTENT_LIMIT: u64 = 64 * 1024;
 

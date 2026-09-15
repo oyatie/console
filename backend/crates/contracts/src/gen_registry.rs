@@ -3349,6 +3349,7 @@ const IDENTITY_FRAGMENT_EXTERNAL: &[&str] = &[
     "ErrorBody",
     "MobilePasskeyStepUpBinding",
     "MobileStepUpActionKind",
+    "OrgChangeDetail",
     "PasskeyStepUpAssertion",
     "Timestamp",
     "Uuid",
@@ -4164,6 +4165,31 @@ const IDENTITY_FRAGMENT_PATHS: &[PathItem] = &[
         }],
     },
     PathItem {
+        path: "/api/v2/auth/terms",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../../identity/rest/openapi/paths/api__v2__auth__terms.get.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/terms/content/{sha256}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!(
+                "../../identity/rest/openapi/paths/api__v2__auth__terms__content__sha256.get.yaml"
+            ),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/terms/manifests/{sha256}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!(
+                "../../identity/rest/openapi/paths/api__v2__auth__terms__manifests__sha256.get.yaml"
+            ),
+        }],
+    },
+    PathItem {
         path: "/healthz",
         operations: &[Operation {
             method: "get",
@@ -4631,6 +4657,14 @@ const IDENTITY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "Team",
         body: include_str!("../../identity/rest/openapi/schemas/Team.yaml"),
+    },
+    NamedYaml {
+        name: "TermsCurrent",
+        body: include_str!("../../identity/rest/openapi/schemas/TermsCurrent.yaml"),
+    },
+    NamedYaml {
+        name: "TermsManifest",
+        body: include_str!("../../identity/rest/openapi/schemas/TermsManifest.yaml"),
     },
     NamedYaml {
         name: "TokenPairResponse",
