@@ -512,6 +512,13 @@ mod limits_tests;
 
 // Shared bounded parsing for plain editor values; existing submission semantics
 // stay unchanged. Callers select a smaller budget before any untrusted parsing.
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "Pure draft owner awaits its separately admitted integration caller"
+    )
+)]
 pub(crate) fn deserialize_bounded<'de, D: Deserializer<'de>>(
     deserializer: D,
     limit: usize,
@@ -523,6 +530,13 @@ pub(crate) fn deserialize_bounded<'de, D: Deserializer<'de>>(
     }
     .deserialize(deserializer)
 }
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "Pure draft owner awaits its separately admitted integration caller"
+    )
+)]
 pub(crate) fn parse_bounded(bytes: &[u8], limit: usize) -> Result<Value, CodecError> {
     require(bytes.len() <= limit, "owner input size")?;
     let mut deserializer = serde_json::Deserializer::from_slice(bytes);

@@ -12,6 +12,13 @@ use uuid::Uuid;
 
 mod apply;
 mod schema;
+#[cfg_attr(
+    not(test),
+    expect(
+        unused_imports,
+        reason = "Pure draft owner awaits its separately admitted integration caller"
+    )
+)]
 pub(crate) use apply::apply_draft_patches;
 pub(crate) use schema::DraftSchema;
 

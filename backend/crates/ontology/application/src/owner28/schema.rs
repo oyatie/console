@@ -65,11 +65,25 @@ pub(super) struct Binding {
     pub owner: String,
     pub object_kind: String,
     pub input: Validator,
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "Pure draft owner awaits its separately admitted integration caller"
+        )
+    )]
     reference: String,
 }
 pub(super) struct Schemas {
     pub input_schema: Validator,
     pub bindings: BTreeMap<String, Binding>,
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "Pure draft owner awaits its separately admitted integration caller"
+        )
+    )]
     resources: BTreeMap<String, Value>,
 }
 struct FixedSchemas(BTreeMap<String, Value>);
@@ -280,6 +294,13 @@ fn rewrite_references(value: &mut Value, document: &str) -> Result<(), CodecErro
 mod tests;
 
 // Fixed-schema editor reuse only: no external retrieval or current registration.
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "Pure draft owner awaits its separately admitted integration caller"
+    )
+)]
 pub(crate) fn draft_body(action: &str) -> Result<Value, CodecError> {
     let schemas = registered()?;
     let binding = schemas
@@ -288,15 +309,36 @@ pub(crate) fn draft_body(action: &str) -> Result<Value, CodecError> {
         .ok_or(CodecError("unregistered draft action"))?;
     Ok(serde_json::json!({"$ref":binding.reference}))
 }
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "Pure draft owner awaits its separately admitted integration caller"
+    )
+)]
 pub(crate) fn draft_resource(reference: &str) -> Result<&'static Value, CodecError> {
     registered()?
         .resources
         .get(reference)
         .ok_or(CodecError("unregistered draft reference"))
 }
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "Pure draft owner awaits its separately admitted integration caller"
+    )
+)]
 pub(crate) fn draft_validator(value: &Value) -> Result<Validator, CodecError> {
     compile_value(value, &registered()?.resources)
 }
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "Pure draft owner awaits its separately admitted integration caller"
+    )
+)]
 pub(crate) fn draft_definition(name: &str, value: &Value) -> Result<bool, CodecError> {
     static EDITOR: OnceLock<Result<BTreeMap<&'static str, Validator>, CodecError>> =
         OnceLock::new();

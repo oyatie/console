@@ -51,12 +51,19 @@ pub(crate) fn apply_draft_patches(
         "draft schema mismatch",
     )?;
     let mut budget = Budget(schema.work_budget);
-    validate_snapshot(schema, current, &mut budget)?;
+    let mut live_items = validate_snapshot(schema, current, &mut budget)?;
     // Only validated bounded input is cloned; all edits occur on this private
     // copy. Failed operations never write back a partially edited snapshot.
     let mut next = current.clone();
     for patch in patches {
-        apply_one(schema, &mut next, patch, scope, &mut budget)?;
+        apply_one(
+            schema,
+            &mut next,
+            patch,
+            scope,
+            &mut budget,
+            &mut live_items,
+        )?;
     }
     validate_snapshot(schema, &next, &mut Budget(schema.work_budget))?;
     let changed = next != *current;
@@ -70,7 +77,7 @@ fn validate_snapshot(
     schema: &DraftSchema,
     snapshot: &DraftSnapshot,
     budget: &mut Budget,
-) -> Result<(), DraftError> {
+) -> Result<BTreeSet<Uuid>, DraftError> {
     check(
         snapshot.cells.len() == schema.root.len(),
         "draft field coverage mismatch",
@@ -85,6 +92,7 @@ fn validate_snapshot(
         budget.value(&reference.0)?;
     }
     let mut live = BTreeSet::new();
+    let mut live_items = BTreeSet::new();
     for (field, cell) in &snapshot.cells {
         let node = schema
             .root
@@ -95,7 +103,7 @@ fn validate_snapshot(
             parent_item_ids: Vec::new(),
             item_id: None,
         };
-        validate_cell(node, cell, &address, 0, budget, &mut live)?;
+        validate_cell(node, cell, &address, 0, budget, &mut live, &mut live_items)?;
     }
     for (address, provenance) in &snapshot.provenance {
         check(live.contains(address), "orphan draft provenance")?;
@@ -104,7 +112,7 @@ fn validate_snapshot(
             budget.value(&reference.0)?;
         }
     }
-    Ok(())
+    Ok(live_items)
 }
 fn validate_cell(
     node: &Node,
@@ -113,6 +121,7 @@ fn validate_cell(
     depth: usize,
     budget: &mut Budget,
     live: &mut BTreeSet<FieldAddress>,
+    live_items: &mut BTreeSet<Uuid>,
 ) -> Result<(), DraftError> {
     check(depth <= CELL_DEPTH, "draft cell depth")?;
     address.validate()?;
@@ -158,6 +167,7 @@ fn validate_cell(
                     depth + 1,
                     budget,
                     live,
+                    live_items,
                 )?;
             }
             Ok(())
@@ -167,10 +177,9 @@ fn validate_cell(
                 return Err(DraftError("draft list shape mismatch"));
             };
             check(items.len() <= *maximum, "draft list bound")?;
-            let mut seen = BTreeSet::new();
             for entry in items {
                 check(
-                    !entry.item_id.is_nil() && seen.insert(entry.item_id),
+                    !entry.item_id.is_nil() && live_items.insert(entry.item_id),
                     "duplicate draft item",
                 )?;
                 validate_cell(
@@ -184,6 +193,7 @@ fn validate_cell(
                     depth + 1,
                     budget,
                     live,
+                    live_items,
                 )?;
             }
             Ok(())
@@ -340,12 +350,13 @@ fn insertion(
     after: Option<Uuid>,
     scope: &DraftEditScope,
     maximum: usize,
+    live_items: &mut BTreeSet<Uuid>,
 ) -> Result<(Uuid, usize), DraftError> {
     let id = address
         .item_id
         .ok_or(DraftError("draft item identity required"))?;
     check(
-        !id.is_nil() && !items.iter().any(|item| item.item_id == id),
+        !id.is_nil() && live_items.insert(id),
         "draft item already exists",
     )?;
     check(items.len() < maximum, "draft list bound")?;
@@ -398,6 +409,7 @@ fn apply_one(
     patch: &Patch,
     scope: &DraftEditScope,
     budget: &mut Budget,
+    live_items: &mut BTreeSet<Uuid>,
 ) -> Result<(), DraftError> {
     let address = patch.address();
     match patch {
@@ -430,7 +442,7 @@ fn apply_one(
                 node.validate_value(value),
                 "draft insertion requires valid scalar element",
             )?;
-            let (item_id, at) = insertion(items, address, *after, scope, maximum)?;
+            let (item_id, at) = insertion(items, address, *after, scope, maximum, live_items)?;
             items.insert(
                 at,
                 DraftItem {
@@ -446,7 +458,7 @@ fn apply_one(
         } => {
             if address.item_id.is_some() {
                 let (items, node, maximum) = collection(schema, &mut next.cells, address)?;
-                let (item_id, at) = insertion(items, address, *after, scope, maximum)?;
+                let (item_id, at) = insertion(items, address, *after, scope, maximum, live_items)?;
                 let cell = construct(node, *container, budget)?;
                 items.insert(at, DraftItem { item_id, cell });
             } else {
@@ -490,6 +502,11 @@ fn apply_one(
                 items.remove(index);
                 affected
             };
+            for removed_address in &removed {
+                if let Some(item_id) = removed_address.item_id {
+                    live_items.remove(&item_id);
+                }
+            }
             next.provenance.retain(|entry, _| !removed.contains(entry));
         }
     }

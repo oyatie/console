@@ -175,7 +175,11 @@ fn head(raw: &Value) -> Result<(Value, Vec<String>), DraftError> {
             .as_object()
             .ok_or(DraftError("invalid fixed schema"))?
         {
-            if key != "$ref" && !target.get(key).is_some_and(|prior| prior != sibling) {
+            if key != "$ref" {
+                check(
+                    target.get(key).is_none_or(|prior| prior == sibling),
+                    "conflicting draft schema constraint",
+                )?;
                 target
                     .as_object_mut()
                     .ok_or(DraftError("invalid fixed schema"))?
@@ -184,7 +188,48 @@ fn head(raw: &Value) -> Result<(Value, Vec<String>), DraftError> {
         }
         value = target;
     }
+    check_structure(&value)?;
     Ok((value, aliases))
+}
+// Only the fixed container assertions represented by this index are admitted.
+// Scalar assertions remain owned by the original complete leaf validator.
+fn check_structure(shape: &Value) -> Result<(), DraftError> {
+    let allowed: &[&str] = if shape.get("oneOf").is_some() {
+        &["oneOf"]
+    } else if shape.get("anyOf").is_some() {
+        &["anyOf"]
+    } else {
+        match shape.get("type").and_then(Value::as_str) {
+            Some("object") => {
+                check(
+                    shape.get("additionalProperties") == Some(&Value::Bool(false)),
+                    "unsupported draft structural constraint",
+                )?;
+                &["type", "properties", "required", "additionalProperties"]
+            }
+            Some("array") => &["type", "items", "minItems", "maxItems"],
+            _ => return Ok(()),
+        }
+    };
+    check(
+        shape.as_object().is_some_and(|fields| {
+            fields.keys().all(|key| {
+                allowed.contains(&key.as_str())
+                    || matches!(
+                        key.as_str(),
+                        "description"
+                            | "title"
+                            | "$comment"
+                            | "default"
+                            | "examples"
+                            | "deprecated"
+                            | "readOnly"
+                            | "writeOnly"
+                    )
+            })
+        }),
+        "unsupported draft structural constraint",
+    )
 }
 fn compile(raw: &Value, trie: &Trie, depth: usize) -> Result<Node, DraftError> {
     check(depth <= 32, "draft schema structure depth")?;
@@ -213,12 +258,22 @@ fn compile(raw: &Value, trie: &Trie, depth: usize) -> Result<Node, DraftError> {
             if branch_shape.get("type").and_then(Value::as_str) == Some("null") {
                 continue;
             }
-            if let Ok(node) = compile(branch, trie, depth + 1) {
-                if let Some(prior) = &selected {
-                    check(prior.source == node.source, "ambiguous draft schema branch")?;
-                } else {
-                    selected = Some(node);
+            match compile(branch, trie, depth + 1) {
+                Ok(node) => {
+                    if let Some(prior) = &selected {
+                        check(prior.source == node.source, "ambiguous draft schema branch")?;
+                    } else {
+                        selected = Some(node);
+                    }
                 }
+                // Missing supplied paths eliminate a branch. Contract failures
+                // must propagate rather than silently selecting a sibling.
+                Err(DraftError(
+                    "unregistered draft property"
+                    | "scalar draft field has children"
+                    | "unresolved draft schema branch",
+                )) => {}
+                Err(error) => return Err(error),
             }
         }
         let mut node = selected.ok_or(DraftError("unresolved draft schema branch"))?;
