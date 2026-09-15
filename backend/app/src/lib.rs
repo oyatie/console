@@ -9,6 +9,7 @@ use std::collections::{BTreeSet, HashMap};
 use std::env;
 use std::fmt::{Display, Formatter};
 use std::net::SocketAddr;
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -497,6 +498,8 @@ pub struct AppConfig {
     /// Dedicated Account custody transport, required for configured API auth.
     /// Configuration only: opening its restricted pool belongs to auth wiring.
     pub auth_database_url: Option<String>,
+    /// Trusted public terms release directory, independent of signing keys.
+    pub account_terms_artifact_root: Option<PathBuf>,
     /// Dedicated least-privilege connection used only for leave commands
     /// (`LEAVE_COMMAND_DATABASE_URL`). The API requires this whenever its
     /// general runtime `DATABASE_URL` is configured so command execution can
@@ -625,6 +628,10 @@ impl std::fmt::Debug for AppConfig {
                 &self.auth_database_url.is_some(),
             )
             .field("auth_enabled", &self.auth_rest.is_some())
+            .field(
+                "account_terms_configured",
+                &self.account_terms_artifact_root.is_some(),
+            )
             .finish_non_exhaustive()
     }
 }
@@ -883,10 +890,12 @@ impl AppConfig {
             public_key_pem,
         });
         let auth_rest = auth_rest_config_from_vars(&vars, jwt.as_ref())?;
+        let account_terms_artifact_root =
+            non_empty(vars.get("CONSOLE_ACCOUNT_TERMS_ARTIFACT_ROOT")).map(PathBuf::from);
         let auth_database_url = non_empty(vars.get("AUTH_DATABASE_URL"));
         if role == AppRole::Api
             && database_url.is_some()
-            && jwt.is_some()
+            && (jwt.is_some() || account_terms_artifact_root.is_some())
             && auth_database_url.is_none()
         {
             return Err(AppError::Config(
@@ -1042,6 +1051,7 @@ impl AppConfig {
             http_addr,
             database_url,
             auth_database_url,
+            account_terms_artifact_root,
             leave_command_database_url,
             ontology_command_database_url,
             platform_force_command_database_url,
@@ -1578,6 +1588,10 @@ impl AppState {
             },
             DatabaseDependency::NotConfigured => None,
         };
+        let auth_rest = auth_rest.map(|state| match config.account_terms_artifact_root.clone() {
+            Some(root) => state.with_account_terms_artifact_root(root),
+            None => state,
+        });
         let audit_attestation_signer =
             audit_chain_signer::build_attestation_signer(config.audit_chain_external.as_ref())?;
         let realtime_hub = realtime_hub_from_database(&database);
@@ -1720,8 +1734,12 @@ impl AppState {
             _ => DatabaseDependency::NotConfigured,
         };
 
-        let auth_database = match (config.role, &database, config.jwt.as_ref()) {
-            (AppRole::Api, DatabaseDependency::Postgres(business), Some(_)) => {
+        let auth_database = match (
+            config.role,
+            &database,
+            config.jwt.is_some() || config.account_terms_artifact_root.is_some(),
+        ) {
+            (AppRole::Api, DatabaseDependency::Postgres(business), true) => {
                 let url = config.auth_database_url.as_deref().ok_or_else(|| {
                     AppError::Config("AUTH_DATABASE_URL is required for API authentication".into())
                 })?;
@@ -4002,7 +4020,9 @@ async fn readyz(State(state): State<AppState>) -> impl IntoResponse {
     let database = readiness_dependency_status(&state.database, "runtime").await;
     let command_databases_required = state.config.role == AppRole::Api
         && matches!(state.database, DatabaseDependency::Postgres(_));
-    let auth_ready = if command_databases_required && state.config.jwt.is_some() {
+    let auth_ready = if command_databases_required
+        && (state.config.jwt.is_some() || state.config.account_terms_artifact_root.is_some())
+    {
         let dependency = state
             .auth_rest
             .as_ref()

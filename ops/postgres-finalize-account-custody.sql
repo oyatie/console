@@ -10,6 +10,7 @@ DECLARE
     populated boolean;
     fence_present boolean;
     guard_present boolean;
+    current_present boolean;
     expected_fence_body text := $fence_body$BEGIN
     IF subject_account_id IS NULL THEN
         RAISE EXCEPTION USING MESSAGE='account_fence_projection.null_identity', ERRCODE='22004';
@@ -19,6 +20,7 @@ END;$fence_body$;
     expected_guard_body text := $guard_body$BEGIN
     RAISE EXCEPTION USING MESSAGE='account_terms_receipts.immutable', ERRCODE='P0001';
 END;$guard_body$;
+    expected_current_body text := $current_body$SELECT h.manifest_sha256,h.revision FROM public.account_terms_head AS h WHERE h.id=1$current_body$;
 BEGIN
     PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
     PERFORM pg_catalog.set_config('lock_timeout','5s',true);
@@ -45,7 +47,7 @@ BEGIN
     LOCK TABLE ONLY public.accounts, ONLY public.account_security, ONLY public.account_security_events, ONLY public.account_terms_acceptances, ONLY public.account_terms_head, ONLY public.account_terms_release_receipts IN ACCESS EXCLUSIVE MODE;
     -- The complete verdict is authoritative only under the six relation locks.
     state := (
--- Read-only complete custody verdict: six relations and both routines. Caller must use search_path=pg_catalog,pg_temp.
+-- Read-only complete custody verdict: six relations and three routines. Caller must use search_path=pg_catalog,pg_temp.
 -- Expected fingerprints are fixed from reviewed0226, never from this target.
 WITH expected(name, owner_name, shape_sha256) AS (VALUES
  ('accounts','console_account_owner','bf8b3a765aca8473b0bdcb977a3c2adbb2c1fe0dd775cc151faae1271427d3f9'),
@@ -83,7 +85,8 @@ ORDER BY wanted.name), relations AS (
  LEFT JOIN pg_roles r ON r.oid=c.relowner
 ), routine_bodies(name,sha256) AS (VALUES
  ('account_legacy_fenced_v1','0ea5ca5ecadcdef895d525dfc552fd35dfda06add0705b3ef202f4099debd8d9'),
- ('account_terms_receipts_immutable_v1','dac65dd11a1031196794f94f445205aad1ed804c09e0326c896b94af7d991b7c')
+ ('account_terms_receipts_immutable_v1','dac65dd11a1031196794f94f445205aad1ed804c09e0326c896b94af7d991b7c'),
+ ('account_terms_current_v1','e39c2c73c35b1be6ca7379b08c684879ab831df369f264ec63552490057563ec')
 ), projection AS (
  SELECT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
    WHERE n.nspname='public' AND p.proname='account_legacy_fenced_v1') AS present,
@@ -131,6 +134,33 @@ ORDER BY wanted.name), relations AS (
      AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']::text[]
      AND p.proacl IS NOT NULL AND cardinality(p.proacl)=0
  ) AS valid
+), terms_current AS (
+ SELECT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public' AND p.proname='account_terms_current_v1') AS present,
+ (SELECT count(*)=1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public' AND p.proname='account_terms_current_v1') AND EXISTS (
+   SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   JOIN pg_roles owner_role ON owner_role.oid=p.proowner
+   JOIN pg_language language ON language.oid=p.prolang
+   WHERE n.nspname='public' AND p.proname='account_terms_current_v1'
+     AND owner_role.rolname='console_terms_owner' AND language.lanname='sql'
+     AND p.prokind='f' AND p.prosecdef AND NOT p.proisstrict AND p.proretset
+     AND NOT p.proleakproof AND p.provolatile='s' AND p.proparallel='u' AND p.prosupport=0
+     AND p.pronargs=0 AND p.proargtypes=''::oidvector
+     AND p.proallargtypes=ARRAY['pg_catalog.bytea'::regtype::oid,'pg_catalog.int8'::regtype::oid]
+     AND p.proargmodes=ARRAY['t','t']::"char"[]
+     AND p.proargnames=ARRAY['manifest_sha256','revision']::text[]
+     AND p.provariadic=0 AND p.pronargdefaults=0 AND p.proargdefaults IS NULL
+     AND p.prorettype='pg_catalog.record'::regtype AND p.probin IS NULL
+     AND p.prosqlbody IS NULL AND p.protrftypes IS NULL
+     AND encode(sha256(convert_to(p.prosrc,'UTF8')),'hex')=(SELECT sha256 FROM routine_bodies WHERE name='account_terms_current_v1')
+     AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']::text[]
+     AND p.proacl IS NOT NULL AND cardinality(p.proacl)=2
+     AND (SELECT count(*)=2 AND count(DISTINCT a.grantee)=2 AND bool_and(
+       a.grantor=p.proowner AND a.privilege_type='EXECUTE' AND NOT a.is_grantable
+       AND COALESCE(a.grantee IN (p.proowner,(SELECT oid FROM pg_roles WHERE rolname='console_auth_rt')),false))
+       FROM aclexplode(p.proacl) a)
+ ) AS valid
 ), guard_trigger AS (
  -- Pin fields outside the relation fingerprint too. Function OIDs are resolved
  -- through the exact zero-argument routine, never learned as expected values.
@@ -157,7 +187,9 @@ ORDER BY wanted.name), relations AS (
             AND acl.privilege_type='UPDATE' AND NOT acl.is_grantable)
             FROM aclexplode(a.attacl) acl)
           ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS prepared,
+        -- Common guarded profile, with the entire head ACL checked separately.
         bool_and(CASE
+          WHEN c.name='account_terms_head' THEN true
           WHEN c.name='account_terms_release_receipts' AND a.attname IN ('id','revision','manifest_sha256') THEN
             COALESCE(cardinality(a.attacl),0)=1 AND (SELECT
               count(*)=CASE WHEN a.attname='id' THEN 2 ELSE 1 END
@@ -171,7 +203,16 @@ ORDER BY wanted.name), relations AS (
               acl.grantor=c.relowner AND acl.grantee=c.relowner
               AND acl.privilege_type='UPDATE' AND NOT acl.is_grantable)
               FROM aclexplode(a.attacl) acl)
-          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS ready
+          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS guarded,
+        bool_and(CASE WHEN c.name='account_terms_head'
+          THEN COALESCE(cardinality(a.attacl),0)=0 ELSE true END) AS head_dormant,
+        bool_and(CASE WHEN c.name<>'account_terms_head' THEN true
+          WHEN a.attname IN ('id','manifest_sha256','revision') THEN
+            COALESCE(cardinality(a.attacl),0)=1 AND (SELECT count(*)=1 AND bool_and(
+              acl.grantor=c.relowner AND acl.grantee=c.relowner
+              AND acl.privilege_type='SELECT' AND NOT acl.is_grantable)
+              FROM aclexplode(a.attacl) acl)
+          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS head_ready
  FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
 ), table_acl_profiles AS (
  -- Profiles are collective: accepting either ACL independently per table would
@@ -188,7 +229,8 @@ ORDER BY wanted.name), relations AS (
 ), acl_profiles AS (
  SELECT t.dormant AND c.dormant AS dormant,
         t.prepared AND c.prepared AS prepared,
-        t.prepared AND c.ready AS ready
+        t.prepared AND c.guarded AND c.head_dormant AS guarded,
+        t.prepared AND c.guarded AND c.head_ready AS ready
  FROM table_acl_profiles t CROSS JOIN column_acl_profiles c
 )
 SELECT CASE
@@ -202,7 +244,7 @@ SELECT CASE
  THEN 'account_custody.catalog_missing'
  WHEN EXISTS (SELECT 1 FROM relations WHERE actual_shape IS DISTINCT FROM
    CASE WHEN name='account_terms_release_receipts' AND
-     ((SELECT present FROM receipt_guard) OR (SELECT ready FROM acl_profiles))
+     ((SELECT present FROM receipt_guard) OR (SELECT guarded OR ready FROM acl_profiles))
      THEN 'b72be303c47b094e2291e00bc0a98345ac5cc63a8be1520373ea4cb07c90c410'
      ELSE shape_sha256 END)
    OR ((SELECT present FROM receipt_guard) AND NOT COALESCE((SELECT valid FROM guard_trigger),false))
@@ -212,13 +254,18 @@ SELECT CASE
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
  WHEN ((SELECT dormant FROM table_acl_profiles) AND (SELECT present FROM projection))
-   OR ((SELECT prepared OR ready FROM acl_profiles) AND NOT (SELECT present FROM projection))
+   OR ((SELECT prepared OR guarded OR ready FROM acl_profiles) AND NOT (SELECT present FROM projection))
  THEN 'account_fence_projection.profile_mismatch'
  WHEN (SELECT present AND NOT valid FROM projection)
  THEN 'account_fence_projection.definition_mismatch'
  WHEN (SELECT present AND NOT valid FROM receipt_guard)
  THEN 'account_terms_receipts.definition_mismatch'
- WHEN NOT COALESCE((SELECT dormant OR prepared OR ready FROM acl_profiles),false)
+ WHEN (SELECT present AND NOT valid FROM terms_current)
+ THEN 'account_terms_current.definition_mismatch'
+ WHEN ((SELECT ready FROM acl_profiles) AND NOT (SELECT present FROM terms_current))
+   OR ((SELECT present FROM terms_current) AND (SELECT dormant OR prepared OR guarded FROM acl_profiles))
+ THEN 'account_terms_current.profile_mismatch'
+ WHEN NOT COALESCE((SELECT dormant OR prepared OR guarded OR ready FROM acl_profiles),false)
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
      WHERE r.rolname NOT LIKE 'pg\_%' ESCAPE '\' AND r.oid<>c.relowner AND NOT r.rolsuper
      AND (has_table_privilege(r.oid,c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER,MAINTAIN')
@@ -227,10 +274,16 @@ SELECT CASE
  THEN 'account_custody.unexpected_privilege'
  WHEN (SELECT finalized FROM ownership) AND (SELECT ready FROM acl_profiles)
    AND (SELECT valid FROM projection) AND (SELECT valid FROM receipt_guard)
+   AND (SELECT valid FROM terms_current)
    AND COALESCE((SELECT valid FROM guard_trigger),false)
  THEN 'account_custody.finalized'
  -- Historical profiles are complete upgrade inputs, never serving profiles.
- WHEN NOT (SELECT present FROM receipt_guard)
+ WHEN (SELECT finalized FROM ownership) AND (SELECT guarded FROM acl_profiles)
+   AND NOT (SELECT present FROM terms_current)
+   AND (SELECT valid FROM projection) AND (SELECT valid FROM receipt_guard)
+   AND COALESCE((SELECT valid FROM guard_trigger),false)
+ THEN 'account_custody.upgrade_required'
+ WHEN NOT (SELECT present FROM receipt_guard) AND NOT (SELECT present FROM terms_current)
    AND ((SELECT dormant FROM acl_profiles) OR
      ((SELECT prepared FROM acl_profiles) AND (SELECT valid FROM projection)))
  THEN CASE WHEN (SELECT pending FROM ownership) THEN 'account_custody.pending'
@@ -265,6 +318,9 @@ END
     SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p
       JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
       WHERE n.nspname='public' AND p.proname='account_terms_receipts_immutable_v1') INTO guard_present;
+    SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p
+      JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+      WHERE n.nspname='public' AND p.proname='account_terms_current_v1') INTO current_present;
     IF state='account_custody.pending' THEN
     FOREACH relation_name IN ARRAY ARRAY['accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts'] LOOP
         EXECUTE format('SELECT EXISTS(SELECT 1 FROM public.%I)',relation_name) INTO populated;
@@ -278,7 +334,7 @@ END
         EXECUTE format('ALTER TABLE public.%I OWNER TO %I',relation_name,target_owner);
     END LOOP;
     state := (
--- Read-only complete custody verdict: six relations and both routines. Caller must use search_path=pg_catalog,pg_temp.
+-- Read-only complete custody verdict: six relations and three routines. Caller must use search_path=pg_catalog,pg_temp.
 -- Expected fingerprints are fixed from reviewed0226, never from this target.
 WITH expected(name, owner_name, shape_sha256) AS (VALUES
  ('accounts','console_account_owner','bf8b3a765aca8473b0bdcb977a3c2adbb2c1fe0dd775cc151faae1271427d3f9'),
@@ -316,7 +372,8 @@ ORDER BY wanted.name), relations AS (
  LEFT JOIN pg_roles r ON r.oid=c.relowner
 ), routine_bodies(name,sha256) AS (VALUES
  ('account_legacy_fenced_v1','0ea5ca5ecadcdef895d525dfc552fd35dfda06add0705b3ef202f4099debd8d9'),
- ('account_terms_receipts_immutable_v1','dac65dd11a1031196794f94f445205aad1ed804c09e0326c896b94af7d991b7c')
+ ('account_terms_receipts_immutable_v1','dac65dd11a1031196794f94f445205aad1ed804c09e0326c896b94af7d991b7c'),
+ ('account_terms_current_v1','e39c2c73c35b1be6ca7379b08c684879ab831df369f264ec63552490057563ec')
 ), projection AS (
  SELECT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
    WHERE n.nspname='public' AND p.proname='account_legacy_fenced_v1') AS present,
@@ -364,6 +421,33 @@ ORDER BY wanted.name), relations AS (
      AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']::text[]
      AND p.proacl IS NOT NULL AND cardinality(p.proacl)=0
  ) AS valid
+), terms_current AS (
+ SELECT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public' AND p.proname='account_terms_current_v1') AS present,
+ (SELECT count(*)=1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public' AND p.proname='account_terms_current_v1') AND EXISTS (
+   SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   JOIN pg_roles owner_role ON owner_role.oid=p.proowner
+   JOIN pg_language language ON language.oid=p.prolang
+   WHERE n.nspname='public' AND p.proname='account_terms_current_v1'
+     AND owner_role.rolname='console_terms_owner' AND language.lanname='sql'
+     AND p.prokind='f' AND p.prosecdef AND NOT p.proisstrict AND p.proretset
+     AND NOT p.proleakproof AND p.provolatile='s' AND p.proparallel='u' AND p.prosupport=0
+     AND p.pronargs=0 AND p.proargtypes=''::oidvector
+     AND p.proallargtypes=ARRAY['pg_catalog.bytea'::regtype::oid,'pg_catalog.int8'::regtype::oid]
+     AND p.proargmodes=ARRAY['t','t']::"char"[]
+     AND p.proargnames=ARRAY['manifest_sha256','revision']::text[]
+     AND p.provariadic=0 AND p.pronargdefaults=0 AND p.proargdefaults IS NULL
+     AND p.prorettype='pg_catalog.record'::regtype AND p.probin IS NULL
+     AND p.prosqlbody IS NULL AND p.protrftypes IS NULL
+     AND encode(sha256(convert_to(p.prosrc,'UTF8')),'hex')=(SELECT sha256 FROM routine_bodies WHERE name='account_terms_current_v1')
+     AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']::text[]
+     AND p.proacl IS NOT NULL AND cardinality(p.proacl)=2
+     AND (SELECT count(*)=2 AND count(DISTINCT a.grantee)=2 AND bool_and(
+       a.grantor=p.proowner AND a.privilege_type='EXECUTE' AND NOT a.is_grantable
+       AND COALESCE(a.grantee IN (p.proowner,(SELECT oid FROM pg_roles WHERE rolname='console_auth_rt')),false))
+       FROM aclexplode(p.proacl) a)
+ ) AS valid
 ), guard_trigger AS (
  -- Pin fields outside the relation fingerprint too. Function OIDs are resolved
  -- through the exact zero-argument routine, never learned as expected values.
@@ -390,7 +474,9 @@ ORDER BY wanted.name), relations AS (
             AND acl.privilege_type='UPDATE' AND NOT acl.is_grantable)
             FROM aclexplode(a.attacl) acl)
           ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS prepared,
+        -- Common guarded profile, with the entire head ACL checked separately.
         bool_and(CASE
+          WHEN c.name='account_terms_head' THEN true
           WHEN c.name='account_terms_release_receipts' AND a.attname IN ('id','revision','manifest_sha256') THEN
             COALESCE(cardinality(a.attacl),0)=1 AND (SELECT
               count(*)=CASE WHEN a.attname='id' THEN 2 ELSE 1 END
@@ -404,7 +490,16 @@ ORDER BY wanted.name), relations AS (
               acl.grantor=c.relowner AND acl.grantee=c.relowner
               AND acl.privilege_type='UPDATE' AND NOT acl.is_grantable)
               FROM aclexplode(a.attacl) acl)
-          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS ready
+          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS guarded,
+        bool_and(CASE WHEN c.name='account_terms_head'
+          THEN COALESCE(cardinality(a.attacl),0)=0 ELSE true END) AS head_dormant,
+        bool_and(CASE WHEN c.name<>'account_terms_head' THEN true
+          WHEN a.attname IN ('id','manifest_sha256','revision') THEN
+            COALESCE(cardinality(a.attacl),0)=1 AND (SELECT count(*)=1 AND bool_and(
+              acl.grantor=c.relowner AND acl.grantee=c.relowner
+              AND acl.privilege_type='SELECT' AND NOT acl.is_grantable)
+              FROM aclexplode(a.attacl) acl)
+          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS head_ready
  FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
 ), table_acl_profiles AS (
  -- Profiles are collective: accepting either ACL independently per table would
@@ -421,7 +516,8 @@ ORDER BY wanted.name), relations AS (
 ), acl_profiles AS (
  SELECT t.dormant AND c.dormant AS dormant,
         t.prepared AND c.prepared AS prepared,
-        t.prepared AND c.ready AS ready
+        t.prepared AND c.guarded AND c.head_dormant AS guarded,
+        t.prepared AND c.guarded AND c.head_ready AS ready
  FROM table_acl_profiles t CROSS JOIN column_acl_profiles c
 )
 SELECT CASE
@@ -435,7 +531,7 @@ SELECT CASE
  THEN 'account_custody.catalog_missing'
  WHEN EXISTS (SELECT 1 FROM relations WHERE actual_shape IS DISTINCT FROM
    CASE WHEN name='account_terms_release_receipts' AND
-     ((SELECT present FROM receipt_guard) OR (SELECT ready FROM acl_profiles))
+     ((SELECT present FROM receipt_guard) OR (SELECT guarded OR ready FROM acl_profiles))
      THEN 'b72be303c47b094e2291e00bc0a98345ac5cc63a8be1520373ea4cb07c90c410'
      ELSE shape_sha256 END)
    OR ((SELECT present FROM receipt_guard) AND NOT COALESCE((SELECT valid FROM guard_trigger),false))
@@ -445,13 +541,18 @@ SELECT CASE
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
  WHEN ((SELECT dormant FROM table_acl_profiles) AND (SELECT present FROM projection))
-   OR ((SELECT prepared OR ready FROM acl_profiles) AND NOT (SELECT present FROM projection))
+   OR ((SELECT prepared OR guarded OR ready FROM acl_profiles) AND NOT (SELECT present FROM projection))
  THEN 'account_fence_projection.profile_mismatch'
  WHEN (SELECT present AND NOT valid FROM projection)
  THEN 'account_fence_projection.definition_mismatch'
  WHEN (SELECT present AND NOT valid FROM receipt_guard)
  THEN 'account_terms_receipts.definition_mismatch'
- WHEN NOT COALESCE((SELECT dormant OR prepared OR ready FROM acl_profiles),false)
+ WHEN (SELECT present AND NOT valid FROM terms_current)
+ THEN 'account_terms_current.definition_mismatch'
+ WHEN ((SELECT ready FROM acl_profiles) AND NOT (SELECT present FROM terms_current))
+   OR ((SELECT present FROM terms_current) AND (SELECT dormant OR prepared OR guarded FROM acl_profiles))
+ THEN 'account_terms_current.profile_mismatch'
+ WHEN NOT COALESCE((SELECT dormant OR prepared OR guarded OR ready FROM acl_profiles),false)
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
      WHERE r.rolname NOT LIKE 'pg\_%' ESCAPE '\' AND r.oid<>c.relowner AND NOT r.rolsuper
      AND (has_table_privilege(r.oid,c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER,MAINTAIN')
@@ -460,10 +561,16 @@ SELECT CASE
  THEN 'account_custody.unexpected_privilege'
  WHEN (SELECT finalized FROM ownership) AND (SELECT ready FROM acl_profiles)
    AND (SELECT valid FROM projection) AND (SELECT valid FROM receipt_guard)
+   AND (SELECT valid FROM terms_current)
    AND COALESCE((SELECT valid FROM guard_trigger),false)
  THEN 'account_custody.finalized'
  -- Historical profiles are complete upgrade inputs, never serving profiles.
- WHEN NOT (SELECT present FROM receipt_guard)
+ WHEN (SELECT finalized FROM ownership) AND (SELECT guarded FROM acl_profiles)
+   AND NOT (SELECT present FROM terms_current)
+   AND (SELECT valid FROM projection) AND (SELECT valid FROM receipt_guard)
+   AND COALESCE((SELECT valid FROM guard_trigger),false)
+ THEN 'account_custody.upgrade_required'
+ WHEN NOT (SELECT present FROM receipt_guard) AND NOT (SELECT present FROM terms_current)
    AND ((SELECT dormant FROM acl_profiles) OR
      ((SELECT prepared FROM acl_profiles) AND (SELECT valid FROM projection)))
  THEN CASE WHEN (SELECT pending FROM ownership) THEN 'account_custody.pending'
@@ -501,10 +608,19 @@ END
         REVOKE ALL ON FUNCTION public.account_legacy_fenced_v1(uuid) FROM PUBLIC;
         GRANT EXECUTE ON FUNCTION public.account_legacy_fenced_v1(uuid) TO console_auth_rt;
     END IF;
+    IF NOT current_present THEN
+        GRANT SELECT(id,manifest_sha256,revision) ON public.account_terms_head TO console_terms_owner;
+        EXECUTE pg_catalog.format('CREATE FUNCTION public.account_terms_current_v1()
+            RETURNS TABLE(manifest_sha256 bytea,revision bigint) LANGUAGE sql STABLE SECURITY DEFINER
+            SET search_path=pg_catalog,pg_temp AS %L', expected_current_body);
+        ALTER FUNCTION public.account_terms_current_v1() OWNER TO console_terms_owner;
+        REVOKE ALL ON FUNCTION public.account_terms_current_v1() FROM PUBLIC;
+        GRANT EXECUTE ON FUNCTION public.account_terms_current_v1() TO console_auth_rt;
+    END IF;
 
     -- Certify the complete installed state, not merely the routine definition.
     state := (
--- Read-only complete custody verdict: six relations and both routines. Caller must use search_path=pg_catalog,pg_temp.
+-- Read-only complete custody verdict: six relations and three routines. Caller must use search_path=pg_catalog,pg_temp.
 -- Expected fingerprints are fixed from reviewed0226, never from this target.
 WITH expected(name, owner_name, shape_sha256) AS (VALUES
  ('accounts','console_account_owner','bf8b3a765aca8473b0bdcb977a3c2adbb2c1fe0dd775cc151faae1271427d3f9'),
@@ -542,7 +658,8 @@ ORDER BY wanted.name), relations AS (
  LEFT JOIN pg_roles r ON r.oid=c.relowner
 ), routine_bodies(name,sha256) AS (VALUES
  ('account_legacy_fenced_v1','0ea5ca5ecadcdef895d525dfc552fd35dfda06add0705b3ef202f4099debd8d9'),
- ('account_terms_receipts_immutable_v1','dac65dd11a1031196794f94f445205aad1ed804c09e0326c896b94af7d991b7c')
+ ('account_terms_receipts_immutable_v1','dac65dd11a1031196794f94f445205aad1ed804c09e0326c896b94af7d991b7c'),
+ ('account_terms_current_v1','e39c2c73c35b1be6ca7379b08c684879ab831df369f264ec63552490057563ec')
 ), projection AS (
  SELECT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
    WHERE n.nspname='public' AND p.proname='account_legacy_fenced_v1') AS present,
@@ -590,6 +707,33 @@ ORDER BY wanted.name), relations AS (
      AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']::text[]
      AND p.proacl IS NOT NULL AND cardinality(p.proacl)=0
  ) AS valid
+), terms_current AS (
+ SELECT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public' AND p.proname='account_terms_current_v1') AS present,
+ (SELECT count(*)=1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public' AND p.proname='account_terms_current_v1') AND EXISTS (
+   SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   JOIN pg_roles owner_role ON owner_role.oid=p.proowner
+   JOIN pg_language language ON language.oid=p.prolang
+   WHERE n.nspname='public' AND p.proname='account_terms_current_v1'
+     AND owner_role.rolname='console_terms_owner' AND language.lanname='sql'
+     AND p.prokind='f' AND p.prosecdef AND NOT p.proisstrict AND p.proretset
+     AND NOT p.proleakproof AND p.provolatile='s' AND p.proparallel='u' AND p.prosupport=0
+     AND p.pronargs=0 AND p.proargtypes=''::oidvector
+     AND p.proallargtypes=ARRAY['pg_catalog.bytea'::regtype::oid,'pg_catalog.int8'::regtype::oid]
+     AND p.proargmodes=ARRAY['t','t']::"char"[]
+     AND p.proargnames=ARRAY['manifest_sha256','revision']::text[]
+     AND p.provariadic=0 AND p.pronargdefaults=0 AND p.proargdefaults IS NULL
+     AND p.prorettype='pg_catalog.record'::regtype AND p.probin IS NULL
+     AND p.prosqlbody IS NULL AND p.protrftypes IS NULL
+     AND encode(sha256(convert_to(p.prosrc,'UTF8')),'hex')=(SELECT sha256 FROM routine_bodies WHERE name='account_terms_current_v1')
+     AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']::text[]
+     AND p.proacl IS NOT NULL AND cardinality(p.proacl)=2
+     AND (SELECT count(*)=2 AND count(DISTINCT a.grantee)=2 AND bool_and(
+       a.grantor=p.proowner AND a.privilege_type='EXECUTE' AND NOT a.is_grantable
+       AND COALESCE(a.grantee IN (p.proowner,(SELECT oid FROM pg_roles WHERE rolname='console_auth_rt')),false))
+       FROM aclexplode(p.proacl) a)
+ ) AS valid
 ), guard_trigger AS (
  -- Pin fields outside the relation fingerprint too. Function OIDs are resolved
  -- through the exact zero-argument routine, never learned as expected values.
@@ -616,7 +760,9 @@ ORDER BY wanted.name), relations AS (
             AND acl.privilege_type='UPDATE' AND NOT acl.is_grantable)
             FROM aclexplode(a.attacl) acl)
           ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS prepared,
+        -- Common guarded profile, with the entire head ACL checked separately.
         bool_and(CASE
+          WHEN c.name='account_terms_head' THEN true
           WHEN c.name='account_terms_release_receipts' AND a.attname IN ('id','revision','manifest_sha256') THEN
             COALESCE(cardinality(a.attacl),0)=1 AND (SELECT
               count(*)=CASE WHEN a.attname='id' THEN 2 ELSE 1 END
@@ -630,7 +776,16 @@ ORDER BY wanted.name), relations AS (
               acl.grantor=c.relowner AND acl.grantee=c.relowner
               AND acl.privilege_type='UPDATE' AND NOT acl.is_grantable)
               FROM aclexplode(a.attacl) acl)
-          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS ready
+          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS guarded,
+        bool_and(CASE WHEN c.name='account_terms_head'
+          THEN COALESCE(cardinality(a.attacl),0)=0 ELSE true END) AS head_dormant,
+        bool_and(CASE WHEN c.name<>'account_terms_head' THEN true
+          WHEN a.attname IN ('id','manifest_sha256','revision') THEN
+            COALESCE(cardinality(a.attacl),0)=1 AND (SELECT count(*)=1 AND bool_and(
+              acl.grantor=c.relowner AND acl.grantee=c.relowner
+              AND acl.privilege_type='SELECT' AND NOT acl.is_grantable)
+              FROM aclexplode(a.attacl) acl)
+          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS head_ready
  FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
 ), table_acl_profiles AS (
  -- Profiles are collective: accepting either ACL independently per table would
@@ -647,7 +802,8 @@ ORDER BY wanted.name), relations AS (
 ), acl_profiles AS (
  SELECT t.dormant AND c.dormant AS dormant,
         t.prepared AND c.prepared AS prepared,
-        t.prepared AND c.ready AS ready
+        t.prepared AND c.guarded AND c.head_dormant AS guarded,
+        t.prepared AND c.guarded AND c.head_ready AS ready
  FROM table_acl_profiles t CROSS JOIN column_acl_profiles c
 )
 SELECT CASE
@@ -661,7 +817,7 @@ SELECT CASE
  THEN 'account_custody.catalog_missing'
  WHEN EXISTS (SELECT 1 FROM relations WHERE actual_shape IS DISTINCT FROM
    CASE WHEN name='account_terms_release_receipts' AND
-     ((SELECT present FROM receipt_guard) OR (SELECT ready FROM acl_profiles))
+     ((SELECT present FROM receipt_guard) OR (SELECT guarded OR ready FROM acl_profiles))
      THEN 'b72be303c47b094e2291e00bc0a98345ac5cc63a8be1520373ea4cb07c90c410'
      ELSE shape_sha256 END)
    OR ((SELECT present FROM receipt_guard) AND NOT COALESCE((SELECT valid FROM guard_trigger),false))
@@ -671,13 +827,18 @@ SELECT CASE
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
  WHEN ((SELECT dormant FROM table_acl_profiles) AND (SELECT present FROM projection))
-   OR ((SELECT prepared OR ready FROM acl_profiles) AND NOT (SELECT present FROM projection))
+   OR ((SELECT prepared OR guarded OR ready FROM acl_profiles) AND NOT (SELECT present FROM projection))
  THEN 'account_fence_projection.profile_mismatch'
  WHEN (SELECT present AND NOT valid FROM projection)
  THEN 'account_fence_projection.definition_mismatch'
  WHEN (SELECT present AND NOT valid FROM receipt_guard)
  THEN 'account_terms_receipts.definition_mismatch'
- WHEN NOT COALESCE((SELECT dormant OR prepared OR ready FROM acl_profiles),false)
+ WHEN (SELECT present AND NOT valid FROM terms_current)
+ THEN 'account_terms_current.definition_mismatch'
+ WHEN ((SELECT ready FROM acl_profiles) AND NOT (SELECT present FROM terms_current))
+   OR ((SELECT present FROM terms_current) AND (SELECT dormant OR prepared OR guarded FROM acl_profiles))
+ THEN 'account_terms_current.profile_mismatch'
+ WHEN NOT COALESCE((SELECT dormant OR prepared OR guarded OR ready FROM acl_profiles),false)
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
      WHERE r.rolname NOT LIKE 'pg\_%' ESCAPE '\' AND r.oid<>c.relowner AND NOT r.rolsuper
      AND (has_table_privilege(r.oid,c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER,MAINTAIN')
@@ -686,10 +847,16 @@ SELECT CASE
  THEN 'account_custody.unexpected_privilege'
  WHEN (SELECT finalized FROM ownership) AND (SELECT ready FROM acl_profiles)
    AND (SELECT valid FROM projection) AND (SELECT valid FROM receipt_guard)
+   AND (SELECT valid FROM terms_current)
    AND COALESCE((SELECT valid FROM guard_trigger),false)
  THEN 'account_custody.finalized'
  -- Historical profiles are complete upgrade inputs, never serving profiles.
- WHEN NOT (SELECT present FROM receipt_guard)
+ WHEN (SELECT finalized FROM ownership) AND (SELECT guarded FROM acl_profiles)
+   AND NOT (SELECT present FROM terms_current)
+   AND (SELECT valid FROM projection) AND (SELECT valid FROM receipt_guard)
+   AND COALESCE((SELECT valid FROM guard_trigger),false)
+ THEN 'account_custody.upgrade_required'
+ WHEN NOT (SELECT present FROM receipt_guard) AND NOT (SELECT present FROM terms_current)
    AND ((SELECT dormant FROM acl_profiles) OR
      ((SELECT prepared FROM acl_profiles) AND (SELECT valid FROM projection)))
  THEN CASE WHEN (SELECT pending FROM ownership) THEN 'account_custody.pending'
