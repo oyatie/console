@@ -40,7 +40,10 @@ const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 /** Fixed supervised sources contain only reviewed top-level SQLx cases. */
 export function supervisedSourceCases(source, expected, modulePrefix = "") {
-  const code = stripRustCommentsAndStringLiterals(source, { preserveLines: true });
+  // Every supervised command runs cargo test: this exact outer predicate is
+  // always true. Keep rejecting inner, compound, negated and conditional guards.
+  const code = stripRustCommentsAndStringLiterals(source, { preserveLines: true })
+    .replace(/#\s*\[\s*cfg\s*\(\s*test\s*\)\s*\]/g, attribute => attribute.replace(/[^\n]/g, " "));
   if (/#\s*!?\s*\[\s*(?:cfg|cfg_attr|ignore)\b/.test(code)) throw new Error("supervised source cfg/ignore enrollment changed");
   if (/\bmod\s+[A-Za-z_][A-Za-z0-9_]*\s*[;{]|\binclude\s*!/.test(code)) throw new Error("supervised source module topology changed");
   const attributes = [...code.matchAll(/#\s*\[\s*(?:(tokio|sqlx)\s*::\s*)?test\b[^\]]*\]/g)];
