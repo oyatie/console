@@ -1,0 +1,14 @@
+{
+  "head": "b2c52e27c719237590205d7441ba708a52d66265",
+  "command": "env RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --offline --manifest-path backend/Cargo.toml -p console-platform-auth --test jwt_es256 account_crypto:: -- --test-threads=1",
+  "log_sha256": "54eb421dba22bfc6b1aa1a5c88b2c4a823029c51a2bfe78cd2ce6c6452454ecc",
+  "exit": 101,
+  "compiler_errors": 27,
+  "error_kinds": [
+    "E0432",
+    "E0599"
+  ],
+  "runtime_discovered": 0,
+  "runtime_executed": 0,
+  "reason": "Existing test binary cannot compile because this exact Account crypto owner API does not exist. The15behavioral assertions remain unreached; this is not15runtimefailures. Prior legacy-protocol3 has separate actual behavioralRED/GREEN."
+}

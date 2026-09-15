@@ -1,0 +1,433 @@
+{
+  "kind": "INDEPENDENT_INTEGRATED_ACCOUNT_CRYPTO_COMPLETED_RUNTIME_REVIEW",
+  "reviewer": "/root/capture_review",
+  "runtime_operator": "/root",
+  "candidate_sha": "7c599773ac0e4c7cdec4e4ca3deab9f9258b067b",
+  "testbase_before_uncommitted_implementation": "2179b0da",
+  "admitted_owner_base": "b2c52e27c719237590205d7441ba708a52d66265",
+  "verdict": "PASS_EXACT_CRYPTO15_FULL36_CLIPPY_WORKSPACE_CHECK_AND_FORMAT",
+  "findings": [],
+  "source_binding": {
+    "frozen_manifest_sha256": "8b869b6fad5b138b458f114cb23107855a83839b5e9aaf4c5f2e8a5e5758cfa8",
+    "frozen_source_review_sha256": "d7d4ccd6f1e9b5cbc9bdfccf85a5ae6a3c5d9a3ebe24caf8549a847aa24c15cb",
+    "integrated_commit_has_only_exact3_frozen_postimages": true,
+    "test_file_sha256": {
+      "jwt_es256": "ecc5020a2478a262b89a26c531f2809d434999bc71a4a2b901420cf5974dd3fb",
+      "jwt_verifier": "9a68df9056b171aa3efafa7130771b9c48675a74c9f5987c7da9566285c49086"
+    },
+    "provenance": "Root confirms no source changed throughout selected15/full36/Clippy/workspace check. Runs used testbase2179b0da plus exact reviewed source postimages, subsequently committed as7c599773. Reviewer verified immutable commit/postimage/test bytes; no invented full pre/post workspace snapshot.",
+    "buck": "Root reported generator174files with zero diff; existing glob includes new source. No separate Buck build claimed."
+  },
+  "command_receipt": {
+    "path": "/private/tmp/account-crypto-runtime-command-receipt-7c599773.json",
+    "sha256": "2e4a75e36d15b1df336ae8c58fb31b5a629e50a8da18d8691385b3f5a5ba757a",
+    "commands": [
+      {
+        "argv": [
+          "env",
+          "RUSTUP_TOOLCHAIN=1.98.1",
+          "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo",
+          "SQLX_OFFLINE=true",
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "--manifest-path",
+          "backend/Cargo.toml",
+          "-p",
+          "console-platform-auth",
+          "--test",
+          "jwt_es256",
+          "account_crypto::",
+          "--",
+          "--test-threads=1"
+        ],
+        "cwd": "/private/tmp/console-production-tdd-preparation-20260913",
+        "exit": 0,
+        "log": "/private/tmp/account-crypto15-b2c52e27-green.log",
+        "sha256": "2858215d1369ded53db34ba7fdbc0e8cc5fcf0a68c23f2f52e6731641d0f829d",
+        "executed": 15,
+        "filtered": 14
+      },
+      {
+        "argv": [
+          "env",
+          "RUSTUP_TOOLCHAIN=1.98.1",
+          "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo",
+          "SQLX_OFFLINE=true",
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "--manifest-path",
+          "backend/Cargo.toml",
+          "-p",
+          "console-platform-auth",
+          "--test",
+          "jwt_es256",
+          "--test",
+          "jwt_verifier",
+          "--",
+          "--test-threads=1"
+        ],
+        "cwd": "/private/tmp/console-production-tdd-preparation-20260913",
+        "exit": 0,
+        "log": "/private/tmp/account-crypto36-b2c52e27-regression.log",
+        "sha256": "106041aa8188cd811c30e95aff41387381b6397f50c8d9f36f9b939ccac2fa70",
+        "executed": 36,
+        "filtered": 0
+      },
+      {
+        "argv": [
+          "env",
+          "RUSTUP_TOOLCHAIN=1.98.1",
+          "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo",
+          "SQLX_OFFLINE=true",
+          "cargo",
+          "clippy",
+          "--locked",
+          "--offline",
+          "--manifest-path",
+          "backend/Cargo.toml",
+          "-p",
+          "console-platform-auth",
+          "--lib",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "cwd": "/private/tmp/console-production-tdd-preparation-20260913",
+        "exit": 0,
+        "log": "/private/tmp/account-crypto-b2c52e27-clippy.log",
+        "sha256": "709daf425107ae30e2cec748e54f9a391b7d9230b83db3bc7cf68bdc154ad91a",
+        "executed": null,
+        "filtered": null
+      }
+    ]
+  },
+  "build_receipt": {
+    "path": "/private/tmp/account-crypto-build-checks-2179b0da.json",
+    "sha256": "67fd6d36d5c4c35c753df3cbc51854866d9e88bc4c265198ea86e3b8059e4ad3",
+    "checks": [
+      {
+        "argv": [
+          "env",
+          "RUSTUP_TOOLCHAIN=1.98.1",
+          "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo",
+          "SQLX_OFFLINE=true",
+          "cargo",
+          "check",
+          "--locked",
+          "--offline",
+          "--manifest-path",
+          "backend/Cargo.toml",
+          "--workspace",
+          "--all-targets"
+        ],
+        "exit": 0,
+        "log": "/private/tmp/account-crypto-alltargets-2179b0da.log",
+        "sha256": "d44b052f75ef5ffe5d0c46294401bc31d9c3687ef7c1fd90d378303b9b2b02a6",
+        "cwd": "/private/tmp/console-production-tdd-preparation-20260913"
+      },
+      {
+        "argv": [
+          "rustfmt",
+          "+1.98.1",
+          "--edition",
+          "2024",
+          "--check",
+          "backend/crates/platform/auth/src/jwt/account.rs",
+          "backend/crates/platform/auth/src/jwt.rs",
+          "backend/crates/platform/auth/src/lib.rs"
+        ],
+        "exit": 0,
+        "log": "/private/tmp/account-crypto-fmt-2179b0da.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "cwd": "/private/tmp/console-production-tdd-preparation-20260913"
+      }
+    ]
+  },
+  "counts": {
+    "initial_missing_owner": {
+      "compiler_errors": 27,
+      "exit": 101,
+      "runtime_discovered": 0,
+      "runtime_executed": 0,
+      "error_kinds": [
+        "E0432",
+        "E0599"
+      ],
+      "log_sha256": "54eb421dba22bfc6b1aa1a5c88b2c4a823029c51a2bfe78cd2ce6c6452454ecc"
+    },
+    "selected": {
+      "discovered": 15,
+      "executed": 15,
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 14,
+      "cases": [
+        [
+          "account_crypto::access_issuance_respects_configured_fifteen_minute_and_family_ceilings",
+          "ok"
+        ],
+        [
+          "account_crypto::access_round_trip_is_closed_company_free_and_bound_to_primary_metadata",
+          "ok"
+        ],
+        [
+          "account_crypto::account_csrf_and_legacy_parsers_are_separate_in_both_directions",
+          "ok"
+        ],
+        [
+          "account_crypto::both_protocols_reject_missing_extra_and_raw_duplicate_claims",
+          "ok"
+        ],
+        [
+          "account_crypto::both_protocols_require_exact_issuer_audience_and_kind",
+          "ok"
+        ],
+        [
+          "account_crypto::csrf_issuance_respects_five_minute_and_family_ceilings",
+          "ok"
+        ],
+        [
+          "account_crypto::csrf_round_trip_is_closed_and_has_no_access_or_assurance_projection",
+          "ok"
+        ],
+        [
+          "account_crypto::empty_configured_issuer_never_enables_account_or_csrf_tokens",
+          "ok"
+        ],
+        [
+          "account_crypto::expired_access_preserves_verified_claims_without_skipping_other_validation",
+          "ok"
+        ],
+        [
+          "account_crypto::identity_generation_and_assurance_claims_have_closed_canonical_values",
+          "ok"
+        ],
+        [
+          "account_crypto::issuance_rejects_zero_ttl_expired_ceiling_invalid_identity_and_generation",
+          "ok"
+        ],
+        [
+          "account_crypto::lifetime_arithmetic_near_representable_time_limit_does_not_overflow",
+          "ok"
+        ],
+        [
+          "account_crypto::signed_token_debug_and_invalid_claim_errors_do_not_echo_secrets",
+          "ok"
+        ],
+        [
+          "account_crypto::time_validation_has_no_grace_and_enforces_signed_lifetime_and_primary_age",
+          "ok"
+        ],
+        [
+          "account_crypto::wrong_keys_hmac_payload_tampering_and_malformed_tokens_are_refused",
+          "ok"
+        ]
+      ]
+    },
+    "regression": {
+      "discovered": [
+        29,
+        7
+      ],
+      "executed": [
+        29,
+        7
+      ],
+      "passed": 36,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "cases": [
+        [
+          "access_scope_claims_must_be_a_complete_pair",
+          "ok"
+        ],
+        [
+          "account_crypto::access_issuance_respects_configured_fifteen_minute_and_family_ceilings",
+          "ok"
+        ],
+        [
+          "account_crypto::access_round_trip_is_closed_company_free_and_bound_to_primary_metadata",
+          "ok"
+        ],
+        [
+          "account_crypto::account_csrf_and_legacy_parsers_are_separate_in_both_directions",
+          "ok"
+        ],
+        [
+          "account_crypto::both_protocols_reject_missing_extra_and_raw_duplicate_claims",
+          "ok"
+        ],
+        [
+          "account_crypto::both_protocols_require_exact_issuer_audience_and_kind",
+          "ok"
+        ],
+        [
+          "account_crypto::csrf_issuance_respects_five_minute_and_family_ceilings",
+          "ok"
+        ],
+        [
+          "account_crypto::csrf_round_trip_is_closed_and_has_no_access_or_assurance_projection",
+          "ok"
+        ],
+        [
+          "account_crypto::empty_configured_issuer_never_enables_account_or_csrf_tokens",
+          "ok"
+        ],
+        [
+          "account_crypto::expired_access_preserves_verified_claims_without_skipping_other_validation",
+          "ok"
+        ],
+        [
+          "account_crypto::identity_generation_and_assurance_claims_have_closed_canonical_values",
+          "ok"
+        ],
+        [
+          "account_crypto::issuance_rejects_zero_ttl_expired_ceiling_invalid_identity_and_generation",
+          "ok"
+        ],
+        [
+          "account_crypto::lifetime_arithmetic_near_representable_time_limit_does_not_overflow",
+          "ok"
+        ],
+        [
+          "account_crypto::signed_token_debug_and_invalid_claim_errors_do_not_echo_secrets",
+          "ok"
+        ],
+        [
+          "account_crypto::time_validation_has_no_grace_and_enforces_signed_lifetime_and_primary_age",
+          "ok"
+        ],
+        [
+          "account_crypto::wrong_keys_hmac_payload_tampering_and_malformed_tokens_are_refused",
+          "ok"
+        ],
+        [
+          "es256_access_token_can_carry_group_roles_without_widening_scope",
+          "ok"
+        ],
+        [
+          "es256_access_token_carries_feature_grant_ui_hints",
+          "ok"
+        ],
+        [
+          "es256_access_token_carries_optional_display_name_claim",
+          "ok"
+        ],
+        [
+          "es256_access_token_round_trips_explicit_access_scope_claims",
+          "ok"
+        ],
+        [
+          "es256_access_token_round_trips_with_expected_claims",
+          "ok"
+        ],
+        [
+          "es256_access_token_stamps_subject_authz_freshness",
+          "ok"
+        ],
+        [
+          "es256_rejects_actor_home_org_on_non_delegated_tokens",
+          "ok"
+        ],
+        [
+          "es256_scoped_token_rejects_unknown_group_role_on_issue",
+          "ok"
+        ],
+        [
+          "es256_scoped_token_rejects_unknown_group_role_on_verify",
+          "ok"
+        ],
+        [
+          "es256_view_as_token_refuses_group_roles",
+          "ok"
+        ],
+        [
+          "group_admin_tenant_context_token_is_bounded_and_distinct_from_super_admin",
+          "ok"
+        ],
+        [
+          "group_admin_tenant_context_token_rejects_super_admin_role",
+          "ok"
+        ],
+        [
+          "legacy_access_token_without_freshness_claims_defaults_to_zero",
+          "ok"
+        ],
+        [
+          "account_protocol_separation::account_access_marker_cannot_enter_legacy_parser_with_legacy_shaped_claims",
+          "ok"
+        ],
+        [
+          "account_protocol_separation::account_csrf_marker_cannot_enter_legacy_parser_with_legacy_shaped_claims",
+          "ok"
+        ],
+        [
+          "account_protocol_separation::unmarked_legacy_token_remains_valid_in_both_verifiers",
+          "ok"
+        ],
+        [
+          "legacy_protocol_compatibility::duplicate_known_claims_remain_refused_in_both_verifiers",
+          "ok"
+        ],
+        [
+          "legacy_protocol_compatibility::duplicate_recognized_protocol_markers_are_refused_in_both_orders",
+          "ok"
+        ],
+        [
+          "legacy_protocol_compatibility::unrelated_unknown_fields_and_null_protocol_marker_preserve_legacy_compatibility",
+          "ok"
+        ],
+        [
+          "public_key_verifier_accepts_es256_access_token",
+          "ok"
+        ]
+      ]
+    },
+    "non_aggregation": "Selected15 are repeated within full29; complete auth regression36 is not51unique tests. Table-driven inputs are grouped test cases, not separate discovered tests."
+  },
+  "validation_conclusions": [
+    "Same exact admitted probe command now executes all15 frozen behavioral cases successfully; original missing-owner compiler failures remain separate evidence.",
+    "All29 jwt_es256 and7 jwt_verifier names match immutable source declarations;14preexisting ES256 and7legacy/protocol/compatibility tests pass.",
+    "Completed library Clippy with -D warnings exits0 without diagnostics.",
+    "Completed workspace --all-targets cargo check exits0; this compiles targets and does not execute their tests. Existing proc-macro-error2 future-incompatibility warning retained.",
+    "Completed exact3source rustfmt check exits0 with empty log."
+  ],
+  "workspace_warning": [
+    "the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1"
+  ],
+  "pre_mortem": "Counting compile failures as behavioral RED, losing a test through filtering, or binding logs to drifted source would overstate readiness.",
+  "blast_radius": "Pure auth crypto implementation and narrow exports, exact frozen acceptance targets; no session/DB/browser operations.",
+  "detection": "Exact immutable source/tests, all completed case names/discovery/result summaries, exact command/log hashes and root exit receipts, separate compile-vs-runtime accounting.",
+  "rollback": "Preserve tests/compiler/runtime/review evidence; only reviewed isolated source correction. No key/database/session rollback.",
+  "stop_conditions": [
+    "Candidate/source/test mismatch",
+    "Incomplete log or count/name discrepancy",
+    "Any ignored/weakened test",
+    "Claim of live authority or warning-free workspace"
+  ],
+  "remaining_holds": [
+    "Live primary/current Account/generation/family/revocation/absolute-lifetime checks",
+    "Actual browser/cookie/CSRF binding and remaining Account lifecycle work",
+    "Hosted required checks/protected merge, production activation/rotation and legal authority"
+  ],
+  "reviewer_execution": {
+    "cargo": 0,
+    "database": 0,
+    "docker": 0,
+    "integration_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}
