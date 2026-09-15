@@ -251,6 +251,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/console_kill_switch.rs': 'postgres',
             'tests/console_route_telemetry.rs': 'postgres',
             'tests/consulting_engagement_api.rs': 'postgres',
+            'tests/database_durability_config.rs': 'none',
             'tests/dev_auth_persona_guard.rs': 'postgres',
             'tests/dev_auth_persona_guard_feature.rs': 'postgres',
             'tests/dev_seed_notification_links.rs': 'none',
