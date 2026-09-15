@@ -446,4 +446,11 @@ pub mod owner28;
 mod draft_patch_snapshot_tests;
 
 /// Pure draft editing over plain owner-supplied facts; no authority or persistence.
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "Pure draft owner awaits its separately admitted integration caller"
+    )
+)]
 pub(crate) mod draft;
