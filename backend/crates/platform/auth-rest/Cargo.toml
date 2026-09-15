@@ -29,6 +29,7 @@ sha2 = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
 time = { workspace = true }
+tokio = { workspace = true }
 tracing = { workspace = true }
 url = "2.5.8"
 uuid = { workspace = true }
@@ -36,7 +37,6 @@ uuid = { workspace = true }
 [dev-dependencies]
 console-platform-test-support = { workspace = true }
 p256 = { version = "0.13.2", features = ["ecdsa", "pkcs8", "pem"] }
-tokio = { workspace = true }
 tower = { workspace = true, features = ["util"] }
 
 [lints]

@@ -6,6 +6,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 use std::collections::BTreeSet;
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -41,6 +42,8 @@ use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
 use url::Url;
 use uuid::Uuid;
+
+mod terms;
 
 const DEFAULT_ACCESS_TOKEN_TTL: Duration = Duration::minutes(15);
 const GROUP_ADMIN_TENANT_CONTEXT_TTL: Duration = Duration::minutes(15);
@@ -88,6 +91,9 @@ pub const GROUP_ADMIN_TENANT_CONTEXT_EXIT_PATH: &str = "/api/v1/group-admin/tena
 #[cfg(feature = "dev-auth")]
 pub const DEV_AUTH_SESSION_PATH: &str = "/api/v1/dev-auth/session";
 pub const AUTH_ROUTE_PATHS: &[&str] = &[
+    terms::CURRENT_PATH,
+    terms::MANIFEST_PATH,
+    terms::CONTENT_PATH,
     SIGNUP_PATH,
     PASSKEY_REGISTER_START_PATH,
     PASSKEY_REGISTER_FINISH_PATH,
@@ -181,6 +187,7 @@ pub struct AuthRestConfig {
 pub struct AuthRestState {
     pool: PgPool,
     auth_database: Option<PgPool>,
+    terms_artifacts: Option<Arc<terms::TermsArtifacts>>,
     services: Option<AuthServices>,
 }
 
@@ -220,6 +227,7 @@ impl AuthRestState {
         Self {
             pool,
             auth_database: None,
+            terms_artifacts: None,
             services: None,
         }
     }
@@ -252,6 +260,7 @@ impl AuthRestState {
         Ok(Self {
             pool,
             auth_database: None,
+            terms_artifacts: None,
             services: Some(AuthServices {
                 passkeys,
                 jwt_issuer,
@@ -284,6 +293,15 @@ impl AuthRestState {
         self.auth_database.as_ref()
     }
 
+    /// Bind trusted public release metadata independently of signing/WebAuthn
+    /// services. Invalid metadata leaves terms unavailable without aborting App
+    /// construction; registered file bytes are checked again on every request.
+    #[must_use]
+    pub fn with_account_terms_artifact_root(mut self, root: PathBuf) -> Self {
+        self.terms_artifacts = terms::TermsArtifacts::load(root).ok().map(Arc::new);
+        self
+    }
+
     /// Install the outbound OTP email sender used by the open-signup endpoint.
     /// The composition root calls this with the app's `Arc<dyn EmailSender>`
     /// (live SMTP or the logging stub). A no-op when auth services are disabled.
@@ -307,6 +325,9 @@ pub enum AuthRestConfigError {
 
 pub fn router(state: AuthRestState) -> Router {
     let router = Router::new()
+        .route(terms::CURRENT_PATH, get(terms::current))
+        .route(terms::MANIFEST_PATH, get(terms::manifest))
+        .route(terms::CONTENT_PATH, get(terms::content))
         .route(SIGNUP_PATH, post(signup))
         .route(PASSKEY_REGISTER_START_PATH, post(start_registration))
         .route(PASSKEY_REGISTER_FINISH_PATH, post(finish_registration))

@@ -27,6 +27,8 @@ GUARD_BODY = """BEGIN
     RAISE EXCEPTION USING MESSAGE='account_terms_receipts.immutable', ERRCODE='P0001';
 END;"""
 
+CURRENT_BODY = 'SELECT h.manifest_sha256,h.revision FROM public.account_terms_head AS h WHERE h.id=1'
+
 INSTALL = """
     IF NOT guard_present THEN
         EXECUTE pg_catalog.format('CREATE FUNCTION public.account_terms_receipts_immutable_v1()
@@ -53,13 +55,23 @@ INSTALL = """
         REVOKE ALL ON FUNCTION public.account_legacy_fenced_v1(uuid) FROM PUBLIC;
         GRANT EXECUTE ON FUNCTION public.account_legacy_fenced_v1(uuid) TO console_auth_rt;
     END IF;
+    IF NOT current_present THEN
+        GRANT SELECT(id,manifest_sha256,revision) ON public.account_terms_head TO console_terms_owner;
+        EXECUTE pg_catalog.format('CREATE FUNCTION public.account_terms_current_v1()
+            RETURNS TABLE(manifest_sha256 bytea,revision bigint) LANGUAGE sql STABLE SECURITY DEFINER
+            SET search_path=pg_catalog,pg_temp AS %L', expected_current_body);
+        ALTER FUNCTION public.account_terms_current_v1() OWNER TO console_terms_owner;
+        REVOKE ALL ON FUNCTION public.account_terms_current_v1() FROM PUBLIC;
+        GRANT EXECUTE ON FUNCTION public.account_terms_current_v1() TO console_auth_rt;
+    END IF;
 """
 
 
 def generated_files():
     query = (ROOT / 'backend/app/src/account_custody_state.sql').read_text().strip().removesuffix(';')
     for name, body in (('account_legacy_fenced_v1', FENCE_BODY),
-                       ('account_terms_receipts_immutable_v1', GUARD_BODY)):
+                       ('account_terms_receipts_immutable_v1', GUARD_BODY),
+                       ('account_terms_current_v1', CURRENT_BODY)):
         expected = f"('{name}','{hashlib.sha256(body.encode()).hexdigest()}')"
         if query.count(expected) != 1:
             raise SystemExit('reviewed custody routine digest differs: ' + name)
@@ -78,8 +90,10 @@ DECLARE
     populated boolean;
     fence_present boolean;
     guard_present boolean;
+    current_present boolean;
     expected_fence_body text := $fence_body${FENCE_BODY}$fence_body$;
     expected_guard_body text := $guard_body${GUARD_BODY}$guard_body$;
+    expected_current_body text := $current_body${CURRENT_BODY}$current_body$;
 BEGIN
     PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
     PERFORM pg_catalog.set_config('lock_timeout','5s',true);
@@ -133,6 +147,9 @@ BEGIN
     SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p
       JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
       WHERE n.nspname='public' AND p.proname='account_terms_receipts_immutable_v1') INTO guard_present;
+    SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p
+      JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+      WHERE n.nspname='public' AND p.proname='account_terms_current_v1') INTO current_present;
     IF state='account_custody.pending' THEN
     FOREACH relation_name IN ARRAY ARRAY[{names}] LOOP
         EXECUTE format('SELECT EXISTS(SELECT 1 FROM public.%I)',relation_name) INTO populated;
