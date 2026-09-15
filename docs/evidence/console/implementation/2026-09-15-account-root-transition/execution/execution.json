@@ -1,0 +1,58 @@
+{
+  "kind": "ACCOUNT_ROOT_TRANSITION_IMPLEMENTATION_AND_VERIFICATION",
+  "source_head": "f476c9133b0de665c217366c2ebe5933a39493cb",
+  "implementation_commit": "b11a8f800fcc321c9a7d18a25e22e90262cb6e0f",
+  "integration_writer": "/root",
+  "reviewers": [
+    "/root/capture_review",
+    "/root/fast_gate_review",
+    "/root/inventory_repair"
+  ],
+  "behavior": [
+    "Legacy users receive immutable Account roots atomically without inferred employment grants, consent or security state",
+    "Initial identity overlap and catalog drift refuse without repair",
+    "Bridge and native deferred FK preserve identity roots; valid operator replay is read-only",
+    "Auth REST Buck target includes all actual Rust/SQL inputs"
+  ],
+  "actual_results": {
+    "selected10": {
+      "head": "0fc4dca608d468477298ffc6df586692a133dfc8",
+      "executed": 10,
+      "passed": 10,
+      "failed": 0,
+      "filtered": 206,
+      "ignored": 0
+    },
+    "full216": {
+      "head": "f476c9133b0de665c217366c2ebe5933a39493cb",
+      "executed": 216,
+      "passed": 193,
+      "failed": 23,
+      "filtered": 0,
+      "ignored": 0
+    }
+  },
+  "new_fixture_amendment": {
+    "path": "backend/app/tests/auth_rest/account_fence_projection.rs",
+    "approval": "/private/tmp/account-terms-root-compat-f476c913-root-approval.json",
+    "purpose": "Preserve exact retained-plus-added roots and exactly five approved column ACL changes in historical terms-reader upgrade test",
+    "runtime": "PENDING exact revised fixture execution; earlier193/23 result is not overwritten"
+  },
+  "premortem": "Silent identity association, unauthorized custody grants, destructive legacy changes or false-positive recovery evidence.",
+  "blast_radius": "Account root operator/profile, two fixture compatibility corrections and Auth REST build input closure.",
+  "detection": "Exact roster and assertion boundaries, native PG schedules, before/after rows/catalog/source hashes, independent review.",
+  "rollback": "Initial SQL rollback is atomic; after commit retain Account roots/bridge/FK and use compatible binary or reviewed forward repair.",
+  "stop_conditions": [
+    "Unexpected source or test change",
+    "Legacy auth regression",
+    "Unproven runtime completeness/cleanup",
+    "Privilege expansion or identity reuse"
+  ],
+  "holds": [
+    "22 existing native Account/browser/actor/custody failures remain",
+    "Revised terms fixture runtime pending",
+    "Durable current-context, drafts/actions/payroll and first-vertical SSR remain unfinished",
+    "Production, legal, payment and independent-site HA certification remain separate"
+  ],
+  "retention": "All retained gz payloads decode byte-for-byte to manifest source hashes; historical RED and prerequisite failures retained."
+}

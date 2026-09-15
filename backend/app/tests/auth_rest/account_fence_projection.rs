@@ -1552,6 +1552,14 @@ mod terms_current {
         assert_eq!(before_rows["receipts"].as_array().unwrap().len(), 1);
         assert!(!before_rows["accounts"].as_array().unwrap().is_empty());
         assert!(!before_rows["security"].as_array().unwrap().is_empty());
+        // Compute the approved retained-plus-users root union before transition.
+        // The complete terms/security/event/audit row oracle stays byte-exact.
+        let expected_roots =
+            crate::account_root_transition::expected_roots_after_backfill(&pool).await;
+        let mut expected_accounts = expected_roots.as_array().unwrap().clone();
+        expected_accounts.sort_by_key(|row| row["id"].as_str().unwrap().to_owned());
+        let mut expected_rows = before_rows.clone();
+        expected_rows["accounts"] = Value::Array(expected_accounts);
         let before_catalog = projection_catalog(&pool).await;
         assert!(before_catalog["terms_current_functions"] == json!([]));
         assert_eq!(
@@ -1565,18 +1573,86 @@ mod terms_current {
             "account_custody.finalized"
         );
         assert_eq!(current(&auth).await.len(), 1);
-        assert!(terms_reference_rows(&pool).await == before_rows);
+        assert!(terms_reference_rows(&pool).await == expected_rows);
+        crate::account_root_transition::assert_exact_roots(&pool, &expected_roots).await;
         let installed = projection_catalog(&pool).await;
-        // Upgrade permits only the reviewed new routine and three head-column
-        // ACL/xmin changes. Preserve every original function/guard/table field.
+        let current_functions = installed["terms_current_functions"].as_array().unwrap();
+        assert_eq!(current_functions.len(), 1);
+        let installed_xmin = &current_functions[0]["xmin"];
+        // Positively check every ACL/xmin projected from the catalog equation.
+        // All five column changes belong to the same operator transaction as
+        // the new terms reader, whose complete fixed profile is checked above.
+        for (relation, number, name, before_acl, after_acl) in [
+            (
+                "account_terms_head",
+                1,
+                "id",
+                Value::Null,
+                json!(["console_terms_owner=r/console_terms_owner"]),
+            ),
+            (
+                "account_terms_head",
+                2,
+                "manifest_sha256",
+                Value::Null,
+                json!(["console_terms_owner=r/console_terms_owner"]),
+            ),
+            (
+                "account_terms_head",
+                3,
+                "revision",
+                Value::Null,
+                json!(["console_terms_owner=r/console_terms_owner"]),
+            ),
+            (
+                "accounts",
+                1,
+                "id",
+                json!(["console_account_owner=w/console_account_owner"]),
+                json!(["console_account_owner=aw/console_account_owner"]),
+            ),
+            (
+                "accounts",
+                2,
+                "created_at",
+                Value::Null,
+                json!(["console_account_owner=a/console_account_owner"]),
+            ),
+        ] {
+            let before_columns: Vec<_> = before_catalog["columns"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter(|column| column["relation"] == relation && column["number"] == number)
+                .collect();
+            let after_columns: Vec<_> = installed["columns"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter(|column| column["relation"] == relation && column["number"] == number)
+                .collect();
+            assert_eq!(before_columns.len(), 1);
+            assert_eq!(after_columns.len(), 1);
+            assert_eq!(before_columns[0]["name"], name);
+            assert_eq!(after_columns[0]["name"], name);
+            assert_eq!(before_columns[0]["acl"], before_acl);
+            assert_eq!(after_columns[0]["acl"], after_acl);
+            assert_ne!(before_columns[0]["xmin"], after_columns[0]["xmin"]);
+            assert_eq!(&after_columns[0]["xmin"], installed_xmin);
+        }
+        // Permit only the reviewed new reader and these five proven column
+        // ACL/xmin changes. Preserve every other function/guard/table field,
+        // including the complete accounts relation row and all system columns.
         let unchanged = |mut value: Value| {
             value
                 .as_object_mut()
                 .unwrap()
                 .remove("terms_current_functions");
             for column in value["columns"].as_array_mut().unwrap() {
-                if column["relation"] == "account_terms_head"
-                    && [json!(1), json!(2), json!(3)].contains(&column["number"])
+                if (column["relation"] == "account_terms_head"
+                    && [json!(1), json!(2), json!(3)].contains(&column["number"]))
+                    || (column["relation"] == "accounts"
+                        && [json!(1), json!(2)].contains(&column["number"]))
                 {
                     column.as_object_mut().unwrap().remove("acl");
                     column.as_object_mut().unwrap().remove("xmin");
@@ -1590,7 +1666,7 @@ mod terms_current {
             projection_catalog(&pool).await == installed,
             "valid replay preserves the new helper too"
         );
-        assert!(terms_reference_rows(&pool).await == before_rows);
+        assert!(terms_reference_rows(&pool).await == expected_rows);
         assert!(fenced(&auth, *subject.as_uuid()).await.unwrap());
     }
 
