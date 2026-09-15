@@ -26,9 +26,16 @@ OWNERS = {t: 'console_terms_owner' if t in TABLES[-2:] else 'console_account_own
 CASES = ('valid_finalize', 'already_finalized', 'wrong_expected_operator',
          'ordinary_migration_login', 'missing_descriptor', 'wrong_database_descriptor', 'wrong_database_oid',
          'identically_migrated_wrong_database', 'wrong_cluster', 'missing_ledger',
-         'release_checksum_mismatch', 'wrong_tls_ca', 'wrong_tls_hostname')
+         'release_checksum_mismatch', 'wrong_tls_ca', 'wrong_tls_hostname',
+         'composed_default_installer_order', 'composed_observer_installer_order',
+         'missing_credential_artifact_rolls_back', 'observer_failure_rolls_back_composed_custody')
 ASSETS = ('postgres-finalize-account-custody.sh', 'postgres-finalize-account-custody.sql',
-          'account-custody-migrations.sha384')
+          'account-custody-migrations.sha384', 'postgres-finalize-account-credentials.sql',
+          'postgres-install-durability-observer.sql')
+CREDENTIAL_TABLES = ('auth_webauthn_credentials', 'auth_webauthn_ceremonies',
+                    'auth_refresh_token_families', 'auth_refresh_tokens',
+                    'auth_bootstrap_credentials', 'auth_webauthn_ceremony_bindings',
+                    'auth_device_login_handoffs')
 
 # Independent relation roster and state oracle; NULL/empty result cannot pass.
 SNAPSHOT = """SELECT jsonb_agg(jsonb_build_object(
@@ -46,6 +53,54 @@ SNAPSHOT = """SELECT jsonb_agg(jsonb_build_object(
  FROM pg_rewrite r WHERE r.ev_class=c.oid)) ORDER BY c.relname)
  FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
  WHERE n.nspname='public' AND c.relname IN (%s)""" % ','.join("'"+t+"'" for t in TABLES)
+CREDENTIAL_SNAPSHOT = SNAPSHOT.replace(
+    ','.join("'"+t+"'" for t in TABLES),
+    ','.join("'"+t+"'" for t in CREDENTIAL_TABLES))
+
+
+def assert_composed_psql_trace(trace, assets, observer):
+    """Actual shim argv only; this is not a SQL execution or transaction oracle."""
+    assert trace.endswith('\0'), 'incomplete psql trace'
+    words = trace.split('\0')[:-1]
+    assert words and words[0] == 'BEGIN_PSQL' and words.count('BEGIN_PSQL') == 1, 'must use one psql process'
+    argv = words[1:]
+    assert argv.count('--single-transaction') == 1, 'one explicit transaction for all installers'
+    assert '-X' in argv and '-w' in argv, 'preserve startup-file and password-prompt refusal'
+    assert sum(argv[i:i+2] == ['--set', 'ON_ERROR_STOP=1'] for i in range(len(argv))) == 1
+    flags = set()
+    options = set()
+    settings = {}
+    files = []
+    index = 0
+    while index < len(argv):
+        option = argv[index]
+        index += 1
+        if option in ('-X', '-w', '--quiet', '--single-transaction'):
+            assert option not in flags, 'duplicate psql flag'
+            flags.add(option)
+            continue
+        assert option in ('--host', '--port', '--username', '--dbname', '--set', '--file'), 'unexpected or attached psql option'
+        assert index < len(argv) and argv[index] and not argv[index].startswith('-'), 'unbound psql option'
+        value = argv[index]
+        index += 1
+        if option == '--set':
+            name, separator, setting = value.partition('=')
+            assert separator and setting and name in ('ON_ERROR_STOP', 'expected_operator', 'expected_database', 'expected_database_oid', 'expected_system_identifier'), 'unexpected psql setting'
+            assert name not in settings, 'overridden psql setting'
+            settings[name] = setting
+        elif option == '--file':
+            files.append(value)
+        else:
+            assert option not in options, 'overridden connection option'
+            options.add(option)
+    assert settings.get('ON_ERROR_STOP') == '1', 'error stop must remain enabled'
+    expected = [assets+'/postgres-finalize-account-custody.sql',
+                assets+'/postgres-finalize-account-credentials.sql']
+    if observer:
+        expected.append(assets+'/postgres-install-durability-observer.sql')
+    assert len(files) == len(expected)+1, 'missing or extra installer file'
+    assert re.fullmatch(r'/tmp/console-account-custody\.[A-Za-z0-9]+/preflight\.sql', files[0]), 'actual private preflight first'
+    assert files[1:] == expected, 'root then credential then optional observer in the same transaction'
 
 
 def complete_case_roster(results):
@@ -201,6 +256,48 @@ class Suite:
             assert ledger, 'empty ledger cannot be a migrated positive'
         return {'relations': rows, 'counts': counts, 'ledger': ledger}
 
+    def composed_snapshot(self, container, database):
+        root = self.snapshot(container, database)
+        _, text = self.psql(container, database, CREDENTIAL_SNAPSHOT)
+        credentials = json.loads(text)
+        assert isinstance(credentials, list) and len(credentials) == 7
+        assert {row['name'] for row in credentials} == set(CREDENTIAL_TABLES)
+        counts = []
+        for table in CREDENTIAL_TABLES:
+            _, text = self.psql(container, database, f'SELECT count(*) FROM public.{table}')
+            counts.append(int(text.strip()))
+        # Unchanged migrator produces these databases; no credential row seed.
+        # Compare every observed count rather than assuming a fixture value.
+        _, text = self.psql(container, database, """SELECT jsonb_agg(jsonb_build_array(
+            n.nspname,p.proname,pg_get_function_identity_arguments(p.oid),
+            pg_get_userbyid(p.proowner),p.proacl::text,pg_get_functiondef(p.oid))
+            ORDER BY n.nspname,p.proname,pg_get_function_identity_arguments(p.oid))
+            FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+            WHERE n.nspname='public' AND p.prokind IN ('f','p')""")
+        return {'root': root, 'credentials': credentials, 'counts': counts,
+                'public_routines': json.loads(text)}
+
+    def traced_wrapper(self, container, database, expected, *, observer=False, assets='/wrapper-assets'):
+        # Test-only transport observation. The shim forwards every original
+        # argument to the actual image psql; it changes no SQL, identity or TLS.
+        number = self.sequence
+        directory = f'/wrapper-trace-{number}'
+        self.run(['docker', 'exec', container, 'mkdir', '-p', directory])
+        _, selected = self.run(['docker', 'exec', container, 'sh', '-c', 'command -v psql'])
+        actual_psql = selected.strip()
+        assert re.fullmatch(r'/[A-Za-z0-9_./-]+/psql', actual_psql)
+        trace_path = directory+'/argv'
+        shim = self.private_file(f'psql-shim-{number}',
+            '#!/bin/sh\n{ printf \'BEGIN_PSQL\\0\'; printf \'%s\\0\' "$@"; } >> '+trace_path+'\n'
+            'exec '+actual_psql+' "$@"\n')
+        self.copy(container, shim, directory+'/psql')
+        self.run(['docker', 'exec', container, 'chmod', '500', directory+'/psql'])
+        result = self.wrapper(container, database, expected, observer=observer, assets=assets,
+            PATH=directory+':/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin')
+        _, trace = self.run(['docker', 'exec', container, 'cat', trace_path])
+        assert_composed_psql_trace(trace, assets, observer)
+        return result
+
     def certificate(self):
         def openssl(*args):
             self.run(['openssl', *map(str, args)])
@@ -292,13 +389,18 @@ class Suite:
             POSTGRES_ADMIN_USER='wrapper_admin',POSTGRES_ADMIN_PASSWORD_FILE='/operator.password',
             PGSSLROOTCERT='/wrapper-tls/ca.crt',PGSSLMODE='verify-full')
         assets = changes.pop('assets','/wrapper-assets')
+        observer = changes.pop('observer', False)
+        assert type(observer) is bool, 'test profile must be explicit boolean'
         for key,value in changes.items():
             if value is None:
                 values.pop(key,None)
             else:
                 values[key]=value
         file=self.private_file('wrapper.env',''.join(k+'='+v+'\n' for k,v in values.items()))
-        return self.run(['docker','exec','--env-file',str(file),container,'bash',assets+'/'+ASSETS[0]],required=False)
+        command = ['docker','exec','--env-file',str(file),container,'bash',assets+'/'+ASSETS[0]]
+        if observer:
+            command.append('--with-durability-observer')
+        return self.run(command,required=False)
 
     def rejection(self, name, container, database, descriptor, error, **changes):
         before=self.snapshot(container,database)
@@ -395,6 +497,47 @@ class Suite:
         reject('wrong_tls_hostname',r'(does not match host name|certificate verify failed)',
                POSTGRES_HOST='127.0.0.1',ACCOUNT_CUSTODY_EXPECTED_TLS_HOST='127.0.0.1')
 
+        def default_order():
+            before = self.composed_snapshot(first, 'wrapper_positive')
+            code, text = self.traced_wrapper(first, 'wrapper_positive', positive_expected)
+            assert code == 0 and 'account_custody.finalized' in text
+            assert self.composed_snapshot(first, 'wrapper_positive') == before, 'composed retry changed state'
+        self.case('composed_default_installer_order', default_order)
+
+        def observer_order():
+            code, text = self.traced_wrapper(first, 'wrapper_positive', positive_expected, observer=True)
+            assert code == 0 and 'account_custody.finalized' in text
+            _, text = self.psql(first, 'wrapper_positive',
+                "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname='console_durability_observation_v1'")
+            assert text.strip() == '1', 'optional observer was not actually installed'
+        self.case('composed_observer_installer_order', observer_order)
+
+        def missing_credentials():
+            variant = self.private/'missing-credential'
+            variant.mkdir()
+            for name in ASSETS:
+                if name != 'postgres-finalize-account-credentials.sql':
+                    shutil.copyfile(ROOT/'ops'/name, variant/name)
+            self.copy(first, variant, '/missing-credential')
+            before = self.composed_snapshot(first, 'wrapper_subject')
+            code, text = self.traced_wrapper(first, 'wrapper_subject', expected, assets='/missing-credential')
+            assert code != 0 and re.search(r'postgres-finalize-account-credentials\.sql: No such file or directory', text), 'missing credential artifact did not cause the expected file refusal'
+            assert self.composed_snapshot(first, 'wrapper_subject') == before, 'missing credential artifact committed partial custody'
+        self.case('missing_credential_artifact_rolls_back', missing_credentials)
+
+        def observer_rollback():
+            # The previous real observer installation created the cluster role
+            # in another database. Its absence here is an actual partial state,
+            # refused by the unchanged observer installer without fake SQL.
+            _, text = self.psql(first, 'wrapper_subject',
+                "SELECT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='console_durability_observer'),to_regprocedure('public.console_durability_observation_v1(name,oid)') IS NULL")
+            assert text.strip() == 't|t', 'observer partial-state prerequisite missing'
+            before = self.composed_snapshot(first, 'wrapper_subject')
+            code, text = self.traced_wrapper(first, 'wrapper_subject', expected, observer=True)
+            assert code != 0 and 'durability_observer.partial_installation' in text, 'wrong optional-observer refusal'
+            assert self.composed_snapshot(first, 'wrapper_subject') == before, 'observer refusal committed root or credential custody'
+        self.case('observer_failure_rolls_back_composed_custody', observer_rollback)
+
     def cleanup(self):
         try:
             return cleanup_containers(self.containers, self.run)
@@ -407,6 +550,44 @@ def machinery_tests():
     import unittest
 
     class Machinery(unittest.TestCase):
+        def test_composed_psql_order_accepts_both_fixed_profiles(self):
+            for observer in (False, True):
+                argv = ['-X', '-w', '--set', 'ON_ERROR_STOP=1', '--single-transaction',
+                        '--file', '/tmp/console-account-custody.Abc123/preflight.sql',
+                        '--file', '/assets/postgres-finalize-account-custody.sql',
+                        '--file', '/assets/postgres-finalize-account-credentials.sql']
+                if observer:
+                    argv += ['--file', '/assets/postgres-install-durability-observer.sql']
+                assert_composed_psql_trace('BEGIN_PSQL\0'+'\0'.join(argv)+'\0', '/assets', observer)
+
+        def test_composed_psql_order_rejects_omission_extra_substitution_reorder_and_split(self):
+            argv = ['-X', '-w', '--set', 'ON_ERROR_STOP=1', '--single-transaction',
+                    '--file', '/tmp/console-account-custody.Abc123/preflight.sql',
+                    '--file', '/assets/postgres-finalize-account-custody.sql',
+                    '--file', '/assets/postgres-finalize-account-credentials.sql',
+                    '--file', '/assets/postgres-install-durability-observer.sql']
+            mutations = [argv[:-4]+argv[-2:], argv+['--file', '/assets/extra.sql'],
+                         [v.replace('postgres-finalize-account-credentials.sql', 'substituted.sql') for v in argv],
+                         argv[:-4]+argv[-2:]+argv[-4:-2],
+                         [v for v in argv if v != '--single-transaction'],
+                         argv+['BEGIN_PSQL'], argv+['-c', 'COMMIT'],
+                         [v for v in argv if v != '-X'],
+                         [v.replace('ON_ERROR_STOP=1', 'ON_ERROR_STOP=0') for v in argv],
+                         argv+['-cCOMMIT'], argv+['-f/tmp/extra.sql'],
+                         argv+['--set', 'ON_ERROR_STOP=0'],
+                         argv+['--variable=ON_ERROR_STOP=0'],
+                         argv+['--file=/tmp/extra.sql']]
+            for mutation in mutations:
+                with self.subTest(argv=mutation), self.assertRaises(AssertionError):
+                    assert_composed_psql_trace('BEGIN_PSQL\0'+'\0'.join(mutation)+'\0', '/assets', True)
+
+        def test_operator_assets_have_exact_five_without_losing_manifest_index(self):
+            self.assertEqual(len(ASSETS), 5)
+            self.assertEqual(set(ASSETS), {'postgres-finalize-account-custody.sh',
+                'postgres-finalize-account-custody.sql', 'postgres-finalize-account-credentials.sql',
+                'postgres-install-durability-observer.sql', 'account-custody-migrations.sha384'})
+            self.assertEqual(ASSETS[2], 'account-custody-migrations.sha384')
+
         def test_exact_unique_roster_positive(self):
             self.assertTrue(complete_case_roster([{'name':n,'status':'PASS'} for n in CASES]))
 

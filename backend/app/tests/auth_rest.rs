@@ -34,6 +34,8 @@ const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 const TEST_ORIGIN: &str = "https://auth.example.com";
 
+#[path = "auth_rest/account_auth7_transition.rs"]
+mod account_auth7_transition;
 #[path = "auth_rest/account_custody_lifecycle.rs"]
 mod account_custody_lifecycle;
 #[path = "auth_rest/account_custody_startup.rs"]
@@ -3324,7 +3326,17 @@ fn account_transport_urls(owner_pool: &PgPool) -> Vec<(&'static str, String)> {
 /// Runtime pools never receive this directly authenticated migration-owner URL.
 async fn prepare_http_database(pool: &PgPool) {
     prepare_http_database_staging(pool).await;
+    finalize_serving_account_custody(pool).await;
+}
+
+/// Retained root-only installation oracles do not opt into credential cutover.
+async fn prepare_http_root_database(pool: &PgPool) {
+    prepare_http_database_staging(pool).await;
     finalize_account_custody(pool).await;
+}
+
+async fn finalize_serving_account_custody(pool: &PgPool) {
+    console_platform_test_support::finalize_serving_account_custody(pool).await;
 }
 
 fn account_custody_finalizer_sql() -> String {
