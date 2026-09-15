@@ -1,0 +1,24 @@
+{
+  "kind": "READ_ONLY_FINDING_CORRECTION",
+  "author": "/root/inventory_repair",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "corrects": {
+    "path": "/private/tmp/account-browser-cutover-f96eddd3-addendum.json",
+    "sha256": "24e40fb3cd02b9a55d1e092809612ce0081b301dacc26f02eaad4d7fdd5f8bf0",
+    "entry": "authority_evidence canonical FENCE_BODY entry"
+  },
+  "incorrect_statement": "Canonical FENCE_BODY locks existing accounts row and returns EXISTS account_security.",
+  "correct_statement": "Canonical FENCE_BODY checks null input and returns EXISTS public.account_security for the supplied UUID. It does not acquire an Account row lock. Current session readers perform a presence query; in-flight admission/drain remains separate proof.",
+  "source": {
+    "path": "ops/generate-account-custody.py",
+    "lines": "16-21",
+    "sha256": "75a78dfe6eed8cc5ac9830b369e7876e7b6a9557c34d578f9bf3704c0caa365a"
+  },
+  "unchanged_conclusions": [
+    "accounts-only row does not activate current fence",
+    "account_security presence is permanent legacy fence irrespective of state",
+    "Stable accounts-only coexistence is not established merely by this SQL observation",
+    "Approved per-subject cutover requires pause/drain/reconciliation; source presence check does not serialize it"
+  ],
+  "history_preserved": true
+}
