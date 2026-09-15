@@ -6,7 +6,7 @@ use std::{future::Future, net::IpAddr, pin::Pin, time::Duration};
 use console_kernel_core::OrgId;
 use serde::Deserialize;
 use sqlx::postgres::types::Oid;
-use sqlx::{Acquire, PgConnection, PgPool, Postgres, Row, Transaction, pool::PoolConnection};
+use sqlx::{Connection, PgConnection, PgPool, Postgres, Row, Transaction, pool::PoolConnection};
 use time::OffsetDateTime;
 use tokio::time::{Instant, sleep, timeout_at};
 
@@ -133,8 +133,8 @@ impl DurabilityPolicy {
         };
         let deadline = Instant::now() + Duration::from_millis(admission.timeout_ms);
         timeout_at(deadline, async {
-            let mut held = RetainedConnection::new(pool.acquire().await?);
-            observe(&mut held.connection, admission, None).await?;
+            let mut held = RetainedConnection::new(pool.acquire().await?, pool, true);
+            observe(held.connection()?, admission, None).await?;
             ensure_deadline(Some(deadline))?;
             held.reusable = true;
             Ok(())
@@ -156,28 +156,120 @@ fn valid_name(value: &str) -> bool {
     !value.trim().is_empty() && value.len() <= 63 && !value.chars().any(char::is_control)
 }
 
-/// The pool retains its capacity accounting while an uncertain transport closes.
-/// Do not detach, or return a canceled transaction/confirmation to the pool.
+/// An uncertain Required operation keeps its pool permit until the same
+/// channel reaches ReadyForQuery. A socket close alone cannot wake SyncRep.
 struct RetainedConnection {
-    connection: PoolConnection<Postgres>,
+    connection: Option<PoolConnection<Postgres>>,
+    pool: PgPool,
+    runtime: tokio::runtime::Handle,
+    required: bool,
+    cleaning: bool,
     reusable: bool,
 }
 
 impl RetainedConnection {
-    fn new(connection: PoolConnection<Postgres>) -> Self {
+    fn new(connection: PoolConnection<Postgres>, pool: &PgPool, required: bool) -> Self {
         Self {
-            connection,
+            connection: Some(connection),
+            pool: pool.clone(),
+            runtime: tokio::runtime::Handle::current(),
+            required,
+            cleaning: false,
             reusable: false,
         }
+    }
+
+    fn connection(&mut self) -> Result<&mut PgConnection, DurabilityUnknown> {
+        self.connection
+            .as_deref_mut()
+            .ok_or_else(|| DurabilityUnknown::new("retained connection unavailable"))
     }
 }
 
 impl Drop for RetainedConnection {
     fn drop(&mut self) {
-        if !self.reusable {
-            self.connection.close_on_drop();
+        if self.reusable {
+            return;
+        }
+        let runtime_available = tokio::runtime::Handle::try_current().is_ok();
+        // SQLx PoolConnection::Drop itself spawns. Enter the acquisition runtime
+        // even during caller teardown; this does not promise runtime progress.
+        let _entered = self.runtime.enter();
+        if !self.required {
+            if let Some(mut connection) = self.connection.take() {
+                connection.close_on_drop();
+                drop(connection);
+            }
+        } else if self.cleaning || !runtime_available {
+            // Cleanup was canceled or cannot run. Pool::close marks closed
+            // synchronously; do not release uncertainty into replacement work.
+            drop(self.pool.close());
+            if let Some(mut connection) = self.connection.take() {
+                connection.close_on_drop();
+                drop(connection);
+            }
+        } else {
+            let mut cleanup = Self {
+                connection: self.connection.take(),
+                pool: self.pool.clone(),
+                runtime: self.runtime.clone(),
+                required: true,
+                cleaning: true,
+                reusable: false,
+            };
+            self.runtime.spawn(async move {
+                let drained = match cleanup.connection() {
+                    Ok(connection) => connection.ping().await.is_ok(),
+                    Err(_) => false,
+                };
+                if !drained {
+                    // A failed channel is not evidence that its server finished.
+                    drop(cleanup.pool.close());
+                }
+                if let Some(connection) = cleanup.connection.take() {
+                    let _ = connection.close().await;
+                }
+                cleanup.reusable = true;
+                drop(cleanup);
+            });
         }
     }
+}
+
+/// PostgreSQL disables transaction_timeout before SyncRep, and suppresses a
+/// statement timer that is >= a positive transaction_timeout. Arm a shorter
+/// positive native timer before COMMIT so cancellation can wake that wait.
+async fn bound_commit_wait(
+    transaction: &mut Transaction<'_, Postgres>,
+    deadline: Instant,
+) -> Result<(), DurabilityUnknown> {
+    let (statement_ms, transaction_ms): (i64, i64) = sqlx::query_as(
+        "SELECT (SELECT setting::bigint FROM pg_settings WHERE name='statement_timeout'), \
+         (SELECT setting::bigint FROM pg_settings WHERE name='transaction_timeout')",
+    )
+    .fetch_one(&mut **transaction)
+    .await?;
+    let remaining = deadline
+        .saturating_duration_since(Instant::now())
+        .as_millis();
+    let mut cap = i64::try_from(remaining)
+        .map_err(|_| DurabilityUnknown::new("native completion timer exceeds range"))?;
+    if statement_ms > 0 {
+        cap = cap.min(statement_ms);
+    }
+    if transaction_ms > 0 {
+        cap = cap.min(transaction_ms - 1);
+    }
+    if cap <= 0 {
+        return Err(DurabilityUnknown::new(
+            "no positive native completion timer remains",
+        ));
+    }
+    sqlx::query("SELECT set_config('statement_timeout', $1, true)")
+        .bind(format!("{cap}ms"))
+        .execute(&mut **transaction)
+        .await?;
+    Ok(())
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -273,16 +365,19 @@ where
         }
     };
     let work = async {
-        let mut held =
-            RetainedConnection::new(pool.acquire().await.map_err(DurabilityUnknown::from)?);
+        let mut held = RetainedConnection::new(
+            pool.acquire().await.map_err(DurabilityUnknown::from)?,
+            pool,
+            deadline.is_some(),
+        );
         let admitted_epoch = match &policy.0 {
             PolicyMode::LocalDevelopment {} => None,
             PolicyMode::RequiredRemoteApply(admission) => {
-                Some(observe(&mut held.connection, admission, None).await?.0)
+                Some(observe(held.connection()?, admission, None).await?.0)
             }
         };
         let mut transaction = held
-            .connection
+            .connection()?
             .begin()
             .await
             .map_err(DurabilityUnknown::from)?;
@@ -305,6 +400,9 @@ where
             }
         };
         // This also ends receipt replay's read transaction before capturing WAL.
+        if let Some(deadline) = deadline {
+            bound_commit_wait(&mut transaction, deadline).await?;
+        }
         ensure_deadline(deadline)?;
         transaction
             .commit()
@@ -318,12 +416,12 @@ where
             let bound: String = sqlx::query_scalar(
                 "SELECT pg_current_wal_insert_lsn()::text /* console_durability_capture_v1 */",
             )
-            .fetch_one(&mut *held.connection)
+            .fetch_one(held.connection()?)
             .await
             .map_err(DurabilityUnknown::from)?;
             loop {
                 let (observed, confirmed) =
-                    observe(&mut held.connection, admission, Some(&bound)).await?;
+                    observe(held.connection()?, admission, Some(&bound)).await?;
                 if observed != epoch {
                     return Err(DurabilityUnknown::new(
                         "operation session or sender epoch changed",
