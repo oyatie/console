@@ -1576,7 +1576,12 @@ impl<S: tracing::Subscriber> tracing_subscriber::Layer<S> for UnknownOutcomes {
         }
         let mut fields = Fields::default();
         event.record(&mut fields);
-        if fields.0.contains_key("outcome") {
+        if fields.0.contains_key("outcome")
+            || fields.0.get("message").is_some_and(|message| {
+                message.starts_with("payroll draft staging failed;")
+                    || message == "workflow payroll outbox drainer stopping"
+            })
+        {
             self.0.lock().unwrap().push(fields.0);
         }
     }
@@ -1687,4 +1692,161 @@ async fn required_workflow_typed_unknown_preserves_pending_and_failed_events(own
         );
         replica.close().await;
     }
+}
+
+impl UnknownOutcomes {
+    fn saw_provenance_operation(&self, event: Uuid, run: Uuid) -> bool {
+        self.0.lock().unwrap().iter().any(|fields| {
+            fields.get("event_id") == Some(&event.to_string())
+                && fields.get("source_label") == Some(&format!("workflow_runtime_m2:run:{run}"))
+                && fields.get("message").is_some_and(|message| {
+                    message.starts_with("payroll draft staging failed;")
+                })
+                && fields.get("error").map(String::as_str)
+                    == Some("Conflict: a payroll draft for this run and period already exists with different provenance")
+                && fields.get("outcome").map(String::as_str) != Some("unknown")
+        })
+    }
+
+    fn saw_drainer_stop(&self) -> bool {
+        self.0.lock().unwrap().iter().any(|fields| {
+            fields.get("message").map(String::as_str)
+                == Some("workflow payroll outbox drainer stopping")
+        })
+    }
+
+    fn unknown_for_stage(&self, event: Uuid, run: Uuid) -> bool {
+        self.0.lock().unwrap().iter().any(|fields| {
+            fields.get("outcome").map(String::as_str) == Some("unknown")
+                && (fields.get("event_id") == Some(&event.to_string())
+                    || fields.get("run_id") == Some(&run.to_string())
+                    || fields.get("source_label")
+                        == Some(&format!("workflow_runtime_m2:run:{run}")))
+        })
+    }
+}
+
+#[sqlx::test(migrations = false)]
+async fn required_workflow_provenance_refusal_is_operation_not_unknown(owner: PgPool) {
+    use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
+    use console_workflow_domain::{PayrollDraftStaging, StagePayrollDraft};
+    use tracing_subscriber::prelude::*;
+
+    let outcomes = UnknownOutcomes::default();
+    tracing::subscriber::set_global_default(tracing_subscriber::registry().with(outcomes.clone()))
+        .expect("one exact case in a fresh supervised process");
+    let descriptor = setup(&owner, 3_000).await;
+    let org = OrgId::from_uuid(Uuid::new_v4());
+    seed_org_rls_off(&owner, *org.as_uuid(), "operation-provenance").await;
+    let state = start(config(&owner, AppRole::Worker, &descriptor, None)).await;
+    let pool = business(&state);
+    let (event, run) = seed_completion(&pool, org).await;
+    let emitted = workflow_snapshot(&owner, org, event, run).await;
+    assert_eq!(emitted["event"]["status"], "PENDING");
+    assert_eq!(emitted["drafts"], json!([]));
+    assert_eq!(emitted["receipts"], json!([]));
+    assert_eq!(emitted["audits"], json!([]));
+
+    // Use the real owner's public staging port. Only connector provenance
+    // differs from the engine's request; the event, run, period and job remain.
+    let period: (Option<time::Date>, Option<time::Date>) = sqlx::query_as(
+        "SELECT (payload->>'period_start')::date,(payload->>'period_end')::date \
+         FROM workflow_outbox_events WHERE id=$1 AND org_id=$2 AND run_id=$3",
+    )
+    .bind(event)
+    .bind(org.as_uuid())
+    .bind(run)
+    .fetch_one(&owner)
+    .await
+    .unwrap();
+    let period = period.0.zip(period.1);
+    let connector = "ordinary-operation-conflict";
+    assert_ne!(emitted["event"]["payload"]["connector"], json!(connector));
+    let draft = StagePayrollDraft {
+        org,
+        outbox_event_id: event,
+        run_id: run,
+        period_start: period.map(|(start, _)| start),
+        period_end: period.map(|(_, end)| end),
+        connector: Some(connector.to_owned()),
+        job: emitted["event"]["payload"]["job"]
+            .as_str()
+            .map(str::to_owned),
+    };
+    let staging = PgPayRunPort::new(
+        pool.clone(),
+        tokio::runtime::Handle::current(),
+        state.postgres_durability(),
+    );
+    assert!(
+        tokio::time::timeout(Duration::from_secs(5), scope_org(org, staging.stage(draft)))
+            .await
+            .expect("bounded real Required owner seed")
+            .expect("real owner seed must complete before drainer refusal")
+    );
+    drop(staging);
+    let seeded = workflow_snapshot(&owner, org, event, run).await;
+    assert_eq!(seeded["drafts"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        seeded["drafts"][0]["source_label"],
+        format!("workflow_runtime_m2:run:{run}")
+    );
+    assert_eq!(
+        seeded["drafts"][0]["source_summary"]["connector"],
+        connector
+    );
+    assert_eq!(
+        seeded["drafts"][0]["source_summary"]["outbox_event_id"],
+        json!(event)
+    );
+    assert_eq!(seeded["drafts"][0]["status"], "BLOCKED_LEGAL_GATE");
+    assert_eq!(seeded["drafts"][0]["calculation_enabled"], false);
+    let mut expected_seed = emitted;
+    expected_seed["drafts"] = seeded["drafts"].clone();
+    assert_eq!(
+        seeded, expected_seed,
+        "owner seed changes only the real draft"
+    );
+    let replica = standby(&owner).await;
+    assert_eq!(workflow_snapshot(&replica, org, event, run).await, seeded);
+
+    let drain = super::workflow_drain::spawn(pool.clone(), state.postgres_durability());
+    let observed = tokio::time::timeout(Duration::from_secs(5), async {
+        while !outcomes.saw_provenance_operation(event, run) {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await;
+    // The real stop log follows run_tick completion. Wait for it before closing
+    // the pool, so shutdown cannot mask an incorrect late ACK in that pass.
+    drain.shutdown();
+    let stopped = tokio::time::timeout(Duration::from_secs(5), async {
+        while !outcomes.saw_drainer_stop() {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await;
+    close_state(state).await;
+    drop(pool);
+    let after = workflow_snapshot(&owner, org, event, run).await;
+    let remote = workflow_snapshot(&replica, org, event, run).await;
+    replica.close().await;
+
+    assert!(
+        observed.is_ok(),
+        "ORDINARY_STAGE_OPERATION_NOT_OBSERVED: exact provenance conflict must reach the real drainer error branch"
+    );
+    assert!(
+        stopped.is_ok(),
+        "ordinary refusal drainer must finish its pass before pool shutdown"
+    );
+    assert!(
+        !outcomes.unknown_for_stage(event, run),
+        "ORDINARY_STAGE_MISCLASSIFIED_UNKNOWN: known provenance refusal must not emit unknown for its event, run or source"
+    );
+    assert_eq!(
+        after, seeded,
+        "ordinary refusal preserves event, draft and observed workflow history without ACK or success audit"
+    );
+    assert_eq!(remote, seeded);
 }
