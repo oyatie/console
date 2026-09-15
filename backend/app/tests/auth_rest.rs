@@ -4106,6 +4106,10 @@ mod account_browser {
         root: PathBuf,
         signing_key: &SigningKey,
     ) -> axum::Router {
+        build_router(state_with_key(pool, root, signing_key).await)
+    }
+
+    async fn state_with_key(pool: &PgPool, root: PathBuf, signing_key: &SigningKey) -> AppState {
         let mut pairs = vec![
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -4137,11 +4141,9 @@ mod account_browser {
             ),
         ];
         pairs.extend(account_transport_urls(pool));
-        build_router(
-            AppState::from_config(AppConfig::from_pairs(pairs).unwrap())
-                .await
-                .unwrap(),
-        )
+        AppState::from_config(AppConfig::from_pairs(pairs).unwrap())
+            .await
+            .unwrap()
     }
 
     /// Fixture inserts ONLY the reviewed immutable publication/head data. Runtime
@@ -5942,6 +5944,8 @@ mod account_browser {
         .await;
         let value = response.json(StatusCode::OK);
         response.private();
+        assert!(!response.headers.contains_key(header::SET_COOKIE));
+        assert!(!response.headers.contains_key(header::LOCATION));
         exact_keys(&value, &["terms_version", "terms_revision", "manifest_url"]);
         assert_eq!(value["terms_version"], MANIFEST_DIGEST);
         assert_eq!(value["terms_revision"], revision.to_string());
@@ -6232,6 +6236,144 @@ mod account_browser {
                 .iter()
                 .all(|f| !f["revoked_at"].is_null())
         );
+    }
+    // Public read acceptance only. The fixture administrator models sequential
+    // TEST_ONLY release states; these tests confer no publication authority.
+    mod terms_read {
+        use super::*;
+
+        #[sqlx::test(migrations = false)]
+        async fn current_head_and_retained_bytes_are_authoritative_and_read_only(pool: PgPool) {
+            let app = fixture(&pool).await;
+            let before = terms_reference_rows(&pool).await;
+            assert_current_terms(&app, 1).await;
+            assert_retained_artifacts(&app).await;
+
+            let unsupported = "f".repeat(64);
+            assert!(unsupported != MANIFEST_DIGEST);
+            for kind in ["manifests", "content"] {
+                request(
+                    &app,
+                    "GET",
+                    &format!("/api/v2/auth/terms/{kind}/{unsupported}"),
+                    &Cookies::default(),
+                    None,
+                    &[],
+                )
+                .await
+                .error(StatusCode::NOT_FOUND, "not_found");
+            }
+            assert!(terms_reference_rows(&pool).await == before);
+
+            // The same bytes at a later authoritative revision cannot be served
+            // with a stale revision chosen from the local artifact index.
+            let (_, revision) = seed_next_terms_head(&pool, MANIFEST_DIGEST).await;
+            assert_eq!(revision, 2);
+            let advanced = terms_reference_rows(&pool).await;
+            assert_current_terms(&app, revision).await;
+            assert_retained_artifacts(&app).await;
+            assert!(terms_reference_rows(&pool).await == advanced);
+
+            // An unsupported current head closes current authority while exact
+            // previously registered immutable bytes remain publicly readable.
+            let (_, revision) = seed_next_terms_head(&pool, &unsupported).await;
+            assert_eq!(revision, 3);
+            let unavailable = terms_reference_rows(&pool).await;
+            request(
+                &app,
+                "GET",
+                "/api/v2/auth/terms",
+                &Cookies::default(),
+                None,
+                &[],
+            )
+            .await
+            .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+            assert_retained_artifacts(&app).await;
+            assert!(terms_reference_rows(&pool).await == unavailable);
+        }
+
+        #[sqlx::test(migrations = false)]
+        async fn registered_content_loss_and_restore_preserve_public_read_state(pool: PgPool) {
+            let mut app = fixture(&pool).await;
+            let before = terms_reference_rows(&pool).await;
+            assert_current_terms(&app, 1).await;
+            assert_retained_artifacts(&app).await;
+            assert!(terms_reference_rows(&pool).await == before);
+
+            let lost_path = app._artifacts.root.join("fixtures/privacy.txt");
+            assert!(std::fs::read(&lost_path).unwrap() == PRIVACY_TEXT.as_bytes());
+            std::fs::remove_file(&lost_path).unwrap(); // Only this fixture-owned file.
+            // Match the existing outage fixture. This does not require live
+            // invalidation of already verified immutable bytes in a running router.
+            app.service = router(&pool, app._artifacts.root.clone()).await;
+            let digest = manifest()["items"][1]["content_sha256"]
+                .as_str()
+                .unwrap()
+                .to_owned();
+            for path in [
+                format!("/api/v2/auth/terms/content/{digest}"),
+                "/api/v2/auth/terms".to_owned(),
+            ] {
+                request(&app, "GET", &path, &Cookies::default(), None, &[])
+                    .await
+                    .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+            }
+            assert!(terms_reference_rows(&pool).await == before);
+
+            std::fs::write(&lost_path, PRIVACY_TEXT.as_bytes()).unwrap();
+            app.service = router(&pool, app._artifacts.root.clone()).await;
+            assert_current_terms(&app, 1).await;
+            assert_retained_artifacts(&app).await;
+            assert!(terms_reference_rows(&pool).await == before);
+        }
+
+        #[sqlx::test(migrations = false)]
+        async fn auth_database_outage_closes_current_authority_but_retains_public_bytes(
+            pool: PgPool,
+        ) {
+            let mut app = fixture(&pool).await;
+            let auth_url = account_transport_urls(&pool)
+                .into_iter()
+                .find(|(key, _)| *key == "AUTH_DATABASE_URL")
+                .expect("existing restricted Auth fixture transport")
+                .1;
+            let auth = PgPool::connect(&auth_url)
+                .await
+                .expect("connect genuine restricted Auth fixture transport");
+            let role: String = sqlx::query_scalar("SELECT current_user")
+                .fetch_one(&auth)
+                .await
+                .unwrap();
+            assert_eq!(role, "console_auth_rt");
+            let state = state_with_key(
+                &pool,
+                app._artifacts.root.clone(),
+                &SigningKey::random(&mut OsRng),
+            )
+            .await;
+            app.service = build_router(state.with_auth_database(auth.clone()));
+            let before = terms_reference_rows(&pool).await;
+            assert_current_terms(&app, 1).await;
+            assert_retained_artifacts(&app).await;
+            assert!(terms_reference_rows(&pool).await == before);
+
+            // Close this actual Auth transport only; the fixture administrator
+            // and immutable artifact reads remain available for the oracle.
+            auth.close().await;
+            request(
+                &app,
+                "GET",
+                "/api/v2/auth/terms",
+                &Cookies::default(),
+                None,
+                &[],
+            )
+            .await
+            .error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+            assert_retained_artifacts(&app).await;
+            assert!(terms_reference_rows(&pool).await == before);
+        }
     }
 }
 

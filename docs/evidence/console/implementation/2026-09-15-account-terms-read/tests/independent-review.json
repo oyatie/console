@@ -1,0 +1,139 @@
+{
+  "kind": "INDEPENDENT_TERMS_PUBLIC_READ_TEST_AND_MINIMAL_OWNER_DESIGN_REVIEW",
+  "reviewer": "/root/capture_review",
+  "author": "/root/inventory_repair",
+  "root_writer_and_runtime_operator": "/root",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "candidate_directory": "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3",
+  "manifest_sha256": "5e7d4e53b7fc65820d3009d3428aa7f9292d4fcd0d773564a3b89319eb50b7f8",
+  "patch_sha256": "104c00f183c4191290af6c877777c2c0c6a4dfb3d8b74cb39e5294677d6d0329",
+  "source_sha256": "b3192f03a5257737a2538f4311f808044409d65817e9dc4f576b8306cc0ef9f0",
+  "guide_sha256": "79d1f21c56db438304039a016f6ec107016f6006a5951856ca0485a9476a0c26",
+  "verdict": "APPROVE_EXACT_ADDITIVE_TEST_CANDIDATE_AND_BOUNDED_TERMS_READ_OWNER_DESIGN",
+  "findings": [],
+  "independent_static_checks": {
+    "candidate_manifest_sha256": "5e7d4e53b7fc65820d3009d3428aa7f9292d4fcd0d773564a3b89319eb50b7f8",
+    "source_sha256": "b3192f03a5257737a2538f4311f808044409d65817e9dc4f576b8306cc0ef9f0",
+    "base_sha256": "9e62c1e0c2c4d81cc8c5d6c62210d59851bcdb44a11e26f49c4eab10478d7b25",
+    "checks": [
+      {
+        "argv": [
+          "git",
+          "apply",
+          "--check",
+          "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/candidate.patch"
+        ],
+        "cwd": "private exact frozen-base copy",
+        "exit": 0
+      },
+      {
+        "argv": [
+          "git",
+          "apply",
+          "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/candidate.patch"
+        ],
+        "cwd": "private exact frozen-base copy",
+        "exit": 0
+      },
+      {
+        "argv": [
+          "rustfmt",
+          "--edition",
+          "2024",
+          "--config",
+          "skip_children=true",
+          "--check",
+          "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/backend/app/tests/auth_rest.rs"
+        ],
+        "exit": 0
+      }
+    ],
+    "test_names": [
+      "current_head_and_retained_bytes_are_authoritative_and_read_only",
+      "registered_content_loss_and_restore_preserve_public_read_state",
+      "auth_database_outage_closes_current_authority_but_retains_public_bytes"
+    ],
+    "static_counts": {
+      "direct_before": 57,
+      "direct_after": 60,
+      "browser_before": 25,
+      "browser_after": 28,
+      "new": 3
+    },
+    "exact_reverse_restoration": true,
+    "all_manifest_hashes": true,
+    "runtime_executed": 0
+  },
+  "static_check_receipt": "/private/tmp/account-terms-read-v2-capture-static-checks.json",
+  "static_check_receipt_sha256": "9e24bbf8c5a08ca7bf9cdd93cdaf8054bbf3af9a48b6e93066cf04b041087af5",
+  "preservation": "All artifacts/preserved V1 hashes verified. Base bytes match immutable f96 and root ffabda81. Reversing only new module (retaining original boundary newline), recorded fixture extraction and two added header assertions reproduces every original byte. Private patch reapplication reproduces exact candidate; rustfmt skip_children check PASS. Original config pairs/AppState startup admission and all original tests/assertions remain; no fixture bytes, dependencies, test binary or production source added.",
+  "counts": "Static new3; direct attributes57->60 (includes12 ordinary,44->47SQLx,1Tokio); browser25->28. Expected reachable app binary181->184 and broader runtime191->194 are distinct inherited expectations, not observed discovery. Runtime discovered/executed by reviewer0.",
+  "oracles": {
+    "positive": "Each new test first establishes successful authoritative current metadata plus exact manifest and two content responses from the genuine same router/fixture.",
+    "authority": "Same manifest revision1->2 must update current metadata without router reconstruction. Subsequent unregistered current digest at revision3 closes current503 while previous registered bytes remain200.",
+    "unknown": "Healthy registry unknown digest404 tested in both namespaces.",
+    "file_outage": "Exact fixture privacy file is calibrated before removal. Successful router rebuild then registered content/current503; exact byte restoration and rebuild recover all positive reads.",
+    "auth_outage": "Actual restricted Auth pool from existing fixture transport, verified current_user=console_auth_rt. Real AppState startup admission preserved before existing injection. Positive current/artifacts then close only injected pool: current503 and retained artifacts200.",
+    "no_effects": "Private complete receipts/head/acceptances/accounts/security/events/audit snapshots unchanged around all HTTP phases. Administrator head transitions separately bracketed. No sensitive snapshot dumps.",
+    "responses": "Current exact closed JSON/revision/URL, no-store/Pragma and no cookies/Location. Retained exact bytes/digest/type/nosniff/no cookies/Location. Error helper checks closed code/message/status/no cookies/private cache controls.",
+    "limits": [
+      "Snapshots cover named tables, not every database surface.",
+      "Auth outage alone cannot prove no attempted Business fallback; implementation must forbid fallback.",
+      "File tests require router rebuild behavior, not independent live-cache invalidation proof.",
+      "Private-key-independent public config is design guidance not isolated by these3 cases.",
+      "Existing no-head negative reused; no exact candidate runtime yet."
+    ]
+  },
+  "minimal_api_design": {
+    "verdict": "APPROVE_NARROW_PROPOSAL_FOR_ROOT_FREEZE_AND_ADMITTED_IMPLEMENTATION",
+    "signature": "public.account_terms_current_v1() RETURNS TABLE (manifest_sha256 bytea, revision bigint)",
+    "body": "SELECT h.manifest_sha256,h.revision FROM public.account_terms_head AS h WHERE h.id=1",
+    "properties": "SQL STABLE SECURITY DEFINER; zero arguments; fixed search_path=pg_catalog,pg_temp; schema-qualified singleton read. No row locks, writes, Account selector, receipt body or credential data.",
+    "privileges": "Existing nonlogin console_terms_owner requires only SELECT(id,manifest_sha256,revision) on head for this reader. Auth gets EXECUTE only; revoke PUBLIC/business execution, pin exact accepted owner/Auth ACL. No Auth/Business table grants or owner memberships.",
+    "custody": "Root serializes canonical query/generator/generated SQL. One exact collective helper-plus-column-ACL profile must pin routine signature/result/body/owner/config/ACL. Prior fully finalized state becomes certified upgrade input, not new serving state. Reject partial/drifted profiles, preserve legacy fence and immutable-receipt guard/FK grants. Populated upgrade and valid replay require row-preservation evidence.",
+    "configuration": "Reuse optional trusted artifact configuration in existing AuthRestState separate from signing/WebAuthn AuthServices. Retained bytes need neither private key nor Auth DB availability. Current-head transport admission stays at AppConfig/AppState; preserve absent-root modes.",
+    "artifacts": "Keep registered identity independent of file availability; exactly64 lowercase hex; only trusted registered local paths, bounded reads and SHA256/required manifest-item validation. Registered missing/tampered503; healthy unknown404; bad registry cannot establish healthy unknown. No remote fetch, caller-selected path, new registry format or publisher.",
+    "reread": "Root-selected load-once trusted metadata with bounded per-request byte reread is compatible; no separate cache invalidation framework required.",
+    "failure_isolation": "Fixed safe terms503 for unavailable artifact authority while unrelated AppState construction remains available. No raw SQL/path/authority diagnostics in HTTP.",
+    "authorization": "Design/tests approved, not source edits before actual executable RED and fanout admission. No credential or actor transition is needed."
+  },
+  "contract_citations": [
+    "docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt:9",
+    "docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt:11",
+    "docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt:12",
+    "docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt:44"
+  ],
+  "pre_mortem": "A local artifact index might falsely become current authority; registered missing bytes might become404; a cached revision might ignore head changes; broad ACLs might bypass restricted Auth custody; startup might abort unrelated services.",
+  "blast_radius": "Three anonymous public GETs, trusted artifact configuration, narrow terms metadata owner/ACL, corresponding custody-state/finalizer profiles. No Account credentials, Company identity, publication write, session authority, or business RLS.",
+  "detection": "Immutable restoration/hash checks; focused3 plus existing no-head1; exact source-reviewed transport/ACL/registry boundaries; applicable regressions and custody populated-upgrade/replay preservation after implementation.",
+  "rollback": "Preserve head/receipts/artifact bytes/history; reviewed compatible route/config correction only, never rewind current head or remove immutable guard.",
+  "stop_conditions": [
+    "Candidate/source/API mismatch",
+    "Missing, green or nonexecutable initial probe",
+    "Test weakening or generic custody relaxation",
+    "Credential/CompanyActor/publication scope",
+    "Unbounded or caller-selected file/network access"
+  ],
+  "remaining_holds": [
+    "Root installation/actual focused3 baseline and formal admission",
+    "Exact root helper/custody freeze and independent implementation/runtime review",
+    "Populated custody upgrade/replay and full applicable regressions",
+    "Other Account lifecycle work",
+    "Qualified content/publication, hosted merge/release, capacity and legal authority"
+  ],
+  "reviewer_execution": {
+    "runtime_tests": 0,
+    "cargo": 0,
+    "database": 0,
+    "docker": 0,
+    "integration_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}
