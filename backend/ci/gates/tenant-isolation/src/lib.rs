@@ -1254,7 +1254,7 @@ mod tests {
     fn account_catalog_tables_are_owner_only() {
         let mut failures = Vec::new();
         for table in ACCOUNT_CATALOG_TABLES {
-            let dir = tmpdir(table);
+            let dir = tmpdir(&format!("classification-{table}"));
             write(
                 &dir,
                 "0001_catalog.sql",
@@ -1284,7 +1284,7 @@ mod tests {
         let mut missed = Vec::new();
         for table in ACCOUNT_CATALOG_TABLES {
             for role in ["console_rt", "PUBLIC"] {
-                let dir = tmpdir(table);
+                let dir = tmpdir(&format!("grants-{table}-{role}"));
                 write(
                     &dir,
                     "0001_catalog.sql",
