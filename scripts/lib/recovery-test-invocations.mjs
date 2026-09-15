@@ -10,6 +10,9 @@ export const RECOVERY_CASES = new Map([
   ["staging_success_and_idempotent_restage_wait_for_remote_confirmation", ""],
   ["required_remote_unknown_is_bounded_and_never_local_fallback", ""],
   ["finite_remote_bound_and_repeated_replay_preserve_exact_rows", ""],
+  ["fresh_commit_deadline_reclaims_backend_before_replay_resumes", ""],
+  ["aborted_fresh_stage_retains_capacity_until_native_wait_ends", ""],
+  ["fresh_stage_transport_error_closes_pool_before_reconciliation", ""],
 ]);
 export const OBSERVER_CASE = "real_observer_installer_is_atomic_replay_exact_and_drift_refusing";
 const supervisedCases = new Map([

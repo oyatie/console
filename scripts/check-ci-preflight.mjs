@@ -42,7 +42,15 @@ const recoveryRunCondition = "${{ !cancelled() && needs.preflight.outputs.run_li
 const recoveryImageCommand = "docker pull postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280";
 const recoveryCommands = [
   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply -- --exact --test-threads=1 --nocapture",
-  "CONSOLE_RECOVERY_CUT=after-commit-response python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery lost_commit_transport_reply_replays_one_real_payroll_effect -- --exact --test-threads=1 --nocapture"
+  "CONSOLE_RECOVERY_CUT=after-commit-response python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery lost_commit_transport_reply_replays_one_real_payroll_effect -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_commit_wait_release_requires_explicit_remote_confirmation -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery staging_success_and_idempotent_restage_wait_for_remote_confirmation -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery required_remote_unknown_is_bounded_and_never_local_fallback -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery finite_remote_bound_and_repeated_replay_preserve_exact_rows -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_commit_deadline_reclaims_backend_before_replay_resumes -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery aborted_fresh_stage_retains_capacity_until_native_wait_ends -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_stage_transport_error_closes_pool_before_reconciliation -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test durability_observer real_observer_installer_is_atomic_replay_exact_and_drift_refusing -- --exact --test-threads=1 --nocapture"
 ];
 const skipLivePostgresCondition = "${{ needs.preflight.outputs.run_live_postgres != 'true' }}";
 /** Heavy proofs that are postsubmit-only (push / workflow_dispatch). */
@@ -1167,6 +1175,14 @@ const requiredJobRunContracts = Object.freeze({
     proofDigest("Run disposable PostgreSQL integration targets", "4ea121588589036833c7f24f19f7cc2cfdd8e146cb4b5749f31d17227f5bf861", { if: runLivePostgresCondition }),
     proofRun("Recovery replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply", recoveryCommands[0], { if: recoveryRunCondition }),
     proofRun("Recovery lost_commit_transport_reply_replays_one_real_payroll_effect", recoveryCommands[1], { if: recoveryRunCondition }),
+    proofRun("Recovery fresh_commit_wait_release_requires_explicit_remote_confirmation", recoveryCommands[2], { if: recoveryRunCondition }),
+    proofRun("Recovery staging_success_and_idempotent_restage_wait_for_remote_confirmation", recoveryCommands[3], { if: recoveryRunCondition }),
+    proofRun("Recovery required_remote_unknown_is_bounded_and_never_local_fallback", recoveryCommands[4], { if: recoveryRunCondition }),
+    proofRun("Recovery finite_remote_bound_and_repeated_replay_preserve_exact_rows", recoveryCommands[5], { if: recoveryRunCondition }),
+    proofRun("Recovery fresh_commit_deadline_reclaims_backend_before_replay_resumes", recoveryCommands[6], { if: recoveryRunCondition }),
+    proofRun("Recovery aborted_fresh_stage_retains_capacity_until_native_wait_ends", recoveryCommands[7], { if: recoveryRunCondition }),
+    proofRun("Recovery fresh_stage_transport_error_closes_pool_before_reconciliation", recoveryCommands[8], { if: recoveryRunCondition }),
+    proofRun("Certify durability observer in a dedicated disposable cluster", recoveryCommands[9], { if: recoveryRunCondition }),
   ],
   "rust-fmt": [
     proofRun("rustfmt check", "cargo fmt --all -- --check"),

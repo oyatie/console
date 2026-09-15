@@ -17,6 +17,7 @@ import {
   unitTestedCrateSrcRoots,
 } from "./check-executed-tests-cfg.mjs";
 import { cargoTestKind } from "./lib/cargo-test-kind.mjs";
+import { RECOVERY_CASES } from "./lib/recovery-test-invocations.mjs";
 
 const gateSource = readFileSync(
   fileURLToPath(new URL("./check-executed-tests.mjs", import.meta.url)),
@@ -207,7 +208,7 @@ path = "crates/payroll/adapter-postgres/tests/durability_observer.rs"
     deferred_fixture: [],
     test_attribute_baseline: {
       ...Object.fromEntries(anchors.map((path) => [path, 1])),
-      [recoveryRoot]: 2,
+      [recoveryRoot]: RECOVERY_CASES.size,
       [observerRoot]: 1,
       [integrationRoot]: expectedCount,
     },

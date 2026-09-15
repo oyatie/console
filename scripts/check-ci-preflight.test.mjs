@@ -948,8 +948,8 @@ describe("CI preflight contract", () => {
       "postgres-reachability-platform": 3,
       "postgres-reachability-ontology": 3,
       "postgres-reachability-domain-a": 3,
-      // Pinned image setup and both independently gated recovery scenarios.
-      "postgres-reachability-domain-b": 6,
+      // Pinned image setup, nine recovery scenarios and the isolated observer.
+      "postgres-reachability-domain-b": 14,
       "postgres-domain-reachability": 3,
       "required-ci": 1,
       "rust-fmt": 1,
@@ -1009,9 +1009,9 @@ describe("CI preflight contract", () => {
     // previously dark 13-test suite and subjects the new step to all bypasses.
     // 2026-08-28: +1 rust-fmt presubmit run step (oyatie lint analog).
     // +1: isolate the app dev-auth feature case so an earlier failure cannot hide it.
-    assert.equal(runStepCount, 140, "required and planned job run-step coverage must not shrink");
-    // Three added Rust regression steps: 140*3 = 420.
-    assert.equal(mutationCount, 420, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 148, "required and planned job run-step coverage must not shrink");
+    // Three fresh cleanup proofs extend the matrix: 148*3 = 444.
+    assert.equal(mutationCount, 444, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {
