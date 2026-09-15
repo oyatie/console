@@ -193,7 +193,7 @@ pub fn render(model: &AuthorizedComposer) -> String {
         let save = context.operations.contains(&ComposerOperation::Save);
         let submit = context.operations.contains(&ComposerOperation::Submit);
         view! {
-            <form method="post" action=context.action_path.clone()>
+            <form method="post" action=context.action_path.clone() aria-label="업무 입력">
                 <input type="hidden" name="csrf_token" value=context.csrf_token.clone()/>
                 <input type="hidden" name="command_id" value=context.command_id.clone()/>
                 <input type="hidden" name="expected_token" value=context.expected_token.clone()/>
