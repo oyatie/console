@@ -1,20 +1,15 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Populated actual numbered-migration compatibility, starting at225.
 //! No test-created Account schema, backfill, cutover authority or HTTP handlers.
-//! Legacy auth stores produce real key/family/token/ceremony/audit rows. Fixture
+//! Captured historical auth-owner output retains real key/family/token/ceremony/audit rows. Fixture
 //! ownership is privileged setup, not evidence of serving-role authorization.
 use console_app::{AppConfig, AppRole, run_migrations};
-use console_kernel_core::OrgId;
-use console_platform_auth::{
-    PasskeyRegistrationStart, PasskeyService, RefreshTokenStore, WebauthnSettings,
-};
-use console_platform_test_support::seed_org_and_super_admin;
+use console_platform_auth::RefreshTokenStore;
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use time::{Duration, OffsetDateTime};
 use url::Url;
 use uuid::Uuid;
-use webauthn_authenticator_rs::{prelude::WebauthnAuthenticator, softpasskey::SoftPasskey};
 
 struct LegacyFixture {
     subjects: Vec<Uuid>,
@@ -137,6 +132,60 @@ async fn material_snapshot(pool: &PgPool, subjects: &[Uuid], audit_ids: &[Uuid])
 }
 
 async fn seed_legacy(pool: &PgPool) -> LegacyFixture {
+    use sha2::Digest as _;
+
+    // Immutable TEST_ONLY output of the real historical auth owner at schema225.
+    // Producer1bb508a2 + capture-only028828ac; never run new auth code on old schema.
+    let bytes = include_bytes!("fixtures/account-legacy225-owner-output-v1.json");
+    require_legacy225_digest(bytes);
+    let saved: Value = serde_json::from_slice(bytes).expect("reviewed historical fixture JSON");
+    assert!(saved["kind"] == "TEST_ONLY_HISTORICAL225_OWNER_OUTPUT");
+    assert!(saved["format_version"] == 1);
+    assert!(saved["producer_base_sha"] == "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf");
+    assert!(saved["capture"]["migration_version"] == 225);
+    assert!(saved["credential_count"] == 2);
+    let subjects: Vec<Uuid> = serde_json::from_value(saved["subjects"].clone()).unwrap();
+    let audit_ids: Vec<Uuid> = serde_json::from_value(saved["audit_ids"].clone()).unwrap();
+    assert_eq!(subjects.len(), 2);
+    assert_eq!(audit_ids.len(), 7);
+    assert_eq!(
+        subjects
+            .iter()
+            .collect::<std::collections::BTreeSet<_>>()
+            .len(),
+        2
+    );
+    assert_eq!(
+        audit_ids
+            .iter()
+            .collect::<std::collections::BTreeSet<_>>()
+            .len(),
+        7
+    );
+    let tables = &saved["capture"]["tables"];
+    assert_eq!(tables.as_object().unwrap().len(), 10);
+    for (name, count) in [
+        ("groups", 2),
+        ("organizations", 2),
+        ("group_memberships", 2),
+        ("users", 2),
+        ("auth_webauthn_credentials", 2),
+        ("auth_webauthn_ceremonies", 4),
+        ("auth_webauthn_ceremony_bindings", 0),
+        ("auth_refresh_token_families", 2),
+        ("auth_refresh_tokens", 4),
+        ("audit_events", 7),
+    ] {
+        assert_eq!(
+            tables[name].as_array().unwrap().len(),
+            count,
+            "historical roster differs"
+        );
+    }
+    let revoked_token = saved["revoked_token"].as_str().unwrap().to_owned();
+    let revoked_hash = sha2::Sha256::digest(revoked_token.as_bytes()).to_vec();
+    assert!(saved["revoked_token_sha256"] == hex::encode(&revoked_hash));
+
     let (migrator, migrate_config) = old_migration_login(pool).await;
     sqlx::migrate!("../crates/platform/db/migrations")
         .run_to(225, &migrator)
@@ -148,121 +197,162 @@ async fn seed_legacy(pool: &PgPool) -> LegacyFixture {
             .await
             .unwrap();
     assert_eq!(version, 225);
-    let old_checksums = sqlx::query_as(
+    let old_checksums: Vec<(i64, Vec<u8>)> = sqlx::query_as(
         "SELECT version,checksum FROM _sqlx_migrations WHERE version<=225 ORDER BY version",
     )
     .fetch_all(&migrator)
     .await
     .unwrap();
-    migrator.close().await;
-    let service = PasskeyService::new(WebauthnSettings {
-        rp_id: "example.com".to_owned(),
-        rp_origin: Url::parse("https://auth.example.com").unwrap(),
-        rp_name: "Console".to_owned(),
-        extra_allowed_origins: vec![],
-        ceremony_ttl: Duration::minutes(5),
-    })
-    .unwrap();
-    let orgs = [OrgId::new(), OrgId::new()];
-    let mut subjects = Vec::new();
-    let mut revoked_token = None;
-    for (index, org) in orgs.into_iter().enumerate() {
-        let subject =
-            seed_org_and_super_admin(pool, *org.as_uuid(), &format!("migration225-{index}")).await;
-        subjects.push(*subject.as_uuid());
-        let registration = service
-            .start_registration(
-                pool,
-                org,
-                PasskeyRegistrationStart {
-                    user_id: *subject.as_uuid(),
-                    username: format!("migration-{index}"),
-                    display_name: format!("TEST_ONLY migration {index}"),
-                },
-            )
-            .await
-            .unwrap();
-        let mut authenticator = WebauthnAuthenticator::new(SoftPasskey::new(true));
-        let credential = authenticator
-            .do_registration(
-                Url::parse("https://auth.example.com").unwrap(),
-                registration.challenge,
-            )
-            .unwrap();
-        let stored = service
-            .finish_registration(pool, org, registration.ceremony_id, credential)
-            .await
-            .unwrap();
-        assert_eq!(stored.user_id, *subject.as_uuid());
-        // Retain a second real outstanding ceremony. No fabricated state JSON.
-        service
-            .start_registration(
-                pool,
-                org,
-                PasskeyRegistrationStart {
-                    user_id: *subject.as_uuid(),
-                    username: format!("pending-{index}"),
-                    display_name: "TEST_ONLY pending".to_owned(),
-                },
-            )
-            .await
-            .unwrap();
-        let now = OffsetDateTime::now_utc();
-        let issue = RefreshTokenStore
-            .issue_family(pool, *subject.as_uuid(), org, now, Duration::hours(2))
-            .await
-            .unwrap();
-        let rotated = RefreshTokenStore
-            .rotate(
-                pool,
-                issue.token.as_str(),
-                now + Duration::seconds(1),
-                Duration::hours(2),
-                Duration::days(1),
-            )
-            .await
-            .unwrap();
-        assert_eq!(rotated.family_id, issue.family_id);
-        assert_ne!(rotated.token_id, issue.token_id);
-        if index == 1 {
-            RefreshTokenStore
-                .revoke_family_for_logout(pool, rotated.token.as_str(), now + Duration::seconds(2))
-                .await
-                .unwrap();
-            revoked_token = Some(rotated.token.as_str().to_owned());
-        }
-    }
-    let audit_ids: Vec<Uuid> =
-        sqlx::query_scalar("SELECT id FROM audit_events WHERE actor=ANY($1) ORDER BY id")
-            .bind(&subjects)
-            .fetch_all(pool)
-            .await
-            .unwrap();
+    let checksums: Vec<Value> = old_checksums
+        .iter()
+        .map(|(version, checksum)| json!([version, hex::encode(checksum)]))
+        .collect();
     assert!(
-        !audit_ids.is_empty(),
-        "real auth-owner operations must produce attributed audits"
+        saved["capture"]["migration_checksums"] == json!(checksums),
+        "historical migration checksum differs"
     );
+    migrator.close().await;
+
+    let mut tx = pool.begin().await.unwrap();
+    // Fixed native table types retain bytea, timestamps, arrays and JSON exactly.
+    // All four tokens share one INSERT so replaced_by self-FKs resolve normally.
+    for (name, statement) in [
+        (
+            "groups",
+            "INSERT INTO public.groups SELECT * FROM jsonb_populate_recordset(NULL::public.groups, $1::jsonb)",
+        ),
+        (
+            "organizations",
+            "INSERT INTO public.organizations SELECT * FROM jsonb_populate_recordset(NULL::public.organizations, $1::jsonb)",
+        ),
+        (
+            "users",
+            "INSERT INTO public.users SELECT * FROM jsonb_populate_recordset(NULL::public.users, $1::jsonb)",
+        ),
+        (
+            "auth_webauthn_credentials",
+            "INSERT INTO public.auth_webauthn_credentials SELECT * FROM jsonb_populate_recordset(NULL::public.auth_webauthn_credentials, $1::jsonb)",
+        ),
+        (
+            "auth_webauthn_ceremonies",
+            "INSERT INTO public.auth_webauthn_ceremonies SELECT * FROM jsonb_populate_recordset(NULL::public.auth_webauthn_ceremonies, $1::jsonb)",
+        ),
+        (
+            "auth_webauthn_ceremony_bindings",
+            "INSERT INTO public.auth_webauthn_ceremony_bindings SELECT * FROM jsonb_populate_recordset(NULL::public.auth_webauthn_ceremony_bindings, $1::jsonb)",
+        ),
+        (
+            "auth_refresh_token_families",
+            "INSERT INTO public.auth_refresh_token_families SELECT * FROM jsonb_populate_recordset(NULL::public.auth_refresh_token_families, $1::jsonb)",
+        ),
+        (
+            "auth_refresh_tokens",
+            "INSERT INTO public.auth_refresh_tokens SELECT * FROM jsonb_populate_recordset(NULL::public.auth_refresh_tokens, $1::jsonb)",
+        ),
+        (
+            "audit_events",
+            "INSERT INTO public.audit_events SELECT * FROM jsonb_populate_recordset(NULL::public.audit_events, $1::jsonb)",
+        ),
+    ] {
+        let affected = sqlx::query(statement)
+            .bind(&tables[name])
+            .execute(&mut *tx)
+            .await
+            .expect("native historical replay must preserve active constraints")
+            .rows_affected();
+        assert_eq!(
+            affected,
+            tables[name].as_array().unwrap().len() as u64,
+            "historical insert count differs"
+        );
+    }
+    // Migration225 creates these rows on organization INSERT. Restore only the
+    // original timestamp, after proving the trigger generated exactly our keys.
+    let memberships: Vec<(Uuid, Uuid)> = sqlx::query_as(
+        "SELECT group_id,org_id FROM public.group_memberships WHERE org_id IN \
+         (SELECT org_id FROM public.users WHERE id=ANY($1)) ORDER BY group_id,org_id",
+    )
+    .bind(&subjects)
+    .fetch_all(&mut *tx)
+    .await
+    .unwrap();
+    let expected_memberships: Vec<(Uuid, Uuid)> = tables["group_memberships"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|row| {
+            (
+                serde_json::from_value(row["group_id"].clone()).unwrap(),
+                serde_json::from_value(row["org_id"].clone()).unwrap(),
+            )
+        })
+        .collect();
+    assert!(
+        memberships == expected_memberships,
+        "historical membership keys differ"
+    );
+    let affected = sqlx::query(
+        "UPDATE public.group_memberships AS actual SET created_at=captured.created_at \
+         FROM jsonb_populate_recordset(NULL::public.group_memberships, $1::jsonb) AS captured \
+         WHERE actual.group_id=captured.group_id AND actual.org_id=captured.org_id",
+    )
+    .bind(&tables["group_memberships"])
+    .execute(&mut *tx)
+    .await
+    .unwrap()
+    .rows_affected();
+    assert_eq!(affected, 2);
+
+    let restored: Value = sqlx::query_scalar(LEGACY225_ROWS)
+        .bind(&subjects)
+        .bind(&audit_ids)
+        .fetch_one(&mut *tx)
+        .await
+        .unwrap();
+    require_legacy225_rows(&restored, tables, &saved["capture"]["migration_checksums"]);
     let credential_count: i64 =
         sqlx::query_scalar("SELECT count(*) FROM auth_webauthn_credentials WHERE user_id=ANY($1)")
             .bind(&subjects)
-            .fetch_one(pool)
+            .fetch_one(&mut *tx)
             .await
             .unwrap();
     assert_eq!(
         credential_count, 2,
-        "two real independently generated credentials"
+        "two real independently generated historical credentials"
     );
-    let correlation:(i64,i64,i64)=sqlx::query_as(r#"SELECT
+    let correlation: (i64, i64, i64) = sqlx::query_as(r#"SELECT
         (SELECT count(*) FROM auth_refresh_tokens WHERE user_id=ANY($1)),
         (SELECT count(*) FROM auth_refresh_tokens WHERE user_id=ANY($1) AND used_at IS NOT NULL AND replaced_by IS NOT NULL),
         (SELECT count(*) FROM auth_refresh_token_families WHERE user_id=ANY($1) AND revoked_at IS NOT NULL)"#)
-        .bind(&subjects).fetch_one(pool).await.unwrap();
+        .bind(&subjects).fetch_one(&mut *tx).await.unwrap();
     assert_eq!(correlation, (4, 2, 1));
+    let revoked: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM public.auth_refresh_tokens t \
+         JOIN public.auth_refresh_token_families f ON f.id=t.family_id \
+         WHERE t.token_hash=$1 AND t.user_id=ANY($2::uuid[]) \
+         AND t.revoked_at IS NOT NULL AND f.revoked_at IS NOT NULL)",
+    )
+    .bind(&revoked_hash)
+    .bind(&subjects)
+    .fetch_one(&mut *tx)
+    .await
+    .unwrap();
+    assert!(
+        revoked,
+        "historical raw token must correlate to a revoked token and family"
+    );
+    tx.commit().await.unwrap();
+    // Full native rows were checked before commit. Preserve the original
+    // independent material projection before invoking any current migration.
     let snapshot = material_snapshot(pool, &subjects, &audit_ids).await;
+    assert!(
+        snapshot == saved["material_snapshot"],
+        "historical material differs; no sensitive dump"
+    );
     LegacyFixture {
         subjects,
         audit_ids,
-        revoked_token: revoked_token.unwrap(),
+        revoked_token,
         credential_count,
         snapshot,
         old_checksums,
@@ -364,9 +454,15 @@ async fn populated_225_to_current_preserves_preexisting_family_and_token_revocat
     }
     // Existing legacy store must not remint from a preserved revoked family.
     // This is not the missing global Account cutover/fresh-session owner.
+    let auth_pool = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let result = RefreshTokenStore
         .rotate(
             &pool,
+            &auth_pool,
             &fixture.revoked_token,
             OffsetDateTime::now_utc(),
             Duration::hours(2),
@@ -385,4 +481,176 @@ async fn populated_225_to_current_preserves_preexisting_family_and_token_revocat
         after == fixture.snapshot,
         "refused old refresh changed retained material; no sensitive dump"
     );
+}
+
+// Shared guards make the rollback controls exercise the actual replay checks.
+fn require_legacy225_digest(bytes: &[u8]) {
+    use sha2::Digest as _;
+
+    assert!(
+        hex::encode(sha2::Sha256::digest(bytes))
+            == "bc0c8a562d54866f892706a0a0b6a6723d8874922f58635f3db6f78685889ce4",
+        "historical fixture digest differs"
+    );
+}
+
+fn require_legacy225_rows(restored: &Value, tables: &Value, checksums: &Value) {
+    assert!(
+        restored["tables"] == *tables,
+        "complete historical rows differ; no sensitive dump"
+    );
+    assert!(restored["migration_version"] == 225);
+    assert!(restored["migration_checksums"] == *checksums);
+    assert!(restored["unused_fixture_edges"] == json!({"user_branches":0,"group_role_grants":0}));
+}
+
+const LEGACY225_ROWS: &str = r#"WITH fixture_subjects AS (
+    SELECT * FROM public.users WHERE id = ANY($1::uuid[])
+), fixture_orgs AS (
+    SELECT * FROM public.organizations WHERE id IN (SELECT org_id FROM fixture_subjects)
+), fixture_ceremonies AS (
+    SELECT * FROM public.auth_webauthn_ceremonies WHERE user_id = ANY($1::uuid[])
+)
+SELECT jsonb_build_object(
+    'database', current_database(),
+    'server_version_num', current_setting('server_version_num'),
+    'migration_version', (SELECT max(version) FROM public._sqlx_migrations WHERE success),
+    'migration_checksums', (SELECT jsonb_agg(jsonb_build_array(version, encode(checksum,'hex')) ORDER BY version)
+        FROM public._sqlx_migrations WHERE version <= 225),
+    'tables', jsonb_build_object(
+        'groups', (SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]'::jsonb)
+            FROM public.groups t WHERE id IN (SELECT group_id FROM fixture_orgs)),
+        'organizations', (SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]'::jsonb) FROM fixture_orgs t),
+        'group_memberships', (SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY t.group_id,t.org_id),'[]'::jsonb)
+            FROM public.group_memberships t WHERE org_id IN (SELECT id FROM fixture_orgs)),
+        'users', (SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]'::jsonb) FROM fixture_subjects t),
+        'auth_webauthn_credentials', (SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]'::jsonb)
+            FROM public.auth_webauthn_credentials t WHERE user_id = ANY($1::uuid[])),
+        'auth_webauthn_ceremonies', (SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]'::jsonb) FROM fixture_ceremonies t),
+        'auth_webauthn_ceremony_bindings', (SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY t.ceremony_id),'[]'::jsonb)
+            FROM public.auth_webauthn_ceremony_bindings t WHERE ceremony_id IN (SELECT id FROM fixture_ceremonies)),
+        'auth_refresh_token_families', (SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]'::jsonb)
+            FROM public.auth_refresh_token_families t WHERE user_id = ANY($1::uuid[])),
+        'auth_refresh_tokens', (SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]'::jsonb)
+            FROM public.auth_refresh_tokens t WHERE user_id = ANY($1::uuid[])),
+        'audit_events', (SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]'::jsonb)
+            FROM public.audit_events t WHERE id = ANY($2::uuid[]))
+    ),
+    'unused_fixture_edges', jsonb_build_object(
+        'user_branches', (SELECT count(*) FROM public.user_branches WHERE user_id=ANY($1::uuid[])),
+        'group_role_grants', (SELECT count(*) FROM public.group_role_grants WHERE user_id=ANY($1::uuid[]))
+    )
+)"#;
+
+#[sqlx::test(migrations = false)]
+async fn historical225_fixture_corrupt_digest_refuses_before_replay_write(pool: PgPool) {
+    let fixture = seed_legacy(&pool).await;
+    let before: Value = sqlx::query_scalar(LEGACY225_ROWS)
+        .bind(&fixture.subjects)
+        .bind(&fixture.audit_ids)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    let mut bytes = include_bytes!("fixtures/account-legacy225-owner-output-v1.json").to_vec();
+    // Change only trailing JSON whitespace so malformed JSON cannot explain refusal.
+    assert_eq!(bytes.pop(), Some(b'\n'));
+    bytes.push(b' ');
+    let rejected = std::panic::catch_unwind(|| require_legacy225_digest(&bytes))
+        .expect_err("corrupt fixture digest was accepted");
+    let message = rejected
+        .downcast_ref::<String>()
+        .map(String::as_str)
+        .or_else(|| rejected.downcast_ref::<&str>().copied());
+    assert_eq!(message, Some("historical fixture digest differs"));
+    let after: Value = sqlx::query_scalar(LEGACY225_ROWS)
+        .bind(&fixture.subjects)
+        .bind(&fixture.audit_ids)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    require_legacy225_rows(&after, &before["tables"], &before["migration_checksums"]);
+}
+
+async fn require_replay_tamper_rejected_and_rolled_back(pool: PgPool, mutation: &str) {
+    let fixture = seed_legacy(&pool).await;
+    let before: Value = sqlx::query_scalar(LEGACY225_ROWS)
+        .bind(&fixture.subjects)
+        .bind(&fixture.audit_ids)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    let mut tx = pool.begin().await.unwrap();
+    let affected = sqlx::query(mutation)
+        .bind(&fixture.subjects)
+        .execute(&mut *tx)
+        .await
+        .expect("bounded tamper must reach the row oracle")
+        .rows_affected();
+    assert_eq!(affected, 1, "tamper must change exactly one historical row");
+    let changed: Value = sqlx::query_scalar(LEGACY225_ROWS)
+        .bind(&fixture.subjects)
+        .bind(&fixture.audit_ids)
+        .fetch_one(&mut *tx)
+        .await
+        .unwrap();
+    let rejected = std::panic::catch_unwind(|| {
+        require_legacy225_rows(&changed, &before["tables"], &before["migration_checksums"]);
+    })
+    .expect_err("tampered historical rows were accepted");
+    let message = rejected
+        .downcast_ref::<String>()
+        .map(String::as_str)
+        .or_else(|| rejected.downcast_ref::<&str>().copied());
+    assert_eq!(
+        message,
+        Some("complete historical rows differ; no sensitive dump")
+    );
+    tx.rollback().await.unwrap();
+    let after: Value = sqlx::query_scalar(LEGACY225_ROWS)
+        .bind(&fixture.subjects)
+        .bind(&fixture.audit_ids)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    require_legacy225_rows(&after, &before["tables"], &before["migration_checksums"]);
+    assert!(
+        material_snapshot(&pool, &fixture.subjects, &fixture.audit_ids).await == fixture.snapshot,
+        "rollback must restore original historical material; no sensitive dump"
+    );
+}
+
+#[sqlx::test(migrations = false)]
+async fn historical225_fixture_omitted_row_rejects_and_rolls_back(pool: PgPool) {
+    require_replay_tamper_rejected_and_rolled_back(
+        pool,
+        "DELETE FROM public.auth_webauthn_ceremonies WHERE id=(SELECT id \
+         FROM public.auth_webauthn_ceremonies WHERE user_id=ANY($1) ORDER BY id LIMIT 1)",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn historical225_fixture_token_correlation_rejects_and_rolls_back(pool: PgPool) {
+    require_replay_tamper_rejected_and_rolled_back(
+        pool,
+        "UPDATE public.auth_refresh_tokens AS original SET replaced_by=(SELECT other.id \
+         FROM public.auth_refresh_tokens other WHERE other.user_id=ANY($1) \
+         AND other.family_id<>original.family_id ORDER BY other.id LIMIT 1) \
+         WHERE original.id=(SELECT id FROM public.auth_refresh_tokens \
+         WHERE user_id=ANY($1) AND replaced_by IS NOT NULL ORDER BY id LIMIT 1)",
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn historical225_fixture_membership_key_rejects_and_rolls_back(pool: PgPool) {
+    require_replay_tamper_rejected_and_rolled_back(
+        pool,
+        "UPDATE public.group_memberships AS actual SET group_id=(SELECT other.group_id \
+         FROM public.organizations other WHERE other.id<>actual.org_id \
+         AND other.id IN(SELECT org_id FROM public.users WHERE id=ANY($1)) \
+         ORDER BY other.id LIMIT 1) WHERE actual.org_id=(SELECT org_id \
+         FROM public.users WHERE id=ANY($1) ORDER BY org_id LIMIT 1)",
+    )
+    .await;
 }
