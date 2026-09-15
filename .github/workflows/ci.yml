@@ -1363,6 +1363,7 @@ jobs:
             --include-ignored --test-threads=1
 
           CONSOLE_APP_ROLE=api \
+          CONSOLE_DATABASE_DURABILITY='{"mode":"local_development"}' \
           DATABASE_URL="$RUNTIME_DATABASE_URL" \
           AUTH_DATABASE_URL="$AUTH_DATABASE_URL" \
           LEAVE_COMMAND_DATABASE_URL="$LEAVE_COMMAND_DATABASE_URL" \

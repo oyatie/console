@@ -166,7 +166,25 @@ function composeArgs(compose, args) {
 }
 
 function runCompose(compose, args, opts) {
-  return spawnSync(compose.bin, composeArgs(compose, args), opts);
+  // Compose parses the entire model even for exec/ps/down. Every local caller,
+  // including seed, therefore needs the same selected interpolation inputs.
+  const env = {
+    ...process.env,
+    CONSOLE_POSTGRES_PORT: String(PORTS.postgres),
+    CONSOLE_POSTGRES_DB: POSTGRES_DB,
+    CONSOLE_POSTGRES_ADMIN_USER: POSTGRES_ADMIN_USER,
+    CONSOLE_POSTGRES_ADMIN_PASSWORD: POSTGRES_ADMIN_PASSWORD,
+    CONSOLE_APP_POSTGRES_PASSWORD: APP_POSTGRES_PASSWORD,
+    CONSOLE_RT_POSTGRES_PASSWORD: RT_POSTGRES_PASSWORD,
+    CONSOLE_AUTH_POSTGRES_PASSWORD: AUTH_POSTGRES_PASSWORD,
+    AUTH_DATABASE_URL: commandDatabaseUrl("console_auth_rt", AUTH_POSTGRES_PASSWORD, "postgres", 5432),
+    CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: LEAVE_COMMAND_POSTGRES_PASSWORD,
+    CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
+    CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD: PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD,
+    ...opts?.env,
+  };
+  env.CONSOLE_DATABASE_DURABILITY ??= '{"mode":"local_development"}';
+  return spawnSync(compose.bin, composeArgs(compose, args), { ...opts, env });
 }
 
 function portFree(port) {
@@ -639,9 +657,9 @@ function runSeed(compose) {
   const seedPath = path.join(REPO_ROOT, "scripts", "dev-seed.sql");
   if (!existsSync(seedPath)) return;
   log("seeding dev fixtures (scripts/dev-seed.sql)...");
-  const result = spawnSync(
-    compose.bin,
-    composeArgs(compose, [
+  const result = runCompose(
+    compose,
+    [
       "exec",
       "-T",
       "postgres",
@@ -652,8 +670,8 @@ function runSeed(compose) {
       POSTGRES_ADMIN_USER,
       "-d",
       POSTGRES_DB,
-    ]),
-    { input: readFileSync(seedPath), stdio: ["pipe", "ignore", "inherit"] },
+    ],
+    { cwd: REPO_ROOT, input: readFileSync(seedPath), stdio: ["pipe", "ignore", "inherit"] },
   );
   if (result.status !== 0) throw new Error("dev seed failed (scripts/dev-seed.sql)");
 }
@@ -669,10 +687,13 @@ function buildAppEnv(role) {
   // Operator transport belongs to the parent orchestrator, never its serving
   // or migration child. Clear libpq's alternate credential/target channels too.
   const parentEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
-    !/^(?:ACCOUNT_CUSTODY_|CONSOLE_POSTGRES_ADMIN_|CONSOLE_APP_POSTGRES_PASSWORD$|CONSOLE_AUTH_POSTGRES_PASSWORD$|AUTH_DATABASE_URL$|POSTGRES_|PG)/.test(key)));
+    !/^(?:ACCOUNT_CUSTODY_|CONSOLE_POSTGRES_ADMIN_|CONSOLE_APP_POSTGRES_PASSWORD$|CONSOLE_AUTH_POSTGRES_PASSWORD$|AUTH_DATABASE_URL$|CONSOLE_DATABASE_DURABILITY$|POSTGRES_|PG)/.test(key)));
   return {
     ...parentEnv,
     CONSOLE_APP_ROLE: role,
+    ...(role === "api" || role === "worker" ? {
+      CONSOLE_DATABASE_DURABILITY: process.env.CONSOLE_DATABASE_DURABILITY ?? '{"mode":"local_development"}',
+    } : {}),
     DATABASE_URL: role === "migrate" ? databaseUrl() : runtimeDatabaseUrl(),
     ...(role === "api" ? {
       AUTH_DATABASE_URL: commandDatabaseUrl("console_auth_rt", AUTH_POSTGRES_PASSWORD),

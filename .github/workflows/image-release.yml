@@ -1126,6 +1126,7 @@ jobs:
         run: |
           docker run -d --network host --name console-app-probe \
             -e CONSOLE_APP_ROLE=api \
+            -e CONSOLE_DATABASE_DURABILITY='{"mode":"local_development"}' \
             -e DATABASE_URL="$PROBE_RUNTIME_DATABASE_URL" \
             -e AUTH_DATABASE_URL="$PROBE_AUTH_DATABASE_URL" \
             -e LEAVE_COMMAND_DATABASE_URL="$PROBE_LEAVE_COMMAND_DATABASE_URL" \

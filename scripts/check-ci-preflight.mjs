@@ -1055,7 +1055,7 @@ const requiredJobRunContracts = Object.freeze({
     proofDigest("Buck2 CI-gate mutation suites — every gate proven to still reject", "f6614509bd73220754a83d449b8bf422e616309ba48965f730f0d3dcff9d2cf4", { if: backendLegCondition("cargo"), workingDirectory: "." }),
     proofRun("PR 473 migration operational contract tests", "python3 scripts/check-pr473-migration-operational.test.py -v", { if: backendLegCondition("cargo"), workingDirectory: "." }),
     setupDigest("Reconcile portable PostgreSQL role topology", "5da0f2d8c399657dbc0a9d358c81d71399af1ea6c659074a365653db21fcaded", { if: backendIndependentCondition }),
-    proofDigest("Boot smoke — migrate + serve + /readyz", "7c888a6ab990646df7d0c3a1ebdc1a1b0bb6771d2473ef5cfd2d1f72a5fcb6bc", { if: backendLegTopologyCondition("cargo") }),
+    proofDigest("Boot smoke — migrate + serve + /readyz", "5855b04a12c8f5b9e1ea49cac8abcc3e2d1bffb58e845dbd3525a5dd10bb6b05", { if: backendLegTopologyCondition("cargo") }),
     proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { if: backendLegTopologyCondition("buck-dev-auth"), workingDirectory: "." }),
     proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
     proofRun("Cargo console-app unit suite", "env -u DATABASE_URL cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
