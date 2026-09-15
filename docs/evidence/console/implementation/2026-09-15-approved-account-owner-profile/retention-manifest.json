@@ -1,0 +1,713 @@
+{
+  "kind": "explicit-allowlist-retention-index",
+  "status": "READY_FOR_ROOT_REVIEW_AND_SERIAL_IMPORT_NOT_IMPORTED",
+  "author": "/root/owner_privilege_review",
+  "candidate_sha": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+  "recommended_repository_parent": "docs/evidence/console/implementation/2026-09-15-approved-account-owner-profile",
+  "scope": "Approved local Account ownerUPDATE(id) source change and four completed real runtime runs. This index grants no deployment authority.",
+  "records": [
+    {
+      "source_path": "/private/tmp/account-owner-update-final-approval-scope.json",
+      "destination": "authorization/account-owner-update-final-approval-scope.json",
+      "file_type": "regular",
+      "size": 2819,
+      "sha256": "2ad1717fb381e93ad97d35be1223d32777f1cad6312ba6322caf147550be5667",
+      "purpose": "Historical concrete proposal; pending label preserved and superseded by explicit approval record"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-approved-authorization-20260915.json",
+      "destination": "authorization/account-owner-approved-authorization-20260915.json",
+      "file_type": "regular",
+      "size": 969,
+      "sha256": "30ee8b429a466c9ac546f94dacf9e92c1e182933b77cd5d08e2bb8a049750e11",
+      "purpose": "Current user approval and exact three-path scope"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-approved-lane-20260915.json",
+      "destination": "authorization/account-owner-approved-lane-20260915.json",
+      "file_type": "regular",
+      "size": 2137,
+      "sha256": "187be951175cfe11b7a250327f957f8a184a35db5838eae2ff4b77baabdc0258",
+      "purpose": "Named RED lane ownership, mechanical guide, boundaries and HOLDs"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-approved-admission-20260915.log",
+      "destination": "authorization/account-owner-approved-admission-20260915.log",
+      "file_type": "regular",
+      "size": 48,
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "purpose": "Observed named RED admission"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-approved-source.patch",
+      "destination": "proposal/account-owner-approved-source.patch",
+      "file_type": "regular",
+      "size": 3452,
+      "sha256": "841bb3233088a3cd7923594f2922dd4d465a03b249c94a6193cd92dc87f08bd7",
+      "purpose": "Original preapply patch; historical source plan, not final corrected source"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-approved-generator.py",
+      "destination": "proposal/account-owner-approved-generator.py",
+      "file_type": "regular",
+      "size": 10046,
+      "sha256": "f0b61cc8e7fb6aef7ba2494e7c983103f62d89b674ea7ab45a9a40e7cbdb2558",
+      "purpose": "Exact generator candidate retained by preapply review"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-column-acl-cardinality-readonly.log",
+      "destination": "receipts/account-owner-column-acl-cardinality-readonly.log",
+      "file_type": "regular",
+      "size": 4,
+      "sha256": "4dc700f48df32e964eaa814eed3f1e87bb1f8a21c825bee2edde61fac35c1182",
+      "purpose": "Actual read-only PostgreSQL2raw/1exploded ACL observation"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-approved-independent-review.json",
+      "destination": "reviews/account-owner-approved-independent-review.json",
+      "file_type": "regular",
+      "size": 9867,
+      "sha256": "22ebae0563de01911de666ba90dafe930f09d0bf277ded19624b5bb1f12d64b9",
+      "purpose": "Original exact773bac70 static PASS retained with runtime pending; later failure is explicitly recorded separately"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-approved-independent-review-773bac70.json",
+      "destination": "reviews/account-owner-approved-independent-review-773bac70.json",
+      "file_type": "regular",
+      "size": 9867,
+      "sha256": "22ebae0563de01911de666ba90dafe930f09d0bf277ded19624b5bb1f12d64b9",
+      "purpose": "Frozen copy of earlier source review before42702 correction"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-qualified-independent-review.json",
+      "destination": "reviews/account-owner-qualified-independent-review.json",
+      "file_type": "regular",
+      "size": 4390,
+      "sha256": "b1b253f8f8d8e6378e6212a578fe62ab8696da98c7e3d6704712834970cb086c",
+      "purpose": "Exact0d6fa316 correction review and acknowledgment of missed procedural name-resolution boundary"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-approved-completion-review.json",
+      "destination": "reviews/account-owner-approved-completion-review.json",
+      "file_type": "regular",
+      "size": 7879,
+      "sha256": "df9690b4efa010e03303082ba5edb8cc92db661f3134c763856a04a23af8ae11",
+      "purpose": "Independent37GREEN evidence closure while regression run still pending"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-approved-completion-with-regressions-review.json",
+      "destination": "reviews/account-owner-approved-completion-with-regressions-review.json",
+      "file_type": "regular",
+      "size": 11535,
+      "sha256": "6a64b1fc1929e552a5716b95410d1c730871648f66b00e0c7abace140c8a793a",
+      "purpose": "Independent full approved-scope closure with22lifecycle/11startupPASS and3classifiedlegacyFAIL"
+    },
+    {
+      "source_path": "/private/tmp/account-owner-approved-regression-receipt.json",
+      "destination": "receipts/account-owner-approved-regression-receipt.json",
+      "file_type": "regular",
+      "size": 1650,
+      "sha256": "744da2c1bf9d73fd1b9141773e8d4c3ed1277a9da1545ebe9bde997c4fc2debc",
+      "purpose": "Root regression failure classification; reviewed against actual and historical logs"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-probe.py",
+      "destination": "drivers/account-fence37-probe.py",
+      "file_type": "regular",
+      "size": 435,
+      "sha256": "3c9a8b5bf2eec93dd1f856918885d8977e6decc65ecd7b7c6ee5637914f699ca",
+      "purpose": "Exact named probe entrypoint"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-driver.sh",
+      "destination": "drivers/account-fence37-driver.sh",
+      "file_type": "regular",
+      "size": 8339,
+      "sha256": "dbc79064b0ef3628bb919f3d8db623f4ee63befe84213e9280b817bd2c54f146",
+      "purpose": "Exact wrapper shared by cleanRED, failedsource and correctedGREEN"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-regression-driver.sh",
+      "destination": "drivers/account-custody-regression-driver.sh",
+      "file_type": "regular",
+      "size": 8380,
+      "sha256": "ce4dc9671c85147ac75439f46ab81fa45eba62cc99cfd6af04c51ed95b423a4b",
+      "purpose": "Exact retained36regression wrapper"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/cleanup-final-list-error.txt",
+      "destination": "runs/01-clean-base-red/cleanup-final-list-error.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/cleanup-list-error.txt",
+      "destination": "runs/01-clean-base-red/cleanup-list-error.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/cleanup.txt",
+      "destination": "runs/01-clean-base-red/cleanup.txt",
+      "file_type": "regular",
+      "size": 69,
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/container-name.txt",
+      "destination": "runs/01-clean-base-red/container-name.txt",
+      "file_type": "regular",
+      "size": 38,
+      "sha256": "b5b46ffcf9ae1bec146329cf12b8a3afdbda908a27225d515feec2bf375a8ff7",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/containers-after.txt",
+      "destination": "runs/01-clean-base-red/containers-after.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/containers-before-cleanup.txt",
+      "destination": "runs/01-clean-base-red/containers-before-cleanup.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/ownership-label.txt",
+      "destination": "runs/01-clean-base-red/ownership-label.txt",
+      "file_type": "regular",
+      "size": 49,
+      "sha256": "2d5b685a06e32cdb6757321b5030380b012af9405a45412062b8519f6d4224f9",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/postgres-map.json",
+      "destination": "runs/01-clean-base-red/postgres-map.json",
+      "file_type": "regular",
+      "size": 184155,
+      "sha256": "28f7f200f883f9a7f55d317e35114cafcb023313812c2edd3644d8c0ec709ec4",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/prebuild-dispatch.txt",
+      "destination": "runs/01-clean-base-red/prebuild-dispatch.txt",
+      "file_type": "regular",
+      "size": 65,
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/probe-exit.txt",
+      "destination": "runs/01-clean-base-red/probe-exit.txt",
+      "file_type": "regular",
+      "size": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/probe.log",
+      "destination": "runs/01-clean-base-red/probe.log",
+      "file_type": "regular",
+      "size": 39235,
+      "sha256": "d01e9a1ed0c6f13ce5861a4bf5a463f0ab20d9df097fdc23bec1898bab16017a",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/source-after.json",
+      "destination": "runs/01-clean-base-red/source-after.json",
+      "file_type": "regular",
+      "size": 2084,
+      "sha256": "88125b74c913796d3cb25507bdb9c69f5ea1921501395b64658396f36bd9a95c",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/source-before.json",
+      "destination": "runs/01-clean-base-red/source-before.json",
+      "file_type": "regular",
+      "size": 2084,
+      "sha256": "88125b74c913796d3cb25507bdb9c69f5ea1921501395b64658396f36bd9a95c",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78/driver-receipt.json",
+      "destination": "runs/01-clean-base-red/driver-receipt.json",
+      "file_type": "regular",
+      "size": 1609,
+      "sha256": "39afc0a8485423f56dbcefd55daccba592b7f76d9c8cac274fc6677f2a326694",
+      "purpose": "Run artifact hashes, exit code and exact-owned-container absence evidence"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/cleanup-final-list-error.txt",
+      "destination": "runs/02-source-42702-failure/cleanup-final-list-error.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/cleanup-list-error.txt",
+      "destination": "runs/02-source-42702-failure/cleanup-list-error.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/cleanup.txt",
+      "destination": "runs/02-source-42702-failure/cleanup.txt",
+      "file_type": "regular",
+      "size": 69,
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/container-name.txt",
+      "destination": "runs/02-source-42702-failure/container-name.txt",
+      "file_type": "regular",
+      "size": 38,
+      "sha256": "fcc9671d8416d257fae997c16844bad9136c225c5b9dccacc7266c0b13e19f0f",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/containers-after.txt",
+      "destination": "runs/02-source-42702-failure/containers-after.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/containers-before-cleanup.txt",
+      "destination": "runs/02-source-42702-failure/containers-before-cleanup.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/ownership-label.txt",
+      "destination": "runs/02-source-42702-failure/ownership-label.txt",
+      "file_type": "regular",
+      "size": 49,
+      "sha256": "f7f7e6583b409830066a9bb53245aee1439c5ad9457d22ed0f4954599b8a7d0f",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/postgres-map.json",
+      "destination": "runs/02-source-42702-failure/postgres-map.json",
+      "file_type": "regular",
+      "size": 184155,
+      "sha256": "28f7f200f883f9a7f55d317e35114cafcb023313812c2edd3644d8c0ec709ec4",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/prebuild-dispatch.txt",
+      "destination": "runs/02-source-42702-failure/prebuild-dispatch.txt",
+      "file_type": "regular",
+      "size": 65,
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/probe-exit.txt",
+      "destination": "runs/02-source-42702-failure/probe-exit.txt",
+      "file_type": "regular",
+      "size": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/probe.log",
+      "destination": "runs/02-source-42702-failure/probe.log",
+      "file_type": "regular",
+      "size": 289975,
+      "sha256": "1563b392b11acaa641502f1a5df468c318310996e7e4ee89b46236c1f8d251e6",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/source-after.json",
+      "destination": "runs/02-source-42702-failure/source-after.json",
+      "file_type": "regular",
+      "size": 2084,
+      "sha256": "8f5fd106753bf360f3e0515ab42d1c69ca698c8a62f82fe0cfc6c6ab0109333e",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/source-before.json",
+      "destination": "runs/02-source-42702-failure/source-before.json",
+      "file_type": "regular",
+      "size": 2084,
+      "sha256": "8f5fd106753bf360f3e0515ab42d1c69ca698c8a62f82fe0cfc6c6ab0109333e",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6/driver-receipt.json",
+      "destination": "runs/02-source-42702-failure/driver-receipt.json",
+      "file_type": "regular",
+      "size": 1609,
+      "sha256": "0ffba1c27de6e9b5d0941dee60b1580263872cecc7c9e9b172ead53315fe34c8",
+      "purpose": "Run artifact hashes, exit code and exact-owned-container absence evidence"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/cleanup-final-list-error.txt",
+      "destination": "runs/03-corrected-projection-green/cleanup-final-list-error.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/cleanup-list-error.txt",
+      "destination": "runs/03-corrected-projection-green/cleanup-list-error.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/cleanup.txt",
+      "destination": "runs/03-corrected-projection-green/cleanup.txt",
+      "file_type": "regular",
+      "size": 69,
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/container-name.txt",
+      "destination": "runs/03-corrected-projection-green/container-name.txt",
+      "file_type": "regular",
+      "size": 38,
+      "sha256": "716e34e5d8b2e8dfaefff353b91b504f287236105e0cdd2c70ccf0c93dc99366",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/containers-after.txt",
+      "destination": "runs/03-corrected-projection-green/containers-after.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/containers-before-cleanup.txt",
+      "destination": "runs/03-corrected-projection-green/containers-before-cleanup.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/ownership-label.txt",
+      "destination": "runs/03-corrected-projection-green/ownership-label.txt",
+      "file_type": "regular",
+      "size": 49,
+      "sha256": "2650a8ca800ea28c230b99b9db12ab10853552eccd40b2ee2e9daf37a7406299",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/postgres-map.json",
+      "destination": "runs/03-corrected-projection-green/postgres-map.json",
+      "file_type": "regular",
+      "size": 184155,
+      "sha256": "28f7f200f883f9a7f55d317e35114cafcb023313812c2edd3644d8c0ec709ec4",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/prebuild-dispatch.txt",
+      "destination": "runs/03-corrected-projection-green/prebuild-dispatch.txt",
+      "file_type": "regular",
+      "size": 65,
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/probe-exit.txt",
+      "destination": "runs/03-corrected-projection-green/probe-exit.txt",
+      "file_type": "regular",
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/probe.log",
+      "destination": "runs/03-corrected-projection-green/probe.log",
+      "file_type": "regular",
+      "size": 8752,
+      "sha256": "37a10f85c8f077d0a0a7c5b8c4026186f96a63aa7802dbed16601fa9c46c1a25",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/source-after.json",
+      "destination": "runs/03-corrected-projection-green/source-after.json",
+      "file_type": "regular",
+      "size": 2084,
+      "sha256": "671ac670534df262ce39236e241cc4804a5c1f91fc974f41dab97f0ed3054a64",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/source-before.json",
+      "destination": "runs/03-corrected-projection-green/source-before.json",
+      "file_type": "regular",
+      "size": 2084,
+      "sha256": "671ac670534df262ce39236e241cc4804a5c1f91fc974f41dab97f0ed3054a64",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87/driver-receipt.json",
+      "destination": "runs/03-corrected-projection-green/driver-receipt.json",
+      "file_type": "regular",
+      "size": 1609,
+      "sha256": "43cbead23904d36a2195d51288635037b52161fb9683f23baa88e8a4eac9ec09",
+      "purpose": "Run artifact hashes, exit code and exact-owned-container absence evidence"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/cleanup-final-list-error.txt",
+      "destination": "runs/04-retained-regressions/cleanup-final-list-error.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/cleanup-list-error.txt",
+      "destination": "runs/04-retained-regressions/cleanup-list-error.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/cleanup.txt",
+      "destination": "runs/04-retained-regressions/cleanup.txt",
+      "file_type": "regular",
+      "size": 69,
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/container-name.txt",
+      "destination": "runs/04-retained-regressions/container-name.txt",
+      "file_type": "regular",
+      "size": 38,
+      "sha256": "f8e18aa4f63080c1990786ac5764d3cd0680c8b6a10371660553384f67192c15",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/containers-after.txt",
+      "destination": "runs/04-retained-regressions/containers-after.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/containers-before-cleanup.txt",
+      "destination": "runs/04-retained-regressions/containers-before-cleanup.txt",
+      "file_type": "regular",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/ownership-label.txt",
+      "destination": "runs/04-retained-regressions/ownership-label.txt",
+      "file_type": "regular",
+      "size": 60,
+      "sha256": "ef4de1881a525f96c7ead91c8a252a6590d56e57b29304b17e82cd5afe090cad",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/postgres-map.json",
+      "destination": "runs/04-retained-regressions/postgres-map.json",
+      "file_type": "regular",
+      "size": 184146,
+      "sha256": "5681833d72a94b44b48b05d59c28d39c7ffabbe775ed17a0e4b79e26ea1e4907",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/prebuild-dispatch.txt",
+      "destination": "runs/04-retained-regressions/prebuild-dispatch.txt",
+      "file_type": "regular",
+      "size": 65,
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/probe-exit.txt",
+      "destination": "runs/04-retained-regressions/probe-exit.txt",
+      "file_type": "regular",
+      "size": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/probe.log",
+      "destination": "runs/04-retained-regressions/probe.log",
+      "file_type": "regular",
+      "size": 10274,
+      "sha256": "9a0ebd4bf3f80707316afc820083eaba4a52628fe4e3ebd12a452662443ee701",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/source-after.json",
+      "destination": "runs/04-retained-regressions/source-after.json",
+      "file_type": "regular",
+      "size": 2194,
+      "sha256": "997d2559d8520b7247b67f4c3ebbb6c79067860f7fb39f7e4d262b87068e9cb2",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/source-before.json",
+      "destination": "runs/04-retained-regressions/source-before.json",
+      "file_type": "regular",
+      "size": 2194,
+      "sha256": "997d2559d8520b7247b67f4c3ebbb6c79067860f7fb39f7e4d262b87068e9cb2",
+      "purpose": "Exact completed run artifact referenced by hashed driver receipt"
+    },
+    {
+      "source_path": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b/driver-receipt.json",
+      "destination": "runs/04-retained-regressions/driver-receipt.json",
+      "file_type": "regular",
+      "size": 1609,
+      "sha256": "7606661f7966aa6151c18380e4b7c29c9405540d4297523ba4964e05bf979877",
+      "purpose": "Run artifact hashes, exit code and exact-owned-container absence evidence"
+    },
+    {
+      "source_path": "/private/tmp/console-production-tdd-preparation-20260913/backend/app/src/account_custody_state.sql",
+      "destination": "source/0d6fa316/backend/app/src/account_custody_state.sql",
+      "file_type": "regular",
+      "size": 7038,
+      "sha256": "bbaa00932e808745070ebb866c7050d5f5544961a3e7158d0aa1da58be7c8899",
+      "purpose": "Exact final approved implementation bytes, bound to corrected commit",
+      "git_binding": {
+        "commit": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+        "path": "backend/app/src/account_custody_state.sql",
+        "blob_oid": "03b1b972b8b2c257429dfafa52f325c941f345fa"
+      }
+    },
+    {
+      "source_path": "/private/tmp/console-production-tdd-preparation-20260913/ops/generate-account-custody.py",
+      "destination": "source/0d6fa316/ops/generate-account-custody.py",
+      "file_type": "regular",
+      "size": 10046,
+      "sha256": "f0b61cc8e7fb6aef7ba2494e7c983103f62d89b674ea7ab45a9a40e7cbdb2558",
+      "purpose": "Exact final approved implementation bytes, bound to corrected commit",
+      "git_binding": {
+        "commit": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+        "path": "ops/generate-account-custody.py",
+        "blob_oid": "91e3cffc488bb61ec3ac427fd7309b202f884815"
+      }
+    },
+    {
+      "source_path": "/private/tmp/console-production-tdd-preparation-20260913/ops/postgres-finalize-account-custody.sql",
+      "destination": "source/0d6fa316/ops/postgres-finalize-account-custody.sql",
+      "file_type": "regular",
+      "size": 30290,
+      "sha256": "eea1ef091ebdacf3fe537bee293a0e0eedf077ab0033bb87f37d617fe6e75c5c",
+      "purpose": "Exact final approved implementation bytes, bound to corrected commit",
+      "git_binding": {
+        "commit": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+        "path": "ops/postgres-finalize-account-custody.sql",
+        "blob_oid": "9938fdf25fb4bf132967970d3b3c41aa6ad21877"
+      }
+    }
+  ],
+  "record_count": 75,
+  "total_bytes": 1238269,
+  "runs": [
+    {
+      "source_directory": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78",
+      "destination": "runs/01-clean-base-red",
+      "candidate_sha": "5661e3135ec58f566b4a451b9ec7c5242457d29c",
+      "passed": 4,
+      "failed": 33,
+      "ignored": 0,
+      "driver_exit": 1,
+      "all13indexed_artifacts_retained": true,
+      "cleanup": "confirmed owned container absent via successful bounded docker ps -a"
+    },
+    {
+      "source_directory": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6",
+      "destination": "runs/02-source-42702-failure",
+      "candidate_sha": "773bac705a25e8e6903e0a3c41752080915d6946",
+      "passed": 0,
+      "failed": 37,
+      "ignored": 0,
+      "driver_exit": 1,
+      "all13indexed_artifacts_retained": true,
+      "cleanup": "confirmed owned container absent via successful bounded docker ps -a"
+    },
+    {
+      "source_directory": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87",
+      "destination": "runs/03-corrected-projection-green",
+      "candidate_sha": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+      "passed": 37,
+      "failed": 0,
+      "ignored": 0,
+      "driver_exit": 0,
+      "all13indexed_artifacts_retained": true,
+      "cleanup": "confirmed owned container absent via successful bounded docker ps -a"
+    },
+    {
+      "source_directory": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b",
+      "destination": "runs/04-retained-regressions",
+      "candidate_sha": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+      "passed": 33,
+      "failed": 3,
+      "ignored": 0,
+      "driver_exit": 1,
+      "all13indexed_artifacts_retained": true,
+      "cleanup": "confirmed owned container absent via successful bounded docker ps -a"
+    }
+  ],
+  "preservation": "Copy each regular source file exactly after hash/size recheck, preserving original failure bytes and pending status text as historical evidence. Do not regenerate logs or edit previously reviewed records.",
+  "security_screen": {
+    "credential_dsn_private_key_jwt_pattern_hits": 0,
+    "patterns": [
+      "private_key_pem",
+      "credential_dsn",
+      "private_key_json",
+      "jwt_literal"
+    ],
+    "manual_scope_review": "Selected logs contain build diagnostics, PostgreSQL schema/routine metadata and test outcomes; selected drivers contain variable names/code but no runtime environment dump or credentials. No raw environment file, databaseDSN/private key or database dump is included.",
+    "limits": "Pattern screening and bounded content review are not universal secret-discovery proof; root must reject any unexpected byte/hash drift during import."
+  },
+  "exclusions": [
+    {
+      "source_path": "/private/tmp/account-owner-approved-canonical.sql",
+      "reason": "Current transient canonical candidate was changed by the table-ACL comment clarification after preapply review; it must not be represented as the original reviewed6993byte candidate. Original source patch and final committed source are retained.",
+      "reviewed_binding": {
+        "sha256": "4f1e0f03f68d825021a71847647e6b63e53b1d2f3a5d60f20e6b9cfed2bbd678",
+        "bytes": 6993
+      },
+      "current_binding": {
+        "size": 6998,
+        "sha256": "4ef1a00ea980888a1ee67c3507773d01c47ecd0772545ac265307f06c56033bb"
+      }
+    },
+    {
+      "scope": "All unlisted /private/tmp paths, running auth-lane artifacts, environment/configuration secret files, live database dumps, unrelated diagnostic outputs",
+      "reason": "Not part of this bounded completed approval/evidence custody set."
+    },
+    {
+      "scope": "Historical earlier committed followup/core regression log cited in completion review",
+      "reason": "Already retained in repository unchanged; this index records its existing path through review without duplicating archival bytes."
+    }
+  ],
+  "closure_limits": [
+    "Preapply review references the now-drifted transient canonical candidate; this missing original regular-file source is explicitly disclosed rather than silently substituted.",
+    "PostgreSQL fixtures used tmpfs: noHA/durability/backup/no-loss claim.",
+    "Projection37 passed and22lifecycle+11startup passed; retained36command remains exit1 because3legacycustody requirements remain failing.",
+    "Actual Auth pool/request wiring, Account conversion/currentcontext and wholeConsole completion are outside these four completed runs."
+  ]
+}
