@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.26](https://github.com/oyatie/console/compare/v0.3.25...v0.3.26) (2026-09-15)
+
+
+### Bug Fixes
+
+* **build:** refresh Buck dependencies and select native ARM toolchains ([#1108](https://github.com/oyatie/console/issues/1108)) ([db3c4b9](https://github.com/oyatie/console/commit/db3c4b9cd7d38f85075e4d5b1b3bddc65f40a35d))
+* **deps:** Bump the rust-crates group in /backend with 27 updates ([#1105](https://github.com/oyatie/console/issues/1105)) ([7d729e5](https://github.com/oyatie/console/commit/7d729e58f3ac48a7ba0f4943117ba7f34a1094b1))
+* **deps:** restore cipher compatibility and patch rustls ([#1107](https://github.com/oyatie/console/issues/1107)) ([276df9b](https://github.com/oyatie/console/commit/276df9b30fae113d112781e6fe35d1a6d9f190bc))
+
 ## [0.3.25](https://github.com/oyatie/console/compare/v0.3.24...v0.3.25) (2026-09-10)
 
 
